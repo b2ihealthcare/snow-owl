@@ -15,50 +15,52 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
+import com.b2international.snowowl.snomed.ecl.ecl.Script;
+
 import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Term Filter</b></em>'.
+ * A representation of the model object '<em><b>Descriptiontype</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getEcl <em>Ecl</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptiontype()
  * @model
  * @generated
  */
-public interface TermFilter extends EObject
+public interface Descriptiontype extends EObject
 {
   /**
-   * Returns the value of the '<em><b>Term</b></em>' attribute.
+   * Returns the value of the '<em><b>Ecl</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Term</em>' attribute isn't clear,
+   * If the meaning of the '<em>Ecl</em>' containment reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Term</em>' attribute.
-   * @see #setTerm(String)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter_Term()
-   * @model
+   * @return the value of the '<em>Ecl</em>' containment reference.
+   * @see #setEcl(Script)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptiontype_Ecl()
+   * @model containment="true"
    * @generated
    */
-  String getTerm();
+  Script getEcl();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getEcl <em>Ecl</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Term</em>' attribute.
-   * @see #getTerm()
+   * @param value the new value of the '<em>Ecl</em>' containment reference.
+   * @see #getEcl()
    * @generated
    */
-  void setTerm(String value);
+  void setEcl(Script value);
 
-} // TermFilter
+} // Descriptiontype

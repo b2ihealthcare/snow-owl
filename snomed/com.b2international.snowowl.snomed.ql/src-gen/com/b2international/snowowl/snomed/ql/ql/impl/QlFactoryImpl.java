@@ -82,8 +82,13 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
       case QlPackage.NESTED_FILTER: return createNestedFilter();
       case QlPackage.FILTER: return createFilter();
       case QlPackage.ECL_FILTER: return createEclFilter();
-      case QlPackage.TERM_FILTER: return createTermFilter();
       case QlPackage.ACTIVE_FILTER: return createActiveFilter();
+      case QlPackage.DESCRIPTION: return createDescription();
+      case QlPackage.DESCRIPTION_FILTER: return createDescriptionFilter();
+      case QlPackage.TERM_FILTER: return createTermFilter();
+      case QlPackage.REGULAR_EXPRESSION: return createRegularExpression();
+      case QlPackage.DESCRIPTIONTYPE: return createDescriptiontype();
+      case QlPackage.ACTIVE_TERM: return createActiveTerm();
       case QlPackage.DISJUNCTION: return createDisjunction();
       case QlPackage.CONJUNCTION: return createConjunction();
       case QlPackage.EXCLUSION: return createExclusion();
@@ -152,6 +157,39 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  public ActiveFilter createActiveFilter()
+  {
+    ActiveFilterImpl activeFilter = new ActiveFilterImpl();
+    return activeFilter;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Description createDescription()
+  {
+    DescriptionImpl description = new DescriptionImpl();
+    return description;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DescriptionFilter createDescriptionFilter()
+  {
+    DescriptionFilterImpl descriptionFilter = new DescriptionFilterImpl();
+    return descriptionFilter;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public TermFilter createTermFilter()
   {
     TermFilterImpl termFilter = new TermFilterImpl();
@@ -163,10 +201,32 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public ActiveFilter createActiveFilter()
+  public RegularExpression createRegularExpression()
   {
-    ActiveFilterImpl activeFilter = new ActiveFilterImpl();
-    return activeFilter;
+    RegularExpressionImpl regularExpression = new RegularExpressionImpl();
+    return regularExpression;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Descriptiontype createDescriptiontype()
+  {
+    DescriptiontypeImpl descriptiontype = new DescriptiontypeImpl();
+    return descriptiontype;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public ActiveTerm createActiveTerm()
+  {
+    ActiveTermImpl activeTerm = new ActiveTermImpl();
+    return activeTerm;
   }
 
   /**

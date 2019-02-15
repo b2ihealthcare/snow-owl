@@ -113,14 +113,39 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createEclFilterAdapter();
       }
       @Override
+      public Adapter caseActiveFilter(ActiveFilter object)
+      {
+        return createActiveFilterAdapter();
+      }
+      @Override
+      public Adapter caseDescription(Description object)
+      {
+        return createDescriptionAdapter();
+      }
+      @Override
+      public Adapter caseDescriptionFilter(DescriptionFilter object)
+      {
+        return createDescriptionFilterAdapter();
+      }
+      @Override
       public Adapter caseTermFilter(TermFilter object)
       {
         return createTermFilterAdapter();
       }
       @Override
-      public Adapter caseActiveFilter(ActiveFilter object)
+      public Adapter caseRegularExpression(RegularExpression object)
       {
-        return createActiveFilterAdapter();
+        return createRegularExpressionAdapter();
+      }
+      @Override
+      public Adapter caseDescriptiontype(Descriptiontype object)
+      {
+        return createDescriptiontypeAdapter();
+      }
+      @Override
+      public Adapter caseActiveTerm(ActiveTerm object)
+      {
+        return createActiveTermAdapter();
       }
       @Override
       public Adapter caseDisjunction(Disjunction object)
@@ -235,6 +260,51 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter <em>Active Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.ActiveFilter
+   * @generated
+   */
+  public Adapter createActiveFilterAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Description <em>Description</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.Description
+   * @generated
+   */
+  public Adapter createDescriptionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter <em>Description Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.DescriptionFilter
+   * @generated
+   */
+  public Adapter createDescriptionFilterAdapter()
+  {
+    return null;
+  }
+
+  /**
    * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.TermFilter <em>Term Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -250,16 +320,46 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter <em>Active Filter</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.RegularExpression <em>Regular Expression</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.ActiveFilter
+   * @see com.b2international.snowowl.snomed.ql.ql.RegularExpression
    * @generated
    */
-  public Adapter createActiveFilterAdapter()
+  public Adapter createRegularExpressionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype <em>Descriptiontype</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.Descriptiontype
+   * @generated
+   */
+  public Adapter createDescriptiontypeAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveTerm <em>Active Term</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.ActiveTerm
+   * @generated
+   */
+  public Adapter createActiveTermAdapter()
   {
     return null;
   }

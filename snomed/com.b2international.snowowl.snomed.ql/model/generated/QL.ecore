@@ -16,10 +16,34 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="ecl" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Script"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TermFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="ActiveFilter" eSuperTypes="#//Filter">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="active" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Description" eSuperTypes="#//Filter">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="filter" eType="#//DescriptionFilter"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DescriptionFilter">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="termFilter" eType="#//TermFilter"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="active" eType="#//ActiveTerm"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Descriptiontype"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="regex" eType="#//RegularExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TermFilter">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ActiveFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="RegularExpression">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="regex" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Descriptiontype">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ecl" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Script"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActiveTerm">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="active" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Disjunction" eSuperTypes="#//Constraint">

@@ -19,46 +19,46 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Term Filter</b></em>'.
+ * A representation of the model object '<em><b>Active Term</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ActiveTerm#getActive <em>Active</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getActiveTerm()
  * @model
  * @generated
  */
-public interface TermFilter extends EObject
+public interface ActiveTerm extends EObject
 {
   /**
-   * Returns the value of the '<em><b>Term</b></em>' attribute.
+   * Returns the value of the '<em><b>Active</b></em>' attribute.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Term</em>' attribute isn't clear,
+   * If the meaning of the '<em>Active</em>' attribute isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Term</em>' attribute.
-   * @see #setTerm(String)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter_Term()
+   * @return the value of the '<em>Active</em>' attribute.
+   * @see #setActive(String)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getActiveTerm_Active()
    * @model
    * @generated
    */
-  String getTerm();
+  String getActive();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ActiveTerm#getActive <em>Active</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Term</em>' attribute.
-   * @see #getTerm()
+   * @param value the new value of the '<em>Active</em>' attribute.
+   * @see #getActive()
    * @generated
    */
-  void setTerm(String value);
+  void setActive(String value);
 
-} // TermFilter
+} // ActiveTerm

@@ -17,11 +17,29 @@
     <genClasses ecoreClass="QL.ecore#//EclFilter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//EclFilter/ecl"/>
     </genClasses>
+    <genClasses ecoreClass="QL.ecore#//ActiveFilter">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveFilter/active"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//Description">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Description/filter"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//DescriptionFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/termFilter"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/active"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/regex"/>
+    </genClasses>
     <genClasses ecoreClass="QL.ecore#//TermFilter">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//TermFilter/term"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//ActiveFilter">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveFilter/active"/>
+    <genClasses ecoreClass="QL.ecore#//RegularExpression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//RegularExpression/regex"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//Descriptiontype">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Descriptiontype/ecl"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//ActiveTerm">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveTerm/active"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//Disjunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Disjunction/left"/>

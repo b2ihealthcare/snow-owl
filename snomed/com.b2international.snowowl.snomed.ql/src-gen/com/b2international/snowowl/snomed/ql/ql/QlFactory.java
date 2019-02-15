@@ -81,6 +81,33 @@ public interface QlFactory extends EFactory
   EclFilter createEclFilter();
 
   /**
+   * Returns a new object of class '<em>Active Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Active Filter</em>'.
+   * @generated
+   */
+  ActiveFilter createActiveFilter();
+
+  /**
+   * Returns a new object of class '<em>Description</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Description</em>'.
+   * @generated
+   */
+  Description createDescription();
+
+  /**
+   * Returns a new object of class '<em>Description Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Description Filter</em>'.
+   * @generated
+   */
+  DescriptionFilter createDescriptionFilter();
+
+  /**
    * Returns a new object of class '<em>Term Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -90,13 +117,31 @@ public interface QlFactory extends EFactory
   TermFilter createTermFilter();
 
   /**
-   * Returns a new object of class '<em>Active Filter</em>'.
+   * Returns a new object of class '<em>Regular Expression</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Active Filter</em>'.
+   * @return a new object of class '<em>Regular Expression</em>'.
    * @generated
    */
-  ActiveFilter createActiveFilter();
+  RegularExpression createRegularExpression();
+
+  /**
+   * Returns a new object of class '<em>Descriptiontype</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Descriptiontype</em>'.
+   * @generated
+   */
+  Descriptiontype createDescriptiontype();
+
+  /**
+   * Returns a new object of class '<em>Active Term</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Active Term</em>'.
+   * @generated
+   */
+  ActiveTerm createActiveTerm();
 
   /**
    * Returns a new object of class '<em>Disjunction</em>'.

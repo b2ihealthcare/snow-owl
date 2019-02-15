@@ -19,46 +19,46 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Term Filter</b></em>'.
+ * A representation of the model object '<em><b>Regular Expression</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.RegularExpression#getRegex <em>Regex</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getRegularExpression()
  * @model
  * @generated
  */
-public interface TermFilter extends EObject
+public interface RegularExpression extends EObject
 {
   /**
-   * Returns the value of the '<em><b>Term</b></em>' attribute.
+   * Returns the value of the '<em><b>Regex</b></em>' attribute.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Term</em>' attribute isn't clear,
+   * If the meaning of the '<em>Regex</em>' attribute isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Term</em>' attribute.
-   * @see #setTerm(String)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter_Term()
+   * @return the value of the '<em>Regex</em>' attribute.
+   * @see #setRegex(String)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getRegularExpression_Regex()
    * @model
    * @generated
    */
-  String getTerm();
+  String getRegex();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.RegularExpression#getRegex <em>Regex</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Term</em>' attribute.
-   * @see #getTerm()
+   * @param value the new value of the '<em>Regex</em>' attribute.
+   * @see #getRegex()
    * @generated
    */
-  void setTerm(String value);
+  void setRegex(String value);
 
-} // TermFilter
+} // RegularExpression

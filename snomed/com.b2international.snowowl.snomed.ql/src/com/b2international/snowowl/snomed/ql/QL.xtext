@@ -38,19 +38,43 @@ NestedFilter:
 ;
 
 Filter:
-	ActiveFilter | EclFilter | TermFilter | NestedFilter
+	ActiveFilter | EclFilter | Description | NestedFilter
 ;
 
 EclFilter:
 	ECL (ecl = Script)
 ;
 
-TermFilter:
-	TERM (term = STRING)
-;
-
 ActiveFilter:
 	ACTIVE (active = Boolean)
+;
+
+Description:
+	{Description} OPEN_DOUBLE_BRACES filter = DescriptionFilter CLOSE_DOUBLE_BRACES
+;
+
+DescriptionFilter:
+	{DescriptionFilter} ((termFilter = TermFilter)? 
+		& (active=ActiveTerm)?
+		& (type=Descriptiontype)?
+		& (regex = RegularExpression)?
+	)
+;
+
+TermFilter:
+	TERM EQUAL (term = STRING)
+;
+
+RegularExpression:
+	REGEX EQUAL (regex = STRING)
+;
+
+Descriptiontype:
+	DESCRIPTION_TYPE EQUAL (ecl = Script)
+;
+
+ActiveTerm:
+	ACTIVE EQUAL (active = Boolean)
 ;
 
 Boolean:
@@ -74,4 +98,20 @@ terminal TRUE:
 
 terminal FALSE:
 	'false'
+;
+
+terminal REGEX:
+	'regex'
+;
+
+terminal DESCRIPTION_TYPE:
+	'type'
+;
+
+terminal OPEN_DOUBLE_BRACES:
+	'{{'
+;
+
+terminal CLOSE_DOUBLE_BRACES:
+	'}}'
 ;

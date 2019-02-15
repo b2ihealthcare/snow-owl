@@ -41,6 +41,14 @@ RULE_TRUE : 'true';
 
 RULE_FALSE : 'false';
 
+RULE_REGEX : 'regex';
+
+RULE_DESCRIPTION_TYPE : 'type';
+
+RULE_OPEN_DOUBLE_BRACES : '{{';
+
+RULE_CLOSE_DOUBLE_BRACES : '}}';
+
 RULE_TERM_STRING : '|' ~('|')* '|';
 
 RULE_REVERSED : 'R';

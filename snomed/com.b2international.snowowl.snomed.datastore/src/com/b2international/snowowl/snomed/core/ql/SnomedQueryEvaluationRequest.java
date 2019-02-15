@@ -36,16 +36,22 @@ import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
+import com.b2international.snowowl.snomed.ql.ql.ActiveTerm;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ql.ql.Description;
+import com.b2international.snowowl.snomed.ql.ql.DescriptionFilter;
+import com.b2international.snowowl.snomed.ql.ql.Descriptiontype;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.EclFilter;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.RegularExpression;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -88,17 +94,31 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 		return Promise.immediate(Expressions.builder().filter(SnomedDocument.Expressions.active(isActive)).build());
 	}
 	
-	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {
-		final String term = termFilter.getTerm();
+	protected Promise<Expression> eval(BranchContext context, final Description description) {
+		final DescriptionFilter descriptionFilter = description.getFilter();		
+		final ActiveTerm activeTerm = descriptionFilter.getActive();
+		final TermFilter termFilter = descriptionFilter.getTermFilter();
+		final Descriptiontype descriptiontype = descriptionFilter.getType();
+		final RegularExpression regularExpression = descriptionFilter.getRegex();
 		
-		if (term.length()<3) {
-			return Promise.immediate(Expressions.matchAll());
+		SnomedDescriptionSearchRequestBuilder descriptionRequest = SnomedRequests.prepareSearchDescription().all();
+		if (termFilter != null) {
+			String term = termFilter.getTerm();
+			if (term.length() > 2) {
+				descriptionRequest.filterByTerm(term);
+			}
+		} else if (activeTerm != null) {
+			boolean active = activeTerm.getActive().equals("true") ? true : false;
+			descriptionRequest.filterByActive(active);
+		} else if (descriptiontype != null) {
+			final Script script = descriptiontype.getEcl();
+			final String eclExpression = context.service(EclSerializer.class).serializeWithoutTerms(script.getConstraint());
+			descriptionRequest.filterByType(eclExpression);
+		} else if (regularExpression != null) {
+			descriptionRequest.filterByTermRegex(regularExpression.getRegex());
 		}
 		
-		return SnomedRequests.prepareSearchDescription()
-				.all()
-				.filterByActive(true)
-				.filterByTerm(term)
+		return descriptionRequest
 				.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 				.build(context.id(), context.branchPath())
 				.execute(context.service(IEventBus.class))

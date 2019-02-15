@@ -125,21 +125,56 @@ public class QlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case QlPackage.TERM_FILTER:
-      {
-        TermFilter termFilter = (TermFilter)theEObject;
-        T result = caseTermFilter(termFilter);
-        if (result == null) result = caseFilter(termFilter);
-        if (result == null) result = caseConstraint(termFilter);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
       case QlPackage.ACTIVE_FILTER:
       {
         ActiveFilter activeFilter = (ActiveFilter)theEObject;
         T result = caseActiveFilter(activeFilter);
         if (result == null) result = caseFilter(activeFilter);
         if (result == null) result = caseConstraint(activeFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.DESCRIPTION:
+      {
+        Description description = (Description)theEObject;
+        T result = caseDescription(description);
+        if (result == null) result = caseFilter(description);
+        if (result == null) result = caseConstraint(description);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.DESCRIPTION_FILTER:
+      {
+        DescriptionFilter descriptionFilter = (DescriptionFilter)theEObject;
+        T result = caseDescriptionFilter(descriptionFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.TERM_FILTER:
+      {
+        TermFilter termFilter = (TermFilter)theEObject;
+        T result = caseTermFilter(termFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.REGULAR_EXPRESSION:
+      {
+        RegularExpression regularExpression = (RegularExpression)theEObject;
+        T result = caseRegularExpression(regularExpression);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.DESCRIPTIONTYPE:
+      {
+        Descriptiontype descriptiontype = (Descriptiontype)theEObject;
+        T result = caseDescriptiontype(descriptiontype);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.ACTIVE_TERM:
+      {
+        ActiveTerm activeTerm = (ActiveTerm)theEObject;
+        T result = caseActiveTerm(activeTerm);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -252,6 +287,54 @@ public class QlSwitch<T> extends Switch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>Active Filter</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Active Filter</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseActiveFilter(ActiveFilter object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Description</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Description</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDescription(Description object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Description Filter</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Description Filter</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDescriptionFilter(DescriptionFilter object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>Term Filter</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -268,17 +351,49 @@ public class QlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Active Filter</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Regular Expression</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Active Filter</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Regular Expression</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseActiveFilter(ActiveFilter object)
+  public T caseRegularExpression(RegularExpression object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Descriptiontype</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Descriptiontype</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDescriptiontype(Descriptiontype object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Active Term</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Active Term</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseActiveTerm(ActiveTerm object)
   {
     return null;
   }

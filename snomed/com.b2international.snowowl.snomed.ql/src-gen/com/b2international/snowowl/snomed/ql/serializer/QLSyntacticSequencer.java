@@ -51,6 +51,8 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getACTIVEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getCLOSE_DOUBLE_BRACESRule())
+			return getCLOSE_DOUBLE_BRACESToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCOLONRule())
 			return getCOLONToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCURLY_CLOSERule())
@@ -61,6 +63,8 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getDBL_GTToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDBL_LTRule())
 			return getDBL_LTToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getDESCRIPTION_TYPERule())
+			return getDESCRIPTION_TYPEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDOTRule())
 			return getDOTToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getECLRule())
@@ -83,6 +87,10 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getLT_EMToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getNOT_EQUALRule())
 			return getNOT_EQUALToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getOPEN_DOUBLE_BRACESRule())
+			return getOPEN_DOUBLE_BRACESToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getREGEXRule())
+			return getREGEXToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getREVERSEDRule())
 			return getREVERSEDToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getROUND_CLOSERule())
@@ -121,6 +129,17 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "^";
+	}
+	
+	/**
+	 * terminal CLOSE_DOUBLE_BRACES:
+	 * 	'}}'
+	 * ;
+	 */
+	protected String getCLOSE_DOUBLE_BRACESToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "}}";
 	}
 	
 	/**
@@ -171,6 +190,17 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "<<";
+	}
+	
+	/**
+	 * terminal DESCRIPTION_TYPE:
+	 * 	'type'
+	 * ;
+	 */
+	protected String getDESCRIPTION_TYPEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "type";
 	}
 	
 	/**
@@ -285,6 +315,28 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
+	 * terminal OPEN_DOUBLE_BRACES:
+	 * 	'{{'
+	 * ;
+	 */
+	protected String getOPEN_DOUBLE_BRACESToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "{{";
+	}
+	
+	/**
+	 * terminal REGEX:
+	 * 	'regex'
+	 * ;
+	 */
+	protected String getREGEXToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "regex";
+	}
+	
+	/**
 	 * terminal REVERSED:
 	 * 	'R';
 	 */
@@ -394,7 +446,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     'AND' | ','
+	 *     ',' | 'AND'
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndExpressionConstraint.left=} (ambiguity) right=ExclusionExpressionConstraint

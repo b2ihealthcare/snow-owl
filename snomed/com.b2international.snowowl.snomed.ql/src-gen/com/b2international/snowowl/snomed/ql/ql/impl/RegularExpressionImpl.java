@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
-import com.b2international.snowowl.snomed.ql.ql.TermFilter;
+import com.b2international.snowowl.snomed.ql.ql.RegularExpression;
 
 import org.eclipse.emf.common.notify.Notification;
 
@@ -27,45 +27,45 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Term Filter</b></em>'.
+ * An implementation of the model object '<em><b>Regular Expression</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.TermFilterImpl#getTerm <em>Term</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.RegularExpressionImpl#getRegex <em>Regex</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class TermFilterImpl extends MinimalEObjectImpl.Container implements TermFilter
+public class RegularExpressionImpl extends MinimalEObjectImpl.Container implements RegularExpression
 {
   /**
-   * The default value of the '{@link #getTerm() <em>Term</em>}' attribute.
+   * The default value of the '{@link #getRegex() <em>Regex</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getTerm()
+   * @see #getRegex()
    * @generated
    * @ordered
    */
-  protected static final String TERM_EDEFAULT = null;
+  protected static final String REGEX_EDEFAULT = null;
 
   /**
-   * The cached value of the '{@link #getTerm() <em>Term</em>}' attribute.
+   * The cached value of the '{@link #getRegex() <em>Regex</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getTerm()
+   * @see #getRegex()
    * @generated
    * @ordered
    */
-  protected String term = TERM_EDEFAULT;
+  protected String regex = REGEX_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected TermFilterImpl()
+  protected RegularExpressionImpl()
   {
     super();
   }
@@ -78,7 +78,7 @@ public class TermFilterImpl extends MinimalEObjectImpl.Container implements Term
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.TERM_FILTER;
+    return QlPackage.Literals.REGULAR_EXPRESSION;
   }
 
   /**
@@ -86,9 +86,9 @@ public class TermFilterImpl extends MinimalEObjectImpl.Container implements Term
    * <!-- end-user-doc -->
    * @generated
    */
-  public String getTerm()
+  public String getRegex()
   {
-    return term;
+    return regex;
   }
 
   /**
@@ -96,12 +96,12 @@ public class TermFilterImpl extends MinimalEObjectImpl.Container implements Term
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setTerm(String newTerm)
+  public void setRegex(String newRegex)
   {
-    String oldTerm = term;
-    term = newTerm;
+    String oldRegex = regex;
+    regex = newRegex;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.TERM_FILTER__TERM, oldTerm, term));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.REGULAR_EXPRESSION__REGEX, oldRegex, regex));
   }
 
   /**
@@ -114,8 +114,8 @@ public class TermFilterImpl extends MinimalEObjectImpl.Container implements Term
   {
     switch (featureID)
     {
-      case QlPackage.TERM_FILTER__TERM:
-        return getTerm();
+      case QlPackage.REGULAR_EXPRESSION__REGEX:
+        return getRegex();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -130,8 +130,8 @@ public class TermFilterImpl extends MinimalEObjectImpl.Container implements Term
   {
     switch (featureID)
     {
-      case QlPackage.TERM_FILTER__TERM:
-        setTerm((String)newValue);
+      case QlPackage.REGULAR_EXPRESSION__REGEX:
+        setRegex((String)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -147,8 +147,8 @@ public class TermFilterImpl extends MinimalEObjectImpl.Container implements Term
   {
     switch (featureID)
     {
-      case QlPackage.TERM_FILTER__TERM:
-        setTerm(TERM_EDEFAULT);
+      case QlPackage.REGULAR_EXPRESSION__REGEX:
+        setRegex(REGEX_EDEFAULT);
         return;
     }
     super.eUnset(featureID);
@@ -164,8 +164,8 @@ public class TermFilterImpl extends MinimalEObjectImpl.Container implements Term
   {
     switch (featureID)
     {
-      case QlPackage.TERM_FILTER__TERM:
-        return TERM_EDEFAULT == null ? term != null : !TERM_EDEFAULT.equals(term);
+      case QlPackage.REGULAR_EXPRESSION__REGEX:
+        return REGEX_EDEFAULT == null ? regex != null : !REGEX_EDEFAULT.equals(regex);
     }
     return super.eIsSet(featureID);
   }
@@ -181,10 +181,10 @@ public class TermFilterImpl extends MinimalEObjectImpl.Container implements Term
     if (eIsProxy()) return super.toString();
 
     StringBuffer result = new StringBuffer(super.toString());
-    result.append(" (term: ");
-    result.append(term);
+    result.append(" (regex: ");
+    result.append(regex);
     result.append(')');
     return result.toString();
   }
 
-} //TermFilterImpl
+} //RegularExpressionImpl

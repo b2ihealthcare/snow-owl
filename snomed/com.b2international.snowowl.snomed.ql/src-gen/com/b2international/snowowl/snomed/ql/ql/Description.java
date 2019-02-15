@@ -15,50 +15,49 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
-import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Term Filter</b></em>'.
+ * A representation of the model object '<em><b>Description</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Description#getFilter <em>Filter</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescription()
  * @model
  * @generated
  */
-public interface TermFilter extends EObject
+public interface Description extends Filter
 {
   /**
-   * Returns the value of the '<em><b>Term</b></em>' attribute.
+   * Returns the value of the '<em><b>Filter</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Term</em>' attribute isn't clear,
+   * If the meaning of the '<em>Filter</em>' containment reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Term</em>' attribute.
-   * @see #setTerm(String)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter_Term()
-   * @model
+   * @return the value of the '<em>Filter</em>' containment reference.
+   * @see #setFilter(DescriptionFilter)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescription_Filter()
+   * @model containment="true"
    * @generated
    */
-  String getTerm();
+  DescriptionFilter getFilter();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Description#getFilter <em>Filter</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Term</em>' attribute.
-   * @see #getTerm()
+   * @param value the new value of the '<em>Filter</em>' containment reference.
+   * @see #getFilter()
    * @generated
    */
-  void setTerm(String value);
+  void setFilter(DescriptionFilter value);
 
-} // TermFilter
+} // Description
