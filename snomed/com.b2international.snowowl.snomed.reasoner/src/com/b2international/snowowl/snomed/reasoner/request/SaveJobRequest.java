@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.request;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.request.IdRequest;
@@ -75,7 +77,7 @@ import com.google.common.primitives.Longs;
  * 
  * @since 6.11 (originally introduced on 7.0)
  */
-public class SaveJobRequest implements Request<BranchContext, Boolean> {
+final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
@@ -93,18 +95,51 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 	@NotNull
 	private String parentLockContext;
 
-	protected SaveJobRequest() {}
+	@NotEmpty
+	private String commitComment;
+
+	// @Nullable
+	private String moduleId;
+
+	// @Nullable
+	private String namespace;
 	
-	protected void setClassificationId(final String classificationId) {
+	private boolean fixEquivalences;
+	
+	private boolean handleConcreteDomains;
+	
+	SaveJobRequest() {}
+	
+	void setClassificationId(final String classificationId) {
 		this.classificationId = classificationId;
 	}
 	
-	protected void setUserId(final String userId) {
+	void setUserId(final String userId) {
 		this.userId = userId;
 	}
 	
-	protected void setParentLockContext(final String parentLockContext) {
+	void setParentLockContext(final String parentLockContext) {
 		this.parentLockContext = parentLockContext;
+	}
+	
+	void setCommitComment(final String commitComment) {
+		this.commitComment = commitComment;
+	}
+	
+	void setModuleId(String moduleId) {
+		this.moduleId = moduleId;
+	}
+	
+	void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+	
+	void setFixEquivalences(boolean fixEquivalences) {
+		this.fixEquivalences = fixEquivalences;
+	}
+	
+	void setHandleConcreteDomains(boolean handleConcreteDomains) {
+		this.handleConcreteDomains = handleConcreteDomains;
 	}
 	
 	@Override
@@ -165,7 +200,7 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 		final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
 			.setBody(bulkRequestBuilder)
-			.setCommitComment("Classified ontology.")
+			.setCommitComment(commitComment)
 			.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
 			.setUserId(userId)
 			.build();
@@ -185,8 +220,12 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final Set<String> conceptIdsToSkip = mergeEquivalentConcepts(context, bulkRequestBuilder);
 		applyRelationshipChanges(context, bulkRequestBuilder, assigner, conceptIdsToSkip);
 
-		if (isConcreteDomainSupported(context)) {
-			applyConcreteDomainChanges(context, bulkRequestBuilder, assigner, conceptIdsToSkip);
+		if (handleConcreteDomains) {
+			// CD member support in configuration overrides the flag on the save request
+			final SnomedCoreConfiguration snomedCoreConfiguration = context.service(SnomedCoreConfiguration.class);
+			if (snomedCoreConfiguration.isConcreteDomainSupported()) {
+				applyConcreteDomainChanges(context, bulkRequestBuilder, assigner, conceptIdsToSkip);
+			}
 		}
 	}
 
@@ -359,8 +398,11 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 		bulkRequestBuilder.add(request);
 	}
 
-	protected Set<String> mergeEquivalentConcepts(final BranchContext context, final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
-
+	private Set<String> mergeEquivalentConcepts(final BranchContext context, final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
+		if (!fixEquivalences) {
+			return Collections.emptySet();
+		}
+		
 		// XXX: Restrict merging to active components only
 		final String expand = "equivalentConcepts(expand("
 				+ "members(active:true),"
@@ -410,19 +452,15 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 				.collect(Collectors.toSet());
 	}
 
-	protected boolean isConcreteDomainSupported(final BranchContext context) {
-		final SnomedCoreConfiguration snomedCoreConfiguration = context.service(SnomedCoreConfiguration.class);
-		return snomedCoreConfiguration.isConcreteDomainSupported();
-	}
-	
-	protected SnomedNamespaceAndModuleAssigner createNamespaceAndModuleAssigner(final BranchContext context) {
-		final SnomedNamespaceAndModuleAssigner assigner = context
-				.service(SnomedNamespaceAndModuleAssignerProvider.class)
-				.get();
+	private SnomedNamespaceAndModuleAssigner createNamespaceAndModuleAssigner(final BranchContext context) {
+		final SnomedNamespaceAndModuleAssigner assigner;
+		if (namespace != null || moduleId != null) {
+			assigner = new DefaultNamespaceAndModuleAssigner(namespace, moduleId);
+		} else {
+			assigner = context.service(SnomedNamespaceAndModuleAssignerProvider.class).get();
+		}
 
-		final String assignerName = assigner.getClass()
-				.getSimpleName();
-
+		final String assignerName = assigner.getClass().getSimpleName();
 		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assignerName);
 		return assigner;
 	}

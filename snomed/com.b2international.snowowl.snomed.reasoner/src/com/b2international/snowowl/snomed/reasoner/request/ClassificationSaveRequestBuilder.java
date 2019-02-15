@@ -31,7 +31,12 @@ public final class ClassificationSaveRequestBuilder
 	private String classificationId;
 	private String userId;
 	private String parentLockContext = DatastoreLockContextDescriptions.ROOT;
-
+	private String commitComment = "Classified ontology.";
+	private String moduleId = null;
+	private String namespace = null;
+	private boolean fixEquivalences = true;
+	private boolean handleConcreteDomains = true;
+	
 	ClassificationSaveRequestBuilder() { }
 	
 	public ClassificationSaveRequestBuilder setClassificationId(String classificationId) {
@@ -48,6 +53,31 @@ public final class ClassificationSaveRequestBuilder
 		this.parentLockContext = parentLockContext;
 		return getSelf();
 	}
+	
+	public ClassificationSaveRequestBuilder setCommitComment(String commitComment) {
+		this.commitComment = commitComment;
+		return getSelf();
+	}
+	
+	public ClassificationSaveRequestBuilder setModuleId(String moduleId) {
+		this.moduleId = moduleId;
+		return getSelf();
+	}
+	
+	public ClassificationSaveRequestBuilder setNamespace(String namespace) {
+		this.namespace = namespace;
+		return getSelf();
+	}
+	
+	public ClassificationSaveRequestBuilder setFixEquivalences(boolean fixEquivalences) {
+		this.fixEquivalences = fixEquivalences;
+		return getSelf();
+	}
+	
+	public ClassificationSaveRequestBuilder setHandleConcreteDomains(boolean handleConcreteDomains) {
+		this.handleConcreteDomains = handleConcreteDomains;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<RepositoryContext, String> doBuild() {
@@ -55,6 +85,11 @@ public final class ClassificationSaveRequestBuilder
 		request.setClassificationId(classificationId);
 		request.setUserId(userId);
 		request.setParentLockContext(parentLockContext);
+		request.setCommitComment(commitComment);
+		request.setModuleId(moduleId);
+		request.setNamespace(namespace);
+		request.setFixEquivalences(fixEquivalences);
+		request.setHandleConcreteDomains(handleConcreteDomains);
 		return request;
 	}
 }
