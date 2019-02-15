@@ -83,6 +83,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
       case QlPackage.FILTER: return createFilter();
       case QlPackage.ECL_FILTER: return createEclFilter();
       case QlPackage.TERM_FILTER: return createTermFilter();
+      case QlPackage.ACTIVE_FILTER: return createActiveFilter();
       case QlPackage.DISJUNCTION: return createDisjunction();
       case QlPackage.CONJUNCTION: return createConjunction();
       case QlPackage.EXCLUSION: return createExclusion();
@@ -155,6 +156,17 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
   {
     TermFilterImpl termFilter = new TermFilterImpl();
     return termFilter;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public ActiveFilter createActiveFilter()
+  {
+    ActiveFilterImpl activeFilter = new ActiveFilterImpl();
+    return activeFilter;
   }
 
   /**

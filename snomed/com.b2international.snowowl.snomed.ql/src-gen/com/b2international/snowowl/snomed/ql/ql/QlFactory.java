@@ -90,6 +90,15 @@ public interface QlFactory extends EFactory
   TermFilter createTermFilter();
 
   /**
+   * Returns a new object of class '<em>Active Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Active Filter</em>'.
+   * @generated
+   */
+  ActiveFilter createActiveFilter();
+
+  /**
    * Returns a new object of class '<em>Disjunction</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

@@ -38,7 +38,7 @@ NestedFilter:
 ;
 
 Filter:
-	EclFilter | TermFilter | NestedFilter
+	ActiveFilter | EclFilter | TermFilter | NestedFilter
 ;
 
 EclFilter:
@@ -49,10 +49,29 @@ TermFilter:
 	TERM (term = STRING)
 ;
 
+ActiveFilter:
+	ACTIVE (active = Boolean)
+;
+
+Boolean:
+	TRUE | FALSE;
+
 terminal TERM:
 	'term'
 ;
 
 terminal ECL:
 	'ecl'
+;
+
+terminal ACTIVE:
+	'active'
+;
+
+terminal TRUE:
+	'true'
+;
+
+terminal FALSE:
+	'false'
 ;

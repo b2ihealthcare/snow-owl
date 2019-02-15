@@ -220,6 +220,34 @@ public interface QlPackage extends EPackage
   int TERM_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 1;
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ActiveFilterImpl <em>Active Filter</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.ActiveFilterImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getActiveFilter()
+   * @generated
+   */
+  int ACTIVE_FILTER = 6;
+
+  /**
+   * The feature id for the '<em><b>Active</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ACTIVE_FILTER__ACTIVE = FILTER_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Active Filter</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ACTIVE_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.DisjunctionImpl <em>Disjunction</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -227,7 +255,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDisjunction()
    * @generated
    */
-  int DISJUNCTION = 6;
+  int DISJUNCTION = 7;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -264,7 +292,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getConjunction()
    * @generated
    */
-  int CONJUNCTION = 7;
+  int CONJUNCTION = 8;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -301,7 +329,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getExclusion()
    * @generated
    */
-  int EXCLUSION = 8;
+  int EXCLUSION = 9;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -434,6 +462,27 @@ public interface QlPackage extends EPackage
    * @generated
    */
   EAttribute getTermFilter_Term();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter <em>Active Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Active Filter</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.ActiveFilter
+   * @generated
+   */
+  EClass getActiveFilter();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter#getActive <em>Active</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Active</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.ActiveFilter#getActive()
+   * @see #getActiveFilter()
+   * @generated
+   */
+  EAttribute getActiveFilter_Active();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.Disjunction <em>Disjunction</em>}'.
@@ -645,6 +694,24 @@ public interface QlPackage extends EPackage
      * @generated
      */
     EAttribute TERM_FILTER__TERM = eINSTANCE.getTermFilter_Term();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ActiveFilterImpl <em>Active Filter</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.ActiveFilterImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getActiveFilter()
+     * @generated
+     */
+    EClass ACTIVE_FILTER = eINSTANCE.getActiveFilter();
+
+    /**
+     * The meta object literal for the '<em><b>Active</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute ACTIVE_FILTER__ACTIVE = eINSTANCE.getActiveFilter_Active();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.DisjunctionImpl <em>Disjunction</em>}' class.

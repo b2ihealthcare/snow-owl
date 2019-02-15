@@ -35,9 +35,11 @@ import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
+import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
@@ -79,6 +81,11 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	
 	protected Promise<Expression> eval(BranchContext context, final NestedFilter nestedFilter) {
 		return evaluate(context, nestedFilter.getConstraint());
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final ActiveFilter activeFilter) {
+		boolean isActive = activeFilter.getActive().equals("true") ? true : false;
+		return Promise.immediate(Expressions.builder().filter(SnomedDocument.Expressions.active(isActive)).build());
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {

@@ -204,25 +204,29 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	public class FilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Filter");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cEclFilterParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cTermFilterParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cNestedFilterParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cActiveFilterParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cEclFilterParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cTermFilterParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cNestedFilterParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
 		
 		//Filter:
-		//	EclFilter | TermFilter | NestedFilter;
+		//	ActiveFilter | EclFilter | TermFilter | NestedFilter;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//EclFilter | TermFilter | NestedFilter
+		//ActiveFilter | EclFilter | TermFilter | NestedFilter
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
+		//ActiveFilter
+		public RuleCall getActiveFilterParserRuleCall_0() { return cActiveFilterParserRuleCall_0; }
+		
 		//EclFilter
-		public RuleCall getEclFilterParserRuleCall_0() { return cEclFilterParserRuleCall_0; }
+		public RuleCall getEclFilterParserRuleCall_1() { return cEclFilterParserRuleCall_1; }
 		
 		//TermFilter
-		public RuleCall getTermFilterParserRuleCall_1() { return cTermFilterParserRuleCall_1; }
+		public RuleCall getTermFilterParserRuleCall_2() { return cTermFilterParserRuleCall_2; }
 		
 		//NestedFilter
-		public RuleCall getNestedFilterParserRuleCall_2() { return cNestedFilterParserRuleCall_2; }
+		public RuleCall getNestedFilterParserRuleCall_3() { return cNestedFilterParserRuleCall_3; }
 	}
 	public class EclFilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.EclFilter");
@@ -270,6 +274,48 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		//STRING
 		public RuleCall getTermSTRINGTerminalRuleCall_1_0() { return cTermSTRINGTerminalRuleCall_1_0; }
 	}
+	public class ActiveFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ActiveFilter");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cACTIVETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cActiveAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cActiveBooleanParserRuleCall_1_0 = (RuleCall)cActiveAssignment_1.eContents().get(0);
+		
+		//ActiveFilter:
+		//	ACTIVE active=Boolean;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//ACTIVE active=Boolean
+		public Group getGroup() { return cGroup; }
+		
+		//ACTIVE
+		public RuleCall getACTIVETerminalRuleCall_0() { return cACTIVETerminalRuleCall_0; }
+		
+		//active=Boolean
+		public Assignment getActiveAssignment_1() { return cActiveAssignment_1; }
+		
+		//Boolean
+		public RuleCall getActiveBooleanParserRuleCall_1_0() { return cActiveBooleanParserRuleCall_1_0; }
+	}
+	public class BooleanElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Boolean");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cTRUETerminalRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cFALSETerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		//Boolean:
+		//	TRUE | FALSE;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//TRUE | FALSE
+		public Alternatives getAlternatives() { return cAlternatives; }
+		
+		//TRUE
+		public RuleCall getTRUETerminalRuleCall_0() { return cTRUETerminalRuleCall_0; }
+		
+		//FALSE
+		public RuleCall getFALSETerminalRuleCall_1() { return cFALSETerminalRuleCall_1; }
+	}
 	
 	
 	private final QueryElements pQuery;
@@ -281,8 +327,13 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	private final FilterElements pFilter;
 	private final EclFilterElements pEclFilter;
 	private final TermFilterElements pTermFilter;
+	private final ActiveFilterElements pActiveFilter;
+	private final BooleanElements pBoolean;
 	private final TerminalRule tTERM;
 	private final TerminalRule tECL;
+	private final TerminalRule tACTIVE;
+	private final TerminalRule tTRUE;
+	private final TerminalRule tFALSE;
 	
 	private final Grammar grammar;
 	
@@ -302,8 +353,13 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		this.pFilter = new FilterElements();
 		this.pEclFilter = new EclFilterElements();
 		this.pTermFilter = new TermFilterElements();
+		this.pActiveFilter = new ActiveFilterElements();
+		this.pBoolean = new BooleanElements();
 		this.tTERM = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.TERM");
 		this.tECL = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ECL");
+		this.tACTIVE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ACTIVE");
+		this.tTRUE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.TRUE");
+		this.tFALSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.FALSE");
 	}
 	
 	protected Grammar internalFindGrammar(GrammarProvider grammarProvider) {
@@ -394,7 +450,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//Filter:
-	//	EclFilter | TermFilter | NestedFilter;
+	//	ActiveFilter | EclFilter | TermFilter | NestedFilter;
 	public FilterElements getFilterAccess() {
 		return pFilter;
 	}
@@ -423,6 +479,26 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getTermFilterAccess().getRule();
 	}
 	
+	//ActiveFilter:
+	//	ACTIVE active=Boolean;
+	public ActiveFilterElements getActiveFilterAccess() {
+		return pActiveFilter;
+	}
+	
+	public ParserRule getActiveFilterRule() {
+		return getActiveFilterAccess().getRule();
+	}
+	
+	//Boolean:
+	//	TRUE | FALSE;
+	public BooleanElements getBooleanAccess() {
+		return pBoolean;
+	}
+	
+	public ParserRule getBooleanRule() {
+		return getBooleanAccess().getRule();
+	}
+	
 	//terminal TERM:
 	//	'term';
 	public TerminalRule getTERMRule() {
@@ -433,6 +509,24 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	//	'ecl';
 	public TerminalRule getECLRule() {
 		return tECL;
+	}
+	
+	//terminal ACTIVE:
+	//	'active';
+	public TerminalRule getACTIVERule() {
+		return tACTIVE;
+	}
+	
+	//terminal TRUE:
+	//	'true';
+	public TerminalRule getTRUERule() {
+		return tTRUE;
+	}
+	
+	//terminal FALSE:
+	//	'false';
+	public TerminalRule getFALSERule() {
+		return tFALSE;
 	}
 	
 	//Script:

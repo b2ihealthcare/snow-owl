@@ -118,6 +118,11 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createTermFilterAdapter();
       }
       @Override
+      public Adapter caseActiveFilter(ActiveFilter object)
+      {
+        return createActiveFilterAdapter();
+      }
+      @Override
       public Adapter caseDisjunction(Disjunction object)
       {
         return createDisjunctionAdapter();
@@ -240,6 +245,21 @@ public class QlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createTermFilterAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter <em>Active Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.ActiveFilter
+   * @generated
+   */
+  public Adapter createActiveFilterAdapter()
   {
     return null;
   }

@@ -47,7 +47,9 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (ruleCall.getRule() == grammarAccess.getCARETRule())
+		if (ruleCall.getRule() == grammarAccess.getACTIVERule())
+			return getACTIVEToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCOLONRule())
 			return getCOLONToken(semanticObject, ruleCall, node);
@@ -98,6 +100,17 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 		else if (ruleCall.getRule() == grammarAccess.getWILDCARDRule())
 			return getWILDCARDToken(semanticObject, ruleCall, node);
 		return "";
+	}
+	
+	/**
+	 * terminal ACTIVE:
+	 * 	'active'
+	 * ;
+	 */
+	protected String getACTIVEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "active";
 	}
 	
 	/**
@@ -370,7 +383,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 
 	/**
 	 * Ambiguous syntax:
-	 *     ',' | 'AND'
+	 *     'AND' | ','
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndRefinement.left=} (ambiguity) right=SubAttributeSet

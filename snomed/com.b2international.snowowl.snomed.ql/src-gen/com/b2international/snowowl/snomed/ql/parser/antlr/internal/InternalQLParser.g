@@ -408,11 +408,11 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getEclFilterParserRuleCall_0());
+			newCompositeNode(grammarAccess.getFilterAccess().getActiveFilterParserRuleCall_0());
 		}
-		this_EclFilter_0=ruleEclFilter
+		this_ActiveFilter_0=ruleActiveFilter
 		{
-			$current = $this_EclFilter_0.current;
+			$current = $this_ActiveFilter_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -420,11 +420,11 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getTermFilterParserRuleCall_1());
+			newCompositeNode(grammarAccess.getFilterAccess().getEclFilterParserRuleCall_1());
 		}
-		this_TermFilter_1=ruleTermFilter
+		this_EclFilter_1=ruleEclFilter
 		{
-			$current = $this_TermFilter_1.current;
+			$current = $this_EclFilter_1.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -432,11 +432,23 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getNestedFilterParserRuleCall_2());
+			newCompositeNode(grammarAccess.getFilterAccess().getTermFilterParserRuleCall_2());
 		}
-		this_NestedFilter_2=ruleNestedFilter
+		this_TermFilter_2=ruleTermFilter
 		{
-			$current = $this_NestedFilter_2.current;
+			$current = $this_TermFilter_2.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getFilterAccess().getNestedFilterParserRuleCall_3());
+		}
+		this_NestedFilter_3=ruleNestedFilter
+		{
+			$current = $this_NestedFilter_3.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
@@ -522,6 +534,82 @@ ruleTermFilter returns [EObject current=null]
 				}
 			)
 		)
+	)
+;
+
+// Entry rule entryRuleActiveFilter
+entryRuleActiveFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getActiveFilterRule()); }
+	iv_ruleActiveFilter=ruleActiveFilter
+	{ $current=$iv_ruleActiveFilter.current; }
+	EOF;
+
+// Rule ActiveFilter
+ruleActiveFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_ACTIVE_0=RULE_ACTIVE
+		{
+			newLeafNode(this_ACTIVE_0, grammarAccess.getActiveFilterAccess().getACTIVETerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getActiveFilterAccess().getActiveBooleanParserRuleCall_1_0());
+				}
+				lv_active_1_0=ruleBoolean
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getActiveFilterRule());
+					}
+					set(
+						$current,
+						"active",
+						lv_active_1_0,
+						"com.b2international.snowowl.snomed.ql.QL.Boolean");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleBoolean
+entryRuleBoolean returns [String current=null]:
+	{ newCompositeNode(grammarAccess.getBooleanRule()); }
+	iv_ruleBoolean=ruleBoolean
+	{ $current=$iv_ruleBoolean.current.getText(); }
+	EOF;
+
+// Rule Boolean
+ruleBoolean returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_TRUE_0=RULE_TRUE
+		{
+			$current.merge(this_TRUE_0);
+		}
+		{
+			newLeafNode(this_TRUE_0, grammarAccess.getBooleanAccess().getTRUETerminalRuleCall_0());
+		}
+		    |
+		this_FALSE_1=RULE_FALSE
+		{
+			$current.merge(this_FALSE_1);
+		}
+		{
+			newLeafNode(this_FALSE_1, grammarAccess.getBooleanAccess().getFALSETerminalRuleCall_1());
+		}
 	)
 ;
 

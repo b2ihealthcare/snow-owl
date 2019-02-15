@@ -134,6 +134,15 @@ public class QlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case QlPackage.ACTIVE_FILTER:
+      {
+        ActiveFilter activeFilter = (ActiveFilter)theEObject;
+        T result = caseActiveFilter(activeFilter);
+        if (result == null) result = caseFilter(activeFilter);
+        if (result == null) result = caseConstraint(activeFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case QlPackage.DISJUNCTION:
       {
         Disjunction disjunction = (Disjunction)theEObject;
@@ -254,6 +263,22 @@ public class QlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseTermFilter(TermFilter object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Active Filter</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Active Filter</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseActiveFilter(ActiveFilter object)
   {
     return null;
   }

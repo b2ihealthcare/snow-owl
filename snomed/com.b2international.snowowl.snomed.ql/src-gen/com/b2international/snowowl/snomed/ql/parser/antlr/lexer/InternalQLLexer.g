@@ -35,6 +35,12 @@ RULE_TERM : 'term';
 
 RULE_ECL : 'ecl';
 
+RULE_ACTIVE : 'active';
+
+RULE_TRUE : 'true';
+
+RULE_FALSE : 'false';
+
 RULE_TERM_STRING : '|' ~('|')* '|';
 
 RULE_REVERSED : 'R';

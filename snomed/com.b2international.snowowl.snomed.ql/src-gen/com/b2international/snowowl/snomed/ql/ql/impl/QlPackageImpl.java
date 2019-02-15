@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.ql.ql.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 
+import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
@@ -85,6 +86,13 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * @generated
    */
   private EClass termFilterEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass activeFilterEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -278,6 +286,26 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EClass getActiveFilter()
+  {
+    return activeFilterEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getActiveFilter_Active()
+  {
+    return (EAttribute)activeFilterEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EClass getDisjunction()
   {
     return disjunctionEClass;
@@ -409,6 +437,9 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     termFilterEClass = createEClass(TERM_FILTER);
     createEAttribute(termFilterEClass, TERM_FILTER__TERM);
 
+    activeFilterEClass = createEClass(ACTIVE_FILTER);
+    createEAttribute(activeFilterEClass, ACTIVE_FILTER__ACTIVE);
+
     disjunctionEClass = createEClass(DISJUNCTION);
     createEReference(disjunctionEClass, DISJUNCTION__LEFT);
     createEReference(disjunctionEClass, DISJUNCTION__RIGHT);
@@ -458,6 +489,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     filterEClass.getESuperTypes().add(this.getConstraint());
     eclFilterEClass.getESuperTypes().add(this.getFilter());
     termFilterEClass.getESuperTypes().add(this.getFilter());
+    activeFilterEClass.getESuperTypes().add(this.getFilter());
     disjunctionEClass.getESuperTypes().add(this.getConstraint());
     conjunctionEClass.getESuperTypes().add(this.getConstraint());
     exclusionEClass.getESuperTypes().add(this.getConstraint());
@@ -478,6 +510,9 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
 
     initEClass(termFilterEClass, TermFilter.class, "TermFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getTermFilter_Term(), ecorePackage.getEString(), "term", null, 0, 1, TermFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(activeFilterEClass, ActiveFilter.class, "ActiveFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getActiveFilter_Active(), ecorePackage.getEString(), "active", null, 0, 1, ActiveFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(disjunctionEClass, Disjunction.class, "Disjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getDisjunction_Left(), this.getConstraint(), null, "left", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

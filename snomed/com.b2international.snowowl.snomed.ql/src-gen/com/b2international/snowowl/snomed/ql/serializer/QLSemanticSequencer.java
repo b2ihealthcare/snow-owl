@@ -55,6 +55,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.Script;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
+import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.EclFilter;
@@ -251,6 +252,9 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 			}
 		else if (epackage == QlPackage.eINSTANCE)
 			switch (semanticObject.eClass().getClassifierID()) {
+			case QlPackage.ACTIVE_FILTER:
+				sequence_ActiveFilter(context, (ActiveFilter) semanticObject); 
+				return; 
 			case QlPackage.CONJUNCTION:
 				sequence_Conjunction(context, (Conjunction) semanticObject); 
 				return; 
@@ -276,6 +280,32 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 		if (errorAcceptor != null)
 			errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
 	}
+	
+	/**
+	 * Contexts:
+	 *     Constraint returns ActiveFilter
+	 *     Disjunction returns ActiveFilter
+	 *     Disjunction.Disjunction_1_0 returns ActiveFilter
+	 *     Conjunction returns ActiveFilter
+	 *     Conjunction.Conjunction_1_0 returns ActiveFilter
+	 *     Exclusion returns ActiveFilter
+	 *     Exclusion.Exclusion_1_0 returns ActiveFilter
+	 *     Filter returns ActiveFilter
+	 *     ActiveFilter returns ActiveFilter
+	 *
+	 * Constraint:
+	 *     active=Boolean
+	 */
+	protected void sequence_ActiveFilter(ISerializationContext context, ActiveFilter semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.ACTIVE_FILTER__ACTIVE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.ACTIVE_FILTER__ACTIVE));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getActiveFilterAccess().getActiveBooleanParserRuleCall_1_0(), semanticObject.getActive());
+		feeder.finish();
+	}
+	
 	
 	/**
 	 * Contexts:

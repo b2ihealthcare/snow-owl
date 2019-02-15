@@ -20,6 +20,9 @@
     <genClasses ecoreClass="QL.ecore#//TermFilter">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//TermFilter/term"/>
     </genClasses>
+    <genClasses ecoreClass="QL.ecore#//ActiveFilter">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveFilter/active"/>
+    </genClasses>
     <genClasses ecoreClass="QL.ecore#//Disjunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Disjunction/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Disjunction/right"/>
