@@ -257,22 +257,14 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 					// Append extra columns using the properties map
 					final Map<String, Object> properties = member.getProperties();
 					for (final String extraColumn : extraColumns) {
-						Object property = properties.get(extraColumn);
-						if (extraColumn.equals(SnomedRf2Headers.FIELD_QUERY)) {
-							String query = (String) property;
-							query = query.replace("\r", " ");
-							query = query.replace("\n", " ");
-							query = query.replace("\t", " ");
-							property = query;
-						}
-						builder.add(toColumn(property));
+						builder.add(toColumn(extraColumn, properties.get(extraColumn)));
 					}
 
 					return builder.build();
 				});
 	}
 
-	private String toColumn(final Object object) {
+	private String toColumn(final String header, final Object object) {
 		if (object == null) {
 			return "";
 		} else if (object instanceof SnomedCoreComponent) {
@@ -282,7 +274,11 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		} else if (object instanceof Date) {
 			return getEffectiveTime((Date) object);
 		} else {
-			return String.valueOf(object);
+			String serializedValue = String.valueOf(object);
+			if (header.equals(SnomedRf2Headers.FIELD_QUERY)) {
+				serializedValue = serializedValue.replaceAll("[\n\r\t]+", " ");
+			}
+			return serializedValue;
 		}
 	}
 	
