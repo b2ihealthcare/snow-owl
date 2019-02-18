@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.12.1
+
+### Changed
+- Make classification requests more customizable/configurable (#305)
+
+### Bugs
+- Fix RF2 import lock timeout issue (#303)
+
 ## 6.12.0  
 
 ### Added
@@ -14,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - Support ECL expression in filterBy `languageRefSet`, `preferredIn` and `acceptableIn` description filters. (7709d5a)
 - `locales` parameter to history API (04cb537)
 
-### Changes
+### Changed
 - Apply classification changes from 7.x (#300)
 
 ### Removed
@@ -48,7 +56,7 @@ Property groups now can contain concrete domain properties as well, not just rel
 - Support for `dependencies` between two code system. A Code System now declare another as a dependency (#286)
 - New Concept and Description inactivation indicators (102b127) 
 
-### Changes
+### Changed
 - Make SNOMED CT Description `term` field mutable (#284)
 - Allow non-SNOMED CT identifier in `mapCategoryId` column (8b325be) 
 - Export FSN in description term columns when exporting Mapping Reference Sets to DSV (#283)
