@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.ql.ql.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
 
-import com.b2international.snowowl.snomed.ql.ql.Descriptiontype;
+import com.b2international.snowowl.snomed.ql.ql.AcceptableIn;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -31,35 +31,35 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Descriptiontype</b></em>'.
+ * An implementation of the model object '<em><b>Acceptable In</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptiontypeImpl#getType <em>Type</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.AcceptableInImpl#getAcceptable <em>Acceptable</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements Descriptiontype
+public class AcceptableInImpl extends MinimalEObjectImpl.Container implements AcceptableIn
 {
   /**
-   * The cached value of the '{@link #getType() <em>Type</em>}' containment reference.
+   * The cached value of the '{@link #getAcceptable() <em>Acceptable</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getType()
+   * @see #getAcceptable()
    * @generated
    * @ordered
    */
-  protected Script type;
+  protected Script acceptable;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected DescriptiontypeImpl()
+  protected AcceptableInImpl()
   {
     super();
   }
@@ -72,7 +72,7 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.DESCRIPTIONTYPE;
+    return QlPackage.Literals.ACCEPTABLE_IN;
   }
 
   /**
@@ -80,9 +80,9 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
    * <!-- end-user-doc -->
    * @generated
    */
-  public Script getType()
+  public Script getAcceptable()
   {
-    return type;
+    return acceptable;
   }
 
   /**
@@ -90,13 +90,13 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetType(Script newType, NotificationChain msgs)
+  public NotificationChain basicSetAcceptable(Script newAcceptable, NotificationChain msgs)
   {
-    Script oldType = type;
-    type = newType;
+    Script oldAcceptable = acceptable;
+    acceptable = newAcceptable;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.DESCRIPTIONTYPE__TYPE, oldType, newType);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.ACCEPTABLE_IN__ACCEPTABLE, oldAcceptable, newAcceptable);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -107,20 +107,20 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setType(Script newType)
+  public void setAcceptable(Script newAcceptable)
   {
-    if (newType != type)
+    if (newAcceptable != acceptable)
     {
       NotificationChain msgs = null;
-      if (type != null)
-        msgs = ((InternalEObject)type).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.DESCRIPTIONTYPE__TYPE, null, msgs);
-      if (newType != null)
-        msgs = ((InternalEObject)newType).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.DESCRIPTIONTYPE__TYPE, null, msgs);
-      msgs = basicSetType(newType, msgs);
+      if (acceptable != null)
+        msgs = ((InternalEObject)acceptable).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.ACCEPTABLE_IN__ACCEPTABLE, null, msgs);
+      if (newAcceptable != null)
+        msgs = ((InternalEObject)newAcceptable).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.ACCEPTABLE_IN__ACCEPTABLE, null, msgs);
+      msgs = basicSetAcceptable(newAcceptable, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.DESCRIPTIONTYPE__TYPE, newType, newType));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.ACCEPTABLE_IN__ACCEPTABLE, newAcceptable, newAcceptable));
   }
 
   /**
@@ -133,8 +133,8 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
   {
     switch (featureID)
     {
-      case QlPackage.DESCRIPTIONTYPE__TYPE:
-        return basicSetType(null, msgs);
+      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
+        return basicSetAcceptable(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -149,8 +149,8 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
   {
     switch (featureID)
     {
-      case QlPackage.DESCRIPTIONTYPE__TYPE:
-        return getType();
+      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
+        return getAcceptable();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -165,8 +165,8 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
   {
     switch (featureID)
     {
-      case QlPackage.DESCRIPTIONTYPE__TYPE:
-        setType((Script)newValue);
+      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
+        setAcceptable((Script)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -182,8 +182,8 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
   {
     switch (featureID)
     {
-      case QlPackage.DESCRIPTIONTYPE__TYPE:
-        setType((Script)null);
+      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
+        setAcceptable((Script)null);
         return;
     }
     super.eUnset(featureID);
@@ -199,10 +199,10 @@ public class DescriptiontypeImpl extends MinimalEObjectImpl.Container implements
   {
     switch (featureID)
     {
-      case QlPackage.DESCRIPTIONTYPE__TYPE:
-        return type != null;
+      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
+        return acceptable != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //DescriptiontypeImpl
+} //AcceptableInImpl

@@ -55,6 +55,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.Script;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
+import com.b2international.snowowl.snomed.ql.ql.AcceptableIn;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveTerm;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
@@ -64,7 +65,9 @@ import com.b2international.snowowl.snomed.ql.ql.Descriptiontype;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.EclFilter;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.LanguageRefSet;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.PreferredIn;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.Query;
 import com.b2international.snowowl.snomed.ql.ql.RegularExpression;
@@ -257,6 +260,9 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 			}
 		else if (epackage == QlPackage.eINSTANCE)
 			switch (semanticObject.eClass().getClassifierID()) {
+			case QlPackage.ACCEPTABLE_IN:
+				sequence_AcceptableIn(context, (AcceptableIn) semanticObject); 
+				return; 
 			case QlPackage.ACTIVE_FILTER:
 				sequence_ActiveFilter(context, (ActiveFilter) semanticObject); 
 				return; 
@@ -284,8 +290,14 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 			case QlPackage.EXCLUSION:
 				sequence_Exclusion(context, (Exclusion) semanticObject); 
 				return; 
+			case QlPackage.LANGUAGE_REF_SET:
+				sequence_LanguageRefSet(context, (LanguageRefSet) semanticObject); 
+				return; 
 			case QlPackage.NESTED_FILTER:
 				sequence_NestedFilter(context, (NestedFilter) semanticObject); 
+				return; 
+			case QlPackage.PREFERRED_IN:
+				sequence_PreferredIn(context, (PreferredIn) semanticObject); 
 				return; 
 			case QlPackage.QUERY:
 				sequence_Query(context, (Query) semanticObject); 
@@ -300,6 +312,24 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 		if (errorAcceptor != null)
 			errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
 	}
+	
+	/**
+	 * Contexts:
+	 *     AcceptableIn returns AcceptableIn
+	 *
+	 * Constraint:
+	 *     acceptable=Script
+	 */
+	protected void sequence_AcceptableIn(ISerializationContext context, AcceptableIn semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.ACCEPTABLE_IN__ACCEPTABLE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.ACCEPTABLE_IN__ACCEPTABLE));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getAcceptableInAccess().getAcceptableScriptParserRuleCall_2_0(), semanticObject.getAcceptable());
+		feeder.finish();
+	}
+	
 	
 	/**
 	 * Contexts:
@@ -375,7 +405,15 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	 *     DescriptionFilter returns DescriptionFilter
 	 *
 	 * Constraint:
-	 *     (termFilter=TermFilter | active=ActiveTerm | type=Descriptiontype | regex=RegularExpression)*
+	 *     (
+	 *         termFilter=TermFilter | 
+	 *         active=ActiveTerm | 
+	 *         type=Descriptiontype | 
+	 *         regex=RegularExpression | 
+	 *         acceptableIn=AcceptableIn | 
+	 *         preferredIn=PreferredIn | 
+	 *         languageRefSet=LanguageRefSet
+	 *     )*
 	 */
 	protected void sequence_DescriptionFilter(ISerializationContext context, DescriptionFilter semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -413,15 +451,15 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	 *     Descriptiontype returns Descriptiontype
 	 *
 	 * Constraint:
-	 *     ecl=Script
+	 *     type=Script
 	 */
 	protected void sequence_Descriptiontype(ISerializationContext context, Descriptiontype semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.DESCRIPTIONTYPE__ECL) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.DESCRIPTIONTYPE__ECL));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.DESCRIPTIONTYPE__TYPE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.DESCRIPTIONTYPE__TYPE));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getDescriptiontypeAccess().getEclScriptParserRuleCall_2_0(), semanticObject.getEcl());
+		feeder.accept(grammarAccess.getDescriptiontypeAccess().getTypeScriptParserRuleCall_2_0(), semanticObject.getType());
 		feeder.finish();
 	}
 	
@@ -503,6 +541,24 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
+	 *     LanguageRefSet returns LanguageRefSet
+	 *
+	 * Constraint:
+	 *     refset=Script
+	 */
+	protected void sequence_LanguageRefSet(ISerializationContext context, LanguageRefSet semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.LANGUAGE_REF_SET__REFSET) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.LANGUAGE_REF_SET__REFSET));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getLanguageRefSetAccess().getRefsetScriptParserRuleCall_2_0(), semanticObject.getRefset());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
 	 *     Constraint returns NestedFilter
 	 *     Disjunction returns NestedFilter
 	 *     Disjunction.Disjunction_1_0 returns NestedFilter
@@ -523,6 +579,24 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getNestedFilterAccess().getConstraintConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     PreferredIn returns PreferredIn
+	 *
+	 * Constraint:
+	 *     preferred=Script
+	 */
+	protected void sequence_PreferredIn(ISerializationContext context, PreferredIn semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.PREFERRED_IN__PREFERRED) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.PREFERRED_IN__PREFERRED));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getPreferredInAccess().getPreferredScriptParserRuleCall_2_0(), semanticObject.getPreferred());
 		feeder.finish();
 	}
 	

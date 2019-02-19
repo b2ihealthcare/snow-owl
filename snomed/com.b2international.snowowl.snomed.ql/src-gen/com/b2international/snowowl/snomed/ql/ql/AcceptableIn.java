@@ -21,46 +21,46 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Descriptiontype</b></em>'.
+ * A representation of the model object '<em><b>Acceptable In</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getType <em>Type</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.AcceptableIn#getAcceptable <em>Acceptable</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptiontype()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getAcceptableIn()
  * @model
  * @generated
  */
-public interface Descriptiontype extends EObject
+public interface AcceptableIn extends EObject
 {
   /**
-   * Returns the value of the '<em><b>Type</b></em>' containment reference.
+   * Returns the value of the '<em><b>Acceptable</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Type</em>' containment reference isn't clear,
+   * If the meaning of the '<em>Acceptable</em>' containment reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Type</em>' containment reference.
-   * @see #setType(Script)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptiontype_Type()
+   * @return the value of the '<em>Acceptable</em>' containment reference.
+   * @see #setAcceptable(Script)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getAcceptableIn_Acceptable()
    * @model containment="true"
    * @generated
    */
-  Script getType();
+  Script getAcceptable();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getType <em>Type</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.AcceptableIn#getAcceptable <em>Acceptable</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Type</em>' containment reference.
-   * @see #getType()
+   * @param value the new value of the '<em>Acceptable</em>' containment reference.
+   * @see #getAcceptable()
    * @generated
    */
-  void setType(Script value);
+  void setAcceptable(Script value);
 
-} // Descriptiontype
+} // AcceptableIn

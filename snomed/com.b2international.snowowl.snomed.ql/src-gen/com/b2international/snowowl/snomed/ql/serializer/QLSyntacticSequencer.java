@@ -47,7 +47,9 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (ruleCall.getRule() == grammarAccess.getACTIVERule())
+		if (ruleCall.getRule() == grammarAccess.getACCEPTABLERule())
+			return getACCEPTABLEToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getACTIVERule())
 			return getACTIVEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
@@ -79,6 +81,8 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getGT_EMToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getHASHRule())
 			return getHASHToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getLANGREFSETRule())
+			return getLANGREFSETToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getLTRule())
 			return getLTToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getLTERule())
@@ -89,6 +93,8 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getNOT_EQUALToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getOPEN_DOUBLE_BRACESRule())
 			return getOPEN_DOUBLE_BRACESToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getPREFERREDRule())
+			return getPREFERREDToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getREGEXRule())
 			return getREGEXToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getREVERSEDRule())
@@ -108,6 +114,17 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 		else if (ruleCall.getRule() == grammarAccess.getWILDCARDRule())
 			return getWILDCARDToken(semanticObject, ruleCall, node);
 		return "";
+	}
+	
+	/**
+	 * terminal ACCEPTABLE:
+	 * 	'acceptableIn'
+	 * ;
+	 */
+	protected String getACCEPTABLEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "acceptableIn";
 	}
 	
 	/**
@@ -275,6 +292,17 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
+	 * terminal LANGREFSET:
+	 * 	'languageRefSet'
+	 * ;
+	 */
+	protected String getLANGREFSETToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "languageRefSet";
+	}
+	
+	/**
 	 * terminal LT:
 	 * 	'<';
 	 */
@@ -323,6 +351,17 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "{{";
+	}
+	
+	/**
+	 * terminal PREFERRED:
+	 * 	'preferredIn'
+	 * ;
+	 */
+	protected String getPREFERREDToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "preferredIn";
 	}
 	
 	/**

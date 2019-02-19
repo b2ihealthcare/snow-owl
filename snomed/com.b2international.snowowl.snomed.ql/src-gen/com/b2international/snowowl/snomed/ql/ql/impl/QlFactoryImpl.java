@@ -87,6 +87,9 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
       case QlPackage.DESCRIPTION_FILTER: return createDescriptionFilter();
       case QlPackage.TERM_FILTER: return createTermFilter();
       case QlPackage.REGULAR_EXPRESSION: return createRegularExpression();
+      case QlPackage.PREFERRED_IN: return createPreferredIn();
+      case QlPackage.ACCEPTABLE_IN: return createAcceptableIn();
+      case QlPackage.LANGUAGE_REF_SET: return createLanguageRefSet();
       case QlPackage.DESCRIPTIONTYPE: return createDescriptiontype();
       case QlPackage.ACTIVE_TERM: return createActiveTerm();
       case QlPackage.DISJUNCTION: return createDisjunction();
@@ -205,6 +208,39 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
   {
     RegularExpressionImpl regularExpression = new RegularExpressionImpl();
     return regularExpression;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public PreferredIn createPreferredIn()
+  {
+    PreferredInImpl preferredIn = new PreferredInImpl();
+    return preferredIn;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public AcceptableIn createAcceptableIn()
+  {
+    AcceptableInImpl acceptableIn = new AcceptableInImpl();
+    return acceptableIn;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public LanguageRefSet createLanguageRefSet()
+  {
+    LanguageRefSetImpl languageRefSet = new LanguageRefSetImpl();
+    return languageRefSet;
   }
 
   /**

@@ -58,6 +58,9 @@ DescriptionFilter:
 		& (active=ActiveTerm)?
 		& (type=Descriptiontype)?
 		& (regex = RegularExpression)?
+		& (acceptableIn = AcceptableIn)?
+		& (preferredIn = PreferredIn)?
+		& (languageRefSet = LanguageRefSet)?
 	)
 ;
 
@@ -69,8 +72,20 @@ RegularExpression:
 	REGEX EQUAL (regex = STRING)
 ;
 
+PreferredIn:
+	PREFERRED EQUAL (preferred = Script)
+;
+
+AcceptableIn:
+	ACCEPTABLE EQUAL (acceptable = Script)
+;
+
+LanguageRefSet:
+	LANGREFSET EQUAL (refset = Script)
+;
+
 Descriptiontype:
-	DESCRIPTION_TYPE EQUAL (ecl = Script)
+	DESCRIPTION_TYPE EQUAL (type = Script)
 ;
 
 ActiveTerm:
@@ -102,6 +117,16 @@ terminal FALSE:
 
 terminal REGEX:
 	'regex'
+;
+
+terminal ACCEPTABLE:
+	'acceptableIn'
+;
+terminal PREFERRED:
+	'preferredIn'
+;
+terminal LANGREFSET:
+	'languageRefSet'
 ;
 
 terminal DESCRIPTION_TYPE:

@@ -43,6 +43,12 @@ RULE_FALSE : 'false';
 
 RULE_REGEX : 'regex';
 
+RULE_ACCEPTABLE : 'acceptableIn';
+
+RULE_PREFERRED : 'preferredIn';
+
+RULE_LANGREFSET : 'languageRefSet';
+
 RULE_DESCRIPTION_TYPE : 'type';
 
 RULE_OPEN_DOUBLE_BRACES : '{{';

@@ -294,13 +294,40 @@ public interface QlPackage extends EPackage
   int DESCRIPTION_FILTER__REGEX = 3;
 
   /**
+   * The feature id for the '<em><b>Acceptable In</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DESCRIPTION_FILTER__ACCEPTABLE_IN = 4;
+
+  /**
+   * The feature id for the '<em><b>Preferred In</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DESCRIPTION_FILTER__PREFERRED_IN = 5;
+
+  /**
+   * The feature id for the '<em><b>Language Ref Set</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DESCRIPTION_FILTER__LANGUAGE_REF_SET = 6;
+
+  /**
    * The number of structural features of the '<em>Description Filter</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int DESCRIPTION_FILTER_FEATURE_COUNT = 4;
+  int DESCRIPTION_FILTER_FEATURE_COUNT = 7;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.TermFilterImpl <em>Term Filter</em>}' class.
@@ -359,6 +386,90 @@ public interface QlPackage extends EPackage
   int REGULAR_EXPRESSION_FEATURE_COUNT = 1;
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.PreferredInImpl <em>Preferred In</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.PreferredInImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getPreferredIn()
+   * @generated
+   */
+  int PREFERRED_IN = 10;
+
+  /**
+   * The feature id for the '<em><b>Preferred</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PREFERRED_IN__PREFERRED = 0;
+
+  /**
+   * The number of structural features of the '<em>Preferred In</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PREFERRED_IN_FEATURE_COUNT = 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.AcceptableInImpl <em>Acceptable In</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.AcceptableInImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getAcceptableIn()
+   * @generated
+   */
+  int ACCEPTABLE_IN = 11;
+
+  /**
+   * The feature id for the '<em><b>Acceptable</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ACCEPTABLE_IN__ACCEPTABLE = 0;
+
+  /**
+   * The number of structural features of the '<em>Acceptable In</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ACCEPTABLE_IN_FEATURE_COUNT = 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.LanguageRefSetImpl <em>Language Ref Set</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.LanguageRefSetImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getLanguageRefSet()
+   * @generated
+   */
+  int LANGUAGE_REF_SET = 12;
+
+  /**
+   * The feature id for the '<em><b>Refset</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int LANGUAGE_REF_SET__REFSET = 0;
+
+  /**
+   * The number of structural features of the '<em>Language Ref Set</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int LANGUAGE_REF_SET_FEATURE_COUNT = 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptiontypeImpl <em>Descriptiontype</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -366,16 +477,16 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDescriptiontype()
    * @generated
    */
-  int DESCRIPTIONTYPE = 10;
+  int DESCRIPTIONTYPE = 13;
 
   /**
-   * The feature id for the '<em><b>Ecl</b></em>' containment reference.
+   * The feature id for the '<em><b>Type</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int DESCRIPTIONTYPE__ECL = 0;
+  int DESCRIPTIONTYPE__TYPE = 0;
 
   /**
    * The number of structural features of the '<em>Descriptiontype</em>' class.
@@ -394,7 +505,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getActiveTerm()
    * @generated
    */
-  int ACTIVE_TERM = 11;
+  int ACTIVE_TERM = 14;
 
   /**
    * The feature id for the '<em><b>Active</b></em>' attribute.
@@ -422,7 +533,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDisjunction()
    * @generated
    */
-  int DISJUNCTION = 12;
+  int DISJUNCTION = 15;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -459,7 +570,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getConjunction()
    * @generated
    */
-  int CONJUNCTION = 13;
+  int CONJUNCTION = 16;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -496,7 +607,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getExclusion()
    * @generated
    */
-  int EXCLUSION = 14;
+  int EXCLUSION = 17;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -706,6 +817,39 @@ public interface QlPackage extends EPackage
   EReference getDescriptionFilter_Regex();
 
   /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getAcceptableIn <em>Acceptable In</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Acceptable In</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getAcceptableIn()
+   * @see #getDescriptionFilter()
+   * @generated
+   */
+  EReference getDescriptionFilter_AcceptableIn();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getPreferredIn <em>Preferred In</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Preferred In</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getPreferredIn()
+   * @see #getDescriptionFilter()
+   * @generated
+   */
+  EReference getDescriptionFilter_PreferredIn();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getLanguageRefSet <em>Language Ref Set</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Language Ref Set</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getLanguageRefSet()
+   * @see #getDescriptionFilter()
+   * @generated
+   */
+  EReference getDescriptionFilter_LanguageRefSet();
+
+  /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.TermFilter <em>Term Filter</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -748,6 +892,69 @@ public interface QlPackage extends EPackage
   EAttribute getRegularExpression_Regex();
 
   /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.PreferredIn <em>Preferred In</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Preferred In</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.PreferredIn
+   * @generated
+   */
+  EClass getPreferredIn();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.PreferredIn#getPreferred <em>Preferred</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Preferred</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.PreferredIn#getPreferred()
+   * @see #getPreferredIn()
+   * @generated
+   */
+  EReference getPreferredIn_Preferred();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.AcceptableIn <em>Acceptable In</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Acceptable In</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.AcceptableIn
+   * @generated
+   */
+  EClass getAcceptableIn();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.AcceptableIn#getAcceptable <em>Acceptable</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Acceptable</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.AcceptableIn#getAcceptable()
+   * @see #getAcceptableIn()
+   * @generated
+   */
+  EReference getAcceptableIn_Acceptable();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.LanguageRefSet <em>Language Ref Set</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Language Ref Set</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.LanguageRefSet
+   * @generated
+   */
+  EClass getLanguageRefSet();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.LanguageRefSet#getRefset <em>Refset</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Refset</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.LanguageRefSet#getRefset()
+   * @see #getLanguageRefSet()
+   * @generated
+   */
+  EReference getLanguageRefSet_Refset();
+
+  /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype <em>Descriptiontype</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -758,15 +965,15 @@ public interface QlPackage extends EPackage
   EClass getDescriptiontype();
 
   /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getEcl <em>Ecl</em>}'.
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getType <em>Type</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Ecl</em>'.
-   * @see com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getEcl()
+   * @return the meta object for the containment reference '<em>Type</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getType()
    * @see #getDescriptiontype()
    * @generated
    */
-  EReference getDescriptiontype_Ecl();
+  EReference getDescriptiontype_Type();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveTerm <em>Active Term</em>}'.
@@ -1061,6 +1268,30 @@ public interface QlPackage extends EPackage
     EReference DESCRIPTION_FILTER__REGEX = eINSTANCE.getDescriptionFilter_Regex();
 
     /**
+     * The meta object literal for the '<em><b>Acceptable In</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference DESCRIPTION_FILTER__ACCEPTABLE_IN = eINSTANCE.getDescriptionFilter_AcceptableIn();
+
+    /**
+     * The meta object literal for the '<em><b>Preferred In</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference DESCRIPTION_FILTER__PREFERRED_IN = eINSTANCE.getDescriptionFilter_PreferredIn();
+
+    /**
+     * The meta object literal for the '<em><b>Language Ref Set</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference DESCRIPTION_FILTER__LANGUAGE_REF_SET = eINSTANCE.getDescriptionFilter_LanguageRefSet();
+
+    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.TermFilterImpl <em>Term Filter</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -1097,6 +1328,60 @@ public interface QlPackage extends EPackage
     EAttribute REGULAR_EXPRESSION__REGEX = eINSTANCE.getRegularExpression_Regex();
 
     /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.PreferredInImpl <em>Preferred In</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.PreferredInImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getPreferredIn()
+     * @generated
+     */
+    EClass PREFERRED_IN = eINSTANCE.getPreferredIn();
+
+    /**
+     * The meta object literal for the '<em><b>Preferred</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference PREFERRED_IN__PREFERRED = eINSTANCE.getPreferredIn_Preferred();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.AcceptableInImpl <em>Acceptable In</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.AcceptableInImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getAcceptableIn()
+     * @generated
+     */
+    EClass ACCEPTABLE_IN = eINSTANCE.getAcceptableIn();
+
+    /**
+     * The meta object literal for the '<em><b>Acceptable</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference ACCEPTABLE_IN__ACCEPTABLE = eINSTANCE.getAcceptableIn_Acceptable();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.LanguageRefSetImpl <em>Language Ref Set</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.LanguageRefSetImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getLanguageRefSet()
+     * @generated
+     */
+    EClass LANGUAGE_REF_SET = eINSTANCE.getLanguageRefSet();
+
+    /**
+     * The meta object literal for the '<em><b>Refset</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference LANGUAGE_REF_SET__REFSET = eINSTANCE.getLanguageRefSet_Refset();
+
+    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptiontypeImpl <em>Descriptiontype</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -1107,12 +1392,12 @@ public interface QlPackage extends EPackage
     EClass DESCRIPTIONTYPE = eINSTANCE.getDescriptiontype();
 
     /**
-     * The meta object literal for the '<em><b>Ecl</b></em>' containment reference feature.
+     * The meta object literal for the '<em><b>Type</b></em>' containment reference feature.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference DESCRIPTIONTYPE__ECL = eINSTANCE.getDescriptiontype_Ecl();
+    EReference DESCRIPTIONTYPE__TYPE = eINSTANCE.getDescriptiontype_Type();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ActiveTermImpl <em>Active Term</em>}' class.

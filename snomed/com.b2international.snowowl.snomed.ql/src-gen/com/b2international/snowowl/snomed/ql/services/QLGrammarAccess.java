@@ -319,21 +319,32 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cTypeDescriptiontypeParserRuleCall_1_2_0 = (RuleCall)cTypeAssignment_1_2.eContents().get(0);
 		private final Assignment cRegexAssignment_1_3 = (Assignment)cUnorderedGroup_1.eContents().get(3);
 		private final RuleCall cRegexRegularExpressionParserRuleCall_1_3_0 = (RuleCall)cRegexAssignment_1_3.eContents().get(0);
+		private final Assignment cAcceptableInAssignment_1_4 = (Assignment)cUnorderedGroup_1.eContents().get(4);
+		private final RuleCall cAcceptableInAcceptableInParserRuleCall_1_4_0 = (RuleCall)cAcceptableInAssignment_1_4.eContents().get(0);
+		private final Assignment cPreferredInAssignment_1_5 = (Assignment)cUnorderedGroup_1.eContents().get(5);
+		private final RuleCall cPreferredInPreferredInParserRuleCall_1_5_0 = (RuleCall)cPreferredInAssignment_1_5.eContents().get(0);
+		private final Assignment cLanguageRefSetAssignment_1_6 = (Assignment)cUnorderedGroup_1.eContents().get(6);
+		private final RuleCall cLanguageRefSetLanguageRefSetParserRuleCall_1_6_0 = (RuleCall)cLanguageRefSetAssignment_1_6.eContents().get(0);
 		
 		//DescriptionFilter:
 		//	{DescriptionFilter} (termFilter=TermFilter?
 		//	& active=ActiveTerm?
 		//	& type=Descriptiontype?
-		//	& regex=RegularExpression?);
+		//	& regex=RegularExpression?
+		//	& acceptableIn=AcceptableIn?
+		//	& preferredIn=PreferredIn?
+		//	& languageRefSet=LanguageRefSet?);
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{DescriptionFilter} (termFilter=TermFilter? & active=ActiveTerm? & type=Descriptiontype? & regex=RegularExpression?)
+		//{DescriptionFilter} (termFilter=TermFilter? & active=ActiveTerm? & type=Descriptiontype? & regex=RegularExpression? &
+		//acceptableIn=AcceptableIn? & preferredIn=PreferredIn? & languageRefSet=LanguageRefSet?)
 		public Group getGroup() { return cGroup; }
 		
 		//{DescriptionFilter}
 		public Action getDescriptionFilterAction_0() { return cDescriptionFilterAction_0; }
 		
-		//termFilter=TermFilter? & active=ActiveTerm? & type=Descriptiontype? & regex=RegularExpression?
+		//termFilter=TermFilter? & active=ActiveTerm? & type=Descriptiontype? & regex=RegularExpression? &
+		//acceptableIn=AcceptableIn? & preferredIn=PreferredIn? & languageRefSet=LanguageRefSet?
 		public UnorderedGroup getUnorderedGroup_1() { return cUnorderedGroup_1; }
 		
 		//termFilter=TermFilter?
@@ -359,6 +370,24 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		
 		//RegularExpression
 		public RuleCall getRegexRegularExpressionParserRuleCall_1_3_0() { return cRegexRegularExpressionParserRuleCall_1_3_0; }
+		
+		//acceptableIn=AcceptableIn?
+		public Assignment getAcceptableInAssignment_1_4() { return cAcceptableInAssignment_1_4; }
+		
+		//AcceptableIn
+		public RuleCall getAcceptableInAcceptableInParserRuleCall_1_4_0() { return cAcceptableInAcceptableInParserRuleCall_1_4_0; }
+		
+		//preferredIn=PreferredIn?
+		public Assignment getPreferredInAssignment_1_5() { return cPreferredInAssignment_1_5; }
+		
+		//PreferredIn
+		public RuleCall getPreferredInPreferredInParserRuleCall_1_5_0() { return cPreferredInPreferredInParserRuleCall_1_5_0; }
+		
+		//languageRefSet=LanguageRefSet?
+		public Assignment getLanguageRefSetAssignment_1_6() { return cLanguageRefSetAssignment_1_6; }
+		
+		//LanguageRefSet
+		public RuleCall getLanguageRefSetLanguageRefSetParserRuleCall_1_6_0() { return cLanguageRefSetLanguageRefSetParserRuleCall_1_6_0; }
 	}
 	public class TermFilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.TermFilter");
@@ -414,19 +443,100 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		//STRING
 		public RuleCall getRegexSTRINGTerminalRuleCall_2_0() { return cRegexSTRINGTerminalRuleCall_2_0; }
 	}
+	public class PreferredInElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.PreferredIn");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cPREFERREDTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cPreferredAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cPreferredScriptParserRuleCall_2_0 = (RuleCall)cPreferredAssignment_2.eContents().get(0);
+		
+		//PreferredIn:
+		//	PREFERRED EQUAL preferred=Script;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//PREFERRED EQUAL preferred=Script
+		public Group getGroup() { return cGroup; }
+		
+		//PREFERRED
+		public RuleCall getPREFERREDTerminalRuleCall_0() { return cPREFERREDTerminalRuleCall_0; }
+		
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
+		
+		//preferred=Script
+		public Assignment getPreferredAssignment_2() { return cPreferredAssignment_2; }
+		
+		//Script
+		public RuleCall getPreferredScriptParserRuleCall_2_0() { return cPreferredScriptParserRuleCall_2_0; }
+	}
+	public class AcceptableInElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.AcceptableIn");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cACCEPTABLETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cAcceptableAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cAcceptableScriptParserRuleCall_2_0 = (RuleCall)cAcceptableAssignment_2.eContents().get(0);
+		
+		//AcceptableIn:
+		//	ACCEPTABLE EQUAL acceptable=Script;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//ACCEPTABLE EQUAL acceptable=Script
+		public Group getGroup() { return cGroup; }
+		
+		//ACCEPTABLE
+		public RuleCall getACCEPTABLETerminalRuleCall_0() { return cACCEPTABLETerminalRuleCall_0; }
+		
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
+		
+		//acceptable=Script
+		public Assignment getAcceptableAssignment_2() { return cAcceptableAssignment_2; }
+		
+		//Script
+		public RuleCall getAcceptableScriptParserRuleCall_2_0() { return cAcceptableScriptParserRuleCall_2_0; }
+	}
+	public class LanguageRefSetElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LanguageRefSet");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cLANGREFSETTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cRefsetAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cRefsetScriptParserRuleCall_2_0 = (RuleCall)cRefsetAssignment_2.eContents().get(0);
+		
+		//LanguageRefSet:
+		//	LANGREFSET EQUAL refset=Script;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//LANGREFSET EQUAL refset=Script
+		public Group getGroup() { return cGroup; }
+		
+		//LANGREFSET
+		public RuleCall getLANGREFSETTerminalRuleCall_0() { return cLANGREFSETTerminalRuleCall_0; }
+		
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
+		
+		//refset=Script
+		public Assignment getRefsetAssignment_2() { return cRefsetAssignment_2; }
+		
+		//Script
+		public RuleCall getRefsetScriptParserRuleCall_2_0() { return cRefsetScriptParserRuleCall_2_0; }
+	}
 	public class DescriptiontypeElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Descriptiontype");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cDESCRIPTION_TYPETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cEclAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cEclScriptParserRuleCall_2_0 = (RuleCall)cEclAssignment_2.eContents().get(0);
+		private final Assignment cTypeAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cTypeScriptParserRuleCall_2_0 = (RuleCall)cTypeAssignment_2.eContents().get(0);
 		
 		//Descriptiontype:
-		//	DESCRIPTION_TYPE EQUAL ecl=Script;
+		//	DESCRIPTION_TYPE EQUAL type=Script;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//DESCRIPTION_TYPE EQUAL ecl=Script
+		//DESCRIPTION_TYPE EQUAL type=Script
 		public Group getGroup() { return cGroup; }
 		
 		//DESCRIPTION_TYPE
@@ -435,11 +545,11 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		//EQUAL
 		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
 		
-		//ecl=Script
-		public Assignment getEclAssignment_2() { return cEclAssignment_2; }
+		//type=Script
+		public Assignment getTypeAssignment_2() { return cTypeAssignment_2; }
 		
 		//Script
-		public RuleCall getEclScriptParserRuleCall_2_0() { return cEclScriptParserRuleCall_2_0; }
+		public RuleCall getTypeScriptParserRuleCall_2_0() { return cTypeScriptParserRuleCall_2_0; }
 	}
 	public class ActiveTermElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ActiveTerm");
@@ -502,6 +612,9 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	private final DescriptionFilterElements pDescriptionFilter;
 	private final TermFilterElements pTermFilter;
 	private final RegularExpressionElements pRegularExpression;
+	private final PreferredInElements pPreferredIn;
+	private final AcceptableInElements pAcceptableIn;
+	private final LanguageRefSetElements pLanguageRefSet;
 	private final DescriptiontypeElements pDescriptiontype;
 	private final ActiveTermElements pActiveTerm;
 	private final BooleanElements pBoolean;
@@ -511,6 +624,9 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tTRUE;
 	private final TerminalRule tFALSE;
 	private final TerminalRule tREGEX;
+	private final TerminalRule tACCEPTABLE;
+	private final TerminalRule tPREFERRED;
+	private final TerminalRule tLANGREFSET;
 	private final TerminalRule tDESCRIPTION_TYPE;
 	private final TerminalRule tOPEN_DOUBLE_BRACES;
 	private final TerminalRule tCLOSE_DOUBLE_BRACES;
@@ -537,6 +653,9 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		this.pDescriptionFilter = new DescriptionFilterElements();
 		this.pTermFilter = new TermFilterElements();
 		this.pRegularExpression = new RegularExpressionElements();
+		this.pPreferredIn = new PreferredInElements();
+		this.pAcceptableIn = new AcceptableInElements();
+		this.pLanguageRefSet = new LanguageRefSetElements();
 		this.pDescriptiontype = new DescriptiontypeElements();
 		this.pActiveTerm = new ActiveTermElements();
 		this.pBoolean = new BooleanElements();
@@ -546,6 +665,9 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		this.tTRUE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.TRUE");
 		this.tFALSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.FALSE");
 		this.tREGEX = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.REGEX");
+		this.tACCEPTABLE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ACCEPTABLE");
+		this.tPREFERRED = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.PREFERRED");
+		this.tLANGREFSET = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LANGREFSET");
 		this.tDESCRIPTION_TYPE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.DESCRIPTION_TYPE");
 		this.tOPEN_DOUBLE_BRACES = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.OPEN_DOUBLE_BRACES");
 		this.tCLOSE_DOUBLE_BRACES = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.CLOSE_DOUBLE_BRACES");
@@ -682,7 +804,10 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	//	{DescriptionFilter} (termFilter=TermFilter?
 	//	& active=ActiveTerm?
 	//	& type=Descriptiontype?
-	//	& regex=RegularExpression?);
+	//	& regex=RegularExpression?
+	//	& acceptableIn=AcceptableIn?
+	//	& preferredIn=PreferredIn?
+	//	& languageRefSet=LanguageRefSet?);
 	public DescriptionFilterElements getDescriptionFilterAccess() {
 		return pDescriptionFilter;
 	}
@@ -711,8 +836,38 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getRegularExpressionAccess().getRule();
 	}
 	
+	//PreferredIn:
+	//	PREFERRED EQUAL preferred=Script;
+	public PreferredInElements getPreferredInAccess() {
+		return pPreferredIn;
+	}
+	
+	public ParserRule getPreferredInRule() {
+		return getPreferredInAccess().getRule();
+	}
+	
+	//AcceptableIn:
+	//	ACCEPTABLE EQUAL acceptable=Script;
+	public AcceptableInElements getAcceptableInAccess() {
+		return pAcceptableIn;
+	}
+	
+	public ParserRule getAcceptableInRule() {
+		return getAcceptableInAccess().getRule();
+	}
+	
+	//LanguageRefSet:
+	//	LANGREFSET EQUAL refset=Script;
+	public LanguageRefSetElements getLanguageRefSetAccess() {
+		return pLanguageRefSet;
+	}
+	
+	public ParserRule getLanguageRefSetRule() {
+		return getLanguageRefSetAccess().getRule();
+	}
+	
 	//Descriptiontype:
-	//	DESCRIPTION_TYPE EQUAL ecl=Script;
+	//	DESCRIPTION_TYPE EQUAL type=Script;
 	public DescriptiontypeElements getDescriptiontypeAccess() {
 		return pDescriptiontype;
 	}
@@ -775,6 +930,24 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	//	'regex';
 	public TerminalRule getREGEXRule() {
 		return tREGEX;
+	}
+	
+	//terminal ACCEPTABLE:
+	//	'acceptableIn';
+	public TerminalRule getACCEPTABLERule() {
+		return tACCEPTABLE;
+	}
+	
+	//terminal PREFERRED:
+	//	'preferredIn';
+	public TerminalRule getPREFERREDRule() {
+		return tPREFERRED;
+	}
+	
+	//terminal LANGREFSET:
+	//	'languageRefSet';
+	public TerminalRule getLANGREFSETRule() {
+		return tLANGREFSET;
 	}
 	
 	//terminal DESCRIPTION_TYPE:

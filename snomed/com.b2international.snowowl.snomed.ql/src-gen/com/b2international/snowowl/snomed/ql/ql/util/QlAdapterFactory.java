@@ -138,6 +138,21 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createRegularExpressionAdapter();
       }
       @Override
+      public Adapter casePreferredIn(PreferredIn object)
+      {
+        return createPreferredInAdapter();
+      }
+      @Override
+      public Adapter caseAcceptableIn(AcceptableIn object)
+      {
+        return createAcceptableInAdapter();
+      }
+      @Override
+      public Adapter caseLanguageRefSet(LanguageRefSet object)
+      {
+        return createLanguageRefSetAdapter();
+      }
+      @Override
       public Adapter caseDescriptiontype(Descriptiontype object)
       {
         return createDescriptiontypeAdapter();
@@ -330,6 +345,51 @@ public class QlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createRegularExpressionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.PreferredIn <em>Preferred In</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.PreferredIn
+   * @generated
+   */
+  public Adapter createPreferredInAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.AcceptableIn <em>Acceptable In</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.AcceptableIn
+   * @generated
+   */
+  public Adapter createAcceptableInAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.LanguageRefSet <em>Language Ref Set</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.LanguageRefSet
+   * @generated
+   */
+  public Adapter createLanguageRefSetAdapter()
   {
     return null;
   }

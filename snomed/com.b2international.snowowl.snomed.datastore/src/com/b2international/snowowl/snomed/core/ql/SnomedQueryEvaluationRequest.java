@@ -40,6 +40,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSea
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
+import com.b2international.snowowl.snomed.ql.ql.AcceptableIn;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveTerm;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
@@ -50,7 +51,9 @@ import com.b2international.snowowl.snomed.ql.ql.Descriptiontype;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.EclFilter;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.LanguageRefSet;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.PreferredIn;
 import com.b2international.snowowl.snomed.ql.ql.RegularExpression;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -100,6 +103,9 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 		final TermFilter termFilter = descriptionFilter.getTermFilter();
 		final Descriptiontype descriptiontype = descriptionFilter.getType();
 		final RegularExpression regularExpression = descriptionFilter.getRegex();
+		final PreferredIn preferredIn = descriptionFilter.getPreferredIn();
+		final AcceptableIn acceptableIn = descriptionFilter.getAcceptableIn();
+		final LanguageRefSet languageRefSet = descriptionFilter.getLanguageRefSet();
 		
 		SnomedDescriptionSearchRequestBuilder descriptionRequest = SnomedRequests.prepareSearchDescription().all();
 		if (termFilter != null) {
@@ -107,15 +113,33 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 			if (term.length() > 2) {
 				descriptionRequest.filterByTerm(term);
 			}
-		} else if (activeTerm != null) {
+		} 
+		if (activeTerm != null) {
 			boolean active = activeTerm.getActive().equals("true") ? true : false;
 			descriptionRequest.filterByActive(active);
-		} else if (descriptiontype != null) {
-			final Script script = descriptiontype.getEcl();
-			final String eclExpression = context.service(EclSerializer.class).serializeWithoutTerms(script.getConstraint());
+		} 
+		if (descriptiontype != null) {
+			final String eclExpression = context.service(EclSerializer.class)
+					.serializeWithoutTerms(descriptiontype.getType().getConstraint());
 			descriptionRequest.filterByType(eclExpression);
-		} else if (regularExpression != null) {
+		} 
+		if (regularExpression != null) {
 			descriptionRequest.filterByTermRegex(regularExpression.getRegex());
+		} 
+		if(preferredIn != null) {
+			final String langRefSetId = context.service(EclSerializer.class)
+					.serializeWithoutTerms(preferredIn.getPreferred().getConstraint());
+			descriptionRequest.filterByPreferredIn(langRefSetId);
+		}
+		if (acceptableIn != null) {
+			final String langRefSetId = context.service(EclSerializer.class)
+					.serializeWithoutTerms(acceptableIn.getAcceptable().getConstraint());
+			descriptionRequest.filterByAcceptableIn(langRefSetId);
+		}
+		if (languageRefSet != null) {
+			final String langRefSetId = context.service(EclSerializer.class)
+					.serializeWithoutTerms(languageRefSet.getRefset().getConstraint());
+			descriptionRequest.filterByLanguageRefSet(langRefSetId);
 		}
 		
 		return descriptionRequest

@@ -164,6 +164,27 @@ public class QlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case QlPackage.PREFERRED_IN:
+      {
+        PreferredIn preferredIn = (PreferredIn)theEObject;
+        T result = casePreferredIn(preferredIn);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.ACCEPTABLE_IN:
+      {
+        AcceptableIn acceptableIn = (AcceptableIn)theEObject;
+        T result = caseAcceptableIn(acceptableIn);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.LANGUAGE_REF_SET:
+      {
+        LanguageRefSet languageRefSet = (LanguageRefSet)theEObject;
+        T result = caseLanguageRefSet(languageRefSet);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case QlPackage.DESCRIPTIONTYPE:
       {
         Descriptiontype descriptiontype = (Descriptiontype)theEObject;
@@ -362,6 +383,54 @@ public class QlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseRegularExpression(RegularExpression object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Preferred In</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Preferred In</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T casePreferredIn(PreferredIn object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Acceptable In</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Acceptable In</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAcceptableIn(AcceptableIn object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Language Ref Set</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Language Ref Set</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseLanguageRefSet(LanguageRefSet object)
   {
     return null;
   }

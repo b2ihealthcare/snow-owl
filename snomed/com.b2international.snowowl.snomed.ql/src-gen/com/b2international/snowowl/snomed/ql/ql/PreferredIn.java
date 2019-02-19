@@ -21,46 +21,46 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Descriptiontype</b></em>'.
+ * A representation of the model object '<em><b>Preferred In</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getType <em>Type</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.PreferredIn#getPreferred <em>Preferred</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptiontype()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getPreferredIn()
  * @model
  * @generated
  */
-public interface Descriptiontype extends EObject
+public interface PreferredIn extends EObject
 {
   /**
-   * Returns the value of the '<em><b>Type</b></em>' containment reference.
+   * Returns the value of the '<em><b>Preferred</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Type</em>' containment reference isn't clear,
+   * If the meaning of the '<em>Preferred</em>' containment reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Type</em>' containment reference.
-   * @see #setType(Script)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptiontype_Type()
+   * @return the value of the '<em>Preferred</em>' containment reference.
+   * @see #setPreferred(Script)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getPreferredIn_Preferred()
    * @model containment="true"
    * @generated
    */
-  Script getType();
+  Script getPreferred();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype#getType <em>Type</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.PreferredIn#getPreferred <em>Preferred</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Type</em>' containment reference.
-   * @see #getType()
+   * @param value the new value of the '<em>Preferred</em>' containment reference.
+   * @see #getPreferred()
    * @generated
    */
-  void setType(Script value);
+  void setPreferred(Script value);
 
-} // Descriptiontype
+} // PreferredIn

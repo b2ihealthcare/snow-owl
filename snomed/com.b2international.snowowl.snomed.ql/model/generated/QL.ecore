@@ -32,6 +32,12 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="regex" eType="#//RegularExpression"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="acceptableIn" eType="#//AcceptableIn"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="preferredIn" eType="#//PreferredIn"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="languageRefSet" eType="#//LanguageRefSet"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TermFilter">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -39,8 +45,20 @@
   <eClassifiers xsi:type="ecore:EClass" name="RegularExpression">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="regex" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PreferredIn">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="preferred" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Script"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AcceptableIn">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="acceptable" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Script"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="LanguageRefSet">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="refset" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Script"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Descriptiontype">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="ecl" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Script"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Script"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ActiveTerm">

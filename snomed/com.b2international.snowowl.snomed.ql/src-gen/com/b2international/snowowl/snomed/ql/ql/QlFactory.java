@@ -126,6 +126,33 @@ public interface QlFactory extends EFactory
   RegularExpression createRegularExpression();
 
   /**
+   * Returns a new object of class '<em>Preferred In</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Preferred In</em>'.
+   * @generated
+   */
+  PreferredIn createPreferredIn();
+
+  /**
+   * Returns a new object of class '<em>Acceptable In</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Acceptable In</em>'.
+   * @generated
+   */
+  AcceptableIn createAcceptableIn();
+
+  /**
+   * Returns a new object of class '<em>Language Ref Set</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Language Ref Set</em>'.
+   * @generated
+   */
+  LanguageRefSet createLanguageRefSet();
+
+  /**
    * Returns a new object of class '<em>Descriptiontype</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
+import com.b2international.snowowl.snomed.ql.ql.AcceptableIn;
 import com.b2international.snowowl.snomed.ql.ql.ActiveTerm;
 import com.b2international.snowowl.snomed.ql.ql.DescriptionFilter;
 import com.b2international.snowowl.snomed.ql.ql.Descriptiontype;
+import com.b2international.snowowl.snomed.ql.ql.LanguageRefSet;
+import com.b2international.snowowl.snomed.ql.ql.PreferredIn;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.RegularExpression;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
@@ -43,6 +46,9 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptionFilterImpl#getActive <em>Active</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptionFilterImpl#getType <em>Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptionFilterImpl#getRegex <em>Regex</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptionFilterImpl#getAcceptableIn <em>Acceptable In</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptionFilterImpl#getPreferredIn <em>Preferred In</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DescriptionFilterImpl#getLanguageRefSet <em>Language Ref Set</em>}</li>
  * </ul>
  *
  * @generated
@@ -88,6 +94,36 @@ public class DescriptionFilterImpl extends MinimalEObjectImpl.Container implemen
    * @ordered
    */
   protected RegularExpression regex;
+
+  /**
+   * The cached value of the '{@link #getAcceptableIn() <em>Acceptable In</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getAcceptableIn()
+   * @generated
+   * @ordered
+   */
+  protected AcceptableIn acceptableIn;
+
+  /**
+   * The cached value of the '{@link #getPreferredIn() <em>Preferred In</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getPreferredIn()
+   * @generated
+   * @ordered
+   */
+  protected PreferredIn preferredIn;
+
+  /**
+   * The cached value of the '{@link #getLanguageRefSet() <em>Language Ref Set</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getLanguageRefSet()
+   * @generated
+   * @ordered
+   */
+  protected LanguageRefSet languageRefSet;
 
   /**
    * <!-- begin-user-doc -->
@@ -307,6 +343,150 @@ public class DescriptionFilterImpl extends MinimalEObjectImpl.Container implemen
    * <!-- end-user-doc -->
    * @generated
    */
+  public AcceptableIn getAcceptableIn()
+  {
+    return acceptableIn;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NotificationChain basicSetAcceptableIn(AcceptableIn newAcceptableIn, NotificationChain msgs)
+  {
+    AcceptableIn oldAcceptableIn = acceptableIn;
+    acceptableIn = newAcceptableIn;
+    if (eNotificationRequired())
+    {
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN, oldAcceptableIn, newAcceptableIn);
+      if (msgs == null) msgs = notification; else msgs.add(notification);
+    }
+    return msgs;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public void setAcceptableIn(AcceptableIn newAcceptableIn)
+  {
+    if (newAcceptableIn != acceptableIn)
+    {
+      NotificationChain msgs = null;
+      if (acceptableIn != null)
+        msgs = ((InternalEObject)acceptableIn).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN, null, msgs);
+      if (newAcceptableIn != null)
+        msgs = ((InternalEObject)newAcceptableIn).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN, null, msgs);
+      msgs = basicSetAcceptableIn(newAcceptableIn, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN, newAcceptableIn, newAcceptableIn));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public PreferredIn getPreferredIn()
+  {
+    return preferredIn;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NotificationChain basicSetPreferredIn(PreferredIn newPreferredIn, NotificationChain msgs)
+  {
+    PreferredIn oldPreferredIn = preferredIn;
+    preferredIn = newPreferredIn;
+    if (eNotificationRequired())
+    {
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.DESCRIPTION_FILTER__PREFERRED_IN, oldPreferredIn, newPreferredIn);
+      if (msgs == null) msgs = notification; else msgs.add(notification);
+    }
+    return msgs;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public void setPreferredIn(PreferredIn newPreferredIn)
+  {
+    if (newPreferredIn != preferredIn)
+    {
+      NotificationChain msgs = null;
+      if (preferredIn != null)
+        msgs = ((InternalEObject)preferredIn).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.DESCRIPTION_FILTER__PREFERRED_IN, null, msgs);
+      if (newPreferredIn != null)
+        msgs = ((InternalEObject)newPreferredIn).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.DESCRIPTION_FILTER__PREFERRED_IN, null, msgs);
+      msgs = basicSetPreferredIn(newPreferredIn, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.DESCRIPTION_FILTER__PREFERRED_IN, newPreferredIn, newPreferredIn));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public LanguageRefSet getLanguageRefSet()
+  {
+    return languageRefSet;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NotificationChain basicSetLanguageRefSet(LanguageRefSet newLanguageRefSet, NotificationChain msgs)
+  {
+    LanguageRefSet oldLanguageRefSet = languageRefSet;
+    languageRefSet = newLanguageRefSet;
+    if (eNotificationRequired())
+    {
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET, oldLanguageRefSet, newLanguageRefSet);
+      if (msgs == null) msgs = notification; else msgs.add(notification);
+    }
+    return msgs;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public void setLanguageRefSet(LanguageRefSet newLanguageRefSet)
+  {
+    if (newLanguageRefSet != languageRefSet)
+    {
+      NotificationChain msgs = null;
+      if (languageRefSet != null)
+        msgs = ((InternalEObject)languageRefSet).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET, null, msgs);
+      if (newLanguageRefSet != null)
+        msgs = ((InternalEObject)newLanguageRefSet).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET, null, msgs);
+      msgs = basicSetLanguageRefSet(newLanguageRefSet, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET, newLanguageRefSet, newLanguageRefSet));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   @Override
   public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
   {
@@ -320,6 +500,12 @@ public class DescriptionFilterImpl extends MinimalEObjectImpl.Container implemen
         return basicSetType(null, msgs);
       case QlPackage.DESCRIPTION_FILTER__REGEX:
         return basicSetRegex(null, msgs);
+      case QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN:
+        return basicSetAcceptableIn(null, msgs);
+      case QlPackage.DESCRIPTION_FILTER__PREFERRED_IN:
+        return basicSetPreferredIn(null, msgs);
+      case QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET:
+        return basicSetLanguageRefSet(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -342,6 +528,12 @@ public class DescriptionFilterImpl extends MinimalEObjectImpl.Container implemen
         return getType();
       case QlPackage.DESCRIPTION_FILTER__REGEX:
         return getRegex();
+      case QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN:
+        return getAcceptableIn();
+      case QlPackage.DESCRIPTION_FILTER__PREFERRED_IN:
+        return getPreferredIn();
+      case QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET:
+        return getLanguageRefSet();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -367,6 +559,15 @@ public class DescriptionFilterImpl extends MinimalEObjectImpl.Container implemen
         return;
       case QlPackage.DESCRIPTION_FILTER__REGEX:
         setRegex((RegularExpression)newValue);
+        return;
+      case QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN:
+        setAcceptableIn((AcceptableIn)newValue);
+        return;
+      case QlPackage.DESCRIPTION_FILTER__PREFERRED_IN:
+        setPreferredIn((PreferredIn)newValue);
+        return;
+      case QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET:
+        setLanguageRefSet((LanguageRefSet)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -394,6 +595,15 @@ public class DescriptionFilterImpl extends MinimalEObjectImpl.Container implemen
       case QlPackage.DESCRIPTION_FILTER__REGEX:
         setRegex((RegularExpression)null);
         return;
+      case QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN:
+        setAcceptableIn((AcceptableIn)null);
+        return;
+      case QlPackage.DESCRIPTION_FILTER__PREFERRED_IN:
+        setPreferredIn((PreferredIn)null);
+        return;
+      case QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET:
+        setLanguageRefSet((LanguageRefSet)null);
+        return;
     }
     super.eUnset(featureID);
   }
@@ -416,6 +626,12 @@ public class DescriptionFilterImpl extends MinimalEObjectImpl.Container implemen
         return type != null;
       case QlPackage.DESCRIPTION_FILTER__REGEX:
         return regex != null;
+      case QlPackage.DESCRIPTION_FILTER__ACCEPTABLE_IN:
+        return acceptableIn != null;
+      case QlPackage.DESCRIPTION_FILTER__PREFERRED_IN:
+        return preferredIn != null;
+      case QlPackage.DESCRIPTION_FILTER__LANGUAGE_REF_SET:
+        return languageRefSet != null;
     }
     return super.eIsSet(featureID);
   }

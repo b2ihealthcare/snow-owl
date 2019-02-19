@@ -28,6 +28,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/active"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/regex"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/acceptableIn"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/preferredIn"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/languageRefSet"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//TermFilter">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//TermFilter/term"/>
@@ -35,8 +38,17 @@
     <genClasses ecoreClass="QL.ecore#//RegularExpression">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//RegularExpression/regex"/>
     </genClasses>
+    <genClasses ecoreClass="QL.ecore#//PreferredIn">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//PreferredIn/preferred"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//AcceptableIn">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//AcceptableIn/acceptable"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//LanguageRefSet">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//LanguageRefSet/refset"/>
+    </genClasses>
     <genClasses ecoreClass="QL.ecore#//Descriptiontype">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Descriptiontype/ecl"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Descriptiontype/type"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//ActiveTerm">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveTerm/active"/>

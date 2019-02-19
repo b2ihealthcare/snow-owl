@@ -30,6 +30,9 @@ import org.eclipse.emf.ecore.EObject;
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getActive <em>Active</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getType <em>Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getRegex <em>Regex</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getAcceptableIn <em>Acceptable In</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getPreferredIn <em>Preferred In</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getLanguageRefSet <em>Language Ref Set</em>}</li>
  * </ul>
  *
  * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptionFilter()
@@ -141,5 +144,83 @@ public interface DescriptionFilter extends EObject
    * @generated
    */
   void setRegex(RegularExpression value);
+
+  /**
+   * Returns the value of the '<em><b>Acceptable In</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <p>
+   * If the meaning of the '<em>Acceptable In</em>' containment reference isn't clear,
+   * there really should be more of a description here...
+   * </p>
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Acceptable In</em>' containment reference.
+   * @see #setAcceptableIn(AcceptableIn)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptionFilter_AcceptableIn()
+   * @model containment="true"
+   * @generated
+   */
+  AcceptableIn getAcceptableIn();
+
+  /**
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getAcceptableIn <em>Acceptable In</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Acceptable In</em>' containment reference.
+   * @see #getAcceptableIn()
+   * @generated
+   */
+  void setAcceptableIn(AcceptableIn value);
+
+  /**
+   * Returns the value of the '<em><b>Preferred In</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <p>
+   * If the meaning of the '<em>Preferred In</em>' containment reference isn't clear,
+   * there really should be more of a description here...
+   * </p>
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Preferred In</em>' containment reference.
+   * @see #setPreferredIn(PreferredIn)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptionFilter_PreferredIn()
+   * @model containment="true"
+   * @generated
+   */
+  PreferredIn getPreferredIn();
+
+  /**
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getPreferredIn <em>Preferred In</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Preferred In</em>' containment reference.
+   * @see #getPreferredIn()
+   * @generated
+   */
+  void setPreferredIn(PreferredIn value);
+
+  /**
+   * Returns the value of the '<em><b>Language Ref Set</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <p>
+   * If the meaning of the '<em>Language Ref Set</em>' containment reference isn't clear,
+   * there really should be more of a description here...
+   * </p>
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Language Ref Set</em>' containment reference.
+   * @see #setLanguageRefSet(LanguageRefSet)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDescriptionFilter_LanguageRefSet()
+   * @model containment="true"
+   * @generated
+   */
+  LanguageRefSet getLanguageRefSet();
+
+  /**
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter#getLanguageRefSet <em>Language Ref Set</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Language Ref Set</em>' containment reference.
+   * @see #getLanguageRefSet()
+   * @generated
+   */
+  void setLanguageRefSet(LanguageRefSet value);
 
 } // DescriptionFilter
