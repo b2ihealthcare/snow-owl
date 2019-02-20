@@ -234,7 +234,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final RelationshipChangeSearchRequestBuilder relationshipRequestBuilder = ClassificationRequests.prepareSearchRelationshipChange()
 				.setLimit(SCROLL_LIMIT)
 				.setScroll(SCROLL_KEEP_ALIVE)
-				.setExpand("relationship(inferredOnly:true)")
+				.setExpand("relationship()")
 				.filterByClassificationId(classificationId);
 
 		final SearchResourceRequestIterator<RelationshipChangeSearchRequestBuilder, RelationshipChanges> relationshipIterator = 
@@ -257,6 +257,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			for (final RelationshipChange change : nextChanges) {
 				final ReasonerRelationship relationship = change.getRelationship();
 
+				// Do not reference concepts which were handled by the equivalent concept merger
+				if (conceptIdsToSkip.contains(relationship.getSourceId()) 
+						|| conceptIdsToSkip.contains(relationship.getDestinationId())) {
+					continue;
+				}
+				
 				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
 					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
 				} else {
@@ -319,7 +325,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final ConcreteDomainChangeSearchRequestBuilder concreteDomainRequestBuilder = ClassificationRequests.prepareSearchConcreteDomainChange()
 				.setLimit(SCROLL_LIMIT)
 				.setScroll(SCROLL_KEEP_ALIVE)
-				.setExpand("concreteDomainMember(inferredOnly:true)")
+				.setExpand("concreteDomainMember()")
 				.filterByClassificationId(classificationId);
 
 		final SearchResourceRequestIterator<ConcreteDomainChangeSearchRequestBuilder, ConcreteDomainChanges> concreteDomainIterator =
@@ -341,6 +347,11 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 			for (final ConcreteDomainChange change : nextChanges) {
 				final ReasonerConcreteDomainMember referenceSetMember = change.getConcreteDomainMember();
+
+				// Do not reference concepts which were handled by the equivalent concept merger
+				if (conceptIdsToSkip.contains(referenceSetMember.getReferencedComponentId())) { 
+					continue;
+				}
 
 				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
 					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
