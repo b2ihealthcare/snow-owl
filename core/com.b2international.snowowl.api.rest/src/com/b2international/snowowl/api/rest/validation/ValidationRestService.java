@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
@@ -43,8 +44,8 @@ import com.b2international.snowowl.api.rest.admin.AbstractAdminRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.DeferredResults;
 import com.b2international.snowowl.api.rest.util.Responses;
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
@@ -54,11 +55,12 @@ import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.ValidationResult;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
@@ -80,23 +82,23 @@ public class ValidationRestService extends AbstractAdminRestService {
 	private Map<String, String> uniqueIdByUuid = Maps.newHashMap();
 	
 	@ApiOperation(
-			value="Retrieve validation runs from branch", 
-			notes="Returns a list of validations runs for a branch.")
+			value="Retrieve all validation runs from the termserver", 
+			notes="Returns a list of validations runs")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
+		@ApiResponse(code = 200, message = "OK")
 	})
 	@RequestMapping(value="/validations", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<RemoteJobs> getAllValidationRuns(
-			@ApiParam(value="The branch path")
-			@RequestParam(value="branch", required=false) 
-			final String branch) {
-
-		return DeferredResults.wrap(JobRequests.prepareSearch()
+	public @ResponseBody Set<RemoteJobEntry> getAllValidationRuns() {
+		final Set<RemoteJobEntry> validationJobs  = JobRequests.prepareSearch()
 			.all()
-			.filterByIds(uniqueIdByUuid.values())
 			.buildAsync()
-			.execute(bus));
+			.execute(bus)
+			.getSync()
+			.stream()
+			.filter(ValidationRequests::isValidationJob)
+			.collect(Collectors.toSet());
+		
+		return validationJobs;
 	}
 	
 	
@@ -107,7 +109,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 					+ "to determine whether it's completed or not.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class),
+		@ApiResponse(code = 404, message = "Branch or CodeSystem not found", response=RestApiError.class),
 		@ApiResponse(code = 409, message = "Validation job with the same id is already running", response=RestApiError.class)
 	})
 	@RequestMapping(
@@ -123,10 +125,12 @@ public class ValidationRestService extends AbstractAdminRestService {
 			final Principal principal) {
 		
 		ApiValidation.checkInput(validationInput);
-		final String shortName = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
-		final String separator = Branch.SEPARATOR;
-		final String activeBranch = validationInput.branch();
-		final String uniqueJobId = String.format("%s%s%s%s", "Validation", shortName, separator, activeBranch);
+		final String codeSystemShortName = validationInput.codeSystemShortName();
+		final CodeSystemEntry codeSystem = getCodeSystem(codeSystemShortName);
+		
+		Preconditions.checkArgument(codeSystem.getBranchPath().equals(validationInput.branch()));
+		
+		final String uniqueJobId = ValidationRequests.createUniqueValidationId(codeSystemShortName, codeSystem.getBranchPath());
 		
 		final Map<String, Object> ruleParams = ImmutableMap.<String, Object>builder()
 				.put(ValidationConfiguration.IS_UNPUBLISHED_ONLY, validationInput.isUnpublishedValidation())
@@ -165,9 +169,8 @@ public class ValidationRestService extends AbstractAdminRestService {
 						.setRuleIds(validationInput.ruleIds());
 				
 				final Request<ServiceProvider, ValidationResult> request = validateRequestBuilder
-						.build(SnomedDatastoreActivator.REPOSITORY_UUID, validationInput.branch())
+						.build(codeSystem.getRepositoryUuid(), validationInput.branch())
 						.getRequest();
-
 					
 				return JobRequests.prepareSchedule()
 					.setRequest(request)
@@ -194,7 +197,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 			value="Retrieve the state of a validation run from branch")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
+		@ApiResponse(code = 404, message = "Validation not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/validations/{validationId}", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<RemoteJobEntry> getValidationRun(
@@ -215,18 +218,65 @@ public class ValidationRestService extends AbstractAdminRestService {
 	}
 	
 	@ApiOperation(
-			value="Retrieve the validation issues that belong from the collection of ruleIds")
+			value="Retrieve the validation issues from a completed validation on a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/validations/results", method=RequestMethod.POST)
+	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<ValidationIssues> getValidationResults(
-			@ApiParam(value="Validation ruleIds")
-			@RequestBody
-			final Set<String> ruleIds) {
-
-		return DeferredResults.wrap(ValidationRequests.issues().prepareSearch().filterByRules(ruleIds).buildAsync().execute(bus));
+			@ApiParam(value="The validation identifier")
+			@PathVariable(value="validationId")
+			final String validationId,
+			
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false)   
+			final int limit
+			) {
+		
+		final String uniqueJobId = uniqueIdByUuid.get(validationId);
+		if (uniqueJobId != null) {
+			return JobRequests.prepareGet(uniqueJobId)
+					.buildAsync()
+					.execute(bus)
+					.then(entry -> {
+						final String desc = entry.getDescription();
+						final String branchPath = desc.substring(desc.indexOf("'") + 1, desc.length() - 1);
+						return ValidationRequests.issues().prepareSearch()
+							.all()
+							.filterByBranchPath(branchPath)
+							.setLimit(limit)
+							.buildAsync()
+							.execute(bus);
+					}).then(issues -> DeferredResults.wrap(issues)).getSync();
+		} else {
+			throw new NotFoundException("Validation job", validationId);
+		}
+	}
+	
+	private CodeSystemEntry getCodeSystem(final String codeSystemShortName) {
+		final Set<String> repositoryIds = RepositoryRequests.prepareSearch()
+			.all()
+			.buildAsync()
+			.execute(bus)
+			.getSync()
+			.stream()
+			.map(RepositoryInfo::id)
+			.collect(Collectors.toSet());
+		
+		for (String repoId : repositoryIds) {
+			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
+				.build(repoId)
+				.execute(bus)
+				.getSync();
+			
+			if (codeSystemEntry != null) {
+				return codeSystemEntry;
+			}
+		}
+		
+		throw new NotFoundException("Codesystem", codeSystemShortName);
+		
 	}
 	
 }
