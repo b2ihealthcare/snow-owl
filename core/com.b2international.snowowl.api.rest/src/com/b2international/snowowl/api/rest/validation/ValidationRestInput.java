@@ -26,6 +26,9 @@ public class ValidationRestInput {
 
 	@NotEmpty
 	private String branch;
+	
+	@NotEmpty
+	private String codeSystemShortName;
 
 	@NotEmpty
 	private Set<String> ruleIds;
@@ -38,6 +41,14 @@ public class ValidationRestInput {
 
 	public void setBranch(String branch) {
 		this.branch = branch;
+	}
+	
+	public String codeSystemShortName() {
+		return codeSystemShortName;
+	}
+	
+	public void setCodesystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
 	}
 
 	public Set<String> ruleIds() {
