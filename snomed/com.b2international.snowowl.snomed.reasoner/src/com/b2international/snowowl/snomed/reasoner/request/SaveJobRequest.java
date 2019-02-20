@@ -30,6 +30,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -43,7 +44,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -64,12 +64,11 @@ import com.b2international.snowowl.snomed.reasoner.domain.ReasonerConcreteDomain
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
-import com.b2international.snowowl.snomed.reasoner.equivalence.EquivalentConceptMerger;
+import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import com.google.common.primitives.Longs;
 
 /**
  * Represents a request that saves pre-recorded changes of a classification,
@@ -83,8 +82,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private static final int SCROLL_LIMIT = 10_000;
 	private static final String SCROLL_KEEP_ALIVE = "5m";
-	
-	private static final long SMP_ROOT = Long.parseLong(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT);
 
 	@NotEmpty
 	private String classificationId;
@@ -419,6 +416,11 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				new SearchResourceRequestIterator<>(equivalentConceptRequest, 
 						r -> r.build().execute(context));
 
+		// Are there any equivalent concepts present?
+		if (!equivalentConceptIterator.hasNext()) {
+			return Collections.emptySet();
+		}
+		
 		final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts = HashMultimap.create();
 
 		while (equivalentConceptIterator.hasNext()) {
@@ -431,25 +433,22 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 				final List<SnomedConcept> conceptsToRemove = newArrayList(equivalentSet.getEquivalentConcepts());
 				final SnomedConcept conceptToKeep = conceptsToRemove.remove(0);
-
-				// FIXME: make equivalence set to fix user-selectable; currently, only descendants of SMP are auto-merged
-				final List<Long> statedParents = Longs.asList(conceptToKeep.getStatedParentIds());
-				final List<Long> statedAncestors = Longs.asList(conceptToKeep.getStatedAncestorIds());
-				if (statedParents.contains(SMP_ROOT) || statedAncestors.contains(SMP_ROOT)) {
-					equivalentConcepts.putAll(conceptToKeep, conceptsToRemove);
-				}
+				equivalentConcepts.putAll(conceptToKeep, conceptsToRemove);
 			}
 		}
 
-		if (!equivalentConcepts.isEmpty()) {
-			final EquivalentConceptMerger merger = new EquivalentConceptMerger(bulkRequestBuilder, equivalentConcepts);
-			merger.merge();
+		// Were all equivalent concepts unsatisfiable?
+		if (equivalentConcepts.isEmpty()) {
+			return Collections.emptySet();
 		}
 		
-		return equivalentConcepts.values()
-				.stream()
-				.map(SnomedConcept::getId)
-				.collect(Collectors.toSet());
+		final IEquivalentConceptMerger merger = Extensions.getFirstPriorityExtension(
+				IEquivalentConceptMerger.EXTENSION_POINT, 
+				IEquivalentConceptMerger.class);
+		
+		final String mergerName = merger.getClass().getSimpleName();
+		LOG.info("Reasoner service will use {} for equivalent concept merging.", mergerName);
+		return merger.merge(equivalentConcepts, bulkRequestBuilder);
 	}
 
 	private SnomedNamespaceAndModuleAssigner createNamespaceAndModuleAssigner(final BranchContext context) {
