@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: System Bundle Package Export Extensions
 Bundle-SymbolicName: system.bundle.package.exporter
-Bundle-Version: 6.13.0.qualifier
+Bundle-Version: 6.12.2
 Fragment-Host: system.bundle
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: sun.misc,
