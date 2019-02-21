@@ -47,7 +47,7 @@ public class ValidationRestInput {
 		return codeSystemShortName;
 	}
 	
-	public void setCodesystemShortName(String codeSystemShortName) {
+	public void setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
 	}
 

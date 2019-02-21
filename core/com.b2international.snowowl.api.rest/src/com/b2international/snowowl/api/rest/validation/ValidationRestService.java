@@ -20,6 +20,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import java.net.URI;
 import java.security.Principal;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -57,6 +58,7 @@ import com.b2international.snowowl.core.validation.ValidationResult;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -88,17 +90,16 @@ public class ValidationRestService extends AbstractAdminRestService {
 		@ApiResponse(code = 200, message = "OK")
 	})
 	@RequestMapping(value="/validations", method=RequestMethod.GET)
-	public @ResponseBody Set<RemoteJobEntry> getAllValidationRuns() {
-		final Set<RemoteJobEntry> validationJobs  = JobRequests.prepareSearch()
+	public @ResponseBody DeferredResult<RemoteJobs> getAllValidationRuns() {
+		
+		return DeferredResults.wrap(JobRequests.prepareSearch()
 			.all()
 			.buildAsync()
 			.execute(bus)
-			.getSync()
-			.stream()
-			.filter(ValidationRequests::isValidationJob)
-			.collect(Collectors.toSet());
-		
-		return validationJobs;
+			.then(jobs -> {
+				final List<RemoteJobEntry> validationJobs = jobs.stream().filter(ValidationRequests::isValidationJob).collect(Collectors.toList());
+				return new RemoteJobs(validationJobs, null, null, jobs.getLimit(), validationJobs.size());
+			}));
 	}
 	
 	
@@ -223,7 +224,8 @@ public class ValidationRestService extends AbstractAdminRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET)
+	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={ MediaType.APPLICATION_JSON_VALUE, "text/csv" })
+	
 	public @ResponseBody DeferredResult<ValidationIssues> getValidationResults(
 			@ApiParam(value="The validation identifier")
 			@PathVariable(value="validationId")
