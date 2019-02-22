@@ -39,6 +39,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
 import com.b2international.snowowl.api.rest.domain.ICodeSystemVersionPropertiesMixin;
+import com.b2international.snowowl.api.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -172,7 +173,8 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 
 		converters.add(new ByteArrayHttpMessageConverter());
 		converters.add(new ResourceHttpMessageConverter());
-
+		converters.add(new CsvMessageConverter());
+		
 		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
 		jacksonConverter.setObjectMapper(objectMapper());
 		converters.add(jacksonConverter);
