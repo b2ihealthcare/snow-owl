@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class ValidationRestInput {
 
 	@NotEmpty
-	private String branch;
+	private String branchPath;
 	
 	@NotEmpty
 	private String codeSystemShortName;
@@ -35,12 +35,12 @@ public class ValidationRestInput {
 	
 	private Boolean isUnpublishedValidation;
 
-	public String branch() {
-		return branch;
+	public String branchPath() {
+		return branchPath;
 	}
 
-	public void setBranch(String branch) {
-		this.branch = branch;
+	public void setBranch(String branchPath) {
+		this.branchPath = branchPath;
 	}
 	
 	public String codeSystemShortName() {
@@ -71,7 +71,7 @@ public class ValidationRestInput {
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("ValidationRestInput [branch=");
-		builder.append(branch);
+		builder.append(branchPath);
 		builder.append(", ruleIds=");
 		builder.append(ruleIds);
 		builder.append(", isUnpublishedValidation=");
