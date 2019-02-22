@@ -19,6 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,9 @@ import com.b2international.snowowl.core.internal.validation.ValidationConfigurat
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.ValidationResult;
+import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
@@ -64,6 +67,7 @@ import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -124,12 +128,12 @@ public class ValidationRestService extends AbstractAdminRestService {
 			final ValidationRestInput validationInput,
 
 			final Principal principal) {
-		
 		ApiValidation.checkInput(validationInput);
+
 		final String codeSystemShortName = validationInput.codeSystemShortName();
 		final CodeSystemEntry codeSystem = getCodeSystem(codeSystemShortName);
 		
-		Preconditions.checkArgument(codeSystem.getBranchPath().equals(validationInput.branch()));
+		Preconditions.checkArgument(codeSystem.getBranchPath().equals(validationInput.branchPath()));
 		
 		final String uniqueJobId = ValidationRequests.createUniqueValidationId(codeSystemShortName, codeSystem.getBranchPath());
 		
@@ -170,12 +174,12 @@ public class ValidationRestService extends AbstractAdminRestService {
 						.setRuleIds(validationInput.ruleIds());
 				
 				final Request<ServiceProvider, ValidationResult> request = validateRequestBuilder
-						.build(codeSystem.getRepositoryUuid(), validationInput.branch())
+						.build(codeSystem.getRepositoryUuid(), validationInput.branchPath())
 						.getRequest();
 					
 				return JobRequests.prepareSchedule()
 					.setRequest(request)
-					.setDescription(String.format("Validating SNOMED CT on branch '%s'", validationInput.branch()))
+					.setDescription(String.format("Validating SNOMED CT on branch '%s'", validationInput.branchPath()))
 					.setUser(principal.getName())
 					.setId(uniqueJobId)
 					.buildAsync()
@@ -224,36 +228,66 @@ public class ValidationRestService extends AbstractAdminRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={ MediaType.APPLICATION_JSON_VALUE, "text/csv" })
-	
+	@RequestMapping(value="/validations/{branchPath}/issues", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<ValidationIssues> getValidationResults(
-			@ApiParam(value="The validation identifier")
-			@PathVariable(value="validationId")
-			final String validationId,
+			@ApiParam(value="Branch path where the validation was run on.")
+			@PathVariable(value="branchPath")
+			final String branchPath,
 			
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
-			final int limit
-			) {
+			final int limit) {
+
+		return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+			.all()
+			.filterByBranchPath(branchPath)
+			.setLimit(limit)
+			.buildAsync()
+			.execute(bus));
+	}
+	
+	@ApiOperation(
+			value="Retrieve the validation issues from a completed validation on a branch.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
+	})
+	@RequestMapping(value="/validations/{branchPath}/issues", method=RequestMethod.GET, produces={AbstractRestService.CSV_MEDIA_TYPE})
+	public @ResponseBody DeferredResult<Collection<Object>> getValidationResultsAsCsv(
+			@ApiParam(value="Branch path where the validation was run on.")
+			@PathVariable(value="branchPath")
+			final String branchPath,
+			
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false)   
+			final int limit) {
 		
-		final String uniqueJobId = uniqueIdByUuid.get(validationId);
-		if (uniqueJobId != null) {
-			return JobRequests.prepareGet(uniqueJobId)
+		return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+			.all()
+			.filterByBranchPath(branchPath)
+			.setLimit(limit)
+			.buildAsync()
+			.execute(bus)
+			.then(issues -> {
+				final Set<String> rulesToFetch = issues.stream().map(ValidationIssue::getRuleId).collect(Collectors.toSet());
+				final Map<String, String> ruleDescriptionById = ValidationRequests.rules().prepareSearch()
+					.all()
+					.filterByIds(rulesToFetch)
 					.buildAsync()
 					.execute(bus)
-					.then(entry -> {
-						final String desc = entry.getDescription();
-						final String branchPath = desc.substring(desc.indexOf("'") + 1, desc.length() - 1);
-						return ValidationRequests.issues().prepareSearch()
-							.all()
-							.filterByBranchPath(branchPath)
-							.setLimit(limit)
-							.buildAsync()
-							.execute(bus);
-					}).then(issues -> DeferredResults.wrap(issues)).getSync();
-		} else {
-			throw new NotFoundException("Validation job", validationId);
-		}
+					.getSync()
+					.stream().collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
+				final Collection<Object> reports = issues.stream().map(issue -> {
+					final String ruleId = issue.getRuleId();
+					final String ruleDescription = ruleDescriptionById.get(ruleId);
+					final String affectedComponentLabel = Iterables.getFirst(issue.getAffectedComponentLabels(), "No label found");
+					final String affectedComponentId = issue.getAffectedComponent().getComponentId();
+					return new ValidationIssueReport(ruleId, ruleDescription, affectedComponentId, affectedComponentLabel);
+				}).collect(Collectors.toList());
+				
+				return reports;
+			}));
+		
 	}
 	
 	private CodeSystemEntry getCodeSystem(final String codeSystemShortName) {
