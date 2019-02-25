@@ -18,8 +18,6 @@ package com.b2international.snowowl.snomed.reasoner.equivalence;
 import java.util.Collections;
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.google.common.collect.Multimap;
 
@@ -50,16 +48,35 @@ public interface IEquivalentConceptMerger {
 	/**
 	 * Adds changes to the specified bulk request builder that effectively merges
 	 * equivalent concepts into their corresponding suggested replacement.
+	 * <p>
+	 * The concept instance in the multimap should satisfy the following
+	 * constraints:
+	 * <ul>
+	 * <li>Concepts should be active
+	 * <li>Relationships should be populated and active
+	 * <li>Inbound relationships should be populated and active
+	 * <li>CD members should be populated and active
+	 * </ul>
+	 * <p>
+	 * Following this method call:
+	 * <ul>
+	 * <li>The concept's status will be set to "inactive" if it needs to be
+	 * removed/deactivated (they will not be removed from the multimap even if a
+	 * deletion is in order)
+	 * <li>Relationship status will be set to "inactive" if it needs to be
+	 * removed/deactivated (they will not be removed from the list even if a
+	 * deletion is in order)
+	 * <li>CD member status will be set to "inactive" if it needs to be 
+	 * removed/deactivated (they will not be removed from the list even if a
+	 * deletion is in order)
+	 * </ul>
 	 * 
 	 * @param equivalentConcepts the list of equivalent concepts, keyed by the
 	 *                           suggested concept to merge into
-	 * @param bulkRequestBuilder the bulk request builder in which changes can be
-	 *                           registered
 	 * @return the ID of the concepts which were merged (and so do not need
 	 *         additional inferences)
 	 */
-	Set<String> merge(Multimap<SnomedConcept, SnomedConcept> equivalentConcepts, 
-			BulkRequestBuilder<TransactionContext> bulkRequestBuilder);
+	Set<String> merge(Multimap<SnomedConcept, SnomedConcept> equivalentConcepts);
 
 	/**
 	 * The default implementation does not merge concepts, and returns no SCTIDs to
@@ -70,9 +87,7 @@ public interface IEquivalentConceptMerger {
 	class Default implements IEquivalentConceptMerger {
 
 		@Override
-		public Set<String> merge(final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts,
-				final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
-			
+		public Set<String> merge(final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts) {
 			return Collections.emptySet();
 		}
 	}
