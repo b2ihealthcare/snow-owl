@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
-import com.b2international.snowowl.snomed.ql.ql.AcceptableIn;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
+import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -27,39 +27,38 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Acceptable In</b></em>'.
+ * An implementation of the model object '<em><b>Type Filter</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.AcceptableInImpl#getAcceptable <em>Acceptable</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.TypeFilterImpl#getType <em>Type</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class AcceptableInImpl extends MinimalEObjectImpl.Container implements AcceptableIn
+public class TypeFilterImpl extends FilterImpl implements TypeFilter
 {
   /**
-   * The cached value of the '{@link #getAcceptable() <em>Acceptable</em>}' containment reference.
+   * The cached value of the '{@link #getType() <em>Type</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getAcceptable()
+   * @see #getType()
    * @generated
    * @ordered
    */
-  protected Script acceptable;
+  protected ExpressionConstraint type;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected AcceptableInImpl()
+  protected TypeFilterImpl()
   {
     super();
   }
@@ -72,7 +71,7 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.ACCEPTABLE_IN;
+    return QlPackage.Literals.TYPE_FILTER;
   }
 
   /**
@@ -80,9 +79,9 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
    * <!-- end-user-doc -->
    * @generated
    */
-  public Script getAcceptable()
+  public ExpressionConstraint getType()
   {
-    return acceptable;
+    return type;
   }
 
   /**
@@ -90,13 +89,13 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetAcceptable(Script newAcceptable, NotificationChain msgs)
+  public NotificationChain basicSetType(ExpressionConstraint newType, NotificationChain msgs)
   {
-    Script oldAcceptable = acceptable;
-    acceptable = newAcceptable;
+    ExpressionConstraint oldType = type;
+    type = newType;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.ACCEPTABLE_IN__ACCEPTABLE, oldAcceptable, newAcceptable);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.TYPE_FILTER__TYPE, oldType, newType);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -107,20 +106,20 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setAcceptable(Script newAcceptable)
+  public void setType(ExpressionConstraint newType)
   {
-    if (newAcceptable != acceptable)
+    if (newType != type)
     {
       NotificationChain msgs = null;
-      if (acceptable != null)
-        msgs = ((InternalEObject)acceptable).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.ACCEPTABLE_IN__ACCEPTABLE, null, msgs);
-      if (newAcceptable != null)
-        msgs = ((InternalEObject)newAcceptable).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.ACCEPTABLE_IN__ACCEPTABLE, null, msgs);
-      msgs = basicSetAcceptable(newAcceptable, msgs);
+      if (type != null)
+        msgs = ((InternalEObject)type).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.TYPE_FILTER__TYPE, null, msgs);
+      if (newType != null)
+        msgs = ((InternalEObject)newType).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.TYPE_FILTER__TYPE, null, msgs);
+      msgs = basicSetType(newType, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.ACCEPTABLE_IN__ACCEPTABLE, newAcceptable, newAcceptable));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.TYPE_FILTER__TYPE, newType, newType));
   }
 
   /**
@@ -133,8 +132,8 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
   {
     switch (featureID)
     {
-      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
-        return basicSetAcceptable(null, msgs);
+      case QlPackage.TYPE_FILTER__TYPE:
+        return basicSetType(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -149,8 +148,8 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
   {
     switch (featureID)
     {
-      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
-        return getAcceptable();
+      case QlPackage.TYPE_FILTER__TYPE:
+        return getType();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -165,8 +164,8 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
   {
     switch (featureID)
     {
-      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
-        setAcceptable((Script)newValue);
+      case QlPackage.TYPE_FILTER__TYPE:
+        setType((ExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -182,8 +181,8 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
   {
     switch (featureID)
     {
-      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
-        setAcceptable((Script)null);
+      case QlPackage.TYPE_FILTER__TYPE:
+        setType((ExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -199,10 +198,10 @@ public class AcceptableInImpl extends MinimalEObjectImpl.Container implements Ac
   {
     switch (featureID)
     {
-      case QlPackage.ACCEPTABLE_IN__ACCEPTABLE:
-        return acceptable != null;
+      case QlPackage.TYPE_FILTER__TYPE:
+        return type != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //AcceptableInImpl
+} //TypeFilterImpl

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+
 import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.Query;
@@ -36,6 +38,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  * The following features are implemented:
  * </p>
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryImpl#getEcl <em>Ecl</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryImpl#getConstraint <em>Constraint</em>}</li>
  * </ul>
  *
@@ -43,6 +46,16 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  */
 public class QueryImpl extends MinimalEObjectImpl.Container implements Query
 {
+  /**
+   * The cached value of the '{@link #getEcl() <em>Ecl</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getEcl()
+   * @generated
+   * @ordered
+   */
+  protected ExpressionConstraint ecl;
+
   /**
    * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.
    * <!-- begin-user-doc -->
@@ -72,6 +85,54 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   protected EClass eStaticClass()
   {
     return QlPackage.Literals.QUERY;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public ExpressionConstraint getEcl()
+  {
+    return ecl;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NotificationChain basicSetEcl(ExpressionConstraint newEcl, NotificationChain msgs)
+  {
+    ExpressionConstraint oldEcl = ecl;
+    ecl = newEcl;
+    if (eNotificationRequired())
+    {
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__ECL, oldEcl, newEcl);
+      if (msgs == null) msgs = notification; else msgs.add(notification);
+    }
+    return msgs;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public void setEcl(ExpressionConstraint newEcl)
+  {
+    if (newEcl != ecl)
+    {
+      NotificationChain msgs = null;
+      if (ecl != null)
+        msgs = ((InternalEObject)ecl).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__ECL, null, msgs);
+      if (newEcl != null)
+        msgs = ((InternalEObject)newEcl).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__ECL, null, msgs);
+      msgs = basicSetEcl(newEcl, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__ECL, newEcl, newEcl));
   }
 
   /**
@@ -132,6 +193,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
+      case QlPackage.QUERY__ECL:
+        return basicSetEcl(null, msgs);
       case QlPackage.QUERY__CONSTRAINT:
         return basicSetConstraint(null, msgs);
     }
@@ -148,6 +211,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
+      case QlPackage.QUERY__ECL:
+        return getEcl();
       case QlPackage.QUERY__CONSTRAINT:
         return getConstraint();
     }
@@ -164,6 +229,9 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
+      case QlPackage.QUERY__ECL:
+        setEcl((ExpressionConstraint)newValue);
+        return;
       case QlPackage.QUERY__CONSTRAINT:
         setConstraint((Constraint)newValue);
         return;
@@ -181,6 +249,9 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
+      case QlPackage.QUERY__ECL:
+        setEcl((ExpressionConstraint)null);
+        return;
       case QlPackage.QUERY__CONSTRAINT:
         setConstraint((Constraint)null);
         return;
@@ -198,6 +269,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
+      case QlPackage.QUERY__ECL:
+        return ecl != null;
       case QlPackage.QUERY__CONSTRAINT:
         return constraint != null;
     }

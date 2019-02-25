@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
-import com.b2international.snowowl.snomed.ql.ql.LanguageRefSet;
+import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -27,39 +27,38 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Language Ref Set</b></em>'.
+ * An implementation of the model object '<em><b>Language Ref Set Filter</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.LanguageRefSetImpl#getRefset <em>Refset</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.LanguageRefSetFilterImpl#getLanguageRefSetId <em>Language Ref Set Id</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements LanguageRefSet
+public class LanguageRefSetFilterImpl extends FilterImpl implements LanguageRefSetFilter
 {
   /**
-   * The cached value of the '{@link #getRefset() <em>Refset</em>}' containment reference.
+   * The cached value of the '{@link #getLanguageRefSetId() <em>Language Ref Set Id</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getRefset()
+   * @see #getLanguageRefSetId()
    * @generated
    * @ordered
    */
-  protected Script refset;
+  protected ExpressionConstraint languageRefSetId;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected LanguageRefSetImpl()
+  protected LanguageRefSetFilterImpl()
   {
     super();
   }
@@ -72,7 +71,7 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.LANGUAGE_REF_SET;
+    return QlPackage.Literals.LANGUAGE_REF_SET_FILTER;
   }
 
   /**
@@ -80,9 +79,9 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
    * <!-- end-user-doc -->
    * @generated
    */
-  public Script getRefset()
+  public ExpressionConstraint getLanguageRefSetId()
   {
-    return refset;
+    return languageRefSetId;
   }
 
   /**
@@ -90,13 +89,13 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRefset(Script newRefset, NotificationChain msgs)
+  public NotificationChain basicSetLanguageRefSetId(ExpressionConstraint newLanguageRefSetId, NotificationChain msgs)
   {
-    Script oldRefset = refset;
-    refset = newRefset;
+    ExpressionConstraint oldLanguageRefSetId = languageRefSetId;
+    languageRefSetId = newLanguageRefSetId;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.LANGUAGE_REF_SET__REFSET, oldRefset, newRefset);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID, oldLanguageRefSetId, newLanguageRefSetId);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -107,20 +106,20 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRefset(Script newRefset)
+  public void setLanguageRefSetId(ExpressionConstraint newLanguageRefSetId)
   {
-    if (newRefset != refset)
+    if (newLanguageRefSetId != languageRefSetId)
     {
       NotificationChain msgs = null;
-      if (refset != null)
-        msgs = ((InternalEObject)refset).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.LANGUAGE_REF_SET__REFSET, null, msgs);
-      if (newRefset != null)
-        msgs = ((InternalEObject)newRefset).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.LANGUAGE_REF_SET__REFSET, null, msgs);
-      msgs = basicSetRefset(newRefset, msgs);
+      if (languageRefSetId != null)
+        msgs = ((InternalEObject)languageRefSetId).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID, null, msgs);
+      if (newLanguageRefSetId != null)
+        msgs = ((InternalEObject)newLanguageRefSetId).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID, null, msgs);
+      msgs = basicSetLanguageRefSetId(newLanguageRefSetId, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.LANGUAGE_REF_SET__REFSET, newRefset, newRefset));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID, newLanguageRefSetId, newLanguageRefSetId));
   }
 
   /**
@@ -133,8 +132,8 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
   {
     switch (featureID)
     {
-      case QlPackage.LANGUAGE_REF_SET__REFSET:
-        return basicSetRefset(null, msgs);
+      case QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID:
+        return basicSetLanguageRefSetId(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -149,8 +148,8 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
   {
     switch (featureID)
     {
-      case QlPackage.LANGUAGE_REF_SET__REFSET:
-        return getRefset();
+      case QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID:
+        return getLanguageRefSetId();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -165,8 +164,8 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
   {
     switch (featureID)
     {
-      case QlPackage.LANGUAGE_REF_SET__REFSET:
-        setRefset((Script)newValue);
+      case QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID:
+        setLanguageRefSetId((ExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -182,8 +181,8 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
   {
     switch (featureID)
     {
-      case QlPackage.LANGUAGE_REF_SET__REFSET:
-        setRefset((Script)null);
+      case QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID:
+        setLanguageRefSetId((ExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -199,10 +198,10 @@ public class LanguageRefSetImpl extends MinimalEObjectImpl.Container implements 
   {
     switch (featureID)
     {
-      case QlPackage.LANGUAGE_REF_SET__REFSET:
-        return refset != null;
+      case QlPackage.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID:
+        return languageRefSetId != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //LanguageRefSetImpl
+} //LanguageRefSetFilterImpl

@@ -15,31 +15,35 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+
 import com.b2international.snowowl.snomed.ql.ql.Domain;
+import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.NotificationChain;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Active Filter</b></em>'.
+ * An implementation of the model object '<em><b>Module Filter</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.ActiveFilterImpl#getDomain <em>Domain</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.ActiveFilterImpl#isActive <em>Active</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.ModuleFilterImpl#getDomain <em>Domain</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.ModuleFilterImpl#getModuleId <em>Module Id</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
+public class ModuleFilterImpl extends FilterImpl implements ModuleFilter
 {
   /**
    * The default value of the '{@link #getDomain() <em>Domain</em>}' attribute.
@@ -62,31 +66,21 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
   protected Domain domain = DOMAIN_EDEFAULT;
 
   /**
-   * The default value of the '{@link #isActive() <em>Active</em>}' attribute.
+   * The cached value of the '{@link #getModuleId() <em>Module Id</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #isActive()
+   * @see #getModuleId()
    * @generated
    * @ordered
    */
-  protected static final boolean ACTIVE_EDEFAULT = false;
-
-  /**
-   * The cached value of the '{@link #isActive() <em>Active</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #isActive()
-   * @generated
-   * @ordered
-   */
-  protected boolean active = ACTIVE_EDEFAULT;
+  protected ExpressionConstraint moduleId;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected ActiveFilterImpl()
+  protected ModuleFilterImpl()
   {
     super();
   }
@@ -99,7 +93,7 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.ACTIVE_FILTER;
+    return QlPackage.Literals.MODULE_FILTER;
   }
 
   /**
@@ -122,7 +116,7 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
     Domain oldDomain = domain;
     domain = newDomain == null ? DOMAIN_EDEFAULT : newDomain;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.ACTIVE_FILTER__DOMAIN, oldDomain, domain));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.MODULE_FILTER__DOMAIN, oldDomain, domain));
   }
 
   /**
@@ -130,9 +124,9 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public boolean isActive()
+  public ExpressionConstraint getModuleId()
   {
-    return active;
+    return moduleId;
   }
 
   /**
@@ -140,12 +134,53 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setActive(boolean newActive)
+  public NotificationChain basicSetModuleId(ExpressionConstraint newModuleId, NotificationChain msgs)
   {
-    boolean oldActive = active;
-    active = newActive;
+    ExpressionConstraint oldModuleId = moduleId;
+    moduleId = newModuleId;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.ACTIVE_FILTER__ACTIVE, oldActive, active));
+    {
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.MODULE_FILTER__MODULE_ID, oldModuleId, newModuleId);
+      if (msgs == null) msgs = notification; else msgs.add(notification);
+    }
+    return msgs;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public void setModuleId(ExpressionConstraint newModuleId)
+  {
+    if (newModuleId != moduleId)
+    {
+      NotificationChain msgs = null;
+      if (moduleId != null)
+        msgs = ((InternalEObject)moduleId).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.MODULE_FILTER__MODULE_ID, null, msgs);
+      if (newModuleId != null)
+        msgs = ((InternalEObject)newModuleId).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.MODULE_FILTER__MODULE_ID, null, msgs);
+      msgs = basicSetModuleId(newModuleId, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.MODULE_FILTER__MODULE_ID, newModuleId, newModuleId));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
+  {
+    switch (featureID)
+    {
+      case QlPackage.MODULE_FILTER__MODULE_ID:
+        return basicSetModuleId(null, msgs);
+    }
+    return super.eInverseRemove(otherEnd, featureID, msgs);
   }
 
   /**
@@ -158,10 +193,10 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
   {
     switch (featureID)
     {
-      case QlPackage.ACTIVE_FILTER__DOMAIN:
+      case QlPackage.MODULE_FILTER__DOMAIN:
         return getDomain();
-      case QlPackage.ACTIVE_FILTER__ACTIVE:
-        return isActive();
+      case QlPackage.MODULE_FILTER__MODULE_ID:
+        return getModuleId();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -176,11 +211,11 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
   {
     switch (featureID)
     {
-      case QlPackage.ACTIVE_FILTER__DOMAIN:
+      case QlPackage.MODULE_FILTER__DOMAIN:
         setDomain((Domain)newValue);
         return;
-      case QlPackage.ACTIVE_FILTER__ACTIVE:
-        setActive((Boolean)newValue);
+      case QlPackage.MODULE_FILTER__MODULE_ID:
+        setModuleId((ExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -196,11 +231,11 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
   {
     switch (featureID)
     {
-      case QlPackage.ACTIVE_FILTER__DOMAIN:
+      case QlPackage.MODULE_FILTER__DOMAIN:
         setDomain(DOMAIN_EDEFAULT);
         return;
-      case QlPackage.ACTIVE_FILTER__ACTIVE:
-        setActive(ACTIVE_EDEFAULT);
+      case QlPackage.MODULE_FILTER__MODULE_ID:
+        setModuleId((ExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -216,10 +251,10 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
   {
     switch (featureID)
     {
-      case QlPackage.ACTIVE_FILTER__DOMAIN:
+      case QlPackage.MODULE_FILTER__DOMAIN:
         return domain != DOMAIN_EDEFAULT;
-      case QlPackage.ACTIVE_FILTER__ACTIVE:
-        return active != ACTIVE_EDEFAULT;
+      case QlPackage.MODULE_FILTER__MODULE_ID:
+        return moduleId != null;
     }
     return super.eIsSet(featureID);
   }
@@ -237,10 +272,8 @@ public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
     StringBuffer result = new StringBuffer(super.toString());
     result.append(" (domain: ");
     result.append(domain);
-    result.append(", active: ");
-    result.append(active);
     result.append(')');
     return result.toString();
   }
 
-} //ActiveFilterImpl
+} //ModuleFilterImpl

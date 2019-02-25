@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
-import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
@@ -26,6 +25,7 @@ import org.eclipse.emf.ecore.EObject;
  * The following features are supported:
  * </p>
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getLexicalSearchType <em>Lexical Search Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getTerm <em>Term</em>}</li>
  * </ul>
  *
@@ -33,8 +33,37 @@ import org.eclipse.emf.ecore.EObject;
  * @model
  * @generated
  */
-public interface TermFilter extends EObject
+public interface TermFilter extends Filter
 {
+  /**
+   * Returns the value of the '<em><b>Lexical Search Type</b></em>' attribute.
+   * The literals are from the enumeration {@link com.b2international.snowowl.snomed.ql.ql.LexicalSearchType}.
+   * <!-- begin-user-doc -->
+   * <p>
+   * If the meaning of the '<em>Lexical Search Type</em>' attribute isn't clear,
+   * there really should be more of a description here...
+   * </p>
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Lexical Search Type</em>' attribute.
+   * @see com.b2international.snowowl.snomed.ql.ql.LexicalSearchType
+   * @see #setLexicalSearchType(LexicalSearchType)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTermFilter_LexicalSearchType()
+   * @model
+   * @generated
+   */
+  LexicalSearchType getLexicalSearchType();
+
+  /**
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.TermFilter#getLexicalSearchType <em>Lexical Search Type</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Lexical Search Type</em>' attribute.
+   * @see com.b2international.snowowl.snomed.ql.ql.LexicalSearchType
+   * @see #getLexicalSearchType()
+   * @generated
+   */
+  void setLexicalSearchType(LexicalSearchType value);
+
   /**
    * Returns the value of the '<em><b>Term</b></em>' attribute.
    * <!-- begin-user-doc -->

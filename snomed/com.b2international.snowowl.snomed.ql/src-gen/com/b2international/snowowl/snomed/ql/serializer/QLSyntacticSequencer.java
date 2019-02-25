@@ -36,6 +36,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	protected AbstractElementAlias match_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
 	protected AbstractElementAlias match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
 	protected AbstractElementAlias match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1;
+	protected AbstractElementAlias match_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
 	
 	@Inject
 	protected void init(IGrammarAccess access) {
@@ -43,15 +44,12 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 		match_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getCommaKeyword_1_1_1()));
 		match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCommaKeyword_1_1_1()));
 		match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getANDKeyword_1_0_1_0()), new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getCommaKeyword_1_0_1_1()));
+		match_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getConjunctionAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getConjunctionAccess().getCommaKeyword_1_1_1()));
 	}
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (ruleCall.getRule() == grammarAccess.getACCEPTABLERule())
-			return getACCEPTABLEToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getACTIVERule())
-			return getACTIVEToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getCARETRule())
+		if (ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCLOSE_DOUBLE_BRACESRule())
 			return getCLOSE_DOUBLE_BRACESToken(semanticObject, ruleCall, node);
@@ -65,12 +63,8 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getDBL_GTToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDBL_LTRule())
 			return getDBL_LTToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getDESCRIPTION_TYPERule())
-			return getDESCRIPTION_TYPEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDOTRule())
 			return getDOTToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getECLRule())
-			return getECLToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getEQUALRule())
 			return getEQUALToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getGTRule())
@@ -81,8 +75,6 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getGT_EMToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getHASHRule())
 			return getHASHToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getLANGREFSETRule())
-			return getLANGREFSETToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getLTRule())
 			return getLTToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getLTERule())
@@ -93,10 +85,6 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getNOT_EQUALToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getOPEN_DOUBLE_BRACESRule())
 			return getOPEN_DOUBLE_BRACESToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getPREFERREDRule())
-			return getPREFERREDToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getREGEXRule())
-			return getREGEXToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getREVERSEDRule())
 			return getREVERSEDToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getROUND_CLOSERule())
@@ -107,35 +95,11 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getSQUARE_CLOSEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getSQUARE_OPENRule())
 			return getSQUARE_OPENToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getTERMRule())
-			return getTERMToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getTORule())
 			return getTOToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getWILDCARDRule())
 			return getWILDCARDToken(semanticObject, ruleCall, node);
 		return "";
-	}
-	
-	/**
-	 * terminal ACCEPTABLE:
-	 * 	'acceptableIn'
-	 * ;
-	 */
-	protected String getACCEPTABLEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "acceptableIn";
-	}
-	
-	/**
-	 * terminal ACTIVE:
-	 * 	'active'
-	 * ;
-	 */
-	protected String getACTIVEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "active";
 	}
 	
 	/**
@@ -150,8 +114,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * terminal CLOSE_DOUBLE_BRACES:
-	 * 	'}}'
-	 * ;
+	 * 	'}}';
 	 */
 	protected String getCLOSE_DOUBLE_BRACESToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -210,17 +173,6 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal DESCRIPTION_TYPE:
-	 * 	'type'
-	 * ;
-	 */
-	protected String getDESCRIPTION_TYPEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "type";
-	}
-	
-	/**
 	 * terminal DOT:
 	 * 	'.';
 	 */
@@ -228,17 +180,6 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return ".";
-	}
-	
-	/**
-	 * terminal ECL:
-	 * 	'ecl'
-	 * ;
-	 */
-	protected String getECLToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "ecl";
 	}
 	
 	/**
@@ -292,17 +233,6 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal LANGREFSET:
-	 * 	'languageRefSet'
-	 * ;
-	 */
-	protected String getLANGREFSETToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "languageRefSet";
-	}
-	
-	/**
 	 * terminal LT:
 	 * 	'<';
 	 */
@@ -344,35 +274,12 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * terminal OPEN_DOUBLE_BRACES:
-	 * 	'{{'
-	 * ;
+	 * 	'{{';
 	 */
 	protected String getOPEN_DOUBLE_BRACESToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
 			return getTokenText(node);
 		return "{{";
-	}
-	
-	/**
-	 * terminal PREFERRED:
-	 * 	'preferredIn'
-	 * ;
-	 */
-	protected String getPREFERREDToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "preferredIn";
-	}
-	
-	/**
-	 * terminal REGEX:
-	 * 	'regex'
-	 * ;
-	 */
-	protected String getREGEXToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "regex";
 	}
 	
 	/**
@@ -426,17 +333,6 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal TERM:
-	 * 	'term'
-	 * ;
-	 */
-	protected String getTERMToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "term";
-	}
-	
-	/**
 	 * terminal TO:
 	 * 	'..';
 	 */
@@ -468,6 +364,8 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 				emit_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
 			else if (match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1.equals(syntax))
 				emit_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
+			else if (match_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1.equals(syntax))
+				emit_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
 			else acceptNodes(getLastNavigableState(), syntaxNodes);
 		}
 	}
@@ -502,6 +400,17 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	 *     {AndRefinement.left=} (ambiguity) right=SubRefinement
 	 */
 	protected void emit_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+		acceptNodes(transition, nodes);
+	}
+	
+	/**
+	 * Ambiguous syntax:
+	 *     'AND' | ','
+	 *
+	 * This ambiguous syntax occurs at:
+	 *     {Conjunction.left=} (ambiguity) right=Exclusion
+	 */
+	protected void emit_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);
 	}
 	

@@ -39,7 +39,7 @@ public final class SnomedQueryExpression {
 	
 	public Promise<Expression> resolveToExpression(final BranchContext context) {
 		if (expressionPromise == null) {
-			expressionPromise = SnomedRequests.prepareQlEvaluation(query)
+			expressionPromise = SnomedRequests.prepareQueryEvaluation(query)
 					.build()
 					.execute(context);
 		}

@@ -15,25 +15,26 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Active Filter</b></em>'.
+ * A representation of the model object '<em><b>Module Filter</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter#getDomain <em>Domain</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter#isActive <em>Active</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ModuleFilter#getDomain <em>Domain</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ModuleFilter#getModuleId <em>Module Id</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getActiveFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getModuleFilter()
  * @model
  * @generated
  */
-public interface ActiveFilter extends Filter
+public interface ModuleFilter extends Filter
 {
   /**
    * Returns the value of the '<em><b>Domain</b></em>' attribute.
@@ -47,14 +48,14 @@ public interface ActiveFilter extends Filter
    * @return the value of the '<em>Domain</em>' attribute.
    * @see com.b2international.snowowl.snomed.ql.ql.Domain
    * @see #setDomain(Domain)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getActiveFilter_Domain()
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getModuleFilter_Domain()
    * @model
    * @generated
    */
   Domain getDomain();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter#getDomain <em>Domain</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ModuleFilter#getDomain <em>Domain</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Domain</em>' attribute.
@@ -65,29 +66,29 @@ public interface ActiveFilter extends Filter
   void setDomain(Domain value);
 
   /**
-   * Returns the value of the '<em><b>Active</b></em>' attribute.
+   * Returns the value of the '<em><b>Module Id</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Active</em>' attribute isn't clear,
+   * If the meaning of the '<em>Module Id</em>' containment reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Active</em>' attribute.
-   * @see #setActive(boolean)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getActiveFilter_Active()
-   * @model
+   * @return the value of the '<em>Module Id</em>' containment reference.
+   * @see #setModuleId(ExpressionConstraint)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getModuleFilter_ModuleId()
+   * @model containment="true"
    * @generated
    */
-  boolean isActive();
+  ExpressionConstraint getModuleId();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter#isActive <em>Active</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ModuleFilter#getModuleId <em>Module Id</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Active</em>' attribute.
-   * @see #isActive()
+   * @param value the new value of the '<em>Module Id</em>' containment reference.
+   * @see #getModuleId()
    * @generated
    */
-  void setActive(boolean value);
+  void setModuleId(ExpressionConstraint value);
 
-} // ActiveFilter
+} // ModuleFilter

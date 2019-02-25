@@ -15,50 +15,50 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
-import org.eclipse.emf.ecore.EObject;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Regular Expression</b></em>'.
+ * A representation of the model object '<em><b>Type Filter</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.RegularExpression#getRegex <em>Regex</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.TypeFilter#getType <em>Type</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getRegularExpression()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTypeFilter()
  * @model
  * @generated
  */
-public interface RegularExpression extends EObject
+public interface TypeFilter extends Filter
 {
   /**
-   * Returns the value of the '<em><b>Regex</b></em>' attribute.
+   * Returns the value of the '<em><b>Type</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Regex</em>' attribute isn't clear,
+   * If the meaning of the '<em>Type</em>' containment reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Regex</em>' attribute.
-   * @see #setRegex(String)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getRegularExpression_Regex()
-   * @model
+   * @return the value of the '<em>Type</em>' containment reference.
+   * @see #setType(ExpressionConstraint)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getTypeFilter_Type()
+   * @model containment="true"
    * @generated
    */
-  String getRegex();
+  ExpressionConstraint getType();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.RegularExpression#getRegex <em>Regex</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.TypeFilter#getType <em>Type</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Regex</em>' attribute.
-   * @see #getRegex()
+   * @param value the new value of the '<em>Type</em>' containment reference.
+   * @see #getType()
    * @generated
    */
-  void setRegex(String value);
+  void setType(ExpressionConstraint value);
 
-} // RegularExpression
+} // TypeFilter

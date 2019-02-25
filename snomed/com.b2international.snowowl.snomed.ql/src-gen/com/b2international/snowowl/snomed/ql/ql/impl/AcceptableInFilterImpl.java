@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
-import com.b2international.snowowl.snomed.ql.ql.PreferredIn;
+import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -27,39 +27,38 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Preferred In</b></em>'.
+ * An implementation of the model object '<em><b>Acceptable In Filter</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.PreferredInImpl#getPreferred <em>Preferred</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.AcceptableInFilterImpl#getLanguageRefSetId <em>Language Ref Set Id</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class PreferredInImpl extends MinimalEObjectImpl.Container implements PreferredIn
+public class AcceptableInFilterImpl extends FilterImpl implements AcceptableInFilter
 {
   /**
-   * The cached value of the '{@link #getPreferred() <em>Preferred</em>}' containment reference.
+   * The cached value of the '{@link #getLanguageRefSetId() <em>Language Ref Set Id</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getPreferred()
+   * @see #getLanguageRefSetId()
    * @generated
    * @ordered
    */
-  protected Script preferred;
+  protected ExpressionConstraint languageRefSetId;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected PreferredInImpl()
+  protected AcceptableInFilterImpl()
   {
     super();
   }
@@ -72,7 +71,7 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.PREFERRED_IN;
+    return QlPackage.Literals.ACCEPTABLE_IN_FILTER;
   }
 
   /**
@@ -80,9 +79,9 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
    * <!-- end-user-doc -->
    * @generated
    */
-  public Script getPreferred()
+  public ExpressionConstraint getLanguageRefSetId()
   {
-    return preferred;
+    return languageRefSetId;
   }
 
   /**
@@ -90,13 +89,13 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetPreferred(Script newPreferred, NotificationChain msgs)
+  public NotificationChain basicSetLanguageRefSetId(ExpressionConstraint newLanguageRefSetId, NotificationChain msgs)
   {
-    Script oldPreferred = preferred;
-    preferred = newPreferred;
+    ExpressionConstraint oldLanguageRefSetId = languageRefSetId;
+    languageRefSetId = newLanguageRefSetId;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.PREFERRED_IN__PREFERRED, oldPreferred, newPreferred);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID, oldLanguageRefSetId, newLanguageRefSetId);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -107,20 +106,20 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setPreferred(Script newPreferred)
+  public void setLanguageRefSetId(ExpressionConstraint newLanguageRefSetId)
   {
-    if (newPreferred != preferred)
+    if (newLanguageRefSetId != languageRefSetId)
     {
       NotificationChain msgs = null;
-      if (preferred != null)
-        msgs = ((InternalEObject)preferred).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.PREFERRED_IN__PREFERRED, null, msgs);
-      if (newPreferred != null)
-        msgs = ((InternalEObject)newPreferred).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.PREFERRED_IN__PREFERRED, null, msgs);
-      msgs = basicSetPreferred(newPreferred, msgs);
+      if (languageRefSetId != null)
+        msgs = ((InternalEObject)languageRefSetId).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID, null, msgs);
+      if (newLanguageRefSetId != null)
+        msgs = ((InternalEObject)newLanguageRefSetId).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID, null, msgs);
+      msgs = basicSetLanguageRefSetId(newLanguageRefSetId, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.PREFERRED_IN__PREFERRED, newPreferred, newPreferred));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID, newLanguageRefSetId, newLanguageRefSetId));
   }
 
   /**
@@ -133,8 +132,8 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
   {
     switch (featureID)
     {
-      case QlPackage.PREFERRED_IN__PREFERRED:
-        return basicSetPreferred(null, msgs);
+      case QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID:
+        return basicSetLanguageRefSetId(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -149,8 +148,8 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
   {
     switch (featureID)
     {
-      case QlPackage.PREFERRED_IN__PREFERRED:
-        return getPreferred();
+      case QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID:
+        return getLanguageRefSetId();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -165,8 +164,8 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
   {
     switch (featureID)
     {
-      case QlPackage.PREFERRED_IN__PREFERRED:
-        setPreferred((Script)newValue);
+      case QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID:
+        setLanguageRefSetId((ExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -182,8 +181,8 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
   {
     switch (featureID)
     {
-      case QlPackage.PREFERRED_IN__PREFERRED:
-        setPreferred((Script)null);
+      case QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID:
+        setLanguageRefSetId((ExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -199,10 +198,10 @@ public class PreferredInImpl extends MinimalEObjectImpl.Container implements Pre
   {
     switch (featureID)
     {
-      case QlPackage.PREFERRED_IN__PREFERRED:
-        return preferred != null;
+      case QlPackage.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID:
+        return languageRefSetId != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //PreferredInImpl
+} //AcceptableInFilterImpl

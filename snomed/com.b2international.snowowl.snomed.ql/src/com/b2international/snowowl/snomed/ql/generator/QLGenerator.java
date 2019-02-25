@@ -13,11 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.ql
+package com.b2international.snowowl.snomed.ql.generator;
 
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.generator.AbstractGenerator;
+import org.eclipse.xtext.generator.IFileSystemAccess2;
+import org.eclipse.xtext.generator.IGeneratorContext;
 
 /**
- * Use this class to register components to be used at runtime / without the Equinox extension registry.
+ * Generates code from your model files on save.
+ * 
+ * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
-class QLRuntimeModule extends AbstractQLRuntimeModule {
+public class QLGenerator extends AbstractGenerator {
+
+	@Override
+	public void doGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context) {
+	}
+
 }

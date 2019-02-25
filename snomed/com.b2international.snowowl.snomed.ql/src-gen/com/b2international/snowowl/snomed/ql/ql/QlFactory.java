@@ -72,15 +72,6 @@ public interface QlFactory extends EFactory
   Filter createFilter();
 
   /**
-   * Returns a new object of class '<em>Ecl Filter</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Ecl Filter</em>'.
-   * @generated
-   */
-  EclFilter createEclFilter();
-
-  /**
    * Returns a new object of class '<em>Active Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -90,22 +81,13 @@ public interface QlFactory extends EFactory
   ActiveFilter createActiveFilter();
 
   /**
-   * Returns a new object of class '<em>Description</em>'.
+   * Returns a new object of class '<em>Module Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Description</em>'.
+   * @return a new object of class '<em>Module Filter</em>'.
    * @generated
    */
-  Description createDescription();
-
-  /**
-   * Returns a new object of class '<em>Description Filter</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Description Filter</em>'.
-   * @generated
-   */
-  DescriptionFilter createDescriptionFilter();
+  ModuleFilter createModuleFilter();
 
   /**
    * Returns a new object of class '<em>Term Filter</em>'.
@@ -117,58 +99,40 @@ public interface QlFactory extends EFactory
   TermFilter createTermFilter();
 
   /**
-   * Returns a new object of class '<em>Regular Expression</em>'.
+   * Returns a new object of class '<em>Preferred In Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Regular Expression</em>'.
+   * @return a new object of class '<em>Preferred In Filter</em>'.
    * @generated
    */
-  RegularExpression createRegularExpression();
+  PreferredInFilter createPreferredInFilter();
 
   /**
-   * Returns a new object of class '<em>Preferred In</em>'.
+   * Returns a new object of class '<em>Acceptable In Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Preferred In</em>'.
+   * @return a new object of class '<em>Acceptable In Filter</em>'.
    * @generated
    */
-  PreferredIn createPreferredIn();
+  AcceptableInFilter createAcceptableInFilter();
 
   /**
-   * Returns a new object of class '<em>Acceptable In</em>'.
+   * Returns a new object of class '<em>Language Ref Set Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Acceptable In</em>'.
+   * @return a new object of class '<em>Language Ref Set Filter</em>'.
    * @generated
    */
-  AcceptableIn createAcceptableIn();
+  LanguageRefSetFilter createLanguageRefSetFilter();
 
   /**
-   * Returns a new object of class '<em>Language Ref Set</em>'.
+   * Returns a new object of class '<em>Type Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Language Ref Set</em>'.
+   * @return a new object of class '<em>Type Filter</em>'.
    * @generated
    */
-  LanguageRefSet createLanguageRefSet();
-
-  /**
-   * Returns a new object of class '<em>Descriptiontype</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Descriptiontype</em>'.
-   * @generated
-   */
-  Descriptiontype createDescriptiontype();
-
-  /**
-   * Returns a new object of class '<em>Active Term</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Active Term</em>'.
-   * @generated
-   */
-  ActiveTerm createActiveTerm();
+  TypeFilter createTypeFilter();
 
   /**
    * Returns a new object of class '<em>Disjunction</em>'.

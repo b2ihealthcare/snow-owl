@@ -13,130 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-grammar com.b2international.snowowl.snomed.ql.QL
-with com.b2international.snowowl.snomed.ecl.Ecl
+grammar com.b2international.snowowl.snomed.ql.QL with com.b2international.snowowl.snomed.ecl.Ecl
 
 generate ql "http://www.b2international.com/snowowl/snomed/QL"
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
 
 Query:
-	{Query} (constraint=Constraint)?;
-	
+	{Query} (ecl=ExpressionConstraint)? (OPEN_DOUBLE_BRACES constraint=Constraint CLOSE_DOUBLE_BRACES)?;
+
 Constraint:
 	Disjunction;
-	
+
 Disjunction returns Constraint:
-	Conjunction ({Disjunction.left = current} 'OR' right = Conjunction)*;
+	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
 
 Conjunction returns Constraint:
-	Exclusion ({Conjunction.left = current} 'AND' right = Exclusion)*;
+	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
 
 Exclusion returns Constraint:
-	Filter ({Exclusion.left = current} 'MINUS' right = Filter)?;
+	Filter ({Exclusion.left=current} 'MINUS' right=Filter)?;
 
 NestedFilter:
-  ROUND_OPEN constraint = Constraint ROUND_CLOSE 
-;
+	ROUND_OPEN constraint=Constraint ROUND_CLOSE;
 
 Filter:
-	ActiveFilter | EclFilter | Description | NestedFilter
-;
-
-EclFilter:
-	ECL (ecl = Script)
-;
+	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter
+	| NestedFilter;
 
 ActiveFilter:
-	ACTIVE (active = Boolean)
-;
+	(domain=Domain DOT)? 'active' EQUAL (active=Boolean);
 
-Description:
-	{Description} OPEN_DOUBLE_BRACES filter = DescriptionFilter CLOSE_DOUBLE_BRACES
-;
-
-DescriptionFilter:
-	{DescriptionFilter} ((termFilter = TermFilter)? 
-		& (active=ActiveTerm)?
-		& (type=Descriptiontype)?
-		& (regex = RegularExpression)?
-		& (acceptableIn = AcceptableIn)?
-		& (preferredIn = PreferredIn)?
-		& (languageRefSet = LanguageRefSet)?
-	)
-;
+ModuleFilter:
+	(domain=Domain DOT)? 'moduleId' EQUAL moduleId=ExpressionConstraint;
 
 TermFilter:
-	TERM EQUAL (term = STRING)
-;
+	'term' EQUAL (lexicalSearchType=LexicalSearchType COLON)? term=STRING;
 
-RegularExpression:
-	REGEX EQUAL (regex = STRING)
-;
+PreferredInFilter:
+	'preferredIn' EQUAL languageRefSetId=ExpressionConstraint;
 
-PreferredIn:
-	PREFERRED EQUAL (preferred = Script)
-;
+AcceptableInFilter:
+	'acceptableIn' EQUAL languageRefSetId=ExpressionConstraint;
 
-AcceptableIn:
-	ACCEPTABLE EQUAL (acceptable = Script)
-;
+LanguageRefSetFilter:
+	'languageRefSet' EQUAL languageRefSetId=ExpressionConstraint;
 
-LanguageRefSet:
-	LANGREFSET EQUAL (refset = Script)
-;
+TypeFilter:
+	'typeId' EQUAL (type=ExpressionConstraint);
 
-Descriptiontype:
-	DESCRIPTION_TYPE EQUAL (type = Script)
-;
+enum LexicalSearchType:
+	MATCH="match" | REGEX="regex" | EXACT="exact";
 
-ActiveTerm:
-	ACTIVE EQUAL (active = Boolean)
-;
+enum Domain:
+	CONCEPT="Concept" | DESCRIPTION="Description";
 
-Boolean:
-	TRUE | FALSE;
-
-terminal TERM:
-	'term'
-;
-
-terminal ECL:
-	'ecl'
-;
-
-terminal ACTIVE:
-	'active'
-;
-
-terminal TRUE:
-	'true'
-;
-
-terminal FALSE:
-	'false'
-;
-
-terminal REGEX:
-	'regex'
-;
-
-terminal ACCEPTABLE:
-	'acceptableIn'
-;
-terminal PREFERRED:
-	'preferredIn'
-;
-terminal LANGREFSET:
-	'languageRefSet'
-;
-
-terminal DESCRIPTION_TYPE:
-	'type'
-;
+Boolean returns ecore::EBoolean:
+	'true' | 'false'; 
 
 terminal OPEN_DOUBLE_BRACES:
-	'{{'
-;
+	'{{';
 
 terminal CLOSE_DOUBLE_BRACES:
-	'}}'
-;
+	'}}';

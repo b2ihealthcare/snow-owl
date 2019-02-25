@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -26,6 +28,7 @@ import org.eclipse.emf.ecore.EObject;
  * The following features are supported:
  * </p>
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Query#getEcl <em>Ecl</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Query#getConstraint <em>Constraint</em>}</li>
  * </ul>
  *
@@ -35,6 +38,32 @@ import org.eclipse.emf.ecore.EObject;
  */
 public interface Query extends EObject
 {
+  /**
+   * Returns the value of the '<em><b>Ecl</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <p>
+   * If the meaning of the '<em>Ecl</em>' containment reference isn't clear,
+   * there really should be more of a description here...
+   * </p>
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Ecl</em>' containment reference.
+   * @see #setEcl(ExpressionConstraint)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getQuery_Ecl()
+   * @model containment="true"
+   * @generated
+   */
+  ExpressionConstraint getEcl();
+
+  /**
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Query#getEcl <em>Ecl</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Ecl</em>' containment reference.
+   * @see #getEcl()
+   * @generated
+   */
+  void setEcl(ExpressionConstraint value);
+
   /**
    * Returns the value of the '<em><b>Constraint</b></em>' containment reference.
    * <!-- begin-user-doc -->

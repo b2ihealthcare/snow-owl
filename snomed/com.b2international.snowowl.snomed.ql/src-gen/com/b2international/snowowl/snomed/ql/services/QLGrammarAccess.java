@@ -22,6 +22,8 @@ import java.util.List;
 import org.eclipse.xtext.Action;
 import org.eclipse.xtext.Alternatives;
 import org.eclipse.xtext.Assignment;
+import org.eclipse.xtext.EnumLiteralDeclaration;
+import org.eclipse.xtext.EnumRule;
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.Group;
@@ -29,7 +31,7 @@ import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.TerminalRule;
-import org.eclipse.xtext.UnorderedGroup;
+import org.eclipse.xtext.service.AbstractElementFinder.AbstractEnumRuleElementFinder;
 import org.eclipse.xtext.service.AbstractElementFinder.AbstractGrammarElementFinder;
 import org.eclipse.xtext.service.GrammarProvider;
 
@@ -40,24 +42,44 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Query");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Action cQueryAction_0 = (Action)cGroup.eContents().get(0);
-		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cConstraintConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
+		private final Assignment cEclAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cEclExpressionConstraintParserRuleCall_1_0 = (RuleCall)cEclAssignment_1.eContents().get(0);
+		private final Group cGroup_2 = (Group)cGroup.eContents().get(2);
+		private final RuleCall cOPEN_DOUBLE_BRACESTerminalRuleCall_2_0 = (RuleCall)cGroup_2.eContents().get(0);
+		private final Assignment cConstraintAssignment_2_1 = (Assignment)cGroup_2.eContents().get(1);
+		private final RuleCall cConstraintConstraintParserRuleCall_2_1_0 = (RuleCall)cConstraintAssignment_2_1.eContents().get(0);
+		private final RuleCall cCLOSE_DOUBLE_BRACESTerminalRuleCall_2_2 = (RuleCall)cGroup_2.eContents().get(2);
 		
 		//Query:
-		//	{Query} constraint=Constraint?;
+		//	{Query} ecl=ExpressionConstraint? (OPEN_DOUBLE_BRACES constraint=Constraint CLOSE_DOUBLE_BRACES)?;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{Query} constraint=Constraint?
+		//{Query} ecl=ExpressionConstraint? (OPEN_DOUBLE_BRACES constraint=Constraint CLOSE_DOUBLE_BRACES)?
 		public Group getGroup() { return cGroup; }
 		
 		//{Query}
 		public Action getQueryAction_0() { return cQueryAction_0; }
 		
-		//constraint=Constraint?
-		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+		//ecl=ExpressionConstraint?
+		public Assignment getEclAssignment_1() { return cEclAssignment_1; }
+		
+		//ExpressionConstraint
+		public RuleCall getEclExpressionConstraintParserRuleCall_1_0() { return cEclExpressionConstraintParserRuleCall_1_0; }
+		
+		//(OPEN_DOUBLE_BRACES constraint=Constraint CLOSE_DOUBLE_BRACES)?
+		public Group getGroup_2() { return cGroup_2; }
+		
+		//OPEN_DOUBLE_BRACES
+		public RuleCall getOPEN_DOUBLE_BRACESTerminalRuleCall_2_0() { return cOPEN_DOUBLE_BRACESTerminalRuleCall_2_0; }
+		
+		//constraint=Constraint
+		public Assignment getConstraintAssignment_2_1() { return cConstraintAssignment_2_1; }
 		
 		//Constraint
-		public RuleCall getConstraintConstraintParserRuleCall_1_0() { return cConstraintConstraintParserRuleCall_1_0; }
+		public RuleCall getConstraintConstraintParserRuleCall_2_1_0() { return cConstraintConstraintParserRuleCall_2_1_0; }
+		
+		//CLOSE_DOUBLE_BRACES
+		public RuleCall getCLOSE_DOUBLE_BRACESTerminalRuleCall_2_2() { return cCLOSE_DOUBLE_BRACESTerminalRuleCall_2_2; }
 	}
 	public class ConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Constraint");
@@ -111,28 +133,36 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cExclusionParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cConjunctionLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final Keyword cANDKeyword_1_1 = (Keyword)cGroup_1.eContents().get(1);
+		private final Alternatives cAlternatives_1_1 = (Alternatives)cGroup_1.eContents().get(1);
+		private final Keyword cANDKeyword_1_1_0 = (Keyword)cAlternatives_1_1.eContents().get(0);
+		private final Keyword cCommaKeyword_1_1_1 = (Keyword)cAlternatives_1_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightExclusionParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//Conjunction Constraint:
-		//	Exclusion ({Conjunction.left=current} 'AND' right=Exclusion)*;
+		//	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Exclusion ({Conjunction.left=current} 'AND' right=Exclusion)*
+		//Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*
 		public Group getGroup() { return cGroup; }
 		
 		//Exclusion
 		public RuleCall getExclusionParserRuleCall_0() { return cExclusionParserRuleCall_0; }
 		
-		//({Conjunction.left=current} 'AND' right=Exclusion)*
+		//({Conjunction.left=current} ('AND' | ',') right=Exclusion)*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{Conjunction.left=current}
 		public Action getConjunctionLeftAction_1_0() { return cConjunctionLeftAction_1_0; }
 		
+		//'AND' | ','
+		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
+		
 		//'AND'
-		public Keyword getANDKeyword_1_1() { return cANDKeyword_1_1; }
+		public Keyword getANDKeyword_1_1_0() { return cANDKeyword_1_1_0; }
+		
+		//','
+		public Keyword getCommaKeyword_1_1_1() { return cCommaKeyword_1_1_1; }
 		
 		//right=Exclusion
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -206,398 +236,366 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Filter");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cActiveFilterParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cEclFilterParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cDescriptionParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
-		private final RuleCall cNestedFilterParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cTermFilterParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cPreferredInFilterParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cAcceptableInFilterParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cLanguageRefSetFilterParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cTypeFilterParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cModuleFilterParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cNestedFilterParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
 		
 		//Filter:
-		//	ActiveFilter | EclFilter | Description | NestedFilter;
+		//	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter
+		//	| NestedFilter;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//ActiveFilter | EclFilter | Description | NestedFilter
+		//ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter |
+		//NestedFilter
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//ActiveFilter
 		public RuleCall getActiveFilterParserRuleCall_0() { return cActiveFilterParserRuleCall_0; }
 		
-		//EclFilter
-		public RuleCall getEclFilterParserRuleCall_1() { return cEclFilterParserRuleCall_1; }
+		//TermFilter
+		public RuleCall getTermFilterParserRuleCall_1() { return cTermFilterParserRuleCall_1; }
 		
-		//Description
-		public RuleCall getDescriptionParserRuleCall_2() { return cDescriptionParserRuleCall_2; }
+		//PreferredInFilter
+		public RuleCall getPreferredInFilterParserRuleCall_2() { return cPreferredInFilterParserRuleCall_2; }
+		
+		//AcceptableInFilter
+		public RuleCall getAcceptableInFilterParserRuleCall_3() { return cAcceptableInFilterParserRuleCall_3; }
+		
+		//LanguageRefSetFilter
+		public RuleCall getLanguageRefSetFilterParserRuleCall_4() { return cLanguageRefSetFilterParserRuleCall_4; }
+		
+		//TypeFilter
+		public RuleCall getTypeFilterParserRuleCall_5() { return cTypeFilterParserRuleCall_5; }
+		
+		//ModuleFilter
+		public RuleCall getModuleFilterParserRuleCall_6() { return cModuleFilterParserRuleCall_6; }
 		
 		//NestedFilter
-		public RuleCall getNestedFilterParserRuleCall_3() { return cNestedFilterParserRuleCall_3; }
-	}
-	public class EclFilterElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.EclFilter");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cECLTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final Assignment cEclAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cEclScriptParserRuleCall_1_0 = (RuleCall)cEclAssignment_1.eContents().get(0);
-		
-		//EclFilter:
-		//	ECL ecl=Script;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//ECL ecl=Script
-		public Group getGroup() { return cGroup; }
-		
-		//ECL
-		public RuleCall getECLTerminalRuleCall_0() { return cECLTerminalRuleCall_0; }
-		
-		//ecl=Script
-		public Assignment getEclAssignment_1() { return cEclAssignment_1; }
-		
-		//Script
-		public RuleCall getEclScriptParserRuleCall_1_0() { return cEclScriptParserRuleCall_1_0; }
+		public RuleCall getNestedFilterParserRuleCall_7() { return cNestedFilterParserRuleCall_7; }
 	}
 	public class ActiveFilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ActiveFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cACTIVETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final Assignment cActiveAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cActiveBooleanParserRuleCall_1_0 = (RuleCall)cActiveAssignment_1.eContents().get(0);
+		private final Group cGroup_0 = (Group)cGroup.eContents().get(0);
+		private final Assignment cDomainAssignment_0_0 = (Assignment)cGroup_0.eContents().get(0);
+		private final RuleCall cDomainDomainEnumRuleCall_0_0_0 = (RuleCall)cDomainAssignment_0_0.eContents().get(0);
+		private final RuleCall cDOTTerminalRuleCall_0_1 = (RuleCall)cGroup_0.eContents().get(1);
+		private final Keyword cActiveKeyword_1 = (Keyword)cGroup.eContents().get(1);
+		private final RuleCall cEQUALTerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		private final Assignment cActiveAssignment_3 = (Assignment)cGroup.eContents().get(3);
+		private final RuleCall cActiveBooleanParserRuleCall_3_0 = (RuleCall)cActiveAssignment_3.eContents().get(0);
 		
 		//ActiveFilter:
-		//	ACTIVE active=Boolean;
+		//	(domain=Domain DOT)? 'active' EQUAL active=Boolean;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//ACTIVE active=Boolean
+		//(domain=Domain DOT)? 'active' EQUAL active=Boolean
 		public Group getGroup() { return cGroup; }
 		
-		//ACTIVE
-		public RuleCall getACTIVETerminalRuleCall_0() { return cACTIVETerminalRuleCall_0; }
+		//(domain=Domain DOT)?
+		public Group getGroup_0() { return cGroup_0; }
+		
+		//domain=Domain
+		public Assignment getDomainAssignment_0_0() { return cDomainAssignment_0_0; }
+		
+		//Domain
+		public RuleCall getDomainDomainEnumRuleCall_0_0_0() { return cDomainDomainEnumRuleCall_0_0_0; }
+		
+		//DOT
+		public RuleCall getDOTTerminalRuleCall_0_1() { return cDOTTerminalRuleCall_0_1; }
+		
+		//'active'
+		public Keyword getActiveKeyword_1() { return cActiveKeyword_1; }
+		
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_2() { return cEQUALTerminalRuleCall_2; }
 		
 		//active=Boolean
-		public Assignment getActiveAssignment_1() { return cActiveAssignment_1; }
+		public Assignment getActiveAssignment_3() { return cActiveAssignment_3; }
 		
 		//Boolean
-		public RuleCall getActiveBooleanParserRuleCall_1_0() { return cActiveBooleanParserRuleCall_1_0; }
+		public RuleCall getActiveBooleanParserRuleCall_3_0() { return cActiveBooleanParserRuleCall_3_0; }
 	}
-	public class DescriptionElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Description");
+	public class ModuleFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ModuleFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Action cDescriptionAction_0 = (Action)cGroup.eContents().get(0);
-		private final RuleCall cOPEN_DOUBLE_BRACESTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cFilterAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cFilterDescriptionFilterParserRuleCall_2_0 = (RuleCall)cFilterAssignment_2.eContents().get(0);
-		private final RuleCall cCLOSE_DOUBLE_BRACESTerminalRuleCall_3 = (RuleCall)cGroup.eContents().get(3);
+		private final Group cGroup_0 = (Group)cGroup.eContents().get(0);
+		private final Assignment cDomainAssignment_0_0 = (Assignment)cGroup_0.eContents().get(0);
+		private final RuleCall cDomainDomainEnumRuleCall_0_0_0 = (RuleCall)cDomainAssignment_0_0.eContents().get(0);
+		private final RuleCall cDOTTerminalRuleCall_0_1 = (RuleCall)cGroup_0.eContents().get(1);
+		private final Keyword cModuleIdKeyword_1 = (Keyword)cGroup.eContents().get(1);
+		private final RuleCall cEQUALTerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		private final Assignment cModuleIdAssignment_3 = (Assignment)cGroup.eContents().get(3);
+		private final RuleCall cModuleIdExpressionConstraintParserRuleCall_3_0 = (RuleCall)cModuleIdAssignment_3.eContents().get(0);
 		
-		//Description:
-		//	{Description} OPEN_DOUBLE_BRACES filter=DescriptionFilter CLOSE_DOUBLE_BRACES;
+		//ModuleFilter:
+		//	(domain=Domain DOT)? 'moduleId' EQUAL moduleId=ExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{Description} OPEN_DOUBLE_BRACES filter=DescriptionFilter CLOSE_DOUBLE_BRACES
+		//(domain=Domain DOT)? 'moduleId' EQUAL moduleId=ExpressionConstraint
 		public Group getGroup() { return cGroup; }
 		
-		//{Description}
-		public Action getDescriptionAction_0() { return cDescriptionAction_0; }
+		//(domain=Domain DOT)?
+		public Group getGroup_0() { return cGroup_0; }
 		
-		//OPEN_DOUBLE_BRACES
-		public RuleCall getOPEN_DOUBLE_BRACESTerminalRuleCall_1() { return cOPEN_DOUBLE_BRACESTerminalRuleCall_1; }
+		//domain=Domain
+		public Assignment getDomainAssignment_0_0() { return cDomainAssignment_0_0; }
 		
-		//filter=DescriptionFilter
-		public Assignment getFilterAssignment_2() { return cFilterAssignment_2; }
+		//Domain
+		public RuleCall getDomainDomainEnumRuleCall_0_0_0() { return cDomainDomainEnumRuleCall_0_0_0; }
 		
-		//DescriptionFilter
-		public RuleCall getFilterDescriptionFilterParserRuleCall_2_0() { return cFilterDescriptionFilterParserRuleCall_2_0; }
+		//DOT
+		public RuleCall getDOTTerminalRuleCall_0_1() { return cDOTTerminalRuleCall_0_1; }
 		
-		//CLOSE_DOUBLE_BRACES
-		public RuleCall getCLOSE_DOUBLE_BRACESTerminalRuleCall_3() { return cCLOSE_DOUBLE_BRACESTerminalRuleCall_3; }
-	}
-	public class DescriptionFilterElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.DescriptionFilter");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Action cDescriptionFilterAction_0 = (Action)cGroup.eContents().get(0);
-		private final UnorderedGroup cUnorderedGroup_1 = (UnorderedGroup)cGroup.eContents().get(1);
-		private final Assignment cTermFilterAssignment_1_0 = (Assignment)cUnorderedGroup_1.eContents().get(0);
-		private final RuleCall cTermFilterTermFilterParserRuleCall_1_0_0 = (RuleCall)cTermFilterAssignment_1_0.eContents().get(0);
-		private final Assignment cActiveAssignment_1_1 = (Assignment)cUnorderedGroup_1.eContents().get(1);
-		private final RuleCall cActiveActiveTermParserRuleCall_1_1_0 = (RuleCall)cActiveAssignment_1_1.eContents().get(0);
-		private final Assignment cTypeAssignment_1_2 = (Assignment)cUnorderedGroup_1.eContents().get(2);
-		private final RuleCall cTypeDescriptiontypeParserRuleCall_1_2_0 = (RuleCall)cTypeAssignment_1_2.eContents().get(0);
-		private final Assignment cRegexAssignment_1_3 = (Assignment)cUnorderedGroup_1.eContents().get(3);
-		private final RuleCall cRegexRegularExpressionParserRuleCall_1_3_0 = (RuleCall)cRegexAssignment_1_3.eContents().get(0);
-		private final Assignment cAcceptableInAssignment_1_4 = (Assignment)cUnorderedGroup_1.eContents().get(4);
-		private final RuleCall cAcceptableInAcceptableInParserRuleCall_1_4_0 = (RuleCall)cAcceptableInAssignment_1_4.eContents().get(0);
-		private final Assignment cPreferredInAssignment_1_5 = (Assignment)cUnorderedGroup_1.eContents().get(5);
-		private final RuleCall cPreferredInPreferredInParserRuleCall_1_5_0 = (RuleCall)cPreferredInAssignment_1_5.eContents().get(0);
-		private final Assignment cLanguageRefSetAssignment_1_6 = (Assignment)cUnorderedGroup_1.eContents().get(6);
-		private final RuleCall cLanguageRefSetLanguageRefSetParserRuleCall_1_6_0 = (RuleCall)cLanguageRefSetAssignment_1_6.eContents().get(0);
+		//'moduleId'
+		public Keyword getModuleIdKeyword_1() { return cModuleIdKeyword_1; }
 		
-		//DescriptionFilter:
-		//	{DescriptionFilter} (termFilter=TermFilter?
-		//	& active=ActiveTerm?
-		//	& type=Descriptiontype?
-		//	& regex=RegularExpression?
-		//	& acceptableIn=AcceptableIn?
-		//	& preferredIn=PreferredIn?
-		//	& languageRefSet=LanguageRefSet?);
-		@Override public ParserRule getRule() { return rule; }
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_2() { return cEQUALTerminalRuleCall_2; }
 		
-		//{DescriptionFilter} (termFilter=TermFilter? & active=ActiveTerm? & type=Descriptiontype? & regex=RegularExpression? &
-		//acceptableIn=AcceptableIn? & preferredIn=PreferredIn? & languageRefSet=LanguageRefSet?)
-		public Group getGroup() { return cGroup; }
+		//moduleId=ExpressionConstraint
+		public Assignment getModuleIdAssignment_3() { return cModuleIdAssignment_3; }
 		
-		//{DescriptionFilter}
-		public Action getDescriptionFilterAction_0() { return cDescriptionFilterAction_0; }
-		
-		//termFilter=TermFilter? & active=ActiveTerm? & type=Descriptiontype? & regex=RegularExpression? &
-		//acceptableIn=AcceptableIn? & preferredIn=PreferredIn? & languageRefSet=LanguageRefSet?
-		public UnorderedGroup getUnorderedGroup_1() { return cUnorderedGroup_1; }
-		
-		//termFilter=TermFilter?
-		public Assignment getTermFilterAssignment_1_0() { return cTermFilterAssignment_1_0; }
-		
-		//TermFilter
-		public RuleCall getTermFilterTermFilterParserRuleCall_1_0_0() { return cTermFilterTermFilterParserRuleCall_1_0_0; }
-		
-		//active=ActiveTerm?
-		public Assignment getActiveAssignment_1_1() { return cActiveAssignment_1_1; }
-		
-		//ActiveTerm
-		public RuleCall getActiveActiveTermParserRuleCall_1_1_0() { return cActiveActiveTermParserRuleCall_1_1_0; }
-		
-		//type=Descriptiontype?
-		public Assignment getTypeAssignment_1_2() { return cTypeAssignment_1_2; }
-		
-		//Descriptiontype
-		public RuleCall getTypeDescriptiontypeParserRuleCall_1_2_0() { return cTypeDescriptiontypeParserRuleCall_1_2_0; }
-		
-		//regex=RegularExpression?
-		public Assignment getRegexAssignment_1_3() { return cRegexAssignment_1_3; }
-		
-		//RegularExpression
-		public RuleCall getRegexRegularExpressionParserRuleCall_1_3_0() { return cRegexRegularExpressionParserRuleCall_1_3_0; }
-		
-		//acceptableIn=AcceptableIn?
-		public Assignment getAcceptableInAssignment_1_4() { return cAcceptableInAssignment_1_4; }
-		
-		//AcceptableIn
-		public RuleCall getAcceptableInAcceptableInParserRuleCall_1_4_0() { return cAcceptableInAcceptableInParserRuleCall_1_4_0; }
-		
-		//preferredIn=PreferredIn?
-		public Assignment getPreferredInAssignment_1_5() { return cPreferredInAssignment_1_5; }
-		
-		//PreferredIn
-		public RuleCall getPreferredInPreferredInParserRuleCall_1_5_0() { return cPreferredInPreferredInParserRuleCall_1_5_0; }
-		
-		//languageRefSet=LanguageRefSet?
-		public Assignment getLanguageRefSetAssignment_1_6() { return cLanguageRefSetAssignment_1_6; }
-		
-		//LanguageRefSet
-		public RuleCall getLanguageRefSetLanguageRefSetParserRuleCall_1_6_0() { return cLanguageRefSetLanguageRefSetParserRuleCall_1_6_0; }
+		//ExpressionConstraint
+		public RuleCall getModuleIdExpressionConstraintParserRuleCall_3_0() { return cModuleIdExpressionConstraintParserRuleCall_3_0; }
 	}
 	public class TermFilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.TermFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cTERMTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Keyword cTermKeyword_0 = (Keyword)cGroup.eContents().get(0);
 		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cTermAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cTermSTRINGTerminalRuleCall_2_0 = (RuleCall)cTermAssignment_2.eContents().get(0);
+		private final Group cGroup_2 = (Group)cGroup.eContents().get(2);
+		private final Assignment cLexicalSearchTypeAssignment_2_0 = (Assignment)cGroup_2.eContents().get(0);
+		private final RuleCall cLexicalSearchTypeLexicalSearchTypeEnumRuleCall_2_0_0 = (RuleCall)cLexicalSearchTypeAssignment_2_0.eContents().get(0);
+		private final RuleCall cCOLONTerminalRuleCall_2_1 = (RuleCall)cGroup_2.eContents().get(1);
+		private final Assignment cTermAssignment_3 = (Assignment)cGroup.eContents().get(3);
+		private final RuleCall cTermSTRINGTerminalRuleCall_3_0 = (RuleCall)cTermAssignment_3.eContents().get(0);
 		
 		//TermFilter:
-		//	TERM EQUAL term=STRING;
+		//	'term' EQUAL (lexicalSearchType=LexicalSearchType COLON)? term=STRING;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//TERM EQUAL term=STRING
+		//'term' EQUAL (lexicalSearchType=LexicalSearchType COLON)? term=STRING
 		public Group getGroup() { return cGroup; }
 		
-		//TERM
-		public RuleCall getTERMTerminalRuleCall_0() { return cTERMTerminalRuleCall_0; }
+		//'term'
+		public Keyword getTermKeyword_0() { return cTermKeyword_0; }
 		
 		//EQUAL
 		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
+		
+		//(lexicalSearchType=LexicalSearchType COLON)?
+		public Group getGroup_2() { return cGroup_2; }
+		
+		//lexicalSearchType=LexicalSearchType
+		public Assignment getLexicalSearchTypeAssignment_2_0() { return cLexicalSearchTypeAssignment_2_0; }
+		
+		//LexicalSearchType
+		public RuleCall getLexicalSearchTypeLexicalSearchTypeEnumRuleCall_2_0_0() { return cLexicalSearchTypeLexicalSearchTypeEnumRuleCall_2_0_0; }
+		
+		//COLON
+		public RuleCall getCOLONTerminalRuleCall_2_1() { return cCOLONTerminalRuleCall_2_1; }
 		
 		//term=STRING
-		public Assignment getTermAssignment_2() { return cTermAssignment_2; }
+		public Assignment getTermAssignment_3() { return cTermAssignment_3; }
 		
 		//STRING
-		public RuleCall getTermSTRINGTerminalRuleCall_2_0() { return cTermSTRINGTerminalRuleCall_2_0; }
+		public RuleCall getTermSTRINGTerminalRuleCall_3_0() { return cTermSTRINGTerminalRuleCall_3_0; }
 	}
-	public class RegularExpressionElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.RegularExpression");
+	public class PreferredInFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.PreferredInFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cREGEXTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Keyword cPreferredInKeyword_0 = (Keyword)cGroup.eContents().get(0);
 		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cRegexAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cRegexSTRINGTerminalRuleCall_2_0 = (RuleCall)cRegexAssignment_2.eContents().get(0);
+		private final Assignment cLanguageRefSetIdAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cLanguageRefSetIdExpressionConstraintParserRuleCall_2_0 = (RuleCall)cLanguageRefSetIdAssignment_2.eContents().get(0);
 		
-		//RegularExpression:
-		//	REGEX EQUAL regex=STRING;
+		//PreferredInFilter:
+		//	'preferredIn' EQUAL languageRefSetId=ExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//REGEX EQUAL regex=STRING
+		//'preferredIn' EQUAL languageRefSetId=ExpressionConstraint
 		public Group getGroup() { return cGroup; }
 		
-		//REGEX
-		public RuleCall getREGEXTerminalRuleCall_0() { return cREGEXTerminalRuleCall_0; }
+		//'preferredIn'
+		public Keyword getPreferredInKeyword_0() { return cPreferredInKeyword_0; }
 		
 		//EQUAL
 		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
 		
-		//regex=STRING
-		public Assignment getRegexAssignment_2() { return cRegexAssignment_2; }
+		//languageRefSetId=ExpressionConstraint
+		public Assignment getLanguageRefSetIdAssignment_2() { return cLanguageRefSetIdAssignment_2; }
 		
-		//STRING
-		public RuleCall getRegexSTRINGTerminalRuleCall_2_0() { return cRegexSTRINGTerminalRuleCall_2_0; }
+		//ExpressionConstraint
+		public RuleCall getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0() { return cLanguageRefSetIdExpressionConstraintParserRuleCall_2_0; }
 	}
-	public class PreferredInElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.PreferredIn");
+	public class AcceptableInFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.AcceptableInFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cPREFERREDTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Keyword cAcceptableInKeyword_0 = (Keyword)cGroup.eContents().get(0);
 		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cPreferredAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cPreferredScriptParserRuleCall_2_0 = (RuleCall)cPreferredAssignment_2.eContents().get(0);
+		private final Assignment cLanguageRefSetIdAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cLanguageRefSetIdExpressionConstraintParserRuleCall_2_0 = (RuleCall)cLanguageRefSetIdAssignment_2.eContents().get(0);
 		
-		//PreferredIn:
-		//	PREFERRED EQUAL preferred=Script;
+		//AcceptableInFilter:
+		//	'acceptableIn' EQUAL languageRefSetId=ExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//PREFERRED EQUAL preferred=Script
+		//'acceptableIn' EQUAL languageRefSetId=ExpressionConstraint
 		public Group getGroup() { return cGroup; }
 		
-		//PREFERRED
-		public RuleCall getPREFERREDTerminalRuleCall_0() { return cPREFERREDTerminalRuleCall_0; }
+		//'acceptableIn'
+		public Keyword getAcceptableInKeyword_0() { return cAcceptableInKeyword_0; }
 		
 		//EQUAL
 		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
 		
-		//preferred=Script
-		public Assignment getPreferredAssignment_2() { return cPreferredAssignment_2; }
+		//languageRefSetId=ExpressionConstraint
+		public Assignment getLanguageRefSetIdAssignment_2() { return cLanguageRefSetIdAssignment_2; }
 		
-		//Script
-		public RuleCall getPreferredScriptParserRuleCall_2_0() { return cPreferredScriptParserRuleCall_2_0; }
+		//ExpressionConstraint
+		public RuleCall getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0() { return cLanguageRefSetIdExpressionConstraintParserRuleCall_2_0; }
 	}
-	public class AcceptableInElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.AcceptableIn");
+	public class LanguageRefSetFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LanguageRefSetFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cACCEPTABLETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Keyword cLanguageRefSetKeyword_0 = (Keyword)cGroup.eContents().get(0);
 		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cAcceptableAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cAcceptableScriptParserRuleCall_2_0 = (RuleCall)cAcceptableAssignment_2.eContents().get(0);
+		private final Assignment cLanguageRefSetIdAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cLanguageRefSetIdExpressionConstraintParserRuleCall_2_0 = (RuleCall)cLanguageRefSetIdAssignment_2.eContents().get(0);
 		
-		//AcceptableIn:
-		//	ACCEPTABLE EQUAL acceptable=Script;
+		//LanguageRefSetFilter:
+		//	'languageRefSet' EQUAL languageRefSetId=ExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//ACCEPTABLE EQUAL acceptable=Script
+		//'languageRefSet' EQUAL languageRefSetId=ExpressionConstraint
 		public Group getGroup() { return cGroup; }
 		
-		//ACCEPTABLE
-		public RuleCall getACCEPTABLETerminalRuleCall_0() { return cACCEPTABLETerminalRuleCall_0; }
+		//'languageRefSet'
+		public Keyword getLanguageRefSetKeyword_0() { return cLanguageRefSetKeyword_0; }
 		
 		//EQUAL
 		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
 		
-		//acceptable=Script
-		public Assignment getAcceptableAssignment_2() { return cAcceptableAssignment_2; }
+		//languageRefSetId=ExpressionConstraint
+		public Assignment getLanguageRefSetIdAssignment_2() { return cLanguageRefSetIdAssignment_2; }
 		
-		//Script
-		public RuleCall getAcceptableScriptParserRuleCall_2_0() { return cAcceptableScriptParserRuleCall_2_0; }
+		//ExpressionConstraint
+		public RuleCall getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0() { return cLanguageRefSetIdExpressionConstraintParserRuleCall_2_0; }
 	}
-	public class LanguageRefSetElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LanguageRefSet");
+	public class TypeFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.TypeFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cLANGREFSETTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cRefsetAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cRefsetScriptParserRuleCall_2_0 = (RuleCall)cRefsetAssignment_2.eContents().get(0);
-		
-		//LanguageRefSet:
-		//	LANGREFSET EQUAL refset=Script;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//LANGREFSET EQUAL refset=Script
-		public Group getGroup() { return cGroup; }
-		
-		//LANGREFSET
-		public RuleCall getLANGREFSETTerminalRuleCall_0() { return cLANGREFSETTerminalRuleCall_0; }
-		
-		//EQUAL
-		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
-		
-		//refset=Script
-		public Assignment getRefsetAssignment_2() { return cRefsetAssignment_2; }
-		
-		//Script
-		public RuleCall getRefsetScriptParserRuleCall_2_0() { return cRefsetScriptParserRuleCall_2_0; }
-	}
-	public class DescriptiontypeElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Descriptiontype");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cDESCRIPTION_TYPETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Keyword cTypeIdKeyword_0 = (Keyword)cGroup.eContents().get(0);
 		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
 		private final Assignment cTypeAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cTypeScriptParserRuleCall_2_0 = (RuleCall)cTypeAssignment_2.eContents().get(0);
+		private final RuleCall cTypeExpressionConstraintParserRuleCall_2_0 = (RuleCall)cTypeAssignment_2.eContents().get(0);
 		
-		//Descriptiontype:
-		//	DESCRIPTION_TYPE EQUAL type=Script;
+		//TypeFilter:
+		//	'typeId' EQUAL type=ExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//DESCRIPTION_TYPE EQUAL type=Script
+		//'typeId' EQUAL type=ExpressionConstraint
 		public Group getGroup() { return cGroup; }
 		
-		//DESCRIPTION_TYPE
-		public RuleCall getDESCRIPTION_TYPETerminalRuleCall_0() { return cDESCRIPTION_TYPETerminalRuleCall_0; }
+		//'typeId'
+		public Keyword getTypeIdKeyword_0() { return cTypeIdKeyword_0; }
 		
 		//EQUAL
 		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
 		
-		//type=Script
+		//type=ExpressionConstraint
 		public Assignment getTypeAssignment_2() { return cTypeAssignment_2; }
 		
-		//Script
-		public RuleCall getTypeScriptParserRuleCall_2_0() { return cTypeScriptParserRuleCall_2_0; }
-	}
-	public class ActiveTermElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ActiveTerm");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cACTIVETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cActiveAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cActiveBooleanParserRuleCall_2_0 = (RuleCall)cActiveAssignment_2.eContents().get(0);
-		
-		//ActiveTerm:
-		//	ACTIVE EQUAL active=Boolean;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//ACTIVE EQUAL active=Boolean
-		public Group getGroup() { return cGroup; }
-		
-		//ACTIVE
-		public RuleCall getACTIVETerminalRuleCall_0() { return cACTIVETerminalRuleCall_0; }
-		
-		//EQUAL
-		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
-		
-		//active=Boolean
-		public Assignment getActiveAssignment_2() { return cActiveAssignment_2; }
-		
-		//Boolean
-		public RuleCall getActiveBooleanParserRuleCall_2_0() { return cActiveBooleanParserRuleCall_2_0; }
+		//ExpressionConstraint
+		public RuleCall getTypeExpressionConstraintParserRuleCall_2_0() { return cTypeExpressionConstraintParserRuleCall_2_0; }
 	}
 	public class BooleanElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Boolean");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cTRUETerminalRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cFALSETerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final Keyword cTrueKeyword_0 = (Keyword)cAlternatives.eContents().get(0);
+		private final Keyword cFalseKeyword_1 = (Keyword)cAlternatives.eContents().get(1);
 		
-		//Boolean:
-		//	TRUE | FALSE;
+		//Boolean ecore::EBoolean:
+		//	'true' | 'false';
 		@Override public ParserRule getRule() { return rule; }
 		
-		//TRUE | FALSE
+		//'true' | 'false'
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//TRUE
-		public RuleCall getTRUETerminalRuleCall_0() { return cTRUETerminalRuleCall_0; }
+		//'true'
+		public Keyword getTrueKeyword_0() { return cTrueKeyword_0; }
 		
-		//FALSE
-		public RuleCall getFALSETerminalRuleCall_1() { return cFALSETerminalRuleCall_1; }
+		//'false'
+		public Keyword getFalseKeyword_1() { return cFalseKeyword_1; }
 	}
 	
+	public class LexicalSearchTypeElements extends AbstractEnumRuleElementFinder {
+		private final EnumRule rule = (EnumRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LexicalSearchType");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final EnumLiteralDeclaration cMATCHEnumLiteralDeclaration_0 = (EnumLiteralDeclaration)cAlternatives.eContents().get(0);
+		private final Keyword cMATCHMatchKeyword_0_0 = (Keyword)cMATCHEnumLiteralDeclaration_0.eContents().get(0);
+		private final EnumLiteralDeclaration cREGEXEnumLiteralDeclaration_1 = (EnumLiteralDeclaration)cAlternatives.eContents().get(1);
+		private final Keyword cREGEXRegexKeyword_1_0 = (Keyword)cREGEXEnumLiteralDeclaration_1.eContents().get(0);
+		private final EnumLiteralDeclaration cEXACTEnumLiteralDeclaration_2 = (EnumLiteralDeclaration)cAlternatives.eContents().get(2);
+		private final Keyword cEXACTExactKeyword_2_0 = (Keyword)cEXACTEnumLiteralDeclaration_2.eContents().get(0);
+		
+		//enum LexicalSearchType:
+		//	MATCH="match" | REGEX="regex" | EXACT="exact";
+		public EnumRule getRule() { return rule; }
+		
+		//MATCH="match" | REGEX="regex" | EXACT="exact"
+		public Alternatives getAlternatives() { return cAlternatives; }
+		
+		//MATCH="match"
+		public EnumLiteralDeclaration getMATCHEnumLiteralDeclaration_0() { return cMATCHEnumLiteralDeclaration_0; }
+		
+		//"match"
+		public Keyword getMATCHMatchKeyword_0_0() { return cMATCHMatchKeyword_0_0; }
+		
+		//REGEX="regex"
+		public EnumLiteralDeclaration getREGEXEnumLiteralDeclaration_1() { return cREGEXEnumLiteralDeclaration_1; }
+		
+		//"regex"
+		public Keyword getREGEXRegexKeyword_1_0() { return cREGEXRegexKeyword_1_0; }
+		
+		//EXACT="exact"
+		public EnumLiteralDeclaration getEXACTEnumLiteralDeclaration_2() { return cEXACTEnumLiteralDeclaration_2; }
+		
+		//"exact"
+		public Keyword getEXACTExactKeyword_2_0() { return cEXACTExactKeyword_2_0; }
+	}
+	public class DomainElements extends AbstractEnumRuleElementFinder {
+		private final EnumRule rule = (EnumRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Domain");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final EnumLiteralDeclaration cCONCEPTEnumLiteralDeclaration_0 = (EnumLiteralDeclaration)cAlternatives.eContents().get(0);
+		private final Keyword cCONCEPTConceptKeyword_0_0 = (Keyword)cCONCEPTEnumLiteralDeclaration_0.eContents().get(0);
+		private final EnumLiteralDeclaration cDESCRIPTIONEnumLiteralDeclaration_1 = (EnumLiteralDeclaration)cAlternatives.eContents().get(1);
+		private final Keyword cDESCRIPTIONDescriptionKeyword_1_0 = (Keyword)cDESCRIPTIONEnumLiteralDeclaration_1.eContents().get(0);
+		
+		//enum Domain:
+		//	CONCEPT="Concept" | DESCRIPTION="Description";
+		public EnumRule getRule() { return rule; }
+		
+		//CONCEPT="Concept" | DESCRIPTION="Description"
+		public Alternatives getAlternatives() { return cAlternatives; }
+		
+		//CONCEPT="Concept"
+		public EnumLiteralDeclaration getCONCEPTEnumLiteralDeclaration_0() { return cCONCEPTEnumLiteralDeclaration_0; }
+		
+		//"Concept"
+		public Keyword getCONCEPTConceptKeyword_0_0() { return cCONCEPTConceptKeyword_0_0; }
+		
+		//DESCRIPTION="Description"
+		public EnumLiteralDeclaration getDESCRIPTIONEnumLiteralDeclaration_1() { return cDESCRIPTIONEnumLiteralDeclaration_1; }
+		
+		//"Description"
+		public Keyword getDESCRIPTIONDescriptionKeyword_1_0() { return cDESCRIPTIONDescriptionKeyword_1_0; }
+	}
 	
 	private final QueryElements pQuery;
 	private final ConstraintElements pConstraint;
@@ -606,28 +604,16 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	private final ExclusionElements pExclusion;
 	private final NestedFilterElements pNestedFilter;
 	private final FilterElements pFilter;
-	private final EclFilterElements pEclFilter;
 	private final ActiveFilterElements pActiveFilter;
-	private final DescriptionElements pDescription;
-	private final DescriptionFilterElements pDescriptionFilter;
+	private final ModuleFilterElements pModuleFilter;
 	private final TermFilterElements pTermFilter;
-	private final RegularExpressionElements pRegularExpression;
-	private final PreferredInElements pPreferredIn;
-	private final AcceptableInElements pAcceptableIn;
-	private final LanguageRefSetElements pLanguageRefSet;
-	private final DescriptiontypeElements pDescriptiontype;
-	private final ActiveTermElements pActiveTerm;
+	private final PreferredInFilterElements pPreferredInFilter;
+	private final AcceptableInFilterElements pAcceptableInFilter;
+	private final LanguageRefSetFilterElements pLanguageRefSetFilter;
+	private final TypeFilterElements pTypeFilter;
+	private final LexicalSearchTypeElements eLexicalSearchType;
+	private final DomainElements eDomain;
 	private final BooleanElements pBoolean;
-	private final TerminalRule tTERM;
-	private final TerminalRule tECL;
-	private final TerminalRule tACTIVE;
-	private final TerminalRule tTRUE;
-	private final TerminalRule tFALSE;
-	private final TerminalRule tREGEX;
-	private final TerminalRule tACCEPTABLE;
-	private final TerminalRule tPREFERRED;
-	private final TerminalRule tLANGREFSET;
-	private final TerminalRule tDESCRIPTION_TYPE;
 	private final TerminalRule tOPEN_DOUBLE_BRACES;
 	private final TerminalRule tCLOSE_DOUBLE_BRACES;
 	
@@ -647,28 +633,16 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		this.pExclusion = new ExclusionElements();
 		this.pNestedFilter = new NestedFilterElements();
 		this.pFilter = new FilterElements();
-		this.pEclFilter = new EclFilterElements();
 		this.pActiveFilter = new ActiveFilterElements();
-		this.pDescription = new DescriptionElements();
-		this.pDescriptionFilter = new DescriptionFilterElements();
+		this.pModuleFilter = new ModuleFilterElements();
 		this.pTermFilter = new TermFilterElements();
-		this.pRegularExpression = new RegularExpressionElements();
-		this.pPreferredIn = new PreferredInElements();
-		this.pAcceptableIn = new AcceptableInElements();
-		this.pLanguageRefSet = new LanguageRefSetElements();
-		this.pDescriptiontype = new DescriptiontypeElements();
-		this.pActiveTerm = new ActiveTermElements();
+		this.pPreferredInFilter = new PreferredInFilterElements();
+		this.pAcceptableInFilter = new AcceptableInFilterElements();
+		this.pLanguageRefSetFilter = new LanguageRefSetFilterElements();
+		this.pTypeFilter = new TypeFilterElements();
+		this.eLexicalSearchType = new LexicalSearchTypeElements();
+		this.eDomain = new DomainElements();
 		this.pBoolean = new BooleanElements();
-		this.tTERM = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.TERM");
-		this.tECL = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ECL");
-		this.tACTIVE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ACTIVE");
-		this.tTRUE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.TRUE");
-		this.tFALSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.FALSE");
-		this.tREGEX = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.REGEX");
-		this.tACCEPTABLE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ACCEPTABLE");
-		this.tPREFERRED = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.PREFERRED");
-		this.tLANGREFSET = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LANGREFSET");
-		this.tDESCRIPTION_TYPE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.DESCRIPTION_TYPE");
 		this.tOPEN_DOUBLE_BRACES = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.OPEN_DOUBLE_BRACES");
 		this.tCLOSE_DOUBLE_BRACES = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.CLOSE_DOUBLE_BRACES");
 	}
@@ -701,7 +675,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 
 	
 	//Query:
-	//	{Query} constraint=Constraint?;
+	//	{Query} ecl=ExpressionConstraint? (OPEN_DOUBLE_BRACES constraint=Constraint CLOSE_DOUBLE_BRACES)?;
 	public QueryElements getQueryAccess() {
 		return pQuery;
 	}
@@ -731,7 +705,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//Conjunction Constraint:
-	//	Exclusion ({Conjunction.left=current} 'AND' right=Exclusion)*;
+	//	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
 	public ConjunctionElements getConjunctionAccess() {
 		return pConjunction;
 	}
@@ -761,7 +735,8 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//Filter:
-	//	ActiveFilter | EclFilter | Description | NestedFilter;
+	//	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter
+	//	| NestedFilter;
 	public FilterElements getFilterAccess() {
 		return pFilter;
 	}
@@ -770,18 +745,8 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getFilterAccess().getRule();
 	}
 	
-	//EclFilter:
-	//	ECL ecl=Script;
-	public EclFilterElements getEclFilterAccess() {
-		return pEclFilter;
-	}
-	
-	public ParserRule getEclFilterRule() {
-		return getEclFilterAccess().getRule();
-	}
-	
 	//ActiveFilter:
-	//	ACTIVE active=Boolean;
+	//	(domain=Domain DOT)? 'active' EQUAL active=Boolean;
 	public ActiveFilterElements getActiveFilterAccess() {
 		return pActiveFilter;
 	}
@@ -790,34 +755,18 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getActiveFilterAccess().getRule();
 	}
 	
-	//Description:
-	//	{Description} OPEN_DOUBLE_BRACES filter=DescriptionFilter CLOSE_DOUBLE_BRACES;
-	public DescriptionElements getDescriptionAccess() {
-		return pDescription;
+	//ModuleFilter:
+	//	(domain=Domain DOT)? 'moduleId' EQUAL moduleId=ExpressionConstraint;
+	public ModuleFilterElements getModuleFilterAccess() {
+		return pModuleFilter;
 	}
 	
-	public ParserRule getDescriptionRule() {
-		return getDescriptionAccess().getRule();
-	}
-	
-	//DescriptionFilter:
-	//	{DescriptionFilter} (termFilter=TermFilter?
-	//	& active=ActiveTerm?
-	//	& type=Descriptiontype?
-	//	& regex=RegularExpression?
-	//	& acceptableIn=AcceptableIn?
-	//	& preferredIn=PreferredIn?
-	//	& languageRefSet=LanguageRefSet?);
-	public DescriptionFilterElements getDescriptionFilterAccess() {
-		return pDescriptionFilter;
-	}
-	
-	public ParserRule getDescriptionFilterRule() {
-		return getDescriptionFilterAccess().getRule();
+	public ParserRule getModuleFilterRule() {
+		return getModuleFilterAccess().getRule();
 	}
 	
 	//TermFilter:
-	//	TERM EQUAL term=STRING;
+	//	'term' EQUAL (lexicalSearchType=LexicalSearchType COLON)? term=STRING;
 	public TermFilterElements getTermFilterAccess() {
 		return pTermFilter;
 	}
@@ -826,134 +775,74 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getTermFilterAccess().getRule();
 	}
 	
-	//RegularExpression:
-	//	REGEX EQUAL regex=STRING;
-	public RegularExpressionElements getRegularExpressionAccess() {
-		return pRegularExpression;
+	//PreferredInFilter:
+	//	'preferredIn' EQUAL languageRefSetId=ExpressionConstraint;
+	public PreferredInFilterElements getPreferredInFilterAccess() {
+		return pPreferredInFilter;
 	}
 	
-	public ParserRule getRegularExpressionRule() {
-		return getRegularExpressionAccess().getRule();
+	public ParserRule getPreferredInFilterRule() {
+		return getPreferredInFilterAccess().getRule();
 	}
 	
-	//PreferredIn:
-	//	PREFERRED EQUAL preferred=Script;
-	public PreferredInElements getPreferredInAccess() {
-		return pPreferredIn;
+	//AcceptableInFilter:
+	//	'acceptableIn' EQUAL languageRefSetId=ExpressionConstraint;
+	public AcceptableInFilterElements getAcceptableInFilterAccess() {
+		return pAcceptableInFilter;
 	}
 	
-	public ParserRule getPreferredInRule() {
-		return getPreferredInAccess().getRule();
+	public ParserRule getAcceptableInFilterRule() {
+		return getAcceptableInFilterAccess().getRule();
 	}
 	
-	//AcceptableIn:
-	//	ACCEPTABLE EQUAL acceptable=Script;
-	public AcceptableInElements getAcceptableInAccess() {
-		return pAcceptableIn;
+	//LanguageRefSetFilter:
+	//	'languageRefSet' EQUAL languageRefSetId=ExpressionConstraint;
+	public LanguageRefSetFilterElements getLanguageRefSetFilterAccess() {
+		return pLanguageRefSetFilter;
 	}
 	
-	public ParserRule getAcceptableInRule() {
-		return getAcceptableInAccess().getRule();
+	public ParserRule getLanguageRefSetFilterRule() {
+		return getLanguageRefSetFilterAccess().getRule();
 	}
 	
-	//LanguageRefSet:
-	//	LANGREFSET EQUAL refset=Script;
-	public LanguageRefSetElements getLanguageRefSetAccess() {
-		return pLanguageRefSet;
+	//TypeFilter:
+	//	'typeId' EQUAL type=ExpressionConstraint;
+	public TypeFilterElements getTypeFilterAccess() {
+		return pTypeFilter;
 	}
 	
-	public ParserRule getLanguageRefSetRule() {
-		return getLanguageRefSetAccess().getRule();
+	public ParserRule getTypeFilterRule() {
+		return getTypeFilterAccess().getRule();
 	}
 	
-	//Descriptiontype:
-	//	DESCRIPTION_TYPE EQUAL type=Script;
-	public DescriptiontypeElements getDescriptiontypeAccess() {
-		return pDescriptiontype;
+	//enum LexicalSearchType:
+	//	MATCH="match" | REGEX="regex" | EXACT="exact";
+	public LexicalSearchTypeElements getLexicalSearchTypeAccess() {
+		return eLexicalSearchType;
 	}
 	
-	public ParserRule getDescriptiontypeRule() {
-		return getDescriptiontypeAccess().getRule();
+	public EnumRule getLexicalSearchTypeRule() {
+		return getLexicalSearchTypeAccess().getRule();
 	}
 	
-	//ActiveTerm:
-	//	ACTIVE EQUAL active=Boolean;
-	public ActiveTermElements getActiveTermAccess() {
-		return pActiveTerm;
+	//enum Domain:
+	//	CONCEPT="Concept" | DESCRIPTION="Description";
+	public DomainElements getDomainAccess() {
+		return eDomain;
 	}
 	
-	public ParserRule getActiveTermRule() {
-		return getActiveTermAccess().getRule();
+	public EnumRule getDomainRule() {
+		return getDomainAccess().getRule();
 	}
 	
-	//Boolean:
-	//	TRUE | FALSE;
+	//Boolean ecore::EBoolean:
+	//	'true' | 'false';
 	public BooleanElements getBooleanAccess() {
 		return pBoolean;
 	}
 	
 	public ParserRule getBooleanRule() {
 		return getBooleanAccess().getRule();
-	}
-	
-	//terminal TERM:
-	//	'term';
-	public TerminalRule getTERMRule() {
-		return tTERM;
-	}
-	
-	//terminal ECL:
-	//	'ecl';
-	public TerminalRule getECLRule() {
-		return tECL;
-	}
-	
-	//terminal ACTIVE:
-	//	'active';
-	public TerminalRule getACTIVERule() {
-		return tACTIVE;
-	}
-	
-	//terminal TRUE:
-	//	'true';
-	public TerminalRule getTRUERule() {
-		return tTRUE;
-	}
-	
-	//terminal FALSE:
-	//	'false';
-	public TerminalRule getFALSERule() {
-		return tFALSE;
-	}
-	
-	//terminal REGEX:
-	//	'regex';
-	public TerminalRule getREGEXRule() {
-		return tREGEX;
-	}
-	
-	//terminal ACCEPTABLE:
-	//	'acceptableIn';
-	public TerminalRule getACCEPTABLERule() {
-		return tACCEPTABLE;
-	}
-	
-	//terminal PREFERRED:
-	//	'preferredIn';
-	public TerminalRule getPREFERREDRule() {
-		return tPREFERRED;
-	}
-	
-	//terminal LANGREFSET:
-	//	'languageRefSet';
-	public TerminalRule getLANGREFSETRule() {
-		return tLANGREFSET;
-	}
-	
-	//terminal DESCRIPTION_TYPE:
-	//	'type';
-	public TerminalRule getDESCRIPTION_TYPERule() {
-		return tDESCRIPTION_TYPE;
 	}
 	
 	//terminal OPEN_DOUBLE_BRACES:

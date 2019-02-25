@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.ql.ql.impl;
 import com.b2international.snowowl.snomed.ql.ql.*;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 
@@ -81,22 +82,56 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
       case QlPackage.CONSTRAINT: return createConstraint();
       case QlPackage.NESTED_FILTER: return createNestedFilter();
       case QlPackage.FILTER: return createFilter();
-      case QlPackage.ECL_FILTER: return createEclFilter();
       case QlPackage.ACTIVE_FILTER: return createActiveFilter();
-      case QlPackage.DESCRIPTION: return createDescription();
-      case QlPackage.DESCRIPTION_FILTER: return createDescriptionFilter();
+      case QlPackage.MODULE_FILTER: return createModuleFilter();
       case QlPackage.TERM_FILTER: return createTermFilter();
-      case QlPackage.REGULAR_EXPRESSION: return createRegularExpression();
-      case QlPackage.PREFERRED_IN: return createPreferredIn();
-      case QlPackage.ACCEPTABLE_IN: return createAcceptableIn();
-      case QlPackage.LANGUAGE_REF_SET: return createLanguageRefSet();
-      case QlPackage.DESCRIPTIONTYPE: return createDescriptiontype();
-      case QlPackage.ACTIVE_TERM: return createActiveTerm();
+      case QlPackage.PREFERRED_IN_FILTER: return createPreferredInFilter();
+      case QlPackage.ACCEPTABLE_IN_FILTER: return createAcceptableInFilter();
+      case QlPackage.LANGUAGE_REF_SET_FILTER: return createLanguageRefSetFilter();
+      case QlPackage.TYPE_FILTER: return createTypeFilter();
       case QlPackage.DISJUNCTION: return createDisjunction();
       case QlPackage.CONJUNCTION: return createConjunction();
       case QlPackage.EXCLUSION: return createExclusion();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
+    }
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public Object createFromString(EDataType eDataType, String initialValue)
+  {
+    switch (eDataType.getClassifierID())
+    {
+      case QlPackage.LEXICAL_SEARCH_TYPE:
+        return createLexicalSearchTypeFromString(eDataType, initialValue);
+      case QlPackage.DOMAIN:
+        return createDomainFromString(eDataType, initialValue);
+      default:
+        throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
+    }
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public String convertToString(EDataType eDataType, Object instanceValue)
+  {
+    switch (eDataType.getClassifierID())
+    {
+      case QlPackage.LEXICAL_SEARCH_TYPE:
+        return convertLexicalSearchTypeToString(eDataType, instanceValue);
+      case QlPackage.DOMAIN:
+        return convertDomainToString(eDataType, instanceValue);
+      default:
+        throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
     }
   }
 
@@ -149,17 +184,6 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public EclFilter createEclFilter()
-  {
-    EclFilterImpl eclFilter = new EclFilterImpl();
-    return eclFilter;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   public ActiveFilter createActiveFilter()
   {
     ActiveFilterImpl activeFilter = new ActiveFilterImpl();
@@ -171,21 +195,10 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public Description createDescription()
+  public ModuleFilter createModuleFilter()
   {
-    DescriptionImpl description = new DescriptionImpl();
-    return description;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public DescriptionFilter createDescriptionFilter()
-  {
-    DescriptionFilterImpl descriptionFilter = new DescriptionFilterImpl();
-    return descriptionFilter;
+    ModuleFilterImpl moduleFilter = new ModuleFilterImpl();
+    return moduleFilter;
   }
 
   /**
@@ -204,10 +217,10 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public RegularExpression createRegularExpression()
+  public PreferredInFilter createPreferredInFilter()
   {
-    RegularExpressionImpl regularExpression = new RegularExpressionImpl();
-    return regularExpression;
+    PreferredInFilterImpl preferredInFilter = new PreferredInFilterImpl();
+    return preferredInFilter;
   }
 
   /**
@@ -215,10 +228,10 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public PreferredIn createPreferredIn()
+  public AcceptableInFilter createAcceptableInFilter()
   {
-    PreferredInImpl preferredIn = new PreferredInImpl();
-    return preferredIn;
+    AcceptableInFilterImpl acceptableInFilter = new AcceptableInFilterImpl();
+    return acceptableInFilter;
   }
 
   /**
@@ -226,10 +239,10 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public AcceptableIn createAcceptableIn()
+  public LanguageRefSetFilter createLanguageRefSetFilter()
   {
-    AcceptableInImpl acceptableIn = new AcceptableInImpl();
-    return acceptableIn;
+    LanguageRefSetFilterImpl languageRefSetFilter = new LanguageRefSetFilterImpl();
+    return languageRefSetFilter;
   }
 
   /**
@@ -237,32 +250,10 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public LanguageRefSet createLanguageRefSet()
+  public TypeFilter createTypeFilter()
   {
-    LanguageRefSetImpl languageRefSet = new LanguageRefSetImpl();
-    return languageRefSet;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public Descriptiontype createDescriptiontype()
-  {
-    DescriptiontypeImpl descriptiontype = new DescriptiontypeImpl();
-    return descriptiontype;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public ActiveTerm createActiveTerm()
-  {
-    ActiveTermImpl activeTerm = new ActiveTermImpl();
-    return activeTerm;
+    TypeFilterImpl typeFilter = new TypeFilterImpl();
+    return typeFilter;
   }
 
   /**
@@ -296,6 +287,50 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
   {
     ExclusionImpl exclusion = new ExclusionImpl();
     return exclusion;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public LexicalSearchType createLexicalSearchTypeFromString(EDataType eDataType, String initialValue)
+  {
+    LexicalSearchType result = LexicalSearchType.get(initialValue);
+    if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
+    return result;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public String convertLexicalSearchTypeToString(EDataType eDataType, Object instanceValue)
+  {
+    return instanceValue == null ? null : instanceValue.toString();
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Domain createDomainFromString(EDataType eDataType, String initialValue)
+  {
+    Domain result = Domain.get(initialValue);
+    if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
+    return result;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public String convertDomainToString(EDataType eDataType, Object instanceValue)
+  {
+    return instanceValue == null ? null : instanceValue.toString();
   }
 
   /**

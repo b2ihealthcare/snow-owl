@@ -63,6 +63,7 @@ Workflow {
 				encoding = "UTF-8"
 				lineDelimiter = "\n"
 				fileHeader = header
+				preferXtendStubs = false
 			}
 		}
 		language = StandardLanguage {

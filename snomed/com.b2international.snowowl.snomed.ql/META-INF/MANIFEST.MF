@@ -8,12 +8,11 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.equinox.common;bundle-version="3.5.0",
  org.eclipse.emf.ecore,
- org.eclipse.xtext.xbase.lib,
  org.antlr.runtime,
  org.eclipse.xtext.util,
- org.eclipse.xtend.lib,
  org.eclipse.emf.common,
- com.b2international.snowowl.snomed.ecl;visibility:=reexport
+ com.b2international.snowowl.snomed.ecl;visibility:=reexport,
+ org.eclipse.xtext.xbase.lib
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.slf4j;version="1.7.2",
  org.apache.log4j

@@ -29,10 +29,10 @@ import org.eclipse.xtext.parser.*;
 import org.eclipse.xtext.parser.impl.*;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.common.util.Enumerator;
 import org.eclipse.xtext.parser.antlr.AbstractInternalAntlrParser;
 import org.eclipse.xtext.parser.antlr.XtextTokenStream;
 import org.eclipse.xtext.parser.antlr.XtextTokenStream.HiddenTokens;
-import org.eclipse.xtext.parser.antlr.IUnorderedGroupHelper.UnorderedGroupState;
 import org.eclipse.xtext.parser.antlr.AntlrDatatypeRuleToken;
 import com.b2international.snowowl.snomed.ql.services.QLGrammarAccess;
 
@@ -101,21 +101,50 @@ ruleQuery returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getQueryAccess().getConstraintConstraintParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getQueryAccess().getEclExpressionConstraintParserRuleCall_1_0());
 				}
-				lv_constraint_1_0=ruleConstraint
+				lv_ecl_1_0=ruleExpressionConstraint
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getQueryRule());
 					}
 					set(
 						$current,
-						"constraint",
-						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ql.QL.Constraint");
+						"ecl",
+						lv_ecl_1_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
+		)?
+		(
+			this_OPEN_DOUBLE_BRACES_2=RULE_OPEN_DOUBLE_BRACES
+			{
+				newLeafNode(this_OPEN_DOUBLE_BRACES_2, grammarAccess.getQueryAccess().getOPEN_DOUBLE_BRACESTerminalRuleCall_2_0());
+			}
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getQueryAccess().getConstraintConstraintParserRuleCall_2_1_0());
+					}
+					lv_constraint_3_0=ruleConstraint
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getQueryRule());
+						}
+						set(
+							$current,
+							"constraint",
+							lv_constraint_3_0,
+							"com.b2international.snowowl.snomed.ql.QL.Constraint");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			this_CLOSE_DOUBLE_BRACES_4=RULE_CLOSE_DOUBLE_BRACES
+			{
+				newLeafNode(this_CLOSE_DOUBLE_BRACES_4, grammarAccess.getQueryAccess().getCLOSE_DOUBLE_BRACESTerminalRuleCall_2_2());
+			}
 		)?
 	)
 ;
@@ -251,16 +280,23 @@ ruleConjunction returns [EObject current=null]
 						$current);
 				}
 			)
-			otherlv_2=AND
-			{
-				newLeafNode(otherlv_2, grammarAccess.getConjunctionAccess().getANDKeyword_1_1());
-			}
+			(
+				otherlv_2=AND
+				{
+					newLeafNode(otherlv_2, grammarAccess.getConjunctionAccess().getANDKeyword_1_1_0());
+				}
+				    |
+				otherlv_3=Comma
+				{
+					newLeafNode(otherlv_3, grammarAccess.getConjunctionAccess().getCommaKeyword_1_1_1());
+				}
+			)
 			(
 				(
 					{
 						newCompositeNode(grammarAccess.getConjunctionAccess().getRightExclusionParserRuleCall_1_2_0());
 					}
-					lv_right_3_0=ruleExclusion
+					lv_right_4_0=ruleExclusion
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getConjunctionRule());
@@ -268,7 +304,7 @@ ruleConjunction returns [EObject current=null]
 						set(
 							$current,
 							"right",
-							lv_right_3_0,
+							lv_right_4_0,
 							"com.b2international.snowowl.snomed.ql.QL.Exclusion");
 						afterParserOrEnumRuleCall();
 					}
@@ -421,11 +457,11 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getEclFilterParserRuleCall_1());
+			newCompositeNode(grammarAccess.getFilterAccess().getTermFilterParserRuleCall_1());
 		}
-		this_EclFilter_1=ruleEclFilter
+		this_TermFilter_1=ruleTermFilter
 		{
-			$current = $this_EclFilter_1.current;
+			$current = $this_TermFilter_1.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -433,11 +469,11 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getDescriptionParserRuleCall_2());
+			newCompositeNode(grammarAccess.getFilterAccess().getPreferredInFilterParserRuleCall_2());
 		}
-		this_Description_2=ruleDescription
+		this_PreferredInFilter_2=rulePreferredInFilter
 		{
-			$current = $this_Description_2.current;
+			$current = $this_PreferredInFilter_2.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -445,55 +481,61 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getNestedFilterParserRuleCall_3());
+			newCompositeNode(grammarAccess.getFilterAccess().getAcceptableInFilterParserRuleCall_3());
 		}
-		this_NestedFilter_3=ruleNestedFilter
+		this_AcceptableInFilter_3=ruleAcceptableInFilter
 		{
-			$current = $this_NestedFilter_3.current;
+			$current = $this_AcceptableInFilter_3.current;
 			afterParserOrEnumRuleCall();
 		}
-	)
-;
-
-// Entry rule entryRuleEclFilter
-entryRuleEclFilter returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getEclFilterRule()); }
-	iv_ruleEclFilter=ruleEclFilter
-	{ $current=$iv_ruleEclFilter.current; }
-	EOF;
-
-// Rule EclFilter
-ruleEclFilter returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		this_ECL_0=RULE_ECL
+		    |
 		{
-			newLeafNode(this_ECL_0, grammarAccess.getEclFilterAccess().getECLTerminalRuleCall_0());
+			/* */
 		}
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getEclFilterAccess().getEclScriptParserRuleCall_1_0());
-				}
-				lv_ecl_1_0=ruleScript
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getEclFilterRule());
-					}
-					set(
-						$current,
-						"ecl",
-						lv_ecl_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Script");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
+		{
+			newCompositeNode(grammarAccess.getFilterAccess().getLanguageRefSetFilterParserRuleCall_4());
+		}
+		this_LanguageRefSetFilter_4=ruleLanguageRefSetFilter
+		{
+			$current = $this_LanguageRefSetFilter_4.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getFilterAccess().getTypeFilterParserRuleCall_5());
+		}
+		this_TypeFilter_5=ruleTypeFilter
+		{
+			$current = $this_TypeFilter_5.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getFilterAccess().getModuleFilterParserRuleCall_6());
+		}
+		this_ModuleFilter_6=ruleModuleFilter
+		{
+			$current = $this_ModuleFilter_6.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getFilterAccess().getNestedFilterParserRuleCall_7());
+		}
+		this_NestedFilter_7=ruleNestedFilter
+		{
+			$current = $this_NestedFilter_7.current;
+			afterParserOrEnumRuleCall();
+		}
 	)
 ;
 
@@ -513,16 +555,45 @@ ruleActiveFilter returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_ACTIVE_0=RULE_ACTIVE
+		(
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getActiveFilterAccess().getDomainDomainEnumRuleCall_0_0_0());
+					}
+					lv_domain_0_0=ruleDomain
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getActiveFilterRule());
+						}
+						set(
+							$current,
+							"domain",
+							lv_domain_0_0,
+							"com.b2international.snowowl.snomed.ql.QL.Domain");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			this_DOT_1=RULE_DOT
+			{
+				newLeafNode(this_DOT_1, grammarAccess.getActiveFilterAccess().getDOTTerminalRuleCall_0_1());
+			}
+		)?
+		otherlv_2=Active
 		{
-			newLeafNode(this_ACTIVE_0, grammarAccess.getActiveFilterAccess().getACTIVETerminalRuleCall_0());
+			newLeafNode(otherlv_2, grammarAccess.getActiveFilterAccess().getActiveKeyword_1());
+		}
+		this_EQUAL_3=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_3, grammarAccess.getActiveFilterAccess().getEQUALTerminalRuleCall_2());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getActiveFilterAccess().getActiveBooleanParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getActiveFilterAccess().getActiveBooleanParserRuleCall_3_0());
 				}
-				lv_active_1_0=ruleBoolean
+				lv_active_4_0=ruleBoolean
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getActiveFilterRule());
@@ -530,7 +601,7 @@ ruleActiveFilter returns [EObject current=null]
 					set(
 						$current,
 						"active",
-						lv_active_1_0,
+						lv_active_4_0,
 						"com.b2international.snowowl.snomed.ql.QL.Boolean");
 					afterParserOrEnumRuleCall();
 				}
@@ -539,15 +610,15 @@ ruleActiveFilter returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleDescription
-entryRuleDescription returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getDescriptionRule()); }
-	iv_ruleDescription=ruleDescription
-	{ $current=$iv_ruleDescription.current; }
+// Entry rule entryRuleModuleFilter
+entryRuleModuleFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getModuleFilterRule()); }
+	iv_ruleModuleFilter=ruleModuleFilter
+	{ $current=$iv_ruleModuleFilter.current; }
 	EOF;
 
-// Rule Description
-ruleDescription returns [EObject current=null]
+// Rule ModuleFilter
+ruleModuleFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -556,296 +627,59 @@ ruleDescription returns [EObject current=null]
 }:
 	(
 		(
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getModuleFilterAccess().getDomainDomainEnumRuleCall_0_0_0());
+					}
+					lv_domain_0_0=ruleDomain
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getModuleFilterRule());
+						}
+						set(
+							$current,
+							"domain",
+							lv_domain_0_0,
+							"com.b2international.snowowl.snomed.ql.QL.Domain");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			this_DOT_1=RULE_DOT
 			{
-				/* */
+				newLeafNode(this_DOT_1, grammarAccess.getModuleFilterAccess().getDOTTerminalRuleCall_0_1());
 			}
-			{
-				$current = forceCreateModelElement(
-					grammarAccess.getDescriptionAccess().getDescriptionAction_0(),
-					$current);
-			}
-		)
-		this_OPEN_DOUBLE_BRACES_1=RULE_OPEN_DOUBLE_BRACES
+		)?
+		otherlv_2=ModuleId
 		{
-			newLeafNode(this_OPEN_DOUBLE_BRACES_1, grammarAccess.getDescriptionAccess().getOPEN_DOUBLE_BRACESTerminalRuleCall_1());
+			newLeafNode(otherlv_2, grammarAccess.getModuleFilterAccess().getModuleIdKeyword_1());
+		}
+		this_EQUAL_3=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_3, grammarAccess.getModuleFilterAccess().getEQUALTerminalRuleCall_2());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getDescriptionAccess().getFilterDescriptionFilterParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getModuleFilterAccess().getModuleIdExpressionConstraintParserRuleCall_3_0());
 				}
-				lv_filter_2_0=ruleDescriptionFilter
+				lv_moduleId_4_0=ruleExpressionConstraint
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getDescriptionRule());
+						$current = createModelElementForParent(grammarAccess.getModuleFilterRule());
 					}
 					set(
 						$current,
-						"filter",
-						lv_filter_2_0,
-						"com.b2international.snowowl.snomed.ql.QL.DescriptionFilter");
+						"moduleId",
+						lv_moduleId_4_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
 		)
-		this_CLOSE_DOUBLE_BRACES_3=RULE_CLOSE_DOUBLE_BRACES
-		{
-			newLeafNode(this_CLOSE_DOUBLE_BRACES_3, grammarAccess.getDescriptionAccess().getCLOSE_DOUBLE_BRACESTerminalRuleCall_3());
-		}
 	)
 ;
-
-// Entry rule entryRuleDescriptionFilter
-entryRuleDescriptionFilter returns [EObject current=null]@init {
-	UnorderedGroupState myUnorderedGroupState = getUnorderedGroupHelper().snapShot(
-	grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1()
-	);
-}:
-	{ newCompositeNode(grammarAccess.getDescriptionFilterRule()); }
-	iv_ruleDescriptionFilter=ruleDescriptionFilter
-	{ $current=$iv_ruleDescriptionFilter.current; }
-	EOF;
-finally {
-	myUnorderedGroupState.restore();
-}
-
-// Rule DescriptionFilter
-ruleDescriptionFilter returns [EObject current=null]
-@init {
-	enterRule();
-	UnorderedGroupState myUnorderedGroupState = getUnorderedGroupHelper().snapShot(
-	grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1()
-	);
-}
-@after {
-	leaveRule();
-}:
-	(
-		(
-			{
-				/* */
-			}
-			{
-				$current = forceCreateModelElement(
-					grammarAccess.getDescriptionFilterAccess().getDescriptionFilterAction_0(),
-					$current);
-			}
-		)
-		(
-			(
-				{ 
-				  getUnorderedGroupHelper().enter(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-				}
-				(
-					(
-			(
-				{getUnorderedGroupHelper().canSelect(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 0)}?=>(
-					{
-						getUnorderedGroupHelper().select(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 0);
-					}
-								({true}?=>((
-									{
-										newCompositeNode(grammarAccess.getDescriptionFilterAccess().getTermFilterTermFilterParserRuleCall_1_0_0());
-									}
-									lv_termFilter_2_0=ruleTermFilter
-									{
-										if ($current==null) {
-											$current = createModelElementForParent(grammarAccess.getDescriptionFilterRule());
-										}
-										set(
-											$current,
-											"termFilter",
-											lv_termFilter_2_0,
-											"com.b2international.snowowl.snomed.ql.QL.TermFilter");
-										afterParserOrEnumRuleCall();
-									}
-								)
-								))
-					{ 
-						getUnorderedGroupHelper().returnFromSelection(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-					}
-				)
-			)|
-			(
-				{getUnorderedGroupHelper().canSelect(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 1)}?=>(
-					{
-						getUnorderedGroupHelper().select(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 1);
-					}
-								({true}?=>((
-									{
-										newCompositeNode(grammarAccess.getDescriptionFilterAccess().getActiveActiveTermParserRuleCall_1_1_0());
-									}
-									lv_active_3_0=ruleActiveTerm
-									{
-										if ($current==null) {
-											$current = createModelElementForParent(grammarAccess.getDescriptionFilterRule());
-										}
-										set(
-											$current,
-											"active",
-											lv_active_3_0,
-											"com.b2international.snowowl.snomed.ql.QL.ActiveTerm");
-										afterParserOrEnumRuleCall();
-									}
-								)
-								))
-					{ 
-						getUnorderedGroupHelper().returnFromSelection(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-					}
-				)
-			)|
-			(
-				{getUnorderedGroupHelper().canSelect(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 2)}?=>(
-					{
-						getUnorderedGroupHelper().select(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 2);
-					}
-								({true}?=>((
-									{
-										newCompositeNode(grammarAccess.getDescriptionFilterAccess().getTypeDescriptiontypeParserRuleCall_1_2_0());
-									}
-									lv_type_4_0=ruleDescriptiontype
-									{
-										if ($current==null) {
-											$current = createModelElementForParent(grammarAccess.getDescriptionFilterRule());
-										}
-										set(
-											$current,
-											"type",
-											lv_type_4_0,
-											"com.b2international.snowowl.snomed.ql.QL.Descriptiontype");
-										afterParserOrEnumRuleCall();
-									}
-								)
-								))
-					{ 
-						getUnorderedGroupHelper().returnFromSelection(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-					}
-				)
-			)|
-			(
-				{getUnorderedGroupHelper().canSelect(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 3)}?=>(
-					{
-						getUnorderedGroupHelper().select(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 3);
-					}
-								({true}?=>((
-									{
-										newCompositeNode(grammarAccess.getDescriptionFilterAccess().getRegexRegularExpressionParserRuleCall_1_3_0());
-									}
-									lv_regex_5_0=ruleRegularExpression
-									{
-										if ($current==null) {
-											$current = createModelElementForParent(grammarAccess.getDescriptionFilterRule());
-										}
-										set(
-											$current,
-											"regex",
-											lv_regex_5_0,
-											"com.b2international.snowowl.snomed.ql.QL.RegularExpression");
-										afterParserOrEnumRuleCall();
-									}
-								)
-								))
-					{ 
-						getUnorderedGroupHelper().returnFromSelection(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-					}
-				)
-			)|
-			(
-				{getUnorderedGroupHelper().canSelect(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 4)}?=>(
-					{
-						getUnorderedGroupHelper().select(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 4);
-					}
-								({true}?=>((
-									{
-										newCompositeNode(grammarAccess.getDescriptionFilterAccess().getAcceptableInAcceptableInParserRuleCall_1_4_0());
-									}
-									lv_acceptableIn_6_0=ruleAcceptableIn
-									{
-										if ($current==null) {
-											$current = createModelElementForParent(grammarAccess.getDescriptionFilterRule());
-										}
-										set(
-											$current,
-											"acceptableIn",
-											lv_acceptableIn_6_0,
-											"com.b2international.snowowl.snomed.ql.QL.AcceptableIn");
-										afterParserOrEnumRuleCall();
-									}
-								)
-								))
-					{ 
-						getUnorderedGroupHelper().returnFromSelection(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-					}
-				)
-			)|
-			(
-				{getUnorderedGroupHelper().canSelect(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 5)}?=>(
-					{
-						getUnorderedGroupHelper().select(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 5);
-					}
-								({true}?=>((
-									{
-										newCompositeNode(grammarAccess.getDescriptionFilterAccess().getPreferredInPreferredInParserRuleCall_1_5_0());
-									}
-									lv_preferredIn_7_0=rulePreferredIn
-									{
-										if ($current==null) {
-											$current = createModelElementForParent(grammarAccess.getDescriptionFilterRule());
-										}
-										set(
-											$current,
-											"preferredIn",
-											lv_preferredIn_7_0,
-											"com.b2international.snowowl.snomed.ql.QL.PreferredIn");
-										afterParserOrEnumRuleCall();
-									}
-								)
-								))
-					{ 
-						getUnorderedGroupHelper().returnFromSelection(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-					}
-				)
-			)|
-			(
-				{getUnorderedGroupHelper().canSelect(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 6)}?=>(
-					{
-						getUnorderedGroupHelper().select(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1(), 6);
-					}
-								({true}?=>((
-									{
-										newCompositeNode(grammarAccess.getDescriptionFilterAccess().getLanguageRefSetLanguageRefSetParserRuleCall_1_6_0());
-									}
-									lv_languageRefSet_8_0=ruleLanguageRefSet
-									{
-										if ($current==null) {
-											$current = createModelElementForParent(grammarAccess.getDescriptionFilterRule());
-										}
-										set(
-											$current,
-											"languageRefSet",
-											lv_languageRefSet_8_0,
-											"com.b2international.snowowl.snomed.ql.QL.LanguageRefSet");
-										afterParserOrEnumRuleCall();
-									}
-								)
-								))
-					{ 
-						getUnorderedGroupHelper().returnFromSelection(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-					}
-				)
-			)
-					)*
-				)
-			)
-				{ 
-				  getUnorderedGroupHelper().leave(grammarAccess.getDescriptionFilterAccess().getUnorderedGroup_1());
-				}
-		)
-	)
-;
-finally {
-	myUnorderedGroupState.restore();
-}
 
 // Entry rule entryRuleTermFilter
 entryRuleTermFilter returns [EObject current=null]:
@@ -863,9 +697,9 @@ ruleTermFilter returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_TERM_0=RULE_TERM
+		otherlv_0=Term
 		{
-			newLeafNode(this_TERM_0, grammarAccess.getTermFilterAccess().getTERMTerminalRuleCall_0());
+			newLeafNode(otherlv_0, grammarAccess.getTermFilterAccess().getTermKeyword_0());
 		}
 		this_EQUAL_1=RULE_EQUAL
 		{
@@ -873,9 +707,34 @@ ruleTermFilter returns [EObject current=null]
 		}
 		(
 			(
-				lv_term_2_0=RULE_STRING
+				(
+					{
+						newCompositeNode(grammarAccess.getTermFilterAccess().getLexicalSearchTypeLexicalSearchTypeEnumRuleCall_2_0_0());
+					}
+					lv_lexicalSearchType_2_0=ruleLexicalSearchType
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getTermFilterRule());
+						}
+						set(
+							$current,
+							"lexicalSearchType",
+							lv_lexicalSearchType_2_0,
+							"com.b2international.snowowl.snomed.ql.QL.LexicalSearchType");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			this_COLON_3=RULE_COLON
+			{
+				newLeafNode(this_COLON_3, grammarAccess.getTermFilterAccess().getCOLONTerminalRuleCall_2_1());
+			}
+		)?
+		(
+			(
+				lv_term_4_0=RULE_STRING
 				{
-					newLeafNode(lv_term_2_0, grammarAccess.getTermFilterAccess().getTermSTRINGTerminalRuleCall_2_0());
+					newLeafNode(lv_term_4_0, grammarAccess.getTermFilterAccess().getTermSTRINGTerminalRuleCall_3_0());
 				}
 				{
 					if ($current==null) {
@@ -884,7 +743,7 @@ ruleTermFilter returns [EObject current=null]
 					setWithLastConsumed(
 						$current,
 						"term",
-						lv_term_2_0,
+						lv_term_4_0,
 						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
 				}
 			)
@@ -892,15 +751,15 @@ ruleTermFilter returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleRegularExpression
-entryRuleRegularExpression returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getRegularExpressionRule()); }
-	iv_ruleRegularExpression=ruleRegularExpression
-	{ $current=$iv_ruleRegularExpression.current; }
+// Entry rule entryRulePreferredInFilter
+entryRulePreferredInFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getPreferredInFilterRule()); }
+	iv_rulePreferredInFilter=rulePreferredInFilter
+	{ $current=$iv_rulePreferredInFilter.current; }
 	EOF;
 
-// Rule RegularExpression
-ruleRegularExpression returns [EObject current=null]
+// Rule PreferredInFilter
+rulePreferredInFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -908,74 +767,29 @@ ruleRegularExpression returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_REGEX_0=RULE_REGEX
+		otherlv_0=PreferredIn
 		{
-			newLeafNode(this_REGEX_0, grammarAccess.getRegularExpressionAccess().getREGEXTerminalRuleCall_0());
+			newLeafNode(otherlv_0, grammarAccess.getPreferredInFilterAccess().getPreferredInKeyword_0());
 		}
 		this_EQUAL_1=RULE_EQUAL
 		{
-			newLeafNode(this_EQUAL_1, grammarAccess.getRegularExpressionAccess().getEQUALTerminalRuleCall_1());
-		}
-		(
-			(
-				lv_regex_2_0=RULE_STRING
-				{
-					newLeafNode(lv_regex_2_0, grammarAccess.getRegularExpressionAccess().getRegexSTRINGTerminalRuleCall_2_0());
-				}
-				{
-					if ($current==null) {
-						$current = createModelElement(grammarAccess.getRegularExpressionRule());
-					}
-					setWithLastConsumed(
-						$current,
-						"regex",
-						lv_regex_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
-				}
-			)
-		)
-	)
-;
-
-// Entry rule entryRulePreferredIn
-entryRulePreferredIn returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getPreferredInRule()); }
-	iv_rulePreferredIn=rulePreferredIn
-	{ $current=$iv_rulePreferredIn.current; }
-	EOF;
-
-// Rule PreferredIn
-rulePreferredIn returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		this_PREFERRED_0=RULE_PREFERRED
-		{
-			newLeafNode(this_PREFERRED_0, grammarAccess.getPreferredInAccess().getPREFERREDTerminalRuleCall_0());
-		}
-		this_EQUAL_1=RULE_EQUAL
-		{
-			newLeafNode(this_EQUAL_1, grammarAccess.getPreferredInAccess().getEQUALTerminalRuleCall_1());
+			newLeafNode(this_EQUAL_1, grammarAccess.getPreferredInFilterAccess().getEQUALTerminalRuleCall_1());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getPreferredInAccess().getPreferredScriptParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getPreferredInFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0());
 				}
-				lv_preferred_2_0=ruleScript
+				lv_languageRefSetId_2_0=ruleExpressionConstraint
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getPreferredInRule());
+						$current = createModelElementForParent(grammarAccess.getPreferredInFilterRule());
 					}
 					set(
 						$current,
-						"preferred",
-						lv_preferred_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Script");
+						"languageRefSetId",
+						lv_languageRefSetId_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -983,15 +797,15 @@ rulePreferredIn returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleAcceptableIn
-entryRuleAcceptableIn returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getAcceptableInRule()); }
-	iv_ruleAcceptableIn=ruleAcceptableIn
-	{ $current=$iv_ruleAcceptableIn.current; }
+// Entry rule entryRuleAcceptableInFilter
+entryRuleAcceptableInFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getAcceptableInFilterRule()); }
+	iv_ruleAcceptableInFilter=ruleAcceptableInFilter
+	{ $current=$iv_ruleAcceptableInFilter.current; }
 	EOF;
 
-// Rule AcceptableIn
-ruleAcceptableIn returns [EObject current=null]
+// Rule AcceptableInFilter
+ruleAcceptableInFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -999,29 +813,29 @@ ruleAcceptableIn returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_ACCEPTABLE_0=RULE_ACCEPTABLE
+		otherlv_0=AcceptableIn
 		{
-			newLeafNode(this_ACCEPTABLE_0, grammarAccess.getAcceptableInAccess().getACCEPTABLETerminalRuleCall_0());
+			newLeafNode(otherlv_0, grammarAccess.getAcceptableInFilterAccess().getAcceptableInKeyword_0());
 		}
 		this_EQUAL_1=RULE_EQUAL
 		{
-			newLeafNode(this_EQUAL_1, grammarAccess.getAcceptableInAccess().getEQUALTerminalRuleCall_1());
+			newLeafNode(this_EQUAL_1, grammarAccess.getAcceptableInFilterAccess().getEQUALTerminalRuleCall_1());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getAcceptableInAccess().getAcceptableScriptParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getAcceptableInFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0());
 				}
-				lv_acceptable_2_0=ruleScript
+				lv_languageRefSetId_2_0=ruleExpressionConstraint
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getAcceptableInRule());
+						$current = createModelElementForParent(grammarAccess.getAcceptableInFilterRule());
 					}
 					set(
 						$current,
-						"acceptable",
-						lv_acceptable_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Script");
+						"languageRefSetId",
+						lv_languageRefSetId_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1029,15 +843,15 @@ ruleAcceptableIn returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleLanguageRefSet
-entryRuleLanguageRefSet returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getLanguageRefSetRule()); }
-	iv_ruleLanguageRefSet=ruleLanguageRefSet
-	{ $current=$iv_ruleLanguageRefSet.current; }
+// Entry rule entryRuleLanguageRefSetFilter
+entryRuleLanguageRefSetFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getLanguageRefSetFilterRule()); }
+	iv_ruleLanguageRefSetFilter=ruleLanguageRefSetFilter
+	{ $current=$iv_ruleLanguageRefSetFilter.current; }
 	EOF;
 
-// Rule LanguageRefSet
-ruleLanguageRefSet returns [EObject current=null]
+// Rule LanguageRefSetFilter
+ruleLanguageRefSetFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -1045,29 +859,29 @@ ruleLanguageRefSet returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_LANGREFSET_0=RULE_LANGREFSET
+		otherlv_0=LanguageRefSet
 		{
-			newLeafNode(this_LANGREFSET_0, grammarAccess.getLanguageRefSetAccess().getLANGREFSETTerminalRuleCall_0());
+			newLeafNode(otherlv_0, grammarAccess.getLanguageRefSetFilterAccess().getLanguageRefSetKeyword_0());
 		}
 		this_EQUAL_1=RULE_EQUAL
 		{
-			newLeafNode(this_EQUAL_1, grammarAccess.getLanguageRefSetAccess().getEQUALTerminalRuleCall_1());
+			newLeafNode(this_EQUAL_1, grammarAccess.getLanguageRefSetFilterAccess().getEQUALTerminalRuleCall_1());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getLanguageRefSetAccess().getRefsetScriptParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getLanguageRefSetFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0());
 				}
-				lv_refset_2_0=ruleScript
+				lv_languageRefSetId_2_0=ruleExpressionConstraint
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getLanguageRefSetRule());
+						$current = createModelElementForParent(grammarAccess.getLanguageRefSetFilterRule());
 					}
 					set(
 						$current,
-						"refset",
-						lv_refset_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Script");
+						"languageRefSetId",
+						lv_languageRefSetId_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1075,15 +889,15 @@ ruleLanguageRefSet returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleDescriptiontype
-entryRuleDescriptiontype returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getDescriptiontypeRule()); }
-	iv_ruleDescriptiontype=ruleDescriptiontype
-	{ $current=$iv_ruleDescriptiontype.current; }
+// Entry rule entryRuleTypeFilter
+entryRuleTypeFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getTypeFilterRule()); }
+	iv_ruleTypeFilter=ruleTypeFilter
+	{ $current=$iv_ruleTypeFilter.current; }
 	EOF;
 
-// Rule Descriptiontype
-ruleDescriptiontype returns [EObject current=null]
+// Rule TypeFilter
+ruleTypeFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -1091,75 +905,29 @@ ruleDescriptiontype returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_DESCRIPTION_TYPE_0=RULE_DESCRIPTION_TYPE
+		otherlv_0=TypeId
 		{
-			newLeafNode(this_DESCRIPTION_TYPE_0, grammarAccess.getDescriptiontypeAccess().getDESCRIPTION_TYPETerminalRuleCall_0());
+			newLeafNode(otherlv_0, grammarAccess.getTypeFilterAccess().getTypeIdKeyword_0());
 		}
 		this_EQUAL_1=RULE_EQUAL
 		{
-			newLeafNode(this_EQUAL_1, grammarAccess.getDescriptiontypeAccess().getEQUALTerminalRuleCall_1());
+			newLeafNode(this_EQUAL_1, grammarAccess.getTypeFilterAccess().getEQUALTerminalRuleCall_1());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getDescriptiontypeAccess().getTypeScriptParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getTypeFilterAccess().getTypeExpressionConstraintParserRuleCall_2_0());
 				}
-				lv_type_2_0=ruleScript
+				lv_type_2_0=ruleExpressionConstraint
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getDescriptiontypeRule());
+						$current = createModelElementForParent(grammarAccess.getTypeFilterRule());
 					}
 					set(
 						$current,
 						"type",
 						lv_type_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Script");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
-	)
-;
-
-// Entry rule entryRuleActiveTerm
-entryRuleActiveTerm returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getActiveTermRule()); }
-	iv_ruleActiveTerm=ruleActiveTerm
-	{ $current=$iv_ruleActiveTerm.current; }
-	EOF;
-
-// Rule ActiveTerm
-ruleActiveTerm returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		this_ACTIVE_0=RULE_ACTIVE
-		{
-			newLeafNode(this_ACTIVE_0, grammarAccess.getActiveTermAccess().getACTIVETerminalRuleCall_0());
-		}
-		this_EQUAL_1=RULE_EQUAL
-		{
-			newLeafNode(this_EQUAL_1, grammarAccess.getActiveTermAccess().getEQUALTerminalRuleCall_1());
-		}
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getActiveTermAccess().getActiveBooleanParserRuleCall_2_0());
-				}
-				lv_active_2_0=ruleBoolean
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getActiveTermRule());
-					}
-					set(
-						$current,
-						"active",
-						lv_active_2_0,
-						"com.b2international.snowowl.snomed.ql.QL.Boolean");
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1183,69 +951,17 @@ ruleBoolean returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()
 	leaveRule();
 }:
 	(
-		this_TRUE_0=RULE_TRUE
+		kw=True
 		{
-			$current.merge(this_TRUE_0);
-		}
-		{
-			newLeafNode(this_TRUE_0, grammarAccess.getBooleanAccess().getTRUETerminalRuleCall_0());
+			$current.merge(kw);
+			newLeafNode(kw, grammarAccess.getBooleanAccess().getTrueKeyword_0());
 		}
 		    |
-		this_FALSE_1=RULE_FALSE
+		kw=False
 		{
-			$current.merge(this_FALSE_1);
+			$current.merge(kw);
+			newLeafNode(kw, grammarAccess.getBooleanAccess().getFalseKeyword_1());
 		}
-		{
-			newLeafNode(this_FALSE_1, grammarAccess.getBooleanAccess().getFALSETerminalRuleCall_1());
-		}
-	)
-;
-
-// Entry rule entryRuleScript
-entryRuleScript returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getScriptRule()); }
-	iv_ruleScript=ruleScript
-	{ $current=$iv_ruleScript.current; }
-	EOF;
-
-// Rule Script
-ruleScript returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		(
-			{
-				/* */
-			}
-			{
-				$current = forceCreateModelElement(
-					grammarAccess.getScriptAccess().getScriptAction_0(),
-					$current);
-			}
-		)
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getScriptAccess().getConstraintExpressionConstraintParserRuleCall_1_0());
-				}
-				lv_constraint_1_0=ruleExpressionConstraint
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getScriptRule());
-					}
-					set(
-						$current,
-						"constraint",
-						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)?
 	)
 ;
 
@@ -4379,3 +4095,65 @@ ruleNonNegativeDecimal returns [AntlrDatatypeRuleToken current=new AntlrDatatype
 finally {
 	myHiddenTokenState.restore();
 }
+
+// Rule LexicalSearchType
+ruleLexicalSearchType returns [Enumerator current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			enumLiteral_0=Match
+			{
+				$current = grammarAccess.getLexicalSearchTypeAccess().getMATCHEnumLiteralDeclaration_0().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_0, grammarAccess.getLexicalSearchTypeAccess().getMATCHEnumLiteralDeclaration_0());
+			}
+		)
+		    |
+		(
+			enumLiteral_1=Regex
+			{
+				$current = grammarAccess.getLexicalSearchTypeAccess().getREGEXEnumLiteralDeclaration_1().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_1, grammarAccess.getLexicalSearchTypeAccess().getREGEXEnumLiteralDeclaration_1());
+			}
+		)
+		    |
+		(
+			enumLiteral_2=Exact
+			{
+				$current = grammarAccess.getLexicalSearchTypeAccess().getEXACTEnumLiteralDeclaration_2().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_2, grammarAccess.getLexicalSearchTypeAccess().getEXACTEnumLiteralDeclaration_2());
+			}
+		)
+	)
+;
+
+// Rule Domain
+ruleDomain returns [Enumerator current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			enumLiteral_0=Concept
+			{
+				$current = grammarAccess.getDomainAccess().getCONCEPTEnumLiteralDeclaration_0().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_0, grammarAccess.getDomainAccess().getCONCEPTEnumLiteralDeclaration_0());
+			}
+		)
+		    |
+		(
+			enumLiteral_1=Description
+			{
+				$current = grammarAccess.getDomainAccess().getDESCRIPTIONEnumLiteralDeclaration_1().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_1, grammarAccess.getDomainAccess().getDESCRIPTIONEnumLiteralDeclaration_1());
+			}
+		)
+	)
+;

@@ -1,0 +1,113 @@
+/*
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.snomed.ql.validation;
+
+import org.eclipse.xtext.validation.Check;
+
+import com.b2international.snowowl.snomed.ql.QLRuntimeModule;
+import com.b2international.snowowl.snomed.ql.ql.Conjunction;
+import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ql.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.ql.Domain;
+import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.QlPackage;
+import com.b2international.snowowl.snomed.ql.ql.Query;
+import com.b2international.snowowl.snomed.ql.ql.TermFilter;
+
+/**
+ * This class contains custom validation rules. 
+ *
+ * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
+ */
+public class QLValidator extends AbstractQLValidator {
+
+	public static final String AMBIGUOUS_MESSAGE = "Ambiguous binary operator, use parenthesis to disambiguate the meaning of the expression";
+	public static final String AMBIGUOUS_CODE = "binaryoperator.ambiguous";
+	
+	public static final String DOMAIN_INCONSISTENCY_MESSAGE = "Inconsistent domains on left and right side of a binary operator, specify the domain (Concept, Description) the disambiguate the meaning of the expression";
+	public static final String DOMAIN_INCONSISTENCY_CODE = "binaryoperator.inconsistentdomain";
+
+	@Check
+	public void checkQuery(Query it) {
+		if (it.getEcl() == null) {
+			error("ECL expression not specified", QlPackage.Literals.QUERY__ECL);
+		}
+	}
+
+	@Check
+	public void checkDisjunction(Disjunction it) {
+		if (isAmbiguous(it, it.getLeft())) {
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.DISJUNCTION__LEFT, AMBIGUOUS_CODE);
+		} else if (isAmbiguous(it, it.getRight())) {
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.DISJUNCTION__RIGHT, AMBIGUOUS_CODE);
+		}
+		
+		Domain leftDomain = QLRuntimeModule.getDomain(it.getLeft());
+		Domain rightDomain = QLRuntimeModule.getDomain(it.getRight());
+		
+		if (leftDomain != rightDomain) {
+			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.DISJUNCTION__LEFT, DOMAIN_INCONSISTENCY_CODE);
+		}
+		
+	}
+	
+	@Check
+	public void checkConjunction(Conjunction it) {
+		if (isAmbiguous(it, it.getLeft())) {
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__LEFT, AMBIGUOUS_CODE);
+		} else if (isAmbiguous(it, it.getRight())) {
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__RIGHT, AMBIGUOUS_CODE);
+		}
+		
+		Domain leftDomain = QLRuntimeModule.getDomain(it.getLeft());
+		Domain rightDomain = QLRuntimeModule.getDomain(it.getRight());
+		
+		if (leftDomain != rightDomain) {
+			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.CONJUNCTION__LEFT, DOMAIN_INCONSISTENCY_CODE);
+		}
+	}
+	
+	@Check
+	public void checkExclusion(Exclusion it) {
+		if (isAmbiguous(it, it.getLeft())) {
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__LEFT, AMBIGUOUS_CODE);
+		} else if (isAmbiguous(it, it.getRight())) {
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__RIGHT, AMBIGUOUS_CODE);
+		}
+		
+		Domain leftDomain = QLRuntimeModule.getDomain(it.getLeft());
+		Domain rightDomain = QLRuntimeModule.getDomain(it.getRight());
+		
+		if (leftDomain != rightDomain) {
+			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.EXCLUSION__LEFT, DOMAIN_INCONSISTENCY_CODE);
+		}
+	}
+	
+	@Check
+	public void checkShortTermFilter(TermFilter it) {
+		if (it.getTerm().length() < 2) {
+			error("Term filter too short", QlPackage.Literals.TERM_FILTER__TERM);
+		}
+	}
+	
+	private boolean isAmbiguous(Constraint parent, Constraint child) {
+		return parent.getClass() != child.getClass() && 
+			(child instanceof Disjunction 
+				|| child instanceof Conjunction 
+				|| child instanceof Exclusion);
+	}
+	
+}

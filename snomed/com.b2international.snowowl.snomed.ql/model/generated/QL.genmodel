@@ -6,7 +6,17 @@
     complianceLevel="6.0" copyrightFields="false" runtimeVersion="2.12" usedGenPackages="platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.genmodel#//ecl">
   <genPackages prefix="Ql" basePackage="com.b2international.snowowl.snomed.ql" disposableProviderFactory="true"
       fileExtensions="ql" ecorePackage="QL.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="QL.ecore#//LexicalSearchType">
+      <genEnumLiterals ecoreEnumLiteral="QL.ecore#//LexicalSearchType/MATCH"/>
+      <genEnumLiterals ecoreEnumLiteral="QL.ecore#//LexicalSearchType/REGEX"/>
+      <genEnumLiterals ecoreEnumLiteral="QL.ecore#//LexicalSearchType/EXACT"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="QL.ecore#//Domain">
+      <genEnumLiterals ecoreEnumLiteral="QL.ecore#//Domain/CONCEPT"/>
+      <genEnumLiterals ecoreEnumLiteral="QL.ecore#//Domain/DESCRIPTION"/>
+    </genEnums>
     <genClasses ecoreClass="QL.ecore#//Query">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Query/ecl"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Query/constraint"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//Constraint"/>
@@ -14,44 +24,29 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//NestedFilter/constraint"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//Filter"/>
-    <genClasses ecoreClass="QL.ecore#//EclFilter">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//EclFilter/ecl"/>
-    </genClasses>
     <genClasses ecoreClass="QL.ecore#//ActiveFilter">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveFilter/domain"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveFilter/active"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//Description">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Description/filter"/>
-    </genClasses>
-    <genClasses ecoreClass="QL.ecore#//DescriptionFilter">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/termFilter"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/active"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/regex"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/acceptableIn"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/preferredIn"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DescriptionFilter/languageRefSet"/>
+    <genClasses ecoreClass="QL.ecore#//ModuleFilter">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ModuleFilter/domain"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//ModuleFilter/moduleId"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//TermFilter">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//TermFilter/lexicalSearchType"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//TermFilter/term"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//RegularExpression">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//RegularExpression/regex"/>
+    <genClasses ecoreClass="QL.ecore#//PreferredInFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//PreferredInFilter/languageRefSetId"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//PreferredIn">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//PreferredIn/preferred"/>
+    <genClasses ecoreClass="QL.ecore#//AcceptableInFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//AcceptableInFilter/languageRefSetId"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//AcceptableIn">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//AcceptableIn/acceptable"/>
+    <genClasses ecoreClass="QL.ecore#//LanguageRefSetFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//LanguageRefSetFilter/languageRefSetId"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//LanguageRefSet">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//LanguageRefSet/refset"/>
-    </genClasses>
-    <genClasses ecoreClass="QL.ecore#//Descriptiontype">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Descriptiontype/type"/>
-    </genClasses>
-    <genClasses ecoreClass="QL.ecore#//ActiveTerm">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveTerm/active"/>
+    <genClasses ecoreClass="QL.ecore#//TypeFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//TypeFilter/type"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//Disjunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Disjunction/left"/>

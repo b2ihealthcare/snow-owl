@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
-import com.b2international.snowowl.snomed.ql.ql.EclFilter;
+import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -30,35 +30,35 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Ecl Filter</b></em>'.
+ * An implementation of the model object '<em><b>Preferred In Filter</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.EclFilterImpl#getEcl <em>Ecl</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.PreferredInFilterImpl#getLanguageRefSetId <em>Language Ref Set Id</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class EclFilterImpl extends FilterImpl implements EclFilter
+public class PreferredInFilterImpl extends FilterImpl implements PreferredInFilter
 {
   /**
-   * The cached value of the '{@link #getEcl() <em>Ecl</em>}' containment reference.
+   * The cached value of the '{@link #getLanguageRefSetId() <em>Language Ref Set Id</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getEcl()
+   * @see #getLanguageRefSetId()
    * @generated
    * @ordered
    */
-  protected Script ecl;
+  protected ExpressionConstraint languageRefSetId;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected EclFilterImpl()
+  protected PreferredInFilterImpl()
   {
     super();
   }
@@ -71,7 +71,7 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.ECL_FILTER;
+    return QlPackage.Literals.PREFERRED_IN_FILTER;
   }
 
   /**
@@ -79,9 +79,9 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public Script getEcl()
+  public ExpressionConstraint getLanguageRefSetId()
   {
-    return ecl;
+    return languageRefSetId;
   }
 
   /**
@@ -89,13 +89,13 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetEcl(Script newEcl, NotificationChain msgs)
+  public NotificationChain basicSetLanguageRefSetId(ExpressionConstraint newLanguageRefSetId, NotificationChain msgs)
   {
-    Script oldEcl = ecl;
-    ecl = newEcl;
+    ExpressionConstraint oldLanguageRefSetId = languageRefSetId;
+    languageRefSetId = newLanguageRefSetId;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.ECL_FILTER__ECL, oldEcl, newEcl);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID, oldLanguageRefSetId, newLanguageRefSetId);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -106,20 +106,20 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setEcl(Script newEcl)
+  public void setLanguageRefSetId(ExpressionConstraint newLanguageRefSetId)
   {
-    if (newEcl != ecl)
+    if (newLanguageRefSetId != languageRefSetId)
     {
       NotificationChain msgs = null;
-      if (ecl != null)
-        msgs = ((InternalEObject)ecl).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.ECL_FILTER__ECL, null, msgs);
-      if (newEcl != null)
-        msgs = ((InternalEObject)newEcl).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.ECL_FILTER__ECL, null, msgs);
-      msgs = basicSetEcl(newEcl, msgs);
+      if (languageRefSetId != null)
+        msgs = ((InternalEObject)languageRefSetId).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID, null, msgs);
+      if (newLanguageRefSetId != null)
+        msgs = ((InternalEObject)newLanguageRefSetId).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID, null, msgs);
+      msgs = basicSetLanguageRefSetId(newLanguageRefSetId, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.ECL_FILTER__ECL, newEcl, newEcl));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID, newLanguageRefSetId, newLanguageRefSetId));
   }
 
   /**
@@ -132,8 +132,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        return basicSetEcl(null, msgs);
+      case QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID:
+        return basicSetLanguageRefSetId(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -148,8 +148,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        return getEcl();
+      case QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID:
+        return getLanguageRefSetId();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -164,8 +164,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        setEcl((Script)newValue);
+      case QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID:
+        setLanguageRefSetId((ExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -181,8 +181,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        setEcl((Script)null);
+      case QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID:
+        setLanguageRefSetId((ExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -198,10 +198,10 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        return ecl != null;
+      case QlPackage.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID:
+        return languageRefSetId != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //EclFilterImpl
+} //PreferredInFilterImpl

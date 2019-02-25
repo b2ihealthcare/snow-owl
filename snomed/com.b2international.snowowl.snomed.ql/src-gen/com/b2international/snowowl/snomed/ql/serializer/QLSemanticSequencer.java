@@ -55,23 +55,19 @@ import com.b2international.snowowl.snomed.ecl.ecl.Script;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
-import com.b2international.snowowl.snomed.ql.ql.AcceptableIn;
+import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
-import com.b2international.snowowl.snomed.ql.ql.ActiveTerm;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Description;
-import com.b2international.snowowl.snomed.ql.ql.DescriptionFilter;
-import com.b2international.snowowl.snomed.ql.ql.Descriptiontype;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
-import com.b2international.snowowl.snomed.ql.ql.EclFilter;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
-import com.b2international.snowowl.snomed.ql.ql.LanguageRefSet;
+import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
+import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
-import com.b2international.snowowl.snomed.ql.ql.PreferredIn;
+import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.Query;
-import com.b2international.snowowl.snomed.ql.ql.RegularExpression;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
+import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
 import com.b2international.snowowl.snomed.ql.services.QLGrammarAccess;
 import com.google.inject.Inject;
 import java.util.Set;
@@ -260,53 +256,41 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 			}
 		else if (epackage == QlPackage.eINSTANCE)
 			switch (semanticObject.eClass().getClassifierID()) {
-			case QlPackage.ACCEPTABLE_IN:
-				sequence_AcceptableIn(context, (AcceptableIn) semanticObject); 
+			case QlPackage.ACCEPTABLE_IN_FILTER:
+				sequence_AcceptableInFilter(context, (AcceptableInFilter) semanticObject); 
 				return; 
 			case QlPackage.ACTIVE_FILTER:
 				sequence_ActiveFilter(context, (ActiveFilter) semanticObject); 
 				return; 
-			case QlPackage.ACTIVE_TERM:
-				sequence_ActiveTerm(context, (ActiveTerm) semanticObject); 
-				return; 
 			case QlPackage.CONJUNCTION:
 				sequence_Conjunction(context, (Conjunction) semanticObject); 
-				return; 
-			case QlPackage.DESCRIPTION:
-				sequence_Description(context, (Description) semanticObject); 
-				return; 
-			case QlPackage.DESCRIPTION_FILTER:
-				sequence_DescriptionFilter(context, (DescriptionFilter) semanticObject); 
-				return; 
-			case QlPackage.DESCRIPTIONTYPE:
-				sequence_Descriptiontype(context, (Descriptiontype) semanticObject); 
 				return; 
 			case QlPackage.DISJUNCTION:
 				sequence_Disjunction(context, (Disjunction) semanticObject); 
 				return; 
-			case QlPackage.ECL_FILTER:
-				sequence_EclFilter(context, (EclFilter) semanticObject); 
-				return; 
 			case QlPackage.EXCLUSION:
 				sequence_Exclusion(context, (Exclusion) semanticObject); 
 				return; 
-			case QlPackage.LANGUAGE_REF_SET:
-				sequence_LanguageRefSet(context, (LanguageRefSet) semanticObject); 
+			case QlPackage.LANGUAGE_REF_SET_FILTER:
+				sequence_LanguageRefSetFilter(context, (LanguageRefSetFilter) semanticObject); 
+				return; 
+			case QlPackage.MODULE_FILTER:
+				sequence_ModuleFilter(context, (ModuleFilter) semanticObject); 
 				return; 
 			case QlPackage.NESTED_FILTER:
 				sequence_NestedFilter(context, (NestedFilter) semanticObject); 
 				return; 
-			case QlPackage.PREFERRED_IN:
-				sequence_PreferredIn(context, (PreferredIn) semanticObject); 
+			case QlPackage.PREFERRED_IN_FILTER:
+				sequence_PreferredInFilter(context, (PreferredInFilter) semanticObject); 
 				return; 
 			case QlPackage.QUERY:
 				sequence_Query(context, (Query) semanticObject); 
 				return; 
-			case QlPackage.REGULAR_EXPRESSION:
-				sequence_RegularExpression(context, (RegularExpression) semanticObject); 
-				return; 
 			case QlPackage.TERM_FILTER:
 				sequence_TermFilter(context, (TermFilter) semanticObject); 
+				return; 
+			case QlPackage.TYPE_FILTER:
+				sequence_TypeFilter(context, (TypeFilter) semanticObject); 
 				return; 
 			}
 		if (errorAcceptor != null)
@@ -315,18 +299,26 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     AcceptableIn returns AcceptableIn
+	 *     Constraint returns AcceptableInFilter
+	 *     Disjunction returns AcceptableInFilter
+	 *     Disjunction.Disjunction_1_0 returns AcceptableInFilter
+	 *     Conjunction returns AcceptableInFilter
+	 *     Conjunction.Conjunction_1_0 returns AcceptableInFilter
+	 *     Exclusion returns AcceptableInFilter
+	 *     Exclusion.Exclusion_1_0 returns AcceptableInFilter
+	 *     Filter returns AcceptableInFilter
+	 *     AcceptableInFilter returns AcceptableInFilter
 	 *
 	 * Constraint:
-	 *     acceptable=Script
+	 *     languageRefSetId=ExpressionConstraint
 	 */
-	protected void sequence_AcceptableIn(ISerializationContext context, AcceptableIn semanticObject) {
+	protected void sequence_AcceptableInFilter(ISerializationContext context, AcceptableInFilter semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.ACCEPTABLE_IN__ACCEPTABLE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.ACCEPTABLE_IN__ACCEPTABLE));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getAcceptableInAccess().getAcceptableScriptParserRuleCall_2_0(), semanticObject.getAcceptable());
+		feeder.accept(grammarAccess.getAcceptableInFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0(), semanticObject.getLanguageRefSetId());
 		feeder.finish();
 	}
 	
@@ -344,34 +336,10 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	 *     ActiveFilter returns ActiveFilter
 	 *
 	 * Constraint:
-	 *     active=Boolean
+	 *     (domain=Domain? active=Boolean)
 	 */
 	protected void sequence_ActiveFilter(ISerializationContext context, ActiveFilter semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.ACTIVE_FILTER__ACTIVE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.ACTIVE_FILTER__ACTIVE));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getActiveFilterAccess().getActiveBooleanParserRuleCall_1_0(), semanticObject.getActive());
-		feeder.finish();
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     ActiveTerm returns ActiveTerm
-	 *
-	 * Constraint:
-	 *     active=Boolean
-	 */
-	protected void sequence_ActiveTerm(ISerializationContext context, ActiveTerm semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.ACTIVE_TERM__ACTIVE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.ACTIVE_TERM__ACTIVE));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getActiveTermAccess().getActiveBooleanParserRuleCall_2_0(), semanticObject.getActive());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -402,70 +370,6 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     DescriptionFilter returns DescriptionFilter
-	 *
-	 * Constraint:
-	 *     (
-	 *         termFilter=TermFilter | 
-	 *         active=ActiveTerm | 
-	 *         type=Descriptiontype | 
-	 *         regex=RegularExpression | 
-	 *         acceptableIn=AcceptableIn | 
-	 *         preferredIn=PreferredIn | 
-	 *         languageRefSet=LanguageRefSet
-	 *     )*
-	 */
-	protected void sequence_DescriptionFilter(ISerializationContext context, DescriptionFilter semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     Constraint returns Description
-	 *     Disjunction returns Description
-	 *     Disjunction.Disjunction_1_0 returns Description
-	 *     Conjunction returns Description
-	 *     Conjunction.Conjunction_1_0 returns Description
-	 *     Exclusion returns Description
-	 *     Exclusion.Exclusion_1_0 returns Description
-	 *     Filter returns Description
-	 *     Description returns Description
-	 *
-	 * Constraint:
-	 *     filter=DescriptionFilter
-	 */
-	protected void sequence_Description(ISerializationContext context, Description semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.DESCRIPTION__FILTER) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.DESCRIPTION__FILTER));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getDescriptionAccess().getFilterDescriptionFilterParserRuleCall_2_0(), semanticObject.getFilter());
-		feeder.finish();
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     Descriptiontype returns Descriptiontype
-	 *
-	 * Constraint:
-	 *     type=Script
-	 */
-	protected void sequence_Descriptiontype(ISerializationContext context, Descriptiontype semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.DESCRIPTIONTYPE__TYPE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.DESCRIPTIONTYPE__TYPE));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getDescriptiontypeAccess().getTypeScriptParserRuleCall_2_0(), semanticObject.getType());
-		feeder.finish();
-	}
-	
-	
-	/**
-	 * Contexts:
 	 *     Constraint returns Disjunction
 	 *     Disjunction returns Disjunction
 	 *     Disjunction.Disjunction_1_0 returns Disjunction
@@ -483,32 +387,6 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getDisjunctionAccess().getDisjunctionLeftAction_1_0(), semanticObject.getLeft());
 		feeder.accept(grammarAccess.getDisjunctionAccess().getRightConjunctionParserRuleCall_1_2_0(), semanticObject.getRight());
-		feeder.finish();
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     Constraint returns EclFilter
-	 *     Disjunction returns EclFilter
-	 *     Disjunction.Disjunction_1_0 returns EclFilter
-	 *     Conjunction returns EclFilter
-	 *     Conjunction.Conjunction_1_0 returns EclFilter
-	 *     Exclusion returns EclFilter
-	 *     Exclusion.Exclusion_1_0 returns EclFilter
-	 *     Filter returns EclFilter
-	 *     EclFilter returns EclFilter
-	 *
-	 * Constraint:
-	 *     ecl=Script
-	 */
-	protected void sequence_EclFilter(ISerializationContext context, EclFilter semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.ECL_FILTER__ECL) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.ECL_FILTER__ECL));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getEclFilterAccess().getEclScriptParserRuleCall_1_0(), semanticObject.getEcl());
 		feeder.finish();
 	}
 	
@@ -541,19 +419,47 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     LanguageRefSet returns LanguageRefSet
+	 *     Constraint returns LanguageRefSetFilter
+	 *     Disjunction returns LanguageRefSetFilter
+	 *     Disjunction.Disjunction_1_0 returns LanguageRefSetFilter
+	 *     Conjunction returns LanguageRefSetFilter
+	 *     Conjunction.Conjunction_1_0 returns LanguageRefSetFilter
+	 *     Exclusion returns LanguageRefSetFilter
+	 *     Exclusion.Exclusion_1_0 returns LanguageRefSetFilter
+	 *     Filter returns LanguageRefSetFilter
+	 *     LanguageRefSetFilter returns LanguageRefSetFilter
 	 *
 	 * Constraint:
-	 *     refset=Script
+	 *     languageRefSetId=ExpressionConstraint
 	 */
-	protected void sequence_LanguageRefSet(ISerializationContext context, LanguageRefSet semanticObject) {
+	protected void sequence_LanguageRefSetFilter(ISerializationContext context, LanguageRefSetFilter semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.LANGUAGE_REF_SET__REFSET) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.LANGUAGE_REF_SET__REFSET));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getLanguageRefSetAccess().getRefsetScriptParserRuleCall_2_0(), semanticObject.getRefset());
+		feeder.accept(grammarAccess.getLanguageRefSetFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0(), semanticObject.getLanguageRefSetId());
 		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     Constraint returns ModuleFilter
+	 *     Disjunction returns ModuleFilter
+	 *     Disjunction.Disjunction_1_0 returns ModuleFilter
+	 *     Conjunction returns ModuleFilter
+	 *     Conjunction.Conjunction_1_0 returns ModuleFilter
+	 *     Exclusion returns ModuleFilter
+	 *     Exclusion.Exclusion_1_0 returns ModuleFilter
+	 *     Filter returns ModuleFilter
+	 *     ModuleFilter returns ModuleFilter
+	 *
+	 * Constraint:
+	 *     (domain=Domain? moduleId=ExpressionConstraint)
+	 */
+	protected void sequence_ModuleFilter(ISerializationContext context, ModuleFilter semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -585,18 +491,26 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     PreferredIn returns PreferredIn
+	 *     Constraint returns PreferredInFilter
+	 *     Disjunction returns PreferredInFilter
+	 *     Disjunction.Disjunction_1_0 returns PreferredInFilter
+	 *     Conjunction returns PreferredInFilter
+	 *     Conjunction.Conjunction_1_0 returns PreferredInFilter
+	 *     Exclusion returns PreferredInFilter
+	 *     Exclusion.Exclusion_1_0 returns PreferredInFilter
+	 *     Filter returns PreferredInFilter
+	 *     PreferredInFilter returns PreferredInFilter
 	 *
 	 * Constraint:
-	 *     preferred=Script
+	 *     languageRefSetId=ExpressionConstraint
 	 */
-	protected void sequence_PreferredIn(ISerializationContext context, PreferredIn semanticObject) {
+	protected void sequence_PreferredInFilter(ISerializationContext context, PreferredInFilter semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.PREFERRED_IN__PREFERRED) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.PREFERRED_IN__PREFERRED));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getPreferredInAccess().getPreferredScriptParserRuleCall_2_0(), semanticObject.getPreferred());
+		feeder.accept(grammarAccess.getPreferredInFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0(), semanticObject.getLanguageRefSetId());
 		feeder.finish();
 	}
 	
@@ -606,7 +520,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	 *     Query returns Query
 	 *
 	 * Constraint:
-	 *     constraint=Constraint?
+	 *     (ecl=ExpressionConstraint? constraint=Constraint?)
 	 */
 	protected void sequence_Query(ISerializationContext context, Query semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -615,36 +529,46 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     RegularExpression returns RegularExpression
+	 *     Constraint returns TermFilter
+	 *     Disjunction returns TermFilter
+	 *     Disjunction.Disjunction_1_0 returns TermFilter
+	 *     Conjunction returns TermFilter
+	 *     Conjunction.Conjunction_1_0 returns TermFilter
+	 *     Exclusion returns TermFilter
+	 *     Exclusion.Exclusion_1_0 returns TermFilter
+	 *     Filter returns TermFilter
+	 *     TermFilter returns TermFilter
 	 *
 	 * Constraint:
-	 *     regex=STRING
+	 *     (lexicalSearchType=LexicalSearchType? term=STRING)
 	 */
-	protected void sequence_RegularExpression(ISerializationContext context, RegularExpression semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.REGULAR_EXPRESSION__REGEX) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.REGULAR_EXPRESSION__REGEX));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getRegularExpressionAccess().getRegexSTRINGTerminalRuleCall_2_0(), semanticObject.getRegex());
-		feeder.finish();
+	protected void sequence_TermFilter(ISerializationContext context, TermFilter semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
 	/**
 	 * Contexts:
-	 *     TermFilter returns TermFilter
+	 *     Constraint returns TypeFilter
+	 *     Disjunction returns TypeFilter
+	 *     Disjunction.Disjunction_1_0 returns TypeFilter
+	 *     Conjunction returns TypeFilter
+	 *     Conjunction.Conjunction_1_0 returns TypeFilter
+	 *     Exclusion returns TypeFilter
+	 *     Exclusion.Exclusion_1_0 returns TypeFilter
+	 *     Filter returns TypeFilter
+	 *     TypeFilter returns TypeFilter
 	 *
 	 * Constraint:
-	 *     term=STRING
+	 *     type=ExpressionConstraint
 	 */
-	protected void sequence_TermFilter(ISerializationContext context, TermFilter semanticObject) {
+	protected void sequence_TypeFilter(ISerializationContext context, TypeFilter semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.TERM_FILTER__TERM) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.TERM_FILTER__TERM));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.TYPE_FILTER__TYPE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.TYPE_FILTER__TYPE));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getTermFilterAccess().getTermSTRINGTerminalRuleCall_2_0(), semanticObject.getTerm());
+		feeder.accept(grammarAccess.getTypeFilterAccess().getTypeExpressionConstraintParserRuleCall_2_0(), semanticObject.getType());
 		feeder.finish();
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestTest;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclRewriterTest;
+import com.b2international.snowowl.snomed.core.ql.SnomedQueryEvaluationRequestTest;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTreeTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceRegressionTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
@@ -64,6 +65,7 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	ConceptChangeProcessorTest.class,
 	SnomedEclEvaluationRequestTest.class,
 	SnomedEclRewriterTest.class,
+	SnomedQueryEvaluationRequestTest.class,
 	SnomedQueryValidationRuleEvaluatorTest.class,
 	SnomedConceptDocumentTermSortTest.class
 })

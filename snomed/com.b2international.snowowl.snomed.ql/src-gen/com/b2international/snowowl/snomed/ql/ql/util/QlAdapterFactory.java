@@ -108,24 +108,14 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createFilterAdapter();
       }
       @Override
-      public Adapter caseEclFilter(EclFilter object)
-      {
-        return createEclFilterAdapter();
-      }
-      @Override
       public Adapter caseActiveFilter(ActiveFilter object)
       {
         return createActiveFilterAdapter();
       }
       @Override
-      public Adapter caseDescription(Description object)
+      public Adapter caseModuleFilter(ModuleFilter object)
       {
-        return createDescriptionAdapter();
-      }
-      @Override
-      public Adapter caseDescriptionFilter(DescriptionFilter object)
-      {
-        return createDescriptionFilterAdapter();
+        return createModuleFilterAdapter();
       }
       @Override
       public Adapter caseTermFilter(TermFilter object)
@@ -133,34 +123,24 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createTermFilterAdapter();
       }
       @Override
-      public Adapter caseRegularExpression(RegularExpression object)
+      public Adapter casePreferredInFilter(PreferredInFilter object)
       {
-        return createRegularExpressionAdapter();
+        return createPreferredInFilterAdapter();
       }
       @Override
-      public Adapter casePreferredIn(PreferredIn object)
+      public Adapter caseAcceptableInFilter(AcceptableInFilter object)
       {
-        return createPreferredInAdapter();
+        return createAcceptableInFilterAdapter();
       }
       @Override
-      public Adapter caseAcceptableIn(AcceptableIn object)
+      public Adapter caseLanguageRefSetFilter(LanguageRefSetFilter object)
       {
-        return createAcceptableInAdapter();
+        return createLanguageRefSetFilterAdapter();
       }
       @Override
-      public Adapter caseLanguageRefSet(LanguageRefSet object)
+      public Adapter caseTypeFilter(TypeFilter object)
       {
-        return createLanguageRefSetAdapter();
-      }
-      @Override
-      public Adapter caseDescriptiontype(Descriptiontype object)
-      {
-        return createDescriptiontypeAdapter();
-      }
-      @Override
-      public Adapter caseActiveTerm(ActiveTerm object)
-      {
-        return createActiveTermAdapter();
+        return createTypeFilterAdapter();
       }
       @Override
       public Adapter caseDisjunction(Disjunction object)
@@ -260,21 +240,6 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.EclFilter <em>Ecl Filter</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.EclFilter
-   * @generated
-   */
-  public Adapter createEclFilterAdapter()
-  {
-    return null;
-  }
-
-  /**
    * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter <em>Active Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -290,31 +255,16 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Description <em>Description</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ModuleFilter <em>Module Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.Description
+   * @see com.b2international.snowowl.snomed.ql.ql.ModuleFilter
    * @generated
    */
-  public Adapter createDescriptionAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.DescriptionFilter <em>Description Filter</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.DescriptionFilter
-   * @generated
-   */
-  public Adapter createDescriptionFilterAdapter()
+  public Adapter createModuleFilterAdapter()
   {
     return null;
   }
@@ -335,91 +285,61 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.RegularExpression <em>Regular Expression</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.PreferredInFilter <em>Preferred In Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.RegularExpression
+   * @see com.b2international.snowowl.snomed.ql.ql.PreferredInFilter
    * @generated
    */
-  public Adapter createRegularExpressionAdapter()
+  public Adapter createPreferredInFilterAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.PreferredIn <em>Preferred In</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter <em>Acceptable In Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.PreferredIn
+   * @see com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter
    * @generated
    */
-  public Adapter createPreferredInAdapter()
+  public Adapter createAcceptableInFilterAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.AcceptableIn <em>Acceptable In</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter <em>Language Ref Set Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.AcceptableIn
+   * @see com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter
    * @generated
    */
-  public Adapter createAcceptableInAdapter()
+  public Adapter createLanguageRefSetFilterAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.LanguageRefSet <em>Language Ref Set</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.TypeFilter <em>Type Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.LanguageRefSet
+   * @see com.b2international.snowowl.snomed.ql.ql.TypeFilter
    * @generated
    */
-  public Adapter createLanguageRefSetAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Descriptiontype <em>Descriptiontype</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.Descriptiontype
-   * @generated
-   */
-  public Adapter createDescriptiontypeAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveTerm <em>Active Term</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.ActiveTerm
-   * @generated
-   */
-  public Adapter createActiveTermAdapter()
+  public Adapter createTypeFilterAdapter()
   {
     return null;
   }

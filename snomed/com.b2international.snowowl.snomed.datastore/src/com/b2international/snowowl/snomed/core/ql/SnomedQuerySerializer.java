@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ql.ql.Query;
 
 /**
@@ -29,5 +30,13 @@ public interface SnomedQuerySerializer {
 	 * @return
 	 */
 	String serialize(Query query);
-	
+
+	/**
+	 * Serialize an ECL part of a Query expression to its brief syntax equivalent.
+	 * 
+	 * @param ecl
+	 * @return
+	 */
+	String serialize(ExpressionConstraint ecl);
+
 }
