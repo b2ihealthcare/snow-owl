@@ -226,7 +226,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 			value="Retrieve the validation issues from a completed validation on a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
+		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/validations/{branchPath}/issues", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<ValidationIssues> getValidationResults(
@@ -237,7 +237,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit) {
-
+		
 		return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
 			.all()
 			.filterByBranchPath(branchPath)
@@ -291,14 +291,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 	}
 	
 	private CodeSystemEntry getCodeSystem(final String codeSystemShortName) {
-		final Set<String> repositoryIds = RepositoryRequests.prepareSearch()
-			.all()
-			.buildAsync()
-			.execute(bus)
-			.getSync()
-			.stream()
-			.map(RepositoryInfo::id)
-			.collect(Collectors.toSet());
+		final Set<String> repositoryIds = getAllRepoIds();
 		
 		for (String repoId : repositoryIds) {
 			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
@@ -313,6 +306,16 @@ public class ValidationRestService extends AbstractAdminRestService {
 		
 		throw new NotFoundException("Codesystem", codeSystemShortName);
 		
+	}
+	
+	private Set<String> getAllRepoIds() {
+		return RepositoryRequests.prepareSearch()
+					.all()
+					.buildAsync()
+					.execute(bus)
+					.getSync().stream()
+					.map(RepositoryInfo::id)
+					.collect(Collectors.toSet());
 	}
 	
 }

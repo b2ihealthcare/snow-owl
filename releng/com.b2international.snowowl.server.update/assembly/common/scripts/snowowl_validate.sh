@@ -30,15 +30,21 @@ SNOW_OWL_ADMIN_USER=""
 # The password for the above user
 SNOW_OWL_ADMIN_USER_PASSWORD=""
 
+# The target folder to save the validation report
+TARGET_FOLDER=""
+
 #
 # Global variables / constants, advanced parameters
 #
 
-# Default branch to export
+# Default branch to validate
 BRANCH_TO_VALIDATE="MAIN"
 
 # Code system short name
 CODE_SYSTEM_SHORT_NAME="SNOMEDCT"
+
+# Interval to poll for the validation result
+SLEEP_INTERVAL=60
 
 # Should the validation be ran on unpublished content
 IS_UNPUBLISHED_VALIDATION=true
@@ -52,33 +58,35 @@ SNOW_OWL_BASE_URL="http://localhost:8080"
 # URL for Snow Owl's REST API
 SNOW_OWL_ADMIN_URL="/snowowl/admin"
 
-# The address where the export config endpoint can be found
+# The address where the validation endpoint can be found
 VALIDATIONS_POST_ENDPOINT="${SNOW_OWL_ADMIN_URL}/validations"
 
 # Media type to use for REST requests
 MEDIA_TYPE="application/vnd.com.b2international.snowowl+json"
 
-# The UUID of the export request given by Snow Owl
+# The UUID of the validation request given by Snow Owl
 VALIDATION_UUID=""
 
-# The input data for the export config
+# The input data for the validation config
 VALIDATION_CONFIG_POST_INPUT=""
 
 usage() {
 
 cat <<EOF
 NAME:
-    Export script for the Snow Owl terminology server
+    Validation script for the Snow Owl terminology server
     
     OPTIONS:
     -h
         Show this help
     -u
-        Define a username with privileges to the Snow Owl admin REST API
+        Define a username with admin privileges to the Snow Owl REST API
     -p
         Define the password for the above user
     -b
         Snow Owl base URL, defaults to 'http://localhost:8080'
+    -t
+        Target folder where the validation report should be saved
     -c
         The codesystems shortname where the validation should be ran (Default value is SNOMEDCT)
     -i
@@ -86,8 +94,9 @@ NAME:
 NOTES:
     This script can be used to validate content on a Snow Owl terminology server. 
     Mandatory variables:
-        - SNOW OWL user that is able to authenticate through the admin REST API
+        - Admin SNOW OWL user that is able to authenticate through the REST API
         - Password for the above user
+        - Target folder for the validation report
 EOF
 
 }
@@ -107,6 +116,12 @@ validate_variables() {
 
     check_if_empty "${SNOW_OWL_ADMIN_USER}" "Snow Owl admin username must be specified"
     check_if_empty "${SNOW_OWL_ADMIN_USER_PASSWORD}" "User password must be specified"
+    check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
+
+    if [[ ! -d "${TARGET_FOLDER}" ]]; then
+        echo_date "Creating target folder @ ${TARGET_FOLDER}"
+        mkdir "${TARGET_FOLDER}"
+    fi
 
 }
 
@@ -115,28 +130,26 @@ initiate_validation() {
     RULEIDS_JSON_ARRAY="["
     FIRST="first"
     for i in ${!RULES_TO_VALIDATE[@]}; do
-        if [[ ${FIRST} == "first" ]]; then
-            echo "first iteration"
+        if [[ ${FIRST} = "first" ]]; then
             RULEIDS_JSON_ARRAY=''${RULEIDS_JSON_ARRAY}' "'"${RULES_TO_VALIDATE[i]},"'"'
             FIRST=""
         else
             RULEIDS_JSON_ARRAY=''${RULEIDS_JSON_ARRAY}', "'"${RULES_TO_VALIDATE[i]}"'"'
         fi
     done
-    
-    RULEIDS_JSON_ARRAY="${RULEIDS_JSON_ARRAY}]"
 
+    RULEIDS_JSON_ARRAY="${RULEIDS_JSON_ARRAY}]"
     VALIDATION_CONFIG_POST_INPUT='{"branch": "'"${BRANCH_TO_VALIDATE}"'", "isUnpublishedValidation": "'"${IS_UNPUBLISHED_VALIDATION}"'", "codeSystemShortName": "'"${CODE_SYSTEM_SHORT_NAME}"'", "ruleIds": '${RULEIDS_JSON_ARRAY}'}'
     VALIDATION_ENDPOINT="${SNOW_OWL_BASE_URL}${VALIDATIONS_POST_ENDPOINT}"
 
-    UNPUBLISHED_TEXT=
+    VALIDATION_TYPE_TEXT=
     if [[ ${IS_UNPUBLISHED_VALIDATION} == true ]]; then
-        UNPUBLISHED_TEXT="unpublished"
+        VALIDATION_TYPE_TEXT="unpublished"
     else
-        UNPUBLISHED_TEXT="published"
+        VALIDATION_TYPE_TEXT="published"
     fi
 
-    echo_date "Initating "${UNPUBLISHED_TEXT}" validation with config: "${VALIDATION_CONFIG_POST_INPUT}" on target: "${VALIDATION_ENDPOINT}""
+    echo_date "Initating "${VALIDATION_TYPE_TEXT}" validation with config: "${VALIDATION_CONFIG_POST_INPUT}" on target: "${VALIDATION_ENDPOINT}""
 
     RESPONSE="$(curl --user "${SNOW_OWL_ADMIN_USER}:${SNOW_OWL_ADMIN_USER_PASSWORD}" \
        --request POST \
@@ -147,14 +160,64 @@ initiate_validation() {
 
     ID=${RESPONSE##*/}
     VALIDATION_UUID=${ID%$'\r'}
-    echo "Validation id was created: ${VALIDATION_UUID}"
+    
     get_validation_results
 
 }
 
 get_validation_results() {
 
+    check_if_empty "${VALIDATION_UUID}" "Unique validation identifier is missing"
 
+    poll_validation
+
+    VALIDATION_ISSUES_GET_ENDPOINT="${SNOW_OWL_BASE_URL}${VALIDATIONS_POST_ENDPOINT}/${BRANCH_TO_VALIDATE}/issues"
+
+    VALIDATION_ISSUES_REPORT=$(curl --user "${SNOW_OWL_ADMIN_USER}:${SNOW_OWL_ADMIN_USER_PASSWORD}" \
+        --request GET \
+        --header "Accept: text/csv" \
+        --silent --show-error \
+        "${VALIDATION_ISSUES_GET_ENDPOINT}")
+
+
+    DATE=$(date +"%Y%m%d_%H%M%S")
+
+    VALIDATION_REPORT_FILE="${TARGET_FOLDER}/snowowl_validation_report_${BRANCH_TO_VALIDATE}_${DATE}.tsv"
+
+    echo "${VALIDATION_ISSUES_REPORT}" > "${VALIDATION_REPORT_FILE}"
+
+    echo "Finished downloading the validation report to ${VALIDATION_REPORT_FILE}"
+
+}
+
+poll_validation() {
+    VALIDATIONS_STATE_ENDPOINT="${SNOW_OWL_BASE_URL}${VALIDATIONS_POST_ENDPOINT}/${VALIDATION_UUID}"
+
+    # This is going to poll for the validation results for a maximum of an hour
+    ((POLLING_END_TIME=${SECONDS}+3600))
+    echo_date "Starting polling for validation result"
+    while ((${SECONDS} < ${POLLING_END_TIME}))
+    do
+        VALIDATIONS_STATE_RESPONSE="$(curl --user "${SNOW_OWL_ADMIN_USER}:${SNOW_OWL_ADMIN_USER_PASSWORD}" \
+            --request GET \
+            --header "Content-type: ${MEDIA_TYPE}" \
+            --data "${VALIDATIONS_STATE_ENDPOINT}" \
+            --silent --show-error \
+            "${VALIDATIONS_STATE_ENDPOINT}" | grep -Po '"state":.*?[^\\]",' | sed 's/\"state\":\"\(.*\)\",/\1/')"
+
+        if [[ $VALIDATIONS_STATE_RESPONSE = "FINISHED" ]]; then
+            echo "Validation has finished. Downloading report."
+            break
+        else 
+            echo_date "Validation has not finished yet. Current state is: ${VALIDATIONS_STATE_RESPONSE}"
+        fi
+        sleep ${SLEEP_INTERVAL}
+    done
+
+     if [[ $VALIDATIONS_STATE_RESPONSE != "FINISHED" ]]; then
+        echo_date "Validation did not finish in 1 hour. Exiting."
+        exit 0
+     fi
 }
 
 execute() {
@@ -166,7 +229,7 @@ execute() {
     exit 0
 }
 
-while getopts ":hu:p:b:c:i" option; do
+while getopts ":hu:p:b:t:c:i" option; do
     case "${option}" in
     h)
         usage
@@ -178,6 +241,8 @@ while getopts ":hu:p:b:c:i" option; do
         SNOW_OWL_ADMIN_USER_PASSWORD=${OPTARG};;
     b)
         SNOW_OWL_BASE_URL=${OPTARG};;
+    t)
+        TARGET_FOLDER=${OPTARG};;
     c)
         CODE_SYSTEM_SHORT_NAME=${OPTARG};;
     i)
