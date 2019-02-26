@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.ql
-
+package com.b2international.snowowl.snomed.ql;
 
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
  */
-class QLStandaloneSetup extends QLStandaloneSetupGenerated {
+public class QLStandaloneSetup extends QLStandaloneSetupGenerated {
 
-	def static void doSetup() {
-		new QLStandaloneSetup().createInjectorAndDoEMFRegistration()
+	public final static void doSetup() {
+		new QLStandaloneSetup().createInjectorAndDoEMFRegistration();
 	}
+	
 }

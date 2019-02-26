@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ql.ql.Query;
 
 /**
  * @since 6.12
  */
 public interface SnomedQueryParser {
 
-	Constraint parse(String expression);
+	Query parse(String expression);
 	
 }

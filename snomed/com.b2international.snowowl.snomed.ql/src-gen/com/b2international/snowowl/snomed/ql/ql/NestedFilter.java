@@ -25,39 +25,39 @@ package com.b2international.snowowl.snomed.ql.ql;
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter#getConstraint <em>Constraint</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter#getNested <em>Nested</em>}</li>
  * </ul>
  *
  * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getNestedFilter()
  * @model
  * @generated
  */
-public interface NestedFilter extends Filter
+public interface NestedFilter extends PropertyFilter
 {
   /**
-   * Returns the value of the '<em><b>Constraint</b></em>' containment reference.
+   * Returns the value of the '<em><b>Nested</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Constraint</em>' containment reference isn't clear,
+   * If the meaning of the '<em>Nested</em>' containment reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Constraint</em>' containment reference.
-   * @see #setConstraint(Constraint)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getNestedFilter_Constraint()
+   * @return the value of the '<em>Nested</em>' containment reference.
+   * @see #setNested(Filter)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getNestedFilter_Nested()
    * @model containment="true"
    * @generated
    */
-  Constraint getConstraint();
+  Filter getNested();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter#getConstraint <em>Constraint</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter#getNested <em>Nested</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Constraint</em>' containment reference.
-   * @see #getConstraint()
+   * @param value the new value of the '<em>Nested</em>' containment reference.
+   * @see #getNested()
    * @generated
    */
-  void setConstraint(Constraint value);
+  void setNested(Filter value);
 
 } // NestedFilter

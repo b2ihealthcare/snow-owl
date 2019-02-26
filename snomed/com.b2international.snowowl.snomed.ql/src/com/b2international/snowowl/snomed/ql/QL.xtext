@@ -13,46 +13,96 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-grammar com.b2international.snowowl.snomed.ql.QL
-with com.b2international.snowowl.snomed.ecl.Ecl
+grammar com.b2international.snowowl.snomed.ql.QL with com.b2international.snowowl.snomed.ecl.Ecl
 
 generate ql "http://www.b2international.com/snowowl/snomed/QL"
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
 
 Query:
-	{Query} (constraint=Constraint)?;
-	
-Constraint:
-	Disjunction;
-	
-Disjunction returns Constraint:
-	Conjunction ({Disjunction.left = current} 'OR' right = Conjunction)*;
+	{Query} (query=QueryConstraint)?;
 
-Conjunction returns Constraint:
-	Exclusion ({Conjunction.left = current} 'AND' right = Exclusion)*;
+// Domain Query Parts
 
-Exclusion returns Constraint:
-	Filter ({Exclusion.left = current} 'MINUS' right = Filter)?;
+QueryConstraint:
+	QueryDisjunction;
 
-NestedFilter:
-  ROUND_OPEN constraint = Constraint ROUND_CLOSE 
-;
+QueryDisjunction returns QueryConstraint:
+	QueryConjunction ({QueryDisjunction.left=current} 'OR' right=QueryConjunction)*;
+
+QueryConjunction returns QueryConstraint:
+	QueryExclusion ({QueryConjunction.left=current} ('AND' | ',') right=QueryExclusion)*;
+
+QueryExclusion returns QueryConstraint:
+	SubQuery ({QueryExclusion.left=current} 'MINUS' right=SubQuery)?;
+
+SubQuery:
+	DomainQuery | NestedQuery;
+
+DomainQuery:
+	{DomainQuery} (ecl=ExpressionConstraint)? (OPEN_DOUBLE_BRACES filter=Filter CLOSE_DOUBLE_BRACES)?;
+
+NestedQuery:
+	ROUND_OPEN nested=QueryConstraint ROUND_CLOSE;
+
+// Domain Property Filters
 
 Filter:
-	EclFilter | TermFilter | NestedFilter
-;
+	Disjunction;
 
-EclFilter:
-	ECL (ecl = Script)
-;
+Disjunction returns Filter:
+	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
+
+Conjunction returns Filter:
+	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
+
+Exclusion returns Filter:
+	PropertyFilter ({Exclusion.left=current} 'MINUS' right=PropertyFilter)?;
+
+NestedFilter:
+	ROUND_OPEN nested=Filter ROUND_CLOSE;
+
+PropertyFilter:
+	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter | CaseSignificanceFilter | LanguageCodeFilter
+	| NestedFilter;
+
+ActiveFilter:
+	(domain=Domain DOT)? 'active' EQUAL (active=Boolean);
+
+ModuleFilter:
+	(domain=Domain DOT)? 'moduleId' EQUAL moduleId=ExpressionConstraint;
 
 TermFilter:
-	TERM (term = STRING)
-;
+	'term' EQUAL (lexicalSearchType=LexicalSearchType COLON)? term=STRING;
 
-terminal TERM:
-	'term'
-;
+PreferredInFilter:
+	'preferredIn' EQUAL languageRefSetId=ExpressionConstraint;
 
-terminal ECL:
-	'ecl'
-;
+AcceptableInFilter:
+	'acceptableIn' EQUAL languageRefSetId=ExpressionConstraint;
+
+LanguageRefSetFilter:
+	'languageRefSetId' EQUAL languageRefSetId=ExpressionConstraint;
+
+TypeFilter:
+	'typeId' EQUAL type=ExpressionConstraint;
+	
+CaseSignificanceFilter:
+	'caseSignificanceId' EQUAL caseSignificanceId=ExpressionConstraint;
+	
+LanguageCodeFilter:
+	'languageCode' EQUAL languageCode=STRING;
+
+enum LexicalSearchType:
+	MATCH="match" | REGEX="regex" | EXACT="exact";
+
+enum Domain:
+	CONCEPT="Concept" | DESCRIPTION="Description";
+
+Boolean returns ecore::EBoolean:
+	'true' | 'false'; 
+
+terminal OPEN_DOUBLE_BRACES:
+	'{{';
+
+terminal CLOSE_DOUBLE_BRACES:
+	'}}';

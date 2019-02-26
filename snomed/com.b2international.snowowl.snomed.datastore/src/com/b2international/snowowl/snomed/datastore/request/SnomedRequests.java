@@ -311,13 +311,19 @@ public abstract class SnomedRequests {
 	/**
 	 * Returns a SNOMED CT request builder to prepare the evaluation of an 
 	 * Expression Constraint Language (ECL) expression.
+	 * @param expression - the ECL expression to evaluate
 	 * @return SNOMED CT ECL evaluation request builder
 	 */
 	public static SnomedEclEvaluationRequestBuilder prepareEclEvaluation(String expression) {
 		return new SnomedEclEvaluationRequestBuilder(expression);
 	}
 	
-	public static SnomedQueryEvaluationRequestBuilder prepareQlEvaluation(String expression) {
+	/**
+	 * Returns a SNOMED CT request builder to prepare the evaluation of a SNOMED CT Query Language (QL) expression.
+	 * @param expression - the QL expression to evaluate
+	 * @return SNOMED CT Query evaluation request builder
+	 */
+	public static SnomedQueryEvaluationRequestBuilder prepareQueryEvaluation(String expression) {
 		return new SnomedQueryEvaluationRequestBuilder(expression);
 	}
 	

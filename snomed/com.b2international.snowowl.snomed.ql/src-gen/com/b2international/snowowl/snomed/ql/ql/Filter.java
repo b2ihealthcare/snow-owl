@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
+import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
@@ -26,6 +27,6 @@ package com.b2international.snowowl.snomed.ql.ql;
  * @model
  * @generated
  */
-public interface Filter extends Constraint
+public interface Filter extends EObject
 {
 } // Filter

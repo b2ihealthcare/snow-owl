@@ -17,17 +17,12 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.acceptableIn;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.allTermPrefixesPresent;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.allTermsPresent;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.fuzzy;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.languageCodes;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.matchEntireTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.matchTermOriginal;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.parsedTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.List;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -42,7 +37,6 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
@@ -158,7 +152,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (containsKey(OptionKey.PARSED_TERM)) {
 			qb.should(parsedTerm(searchTerm));
 		} else {
-			qb.should(createTermDisjunctionQuery(searchTerm));
+			qb.should(termDisjunctionQuery(searchTerm));
 		}
 		
 		if (isComponentId(searchTerm, ComponentCategory.DESCRIPTION)) {
@@ -174,14 +168,6 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
-	}
-
-	private Expression createTermDisjunctionQuery(final String searchTerm) {
-		final List<Expression> disjuncts = newArrayList();
-		disjuncts.add(Expressions.scriptScore(matchEntireTerm(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
-		disjuncts.add(Expressions.scriptScore(allTermsPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
-		disjuncts.add(Expressions.scriptScore(allTermPrefixesPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
-		return Expressions.dismax(disjuncts);
 	}
 
 	private void addLanguageFilter(ExpressionBuilder queryBuilder) {
