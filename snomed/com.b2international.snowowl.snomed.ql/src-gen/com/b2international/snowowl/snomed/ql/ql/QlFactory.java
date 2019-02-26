@@ -171,6 +171,24 @@ public interface QlFactory extends EFactory
   TypeFilter createTypeFilter();
 
   /**
+   * Returns a new object of class '<em>Case Significance Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Case Significance Filter</em>'.
+   * @generated
+   */
+  CaseSignificanceFilter createCaseSignificanceFilter();
+
+  /**
+   * Returns a new object of class '<em>Language Code Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Language Code Filter</em>'.
+   * @generated
+   */
+  LanguageCodeFilter createLanguageCodeFilter();
+
+  /**
    * Returns a new object of class '<em>Query Disjunction</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

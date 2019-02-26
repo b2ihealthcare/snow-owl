@@ -39,11 +39,13 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
+import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
 import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
@@ -248,6 +250,16 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 							.should(SnomedDescriptionIndexEntry.Expressions.preferredIn(languageReferenceSetIds))
 							.build();
 				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final CaseSignificanceFilter caseSignificanceFilter) {
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(caseSignificanceFilter.getCaseSignificanceId()))
+				.resolve(context)
+				.then(SnomedDescriptionIndexEntry.Expressions::caseSignificances);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final LanguageCodeFilter languageCodeFilter) {
+		return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.languageCode(languageCodeFilter.getLanguageCode()));
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final Conjunction conjunction) {

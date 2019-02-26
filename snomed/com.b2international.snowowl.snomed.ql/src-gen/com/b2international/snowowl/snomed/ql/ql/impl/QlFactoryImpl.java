@@ -93,6 +93,8 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
       case QlPackage.ACCEPTABLE_IN_FILTER: return createAcceptableInFilter();
       case QlPackage.LANGUAGE_REF_SET_FILTER: return createLanguageRefSetFilter();
       case QlPackage.TYPE_FILTER: return createTypeFilter();
+      case QlPackage.CASE_SIGNIFICANCE_FILTER: return createCaseSignificanceFilter();
+      case QlPackage.LANGUAGE_CODE_FILTER: return createLanguageCodeFilter();
       case QlPackage.QUERY_DISJUNCTION: return createQueryDisjunction();
       case QlPackage.QUERY_CONJUNCTION: return createQueryConjunction();
       case QlPackage.QUERY_EXCLUSION: return createQueryExclusion();
@@ -305,6 +307,28 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
   {
     TypeFilterImpl typeFilter = new TypeFilterImpl();
     return typeFilter;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public CaseSignificanceFilter createCaseSignificanceFilter()
+  {
+    CaseSignificanceFilterImpl caseSignificanceFilter = new CaseSignificanceFilterImpl();
+    return caseSignificanceFilter;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public LanguageCodeFilter createLanguageCodeFilter()
+  {
+    LanguageCodeFilterImpl languageCodeFilter = new LanguageCodeFilterImpl();
+    return languageCodeFilter;
   }
 
   /**

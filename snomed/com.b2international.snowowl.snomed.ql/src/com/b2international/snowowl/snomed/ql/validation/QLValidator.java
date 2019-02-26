@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.ql.validation;
 
+import java.util.Locale;
+import java.util.stream.Stream;
+
 import org.eclipse.xtext.validation.Check;
 
 import com.b2international.snowowl.snomed.ql.QLRuntimeModule;
@@ -24,6 +27,7 @@ import com.b2international.snowowl.snomed.ql.ql.Domain;
 import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
 import com.b2international.snowowl.snomed.ql.ql.Filter;
+import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 
@@ -39,11 +43,26 @@ public class QLValidator extends AbstractQLValidator {
 	
 	public static final String DOMAIN_INCONSISTENCY_MESSAGE = "Inconsistent domains on left and right side of a binary operator, specify the domain (Concept, Description) the disambiguate the meaning of the expression";
 	public static final String DOMAIN_INCONSISTENCY_CODE = "binaryoperator.inconsistentdomain";
+	
+	public static final String LANGUAGE_CODE_NONEXISITING_MESSAGE = "Non-existing ISO-639 Language Code";
+	public static final String LANGUAGE_CODE_NONEXISITING_CODE = "languagecode.nonexisting";
+	
 
 	@Check
 	public void checkSubQuery(DomainQuery it) {
 		if (it.getEcl() == null && it.getFilter() != null) {
 			error("ECL expression is required for domain refinement", QlPackage.Literals.DOMAIN_QUERY__ECL);
+		}
+	}
+	
+	@Check
+	public void checkLanguageCodeFilter(LanguageCodeFilter it) {
+		boolean existingLanguageCode = Stream.of(Locale.getISOLanguages())
+			.filter(code -> code.equals(it.getLanguageCode()))
+			.findFirst()
+			.isPresent();
+		if (!existingLanguageCode) {
+			error(LANGUAGE_CODE_NONEXISITING_MESSAGE, it, QlPackage.Literals.LANGUAGE_CODE_FILTER__LANGUAGE_CODE, LANGUAGE_CODE_NONEXISITING_CODE);
 		}
 	}
 

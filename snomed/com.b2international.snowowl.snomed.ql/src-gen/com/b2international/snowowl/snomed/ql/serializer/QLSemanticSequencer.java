@@ -57,10 +57,12 @@ import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
+import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
@@ -267,6 +269,9 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 			case QlPackage.ACTIVE_FILTER:
 				sequence_ActiveFilter(context, (ActiveFilter) semanticObject); 
 				return; 
+			case QlPackage.CASE_SIGNIFICANCE_FILTER:
+				sequence_CaseSignificanceFilter(context, (CaseSignificanceFilter) semanticObject); 
+				return; 
 			case QlPackage.CONJUNCTION:
 				sequence_Conjunction(context, (Conjunction) semanticObject); 
 				return; 
@@ -278,6 +283,9 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case QlPackage.EXCLUSION:
 				sequence_Exclusion(context, (Exclusion) semanticObject); 
+				return; 
+			case QlPackage.LANGUAGE_CODE_FILTER:
+				sequence_LanguageCodeFilter(context, (LanguageCodeFilter) semanticObject); 
 				return; 
 			case QlPackage.LANGUAGE_REF_SET_FILTER:
 				sequence_LanguageRefSetFilter(context, (LanguageRefSetFilter) semanticObject); 
@@ -360,6 +368,32 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	 */
 	protected void sequence_ActiveFilter(ISerializationContext context, ActiveFilter semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     Filter returns CaseSignificanceFilter
+	 *     Disjunction returns CaseSignificanceFilter
+	 *     Disjunction.Disjunction_1_0 returns CaseSignificanceFilter
+	 *     Conjunction returns CaseSignificanceFilter
+	 *     Conjunction.Conjunction_1_0 returns CaseSignificanceFilter
+	 *     Exclusion returns CaseSignificanceFilter
+	 *     Exclusion.Exclusion_1_0 returns CaseSignificanceFilter
+	 *     PropertyFilter returns CaseSignificanceFilter
+	 *     CaseSignificanceFilter returns CaseSignificanceFilter
+	 *
+	 * Constraint:
+	 *     caseSignificanceId=ExpressionConstraint
+	 */
+	protected void sequence_CaseSignificanceFilter(ISerializationContext context, CaseSignificanceFilter semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.CASE_SIGNIFICANCE_FILTER__CASE_SIGNIFICANCE_ID) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.CASE_SIGNIFICANCE_FILTER__CASE_SIGNIFICANCE_ID));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getCaseSignificanceFilterAccess().getCaseSignificanceIdExpressionConstraintParserRuleCall_2_0(), semanticObject.getCaseSignificanceId());
+		feeder.finish();
 	}
 	
 	
@@ -453,6 +487,32 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getExclusionAccess().getExclusionLeftAction_1_0(), semanticObject.getLeft());
 		feeder.accept(grammarAccess.getExclusionAccess().getRightPropertyFilterParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     Filter returns LanguageCodeFilter
+	 *     Disjunction returns LanguageCodeFilter
+	 *     Disjunction.Disjunction_1_0 returns LanguageCodeFilter
+	 *     Conjunction returns LanguageCodeFilter
+	 *     Conjunction.Conjunction_1_0 returns LanguageCodeFilter
+	 *     Exclusion returns LanguageCodeFilter
+	 *     Exclusion.Exclusion_1_0 returns LanguageCodeFilter
+	 *     PropertyFilter returns LanguageCodeFilter
+	 *     LanguageCodeFilter returns LanguageCodeFilter
+	 *
+	 * Constraint:
+	 *     languageCode=STRING
+	 */
+	protected void sequence_LanguageCodeFilter(ISerializationContext context, LanguageCodeFilter semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.LANGUAGE_CODE_FILTER__LANGUAGE_CODE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.LANGUAGE_CODE_FILTER__LANGUAGE_CODE));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getLanguageCodeFilterAccess().getLanguageCodeSTRINGTerminalRuleCall_2_0(), semanticObject.getLanguageCode());
 		feeder.finish();
 	}
 	

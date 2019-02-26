@@ -437,15 +437,18 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cLanguageRefSetFilterParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
 		private final RuleCall cTypeFilterParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
 		private final RuleCall cModuleFilterParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cNestedFilterParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cCaseSignificanceFilterParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cLanguageCodeFilterParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cNestedFilterParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
 		
 		//PropertyFilter:
 		//	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter
+		//	| CaseSignificanceFilter | LanguageCodeFilter
 		//	| NestedFilter;
 		@Override public ParserRule getRule() { return rule; }
 		
 		//ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter |
-		//NestedFilter
+		//CaseSignificanceFilter | LanguageCodeFilter | NestedFilter
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//ActiveFilter
@@ -469,8 +472,14 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		//ModuleFilter
 		public RuleCall getModuleFilterParserRuleCall_6() { return cModuleFilterParserRuleCall_6; }
 		
+		//CaseSignificanceFilter
+		public RuleCall getCaseSignificanceFilterParserRuleCall_7() { return cCaseSignificanceFilterParserRuleCall_7; }
+		
+		//LanguageCodeFilter
+		public RuleCall getLanguageCodeFilterParserRuleCall_8() { return cLanguageCodeFilterParserRuleCall_8; }
+		
 		//NestedFilter
-		public RuleCall getNestedFilterParserRuleCall_7() { return cNestedFilterParserRuleCall_7; }
+		public RuleCall getNestedFilterParserRuleCall_9() { return cNestedFilterParserRuleCall_9; }
 	}
 	public class ActiveFilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ActiveFilter");
@@ -658,20 +667,20 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	public class LanguageRefSetFilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LanguageRefSetFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Keyword cLanguageRefSetKeyword_0 = (Keyword)cGroup.eContents().get(0);
+		private final Keyword cLanguageRefSetIdKeyword_0 = (Keyword)cGroup.eContents().get(0);
 		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
 		private final Assignment cLanguageRefSetIdAssignment_2 = (Assignment)cGroup.eContents().get(2);
 		private final RuleCall cLanguageRefSetIdExpressionConstraintParserRuleCall_2_0 = (RuleCall)cLanguageRefSetIdAssignment_2.eContents().get(0);
 		
 		//LanguageRefSetFilter:
-		//	'languageRefSet' EQUAL languageRefSetId=ExpressionConstraint;
+		//	'languageRefSetId' EQUAL languageRefSetId=ExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//'languageRefSet' EQUAL languageRefSetId=ExpressionConstraint
+		//'languageRefSetId' EQUAL languageRefSetId=ExpressionConstraint
 		public Group getGroup() { return cGroup; }
 		
-		//'languageRefSet'
-		public Keyword getLanguageRefSetKeyword_0() { return cLanguageRefSetKeyword_0; }
+		//'languageRefSetId'
+		public Keyword getLanguageRefSetIdKeyword_0() { return cLanguageRefSetIdKeyword_0; }
 		
 		//EQUAL
 		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
@@ -708,6 +717,60 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		
 		//ExpressionConstraint
 		public RuleCall getTypeExpressionConstraintParserRuleCall_2_0() { return cTypeExpressionConstraintParserRuleCall_2_0; }
+	}
+	public class CaseSignificanceFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.CaseSignificanceFilter");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Keyword cCaseSignificanceIdKeyword_0 = (Keyword)cGroup.eContents().get(0);
+		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cCaseSignificanceIdAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cCaseSignificanceIdExpressionConstraintParserRuleCall_2_0 = (RuleCall)cCaseSignificanceIdAssignment_2.eContents().get(0);
+		
+		//CaseSignificanceFilter:
+		//	'caseSignificanceId' EQUAL caseSignificanceId=ExpressionConstraint;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//'caseSignificanceId' EQUAL caseSignificanceId=ExpressionConstraint
+		public Group getGroup() { return cGroup; }
+		
+		//'caseSignificanceId'
+		public Keyword getCaseSignificanceIdKeyword_0() { return cCaseSignificanceIdKeyword_0; }
+		
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
+		
+		//caseSignificanceId=ExpressionConstraint
+		public Assignment getCaseSignificanceIdAssignment_2() { return cCaseSignificanceIdAssignment_2; }
+		
+		//ExpressionConstraint
+		public RuleCall getCaseSignificanceIdExpressionConstraintParserRuleCall_2_0() { return cCaseSignificanceIdExpressionConstraintParserRuleCall_2_0; }
+	}
+	public class LanguageCodeFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LanguageCodeFilter");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Keyword cLanguageCodeKeyword_0 = (Keyword)cGroup.eContents().get(0);
+		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cLanguageCodeAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cLanguageCodeSTRINGTerminalRuleCall_2_0 = (RuleCall)cLanguageCodeAssignment_2.eContents().get(0);
+		
+		//LanguageCodeFilter:
+		//	'languageCode' EQUAL languageCode=STRING;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//'languageCode' EQUAL languageCode=STRING
+		public Group getGroup() { return cGroup; }
+		
+		//'languageCode'
+		public Keyword getLanguageCodeKeyword_0() { return cLanguageCodeKeyword_0; }
+		
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
+		
+		//languageCode=STRING
+		public Assignment getLanguageCodeAssignment_2() { return cLanguageCodeAssignment_2; }
+		
+		//STRING
+		public RuleCall getLanguageCodeSTRINGTerminalRuleCall_2_0() { return cLanguageCodeSTRINGTerminalRuleCall_2_0; }
 	}
 	public class BooleanElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Boolean");
@@ -813,6 +876,8 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	private final AcceptableInFilterElements pAcceptableInFilter;
 	private final LanguageRefSetFilterElements pLanguageRefSetFilter;
 	private final TypeFilterElements pTypeFilter;
+	private final CaseSignificanceFilterElements pCaseSignificanceFilter;
+	private final LanguageCodeFilterElements pLanguageCodeFilter;
 	private final LexicalSearchTypeElements eLexicalSearchType;
 	private final DomainElements eDomain;
 	private final BooleanElements pBoolean;
@@ -849,6 +914,8 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		this.pAcceptableInFilter = new AcceptableInFilterElements();
 		this.pLanguageRefSetFilter = new LanguageRefSetFilterElements();
 		this.pTypeFilter = new TypeFilterElements();
+		this.pCaseSignificanceFilter = new CaseSignificanceFilterElements();
+		this.pLanguageCodeFilter = new LanguageCodeFilterElements();
 		this.eLexicalSearchType = new LexicalSearchTypeElements();
 		this.eDomain = new DomainElements();
 		this.pBoolean = new BooleanElements();
@@ -1017,6 +1084,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	//PropertyFilter:
 	//	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter
+	//	| CaseSignificanceFilter | LanguageCodeFilter
 	//	| NestedFilter;
 	public PropertyFilterElements getPropertyFilterAccess() {
 		return pPropertyFilter;
@@ -1077,7 +1145,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//LanguageRefSetFilter:
-	//	'languageRefSet' EQUAL languageRefSetId=ExpressionConstraint;
+	//	'languageRefSetId' EQUAL languageRefSetId=ExpressionConstraint;
 	public LanguageRefSetFilterElements getLanguageRefSetFilterAccess() {
 		return pLanguageRefSetFilter;
 	}
@@ -1094,6 +1162,26 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getTypeFilterRule() {
 		return getTypeFilterAccess().getRule();
+	}
+	
+	//CaseSignificanceFilter:
+	//	'caseSignificanceId' EQUAL caseSignificanceId=ExpressionConstraint;
+	public CaseSignificanceFilterElements getCaseSignificanceFilterAccess() {
+		return pCaseSignificanceFilter;
+	}
+	
+	public ParserRule getCaseSignificanceFilterRule() {
+		return getCaseSignificanceFilterAccess().getRule();
+	}
+	
+	//LanguageCodeFilter:
+	//	'languageCode' EQUAL languageCode=STRING;
+	public LanguageCodeFilterElements getLanguageCodeFilterAccess() {
+		return pLanguageCodeFilter;
+	}
+	
+	public ParserRule getLanguageCodeFilterRule() {
+		return getLanguageCodeFilterAccess().getRule();
 	}
 	
 	//enum LexicalSearchType:

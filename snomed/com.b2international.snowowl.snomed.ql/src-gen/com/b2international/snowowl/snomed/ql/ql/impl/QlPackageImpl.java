@@ -19,12 +19,14 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
+import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
 import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
 import com.b2international.snowowl.snomed.ql.ql.Filter;
+import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.LexicalSearchType;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
@@ -163,6 +165,20 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * @generated
    */
   private EClass typeFilterEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass caseSignificanceFilterEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass languageCodeFilterEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -591,6 +607,46 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EClass getCaseSignificanceFilter()
+  {
+    return caseSignificanceFilterEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getCaseSignificanceFilter_CaseSignificanceId()
+  {
+    return (EReference)caseSignificanceFilterEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getLanguageCodeFilter()
+  {
+    return languageCodeFilterEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getLanguageCodeFilter_LanguageCode()
+  {
+    return (EAttribute)languageCodeFilterEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EClass getQueryDisjunction()
   {
     return queryDisjunctionEClass;
@@ -861,6 +917,12 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     typeFilterEClass = createEClass(TYPE_FILTER);
     createEReference(typeFilterEClass, TYPE_FILTER__TYPE);
 
+    caseSignificanceFilterEClass = createEClass(CASE_SIGNIFICANCE_FILTER);
+    createEReference(caseSignificanceFilterEClass, CASE_SIGNIFICANCE_FILTER__CASE_SIGNIFICANCE_ID);
+
+    languageCodeFilterEClass = createEClass(LANGUAGE_CODE_FILTER);
+    createEAttribute(languageCodeFilterEClass, LANGUAGE_CODE_FILTER__LANGUAGE_CODE);
+
     queryDisjunctionEClass = createEClass(QUERY_DISJUNCTION);
     createEReference(queryDisjunctionEClass, QUERY_DISJUNCTION__LEFT);
     createEReference(queryDisjunctionEClass, QUERY_DISJUNCTION__RIGHT);
@@ -934,6 +996,8 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     acceptableInFilterEClass.getESuperTypes().add(this.getPropertyFilter());
     languageRefSetFilterEClass.getESuperTypes().add(this.getPropertyFilter());
     typeFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    caseSignificanceFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    languageCodeFilterEClass.getESuperTypes().add(this.getPropertyFilter());
     queryDisjunctionEClass.getESuperTypes().add(this.getQueryConstraint());
     queryConjunctionEClass.getESuperTypes().add(this.getQueryConstraint());
     queryExclusionEClass.getESuperTypes().add(this.getQueryConstraint());
@@ -986,6 +1050,12 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
 
     initEClass(typeFilterEClass, TypeFilter.class, "TypeFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getTypeFilter_Type(), theEclPackage.getExpressionConstraint(), null, "type", null, 0, 1, TypeFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(caseSignificanceFilterEClass, CaseSignificanceFilter.class, "CaseSignificanceFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getCaseSignificanceFilter_CaseSignificanceId(), theEclPackage.getExpressionConstraint(), null, "caseSignificanceId", null, 0, 1, CaseSignificanceFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(languageCodeFilterEClass, LanguageCodeFilter.class, "LanguageCodeFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getLanguageCodeFilter_LanguageCode(), ecorePackage.getEString(), "languageCode", null, 0, 1, LanguageCodeFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(queryDisjunctionEClass, QueryDisjunction.class, "QueryDisjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getQueryDisjunction_Left(), this.getQueryConstraint(), null, "left", null, 0, 1, QueryDisjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

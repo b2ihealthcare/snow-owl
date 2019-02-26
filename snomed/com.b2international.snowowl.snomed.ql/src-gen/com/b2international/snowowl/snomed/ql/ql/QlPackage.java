@@ -491,6 +491,62 @@ public interface QlPackage extends EPackage
   int TYPE_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 1;
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.CaseSignificanceFilterImpl <em>Case Significance Filter</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.CaseSignificanceFilterImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getCaseSignificanceFilter()
+   * @generated
+   */
+  int CASE_SIGNIFICANCE_FILTER = 15;
+
+  /**
+   * The feature id for the '<em><b>Case Significance Id</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CASE_SIGNIFICANCE_FILTER__CASE_SIGNIFICANCE_ID = PROPERTY_FILTER_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Case Significance Filter</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CASE_SIGNIFICANCE_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.LanguageCodeFilterImpl <em>Language Code Filter</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.LanguageCodeFilterImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getLanguageCodeFilter()
+   * @generated
+   */
+  int LANGUAGE_CODE_FILTER = 16;
+
+  /**
+   * The feature id for the '<em><b>Language Code</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int LANGUAGE_CODE_FILTER__LANGUAGE_CODE = PROPERTY_FILTER_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Language Code Filter</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int LANGUAGE_CODE_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryDisjunctionImpl <em>Query Disjunction</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -498,7 +554,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryDisjunction()
    * @generated
    */
-  int QUERY_DISJUNCTION = 15;
+  int QUERY_DISJUNCTION = 17;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -535,7 +591,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryConjunction()
    * @generated
    */
-  int QUERY_CONJUNCTION = 16;
+  int QUERY_CONJUNCTION = 18;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -572,7 +628,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryExclusion()
    * @generated
    */
-  int QUERY_EXCLUSION = 17;
+  int QUERY_EXCLUSION = 19;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -609,7 +665,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDisjunction()
    * @generated
    */
-  int DISJUNCTION = 18;
+  int DISJUNCTION = 20;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -646,7 +702,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getConjunction()
    * @generated
    */
-  int CONJUNCTION = 19;
+  int CONJUNCTION = 21;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -683,7 +739,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getExclusion()
    * @generated
    */
-  int EXCLUSION = 20;
+  int EXCLUSION = 22;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -720,7 +776,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getLexicalSearchType()
    * @generated
    */
-  int LEXICAL_SEARCH_TYPE = 21;
+  int LEXICAL_SEARCH_TYPE = 23;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.Domain <em>Domain</em>}' enum.
@@ -730,7 +786,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDomain()
    * @generated
    */
-  int DOMAIN = 22;
+  int DOMAIN = 24;
 
 
   /**
@@ -1047,6 +1103,48 @@ public interface QlPackage extends EPackage
    * @generated
    */
   EReference getTypeFilter_Type();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter <em>Case Significance Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Case Significance Filter</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter
+   * @generated
+   */
+  EClass getCaseSignificanceFilter();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter#getCaseSignificanceId <em>Case Significance Id</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Case Significance Id</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter#getCaseSignificanceId()
+   * @see #getCaseSignificanceFilter()
+   * @generated
+   */
+  EReference getCaseSignificanceFilter_CaseSignificanceId();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter <em>Language Code Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Language Code Filter</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter
+   * @generated
+   */
+  EClass getLanguageCodeFilter();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter#getLanguageCode <em>Language Code</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Language Code</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter#getLanguageCode()
+   * @see #getLanguageCodeFilter()
+   * @generated
+   */
+  EAttribute getLanguageCodeFilter_LanguageCode();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.QueryDisjunction <em>Query Disjunction</em>}'.
@@ -1552,6 +1650,42 @@ public interface QlPackage extends EPackage
      * @generated
      */
     EReference TYPE_FILTER__TYPE = eINSTANCE.getTypeFilter_Type();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.CaseSignificanceFilterImpl <em>Case Significance Filter</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.CaseSignificanceFilterImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getCaseSignificanceFilter()
+     * @generated
+     */
+    EClass CASE_SIGNIFICANCE_FILTER = eINSTANCE.getCaseSignificanceFilter();
+
+    /**
+     * The meta object literal for the '<em><b>Case Significance Id</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference CASE_SIGNIFICANCE_FILTER__CASE_SIGNIFICANCE_ID = eINSTANCE.getCaseSignificanceFilter_CaseSignificanceId();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.LanguageCodeFilterImpl <em>Language Code Filter</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.LanguageCodeFilterImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getLanguageCodeFilter()
+     * @generated
+     */
+    EClass LANGUAGE_CODE_FILTER = eINSTANCE.getLanguageCodeFilter();
+
+    /**
+     * The meta object literal for the '<em><b>Language Code</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute LANGUAGE_CODE_FILTER__LANGUAGE_CODE = eINSTANCE.getLanguageCodeFilter_LanguageCode();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryDisjunctionImpl <em>Query Disjunction</em>}' class.

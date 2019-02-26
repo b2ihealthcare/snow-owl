@@ -56,6 +56,12 @@
     <genClasses ecoreClass="QL.ecore#//TypeFilter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//TypeFilter/type"/>
     </genClasses>
+    <genClasses ecoreClass="QL.ecore#//CaseSignificanceFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//CaseSignificanceFilter/caseSignificanceId"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//LanguageCodeFilter">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//LanguageCodeFilter/languageCode"/>
+    </genClasses>
     <genClasses ecoreClass="QL.ecore#//QueryDisjunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryDisjunction/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryDisjunction/right"/>

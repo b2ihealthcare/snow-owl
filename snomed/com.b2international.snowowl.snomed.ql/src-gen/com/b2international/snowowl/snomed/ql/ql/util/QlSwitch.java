@@ -212,6 +212,24 @@ public class QlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case QlPackage.CASE_SIGNIFICANCE_FILTER:
+      {
+        CaseSignificanceFilter caseSignificanceFilter = (CaseSignificanceFilter)theEObject;
+        T result = caseCaseSignificanceFilter(caseSignificanceFilter);
+        if (result == null) result = casePropertyFilter(caseSignificanceFilter);
+        if (result == null) result = caseFilter(caseSignificanceFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.LANGUAGE_CODE_FILTER:
+      {
+        LanguageCodeFilter languageCodeFilter = (LanguageCodeFilter)theEObject;
+        T result = caseLanguageCodeFilter(languageCodeFilter);
+        if (result == null) result = casePropertyFilter(languageCodeFilter);
+        if (result == null) result = caseFilter(languageCodeFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case QlPackage.QUERY_DISJUNCTION:
       {
         QueryDisjunction queryDisjunction = (QueryDisjunction)theEObject;
@@ -500,6 +518,38 @@ public class QlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseTypeFilter(TypeFilter object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Case Significance Filter</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Case Significance Filter</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseCaseSignificanceFilter(CaseSignificanceFilter object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Language Code Filter</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Language Code Filter</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseLanguageCodeFilter(LanguageCodeFilter object)
   {
     return null;
   }

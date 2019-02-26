@@ -895,11 +895,35 @@ rulePropertyFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getPropertyFilterAccess().getNestedFilterParserRuleCall_7());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getCaseSignificanceFilterParserRuleCall_7());
 		}
-		this_NestedFilter_7=ruleNestedFilter
+		this_CaseSignificanceFilter_7=ruleCaseSignificanceFilter
 		{
-			$current = $this_NestedFilter_7.current;
+			$current = $this_CaseSignificanceFilter_7.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getLanguageCodeFilterParserRuleCall_8());
+		}
+		this_LanguageCodeFilter_8=ruleLanguageCodeFilter
+		{
+			$current = $this_LanguageCodeFilter_8.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getNestedFilterParserRuleCall_9());
+		}
+		this_NestedFilter_9=ruleNestedFilter
+		{
+			$current = $this_NestedFilter_9.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
@@ -1225,9 +1249,9 @@ ruleLanguageRefSetFilter returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		otherlv_0=LanguageRefSet
+		otherlv_0=LanguageRefSetId
 		{
-			newLeafNode(otherlv_0, grammarAccess.getLanguageRefSetFilterAccess().getLanguageRefSetKeyword_0());
+			newLeafNode(otherlv_0, grammarAccess.getLanguageRefSetFilterAccess().getLanguageRefSetIdKeyword_0());
 		}
 		this_EQUAL_1=RULE_EQUAL
 		{
@@ -1295,6 +1319,97 @@ ruleTypeFilter returns [EObject current=null]
 						lv_type_2_0,
 						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleCaseSignificanceFilter
+entryRuleCaseSignificanceFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getCaseSignificanceFilterRule()); }
+	iv_ruleCaseSignificanceFilter=ruleCaseSignificanceFilter
+	{ $current=$iv_ruleCaseSignificanceFilter.current; }
+	EOF;
+
+// Rule CaseSignificanceFilter
+ruleCaseSignificanceFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		otherlv_0=CaseSignificanceId
+		{
+			newLeafNode(otherlv_0, grammarAccess.getCaseSignificanceFilterAccess().getCaseSignificanceIdKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getCaseSignificanceFilterAccess().getEQUALTerminalRuleCall_1());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getCaseSignificanceFilterAccess().getCaseSignificanceIdExpressionConstraintParserRuleCall_2_0());
+				}
+				lv_caseSignificanceId_2_0=ruleExpressionConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getCaseSignificanceFilterRule());
+					}
+					set(
+						$current,
+						"caseSignificanceId",
+						lv_caseSignificanceId_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleLanguageCodeFilter
+entryRuleLanguageCodeFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getLanguageCodeFilterRule()); }
+	iv_ruleLanguageCodeFilter=ruleLanguageCodeFilter
+	{ $current=$iv_ruleLanguageCodeFilter.current; }
+	EOF;
+
+// Rule LanguageCodeFilter
+ruleLanguageCodeFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		otherlv_0=LanguageCode
+		{
+			newLeafNode(otherlv_0, grammarAccess.getLanguageCodeFilterAccess().getLanguageCodeKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getLanguageCodeFilterAccess().getEQUALTerminalRuleCall_1());
+		}
+		(
+			(
+				lv_languageCode_2_0=RULE_STRING
+				{
+					newLeafNode(lv_languageCode_2_0, grammarAccess.getLanguageCodeFilterAccess().getLanguageCodeSTRINGTerminalRuleCall_2_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getLanguageCodeFilterRule());
+					}
+					setWithLastConsumed(
+						$current,
+						"languageCode",
+						lv_languageCode_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
 				}
 			)
 		)

@@ -17,11 +17,13 @@ package com.b2international.snowowl.snomed.ql;
 
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
+import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
 import com.b2international.snowowl.snomed.ql.ql.Filter;
+import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
@@ -76,6 +78,10 @@ public class QLRuntimeModule extends AbstractQLRuntimeModule {
 		} else if (constraint instanceof AcceptableInFilter) {
 			return Domain.DESCRIPTION;
 		} else if (constraint instanceof LanguageRefSetFilter) {
+			return Domain.DESCRIPTION;
+		} else if (constraint instanceof LanguageCodeFilter) {
+			return Domain.DESCRIPTION;
+		} else if (constraint instanceof CaseSignificanceFilter) {
 			return Domain.DESCRIPTION;
 		} else {
 			throw new UnsupportedOperationException("Not implemented case: " + constraint);

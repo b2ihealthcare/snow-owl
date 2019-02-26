@@ -62,7 +62,7 @@ NestedFilter:
 	ROUND_OPEN nested=Filter ROUND_CLOSE;
 
 PropertyFilter:
-	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter
+	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter | CaseSignificanceFilter | LanguageCodeFilter
 	| NestedFilter;
 
 ActiveFilter:
@@ -81,10 +81,16 @@ AcceptableInFilter:
 	'acceptableIn' EQUAL languageRefSetId=ExpressionConstraint;
 
 LanguageRefSetFilter:
-	'languageRefSet' EQUAL languageRefSetId=ExpressionConstraint;
+	'languageRefSetId' EQUAL languageRefSetId=ExpressionConstraint;
 
 TypeFilter:
-	'typeId' EQUAL (type=ExpressionConstraint);
+	'typeId' EQUAL type=ExpressionConstraint;
+	
+CaseSignificanceFilter:
+	'caseSignificanceId' EQUAL caseSignificanceId=ExpressionConstraint;
+	
+LanguageCodeFilter:
+	'languageCode' EQUAL languageCode=STRING;
 
 enum LexicalSearchType:
 	MATCH="match" | REGEX="regex" | EXACT="exact";

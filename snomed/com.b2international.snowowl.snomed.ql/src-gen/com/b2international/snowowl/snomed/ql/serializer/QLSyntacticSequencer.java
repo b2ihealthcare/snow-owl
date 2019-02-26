@@ -387,7 +387,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     'AND' | ','
+	 *     ',' | 'AND'
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndExpressionConstraint.left=} (ambiguity) right=ExclusionExpressionConstraint
@@ -409,7 +409,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     'AND' | ','
+	 *     ',' | 'AND'
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {Conjunction.left=} (ambiguity) right=Exclusion
@@ -420,7 +420,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     ',' | 'AND'
+	 *     'AND' | ','
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {QueryConjunction.left=} (ambiguity) right=QueryExclusion

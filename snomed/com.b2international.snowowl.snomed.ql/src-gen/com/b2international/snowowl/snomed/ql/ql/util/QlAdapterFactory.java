@@ -163,6 +163,16 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createTypeFilterAdapter();
       }
       @Override
+      public Adapter caseCaseSignificanceFilter(CaseSignificanceFilter object)
+      {
+        return createCaseSignificanceFilterAdapter();
+      }
+      @Override
+      public Adapter caseLanguageCodeFilter(LanguageCodeFilter object)
+      {
+        return createLanguageCodeFilterAdapter();
+      }
+      @Override
       public Adapter caseQueryDisjunction(QueryDisjunction object)
       {
         return createQueryDisjunctionAdapter();
@@ -435,6 +445,36 @@ public class QlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createTypeFilterAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter <em>Case Significance Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter
+   * @generated
+   */
+  public Adapter createCaseSignificanceFilterAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter <em>Language Code Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter
+   * @generated
+   */
+  public Adapter createLanguageCodeFilterAdapter()
   {
     return null;
   }

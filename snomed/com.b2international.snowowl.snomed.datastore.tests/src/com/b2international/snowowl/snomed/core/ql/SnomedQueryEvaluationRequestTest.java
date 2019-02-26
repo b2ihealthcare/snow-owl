@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.ql;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -368,8 +368,48 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.build());
 		
-		final Expression actual = eval("* {{ languageRefSet = "+Concepts.REFSET_LANGUAGE_TYPE_UK+" }}");
+		final Expression actual = eval("* {{ languageRefSetId = "+Concepts.REFSET_LANGUAGE_TYPE_UK+" }}");
 		final Expression expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void invalidLanguageCodeFilter() throws Exception {
+		eval("* {{ languageCode = \"en-sg\" }}");
+	}
+	
+	@Test
+	public void languageCodeFilter() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.languageCode("en")
+				.build());
+		
+		Expression actual = eval("* {{ languageCode = \"en\" }}");
+		Expression expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void caseSignificanceIdFilter() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.languageCode("en")
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.build());
+		
+		Expression actual = eval("* {{ caseSignificanceId = "+Concepts.ENTIRE_TERM_CASE_INSENSITIVE+" }}");
+		Expression expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT));
 		assertEquals(expected, actual);
 	}
 	
