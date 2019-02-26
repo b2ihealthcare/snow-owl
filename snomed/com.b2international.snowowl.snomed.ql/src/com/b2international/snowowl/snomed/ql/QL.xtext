@@ -19,24 +19,49 @@ generate ql "http://www.b2international.com/snowowl/snomed/QL"
 import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
 
 Query:
-	{Query} (ecl=ExpressionConstraint)? (OPEN_DOUBLE_BRACES constraint=Constraint CLOSE_DOUBLE_BRACES)?;
+	{Query} (query=QueryConstraint)?;
 
-Constraint:
-	Disjunction;
+// Domain Query Parts
 
-Disjunction returns Constraint:
-	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
+QueryConstraint:
+	QueryDisjunction;
 
-Conjunction returns Constraint:
-	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
+QueryDisjunction returns QueryConstraint:
+	QueryConjunction ({QueryDisjunction.left=current} 'OR' right=QueryConjunction)*;
 
-Exclusion returns Constraint:
-	Filter ({Exclusion.left=current} 'MINUS' right=Filter)?;
+QueryConjunction returns QueryConstraint:
+	QueryExclusion ({QueryConjunction.left=current} ('AND' | ',') right=QueryExclusion)*;
 
-NestedFilter:
-	ROUND_OPEN constraint=Constraint ROUND_CLOSE;
+QueryExclusion returns QueryConstraint:
+	SubQuery ({QueryExclusion.left=current} 'MINUS' right=SubQuery)?;
+
+SubQuery:
+	DomainQuery | NestedQuery;
+
+DomainQuery:
+	{DomainQuery} (ecl=ExpressionConstraint)? (OPEN_DOUBLE_BRACES filter=Filter CLOSE_DOUBLE_BRACES)?;
+
+NestedQuery:
+	ROUND_OPEN nested=QueryConstraint ROUND_CLOSE;
+
+// Domain Property Filters
 
 Filter:
+	Disjunction;
+
+Disjunction returns Filter:
+	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
+
+Conjunction returns Filter:
+	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
+
+Exclusion returns Filter:
+	PropertyFilter ({Exclusion.left=current} 'MINUS' right=PropertyFilter)?;
+
+NestedFilter:
+	ROUND_OPEN nested=Filter ROUND_CLOSE;
+
+PropertyFilter:
 	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter
 	| NestedFilter;
 

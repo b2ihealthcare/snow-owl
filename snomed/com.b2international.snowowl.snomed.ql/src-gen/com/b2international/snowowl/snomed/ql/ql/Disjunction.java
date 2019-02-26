@@ -33,7 +33,7 @@ package com.b2international.snowowl.snomed.ql.ql;
  * @model
  * @generated
  */
-public interface Disjunction extends Constraint
+public interface Disjunction extends Filter
 {
   /**
    * Returns the value of the '<em><b>Left</b></em>' containment reference.
@@ -44,12 +44,12 @@ public interface Disjunction extends Constraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Left</em>' containment reference.
-   * @see #setLeft(Constraint)
+   * @see #setLeft(Filter)
    * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDisjunction_Left()
    * @model containment="true"
    * @generated
    */
-  Constraint getLeft();
+  Filter getLeft();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Disjunction#getLeft <em>Left</em>}' containment reference.
@@ -59,7 +59,7 @@ public interface Disjunction extends Constraint
    * @see #getLeft()
    * @generated
    */
-  void setLeft(Constraint value);
+  void setLeft(Filter value);
 
   /**
    * Returns the value of the '<em><b>Right</b></em>' containment reference.
@@ -70,12 +70,12 @@ public interface Disjunction extends Constraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Right</em>' containment reference.
-   * @see #setRight(Constraint)
+   * @see #setRight(Filter)
    * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDisjunction_Right()
    * @model containment="true"
    * @generated
    */
-  Constraint getRight();
+  Filter getRight();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Disjunction#getRight <em>Right</em>}' containment reference.
@@ -85,6 +85,6 @@ public interface Disjunction extends Constraint
    * @see #getRight()
    * @generated
    */
-  void setRight(Constraint value);
+  void setRight(Filter value);
 
 } // Disjunction

@@ -20,19 +20,26 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
+import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
 import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.LexicalSearchType;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.NestedQuery;
 import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
+import com.b2international.snowowl.snomed.ql.ql.PropertyFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlFactory;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.Query;
+import com.b2international.snowowl.snomed.ql.ql.QueryConjunction;
+import com.b2international.snowowl.snomed.ql.ql.QueryConstraint;
+import com.b2international.snowowl.snomed.ql.ql.QueryDisjunction;
+import com.b2international.snowowl.snomed.ql.ql.QueryExclusion;
+import com.b2international.snowowl.snomed.ql.ql.SubQuery;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
 
@@ -64,7 +71,35 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass constraintEClass = null;
+  private EClass queryConstraintEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass subQueryEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass domainQueryEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass nestedQueryEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass filterEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -78,7 +113,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass filterEClass = null;
+  private EClass propertyFilterEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -128,6 +163,27 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * @generated
    */
   private EClass typeFilterEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass queryDisjunctionEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass queryConjunctionEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass queryExclusionEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -245,7 +301,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getQuery_Ecl()
+  public EReference getQuery_Query()
   {
     return (EReference)queryEClass.getEStructuralFeatures().get(0);
   }
@@ -255,9 +311,9 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getQuery_Constraint()
+  public EClass getQueryConstraint()
   {
-    return (EReference)queryEClass.getEStructuralFeatures().get(1);
+    return queryConstraintEClass;
   }
 
   /**
@@ -265,9 +321,69 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EClass getConstraint()
+  public EClass getSubQuery()
   {
-    return constraintEClass;
+    return subQueryEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getDomainQuery()
+  {
+    return domainQueryEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getDomainQuery_Ecl()
+  {
+    return (EReference)domainQueryEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getDomainQuery_Filter()
+  {
+    return (EReference)domainQueryEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getNestedQuery()
+  {
+    return nestedQueryEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getNestedQuery_Nested()
+  {
+    return (EReference)nestedQueryEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getFilter()
+  {
+    return filterEClass;
   }
 
   /**
@@ -285,7 +401,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getNestedFilter_Constraint()
+  public EReference getNestedFilter_Nested()
   {
     return (EReference)nestedFilterEClass.getEStructuralFeatures().get(0);
   }
@@ -295,9 +411,9 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EClass getFilter()
+  public EClass getPropertyFilter()
   {
-    return filterEClass;
+    return propertyFilterEClass;
   }
 
   /**
@@ -475,6 +591,96 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EClass getQueryDisjunction()
+  {
+    return queryDisjunctionEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getQueryDisjunction_Left()
+  {
+    return (EReference)queryDisjunctionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getQueryDisjunction_Right()
+  {
+    return (EReference)queryDisjunctionEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getQueryConjunction()
+  {
+    return queryConjunctionEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getQueryConjunction_Left()
+  {
+    return (EReference)queryConjunctionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getQueryConjunction_Right()
+  {
+    return (EReference)queryConjunctionEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getQueryExclusion()
+  {
+    return queryExclusionEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getQueryExclusion_Left()
+  {
+    return (EReference)queryExclusionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getQueryExclusion_Right()
+  {
+    return (EReference)queryExclusionEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EClass getDisjunction()
   {
     return disjunctionEClass;
@@ -611,15 +817,25 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
 
     // Create classes and their features
     queryEClass = createEClass(QUERY);
-    createEReference(queryEClass, QUERY__ECL);
-    createEReference(queryEClass, QUERY__CONSTRAINT);
+    createEReference(queryEClass, QUERY__QUERY);
 
-    constraintEClass = createEClass(CONSTRAINT);
+    queryConstraintEClass = createEClass(QUERY_CONSTRAINT);
 
-    nestedFilterEClass = createEClass(NESTED_FILTER);
-    createEReference(nestedFilterEClass, NESTED_FILTER__CONSTRAINT);
+    subQueryEClass = createEClass(SUB_QUERY);
+
+    domainQueryEClass = createEClass(DOMAIN_QUERY);
+    createEReference(domainQueryEClass, DOMAIN_QUERY__ECL);
+    createEReference(domainQueryEClass, DOMAIN_QUERY__FILTER);
+
+    nestedQueryEClass = createEClass(NESTED_QUERY);
+    createEReference(nestedQueryEClass, NESTED_QUERY__NESTED);
 
     filterEClass = createEClass(FILTER);
+
+    nestedFilterEClass = createEClass(NESTED_FILTER);
+    createEReference(nestedFilterEClass, NESTED_FILTER__NESTED);
+
+    propertyFilterEClass = createEClass(PROPERTY_FILTER);
 
     activeFilterEClass = createEClass(ACTIVE_FILTER);
     createEAttribute(activeFilterEClass, ACTIVE_FILTER__DOMAIN);
@@ -644,6 +860,18 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
 
     typeFilterEClass = createEClass(TYPE_FILTER);
     createEReference(typeFilterEClass, TYPE_FILTER__TYPE);
+
+    queryDisjunctionEClass = createEClass(QUERY_DISJUNCTION);
+    createEReference(queryDisjunctionEClass, QUERY_DISJUNCTION__LEFT);
+    createEReference(queryDisjunctionEClass, QUERY_DISJUNCTION__RIGHT);
+
+    queryConjunctionEClass = createEClass(QUERY_CONJUNCTION);
+    createEReference(queryConjunctionEClass, QUERY_CONJUNCTION__LEFT);
+    createEReference(queryConjunctionEClass, QUERY_CONJUNCTION__RIGHT);
+
+    queryExclusionEClass = createEClass(QUERY_EXCLUSION);
+    createEReference(queryExclusionEClass, QUERY_EXCLUSION__LEFT);
+    createEReference(queryExclusionEClass, QUERY_EXCLUSION__RIGHT);
 
     disjunctionEClass = createEClass(DISJUNCTION);
     createEReference(disjunctionEClass, DISJUNCTION__LEFT);
@@ -694,30 +922,46 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     // Set bounds for type parameters
 
     // Add supertypes to classes
-    nestedFilterEClass.getESuperTypes().add(this.getFilter());
-    filterEClass.getESuperTypes().add(this.getConstraint());
-    activeFilterEClass.getESuperTypes().add(this.getFilter());
-    moduleFilterEClass.getESuperTypes().add(this.getFilter());
-    termFilterEClass.getESuperTypes().add(this.getFilter());
-    preferredInFilterEClass.getESuperTypes().add(this.getFilter());
-    acceptableInFilterEClass.getESuperTypes().add(this.getFilter());
-    languageRefSetFilterEClass.getESuperTypes().add(this.getFilter());
-    typeFilterEClass.getESuperTypes().add(this.getFilter());
-    disjunctionEClass.getESuperTypes().add(this.getConstraint());
-    conjunctionEClass.getESuperTypes().add(this.getConstraint());
-    exclusionEClass.getESuperTypes().add(this.getConstraint());
+    subQueryEClass.getESuperTypes().add(this.getQueryConstraint());
+    domainQueryEClass.getESuperTypes().add(this.getSubQuery());
+    nestedQueryEClass.getESuperTypes().add(this.getSubQuery());
+    nestedFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    propertyFilterEClass.getESuperTypes().add(this.getFilter());
+    activeFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    moduleFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    termFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    preferredInFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    acceptableInFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    languageRefSetFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    typeFilterEClass.getESuperTypes().add(this.getPropertyFilter());
+    queryDisjunctionEClass.getESuperTypes().add(this.getQueryConstraint());
+    queryConjunctionEClass.getESuperTypes().add(this.getQueryConstraint());
+    queryExclusionEClass.getESuperTypes().add(this.getQueryConstraint());
+    disjunctionEClass.getESuperTypes().add(this.getFilter());
+    conjunctionEClass.getESuperTypes().add(this.getFilter());
+    exclusionEClass.getESuperTypes().add(this.getFilter());
 
     // Initialize classes and features; add operations and parameters
     initEClass(queryEClass, Query.class, "Query", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getQuery_Ecl(), theEclPackage.getExpressionConstraint(), null, "ecl", null, 0, 1, Query.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getQuery_Constraint(), this.getConstraint(), null, "constraint", null, 0, 1, Query.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getQuery_Query(), this.getQueryConstraint(), null, "query", null, 0, 1, Query.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(constraintEClass, Constraint.class, "Constraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEClass(queryConstraintEClass, QueryConstraint.class, "QueryConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(nestedFilterEClass, NestedFilter.class, "NestedFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getNestedFilter_Constraint(), this.getConstraint(), null, "constraint", null, 0, 1, NestedFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(subQueryEClass, SubQuery.class, "SubQuery", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(domainQueryEClass, DomainQuery.class, "DomainQuery", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getDomainQuery_Ecl(), theEclPackage.getExpressionConstraint(), null, "ecl", null, 0, 1, DomainQuery.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getDomainQuery_Filter(), this.getFilter(), null, "filter", null, 0, 1, DomainQuery.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(nestedQueryEClass, NestedQuery.class, "NestedQuery", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getNestedQuery_Nested(), this.getQueryConstraint(), null, "nested", null, 0, 1, NestedQuery.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(filterEClass, Filter.class, "Filter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(nestedFilterEClass, NestedFilter.class, "NestedFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getNestedFilter_Nested(), this.getFilter(), null, "nested", null, 0, 1, NestedFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(propertyFilterEClass, PropertyFilter.class, "PropertyFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(activeFilterEClass, ActiveFilter.class, "ActiveFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getActiveFilter_Domain(), this.getDomain(), "domain", null, 0, 1, ActiveFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -743,17 +987,29 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     initEClass(typeFilterEClass, TypeFilter.class, "TypeFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getTypeFilter_Type(), theEclPackage.getExpressionConstraint(), null, "type", null, 0, 1, TypeFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+    initEClass(queryDisjunctionEClass, QueryDisjunction.class, "QueryDisjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getQueryDisjunction_Left(), this.getQueryConstraint(), null, "left", null, 0, 1, QueryDisjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getQueryDisjunction_Right(), this.getQueryConstraint(), null, "right", null, 0, 1, QueryDisjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(queryConjunctionEClass, QueryConjunction.class, "QueryConjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getQueryConjunction_Left(), this.getQueryConstraint(), null, "left", null, 0, 1, QueryConjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getQueryConjunction_Right(), this.getQueryConstraint(), null, "right", null, 0, 1, QueryConjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(queryExclusionEClass, QueryExclusion.class, "QueryExclusion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getQueryExclusion_Left(), this.getSubQuery(), null, "left", null, 0, 1, QueryExclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getQueryExclusion_Right(), this.getSubQuery(), null, "right", null, 0, 1, QueryExclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
     initEClass(disjunctionEClass, Disjunction.class, "Disjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getDisjunction_Left(), this.getConstraint(), null, "left", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getDisjunction_Right(), this.getConstraint(), null, "right", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getDisjunction_Left(), this.getFilter(), null, "left", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getDisjunction_Right(), this.getFilter(), null, "right", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(conjunctionEClass, Conjunction.class, "Conjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getConjunction_Left(), this.getConstraint(), null, "left", null, 0, 1, Conjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getConjunction_Right(), this.getConstraint(), null, "right", null, 0, 1, Conjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getConjunction_Left(), this.getFilter(), null, "left", null, 0, 1, Conjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getConjunction_Right(), this.getFilter(), null, "right", null, 0, 1, Conjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(exclusionEClass, Exclusion.class, "Exclusion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getExclusion_Left(), this.getFilter(), null, "left", null, 0, 1, Exclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getExclusion_Right(), this.getFilter(), null, "right", null, 0, 1, Exclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getExclusion_Left(), this.getPropertyFilter(), null, "left", null, 0, 1, Exclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getExclusion_Right(), this.getPropertyFilter(), null, "right", null, 0, 1, Exclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     // Initialize enums and add enum literals
     initEEnum(lexicalSearchTypeEEnum, LexicalSearchType.class, "LexicalSearchType");

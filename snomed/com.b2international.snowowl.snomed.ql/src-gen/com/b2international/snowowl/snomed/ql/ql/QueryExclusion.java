@@ -18,22 +18,22 @@ package com.b2international.snowowl.snomed.ql.ql;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Exclusion</b></em>'.
+ * A representation of the model object '<em><b>Query Exclusion</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Exclusion#getLeft <em>Left</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Exclusion#getRight <em>Right</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.QueryExclusion#getLeft <em>Left</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.QueryExclusion#getRight <em>Right</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getExclusion()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getQueryExclusion()
  * @model
  * @generated
  */
-public interface Exclusion extends Filter
+public interface QueryExclusion extends QueryConstraint
 {
   /**
    * Returns the value of the '<em><b>Left</b></em>' containment reference.
@@ -44,22 +44,22 @@ public interface Exclusion extends Filter
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Left</em>' containment reference.
-   * @see #setLeft(PropertyFilter)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getExclusion_Left()
+   * @see #setLeft(SubQuery)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getQueryExclusion_Left()
    * @model containment="true"
    * @generated
    */
-  PropertyFilter getLeft();
+  SubQuery getLeft();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Exclusion#getLeft <em>Left</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.QueryExclusion#getLeft <em>Left</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Left</em>' containment reference.
    * @see #getLeft()
    * @generated
    */
-  void setLeft(PropertyFilter value);
+  void setLeft(SubQuery value);
 
   /**
    * Returns the value of the '<em><b>Right</b></em>' containment reference.
@@ -70,21 +70,21 @@ public interface Exclusion extends Filter
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Right</em>' containment reference.
-   * @see #setRight(PropertyFilter)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getExclusion_Right()
+   * @see #setRight(SubQuery)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getQueryExclusion_Right()
    * @model containment="true"
    * @generated
    */
-  PropertyFilter getRight();
+  SubQuery getRight();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Exclusion#getRight <em>Right</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.QueryExclusion#getRight <em>Right</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Right</em>' containment reference.
    * @see #getRight()
    * @generated
    */
-  void setRight(PropertyFilter value);
+  void setRight(SubQuery value);
 
-} // Exclusion
+} // QueryExclusion

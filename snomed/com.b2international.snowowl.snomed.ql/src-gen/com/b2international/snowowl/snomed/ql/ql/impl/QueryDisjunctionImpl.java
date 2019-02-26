@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ql.ql.Disjunction;
-import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
+import com.b2international.snowowl.snomed.ql.ql.QueryConstraint;
+import com.b2international.snowowl.snomed.ql.ql.QueryDisjunction;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -29,19 +29,19 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Disjunction</b></em>'.
+ * An implementation of the model object '<em><b>Query Disjunction</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DisjunctionImpl#getLeft <em>Left</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.DisjunctionImpl#getRight <em>Right</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryDisjunctionImpl#getLeft <em>Left</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryDisjunctionImpl#getRight <em>Right</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class DisjunctionImpl extends FilterImpl implements Disjunction
+public class QueryDisjunctionImpl extends QueryConstraintImpl implements QueryDisjunction
 {
   /**
    * The cached value of the '{@link #getLeft() <em>Left</em>}' containment reference.
@@ -51,7 +51,7 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
    * @generated
    * @ordered
    */
-  protected Filter left;
+  protected QueryConstraint left;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -61,14 +61,14 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
    * @generated
    * @ordered
    */
-  protected Filter right;
+  protected QueryConstraint right;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected DisjunctionImpl()
+  protected QueryDisjunctionImpl()
   {
     super();
   }
@@ -81,7 +81,7 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.DISJUNCTION;
+    return QlPackage.Literals.QUERY_DISJUNCTION;
   }
 
   /**
@@ -89,7 +89,7 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public Filter getLeft()
+  public QueryConstraint getLeft()
   {
     return left;
   }
@@ -99,13 +99,13 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetLeft(Filter newLeft, NotificationChain msgs)
+  public NotificationChain basicSetLeft(QueryConstraint newLeft, NotificationChain msgs)
   {
-    Filter oldLeft = left;
+    QueryConstraint oldLeft = left;
     left = newLeft;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.DISJUNCTION__LEFT, oldLeft, newLeft);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.QUERY_DISJUNCTION__LEFT, oldLeft, newLeft);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -116,20 +116,20 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setLeft(Filter newLeft)
+  public void setLeft(QueryConstraint newLeft)
   {
     if (newLeft != left)
     {
       NotificationChain msgs = null;
       if (left != null)
-        msgs = ((InternalEObject)left).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.DISJUNCTION__LEFT, null, msgs);
+        msgs = ((InternalEObject)left).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY_DISJUNCTION__LEFT, null, msgs);
       if (newLeft != null)
-        msgs = ((InternalEObject)newLeft).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.DISJUNCTION__LEFT, null, msgs);
+        msgs = ((InternalEObject)newLeft).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY_DISJUNCTION__LEFT, null, msgs);
       msgs = basicSetLeft(newLeft, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.DISJUNCTION__LEFT, newLeft, newLeft));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.QUERY_DISJUNCTION__LEFT, newLeft, newLeft));
   }
 
   /**
@@ -137,7 +137,7 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public Filter getRight()
+  public QueryConstraint getRight()
   {
     return right;
   }
@@ -147,13 +147,13 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRight(Filter newRight, NotificationChain msgs)
+  public NotificationChain basicSetRight(QueryConstraint newRight, NotificationChain msgs)
   {
-    Filter oldRight = right;
+    QueryConstraint oldRight = right;
     right = newRight;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.DISJUNCTION__RIGHT, oldRight, newRight);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.QUERY_DISJUNCTION__RIGHT, oldRight, newRight);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -164,20 +164,20 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRight(Filter newRight)
+  public void setRight(QueryConstraint newRight)
   {
     if (newRight != right)
     {
       NotificationChain msgs = null;
       if (right != null)
-        msgs = ((InternalEObject)right).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.DISJUNCTION__RIGHT, null, msgs);
+        msgs = ((InternalEObject)right).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY_DISJUNCTION__RIGHT, null, msgs);
       if (newRight != null)
-        msgs = ((InternalEObject)newRight).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.DISJUNCTION__RIGHT, null, msgs);
+        msgs = ((InternalEObject)newRight).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY_DISJUNCTION__RIGHT, null, msgs);
       msgs = basicSetRight(newRight, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.DISJUNCTION__RIGHT, newRight, newRight));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.QUERY_DISJUNCTION__RIGHT, newRight, newRight));
   }
 
   /**
@@ -190,9 +190,9 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
   {
     switch (featureID)
     {
-      case QlPackage.DISJUNCTION__LEFT:
+      case QlPackage.QUERY_DISJUNCTION__LEFT:
         return basicSetLeft(null, msgs);
-      case QlPackage.DISJUNCTION__RIGHT:
+      case QlPackage.QUERY_DISJUNCTION__RIGHT:
         return basicSetRight(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -208,9 +208,9 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
   {
     switch (featureID)
     {
-      case QlPackage.DISJUNCTION__LEFT:
+      case QlPackage.QUERY_DISJUNCTION__LEFT:
         return getLeft();
-      case QlPackage.DISJUNCTION__RIGHT:
+      case QlPackage.QUERY_DISJUNCTION__RIGHT:
         return getRight();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -226,11 +226,11 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
   {
     switch (featureID)
     {
-      case QlPackage.DISJUNCTION__LEFT:
-        setLeft((Filter)newValue);
+      case QlPackage.QUERY_DISJUNCTION__LEFT:
+        setLeft((QueryConstraint)newValue);
         return;
-      case QlPackage.DISJUNCTION__RIGHT:
-        setRight((Filter)newValue);
+      case QlPackage.QUERY_DISJUNCTION__RIGHT:
+        setRight((QueryConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -246,11 +246,11 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
   {
     switch (featureID)
     {
-      case QlPackage.DISJUNCTION__LEFT:
-        setLeft((Filter)null);
+      case QlPackage.QUERY_DISJUNCTION__LEFT:
+        setLeft((QueryConstraint)null);
         return;
-      case QlPackage.DISJUNCTION__RIGHT:
-        setRight((Filter)null);
+      case QlPackage.QUERY_DISJUNCTION__RIGHT:
+        setRight((QueryConstraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -266,12 +266,12 @@ public class DisjunctionImpl extends FilterImpl implements Disjunction
   {
     switch (featureID)
     {
-      case QlPackage.DISJUNCTION__LEFT:
+      case QlPackage.QUERY_DISJUNCTION__LEFT:
         return left != null;
-      case QlPackage.DISJUNCTION__RIGHT:
+      case QlPackage.QUERY_DISJUNCTION__RIGHT:
         return right != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //DisjunctionImpl
+} //QueryDisjunctionImpl

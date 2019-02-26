@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
  * @model
  * @generated
  */
-public interface ModuleFilter extends Filter
+public interface ModuleFilter extends PropertyFilter
 {
   /**
    * Returns the value of the '<em><b>Domain</b></em>' attribute.

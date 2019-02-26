@@ -15,18 +15,17 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
-import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Filter</b></em>'.
+ * A representation of the model object '<em><b>Property Filter</b></em>'.
  * <!-- end-user-doc -->
  *
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getPropertyFilter()
  * @model
  * @generated
  */
-public interface Filter extends EObject
+public interface PropertyFilter extends Filter
 {
-} // Filter
+} // PropertyFilter

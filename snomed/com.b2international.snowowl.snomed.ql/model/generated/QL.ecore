@@ -3,43 +3,53 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="ql" nsURI="http://www.b2international.com/snowowl/snomed/QL"
     nsPrefix="ql">
   <eClassifiers xsi:type="ecore:EClass" name="Query">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="query" eType="#//QueryConstraint"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="QueryConstraint"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SubQuery" eSuperTypes="#//QueryConstraint"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DomainQuery" eSuperTypes="#//SubQuery">
     <eStructuralFeatures xsi:type="ecore:EReference" name="ecl" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//ExpressionConstraint"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//Constraint"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="filter" eType="#//Filter"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Constraint"/>
-  <eClassifiers xsi:type="ecore:EClass" name="NestedFilter" eSuperTypes="#//Filter">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//Constraint"
+  <eClassifiers xsi:type="ecore:EClass" name="NestedQuery" eSuperTypes="#//SubQuery">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="nested" eType="#//QueryConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Filter" eSuperTypes="#//Constraint"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ActiveFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="Filter"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NestedFilter" eSuperTypes="#//PropertyFilter">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="nested" eType="#//Filter"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PropertyFilter" eSuperTypes="#//Filter"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActiveFilter" eSuperTypes="#//PropertyFilter">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="domain" eType="#//Domain"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="active" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ModuleFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="ModuleFilter" eSuperTypes="#//PropertyFilter">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="domain" eType="#//Domain"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="moduleId" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TermFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="TermFilter" eSuperTypes="#//PropertyFilter">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="lexicalSearchType" eType="#//LexicalSearchType"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PreferredInFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="PreferredInFilter" eSuperTypes="#//PropertyFilter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="languageRefSetId" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AcceptableInFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="AcceptableInFilter" eSuperTypes="#//PropertyFilter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="languageRefSetId" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="LanguageRefSetFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="LanguageRefSetFilter" eSuperTypes="#//PropertyFilter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="languageRefSetId" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TypeFilter" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="TypeFilter" eSuperTypes="#//PropertyFilter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
@@ -52,22 +62,40 @@
     <eLiterals name="CONCEPT" literal="Concept"/>
     <eLiterals name="DESCRIPTION" value="1" literal="Description"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Disjunction" eSuperTypes="#//Constraint">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Constraint"
+  <eClassifiers xsi:type="ecore:EClass" name="QueryDisjunction" eSuperTypes="#//QueryConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//QueryConstraint"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Constraint"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Conjunction" eSuperTypes="#//Constraint">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Constraint"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Constraint"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//QueryConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Exclusion" eSuperTypes="#//Constraint">
+  <eClassifiers xsi:type="ecore:EClass" name="QueryConjunction" eSuperTypes="#//QueryConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//QueryConstraint"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//QueryConstraint"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="QueryExclusion" eSuperTypes="#//QueryConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//SubQuery"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//SubQuery"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Disjunction" eSuperTypes="#//Filter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Filter"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Filter"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Conjunction" eSuperTypes="#//Filter">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Filter"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Filter"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Exclusion" eSuperTypes="#//Filter">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//PropertyFilter"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//PropertyFilter"
         containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

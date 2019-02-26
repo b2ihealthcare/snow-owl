@@ -45,13 +45,49 @@ public interface QlFactory extends EFactory
   Query createQuery();
 
   /**
-   * Returns a new object of class '<em>Constraint</em>'.
+   * Returns a new object of class '<em>Query Constraint</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Constraint</em>'.
+   * @return a new object of class '<em>Query Constraint</em>'.
    * @generated
    */
-  Constraint createConstraint();
+  QueryConstraint createQueryConstraint();
+
+  /**
+   * Returns a new object of class '<em>Sub Query</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Sub Query</em>'.
+   * @generated
+   */
+  SubQuery createSubQuery();
+
+  /**
+   * Returns a new object of class '<em>Domain Query</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Domain Query</em>'.
+   * @generated
+   */
+  DomainQuery createDomainQuery();
+
+  /**
+   * Returns a new object of class '<em>Nested Query</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Nested Query</em>'.
+   * @generated
+   */
+  NestedQuery createNestedQuery();
+
+  /**
+   * Returns a new object of class '<em>Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Filter</em>'.
+   * @generated
+   */
+  Filter createFilter();
 
   /**
    * Returns a new object of class '<em>Nested Filter</em>'.
@@ -63,13 +99,13 @@ public interface QlFactory extends EFactory
   NestedFilter createNestedFilter();
 
   /**
-   * Returns a new object of class '<em>Filter</em>'.
+   * Returns a new object of class '<em>Property Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Filter</em>'.
+   * @return a new object of class '<em>Property Filter</em>'.
    * @generated
    */
-  Filter createFilter();
+  PropertyFilter createPropertyFilter();
 
   /**
    * Returns a new object of class '<em>Active Filter</em>'.
@@ -133,6 +169,33 @@ public interface QlFactory extends EFactory
    * @generated
    */
   TypeFilter createTypeFilter();
+
+  /**
+   * Returns a new object of class '<em>Query Disjunction</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Query Disjunction</em>'.
+   * @generated
+   */
+  QueryDisjunction createQueryDisjunction();
+
+  /**
+   * Returns a new object of class '<em>Query Conjunction</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Query Conjunction</em>'.
+   * @generated
+   */
+  QueryConjunction createQueryConjunction();
+
+  /**
+   * Returns a new object of class '<em>Query Exclusion</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Query Exclusion</em>'.
+   * @generated
+   */
+  QueryExclusion createQueryExclusion();
 
   /**
    * Returns a new object of class '<em>Disjunction</em>'.

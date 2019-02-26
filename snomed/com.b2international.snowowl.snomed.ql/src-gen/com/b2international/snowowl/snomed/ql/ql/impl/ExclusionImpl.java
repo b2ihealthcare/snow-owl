@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
-import com.b2international.snowowl.snomed.ql.ql.Filter;
+import com.b2international.snowowl.snomed.ql.ql.PropertyFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -41,7 +41,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class ExclusionImpl extends ConstraintImpl implements Exclusion
+public class ExclusionImpl extends FilterImpl implements Exclusion
 {
   /**
    * The cached value of the '{@link #getLeft() <em>Left</em>}' containment reference.
@@ -51,7 +51,7 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
    * @generated
    * @ordered
    */
-  protected Filter left;
+  protected PropertyFilter left;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -61,7 +61,7 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
    * @generated
    * @ordered
    */
-  protected Filter right;
+  protected PropertyFilter right;
 
   /**
    * <!-- begin-user-doc -->
@@ -89,7 +89,7 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
    * <!-- end-user-doc -->
    * @generated
    */
-  public Filter getLeft()
+  public PropertyFilter getLeft()
   {
     return left;
   }
@@ -99,9 +99,9 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetLeft(Filter newLeft, NotificationChain msgs)
+  public NotificationChain basicSetLeft(PropertyFilter newLeft, NotificationChain msgs)
   {
-    Filter oldLeft = left;
+    PropertyFilter oldLeft = left;
     left = newLeft;
     if (eNotificationRequired())
     {
@@ -116,7 +116,7 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setLeft(Filter newLeft)
+  public void setLeft(PropertyFilter newLeft)
   {
     if (newLeft != left)
     {
@@ -137,7 +137,7 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
    * <!-- end-user-doc -->
    * @generated
    */
-  public Filter getRight()
+  public PropertyFilter getRight()
   {
     return right;
   }
@@ -147,9 +147,9 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRight(Filter newRight, NotificationChain msgs)
+  public NotificationChain basicSetRight(PropertyFilter newRight, NotificationChain msgs)
   {
-    Filter oldRight = right;
+    PropertyFilter oldRight = right;
     right = newRight;
     if (eNotificationRequired())
     {
@@ -164,7 +164,7 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRight(Filter newRight)
+  public void setRight(PropertyFilter newRight)
   {
     if (newRight != right)
     {
@@ -227,10 +227,10 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
     switch (featureID)
     {
       case QlPackage.EXCLUSION__LEFT:
-        setLeft((Filter)newValue);
+        setLeft((PropertyFilter)newValue);
         return;
       case QlPackage.EXCLUSION__RIGHT:
-        setRight((Filter)newValue);
+        setRight((PropertyFilter)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -247,10 +247,10 @@ public class ExclusionImpl extends ConstraintImpl implements Exclusion
     switch (featureID)
     {
       case QlPackage.EXCLUSION__LEFT:
-        setLeft((Filter)null);
+        setLeft((PropertyFilter)null);
         return;
       case QlPackage.EXCLUSION__RIGHT:
-        setRight((Filter)null);
+        setRight((PropertyFilter)null);
         return;
     }
     super.eUnset(featureID);

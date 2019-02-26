@@ -19,12 +19,12 @@ import org.eclipse.xtext.validation.Check;
 
 import com.b2international.snowowl.snomed.ql.QLRuntimeModule;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
+import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
-import com.b2international.snowowl.snomed.ql.ql.Query;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 
 /**
@@ -41,9 +41,9 @@ public class QLValidator extends AbstractQLValidator {
 	public static final String DOMAIN_INCONSISTENCY_CODE = "binaryoperator.inconsistentdomain";
 
 	@Check
-	public void checkQuery(Query it) {
-		if (it.getEcl() == null) {
-			error("ECL expression not specified", QlPackage.Literals.QUERY__ECL);
+	public void checkSubQuery(DomainQuery it) {
+		if (it.getEcl() == null && it.getFilter() != null) {
+			error("ECL expression is required for domain refinement", QlPackage.Literals.DOMAIN_QUERY__ECL);
 		}
 	}
 
@@ -98,12 +98,13 @@ public class QLValidator extends AbstractQLValidator {
 	
 	@Check
 	public void checkShortTermFilter(TermFilter it) {
-		if (it.getTerm().length() < 2) {
-			error("Term filter too short", QlPackage.Literals.TERM_FILTER__TERM);
+		int MIN_TERM_LENGTH = 2;
+		if (it.getTerm().length() < MIN_TERM_LENGTH) {
+			error(String.format("At least %d characters are required for term filter", MIN_TERM_LENGTH), QlPackage.Literals.TERM_FILTER__TERM);
 		}
 	}
 	
-	private boolean isAmbiguous(Constraint parent, Constraint child) {
+	private boolean isAmbiguous(Filter parent, Filter child) {
 		return parent.getClass() != child.getClass() && 
 			(child instanceof Disjunction 
 				|| child instanceof Conjunction 

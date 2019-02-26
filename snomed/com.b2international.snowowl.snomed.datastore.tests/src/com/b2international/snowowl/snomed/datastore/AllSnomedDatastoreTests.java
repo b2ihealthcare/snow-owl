@@ -46,28 +46,28 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-	TerminologyTreeTest.class,
-	ReservationImplTest.class,
-	SnomedIdentifierTest.class,
-	SnomedIdentifierReservationServiceImplTest.class,
-	DefaultSnomedIdentifierServiceTest.class,
-	DefaultSnomedIdentifierServiceRegressionTest.class,
-	SnomedConceptIndexEntrySerializationTest.class,
-	SnomedRelationshipIndexEntrySerializationTest.class,
-	SnomedDescriptionIndexEntrySerializationTest.class,
-	SnomedConstraintDocumentSerializationTest.class,
-	SnomedRefSetMemberDocumentSerializationTest.class,
-	// change proc test cases
-	DescriptionChangeProcessorTest.class,
-	RelationshipChangeProcessorTest.class,
-	RefSetMemberChangeProcessorTest.class,
-	ConstraintChangeProcessorTest.class,
-	ConceptChangeProcessorTest.class,
-	SnomedEclEvaluationRequestTest.class,
-	SnomedEclRewriterTest.class,
+//	TerminologyTreeTest.class,
+//	ReservationImplTest.class,
+//	SnomedIdentifierTest.class,
+//	SnomedIdentifierReservationServiceImplTest.class,
+//	DefaultSnomedIdentifierServiceTest.class,
+//	DefaultSnomedIdentifierServiceRegressionTest.class,
+//	SnomedConceptIndexEntrySerializationTest.class,
+//	SnomedRelationshipIndexEntrySerializationTest.class,
+//	SnomedDescriptionIndexEntrySerializationTest.class,
+//	SnomedConstraintDocumentSerializationTest.class,
+//	SnomedRefSetMemberDocumentSerializationTest.class,
+//	// change proc test cases
+//	DescriptionChangeProcessorTest.class,
+//	RelationshipChangeProcessorTest.class,
+//	RefSetMemberChangeProcessorTest.class,
+//	ConstraintChangeProcessorTest.class,
+//	ConceptChangeProcessorTest.class,
+//	SnomedEclEvaluationRequestTest.class,
+//	SnomedEclRewriterTest.class,
 	SnomedQueryEvaluationRequestTest.class,
-	SnomedQueryValidationRuleEvaluatorTest.class,
-	SnomedConceptDocumentTermSortTest.class
+//	SnomedQueryValidationRuleEvaluatorTest.class,
+//	SnomedConceptDocumentTermSortTest.class
 })
 public class AllSnomedDatastoreTests {
 

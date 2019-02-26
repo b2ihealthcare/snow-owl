@@ -18,21 +18,21 @@ package com.b2international.snowowl.snomed.ql.ql;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Nested Filter</b></em>'.
+ * A representation of the model object '<em><b>Nested Query</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter#getNested <em>Nested</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.NestedQuery#getNested <em>Nested</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getNestedFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getNestedQuery()
  * @model
  * @generated
  */
-public interface NestedFilter extends PropertyFilter
+public interface NestedQuery extends SubQuery
 {
   /**
    * Returns the value of the '<em><b>Nested</b></em>' containment reference.
@@ -43,21 +43,21 @@ public interface NestedFilter extends PropertyFilter
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Nested</em>' containment reference.
-   * @see #setNested(Filter)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getNestedFilter_Nested()
+   * @see #setNested(QueryConstraint)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getNestedQuery_Nested()
    * @model containment="true"
    * @generated
    */
-  Filter getNested();
+  QueryConstraint getNested();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter#getNested <em>Nested</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.NestedQuery#getNested <em>Nested</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Nested</em>' containment reference.
    * @see #getNested()
    * @generated
    */
-  void setNested(Filter value);
+  void setNested(QueryConstraint value);
 
-} // NestedFilter
+} // NestedQuery

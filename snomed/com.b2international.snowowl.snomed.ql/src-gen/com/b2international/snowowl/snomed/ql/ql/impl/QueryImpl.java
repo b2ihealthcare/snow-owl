@@ -15,11 +15,9 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
-
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.Query;
+import com.b2international.snowowl.snomed.ql.ql.QueryConstraint;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -38,8 +36,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryImpl#getEcl <em>Ecl</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryImpl#getConstraint <em>Constraint</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryImpl#getQuery <em>Query</em>}</li>
  * </ul>
  *
  * @generated
@@ -47,24 +44,14 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 public class QueryImpl extends MinimalEObjectImpl.Container implements Query
 {
   /**
-   * The cached value of the '{@link #getEcl() <em>Ecl</em>}' containment reference.
+   * The cached value of the '{@link #getQuery() <em>Query</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getEcl()
+   * @see #getQuery()
    * @generated
    * @ordered
    */
-  protected ExpressionConstraint ecl;
-
-  /**
-   * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getConstraint()
-   * @generated
-   * @ordered
-   */
-  protected Constraint constraint;
+  protected QueryConstraint query;
 
   /**
    * <!-- begin-user-doc -->
@@ -92,9 +79,9 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
    * <!-- end-user-doc -->
    * @generated
    */
-  public ExpressionConstraint getEcl()
+  public QueryConstraint getQuery()
   {
-    return ecl;
+    return query;
   }
 
   /**
@@ -102,13 +89,13 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetEcl(ExpressionConstraint newEcl, NotificationChain msgs)
+  public NotificationChain basicSetQuery(QueryConstraint newQuery, NotificationChain msgs)
   {
-    ExpressionConstraint oldEcl = ecl;
-    ecl = newEcl;
+    QueryConstraint oldQuery = query;
+    query = newQuery;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__ECL, oldEcl, newEcl);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__QUERY, oldQuery, newQuery);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -119,68 +106,20 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setEcl(ExpressionConstraint newEcl)
+  public void setQuery(QueryConstraint newQuery)
   {
-    if (newEcl != ecl)
+    if (newQuery != query)
     {
       NotificationChain msgs = null;
-      if (ecl != null)
-        msgs = ((InternalEObject)ecl).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__ECL, null, msgs);
-      if (newEcl != null)
-        msgs = ((InternalEObject)newEcl).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__ECL, null, msgs);
-      msgs = basicSetEcl(newEcl, msgs);
+      if (query != null)
+        msgs = ((InternalEObject)query).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__QUERY, null, msgs);
+      if (newQuery != null)
+        msgs = ((InternalEObject)newQuery).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__QUERY, null, msgs);
+      msgs = basicSetQuery(newQuery, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__ECL, newEcl, newEcl));
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public Constraint getConstraint()
-  {
-    return constraint;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public NotificationChain basicSetConstraint(Constraint newConstraint, NotificationChain msgs)
-  {
-    Constraint oldConstraint = constraint;
-    constraint = newConstraint;
-    if (eNotificationRequired())
-    {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__CONSTRAINT, oldConstraint, newConstraint);
-      if (msgs == null) msgs = notification; else msgs.add(notification);
-    }
-    return msgs;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public void setConstraint(Constraint newConstraint)
-  {
-    if (newConstraint != constraint)
-    {
-      NotificationChain msgs = null;
-      if (constraint != null)
-        msgs = ((InternalEObject)constraint).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__CONSTRAINT, null, msgs);
-      if (newConstraint != null)
-        msgs = ((InternalEObject)newConstraint).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__CONSTRAINT, null, msgs);
-      msgs = basicSetConstraint(newConstraint, msgs);
-      if (msgs != null) msgs.dispatch();
-    }
-    else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__CONSTRAINT, newConstraint, newConstraint));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__QUERY, newQuery, newQuery));
   }
 
   /**
@@ -193,10 +132,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__ECL:
-        return basicSetEcl(null, msgs);
-      case QlPackage.QUERY__CONSTRAINT:
-        return basicSetConstraint(null, msgs);
+      case QlPackage.QUERY__QUERY:
+        return basicSetQuery(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -211,10 +148,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__ECL:
-        return getEcl();
-      case QlPackage.QUERY__CONSTRAINT:
-        return getConstraint();
+      case QlPackage.QUERY__QUERY:
+        return getQuery();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -229,11 +164,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__ECL:
-        setEcl((ExpressionConstraint)newValue);
-        return;
-      case QlPackage.QUERY__CONSTRAINT:
-        setConstraint((Constraint)newValue);
+      case QlPackage.QUERY__QUERY:
+        setQuery((QueryConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -249,11 +181,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__ECL:
-        setEcl((ExpressionConstraint)null);
-        return;
-      case QlPackage.QUERY__CONSTRAINT:
-        setConstraint((Constraint)null);
+      case QlPackage.QUERY__QUERY:
+        setQuery((QueryConstraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -269,10 +198,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__ECL:
-        return ecl != null;
-      case QlPackage.QUERY__CONSTRAINT:
-        return constraint != null;
+      case QlPackage.QUERY__QUERY:
+        return query != null;
     }
     return super.eIsSet(featureID);
   }

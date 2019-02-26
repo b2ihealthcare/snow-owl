@@ -39,7 +39,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class TermFilterImpl extends FilterImpl implements TermFilter
+public class TermFilterImpl extends PropertyFilterImpl implements TermFilter
 {
   /**
    * The default value of the '{@link #getLexicalSearchType() <em>Lexical Search Type</em>}' attribute.

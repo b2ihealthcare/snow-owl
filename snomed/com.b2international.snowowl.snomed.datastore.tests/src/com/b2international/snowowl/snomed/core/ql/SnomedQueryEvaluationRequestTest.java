@@ -16,9 +16,10 @@
 package com.b2international.snowowl.snomed.core.ql;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
@@ -237,6 +238,138 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 				.build());
 		final Expression actual = eval("* {{ typeId = "+Concepts.TEXT_DEFINITION+" }}");
 		final Expression expected = SnomedDocument.Expressions.ids(ImmutableList.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void conjunctionAmbiguity() throws Exception {
+		eval("* {{ Description.active=true AND Description.moduleId = "+ Concepts.MODULE_SCT_CORE +" OR term=\"clinical finding\" }}");
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void disjunctionAmbiguity() throws Exception {
+		eval("* {{ Description.active=true OR Description.moduleId = "+ Concepts.MODULE_SCT_CORE +" AND term=\"clinical finding\" }}");
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void exclusionAmbiguity() throws Exception {
+		eval("* {{ Description.active=true OR Description.moduleId = "+ Concepts.MODULE_SCT_CORE +" MINUS term=\"clinical finding\" }}");
+	}
+	
+	@Test
+	public void multiDomainQueryAnd() throws Exception {
+		Expression actual = eval("* {{ active=false }} AND * {{ term=\"clin find\" }}");
+		Expression expected = Expressions.builder()
+				.filter(SnomedDocument.Expressions.inactive())
+				.filter(SnomedDocument.Expressions.ids(Collections.emptySet()))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void multiDomainQueryOR() throws Exception {
+		Expression actual = eval("* {{ active=false }} OR * {{ term=\"clin find\" }}");
+		Expression expected = Expressions.builder()
+				.should(SnomedDocument.Expressions.inactive())
+				.should(SnomedDocument.Expressions.ids(Collections.emptySet()))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void multiDomainQueryExclusion() throws Exception {
+		Expression actual = eval("* {{ active=false }} MINUS * {{ term=\"clin find\" }}");
+		Expression expected = Expressions.builder()
+				.filter(SnomedDocument.Expressions.inactive())
+				.mustNot(SnomedDocument.Expressions.ids(Collections.emptySet()))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void preferredInFilter() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.build());
+		
+		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.SUBSTANCE)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.build());
+		
+		final Expression actual = eval("* {{ preferredIn = "+Concepts.REFSET_LANGUAGE_TYPE_UK+" }}");
+		final Expression expected = SnomedDocument.Expressions.ids(ImmutableList.of(Concepts.ROOT_CONCEPT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void acceptableInFilter() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.build());
+		
+		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.SUBSTANCE)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.build());
+		
+		final Expression actual = eval("* {{ acceptableIn = "+Concepts.REFSET_LANGUAGE_TYPE_UK+" }}");
+		final Expression expected = SnomedDocument.Expressions.ids(ImmutableList.of(Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void languageRefSetFilter() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.build());
+		
+		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding")
+				.conceptId(Concepts.SUBSTANCE)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.build());
+		
+		final Expression actual = eval("* {{ languageRefSet = "+Concepts.REFSET_LANGUAGE_TYPE_UK+" }}");
+		final Expression expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
 		assertEquals(expected, actual);
 	}
 	

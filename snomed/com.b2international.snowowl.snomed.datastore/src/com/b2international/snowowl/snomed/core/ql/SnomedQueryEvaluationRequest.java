@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.ql;
 import static com.b2international.snowowl.snomed.ql.QLRuntimeModule.getDomain;
 
 import java.io.IOException;
-import java.util.Deque;
 
 import javax.annotation.Nullable;
 
@@ -38,20 +37,25 @@ import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
+import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
 import com.b2international.snowowl.snomed.ql.ql.Query;
+import com.b2international.snowowl.snomed.ql.ql.QueryConjunction;
+import com.b2international.snowowl.snomed.ql.ql.QueryDisjunction;
+import com.b2international.snowowl.snomed.ql.ql.QueryExclusion;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Queues;
 
 /**
  * @since 6.12
@@ -61,121 +65,145 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	private static final long serialVersionUID = 8932162693072727864L;
 
 	@JsonIgnore
-	private transient final PolymorphicDispatcher<Promise<Void>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
+	private transient final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 
 	@Nullable
 	@JsonProperty
 	private String expression;
 
-	@JsonIgnore
-	private transient Deque<Expression> conceptQuery;
-	
-	@JsonIgnore
-	private transient Deque<Expression> descriptionQuery;
-	
 	void setExpression(String expression) {
 		this.expression = expression;
 	}
 
 	@Override
 	public Promise<Expression> execute(BranchContext context) {
-		conceptQuery = Queues.newLinkedBlockingDeque();
-		descriptionQuery = Queues.newLinkedBlockingDeque();
-		
-		final Query query = context.service(SnomedQueryParser.class).parse(expression);
-		if (query == null || query.getEcl() == null) {
-			return Promise.immediate(MatchNone.INSTANCE);
-		}
-		
-		final String ecl = context.service(SnomedQuerySerializer.class).serialize(query.getEcl());
-		final Promise<Expression> eclExpression = SnomedRequests.prepareEclEvaluation(ecl).build().execute(context);
-		if (query.getConstraint() != null) {
-			Promise<Void> eval = evaluate(context, query.getConstraint());
-			if (eval != null) {
-				// wait for any subexpression evaluation before we return the resulting expression
-				eval.getSync();
-			}
-		}
-		
-		Expression conceptPart = getStackExpression(conceptQuery);
-		Expression descriptionPart;
-		try {
-			descriptionPart = executeDescriptionSearch(context, getStackExpression(descriptionQuery));
-		} catch (IOException e) {
-			throw new SnowowlRuntimeException(e);
-		}
-		
-		return eclExpression.then(eclPart -> {
-			ExpressionBuilder bool = Expressions.builder();
-			
-			if (!eclPart.isMatchAll()) {
-				bool.filter(eclPart);
-			}
-			
-			if (!conceptPart.isMatchAll()) {
-				bool.filter(conceptPart);
-			}
-
-			if (!descriptionPart.isMatchAll()) {
-				bool.filter(descriptionPart);
-			}
-			
-			return bool.build();
-		});
+		return evaluate(context, context.service(SnomedQueryParser.class).parse(expression));
 	}
 	
-	private static Expression executeDescriptionSearch(BranchContext context, Expression descriptionQuery) throws IOException {
+	private static Expression executeDescriptionSearch(BranchContext context, Expression descriptionQuery) {
 		if (descriptionQuery.isMatchAll()) {
 			return Expressions.matchAll();
 		}
 		
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
-		return SnomedDocument.Expressions.ids(searcher.search(com.b2international.index.query.Query
-			.select(String.class)
-			.from(SnomedDescriptionIndexEntry.class)
-			.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
-			.where(descriptionQuery)
-			.limit(Integer.MAX_VALUE)
-			.build()
-		).getHits());
-	}
-
-	private static Expression getStackExpression(Deque<Expression> stack) {
-		if (stack.isEmpty()) {
-			return Expressions.matchAll();
-		} else if (stack.size() == 1) {
-			return stack.pop();
-		} else {
-			throw new IllegalStateException("Illegal internal stack state: " + stack);
+		try {
+			return SnomedDocument.Expressions.ids(searcher.search(com.b2international.index.query.Query
+					.select(String.class)
+					.from(SnomedDescriptionIndexEntry.class)
+					.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
+					.where(descriptionQuery)
+					.limit(Integer.MAX_VALUE)
+					.build()
+				).getHits());
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 
-	private Promise<Void> evaluate(BranchContext context, EObject expression) {
+	private Promise<Expression> evaluate(BranchContext context, EObject expression) {
 		return dispatcher.invoke(context, expression);
 	}
 	
-	protected Promise<Void> eval(BranchContext context, final EObject constraint) {
-		throw new UnsupportedOperationException("Not implemented constraint: " + constraint);
+	protected Promise<Expression> eval(BranchContext context, final EObject query) {
+		throw new UnsupportedOperationException("Not implemented case: " + query);
 	}
 	
-	protected Promise<Void> eval(BranchContext context, final NestedFilter nestedFilter) {
-		return evaluate(context, nestedFilter.getConstraint());
+	protected Promise<Expression> eval(BranchContext context, final Void empty) {
+		return Promise.immediate(MatchNone.INSTANCE);
 	}
 	
-	protected Promise<Void> eval(BranchContext context, final ActiveFilter activeFilter) {
-		getStack(activeFilter).push(SnomedDocument.Expressions.active(activeFilter.isActive()));
-		return null;
+	protected Promise<Expression> eval(BranchContext context, final Query query) {
+		return evaluate(context, query.getQuery());
 	}
 	
-	protected Promise<Void> eval(BranchContext context, final ModuleFilter moduleFilter) {
-		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(moduleFilter.getModuleId())).resolve(context)
-			.then(moduleIds -> {
-				getStack(moduleFilter).push(SnomedDocument.Expressions.modules(moduleIds));
-				return null;
+	protected Promise<Expression> eval(BranchContext context, final QueryConjunction conjunction) {
+		return Promise.all(evaluate(context, conjunction.getLeft()), evaluate(context, conjunction.getRight()))
+				.then(results -> {
+					Expression left = (Expression) results.get(0);
+					Expression right = (Expression) results.get(1);
+					return Expressions.builder()
+							.filter(left)
+							.filter(right)
+							.build();
+				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final QueryDisjunction disjunction) {
+		return Promise.all(evaluate(context, disjunction.getLeft()), evaluate(context, disjunction.getRight()))
+				.then(results -> {
+					Expression left = (Expression) results.get(0);
+					Expression right = (Expression) results.get(1);
+					return Expressions.builder()
+							.should(left)
+							.should(right)
+							.build();
+				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final QueryExclusion exclusion) {
+		return Promise.all(evaluate(context, exclusion.getLeft()), evaluate(context, exclusion.getRight()))
+				.then(results -> {
+					Expression left = (Expression) results.get(0);
+					Expression right = (Expression) results.get(1);
+					return Expressions.builder()
+							.filter(left)
+							.mustNot(right)
+							.build();
+				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final DomainQuery query) {
+		final String ecl = context.service(SnomedQuerySerializer.class).serialize(query.getEcl());
+		final Promise<Expression> eclExpression = SnomedRequests.prepareEclEvaluation(ecl).build().execute(context);
+		if (query.getFilter() != null) {
+			return Promise.all(evaluate(context, query.getFilter()), eclExpression).then(subExpressions -> {
+				Expression domainFilter = (Expression) subExpressions.get(0);
+				Expression eclFilter = (Expression) subExpressions.get(1);
+				
+				ExpressionBuilder bool = Expressions.builder();
+				if (!eclFilter.isMatchAll()) {
+					bool.filter(eclFilter);
+				}
+				
+				Domain domain = getDomain(query.getFilter());
+				switch (domain) {
+				case CONCEPT:
+					if (!domainFilter.isMatchAll()) {
+						bool.filter(domainFilter);
+					}
+					break;
+				case DESCRIPTION:
+					Expression conceptIdFilter = executeDescriptionSearch(context, domainFilter);
+					if (!conceptIdFilter.isMatchAll()) {
+						bool.filter(conceptIdFilter);
+					}
+					break;
+				default:
+					throw new UnsupportedOperationException("Not implemented domain case: " + domain);
+				}
+				
+				return bool.build();
 			});
+		} else {
+			return eclExpression;
+		}
 	}
 	
-	protected Promise<Void> eval(BranchContext context, final TermFilter termFilter) {
+	protected Promise<Expression> eval(BranchContext context, final NestedFilter nestedFilter) {
+		return evaluate(context, nestedFilter.getNested());
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final ActiveFilter activeFilter) {
+		return Promise.immediate(SnomedDocument.Expressions.active(activeFilter.isActive()));
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final ModuleFilter moduleFilter) {
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(moduleFilter.getModuleId()))
+				.resolve(context)
+				.then(SnomedDocument.Expressions::modules);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {
 		Expression expression;
 		switch (termFilter.getLexicalSearchType()) {
 		case MATCH:
@@ -190,105 +218,72 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 		default:
 			throw new UnsupportedOperationException("Not implemented lexical search type: " + termFilter.getLexicalSearchType());
 		}
-		getStack(termFilter).push(expression);
-		return null;
+		return Promise.immediate(expression);
 	}
 	
-	protected Promise<Void> eval(BranchContext context, final TypeFilter typeFilter) {
-		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(typeFilter.getType())).resolve(context)
-				.then(typeIds -> {
-					getStack(typeFilter).push(SnomedDescriptionIndexEntry.Expressions.types(typeIds));
-					return null;
+	protected Promise<Expression> eval(BranchContext context, final TypeFilter typeFilter) {
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(typeFilter.getType()))
+				.resolve(context)
+				.then(SnomedDescriptionIndexEntry.Expressions::types);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final PreferredInFilter preferredInFilter) {
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(preferredInFilter.getLanguageRefSetId()))
+				.resolve(context)
+				.then(SnomedDescriptionIndexEntry.Expressions::preferredIn);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final AcceptableInFilter acceptableInFilter) {
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(acceptableInFilter.getLanguageRefSetId()))
+				.resolve(context)
+				.then(SnomedDescriptionIndexEntry.Expressions::acceptableIn);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final LanguageRefSetFilter languageRefSetFilter) {
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(languageRefSetFilter.getLanguageRefSetId()))
+				.resolve(context)
+				.then(languageReferenceSetIds -> {
+					return Expressions.builder()
+							.should(SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageReferenceSetIds))
+							.should(SnomedDescriptionIndexEntry.Expressions.preferredIn(languageReferenceSetIds))
+							.build();
 				});
 	}
 	
-//	protected Promise<Void> eval(BranchContext context, final PreferredInFilter preferredInFilter) {
-//		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(preferredInFilter.getLanguageRefSetId())).resolve(context)
-//				.then(typeIds -> {
-//					getStack(typeFilter).push(SnomedDescriptionIndexEntry.Expressions.types(typeIds));
-//					return null;
-//				});
-//		descriptionSearch.filterByPreferredIn(context.service(EclSerializer.class).serializeWithoutTerms(preferredInFilter.getLanguageRefSetId()));
-//		return null;
-//	}
-	
-//	protected Promise<Void> eval(BranchContext context, final AcceptableInFilter preferredInFilter) {
-//		descriptionSearch.filterByPreferredIn(context.service(EclSerializer.class).serializeWithoutTerms(preferredInFilter.getLanguageRefSetId()));
-//		return null;
-//	}
-	
-//	protected Promise<Void> eval(BranchContext context, final LanguageRefSetFilter preferredInFilter) {
-//		descriptionSearch.filterByPreferredIn(context.service(EclSerializer.class).serializeWithoutTerms(preferredInFilter.getLanguageRefSetId()));
-//		return null;
-//	}
-	
-	protected Promise<Void> eval(BranchContext context, final Conjunction conjunction) {
-		// eval both sides
-		evaluate(context, conjunction.getLeft());
-		evaluate(context, conjunction.getRight());
-		// pop Expressions from deques based on domain
-		Deque<Expression> stack = getStack(conjunction);
-
-		// invocation order matters to get the left and right side properly out of deque
-		Expression right = stack.pop();
-		Expression left = stack.pop();
-		
-		stack.push(Expressions.builder()
-			.filter(left)
-			.filter(right)
-			.build());
-		
-		return null;
+	protected Promise<Expression> eval(BranchContext context, final Conjunction conjunction) {
+		return Promise.all(evaluate(context, conjunction.getLeft()), evaluate(context, conjunction.getRight()))
+				.then(results -> {
+					Expression left = (Expression) results.get(0);
+					Expression right = (Expression) results.get(1);
+					return Expressions.builder()
+							.filter(left)
+							.filter(right)
+							.build();
+				});
 	}
 	
-	protected Promise<Void> eval(BranchContext context, final Disjunction disjunction) {
-		// eval both sides
-		evaluate(context, disjunction.getLeft());
-		evaluate(context, disjunction.getRight());
-		// pop Expressions from deques based on domain
-		Deque<Expression> stack = getStack(disjunction);
-		
-		// invocation order matters to get the left and right side properly out of deque
-		Expression right = stack.pop();
-		Expression left = stack.pop();
-		
-		stack.push(Expressions.builder()
-			.should(left)
-			.should(right)
-			.build());
-		
-		return null;
+	protected Promise<Expression> eval(BranchContext context, final Disjunction disjunction) {
+		return Promise.all(evaluate(context, disjunction.getLeft()), evaluate(context, disjunction.getRight()))
+				.then(results -> {
+					Expression left = (Expression) results.get(0);
+					Expression right = (Expression) results.get(1);
+					return Expressions.builder()
+							.should(left)
+							.should(right)
+							.build();
+				});
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final Exclusion exclusion) {
-		// eval both sides
-		evaluate(context, exclusion.getLeft());
-		evaluate(context, exclusion.getRight());
-		// pop Expressions from deques based on domain
-		Deque<Expression> stack = getStack(exclusion);
-
-		// invocation order matters to get the left and right side properly out of deque
-		Expression right = stack.pop();
-		Expression left = stack.pop();
-		
-		stack.push(Expressions.builder()
-			.filter(left)
-			.mustNot(right)
-			.build());
-		
-		return null;
-	}
-	
-	private Deque<Expression> getStack(Constraint constraint) {
-		final Domain domain = getDomain(constraint);
-		switch (domain) {
-		case CONCEPT:
-			return conceptQuery;
-		case DESCRIPTION:
-			return descriptionQuery;
-		default:
-			throw new UnsupportedOperationException("Not supported domain stack: " + domain);
-		}
+		return Promise.all(evaluate(context, exclusion.getLeft()), evaluate(context, exclusion.getRight()))
+				.then(results -> {
+					Expression left = (Expression) results.get(0);
+					Expression right = (Expression) results.get(1);
+					return Expressions.builder()
+							.filter(left)
+							.mustNot(right)
+							.build();
+				});
 	}
 	
 }

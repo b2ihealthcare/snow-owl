@@ -16,14 +16,22 @@
       <genEnumLiterals ecoreEnumLiteral="QL.ecore#//Domain/DESCRIPTION"/>
     </genEnums>
     <genClasses ecoreClass="QL.ecore#//Query">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Query/ecl"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Query/constraint"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Query/query"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//Constraint"/>
-    <genClasses ecoreClass="QL.ecore#//NestedFilter">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//NestedFilter/constraint"/>
+    <genClasses ecoreClass="QL.ecore#//QueryConstraint"/>
+    <genClasses ecoreClass="QL.ecore#//SubQuery"/>
+    <genClasses ecoreClass="QL.ecore#//DomainQuery">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DomainQuery/ecl"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DomainQuery/filter"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//NestedQuery">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//NestedQuery/nested"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//Filter"/>
+    <genClasses ecoreClass="QL.ecore#//NestedFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//NestedFilter/nested"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//PropertyFilter"/>
     <genClasses ecoreClass="QL.ecore#//ActiveFilter">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveFilter/domain"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute QL.ecore#//ActiveFilter/active"/>
@@ -47,6 +55,18 @@
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//TypeFilter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//TypeFilter/type"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//QueryDisjunction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryDisjunction/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryDisjunction/right"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//QueryConjunction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryConjunction/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryConjunction/right"/>
+    </genClasses>
+    <genClasses ecoreClass="QL.ecore#//QueryExclusion">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryExclusion/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryExclusion/right"/>
     </genClasses>
     <genClasses ecoreClass="QL.ecore#//Disjunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Disjunction/left"/>

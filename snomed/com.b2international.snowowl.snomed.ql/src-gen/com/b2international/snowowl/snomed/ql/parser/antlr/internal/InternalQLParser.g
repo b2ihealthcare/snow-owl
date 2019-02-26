@@ -101,12 +101,332 @@ ruleQuery returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getQueryAccess().getEclExpressionConstraintParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getQueryAccess().getQueryQueryConstraintParserRuleCall_1_0());
+				}
+				lv_query_1_0=ruleQueryConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getQueryRule());
+					}
+					set(
+						$current,
+						"query",
+						lv_query_1_0,
+						"com.b2international.snowowl.snomed.ql.QL.QueryConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)?
+	)
+;
+
+// Entry rule entryRuleQueryConstraint
+entryRuleQueryConstraint returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getQueryConstraintRule()); }
+	iv_ruleQueryConstraint=ruleQueryConstraint
+	{ $current=$iv_ruleQueryConstraint.current; }
+	EOF;
+
+// Rule QueryConstraint
+ruleQueryConstraint returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	{
+		/* */
+	}
+	{
+		newCompositeNode(grammarAccess.getQueryConstraintAccess().getQueryDisjunctionParserRuleCall());
+	}
+	this_QueryDisjunction_0=ruleQueryDisjunction
+	{
+		$current = $this_QueryDisjunction_0.current;
+		afterParserOrEnumRuleCall();
+	}
+;
+
+// Entry rule entryRuleQueryDisjunction
+entryRuleQueryDisjunction returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getQueryDisjunctionRule()); }
+	iv_ruleQueryDisjunction=ruleQueryDisjunction
+	{ $current=$iv_ruleQueryDisjunction.current; }
+	EOF;
+
+// Rule QueryDisjunction
+ruleQueryDisjunction returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getQueryDisjunctionAccess().getQueryConjunctionParserRuleCall_0());
+		}
+		this_QueryConjunction_0=ruleQueryConjunction
+		{
+			$current = $this_QueryConjunction_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		(
+			(
+				{
+					/* */
+				}
+				{
+					$current = forceCreateModelElementAndSet(
+						grammarAccess.getQueryDisjunctionAccess().getQueryDisjunctionLeftAction_1_0(),
+						$current);
+				}
+			)
+			otherlv_2=OR
+			{
+				newLeafNode(otherlv_2, grammarAccess.getQueryDisjunctionAccess().getORKeyword_1_1());
+			}
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getQueryDisjunctionAccess().getRightQueryConjunctionParserRuleCall_1_2_0());
+					}
+					lv_right_3_0=ruleQueryConjunction
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getQueryDisjunctionRule());
+						}
+						set(
+							$current,
+							"right",
+							lv_right_3_0,
+							"com.b2international.snowowl.snomed.ql.QL.QueryConjunction");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+		)*
+	)
+;
+
+// Entry rule entryRuleQueryConjunction
+entryRuleQueryConjunction returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getQueryConjunctionRule()); }
+	iv_ruleQueryConjunction=ruleQueryConjunction
+	{ $current=$iv_ruleQueryConjunction.current; }
+	EOF;
+
+// Rule QueryConjunction
+ruleQueryConjunction returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getQueryConjunctionAccess().getQueryExclusionParserRuleCall_0());
+		}
+		this_QueryExclusion_0=ruleQueryExclusion
+		{
+			$current = $this_QueryExclusion_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		(
+			(
+				{
+					/* */
+				}
+				{
+					$current = forceCreateModelElementAndSet(
+						grammarAccess.getQueryConjunctionAccess().getQueryConjunctionLeftAction_1_0(),
+						$current);
+				}
+			)
+			(
+				otherlv_2=AND
+				{
+					newLeafNode(otherlv_2, grammarAccess.getQueryConjunctionAccess().getANDKeyword_1_1_0());
+				}
+				    |
+				otherlv_3=Comma
+				{
+					newLeafNode(otherlv_3, grammarAccess.getQueryConjunctionAccess().getCommaKeyword_1_1_1());
+				}
+			)
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getQueryConjunctionAccess().getRightQueryExclusionParserRuleCall_1_2_0());
+					}
+					lv_right_4_0=ruleQueryExclusion
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getQueryConjunctionRule());
+						}
+						set(
+							$current,
+							"right",
+							lv_right_4_0,
+							"com.b2international.snowowl.snomed.ql.QL.QueryExclusion");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+		)*
+	)
+;
+
+// Entry rule entryRuleQueryExclusion
+entryRuleQueryExclusion returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getQueryExclusionRule()); }
+	iv_ruleQueryExclusion=ruleQueryExclusion
+	{ $current=$iv_ruleQueryExclusion.current; }
+	EOF;
+
+// Rule QueryExclusion
+ruleQueryExclusion returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getQueryExclusionAccess().getSubQueryParserRuleCall_0());
+		}
+		this_SubQuery_0=ruleSubQuery
+		{
+			$current = $this_SubQuery_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		(
+			(
+				{
+					/* */
+				}
+				{
+					$current = forceCreateModelElementAndSet(
+						grammarAccess.getQueryExclusionAccess().getQueryExclusionLeftAction_1_0(),
+						$current);
+				}
+			)
+			otherlv_2=MINUS
+			{
+				newLeafNode(otherlv_2, grammarAccess.getQueryExclusionAccess().getMINUSKeyword_1_1());
+			}
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getQueryExclusionAccess().getRightSubQueryParserRuleCall_1_2_0());
+					}
+					lv_right_3_0=ruleSubQuery
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getQueryExclusionRule());
+						}
+						set(
+							$current,
+							"right",
+							lv_right_3_0,
+							"com.b2international.snowowl.snomed.ql.QL.SubQuery");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+		)?
+	)
+;
+
+// Entry rule entryRuleSubQuery
+entryRuleSubQuery returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSubQueryRule()); }
+	iv_ruleSubQuery=ruleSubQuery
+	{ $current=$iv_ruleSubQuery.current; }
+	EOF;
+
+// Rule SubQuery
+ruleSubQuery returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getSubQueryAccess().getDomainQueryParserRuleCall_0());
+		}
+		this_DomainQuery_0=ruleDomainQuery
+		{
+			$current = $this_DomainQuery_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getSubQueryAccess().getNestedQueryParserRuleCall_1());
+		}
+		this_NestedQuery_1=ruleNestedQuery
+		{
+			$current = $this_NestedQuery_1.current;
+			afterParserOrEnumRuleCall();
+		}
+	)
+;
+
+// Entry rule entryRuleDomainQuery
+entryRuleDomainQuery returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getDomainQueryRule()); }
+	iv_ruleDomainQuery=ruleDomainQuery
+	{ $current=$iv_ruleDomainQuery.current; }
+	EOF;
+
+// Rule DomainQuery
+ruleDomainQuery returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			{
+				/* */
+			}
+			{
+				$current = forceCreateModelElement(
+					grammarAccess.getDomainQueryAccess().getDomainQueryAction_0(),
+					$current);
+			}
+		)
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getDomainQueryAccess().getEclExpressionConstraintParserRuleCall_1_0());
 				}
 				lv_ecl_1_0=ruleExpressionConstraint
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getQueryRule());
+						$current = createModelElementForParent(grammarAccess.getDomainQueryRule());
 					}
 					set(
 						$current,
@@ -120,44 +440,90 @@ ruleQuery returns [EObject current=null]
 		(
 			this_OPEN_DOUBLE_BRACES_2=RULE_OPEN_DOUBLE_BRACES
 			{
-				newLeafNode(this_OPEN_DOUBLE_BRACES_2, grammarAccess.getQueryAccess().getOPEN_DOUBLE_BRACESTerminalRuleCall_2_0());
+				newLeafNode(this_OPEN_DOUBLE_BRACES_2, grammarAccess.getDomainQueryAccess().getOPEN_DOUBLE_BRACESTerminalRuleCall_2_0());
 			}
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getQueryAccess().getConstraintConstraintParserRuleCall_2_1_0());
+						newCompositeNode(grammarAccess.getDomainQueryAccess().getFilterFilterParserRuleCall_2_1_0());
 					}
-					lv_constraint_3_0=ruleConstraint
+					lv_filter_3_0=ruleFilter
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getQueryRule());
+							$current = createModelElementForParent(grammarAccess.getDomainQueryRule());
 						}
 						set(
 							$current,
-							"constraint",
-							lv_constraint_3_0,
-							"com.b2international.snowowl.snomed.ql.QL.Constraint");
+							"filter",
+							lv_filter_3_0,
+							"com.b2international.snowowl.snomed.ql.QL.Filter");
 						afterParserOrEnumRuleCall();
 					}
 				)
 			)
 			this_CLOSE_DOUBLE_BRACES_4=RULE_CLOSE_DOUBLE_BRACES
 			{
-				newLeafNode(this_CLOSE_DOUBLE_BRACES_4, grammarAccess.getQueryAccess().getCLOSE_DOUBLE_BRACESTerminalRuleCall_2_2());
+				newLeafNode(this_CLOSE_DOUBLE_BRACES_4, grammarAccess.getDomainQueryAccess().getCLOSE_DOUBLE_BRACESTerminalRuleCall_2_2());
 			}
 		)?
 	)
 ;
 
-// Entry rule entryRuleConstraint
-entryRuleConstraint returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getConstraintRule()); }
-	iv_ruleConstraint=ruleConstraint
-	{ $current=$iv_ruleConstraint.current; }
+// Entry rule entryRuleNestedQuery
+entryRuleNestedQuery returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getNestedQueryRule()); }
+	iv_ruleNestedQuery=ruleNestedQuery
+	{ $current=$iv_ruleNestedQuery.current; }
 	EOF;
 
-// Rule Constraint
-ruleConstraint returns [EObject current=null]
+// Rule NestedQuery
+ruleNestedQuery returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_ROUND_OPEN_0=RULE_ROUND_OPEN
+		{
+			newLeafNode(this_ROUND_OPEN_0, grammarAccess.getNestedQueryAccess().getROUND_OPENTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getNestedQueryAccess().getNestedQueryConstraintParserRuleCall_1_0());
+				}
+				lv_nested_1_0=ruleQueryConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getNestedQueryRule());
+					}
+					set(
+						$current,
+						"nested",
+						lv_nested_1_0,
+						"com.b2international.snowowl.snomed.ql.QL.QueryConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		this_ROUND_CLOSE_2=RULE_ROUND_CLOSE
+		{
+			newLeafNode(this_ROUND_CLOSE_2, grammarAccess.getNestedQueryAccess().getROUND_CLOSETerminalRuleCall_2());
+		}
+	)
+;
+
+// Entry rule entryRuleFilter
+entryRuleFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getFilterRule()); }
+	iv_ruleFilter=ruleFilter
+	{ $current=$iv_ruleFilter.current; }
+	EOF;
+
+// Rule Filter
+ruleFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -168,7 +534,7 @@ ruleConstraint returns [EObject current=null]
 		/* */
 	}
 	{
-		newCompositeNode(grammarAccess.getConstraintAccess().getDisjunctionParserRuleCall());
+		newCompositeNode(grammarAccess.getFilterAccess().getDisjunctionParserRuleCall());
 	}
 	this_Disjunction_0=ruleDisjunction
 	{
@@ -334,11 +700,11 @@ ruleExclusion returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getExclusionAccess().getFilterParserRuleCall_0());
+			newCompositeNode(grammarAccess.getExclusionAccess().getPropertyFilterParserRuleCall_0());
 		}
-		this_Filter_0=ruleFilter
+		this_PropertyFilter_0=rulePropertyFilter
 		{
-			$current = $this_Filter_0.current;
+			$current = $this_PropertyFilter_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		(
@@ -359,9 +725,9 @@ ruleExclusion returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getExclusionAccess().getRightFilterParserRuleCall_1_2_0());
+						newCompositeNode(grammarAccess.getExclusionAccess().getRightPropertyFilterParserRuleCall_1_2_0());
 					}
-					lv_right_3_0=ruleFilter
+					lv_right_3_0=rulePropertyFilter
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getExclusionRule());
@@ -370,7 +736,7 @@ ruleExclusion returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"com.b2international.snowowl.snomed.ql.QL.Filter");
+							"com.b2international.snowowl.snomed.ql.QL.PropertyFilter");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -402,18 +768,18 @@ ruleNestedFilter returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getNestedFilterAccess().getConstraintConstraintParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getNestedFilterAccess().getNestedFilterParserRuleCall_1_0());
 				}
-				lv_constraint_1_0=ruleConstraint
+				lv_nested_1_0=ruleFilter
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getNestedFilterRule());
 					}
 					set(
 						$current,
-						"constraint",
-						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ql.QL.Constraint");
+						"nested",
+						lv_nested_1_0,
+						"com.b2international.snowowl.snomed.ql.QL.Filter");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -425,15 +791,15 @@ ruleNestedFilter returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleFilter
-entryRuleFilter returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getFilterRule()); }
-	iv_ruleFilter=ruleFilter
-	{ $current=$iv_ruleFilter.current; }
+// Entry rule entryRulePropertyFilter
+entryRulePropertyFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getPropertyFilterRule()); }
+	iv_rulePropertyFilter=rulePropertyFilter
+	{ $current=$iv_rulePropertyFilter.current; }
 	EOF;
 
-// Rule Filter
-ruleFilter returns [EObject current=null]
+// Rule PropertyFilter
+rulePropertyFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -445,7 +811,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getActiveFilterParserRuleCall_0());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getActiveFilterParserRuleCall_0());
 		}
 		this_ActiveFilter_0=ruleActiveFilter
 		{
@@ -457,7 +823,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getTermFilterParserRuleCall_1());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getTermFilterParserRuleCall_1());
 		}
 		this_TermFilter_1=ruleTermFilter
 		{
@@ -469,7 +835,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getPreferredInFilterParserRuleCall_2());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getPreferredInFilterParserRuleCall_2());
 		}
 		this_PreferredInFilter_2=rulePreferredInFilter
 		{
@@ -481,7 +847,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getAcceptableInFilterParserRuleCall_3());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getAcceptableInFilterParserRuleCall_3());
 		}
 		this_AcceptableInFilter_3=ruleAcceptableInFilter
 		{
@@ -493,7 +859,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getLanguageRefSetFilterParserRuleCall_4());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getLanguageRefSetFilterParserRuleCall_4());
 		}
 		this_LanguageRefSetFilter_4=ruleLanguageRefSetFilter
 		{
@@ -505,7 +871,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getTypeFilterParserRuleCall_5());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getTypeFilterParserRuleCall_5());
 		}
 		this_TypeFilter_5=ruleTypeFilter
 		{
@@ -517,7 +883,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getModuleFilterParserRuleCall_6());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getModuleFilterParserRuleCall_6());
 		}
 		this_ModuleFilter_6=ruleModuleFilter
 		{
@@ -529,7 +895,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getNestedFilterParserRuleCall_7());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getNestedFilterParserRuleCall_7());
 		}
 		this_NestedFilter_7=ruleNestedFilter
 		{

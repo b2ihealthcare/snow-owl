@@ -92,19 +92,36 @@ public class QlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case QlPackage.CONSTRAINT:
+      case QlPackage.QUERY_CONSTRAINT:
       {
-        Constraint constraint = (Constraint)theEObject;
-        T result = caseConstraint(constraint);
+        QueryConstraint queryConstraint = (QueryConstraint)theEObject;
+        T result = caseQueryConstraint(queryConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case QlPackage.NESTED_FILTER:
+      case QlPackage.SUB_QUERY:
       {
-        NestedFilter nestedFilter = (NestedFilter)theEObject;
-        T result = caseNestedFilter(nestedFilter);
-        if (result == null) result = caseFilter(nestedFilter);
-        if (result == null) result = caseConstraint(nestedFilter);
+        SubQuery subQuery = (SubQuery)theEObject;
+        T result = caseSubQuery(subQuery);
+        if (result == null) result = caseQueryConstraint(subQuery);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.DOMAIN_QUERY:
+      {
+        DomainQuery domainQuery = (DomainQuery)theEObject;
+        T result = caseDomainQuery(domainQuery);
+        if (result == null) result = caseSubQuery(domainQuery);
+        if (result == null) result = caseQueryConstraint(domainQuery);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.NESTED_QUERY:
+      {
+        NestedQuery nestedQuery = (NestedQuery)theEObject;
+        T result = caseNestedQuery(nestedQuery);
+        if (result == null) result = caseSubQuery(nestedQuery);
+        if (result == null) result = caseQueryConstraint(nestedQuery);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -112,7 +129,23 @@ public class QlSwitch<T> extends Switch<T>
       {
         Filter filter = (Filter)theEObject;
         T result = caseFilter(filter);
-        if (result == null) result = caseConstraint(filter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.NESTED_FILTER:
+      {
+        NestedFilter nestedFilter = (NestedFilter)theEObject;
+        T result = caseNestedFilter(nestedFilter);
+        if (result == null) result = casePropertyFilter(nestedFilter);
+        if (result == null) result = caseFilter(nestedFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.PROPERTY_FILTER:
+      {
+        PropertyFilter propertyFilter = (PropertyFilter)theEObject;
+        T result = casePropertyFilter(propertyFilter);
+        if (result == null) result = caseFilter(propertyFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -120,8 +153,8 @@ public class QlSwitch<T> extends Switch<T>
       {
         ActiveFilter activeFilter = (ActiveFilter)theEObject;
         T result = caseActiveFilter(activeFilter);
+        if (result == null) result = casePropertyFilter(activeFilter);
         if (result == null) result = caseFilter(activeFilter);
-        if (result == null) result = caseConstraint(activeFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -129,8 +162,8 @@ public class QlSwitch<T> extends Switch<T>
       {
         ModuleFilter moduleFilter = (ModuleFilter)theEObject;
         T result = caseModuleFilter(moduleFilter);
+        if (result == null) result = casePropertyFilter(moduleFilter);
         if (result == null) result = caseFilter(moduleFilter);
-        if (result == null) result = caseConstraint(moduleFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -138,8 +171,8 @@ public class QlSwitch<T> extends Switch<T>
       {
         TermFilter termFilter = (TermFilter)theEObject;
         T result = caseTermFilter(termFilter);
+        if (result == null) result = casePropertyFilter(termFilter);
         if (result == null) result = caseFilter(termFilter);
-        if (result == null) result = caseConstraint(termFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -147,8 +180,8 @@ public class QlSwitch<T> extends Switch<T>
       {
         PreferredInFilter preferredInFilter = (PreferredInFilter)theEObject;
         T result = casePreferredInFilter(preferredInFilter);
+        if (result == null) result = casePropertyFilter(preferredInFilter);
         if (result == null) result = caseFilter(preferredInFilter);
-        if (result == null) result = caseConstraint(preferredInFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -156,8 +189,8 @@ public class QlSwitch<T> extends Switch<T>
       {
         AcceptableInFilter acceptableInFilter = (AcceptableInFilter)theEObject;
         T result = caseAcceptableInFilter(acceptableInFilter);
+        if (result == null) result = casePropertyFilter(acceptableInFilter);
         if (result == null) result = caseFilter(acceptableInFilter);
-        if (result == null) result = caseConstraint(acceptableInFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -165,8 +198,8 @@ public class QlSwitch<T> extends Switch<T>
       {
         LanguageRefSetFilter languageRefSetFilter = (LanguageRefSetFilter)theEObject;
         T result = caseLanguageRefSetFilter(languageRefSetFilter);
+        if (result == null) result = casePropertyFilter(languageRefSetFilter);
         if (result == null) result = caseFilter(languageRefSetFilter);
-        if (result == null) result = caseConstraint(languageRefSetFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -174,8 +207,32 @@ public class QlSwitch<T> extends Switch<T>
       {
         TypeFilter typeFilter = (TypeFilter)theEObject;
         T result = caseTypeFilter(typeFilter);
+        if (result == null) result = casePropertyFilter(typeFilter);
         if (result == null) result = caseFilter(typeFilter);
-        if (result == null) result = caseConstraint(typeFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.QUERY_DISJUNCTION:
+      {
+        QueryDisjunction queryDisjunction = (QueryDisjunction)theEObject;
+        T result = caseQueryDisjunction(queryDisjunction);
+        if (result == null) result = caseQueryConstraint(queryDisjunction);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.QUERY_CONJUNCTION:
+      {
+        QueryConjunction queryConjunction = (QueryConjunction)theEObject;
+        T result = caseQueryConjunction(queryConjunction);
+        if (result == null) result = caseQueryConstraint(queryConjunction);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.QUERY_EXCLUSION:
+      {
+        QueryExclusion queryExclusion = (QueryExclusion)theEObject;
+        T result = caseQueryExclusion(queryExclusion);
+        if (result == null) result = caseQueryConstraint(queryExclusion);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -183,7 +240,7 @@ public class QlSwitch<T> extends Switch<T>
       {
         Disjunction disjunction = (Disjunction)theEObject;
         T result = caseDisjunction(disjunction);
-        if (result == null) result = caseConstraint(disjunction);
+        if (result == null) result = caseFilter(disjunction);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -191,7 +248,7 @@ public class QlSwitch<T> extends Switch<T>
       {
         Conjunction conjunction = (Conjunction)theEObject;
         T result = caseConjunction(conjunction);
-        if (result == null) result = caseConstraint(conjunction);
+        if (result == null) result = caseFilter(conjunction);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -199,7 +256,7 @@ public class QlSwitch<T> extends Switch<T>
       {
         Exclusion exclusion = (Exclusion)theEObject;
         T result = caseExclusion(exclusion);
-        if (result == null) result = caseConstraint(exclusion);
+        if (result == null) result = caseFilter(exclusion);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -224,17 +281,81 @@ public class QlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Constraint</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Query Constraint</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Constraint</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Query Constraint</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseConstraint(Constraint object)
+  public T caseQueryConstraint(QueryConstraint object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Sub Query</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Sub Query</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseSubQuery(SubQuery object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Domain Query</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Domain Query</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDomainQuery(DomainQuery object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Nested Query</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Nested Query</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseNestedQuery(NestedQuery object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Filter</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Filter</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseFilter(Filter object)
   {
     return null;
   }
@@ -256,17 +377,17 @@ public class QlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Filter</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Property Filter</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Filter</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Property Filter</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseFilter(Filter object)
+  public T casePropertyFilter(PropertyFilter object)
   {
     return null;
   }
@@ -379,6 +500,54 @@ public class QlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseTypeFilter(TypeFilter object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Query Disjunction</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Query Disjunction</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseQueryDisjunction(QueryDisjunction object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Query Conjunction</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Query Conjunction</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseQueryConjunction(QueryConjunction object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Query Exclusion</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Query Exclusion</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseQueryExclusion(QueryExclusion object)
   {
     return null;
   }

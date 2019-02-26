@@ -15,28 +15,26 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ql.ql.PropertyFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.ecore.EClass;
 
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
-
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Constraint</b></em>'.
+ * An implementation of the model object '<em><b>Property Filter</b></em>'.
  * <!-- end-user-doc -->
  *
  * @generated
  */
-public class ConstraintImpl extends MinimalEObjectImpl.Container implements Constraint
+public class PropertyFilterImpl extends FilterImpl implements PropertyFilter
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected ConstraintImpl()
+  protected PropertyFilterImpl()
   {
     super();
   }
@@ -49,7 +47,7 @@ public class ConstraintImpl extends MinimalEObjectImpl.Container implements Cons
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.CONSTRAINT;
+    return QlPackage.Literals.PROPERTY_FILTER;
   }
 
-} //ConstraintImpl
+} //PropertyFilterImpl

@@ -59,13 +59,18 @@ import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.NestedQuery;
 import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.Query;
+import com.b2international.snowowl.snomed.ql.ql.QueryConjunction;
+import com.b2international.snowowl.snomed.ql.ql.QueryDisjunction;
+import com.b2international.snowowl.snomed.ql.ql.QueryExclusion;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
 import com.b2international.snowowl.snomed.ql.services.QLGrammarAccess;
@@ -268,6 +273,9 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 			case QlPackage.DISJUNCTION:
 				sequence_Disjunction(context, (Disjunction) semanticObject); 
 				return; 
+			case QlPackage.DOMAIN_QUERY:
+				sequence_DomainQuery(context, (DomainQuery) semanticObject); 
+				return; 
 			case QlPackage.EXCLUSION:
 				sequence_Exclusion(context, (Exclusion) semanticObject); 
 				return; 
@@ -280,11 +288,23 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 			case QlPackage.NESTED_FILTER:
 				sequence_NestedFilter(context, (NestedFilter) semanticObject); 
 				return; 
+			case QlPackage.NESTED_QUERY:
+				sequence_NestedQuery(context, (NestedQuery) semanticObject); 
+				return; 
 			case QlPackage.PREFERRED_IN_FILTER:
 				sequence_PreferredInFilter(context, (PreferredInFilter) semanticObject); 
 				return; 
 			case QlPackage.QUERY:
 				sequence_Query(context, (Query) semanticObject); 
+				return; 
+			case QlPackage.QUERY_CONJUNCTION:
+				sequence_QueryConjunction(context, (QueryConjunction) semanticObject); 
+				return; 
+			case QlPackage.QUERY_DISJUNCTION:
+				sequence_QueryDisjunction(context, (QueryDisjunction) semanticObject); 
+				return; 
+			case QlPackage.QUERY_EXCLUSION:
+				sequence_QueryExclusion(context, (QueryExclusion) semanticObject); 
 				return; 
 			case QlPackage.TERM_FILTER:
 				sequence_TermFilter(context, (TermFilter) semanticObject); 
@@ -299,14 +319,14 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns AcceptableInFilter
+	 *     Filter returns AcceptableInFilter
 	 *     Disjunction returns AcceptableInFilter
 	 *     Disjunction.Disjunction_1_0 returns AcceptableInFilter
 	 *     Conjunction returns AcceptableInFilter
 	 *     Conjunction.Conjunction_1_0 returns AcceptableInFilter
 	 *     Exclusion returns AcceptableInFilter
 	 *     Exclusion.Exclusion_1_0 returns AcceptableInFilter
-	 *     Filter returns AcceptableInFilter
+	 *     PropertyFilter returns AcceptableInFilter
 	 *     AcceptableInFilter returns AcceptableInFilter
 	 *
 	 * Constraint:
@@ -325,14 +345,14 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns ActiveFilter
+	 *     Filter returns ActiveFilter
 	 *     Disjunction returns ActiveFilter
 	 *     Disjunction.Disjunction_1_0 returns ActiveFilter
 	 *     Conjunction returns ActiveFilter
 	 *     Conjunction.Conjunction_1_0 returns ActiveFilter
 	 *     Exclusion returns ActiveFilter
 	 *     Exclusion.Exclusion_1_0 returns ActiveFilter
-	 *     Filter returns ActiveFilter
+	 *     PropertyFilter returns ActiveFilter
 	 *     ActiveFilter returns ActiveFilter
 	 *
 	 * Constraint:
@@ -345,7 +365,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns Conjunction
+	 *     Filter returns Conjunction
 	 *     Disjunction returns Conjunction
 	 *     Disjunction.Disjunction_1_0 returns Conjunction
 	 *     Conjunction returns Conjunction
@@ -370,7 +390,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns Disjunction
+	 *     Filter returns Disjunction
 	 *     Disjunction returns Disjunction
 	 *     Disjunction.Disjunction_1_0 returns Disjunction
 	 *
@@ -393,7 +413,27 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns Exclusion
+	 *     QueryConstraint returns DomainQuery
+	 *     QueryDisjunction returns DomainQuery
+	 *     QueryDisjunction.QueryDisjunction_1_0 returns DomainQuery
+	 *     QueryConjunction returns DomainQuery
+	 *     QueryConjunction.QueryConjunction_1_0 returns DomainQuery
+	 *     QueryExclusion returns DomainQuery
+	 *     QueryExclusion.QueryExclusion_1_0 returns DomainQuery
+	 *     SubQuery returns DomainQuery
+	 *     DomainQuery returns DomainQuery
+	 *
+	 * Constraint:
+	 *     (ecl=ExpressionConstraint? filter=Filter?)
+	 */
+	protected void sequence_DomainQuery(ISerializationContext context, DomainQuery semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     Filter returns Exclusion
 	 *     Disjunction returns Exclusion
 	 *     Disjunction.Disjunction_1_0 returns Exclusion
 	 *     Conjunction returns Exclusion
@@ -401,7 +441,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	 *     Exclusion returns Exclusion
 	 *
 	 * Constraint:
-	 *     (left=Exclusion_Exclusion_1_0 right=Filter)
+	 *     (left=Exclusion_Exclusion_1_0 right=PropertyFilter)
 	 */
 	protected void sequence_Exclusion(ISerializationContext context, Exclusion semanticObject) {
 		if (errorAcceptor != null) {
@@ -412,21 +452,21 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getExclusionAccess().getExclusionLeftAction_1_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getExclusionAccess().getRightFilterParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.accept(grammarAccess.getExclusionAccess().getRightPropertyFilterParserRuleCall_1_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
 	
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns LanguageRefSetFilter
+	 *     Filter returns LanguageRefSetFilter
 	 *     Disjunction returns LanguageRefSetFilter
 	 *     Disjunction.Disjunction_1_0 returns LanguageRefSetFilter
 	 *     Conjunction returns LanguageRefSetFilter
 	 *     Conjunction.Conjunction_1_0 returns LanguageRefSetFilter
 	 *     Exclusion returns LanguageRefSetFilter
 	 *     Exclusion.Exclusion_1_0 returns LanguageRefSetFilter
-	 *     Filter returns LanguageRefSetFilter
+	 *     PropertyFilter returns LanguageRefSetFilter
 	 *     LanguageRefSetFilter returns LanguageRefSetFilter
 	 *
 	 * Constraint:
@@ -445,14 +485,14 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns ModuleFilter
+	 *     Filter returns ModuleFilter
 	 *     Disjunction returns ModuleFilter
 	 *     Disjunction.Disjunction_1_0 returns ModuleFilter
 	 *     Conjunction returns ModuleFilter
 	 *     Conjunction.Conjunction_1_0 returns ModuleFilter
 	 *     Exclusion returns ModuleFilter
 	 *     Exclusion.Exclusion_1_0 returns ModuleFilter
-	 *     Filter returns ModuleFilter
+	 *     PropertyFilter returns ModuleFilter
 	 *     ModuleFilter returns ModuleFilter
 	 *
 	 * Constraint:
@@ -465,7 +505,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns NestedFilter
+	 *     Filter returns NestedFilter
 	 *     Disjunction returns NestedFilter
 	 *     Disjunction.Disjunction_1_0 returns NestedFilter
 	 *     Conjunction returns NestedFilter
@@ -473,32 +513,58 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	 *     Exclusion returns NestedFilter
 	 *     Exclusion.Exclusion_1_0 returns NestedFilter
 	 *     NestedFilter returns NestedFilter
-	 *     Filter returns NestedFilter
+	 *     PropertyFilter returns NestedFilter
 	 *
 	 * Constraint:
-	 *     constraint=Constraint
+	 *     nested=Filter
 	 */
 	protected void sequence_NestedFilter(ISerializationContext context, NestedFilter semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.NESTED_FILTER__CONSTRAINT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.NESTED_FILTER__CONSTRAINT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.NESTED_FILTER__NESTED) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.NESTED_FILTER__NESTED));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getNestedFilterAccess().getConstraintConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getNestedFilterAccess().getNestedFilterParserRuleCall_1_0(), semanticObject.getNested());
 		feeder.finish();
 	}
 	
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns PreferredInFilter
+	 *     QueryConstraint returns NestedQuery
+	 *     QueryDisjunction returns NestedQuery
+	 *     QueryDisjunction.QueryDisjunction_1_0 returns NestedQuery
+	 *     QueryConjunction returns NestedQuery
+	 *     QueryConjunction.QueryConjunction_1_0 returns NestedQuery
+	 *     QueryExclusion returns NestedQuery
+	 *     QueryExclusion.QueryExclusion_1_0 returns NestedQuery
+	 *     SubQuery returns NestedQuery
+	 *     NestedQuery returns NestedQuery
+	 *
+	 * Constraint:
+	 *     nested=QueryConstraint
+	 */
+	protected void sequence_NestedQuery(ISerializationContext context, NestedQuery semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.NESTED_QUERY__NESTED) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.NESTED_QUERY__NESTED));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getNestedQueryAccess().getNestedQueryConstraintParserRuleCall_1_0(), semanticObject.getNested());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     Filter returns PreferredInFilter
 	 *     Disjunction returns PreferredInFilter
 	 *     Disjunction.Disjunction_1_0 returns PreferredInFilter
 	 *     Conjunction returns PreferredInFilter
 	 *     Conjunction.Conjunction_1_0 returns PreferredInFilter
 	 *     Exclusion returns PreferredInFilter
 	 *     Exclusion.Exclusion_1_0 returns PreferredInFilter
-	 *     Filter returns PreferredInFilter
+	 *     PropertyFilter returns PreferredInFilter
 	 *     PreferredInFilter returns PreferredInFilter
 	 *
 	 * Constraint:
@@ -517,10 +583,84 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
+	 *     QueryConstraint returns QueryConjunction
+	 *     QueryDisjunction returns QueryConjunction
+	 *     QueryDisjunction.QueryDisjunction_1_0 returns QueryConjunction
+	 *     QueryConjunction returns QueryConjunction
+	 *     QueryConjunction.QueryConjunction_1_0 returns QueryConjunction
+	 *
+	 * Constraint:
+	 *     (left=QueryConjunction_QueryConjunction_1_0 right=QueryExclusion)
+	 */
+	protected void sequence_QueryConjunction(ISerializationContext context, QueryConjunction semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.QUERY_CONJUNCTION__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.QUERY_CONJUNCTION__LEFT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.QUERY_CONJUNCTION__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.QUERY_CONJUNCTION__RIGHT));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getQueryConjunctionAccess().getQueryConjunctionLeftAction_1_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getQueryConjunctionAccess().getRightQueryExclusionParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     QueryConstraint returns QueryDisjunction
+	 *     QueryDisjunction returns QueryDisjunction
+	 *     QueryDisjunction.QueryDisjunction_1_0 returns QueryDisjunction
+	 *
+	 * Constraint:
+	 *     (left=QueryDisjunction_QueryDisjunction_1_0 right=QueryConjunction)
+	 */
+	protected void sequence_QueryDisjunction(ISerializationContext context, QueryDisjunction semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.QUERY_DISJUNCTION__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.QUERY_DISJUNCTION__LEFT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.QUERY_DISJUNCTION__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.QUERY_DISJUNCTION__RIGHT));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getQueryDisjunctionAccess().getQueryDisjunctionLeftAction_1_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getQueryDisjunctionAccess().getRightQueryConjunctionParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     QueryConstraint returns QueryExclusion
+	 *     QueryDisjunction returns QueryExclusion
+	 *     QueryDisjunction.QueryDisjunction_1_0 returns QueryExclusion
+	 *     QueryConjunction returns QueryExclusion
+	 *     QueryConjunction.QueryConjunction_1_0 returns QueryExclusion
+	 *     QueryExclusion returns QueryExclusion
+	 *
+	 * Constraint:
+	 *     (left=QueryExclusion_QueryExclusion_1_0 right=SubQuery)
+	 */
+	protected void sequence_QueryExclusion(ISerializationContext context, QueryExclusion semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.QUERY_EXCLUSION__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.QUERY_EXCLUSION__LEFT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.QUERY_EXCLUSION__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.QUERY_EXCLUSION__RIGHT));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getQueryExclusionAccess().getQueryExclusionLeftAction_1_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getQueryExclusionAccess().getRightSubQueryParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
 	 *     Query returns Query
 	 *
 	 * Constraint:
-	 *     (ecl=ExpressionConstraint? constraint=Constraint?)
+	 *     query=QueryConstraint?
 	 */
 	protected void sequence_Query(ISerializationContext context, Query semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -529,14 +669,14 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns TermFilter
+	 *     Filter returns TermFilter
 	 *     Disjunction returns TermFilter
 	 *     Disjunction.Disjunction_1_0 returns TermFilter
 	 *     Conjunction returns TermFilter
 	 *     Conjunction.Conjunction_1_0 returns TermFilter
 	 *     Exclusion returns TermFilter
 	 *     Exclusion.Exclusion_1_0 returns TermFilter
-	 *     Filter returns TermFilter
+	 *     PropertyFilter returns TermFilter
 	 *     TermFilter returns TermFilter
 	 *
 	 * Constraint:
@@ -549,14 +689,14 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Constraint returns TypeFilter
+	 *     Filter returns TypeFilter
 	 *     Disjunction returns TypeFilter
 	 *     Disjunction.Disjunction_1_0 returns TypeFilter
 	 *     Conjunction returns TypeFilter
 	 *     Conjunction.Conjunction_1_0 returns TypeFilter
 	 *     Exclusion returns TypeFilter
 	 *     Exclusion.Exclusion_1_0 returns TypeFilter
-	 *     Filter returns TypeFilter
+	 *     PropertyFilter returns TypeFilter
 	 *     TypeFilter returns TypeFilter
 	 *
 	 * Constraint:

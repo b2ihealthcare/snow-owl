@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
  * @model
  * @generated
  */
-public interface AcceptableInFilter extends Filter
+public interface AcceptableInFilter extends PropertyFilter
 {
   /**
    * Returns the value of the '<em><b>Language Ref Set Id</b></em>' containment reference.

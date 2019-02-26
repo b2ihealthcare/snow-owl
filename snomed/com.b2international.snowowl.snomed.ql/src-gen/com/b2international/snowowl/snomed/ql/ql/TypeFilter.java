@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
  * @model
  * @generated
  */
-public interface TypeFilter extends Filter
+public interface TypeFilter extends PropertyFilter
 {
   /**
    * Returns the value of the '<em><b>Type</b></em>' containment reference.

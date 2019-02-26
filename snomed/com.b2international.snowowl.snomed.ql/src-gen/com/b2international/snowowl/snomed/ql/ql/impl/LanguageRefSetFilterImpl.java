@@ -41,7 +41,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class LanguageRefSetFilterImpl extends FilterImpl implements LanguageRefSetFilter
+public class LanguageRefSetFilterImpl extends PropertyFilterImpl implements LanguageRefSetFilter
 {
   /**
    * The cached value of the '{@link #getLanguageRefSetId() <em>Language Ref Set Id</em>}' containment reference.

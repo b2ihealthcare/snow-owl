@@ -33,7 +33,7 @@ package com.b2international.snowowl.snomed.ql.ql;
  * @model
  * @generated
  */
-public interface ActiveFilter extends Filter
+public interface ActiveFilter extends PropertyFilter
 {
   /**
    * Returns the value of the '<em><b>Domain</b></em>' attribute.

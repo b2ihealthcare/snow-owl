@@ -13,20 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.ql.ql;
+package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import org.eclipse.emf.ecore.EObject;
+import com.b2international.snowowl.snomed.ql.ql.QlPackage;
+import com.b2international.snowowl.snomed.ql.ql.SubQuery;
+
+import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Filter</b></em>'.
+ * An implementation of the model object '<em><b>Sub Query</b></em>'.
  * <!-- end-user-doc -->
  *
- *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getFilter()
- * @model
  * @generated
  */
-public interface Filter extends EObject
+public class SubQueryImpl extends QueryConstraintImpl implements SubQuery
 {
-} // Filter
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  protected SubQueryImpl()
+  {
+    super();
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  protected EClass eStaticClass()
+  {
+    return QlPackage.Literals.SUB_QUERY;
+  }
+
+} //SubQueryImpl

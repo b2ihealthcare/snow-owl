@@ -79,9 +79,13 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
     switch (eClass.getClassifierID())
     {
       case QlPackage.QUERY: return createQuery();
-      case QlPackage.CONSTRAINT: return createConstraint();
-      case QlPackage.NESTED_FILTER: return createNestedFilter();
+      case QlPackage.QUERY_CONSTRAINT: return createQueryConstraint();
+      case QlPackage.SUB_QUERY: return createSubQuery();
+      case QlPackage.DOMAIN_QUERY: return createDomainQuery();
+      case QlPackage.NESTED_QUERY: return createNestedQuery();
       case QlPackage.FILTER: return createFilter();
+      case QlPackage.NESTED_FILTER: return createNestedFilter();
+      case QlPackage.PROPERTY_FILTER: return createPropertyFilter();
       case QlPackage.ACTIVE_FILTER: return createActiveFilter();
       case QlPackage.MODULE_FILTER: return createModuleFilter();
       case QlPackage.TERM_FILTER: return createTermFilter();
@@ -89,6 +93,9 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
       case QlPackage.ACCEPTABLE_IN_FILTER: return createAcceptableInFilter();
       case QlPackage.LANGUAGE_REF_SET_FILTER: return createLanguageRefSetFilter();
       case QlPackage.TYPE_FILTER: return createTypeFilter();
+      case QlPackage.QUERY_DISJUNCTION: return createQueryDisjunction();
+      case QlPackage.QUERY_CONJUNCTION: return createQueryConjunction();
+      case QlPackage.QUERY_EXCLUSION: return createQueryExclusion();
       case QlPackage.DISJUNCTION: return createDisjunction();
       case QlPackage.CONJUNCTION: return createConjunction();
       case QlPackage.EXCLUSION: return createExclusion();
@@ -151,10 +158,54 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public Constraint createConstraint()
+  public QueryConstraint createQueryConstraint()
   {
-    ConstraintImpl constraint = new ConstraintImpl();
-    return constraint;
+    QueryConstraintImpl queryConstraint = new QueryConstraintImpl();
+    return queryConstraint;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public SubQuery createSubQuery()
+  {
+    SubQueryImpl subQuery = new SubQueryImpl();
+    return subQuery;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DomainQuery createDomainQuery()
+  {
+    DomainQueryImpl domainQuery = new DomainQueryImpl();
+    return domainQuery;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NestedQuery createNestedQuery()
+  {
+    NestedQueryImpl nestedQuery = new NestedQueryImpl();
+    return nestedQuery;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Filter createFilter()
+  {
+    FilterImpl filter = new FilterImpl();
+    return filter;
   }
 
   /**
@@ -173,10 +224,10 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public Filter createFilter()
+  public PropertyFilter createPropertyFilter()
   {
-    FilterImpl filter = new FilterImpl();
-    return filter;
+    PropertyFilterImpl propertyFilter = new PropertyFilterImpl();
+    return propertyFilter;
   }
 
   /**
@@ -254,6 +305,39 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
   {
     TypeFilterImpl typeFilter = new TypeFilterImpl();
     return typeFilter;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public QueryDisjunction createQueryDisjunction()
+  {
+    QueryDisjunctionImpl queryDisjunction = new QueryDisjunctionImpl();
+    return queryDisjunction;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public QueryConjunction createQueryConjunction()
+  {
+    QueryConjunctionImpl queryConjunction = new QueryConjunctionImpl();
+    return queryConjunction;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public QueryExclusion createQueryExclusion()
+  {
+    QueryExclusionImpl queryExclusion = new QueryExclusionImpl();
+    return queryExclusion;
   }
 
   /**

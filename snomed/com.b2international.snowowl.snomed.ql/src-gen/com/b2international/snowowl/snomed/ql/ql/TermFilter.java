@@ -33,7 +33,7 @@ package com.b2international.snowowl.snomed.ql.ql;
  * @model
  * @generated
  */
-public interface TermFilter extends Filter
+public interface TermFilter extends PropertyFilter
 {
   /**
    * Returns the value of the '<em><b>Lexical Search Type</b></em>' attribute.

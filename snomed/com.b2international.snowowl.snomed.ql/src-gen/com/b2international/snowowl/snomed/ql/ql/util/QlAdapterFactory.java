@@ -93,9 +93,29 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createQueryAdapter();
       }
       @Override
-      public Adapter caseConstraint(Constraint object)
+      public Adapter caseQueryConstraint(QueryConstraint object)
       {
-        return createConstraintAdapter();
+        return createQueryConstraintAdapter();
+      }
+      @Override
+      public Adapter caseSubQuery(SubQuery object)
+      {
+        return createSubQueryAdapter();
+      }
+      @Override
+      public Adapter caseDomainQuery(DomainQuery object)
+      {
+        return createDomainQueryAdapter();
+      }
+      @Override
+      public Adapter caseNestedQuery(NestedQuery object)
+      {
+        return createNestedQueryAdapter();
+      }
+      @Override
+      public Adapter caseFilter(Filter object)
+      {
+        return createFilterAdapter();
       }
       @Override
       public Adapter caseNestedFilter(NestedFilter object)
@@ -103,9 +123,9 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createNestedFilterAdapter();
       }
       @Override
-      public Adapter caseFilter(Filter object)
+      public Adapter casePropertyFilter(PropertyFilter object)
       {
-        return createFilterAdapter();
+        return createPropertyFilterAdapter();
       }
       @Override
       public Adapter caseActiveFilter(ActiveFilter object)
@@ -141,6 +161,21 @@ public class QlAdapterFactory extends AdapterFactoryImpl
       public Adapter caseTypeFilter(TypeFilter object)
       {
         return createTypeFilterAdapter();
+      }
+      @Override
+      public Adapter caseQueryDisjunction(QueryDisjunction object)
+      {
+        return createQueryDisjunctionAdapter();
+      }
+      @Override
+      public Adapter caseQueryConjunction(QueryConjunction object)
+      {
+        return createQueryConjunctionAdapter();
+      }
+      @Override
+      public Adapter caseQueryExclusion(QueryExclusion object)
+      {
+        return createQueryExclusionAdapter();
       }
       @Override
       public Adapter caseDisjunction(Disjunction object)
@@ -195,16 +230,76 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Constraint <em>Constraint</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.QueryConstraint <em>Query Constraint</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.Constraint
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryConstraint
    * @generated
    */
-  public Adapter createConstraintAdapter()
+  public Adapter createQueryConstraintAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.SubQuery <em>Sub Query</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.SubQuery
+   * @generated
+   */
+  public Adapter createSubQueryAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.DomainQuery <em>Domain Query</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.DomainQuery
+   * @generated
+   */
+  public Adapter createDomainQueryAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.NestedQuery <em>Nested Query</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.NestedQuery
+   * @generated
+   */
+  public Adapter createNestedQueryAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Filter <em>Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.Filter
+   * @generated
+   */
+  public Adapter createFilterAdapter()
   {
     return null;
   }
@@ -225,16 +320,16 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Filter <em>Filter</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.PropertyFilter <em>Property Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.Filter
+   * @see com.b2international.snowowl.snomed.ql.ql.PropertyFilter
    * @generated
    */
-  public Adapter createFilterAdapter()
+  public Adapter createPropertyFilterAdapter()
   {
     return null;
   }
@@ -340,6 +435,51 @@ public class QlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createTypeFilterAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.QueryDisjunction <em>Query Disjunction</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryDisjunction
+   * @generated
+   */
+  public Adapter createQueryDisjunctionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.QueryConjunction <em>Query Conjunction</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryConjunction
+   * @generated
+   */
+  public Adapter createQueryConjunctionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.QueryExclusion <em>Query Exclusion</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryExclusion
+   * @generated
+   */
+  public Adapter createQueryExclusionAdapter()
   {
     return null;
   }

@@ -81,22 +81,13 @@ public interface QlPackage extends EPackage
   int QUERY = 0;
 
   /**
-   * The feature id for the '<em><b>Ecl</b></em>' containment reference.
+   * The feature id for the '<em><b>Query</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int QUERY__ECL = 0;
-
-  /**
-   * The feature id for the '<em><b>Constraint</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int QUERY__CONSTRAINT = 1;
+  int QUERY__QUERY = 0;
 
   /**
    * The number of structural features of the '<em>Query</em>' class.
@@ -105,26 +96,110 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int QUERY_FEATURE_COUNT = 2;
+  int QUERY_FEATURE_COUNT = 1;
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ConstraintImpl <em>Constraint</em>}' class.
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryConstraintImpl <em>Query Constraint</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.ql.ql.impl.ConstraintImpl
-   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getConstraint()
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QueryConstraintImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryConstraint()
    * @generated
    */
-  int CONSTRAINT = 1;
+  int QUERY_CONSTRAINT = 1;
 
   /**
-   * The number of structural features of the '<em>Constraint</em>' class.
+   * The number of structural features of the '<em>Query Constraint</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int CONSTRAINT_FEATURE_COUNT = 0;
+  int QUERY_CONSTRAINT_FEATURE_COUNT = 0;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.SubQueryImpl <em>Sub Query</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.SubQueryImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getSubQuery()
+   * @generated
+   */
+  int SUB_QUERY = 2;
+
+  /**
+   * The number of structural features of the '<em>Sub Query</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SUB_QUERY_FEATURE_COUNT = QUERY_CONSTRAINT_FEATURE_COUNT + 0;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.DomainQueryImpl <em>Domain Query</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.DomainQueryImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDomainQuery()
+   * @generated
+   */
+  int DOMAIN_QUERY = 3;
+
+  /**
+   * The feature id for the '<em><b>Ecl</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DOMAIN_QUERY__ECL = SUB_QUERY_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Filter</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DOMAIN_QUERY__FILTER = SUB_QUERY_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Domain Query</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DOMAIN_QUERY_FEATURE_COUNT = SUB_QUERY_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.NestedQueryImpl <em>Nested Query</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.NestedQueryImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getNestedQuery()
+   * @generated
+   */
+  int NESTED_QUERY = 4;
+
+  /**
+   * The feature id for the '<em><b>Nested</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NESTED_QUERY__NESTED = SUB_QUERY_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Nested Query</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NESTED_QUERY_FEATURE_COUNT = SUB_QUERY_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.FilterImpl <em>Filter</em>}' class.
@@ -134,7 +209,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getFilter()
    * @generated
    */
-  int FILTER = 3;
+  int FILTER = 5;
 
   /**
    * The number of structural features of the '<em>Filter</em>' class.
@@ -143,7 +218,26 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int FILTER_FEATURE_COUNT = CONSTRAINT_FEATURE_COUNT + 0;
+  int FILTER_FEATURE_COUNT = 0;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.PropertyFilterImpl <em>Property Filter</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.PropertyFilterImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getPropertyFilter()
+   * @generated
+   */
+  int PROPERTY_FILTER = 7;
+
+  /**
+   * The number of structural features of the '<em>Property Filter</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PROPERTY_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.NestedFilterImpl <em>Nested Filter</em>}' class.
@@ -153,16 +247,16 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getNestedFilter()
    * @generated
    */
-  int NESTED_FILTER = 2;
+  int NESTED_FILTER = 6;
 
   /**
-   * The feature id for the '<em><b>Constraint</b></em>' containment reference.
+   * The feature id for the '<em><b>Nested</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int NESTED_FILTER__CONSTRAINT = FILTER_FEATURE_COUNT + 0;
+  int NESTED_FILTER__NESTED = PROPERTY_FILTER_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Nested Filter</em>' class.
@@ -171,7 +265,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int NESTED_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 1;
+  int NESTED_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ActiveFilterImpl <em>Active Filter</em>}' class.
@@ -181,7 +275,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getActiveFilter()
    * @generated
    */
-  int ACTIVE_FILTER = 4;
+  int ACTIVE_FILTER = 8;
 
   /**
    * The feature id for the '<em><b>Domain</b></em>' attribute.
@@ -190,7 +284,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ACTIVE_FILTER__DOMAIN = FILTER_FEATURE_COUNT + 0;
+  int ACTIVE_FILTER__DOMAIN = PROPERTY_FILTER_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Active</b></em>' attribute.
@@ -199,7 +293,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ACTIVE_FILTER__ACTIVE = FILTER_FEATURE_COUNT + 1;
+  int ACTIVE_FILTER__ACTIVE = PROPERTY_FILTER_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Active Filter</em>' class.
@@ -208,7 +302,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ACTIVE_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 2;
+  int ACTIVE_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ModuleFilterImpl <em>Module Filter</em>}' class.
@@ -218,7 +312,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getModuleFilter()
    * @generated
    */
-  int MODULE_FILTER = 5;
+  int MODULE_FILTER = 9;
 
   /**
    * The feature id for the '<em><b>Domain</b></em>' attribute.
@@ -227,7 +321,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int MODULE_FILTER__DOMAIN = FILTER_FEATURE_COUNT + 0;
+  int MODULE_FILTER__DOMAIN = PROPERTY_FILTER_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Module Id</b></em>' containment reference.
@@ -236,7 +330,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int MODULE_FILTER__MODULE_ID = FILTER_FEATURE_COUNT + 1;
+  int MODULE_FILTER__MODULE_ID = PROPERTY_FILTER_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Module Filter</em>' class.
@@ -245,7 +339,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int MODULE_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 2;
+  int MODULE_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.TermFilterImpl <em>Term Filter</em>}' class.
@@ -255,7 +349,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getTermFilter()
    * @generated
    */
-  int TERM_FILTER = 6;
+  int TERM_FILTER = 10;
 
   /**
    * The feature id for the '<em><b>Lexical Search Type</b></em>' attribute.
@@ -264,7 +358,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int TERM_FILTER__LEXICAL_SEARCH_TYPE = FILTER_FEATURE_COUNT + 0;
+  int TERM_FILTER__LEXICAL_SEARCH_TYPE = PROPERTY_FILTER_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Term</b></em>' attribute.
@@ -273,7 +367,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int TERM_FILTER__TERM = FILTER_FEATURE_COUNT + 1;
+  int TERM_FILTER__TERM = PROPERTY_FILTER_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Term Filter</em>' class.
@@ -282,7 +376,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int TERM_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 2;
+  int TERM_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.PreferredInFilterImpl <em>Preferred In Filter</em>}' class.
@@ -292,7 +386,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getPreferredInFilter()
    * @generated
    */
-  int PREFERRED_IN_FILTER = 7;
+  int PREFERRED_IN_FILTER = 11;
 
   /**
    * The feature id for the '<em><b>Language Ref Set Id</b></em>' containment reference.
@@ -301,7 +395,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID = FILTER_FEATURE_COUNT + 0;
+  int PREFERRED_IN_FILTER__LANGUAGE_REF_SET_ID = PROPERTY_FILTER_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Preferred In Filter</em>' class.
@@ -310,7 +404,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int PREFERRED_IN_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 1;
+  int PREFERRED_IN_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.AcceptableInFilterImpl <em>Acceptable In Filter</em>}' class.
@@ -320,7 +414,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getAcceptableInFilter()
    * @generated
    */
-  int ACCEPTABLE_IN_FILTER = 8;
+  int ACCEPTABLE_IN_FILTER = 12;
 
   /**
    * The feature id for the '<em><b>Language Ref Set Id</b></em>' containment reference.
@@ -329,7 +423,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID = FILTER_FEATURE_COUNT + 0;
+  int ACCEPTABLE_IN_FILTER__LANGUAGE_REF_SET_ID = PROPERTY_FILTER_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Acceptable In Filter</em>' class.
@@ -338,7 +432,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ACCEPTABLE_IN_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 1;
+  int ACCEPTABLE_IN_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.LanguageRefSetFilterImpl <em>Language Ref Set Filter</em>}' class.
@@ -348,7 +442,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getLanguageRefSetFilter()
    * @generated
    */
-  int LANGUAGE_REF_SET_FILTER = 9;
+  int LANGUAGE_REF_SET_FILTER = 13;
 
   /**
    * The feature id for the '<em><b>Language Ref Set Id</b></em>' containment reference.
@@ -357,7 +451,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID = FILTER_FEATURE_COUNT + 0;
+  int LANGUAGE_REF_SET_FILTER__LANGUAGE_REF_SET_ID = PROPERTY_FILTER_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Language Ref Set Filter</em>' class.
@@ -366,7 +460,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int LANGUAGE_REF_SET_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 1;
+  int LANGUAGE_REF_SET_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.TypeFilterImpl <em>Type Filter</em>}' class.
@@ -376,7 +470,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getTypeFilter()
    * @generated
    */
-  int TYPE_FILTER = 10;
+  int TYPE_FILTER = 14;
 
   /**
    * The feature id for the '<em><b>Type</b></em>' containment reference.
@@ -385,7 +479,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int TYPE_FILTER__TYPE = FILTER_FEATURE_COUNT + 0;
+  int TYPE_FILTER__TYPE = PROPERTY_FILTER_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Type Filter</em>' class.
@@ -394,7 +488,118 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int TYPE_FILTER_FEATURE_COUNT = FILTER_FEATURE_COUNT + 1;
+  int TYPE_FILTER_FEATURE_COUNT = PROPERTY_FILTER_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryDisjunctionImpl <em>Query Disjunction</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QueryDisjunctionImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryDisjunction()
+   * @generated
+   */
+  int QUERY_DISJUNCTION = 15;
+
+  /**
+   * The feature id for the '<em><b>Left</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_DISJUNCTION__LEFT = QUERY_CONSTRAINT_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Right</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_DISJUNCTION__RIGHT = QUERY_CONSTRAINT_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Query Disjunction</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_DISJUNCTION_FEATURE_COUNT = QUERY_CONSTRAINT_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryConjunctionImpl <em>Query Conjunction</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QueryConjunctionImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryConjunction()
+   * @generated
+   */
+  int QUERY_CONJUNCTION = 16;
+
+  /**
+   * The feature id for the '<em><b>Left</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_CONJUNCTION__LEFT = QUERY_CONSTRAINT_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Right</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_CONJUNCTION__RIGHT = QUERY_CONSTRAINT_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Query Conjunction</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_CONJUNCTION_FEATURE_COUNT = QUERY_CONSTRAINT_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryExclusionImpl <em>Query Exclusion</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QueryExclusionImpl
+   * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryExclusion()
+   * @generated
+   */
+  int QUERY_EXCLUSION = 17;
+
+  /**
+   * The feature id for the '<em><b>Left</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_EXCLUSION__LEFT = QUERY_CONSTRAINT_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Right</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_EXCLUSION__RIGHT = QUERY_CONSTRAINT_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Query Exclusion</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int QUERY_EXCLUSION_FEATURE_COUNT = QUERY_CONSTRAINT_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.DisjunctionImpl <em>Disjunction</em>}' class.
@@ -404,7 +609,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDisjunction()
    * @generated
    */
-  int DISJUNCTION = 11;
+  int DISJUNCTION = 18;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -413,7 +618,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int DISJUNCTION__LEFT = CONSTRAINT_FEATURE_COUNT + 0;
+  int DISJUNCTION__LEFT = FILTER_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Right</b></em>' containment reference.
@@ -422,7 +627,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int DISJUNCTION__RIGHT = CONSTRAINT_FEATURE_COUNT + 1;
+  int DISJUNCTION__RIGHT = FILTER_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Disjunction</em>' class.
@@ -431,7 +636,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int DISJUNCTION_FEATURE_COUNT = CONSTRAINT_FEATURE_COUNT + 2;
+  int DISJUNCTION_FEATURE_COUNT = FILTER_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ConjunctionImpl <em>Conjunction</em>}' class.
@@ -441,7 +646,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getConjunction()
    * @generated
    */
-  int CONJUNCTION = 12;
+  int CONJUNCTION = 19;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -450,7 +655,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONJUNCTION__LEFT = CONSTRAINT_FEATURE_COUNT + 0;
+  int CONJUNCTION__LEFT = FILTER_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Right</b></em>' containment reference.
@@ -459,7 +664,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONJUNCTION__RIGHT = CONSTRAINT_FEATURE_COUNT + 1;
+  int CONJUNCTION__RIGHT = FILTER_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Conjunction</em>' class.
@@ -468,7 +673,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONJUNCTION_FEATURE_COUNT = CONSTRAINT_FEATURE_COUNT + 2;
+  int CONJUNCTION_FEATURE_COUNT = FILTER_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ExclusionImpl <em>Exclusion</em>}' class.
@@ -478,7 +683,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getExclusion()
    * @generated
    */
-  int EXCLUSION = 13;
+  int EXCLUSION = 20;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -487,7 +692,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EXCLUSION__LEFT = CONSTRAINT_FEATURE_COUNT + 0;
+  int EXCLUSION__LEFT = FILTER_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Right</b></em>' containment reference.
@@ -496,7 +701,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EXCLUSION__RIGHT = CONSTRAINT_FEATURE_COUNT + 1;
+  int EXCLUSION__RIGHT = FILTER_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Exclusion</em>' class.
@@ -505,7 +710,7 @@ public interface QlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EXCLUSION_FEATURE_COUNT = CONSTRAINT_FEATURE_COUNT + 2;
+  int EXCLUSION_FEATURE_COUNT = FILTER_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.LexicalSearchType <em>Lexical Search Type</em>}' enum.
@@ -515,7 +720,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getLexicalSearchType()
    * @generated
    */
-  int LEXICAL_SEARCH_TYPE = 14;
+  int LEXICAL_SEARCH_TYPE = 21;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ql.ql.Domain <em>Domain</em>}' enum.
@@ -525,7 +730,7 @@ public interface QlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDomain()
    * @generated
    */
-  int DOMAIN = 15;
+  int DOMAIN = 22;
 
 
   /**
@@ -539,36 +744,98 @@ public interface QlPackage extends EPackage
   EClass getQuery();
 
   /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.Query#getEcl <em>Ecl</em>}'.
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.Query#getQuery <em>Query</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Query</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.Query#getQuery()
+   * @see #getQuery()
+   * @generated
+   */
+  EReference getQuery_Query();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.QueryConstraint <em>Query Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Query Constraint</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryConstraint
+   * @generated
+   */
+  EClass getQueryConstraint();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.SubQuery <em>Sub Query</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Sub Query</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.SubQuery
+   * @generated
+   */
+  EClass getSubQuery();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.DomainQuery <em>Domain Query</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Domain Query</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.DomainQuery
+   * @generated
+   */
+  EClass getDomainQuery();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.DomainQuery#getEcl <em>Ecl</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for the containment reference '<em>Ecl</em>'.
-   * @see com.b2international.snowowl.snomed.ql.ql.Query#getEcl()
-   * @see #getQuery()
+   * @see com.b2international.snowowl.snomed.ql.ql.DomainQuery#getEcl()
+   * @see #getDomainQuery()
    * @generated
    */
-  EReference getQuery_Ecl();
+  EReference getDomainQuery_Ecl();
 
   /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.Query#getConstraint <em>Constraint</em>}'.
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.DomainQuery#getFilter <em>Filter</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Constraint</em>'.
-   * @see com.b2international.snowowl.snomed.ql.ql.Query#getConstraint()
-   * @see #getQuery()
+   * @return the meta object for the containment reference '<em>Filter</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.DomainQuery#getFilter()
+   * @see #getDomainQuery()
    * @generated
    */
-  EReference getQuery_Constraint();
+  EReference getDomainQuery_Filter();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.Constraint <em>Constraint</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.NestedQuery <em>Nested Query</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Constraint</em>'.
-   * @see com.b2international.snowowl.snomed.ql.ql.Constraint
+   * @return the meta object for class '<em>Nested Query</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.NestedQuery
    * @generated
    */
-  EClass getConstraint();
+  EClass getNestedQuery();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.NestedQuery#getNested <em>Nested</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Nested</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.NestedQuery#getNested()
+   * @see #getNestedQuery()
+   * @generated
+   */
+  EReference getNestedQuery_Nested();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.Filter <em>Filter</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Filter</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.Filter
+   * @generated
+   */
+  EClass getFilter();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter <em>Nested Filter</em>}'.
@@ -581,25 +848,25 @@ public interface QlPackage extends EPackage
   EClass getNestedFilter();
 
   /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter#getConstraint <em>Constraint</em>}'.
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.NestedFilter#getNested <em>Nested</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Constraint</em>'.
-   * @see com.b2international.snowowl.snomed.ql.ql.NestedFilter#getConstraint()
+   * @return the meta object for the containment reference '<em>Nested</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.NestedFilter#getNested()
    * @see #getNestedFilter()
    * @generated
    */
-  EReference getNestedFilter_Constraint();
+  EReference getNestedFilter_Nested();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.Filter <em>Filter</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.PropertyFilter <em>Property Filter</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Filter</em>'.
-   * @see com.b2international.snowowl.snomed.ql.ql.Filter
+   * @return the meta object for class '<em>Property Filter</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.PropertyFilter
    * @generated
    */
-  EClass getFilter();
+  EClass getPropertyFilter();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.ActiveFilter <em>Active Filter</em>}'.
@@ -782,6 +1049,102 @@ public interface QlPackage extends EPackage
   EReference getTypeFilter_Type();
 
   /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.QueryDisjunction <em>Query Disjunction</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Query Disjunction</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryDisjunction
+   * @generated
+   */
+  EClass getQueryDisjunction();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.QueryDisjunction#getLeft <em>Left</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Left</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryDisjunction#getLeft()
+   * @see #getQueryDisjunction()
+   * @generated
+   */
+  EReference getQueryDisjunction_Left();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.QueryDisjunction#getRight <em>Right</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Right</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryDisjunction#getRight()
+   * @see #getQueryDisjunction()
+   * @generated
+   */
+  EReference getQueryDisjunction_Right();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.QueryConjunction <em>Query Conjunction</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Query Conjunction</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryConjunction
+   * @generated
+   */
+  EClass getQueryConjunction();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.QueryConjunction#getLeft <em>Left</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Left</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryConjunction#getLeft()
+   * @see #getQueryConjunction()
+   * @generated
+   */
+  EReference getQueryConjunction_Left();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.QueryConjunction#getRight <em>Right</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Right</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryConjunction#getRight()
+   * @see #getQueryConjunction()
+   * @generated
+   */
+  EReference getQueryConjunction_Right();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.QueryExclusion <em>Query Exclusion</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Query Exclusion</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryExclusion
+   * @generated
+   */
+  EClass getQueryExclusion();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.QueryExclusion#getLeft <em>Left</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Left</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryExclusion#getLeft()
+   * @see #getQueryExclusion()
+   * @generated
+   */
+  EReference getQueryExclusion_Left();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ql.ql.QueryExclusion#getRight <em>Right</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Right</em>'.
+   * @see com.b2international.snowowl.snomed.ql.ql.QueryExclusion#getRight()
+   * @see #getQueryExclusion()
+   * @generated
+   */
+  EReference getQueryExclusion_Right();
+
+  /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ql.ql.Disjunction <em>Disjunction</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -931,30 +1294,86 @@ public interface QlPackage extends EPackage
     EClass QUERY = eINSTANCE.getQuery();
 
     /**
+     * The meta object literal for the '<em><b>Query</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference QUERY__QUERY = eINSTANCE.getQuery_Query();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryConstraintImpl <em>Query Constraint</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QueryConstraintImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryConstraint()
+     * @generated
+     */
+    EClass QUERY_CONSTRAINT = eINSTANCE.getQueryConstraint();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.SubQueryImpl <em>Sub Query</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.SubQueryImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getSubQuery()
+     * @generated
+     */
+    EClass SUB_QUERY = eINSTANCE.getSubQuery();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.DomainQueryImpl <em>Domain Query</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.DomainQueryImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getDomainQuery()
+     * @generated
+     */
+    EClass DOMAIN_QUERY = eINSTANCE.getDomainQuery();
+
+    /**
      * The meta object literal for the '<em><b>Ecl</b></em>' containment reference feature.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference QUERY__ECL = eINSTANCE.getQuery_Ecl();
+    EReference DOMAIN_QUERY__ECL = eINSTANCE.getDomainQuery_Ecl();
 
     /**
-     * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
+     * The meta object literal for the '<em><b>Filter</b></em>' containment reference feature.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference QUERY__CONSTRAINT = eINSTANCE.getQuery_Constraint();
+    EReference DOMAIN_QUERY__FILTER = eINSTANCE.getDomainQuery_Filter();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ConstraintImpl <em>Constraint</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.NestedQueryImpl <em>Nested Query</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.ql.ql.impl.ConstraintImpl
-     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getConstraint()
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.NestedQueryImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getNestedQuery()
      * @generated
      */
-    EClass CONSTRAINT = eINSTANCE.getConstraint();
+    EClass NESTED_QUERY = eINSTANCE.getNestedQuery();
+
+    /**
+     * The meta object literal for the '<em><b>Nested</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference NESTED_QUERY__NESTED = eINSTANCE.getNestedQuery_Nested();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.FilterImpl <em>Filter</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.FilterImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getFilter()
+     * @generated
+     */
+    EClass FILTER = eINSTANCE.getFilter();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.NestedFilterImpl <em>Nested Filter</em>}' class.
@@ -967,22 +1386,22 @@ public interface QlPackage extends EPackage
     EClass NESTED_FILTER = eINSTANCE.getNestedFilter();
 
     /**
-     * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
+     * The meta object literal for the '<em><b>Nested</b></em>' containment reference feature.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference NESTED_FILTER__CONSTRAINT = eINSTANCE.getNestedFilter_Constraint();
+    EReference NESTED_FILTER__NESTED = eINSTANCE.getNestedFilter_Nested();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.FilterImpl <em>Filter</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.PropertyFilterImpl <em>Property Filter</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.ql.ql.impl.FilterImpl
-     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getFilter()
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.PropertyFilterImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getPropertyFilter()
      * @generated
      */
-    EClass FILTER = eINSTANCE.getFilter();
+    EClass PROPERTY_FILTER = eINSTANCE.getPropertyFilter();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.ActiveFilterImpl <em>Active Filter</em>}' class.
@@ -1133,6 +1552,84 @@ public interface QlPackage extends EPackage
      * @generated
      */
     EReference TYPE_FILTER__TYPE = eINSTANCE.getTypeFilter_Type();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryDisjunctionImpl <em>Query Disjunction</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QueryDisjunctionImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryDisjunction()
+     * @generated
+     */
+    EClass QUERY_DISJUNCTION = eINSTANCE.getQueryDisjunction();
+
+    /**
+     * The meta object literal for the '<em><b>Left</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference QUERY_DISJUNCTION__LEFT = eINSTANCE.getQueryDisjunction_Left();
+
+    /**
+     * The meta object literal for the '<em><b>Right</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference QUERY_DISJUNCTION__RIGHT = eINSTANCE.getQueryDisjunction_Right();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryConjunctionImpl <em>Query Conjunction</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QueryConjunctionImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryConjunction()
+     * @generated
+     */
+    EClass QUERY_CONJUNCTION = eINSTANCE.getQueryConjunction();
+
+    /**
+     * The meta object literal for the '<em><b>Left</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference QUERY_CONJUNCTION__LEFT = eINSTANCE.getQueryConjunction_Left();
+
+    /**
+     * The meta object literal for the '<em><b>Right</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference QUERY_CONJUNCTION__RIGHT = eINSTANCE.getQueryConjunction_Right();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.QueryExclusionImpl <em>Query Exclusion</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QueryExclusionImpl
+     * @see com.b2international.snowowl.snomed.ql.ql.impl.QlPackageImpl#getQueryExclusion()
+     * @generated
+     */
+    EClass QUERY_EXCLUSION = eINSTANCE.getQueryExclusion();
+
+    /**
+     * The meta object literal for the '<em><b>Left</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference QUERY_EXCLUSION__LEFT = eINSTANCE.getQueryExclusion_Left();
+
+    /**
+     * The meta object literal for the '<em><b>Right</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference QUERY_EXCLUSION__RIGHT = eINSTANCE.getQueryExclusion_Right();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ql.ql.impl.DisjunctionImpl <em>Disjunction</em>}' class.

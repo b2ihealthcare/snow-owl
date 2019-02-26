@@ -41,7 +41,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class TypeFilterImpl extends FilterImpl implements TypeFilter
+public class TypeFilterImpl extends PropertyFilterImpl implements TypeFilter
 {
   /**
    * The cached value of the '{@link #getType() <em>Type</em>}' containment reference.

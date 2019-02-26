@@ -15,18 +15,17 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
-import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Filter</b></em>'.
+ * A representation of the model object '<em><b>Sub Query</b></em>'.
  * <!-- end-user-doc -->
  *
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getSubQuery()
  * @model
  * @generated
  */
-public interface Filter extends EObject
+public interface SubQuery extends QueryConstraint
 {
-} // Filter
+} // SubQuery

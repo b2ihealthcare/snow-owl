@@ -37,6 +37,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	protected AbstractElementAlias match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
 	protected AbstractElementAlias match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1;
 	protected AbstractElementAlias match_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
+	protected AbstractElementAlias match_QueryConjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
 	
 	@Inject
 	protected void init(IGrammarAccess access) {
@@ -45,6 +46,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 		match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCommaKeyword_1_1_1()));
 		match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getANDKeyword_1_0_1_0()), new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getCommaKeyword_1_0_1_1()));
 		match_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getConjunctionAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getConjunctionAccess().getCommaKeyword_1_1_1()));
+		match_QueryConjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getQueryConjunctionAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getQueryConjunctionAccess().getCommaKeyword_1_1_1()));
 	}
 	
 	@Override
@@ -366,6 +368,8 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 				emit_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
 			else if (match_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1.equals(syntax))
 				emit_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
+			else if (match_QueryConjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1.equals(syntax))
+				emit_QueryConjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
 			else acceptNodes(getLastNavigableState(), syntaxNodes);
 		}
 	}
@@ -383,7 +387,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     ',' | 'AND'
+	 *     'AND' | ','
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndExpressionConstraint.left=} (ambiguity) right=ExclusionExpressionConstraint
@@ -394,7 +398,7 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     ',' | 'AND'
+	 *     'AND' | ','
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndRefinement.left=} (ambiguity) right=SubRefinement
@@ -411,6 +415,17 @@ public class QLSyntacticSequencer extends AbstractSyntacticSequencer {
 	 *     {Conjunction.left=} (ambiguity) right=Exclusion
 	 */
 	protected void emit_Conjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+		acceptNodes(transition, nodes);
+	}
+	
+	/**
+	 * Ambiguous syntax:
+	 *     ',' | 'AND'
+	 *
+	 * This ambiguous syntax occurs at:
+	 *     {QueryConjunction.left=} (ambiguity) right=QueryExclusion
+	 */
+	protected void emit_QueryConjunction_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);
 	}
 	

@@ -39,7 +39,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class ActiveFilterImpl extends FilterImpl implements ActiveFilter
+public class ActiveFilterImpl extends PropertyFilterImpl implements ActiveFilter
 {
   /**
    * The default value of the '{@link #getDomain() <em>Domain</em>}' attribute.

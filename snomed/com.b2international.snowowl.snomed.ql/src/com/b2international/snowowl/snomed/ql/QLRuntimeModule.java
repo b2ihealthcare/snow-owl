@@ -18,10 +18,10 @@ package com.b2international.snowowl.snomed.ql;
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
 import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
@@ -34,14 +34,14 @@ import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
  */
 public class QLRuntimeModule extends AbstractQLRuntimeModule {
 
-	public static Domain getDomain(Constraint constraint) {
+	public static Domain getDomain(Filter constraint) {
 		final Domain domain = getDomainInternal(constraint);
 		return domain == null ? Domain.CONCEPT : domain;
 	}
 	
-	private static Domain getDomainInternal(Constraint constraint) {
+	private static Domain getDomainInternal(Filter constraint) {
 		if (constraint instanceof NestedFilter) {
-			return getDomain(((NestedFilter) constraint).getConstraint());
+			return getDomain(((NestedFilter) constraint).getNested());
 		} else if (constraint instanceof Conjunction) {
 			Domain leftDomain = getDomain(((Conjunction) constraint).getLeft());
 			Domain rightDomain = getDomain(((Conjunction) constraint).getRight());
