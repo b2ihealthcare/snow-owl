@@ -264,7 +264,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				});
 	}
 
-	private String toColumn(final String header, final Object object) {
+	private String toColumn(final String additionalField, final Object object) {
 		if (object == null) {
 			return "";
 		} else if (object instanceof SnomedCoreComponent) {
@@ -275,7 +275,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return getEffectiveTime((Date) object);
 		} else {
 			String serializedValue = String.valueOf(object);
-			if (header.equals(SnomedRf2Headers.FIELD_QUERY)) {
+			if (SnomedRf2Headers.FIELD_QUERY.equals(additionalField)) {
 				serializedValue = serializedValue.replaceAll("[\n\r\t]+", " ");
 			}
 			return serializedValue;
