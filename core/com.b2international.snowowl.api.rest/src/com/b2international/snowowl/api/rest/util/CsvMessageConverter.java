@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.rest.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.util.Collection;
 
 import org.springframework.http.HttpInputMessage;
@@ -28,10 +27,11 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.google.common.base.Charsets;
 
 /**
  * @since 6.13
@@ -41,7 +41,7 @@ public class CsvMessageConverter extends AbstractHttpMessageConverter<Collection
 	private static final String ATTACHMENT = "attachment";
 	private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
-	public static final MediaType MEDIA_TYPE = new MediaType("text", "csv", Charset.forName("utf-8"));
+	public static final MediaType MEDIA_TYPE = new MediaType("text", "csv", Charsets.UTF_8);
 
 	public CsvMessageConverter() {
 		super(MEDIA_TYPE);
@@ -58,7 +58,7 @@ public class CsvMessageConverter extends AbstractHttpMessageConverter<Collection
 			output.getHeaders().set(CONTENT_DISPOSITION, ATTACHMENT);
 			try (OutputStream out = output.getBody()) {
 				final CsvMapper mapper = new CsvMapper();
-				// XXX The mapper is auto closing after the first write out for some reason
+				// XXX The mapper is auto closing the writer after the first write out for some reason
 				mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 				
 				CsvSchema schema = mapper.schemaFor(items.iterator().next().getClass()).withHeader().withColumnSeparator('\t');
