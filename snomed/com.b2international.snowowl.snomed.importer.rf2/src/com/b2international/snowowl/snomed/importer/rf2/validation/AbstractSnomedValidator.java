@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.supercsv.io.CsvListWriter;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -57,6 +58,7 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
@@ -213,9 +215,13 @@ public abstract class AbstractSnomedValidator {
 				
 				final List<String> row = TAB_SPLITTER.splitToList(line);
 				
-				// skip not current effective times, also skips the first line
-				if (!effectiveTime.equals(row.get(1))) {
-					continue;
+				final String incomingEffectiveTime = row.get(1);
+				if (!Strings.isNullOrEmpty(effectiveTime) && !Strings.isNullOrEmpty(incomingEffectiveTime)) {
+					// if current effective time is before the incoming rows effective time skip it
+					if (!EffectiveTimes.parse(incomingEffectiveTime, DateFormats.SHORT).before(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT))) {
+						continue;
+					}
+					
 				}
 				
 				if (row.size() != expectedNumberOfColumns) {
