@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -65,10 +65,12 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
+import com.google.common.hash.Hashing;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -82,10 +84,11 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Api("Validations")
 @Controller
-@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+@RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class ValidationRestService extends AbstractAdminRestService {
 	
-	private Map<String, String> uniqueIdByUuid = Maps.newHashMap();
+	@Autowired
+	private ObjectMapper objectMapper;
 	
 	@ApiOperation(
 			value="Retrieve all validation runs from the termserver", 
@@ -186,10 +189,9 @@ public class ValidationRestService extends AbstractAdminRestService {
 					.execute(bus);
 			})
 			.then(success -> {
-				final String validationUuid = UUID.randomUUID().toString();
-				uniqueIdByUuid.put(validationUuid, uniqueJobId);
+				final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
 				
-				final URI responseURI = linkBuilder.slash(validationUuid).toUri();
+				final URI responseURI = linkBuilder.slash(encodedId).toUri();
 				return Responses.created(responseURI).build();
 				
 			})
@@ -210,88 +212,104 @@ public class ValidationRestService extends AbstractAdminRestService {
 			@PathVariable(value="validationId") 
 			final String validationId) {
 		
-		final String uniqueJobId = uniqueIdByUuid.get(validationId);
-		if (uniqueJobId != null) {
-			return DeferredResults.wrap(JobRequests.prepareGet(uniqueJobId)
-					.buildAsync()
-					.execute(bus));
+			final RemoteJobEntry validationJob = getValidationJobById(validationId);
+		
+			if (validationJob != null) {
+				return DeferredResults.wrap(Promise.immediate(validationJob));
+			} else {
+				throw new NotFoundException("Validation job", validationId);
+			}
 			
-		} else {
-			throw new NotFoundException("Validation job", validationId);
-		}
-				
 	}
-	
+
 	@ApiOperation(
 			value="Retrieve the validation issues from a completed validation on a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/validations/{branchPath}/issues", method=RequestMethod.GET)
+	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<ValidationIssues> getValidationResults(
-			@ApiParam(value="Branch path where the validation was run on.")
-			@PathVariable(value="branchPath")
-			final String branchPath,
+			@ApiParam(value="The unique validation identifier.")
+			@PathVariable(value="validationId")
+			final String validationId,
 			
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit) {
 		
-		return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
-			.all()
-			.filterByBranchPath(branchPath)
-			.setLimit(limit)
-			.buildAsync()
-			.execute(bus));
+		final RemoteJobEntry validationJob = getValidationJobById(validationId);
+		
+		if (validationJob != null) {
+			final String branchPath = getBranchFromJob(validationJob);
+			
+			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+					.all()
+					.filterByBranchPath(branchPath)
+					.setLimit(limit)
+					.buildAsync()
+					.execute(bus));
+		} else {
+			throw new NotFoundException("Validation job", validationId);
+		}
+		
+		
 	}
-	
+
 	@ApiOperation(
 			value="Retrieve the validation issues from a completed validation on a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/validations/{branchPath}/issues", method=RequestMethod.GET, produces={AbstractRestService.CSV_MEDIA_TYPE})
+	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={AbstractRestService.CSV_MEDIA_TYPE})
 	public @ResponseBody DeferredResult<Collection<Object>> getValidationResultsAsCsv(
-			@ApiParam(value="Branch path where the validation was run on.")
-			@PathVariable(value="branchPath")
-			final String branchPath,
+			@ApiParam(value="The unique validation identifier.")
+			@PathVariable(value="validationId")
+			final String validationId,
 			
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit) {
 		
-		return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
-			.all()
-			.filterByBranchPath(branchPath)
-			.setLimit(limit)
-			.buildAsync()
-			.execute(bus)
-			.then(issues -> {
-				final Set<String> rulesToFetch = issues.stream().map(ValidationIssue::getRuleId).collect(Collectors.toSet());
-				final Map<String, String> ruleDescriptionById = ValidationRequests.rules().prepareSearch()
+	final RemoteJobEntry validationJob = getValidationJobById(validationId);
+		
+		if (validationJob != null) {
+			final String branchPath = getBranchFromJob(validationJob);
+			
+			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
 					.all()
-					.filterByIds(rulesToFetch)
+					.filterByBranchPath(branchPath)
+					.setLimit(limit)
 					.buildAsync()
 					.execute(bus)
-					.getSync()
-					.stream().collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
-				final Collection<Object> reports = issues.stream().map(issue -> {
-					final String ruleId = issue.getRuleId();
-					final String ruleDescription = ruleDescriptionById.get(ruleId);
-					final String affectedComponentLabel = Iterables.getFirst(issue.getAffectedComponentLabels(), "No label found");
-					final String affectedComponentId = issue.getAffectedComponent().getComponentId();
-					return new ValidationIssueReport(ruleId, ruleDescription, affectedComponentId, affectedComponentLabel);
-				}).collect(Collectors.toList());
-				
-				return reports;
-			}));
+					.then(issues -> {
+						final Set<String> rulesToFetch = issues.stream().map(ValidationIssue::getRuleId).collect(Collectors.toSet());
+						final Map<String, String> ruleDescriptionById = ValidationRequests.rules().prepareSearch()
+							.all()
+							.filterByIds(rulesToFetch)
+							.buildAsync()
+							.execute(bus)
+							.getSync()
+							.stream().collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
+						final Collection<Object> reports = issues.stream().map(issue -> {
+							final String ruleId = issue.getRuleId();
+							final String ruleDescription = ruleDescriptionById.get(ruleId);
+							final String affectedComponentLabel = Iterables.getFirst(issue.getAffectedComponentLabels(), "No label found");
+							final String affectedComponentId = issue.getAffectedComponent().getComponentId();
+							return new ValidationIssueReport(ruleId, ruleDescription, affectedComponentId, affectedComponentLabel);
+						}).collect(Collectors.toList());
+						
+						return reports;
+					}));
+		} else {
+			throw new NotFoundException("Validation job", validationId);
+		}
 		
 	}
 	
 	private CodeSystemEntry getCodeSystem(final String codeSystemShortName) {
-		final Set<String> repositoryIds = getAllRepoIds();
+		final Set<String> repositoryIds = getRepositoryIds();
 		
 		for (String repoId : repositoryIds) {
 			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
@@ -308,7 +326,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 		
 	}
 	
-	private Set<String> getAllRepoIds() {
+	private Set<String> getRepositoryIds() {
 		return RepositoryRequests.prepareSearch()
 					.all()
 					.buildAsync()
@@ -316,6 +334,29 @@ public class ValidationRestService extends AbstractAdminRestService {
 					.getSync().stream()
 					.map(RepositoryInfo::id)
 					.collect(Collectors.toSet());
+	}
+	
+	private RemoteJobEntry getValidationJobById(final String validationId) {
+		return JobRequests.prepareSearch()
+			.all()
+			.buildAsync()
+			.execute(bus)
+			.getSync()
+			.stream()
+			.filter(ValidationRequests::isValidationJob)
+			.filter(validationJob -> {
+				final String encodedId = Hashing.sha1().hashString(validationJob.getId(), Charsets.UTF_8).toString().substring(0, 7);
+				
+				return validationId.equals(encodedId);
+			}).findFirst().orElse(null);
+		
+	}
+	
+	private String getBranchFromJob(final RemoteJobEntry validationJob) {
+		final Map<String, Object> jobParams = validationJob.getParameters(objectMapper);
+		final String branchPath = (String) jobParams.get("branchPath");
+		
+		return branchPath;
 	}
 	
 }
