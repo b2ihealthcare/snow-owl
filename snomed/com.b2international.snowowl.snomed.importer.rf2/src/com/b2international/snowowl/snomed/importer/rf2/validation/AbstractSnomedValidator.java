@@ -42,7 +42,6 @@ import org.supercsv.io.CsvListWriter;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -58,7 +57,6 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
@@ -215,13 +213,8 @@ public abstract class AbstractSnomedValidator {
 				
 				final List<String> row = TAB_SPLITTER.splitToList(line);
 				
-				final String incomingEffectiveTime = row.get(1);
-				if (!Strings.isNullOrEmpty(effectiveTime) && !Strings.isNullOrEmpty(incomingEffectiveTime)) {
-					// if current effective time is before the incoming rows effective time skip it
-					if (!EffectiveTimes.parse(incomingEffectiveTime, DateFormats.SHORT).before(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT))) {
-						continue;
-					}
-					
+				if (!SPECIAL_EFFECTIVE_TIME_KEY.equals(effectiveTime) && !effectiveTime.equals(row.get(1))) {
+					continue;
 				}
 				
 				if (row.size() != expectedNumberOfColumns) {
