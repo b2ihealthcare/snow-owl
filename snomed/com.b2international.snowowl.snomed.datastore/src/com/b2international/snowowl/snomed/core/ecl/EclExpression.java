@@ -70,6 +70,10 @@ public final class EclExpression {
 			RevisionSearcher searcher = context.service(RevisionSearcher.class);
 			promise = resolveToExpression(context)
 				.then(expression -> {
+					// shortcut to extract IDs from the query itself if possible 
+					if (SnomedEclEvaluationRequest.canExtractIds(expression)) {
+						return SnomedEclEvaluationRequest.extractIds(expression);
+					}
 					try {
 						return newHashSet(searcher.search(Query.select(String.class)
 								.from(SnomedConceptDocument.class)

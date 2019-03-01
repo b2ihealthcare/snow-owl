@@ -20,6 +20,8 @@ import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.ecore.EClass;
 
+import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+
 /**
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Filter</b></em>'.
@@ -27,7 +29,7 @@ import org.eclipse.emf.ecore.EClass;
  *
  * @generated
  */
-public class FilterImpl extends ConstraintImpl implements Filter
+public class FilterImpl extends MinimalEObjectImpl.Container implements Filter
 {
   /**
    * <!-- begin-user-doc -->

@@ -33,7 +33,7 @@ package com.b2international.snowowl.snomed.ql.ql;
  * @model
  * @generated
  */
-public interface Exclusion extends Constraint
+public interface Exclusion extends Filter
 {
   /**
    * Returns the value of the '<em><b>Left</b></em>' containment reference.
@@ -44,12 +44,12 @@ public interface Exclusion extends Constraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Left</em>' containment reference.
-   * @see #setLeft(Filter)
+   * @see #setLeft(PropertyFilter)
    * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getExclusion_Left()
    * @model containment="true"
    * @generated
    */
-  Filter getLeft();
+  PropertyFilter getLeft();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Exclusion#getLeft <em>Left</em>}' containment reference.
@@ -59,7 +59,7 @@ public interface Exclusion extends Constraint
    * @see #getLeft()
    * @generated
    */
-  void setLeft(Filter value);
+  void setLeft(PropertyFilter value);
 
   /**
    * Returns the value of the '<em><b>Right</b></em>' containment reference.
@@ -70,12 +70,12 @@ public interface Exclusion extends Constraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Right</em>' containment reference.
-   * @see #setRight(Filter)
+   * @see #setRight(PropertyFilter)
    * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getExclusion_Right()
    * @model containment="true"
    * @generated
    */
-  Filter getRight();
+  PropertyFilter getRight();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Exclusion#getRight <em>Right</em>}' containment reference.
@@ -85,6 +85,6 @@ public interface Exclusion extends Constraint
    * @see #getRight()
    * @generated
    */
-  void setRight(Filter value);
+  void setRight(PropertyFilter value);
 
 } // Exclusion

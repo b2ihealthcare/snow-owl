@@ -45,14 +45,14 @@ Workflow {
 				
 				genericIde = {
 					enabled = true
-					//root = "../../../snow-owl-ext/snomed-ui/com.b2international.snowowl.snomed.ql.ide"
+					root = "../../../snow-owl-ext/snomed-ui/com.b2international.snowowl.snomed.ql.ui"
 				}
 				runtimeTest = {
 					enabled = false
 				}
 				eclipsePlugin = {
 					enabled = true
-					//root = "../../../snow-owl-ext/snomed-ui/com.b2international.snowowl.snomed.ql.ui"
+					root = "../../../snow-owl-ext/snomed-ui/com.b2international.snowowl.snomed.ql.ui"
 				}
 				eclipsePluginTest = {
 					enabled = false
@@ -63,6 +63,7 @@ Workflow {
 				encoding = "UTF-8"
 				lineDelimiter = "\n"
 				fileHeader = header
+				preferXtendStubs = false
 			}
 		}
 		language = StandardLanguage {

@@ -15,50 +15,56 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
-
-import com.b2international.snowowl.snomed.ql.ql.EclFilter;
+import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.notify.NotificationChain;
 
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Ecl Filter</b></em>'.
+ * An implementation of the model object '<em><b>Language Code Filter</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.EclFilterImpl#getEcl <em>Ecl</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.LanguageCodeFilterImpl#getLanguageCode <em>Language Code</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class EclFilterImpl extends FilterImpl implements EclFilter
+public class LanguageCodeFilterImpl extends PropertyFilterImpl implements LanguageCodeFilter
 {
   /**
-   * The cached value of the '{@link #getEcl() <em>Ecl</em>}' containment reference.
+   * The default value of the '{@link #getLanguageCode() <em>Language Code</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getEcl()
+   * @see #getLanguageCode()
    * @generated
    * @ordered
    */
-  protected Script ecl;
+  protected static final String LANGUAGE_CODE_EDEFAULT = null;
+
+  /**
+   * The cached value of the '{@link #getLanguageCode() <em>Language Code</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getLanguageCode()
+   * @generated
+   * @ordered
+   */
+  protected String languageCode = LANGUAGE_CODE_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected EclFilterImpl()
+  protected LanguageCodeFilterImpl()
   {
     super();
   }
@@ -71,7 +77,7 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.ECL_FILTER;
+    return QlPackage.Literals.LANGUAGE_CODE_FILTER;
   }
 
   /**
@@ -79,9 +85,9 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public Script getEcl()
+  public String getLanguageCode()
   {
-    return ecl;
+    return languageCode;
   }
 
   /**
@@ -89,53 +95,12 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetEcl(Script newEcl, NotificationChain msgs)
+  public void setLanguageCode(String newLanguageCode)
   {
-    Script oldEcl = ecl;
-    ecl = newEcl;
+    String oldLanguageCode = languageCode;
+    languageCode = newLanguageCode;
     if (eNotificationRequired())
-    {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.ECL_FILTER__ECL, oldEcl, newEcl);
-      if (msgs == null) msgs = notification; else msgs.add(notification);
-    }
-    return msgs;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public void setEcl(Script newEcl)
-  {
-    if (newEcl != ecl)
-    {
-      NotificationChain msgs = null;
-      if (ecl != null)
-        msgs = ((InternalEObject)ecl).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.ECL_FILTER__ECL, null, msgs);
-      if (newEcl != null)
-        msgs = ((InternalEObject)newEcl).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.ECL_FILTER__ECL, null, msgs);
-      msgs = basicSetEcl(newEcl, msgs);
-      if (msgs != null) msgs.dispatch();
-    }
-    else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.ECL_FILTER__ECL, newEcl, newEcl));
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
-  {
-    switch (featureID)
-    {
-      case QlPackage.ECL_FILTER__ECL:
-        return basicSetEcl(null, msgs);
-    }
-    return super.eInverseRemove(otherEnd, featureID, msgs);
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.LANGUAGE_CODE_FILTER__LANGUAGE_CODE, oldLanguageCode, languageCode));
   }
 
   /**
@@ -148,8 +113,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        return getEcl();
+      case QlPackage.LANGUAGE_CODE_FILTER__LANGUAGE_CODE:
+        return getLanguageCode();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -164,8 +129,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        setEcl((Script)newValue);
+      case QlPackage.LANGUAGE_CODE_FILTER__LANGUAGE_CODE:
+        setLanguageCode((String)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -181,8 +146,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        setEcl((Script)null);
+      case QlPackage.LANGUAGE_CODE_FILTER__LANGUAGE_CODE:
+        setLanguageCode(LANGUAGE_CODE_EDEFAULT);
         return;
     }
     super.eUnset(featureID);
@@ -198,10 +163,27 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        return ecl != null;
+      case QlPackage.LANGUAGE_CODE_FILTER__LANGUAGE_CODE:
+        return LANGUAGE_CODE_EDEFAULT == null ? languageCode != null : !LANGUAGE_CODE_EDEFAULT.equals(languageCode);
     }
     return super.eIsSet(featureID);
   }
 
-} //EclFilterImpl
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public String toString()
+  {
+    if (eIsProxy()) return super.toString();
+
+    StringBuffer result = new StringBuffer(super.toString());
+    result.append(" (languageCode: ");
+    result.append(languageCode);
+    result.append(')');
+    return result.toString();
+  }
+
+} //LanguageCodeFilterImpl

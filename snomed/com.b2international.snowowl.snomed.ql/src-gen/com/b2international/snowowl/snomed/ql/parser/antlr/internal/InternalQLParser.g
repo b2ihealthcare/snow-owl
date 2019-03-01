@@ -29,6 +29,7 @@ import org.eclipse.xtext.parser.*;
 import org.eclipse.xtext.parser.impl.*;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.common.util.Enumerator;
 import org.eclipse.xtext.parser.antlr.AbstractInternalAntlrParser;
 import org.eclipse.xtext.parser.antlr.XtextTokenStream;
 import org.eclipse.xtext.parser.antlr.XtextTokenStream.HiddenTokens;
@@ -100,18 +101,18 @@ ruleQuery returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getQueryAccess().getConstraintConstraintParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getQueryAccess().getQueryQueryConstraintParserRuleCall_1_0());
 				}
-				lv_constraint_1_0=ruleConstraint
+				lv_query_1_0=ruleQueryConstraint
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getQueryRule());
 					}
 					set(
 						$current,
-						"constraint",
-						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ql.QL.Constraint");
+						"query",
+						lv_query_1_0,
+						"com.b2international.snowowl.snomed.ql.QL.QueryConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -119,15 +120,15 @@ ruleQuery returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleConstraint
-entryRuleConstraint returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getConstraintRule()); }
-	iv_ruleConstraint=ruleConstraint
-	{ $current=$iv_ruleConstraint.current; }
+// Entry rule entryRuleQueryConstraint
+entryRuleQueryConstraint returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getQueryConstraintRule()); }
+	iv_ruleQueryConstraint=ruleQueryConstraint
+	{ $current=$iv_ruleQueryConstraint.current; }
 	EOF;
 
-// Rule Constraint
-ruleConstraint returns [EObject current=null]
+// Rule QueryConstraint
+ruleQueryConstraint returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -138,7 +139,402 @@ ruleConstraint returns [EObject current=null]
 		/* */
 	}
 	{
-		newCompositeNode(grammarAccess.getConstraintAccess().getDisjunctionParserRuleCall());
+		newCompositeNode(grammarAccess.getQueryConstraintAccess().getQueryDisjunctionParserRuleCall());
+	}
+	this_QueryDisjunction_0=ruleQueryDisjunction
+	{
+		$current = $this_QueryDisjunction_0.current;
+		afterParserOrEnumRuleCall();
+	}
+;
+
+// Entry rule entryRuleQueryDisjunction
+entryRuleQueryDisjunction returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getQueryDisjunctionRule()); }
+	iv_ruleQueryDisjunction=ruleQueryDisjunction
+	{ $current=$iv_ruleQueryDisjunction.current; }
+	EOF;
+
+// Rule QueryDisjunction
+ruleQueryDisjunction returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getQueryDisjunctionAccess().getQueryConjunctionParserRuleCall_0());
+		}
+		this_QueryConjunction_0=ruleQueryConjunction
+		{
+			$current = $this_QueryConjunction_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		(
+			(
+				{
+					/* */
+				}
+				{
+					$current = forceCreateModelElementAndSet(
+						grammarAccess.getQueryDisjunctionAccess().getQueryDisjunctionLeftAction_1_0(),
+						$current);
+				}
+			)
+			otherlv_2=OR
+			{
+				newLeafNode(otherlv_2, grammarAccess.getQueryDisjunctionAccess().getORKeyword_1_1());
+			}
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getQueryDisjunctionAccess().getRightQueryConjunctionParserRuleCall_1_2_0());
+					}
+					lv_right_3_0=ruleQueryConjunction
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getQueryDisjunctionRule());
+						}
+						set(
+							$current,
+							"right",
+							lv_right_3_0,
+							"com.b2international.snowowl.snomed.ql.QL.QueryConjunction");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+		)*
+	)
+;
+
+// Entry rule entryRuleQueryConjunction
+entryRuleQueryConjunction returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getQueryConjunctionRule()); }
+	iv_ruleQueryConjunction=ruleQueryConjunction
+	{ $current=$iv_ruleQueryConjunction.current; }
+	EOF;
+
+// Rule QueryConjunction
+ruleQueryConjunction returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getQueryConjunctionAccess().getQueryExclusionParserRuleCall_0());
+		}
+		this_QueryExclusion_0=ruleQueryExclusion
+		{
+			$current = $this_QueryExclusion_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		(
+			(
+				{
+					/* */
+				}
+				{
+					$current = forceCreateModelElementAndSet(
+						grammarAccess.getQueryConjunctionAccess().getQueryConjunctionLeftAction_1_0(),
+						$current);
+				}
+			)
+			(
+				otherlv_2=AND
+				{
+					newLeafNode(otherlv_2, grammarAccess.getQueryConjunctionAccess().getANDKeyword_1_1_0());
+				}
+				    |
+				otherlv_3=Comma
+				{
+					newLeafNode(otherlv_3, grammarAccess.getQueryConjunctionAccess().getCommaKeyword_1_1_1());
+				}
+			)
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getQueryConjunctionAccess().getRightQueryExclusionParserRuleCall_1_2_0());
+					}
+					lv_right_4_0=ruleQueryExclusion
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getQueryConjunctionRule());
+						}
+						set(
+							$current,
+							"right",
+							lv_right_4_0,
+							"com.b2international.snowowl.snomed.ql.QL.QueryExclusion");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+		)*
+	)
+;
+
+// Entry rule entryRuleQueryExclusion
+entryRuleQueryExclusion returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getQueryExclusionRule()); }
+	iv_ruleQueryExclusion=ruleQueryExclusion
+	{ $current=$iv_ruleQueryExclusion.current; }
+	EOF;
+
+// Rule QueryExclusion
+ruleQueryExclusion returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getQueryExclusionAccess().getSubQueryParserRuleCall_0());
+		}
+		this_SubQuery_0=ruleSubQuery
+		{
+			$current = $this_SubQuery_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		(
+			(
+				{
+					/* */
+				}
+				{
+					$current = forceCreateModelElementAndSet(
+						grammarAccess.getQueryExclusionAccess().getQueryExclusionLeftAction_1_0(),
+						$current);
+				}
+			)
+			otherlv_2=MINUS
+			{
+				newLeafNode(otherlv_2, grammarAccess.getQueryExclusionAccess().getMINUSKeyword_1_1());
+			}
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getQueryExclusionAccess().getRightSubQueryParserRuleCall_1_2_0());
+					}
+					lv_right_3_0=ruleSubQuery
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getQueryExclusionRule());
+						}
+						set(
+							$current,
+							"right",
+							lv_right_3_0,
+							"com.b2international.snowowl.snomed.ql.QL.SubQuery");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+		)?
+	)
+;
+
+// Entry rule entryRuleSubQuery
+entryRuleSubQuery returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSubQueryRule()); }
+	iv_ruleSubQuery=ruleSubQuery
+	{ $current=$iv_ruleSubQuery.current; }
+	EOF;
+
+// Rule SubQuery
+ruleSubQuery returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getSubQueryAccess().getDomainQueryParserRuleCall_0());
+		}
+		this_DomainQuery_0=ruleDomainQuery
+		{
+			$current = $this_DomainQuery_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getSubQueryAccess().getNestedQueryParserRuleCall_1());
+		}
+		this_NestedQuery_1=ruleNestedQuery
+		{
+			$current = $this_NestedQuery_1.current;
+			afterParserOrEnumRuleCall();
+		}
+	)
+;
+
+// Entry rule entryRuleDomainQuery
+entryRuleDomainQuery returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getDomainQueryRule()); }
+	iv_ruleDomainQuery=ruleDomainQuery
+	{ $current=$iv_ruleDomainQuery.current; }
+	EOF;
+
+// Rule DomainQuery
+ruleDomainQuery returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			{
+				/* */
+			}
+			{
+				$current = forceCreateModelElement(
+					grammarAccess.getDomainQueryAccess().getDomainQueryAction_0(),
+					$current);
+			}
+		)
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getDomainQueryAccess().getEclExpressionConstraintParserRuleCall_1_0());
+				}
+				lv_ecl_1_0=ruleExpressionConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getDomainQueryRule());
+					}
+					set(
+						$current,
+						"ecl",
+						lv_ecl_1_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)?
+		(
+			this_OPEN_DOUBLE_BRACES_2=RULE_OPEN_DOUBLE_BRACES
+			{
+				newLeafNode(this_OPEN_DOUBLE_BRACES_2, grammarAccess.getDomainQueryAccess().getOPEN_DOUBLE_BRACESTerminalRuleCall_2_0());
+			}
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getDomainQueryAccess().getFilterFilterParserRuleCall_2_1_0());
+					}
+					lv_filter_3_0=ruleFilter
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getDomainQueryRule());
+						}
+						set(
+							$current,
+							"filter",
+							lv_filter_3_0,
+							"com.b2international.snowowl.snomed.ql.QL.Filter");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			this_CLOSE_DOUBLE_BRACES_4=RULE_CLOSE_DOUBLE_BRACES
+			{
+				newLeafNode(this_CLOSE_DOUBLE_BRACES_4, grammarAccess.getDomainQueryAccess().getCLOSE_DOUBLE_BRACESTerminalRuleCall_2_2());
+			}
+		)?
+	)
+;
+
+// Entry rule entryRuleNestedQuery
+entryRuleNestedQuery returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getNestedQueryRule()); }
+	iv_ruleNestedQuery=ruleNestedQuery
+	{ $current=$iv_ruleNestedQuery.current; }
+	EOF;
+
+// Rule NestedQuery
+ruleNestedQuery returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_ROUND_OPEN_0=RULE_ROUND_OPEN
+		{
+			newLeafNode(this_ROUND_OPEN_0, grammarAccess.getNestedQueryAccess().getROUND_OPENTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getNestedQueryAccess().getNestedQueryConstraintParserRuleCall_1_0());
+				}
+				lv_nested_1_0=ruleQueryConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getNestedQueryRule());
+					}
+					set(
+						$current,
+						"nested",
+						lv_nested_1_0,
+						"com.b2international.snowowl.snomed.ql.QL.QueryConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		this_ROUND_CLOSE_2=RULE_ROUND_CLOSE
+		{
+			newLeafNode(this_ROUND_CLOSE_2, grammarAccess.getNestedQueryAccess().getROUND_CLOSETerminalRuleCall_2());
+		}
+	)
+;
+
+// Entry rule entryRuleFilter
+entryRuleFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getFilterRule()); }
+	iv_ruleFilter=ruleFilter
+	{ $current=$iv_ruleFilter.current; }
+	EOF;
+
+// Rule Filter
+ruleFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	{
+		/* */
+	}
+	{
+		newCompositeNode(grammarAccess.getFilterAccess().getDisjunctionParserRuleCall());
 	}
 	this_Disjunction_0=ruleDisjunction
 	{
@@ -250,16 +646,23 @@ ruleConjunction returns [EObject current=null]
 						$current);
 				}
 			)
-			otherlv_2=AND
-			{
-				newLeafNode(otherlv_2, grammarAccess.getConjunctionAccess().getANDKeyword_1_1());
-			}
+			(
+				otherlv_2=AND
+				{
+					newLeafNode(otherlv_2, grammarAccess.getConjunctionAccess().getANDKeyword_1_1_0());
+				}
+				    |
+				otherlv_3=Comma
+				{
+					newLeafNode(otherlv_3, grammarAccess.getConjunctionAccess().getCommaKeyword_1_1_1());
+				}
+			)
 			(
 				(
 					{
 						newCompositeNode(grammarAccess.getConjunctionAccess().getRightExclusionParserRuleCall_1_2_0());
 					}
-					lv_right_3_0=ruleExclusion
+					lv_right_4_0=ruleExclusion
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getConjunctionRule());
@@ -267,7 +670,7 @@ ruleConjunction returns [EObject current=null]
 						set(
 							$current,
 							"right",
-							lv_right_3_0,
+							lv_right_4_0,
 							"com.b2international.snowowl.snomed.ql.QL.Exclusion");
 						afterParserOrEnumRuleCall();
 					}
@@ -297,11 +700,11 @@ ruleExclusion returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getExclusionAccess().getFilterParserRuleCall_0());
+			newCompositeNode(grammarAccess.getExclusionAccess().getPropertyFilterParserRuleCall_0());
 		}
-		this_Filter_0=ruleFilter
+		this_PropertyFilter_0=rulePropertyFilter
 		{
-			$current = $this_Filter_0.current;
+			$current = $this_PropertyFilter_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		(
@@ -322,9 +725,9 @@ ruleExclusion returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getExclusionAccess().getRightFilterParserRuleCall_1_2_0());
+						newCompositeNode(grammarAccess.getExclusionAccess().getRightPropertyFilterParserRuleCall_1_2_0());
 					}
-					lv_right_3_0=ruleFilter
+					lv_right_3_0=rulePropertyFilter
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getExclusionRule());
@@ -333,7 +736,7 @@ ruleExclusion returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"com.b2international.snowowl.snomed.ql.QL.Filter");
+							"com.b2international.snowowl.snomed.ql.QL.PropertyFilter");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -365,18 +768,18 @@ ruleNestedFilter returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getNestedFilterAccess().getConstraintConstraintParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getNestedFilterAccess().getNestedFilterParserRuleCall_1_0());
 				}
-				lv_constraint_1_0=ruleConstraint
+				lv_nested_1_0=ruleFilter
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getNestedFilterRule());
 					}
 					set(
 						$current,
-						"constraint",
-						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ql.QL.Constraint");
+						"nested",
+						lv_nested_1_0,
+						"com.b2international.snowowl.snomed.ql.QL.Filter");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -388,15 +791,15 @@ ruleNestedFilter returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleFilter
-entryRuleFilter returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getFilterRule()); }
-	iv_ruleFilter=ruleFilter
-	{ $current=$iv_ruleFilter.current; }
+// Entry rule entryRulePropertyFilter
+entryRulePropertyFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getPropertyFilterRule()); }
+	iv_rulePropertyFilter=rulePropertyFilter
+	{ $current=$iv_rulePropertyFilter.current; }
 	EOF;
 
-// Rule Filter
-ruleFilter returns [EObject current=null]
+// Rule PropertyFilter
+rulePropertyFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -408,11 +811,11 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getEclFilterParserRuleCall_0());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getActiveFilterParserRuleCall_0());
 		}
-		this_EclFilter_0=ruleEclFilter
+		this_ActiveFilter_0=ruleActiveFilter
 		{
-			$current = $this_EclFilter_0.current;
+			$current = $this_ActiveFilter_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -420,7 +823,7 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getTermFilterParserRuleCall_1());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getTermFilterParserRuleCall_1());
 		}
 		this_TermFilter_1=ruleTermFilter
 		{
@@ -432,25 +835,109 @@ ruleFilter returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getFilterAccess().getNestedFilterParserRuleCall_2());
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getPreferredInFilterParserRuleCall_2());
 		}
-		this_NestedFilter_2=ruleNestedFilter
+		this_PreferredInFilter_2=rulePreferredInFilter
 		{
-			$current = $this_NestedFilter_2.current;
+			$current = $this_PreferredInFilter_2.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getAcceptableInFilterParserRuleCall_3());
+		}
+		this_AcceptableInFilter_3=ruleAcceptableInFilter
+		{
+			$current = $this_AcceptableInFilter_3.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getLanguageRefSetFilterParserRuleCall_4());
+		}
+		this_LanguageRefSetFilter_4=ruleLanguageRefSetFilter
+		{
+			$current = $this_LanguageRefSetFilter_4.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getTypeFilterParserRuleCall_5());
+		}
+		this_TypeFilter_5=ruleTypeFilter
+		{
+			$current = $this_TypeFilter_5.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getModuleFilterParserRuleCall_6());
+		}
+		this_ModuleFilter_6=ruleModuleFilter
+		{
+			$current = $this_ModuleFilter_6.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getCaseSignificanceFilterParserRuleCall_7());
+		}
+		this_CaseSignificanceFilter_7=ruleCaseSignificanceFilter
+		{
+			$current = $this_CaseSignificanceFilter_7.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getLanguageCodeFilterParserRuleCall_8());
+		}
+		this_LanguageCodeFilter_8=ruleLanguageCodeFilter
+		{
+			$current = $this_LanguageCodeFilter_8.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getPropertyFilterAccess().getNestedFilterParserRuleCall_9());
+		}
+		this_NestedFilter_9=ruleNestedFilter
+		{
+			$current = $this_NestedFilter_9.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
 ;
 
-// Entry rule entryRuleEclFilter
-entryRuleEclFilter returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getEclFilterRule()); }
-	iv_ruleEclFilter=ruleEclFilter
-	{ $current=$iv_ruleEclFilter.current; }
+// Entry rule entryRuleActiveFilter
+entryRuleActiveFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getActiveFilterRule()); }
+	iv_ruleActiveFilter=ruleActiveFilter
+	{ $current=$iv_ruleActiveFilter.current; }
 	EOF;
 
-// Rule EclFilter
-ruleEclFilter returns [EObject current=null]
+// Rule ActiveFilter
+ruleActiveFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -458,25 +945,125 @@ ruleEclFilter returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_ECL_0=RULE_ECL
+		(
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getActiveFilterAccess().getDomainDomainEnumRuleCall_0_0_0());
+					}
+					lv_domain_0_0=ruleDomain
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getActiveFilterRule());
+						}
+						set(
+							$current,
+							"domain",
+							lv_domain_0_0,
+							"com.b2international.snowowl.snomed.ql.QL.Domain");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			this_DOT_1=RULE_DOT
+			{
+				newLeafNode(this_DOT_1, grammarAccess.getActiveFilterAccess().getDOTTerminalRuleCall_0_1());
+			}
+		)?
+		otherlv_2=Active
 		{
-			newLeafNode(this_ECL_0, grammarAccess.getEclFilterAccess().getECLTerminalRuleCall_0());
+			newLeafNode(otherlv_2, grammarAccess.getActiveFilterAccess().getActiveKeyword_1());
+		}
+		this_EQUAL_3=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_3, grammarAccess.getActiveFilterAccess().getEQUALTerminalRuleCall_2());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getEclFilterAccess().getEclScriptParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getActiveFilterAccess().getActiveBooleanParserRuleCall_3_0());
 				}
-				lv_ecl_1_0=ruleScript
+				lv_active_4_0=ruleBoolean
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getEclFilterRule());
+						$current = createModelElementForParent(grammarAccess.getActiveFilterRule());
 					}
 					set(
 						$current,
-						"ecl",
-						lv_ecl_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Script");
+						"active",
+						lv_active_4_0,
+						"com.b2international.snowowl.snomed.ql.QL.Boolean");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleModuleFilter
+entryRuleModuleFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getModuleFilterRule()); }
+	iv_ruleModuleFilter=ruleModuleFilter
+	{ $current=$iv_ruleModuleFilter.current; }
+	EOF;
+
+// Rule ModuleFilter
+ruleModuleFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getModuleFilterAccess().getDomainDomainEnumRuleCall_0_0_0());
+					}
+					lv_domain_0_0=ruleDomain
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getModuleFilterRule());
+						}
+						set(
+							$current,
+							"domain",
+							lv_domain_0_0,
+							"com.b2international.snowowl.snomed.ql.QL.Domain");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			this_DOT_1=RULE_DOT
+			{
+				newLeafNode(this_DOT_1, grammarAccess.getModuleFilterAccess().getDOTTerminalRuleCall_0_1());
+			}
+		)?
+		otherlv_2=ModuleId
+		{
+			newLeafNode(otherlv_2, grammarAccess.getModuleFilterAccess().getModuleIdKeyword_1());
+		}
+		this_EQUAL_3=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_3, grammarAccess.getModuleFilterAccess().getEQUALTerminalRuleCall_2());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getModuleFilterAccess().getModuleIdExpressionConstraintParserRuleCall_3_0());
+				}
+				lv_moduleId_4_0=ruleExpressionConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getModuleFilterRule());
+					}
+					set(
+						$current,
+						"moduleId",
+						lv_moduleId_4_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -500,15 +1087,44 @@ ruleTermFilter returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_TERM_0=RULE_TERM
+		otherlv_0=Term
 		{
-			newLeafNode(this_TERM_0, grammarAccess.getTermFilterAccess().getTERMTerminalRuleCall_0());
+			newLeafNode(otherlv_0, grammarAccess.getTermFilterAccess().getTermKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getTermFilterAccess().getEQUALTerminalRuleCall_1());
 		}
 		(
 			(
-				lv_term_1_0=RULE_STRING
+				(
+					{
+						newCompositeNode(grammarAccess.getTermFilterAccess().getLexicalSearchTypeLexicalSearchTypeEnumRuleCall_2_0_0());
+					}
+					lv_lexicalSearchType_2_0=ruleLexicalSearchType
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getTermFilterRule());
+						}
+						set(
+							$current,
+							"lexicalSearchType",
+							lv_lexicalSearchType_2_0,
+							"com.b2international.snowowl.snomed.ql.QL.LexicalSearchType");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			this_COLON_3=RULE_COLON
+			{
+				newLeafNode(this_COLON_3, grammarAccess.getTermFilterAccess().getCOLONTerminalRuleCall_2_1());
+			}
+		)?
+		(
+			(
+				lv_term_4_0=RULE_STRING
 				{
-					newLeafNode(lv_term_1_0, grammarAccess.getTermFilterAccess().getTermSTRINGTerminalRuleCall_1_0());
+					newLeafNode(lv_term_4_0, grammarAccess.getTermFilterAccess().getTermSTRINGTerminalRuleCall_3_0());
 				}
 				{
 					if ($current==null) {
@@ -517,7 +1133,7 @@ ruleTermFilter returns [EObject current=null]
 					setWithLastConsumed(
 						$current,
 						"term",
-						lv_term_1_0,
+						lv_term_4_0,
 						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
 				}
 			)
@@ -525,15 +1141,15 @@ ruleTermFilter returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleScript
-entryRuleScript returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getScriptRule()); }
-	iv_ruleScript=ruleScript
-	{ $current=$iv_ruleScript.current; }
+// Entry rule entryRulePreferredInFilter
+entryRulePreferredInFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getPreferredInFilterRule()); }
+	iv_rulePreferredInFilter=rulePreferredInFilter
+	{ $current=$iv_rulePreferredInFilter.current; }
 	EOF;
 
-// Rule Script
-ruleScript returns [EObject current=null]
+// Rule PreferredInFilter
+rulePreferredInFilter returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -541,35 +1157,292 @@ ruleScript returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		(
-			{
-				/* */
-			}
-			{
-				$current = forceCreateModelElement(
-					grammarAccess.getScriptAccess().getScriptAction_0(),
-					$current);
-			}
-		)
+		otherlv_0=PreferredIn
+		{
+			newLeafNode(otherlv_0, grammarAccess.getPreferredInFilterAccess().getPreferredInKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getPreferredInFilterAccess().getEQUALTerminalRuleCall_1());
+		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getScriptAccess().getConstraintExpressionConstraintParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getPreferredInFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0());
 				}
-				lv_constraint_1_0=ruleExpressionConstraint
+				lv_languageRefSetId_2_0=ruleExpressionConstraint
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getScriptRule());
+						$current = createModelElementForParent(grammarAccess.getPreferredInFilterRule());
 					}
 					set(
 						$current,
-						"constraint",
-						lv_constraint_1_0,
+						"languageRefSetId",
+						lv_languageRefSetId_2_0,
 						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
-		)?
+		)
+	)
+;
+
+// Entry rule entryRuleAcceptableInFilter
+entryRuleAcceptableInFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getAcceptableInFilterRule()); }
+	iv_ruleAcceptableInFilter=ruleAcceptableInFilter
+	{ $current=$iv_ruleAcceptableInFilter.current; }
+	EOF;
+
+// Rule AcceptableInFilter
+ruleAcceptableInFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		otherlv_0=AcceptableIn
+		{
+			newLeafNode(otherlv_0, grammarAccess.getAcceptableInFilterAccess().getAcceptableInKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getAcceptableInFilterAccess().getEQUALTerminalRuleCall_1());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getAcceptableInFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0());
+				}
+				lv_languageRefSetId_2_0=ruleExpressionConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getAcceptableInFilterRule());
+					}
+					set(
+						$current,
+						"languageRefSetId",
+						lv_languageRefSetId_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleLanguageRefSetFilter
+entryRuleLanguageRefSetFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getLanguageRefSetFilterRule()); }
+	iv_ruleLanguageRefSetFilter=ruleLanguageRefSetFilter
+	{ $current=$iv_ruleLanguageRefSetFilter.current; }
+	EOF;
+
+// Rule LanguageRefSetFilter
+ruleLanguageRefSetFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		otherlv_0=LanguageRefSetId
+		{
+			newLeafNode(otherlv_0, grammarAccess.getLanguageRefSetFilterAccess().getLanguageRefSetIdKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getLanguageRefSetFilterAccess().getEQUALTerminalRuleCall_1());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getLanguageRefSetFilterAccess().getLanguageRefSetIdExpressionConstraintParserRuleCall_2_0());
+				}
+				lv_languageRefSetId_2_0=ruleExpressionConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getLanguageRefSetFilterRule());
+					}
+					set(
+						$current,
+						"languageRefSetId",
+						lv_languageRefSetId_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleTypeFilter
+entryRuleTypeFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getTypeFilterRule()); }
+	iv_ruleTypeFilter=ruleTypeFilter
+	{ $current=$iv_ruleTypeFilter.current; }
+	EOF;
+
+// Rule TypeFilter
+ruleTypeFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		otherlv_0=TypeId
+		{
+			newLeafNode(otherlv_0, grammarAccess.getTypeFilterAccess().getTypeIdKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getTypeFilterAccess().getEQUALTerminalRuleCall_1());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getTypeFilterAccess().getTypeExpressionConstraintParserRuleCall_2_0());
+				}
+				lv_type_2_0=ruleExpressionConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getTypeFilterRule());
+					}
+					set(
+						$current,
+						"type",
+						lv_type_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleCaseSignificanceFilter
+entryRuleCaseSignificanceFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getCaseSignificanceFilterRule()); }
+	iv_ruleCaseSignificanceFilter=ruleCaseSignificanceFilter
+	{ $current=$iv_ruleCaseSignificanceFilter.current; }
+	EOF;
+
+// Rule CaseSignificanceFilter
+ruleCaseSignificanceFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		otherlv_0=CaseSignificanceId
+		{
+			newLeafNode(otherlv_0, grammarAccess.getCaseSignificanceFilterAccess().getCaseSignificanceIdKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getCaseSignificanceFilterAccess().getEQUALTerminalRuleCall_1());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getCaseSignificanceFilterAccess().getCaseSignificanceIdExpressionConstraintParserRuleCall_2_0());
+				}
+				lv_caseSignificanceId_2_0=ruleExpressionConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getCaseSignificanceFilterRule());
+					}
+					set(
+						$current,
+						"caseSignificanceId",
+						lv_caseSignificanceId_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleLanguageCodeFilter
+entryRuleLanguageCodeFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getLanguageCodeFilterRule()); }
+	iv_ruleLanguageCodeFilter=ruleLanguageCodeFilter
+	{ $current=$iv_ruleLanguageCodeFilter.current; }
+	EOF;
+
+// Rule LanguageCodeFilter
+ruleLanguageCodeFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		otherlv_0=LanguageCode
+		{
+			newLeafNode(otherlv_0, grammarAccess.getLanguageCodeFilterAccess().getLanguageCodeKeyword_0());
+		}
+		this_EQUAL_1=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_1, grammarAccess.getLanguageCodeFilterAccess().getEQUALTerminalRuleCall_1());
+		}
+		(
+			(
+				lv_languageCode_2_0=RULE_STRING
+				{
+					newLeafNode(lv_languageCode_2_0, grammarAccess.getLanguageCodeFilterAccess().getLanguageCodeSTRINGTerminalRuleCall_2_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getLanguageCodeFilterRule());
+					}
+					setWithLastConsumed(
+						$current,
+						"languageCode",
+						lv_languageCode_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleBoolean
+entryRuleBoolean returns [String current=null]:
+	{ newCompositeNode(grammarAccess.getBooleanRule()); }
+	iv_ruleBoolean=ruleBoolean
+	{ $current=$iv_ruleBoolean.current.getText(); }
+	EOF;
+
+// Rule Boolean
+ruleBoolean returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		kw=True
+		{
+			$current.merge(kw);
+			newLeafNode(kw, grammarAccess.getBooleanAccess().getTrueKeyword_0());
+		}
+		    |
+		kw=False
+		{
+			$current.merge(kw);
+			newLeafNode(kw, grammarAccess.getBooleanAccess().getFalseKeyword_1());
+		}
 	)
 ;
 
@@ -3703,3 +4576,65 @@ ruleNonNegativeDecimal returns [AntlrDatatypeRuleToken current=new AntlrDatatype
 finally {
 	myHiddenTokenState.restore();
 }
+
+// Rule LexicalSearchType
+ruleLexicalSearchType returns [Enumerator current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			enumLiteral_0=Match
+			{
+				$current = grammarAccess.getLexicalSearchTypeAccess().getMATCHEnumLiteralDeclaration_0().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_0, grammarAccess.getLexicalSearchTypeAccess().getMATCHEnumLiteralDeclaration_0());
+			}
+		)
+		    |
+		(
+			enumLiteral_1=Regex
+			{
+				$current = grammarAccess.getLexicalSearchTypeAccess().getREGEXEnumLiteralDeclaration_1().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_1, grammarAccess.getLexicalSearchTypeAccess().getREGEXEnumLiteralDeclaration_1());
+			}
+		)
+		    |
+		(
+			enumLiteral_2=Exact
+			{
+				$current = grammarAccess.getLexicalSearchTypeAccess().getEXACTEnumLiteralDeclaration_2().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_2, grammarAccess.getLexicalSearchTypeAccess().getEXACTEnumLiteralDeclaration_2());
+			}
+		)
+	)
+;
+
+// Rule Domain
+ruleDomain returns [Enumerator current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			enumLiteral_0=Concept
+			{
+				$current = grammarAccess.getDomainAccess().getCONCEPTEnumLiteralDeclaration_0().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_0, grammarAccess.getDomainAccess().getCONCEPTEnumLiteralDeclaration_0());
+			}
+		)
+		    |
+		(
+			enumLiteral_1=Description
+			{
+				$current = grammarAccess.getDomainAccess().getDESCRIPTIONEnumLiteralDeclaration_1().getEnumLiteral().getInstance();
+				newLeafNode(enumLiteral_1, grammarAccess.getDomainAccess().getDESCRIPTIONEnumLiteralDeclaration_1());
+			}
+		)
+	)
+;

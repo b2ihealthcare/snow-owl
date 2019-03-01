@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -41,7 +41,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class DisjunctionImpl extends ConstraintImpl implements Disjunction
+public class DisjunctionImpl extends FilterImpl implements Disjunction
 {
   /**
    * The cached value of the '{@link #getLeft() <em>Left</em>}' containment reference.
@@ -51,7 +51,7 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
    * @generated
    * @ordered
    */
-  protected Constraint left;
+  protected Filter left;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -61,7 +61,7 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
    * @generated
    * @ordered
    */
-  protected Constraint right;
+  protected Filter right;
 
   /**
    * <!-- begin-user-doc -->
@@ -89,7 +89,7 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public Constraint getLeft()
+  public Filter getLeft()
   {
     return left;
   }
@@ -99,9 +99,9 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetLeft(Constraint newLeft, NotificationChain msgs)
+  public NotificationChain basicSetLeft(Filter newLeft, NotificationChain msgs)
   {
-    Constraint oldLeft = left;
+    Filter oldLeft = left;
     left = newLeft;
     if (eNotificationRequired())
     {
@@ -116,7 +116,7 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setLeft(Constraint newLeft)
+  public void setLeft(Filter newLeft)
   {
     if (newLeft != left)
     {
@@ -137,7 +137,7 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public Constraint getRight()
+  public Filter getRight()
   {
     return right;
   }
@@ -147,9 +147,9 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRight(Constraint newRight, NotificationChain msgs)
+  public NotificationChain basicSetRight(Filter newRight, NotificationChain msgs)
   {
-    Constraint oldRight = right;
+    Filter oldRight = right;
     right = newRight;
     if (eNotificationRequired())
     {
@@ -164,7 +164,7 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRight(Constraint newRight)
+  public void setRight(Filter newRight)
   {
     if (newRight != right)
     {
@@ -227,10 +227,10 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
     switch (featureID)
     {
       case QlPackage.DISJUNCTION__LEFT:
-        setLeft((Constraint)newValue);
+        setLeft((Filter)newValue);
         return;
       case QlPackage.DISJUNCTION__RIGHT:
-        setRight((Constraint)newValue);
+        setRight((Filter)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -247,10 +247,10 @@ public class DisjunctionImpl extends ConstraintImpl implements Disjunction
     switch (featureID)
     {
       case QlPackage.DISJUNCTION__LEFT:
-        setLeft((Constraint)null);
+        setLeft((Filter)null);
         return;
       case QlPackage.DISJUNCTION__RIGHT:
-        setRight((Constraint)null);
+        setRight((Filter)null);
         return;
     }
     super.eUnset(featureID);

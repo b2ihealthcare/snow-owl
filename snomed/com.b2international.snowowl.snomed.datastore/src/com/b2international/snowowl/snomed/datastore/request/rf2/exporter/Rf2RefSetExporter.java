@@ -257,14 +257,14 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 					// Append extra columns using the properties map
 					final Map<String, Object> properties = member.getProperties();
 					for (final String extraColumn : extraColumns) {
-						builder.add(toColumn(properties.get(extraColumn)));
+						builder.add(toColumn(extraColumn, properties.get(extraColumn)));
 					}
 
 					return builder.build();
 				});
 	}
 
-	private String toColumn(final Object object) {
+	private String toColumn(final String additionalField, final Object object) {
 		if (object == null) {
 			return "";
 		} else if (object instanceof SnomedCoreComponent) {
@@ -274,7 +274,11 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		} else if (object instanceof Date) {
 			return getEffectiveTime((Date) object);
 		} else {
-			return String.valueOf(object);
+			String serializedValue = String.valueOf(object);
+			if (SnomedRf2Headers.FIELD_QUERY.equals(additionalField)) {
+				serializedValue = serializedValue.replaceAll("[\n\r\t]+", " ");
+			}
+			return serializedValue;
 		}
 	}
 	

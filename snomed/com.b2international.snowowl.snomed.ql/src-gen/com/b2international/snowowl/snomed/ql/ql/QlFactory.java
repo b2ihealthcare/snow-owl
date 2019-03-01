@@ -45,22 +45,40 @@ public interface QlFactory extends EFactory
   Query createQuery();
 
   /**
-   * Returns a new object of class '<em>Constraint</em>'.
+   * Returns a new object of class '<em>Query Constraint</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Constraint</em>'.
+   * @return a new object of class '<em>Query Constraint</em>'.
    * @generated
    */
-  Constraint createConstraint();
+  QueryConstraint createQueryConstraint();
 
   /**
-   * Returns a new object of class '<em>Nested Filter</em>'.
+   * Returns a new object of class '<em>Sub Query</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Nested Filter</em>'.
+   * @return a new object of class '<em>Sub Query</em>'.
    * @generated
    */
-  NestedFilter createNestedFilter();
+  SubQuery createSubQuery();
+
+  /**
+   * Returns a new object of class '<em>Domain Query</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Domain Query</em>'.
+   * @generated
+   */
+  DomainQuery createDomainQuery();
+
+  /**
+   * Returns a new object of class '<em>Nested Query</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Nested Query</em>'.
+   * @generated
+   */
+  NestedQuery createNestedQuery();
 
   /**
    * Returns a new object of class '<em>Filter</em>'.
@@ -72,13 +90,40 @@ public interface QlFactory extends EFactory
   Filter createFilter();
 
   /**
-   * Returns a new object of class '<em>Ecl Filter</em>'.
+   * Returns a new object of class '<em>Nested Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Ecl Filter</em>'.
+   * @return a new object of class '<em>Nested Filter</em>'.
    * @generated
    */
-  EclFilter createEclFilter();
+  NestedFilter createNestedFilter();
+
+  /**
+   * Returns a new object of class '<em>Property Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Property Filter</em>'.
+   * @generated
+   */
+  PropertyFilter createPropertyFilter();
+
+  /**
+   * Returns a new object of class '<em>Active Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Active Filter</em>'.
+   * @generated
+   */
+  ActiveFilter createActiveFilter();
+
+  /**
+   * Returns a new object of class '<em>Module Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Module Filter</em>'.
+   * @generated
+   */
+  ModuleFilter createModuleFilter();
 
   /**
    * Returns a new object of class '<em>Term Filter</em>'.
@@ -88,6 +133,87 @@ public interface QlFactory extends EFactory
    * @generated
    */
   TermFilter createTermFilter();
+
+  /**
+   * Returns a new object of class '<em>Preferred In Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Preferred In Filter</em>'.
+   * @generated
+   */
+  PreferredInFilter createPreferredInFilter();
+
+  /**
+   * Returns a new object of class '<em>Acceptable In Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Acceptable In Filter</em>'.
+   * @generated
+   */
+  AcceptableInFilter createAcceptableInFilter();
+
+  /**
+   * Returns a new object of class '<em>Language Ref Set Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Language Ref Set Filter</em>'.
+   * @generated
+   */
+  LanguageRefSetFilter createLanguageRefSetFilter();
+
+  /**
+   * Returns a new object of class '<em>Type Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Type Filter</em>'.
+   * @generated
+   */
+  TypeFilter createTypeFilter();
+
+  /**
+   * Returns a new object of class '<em>Case Significance Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Case Significance Filter</em>'.
+   * @generated
+   */
+  CaseSignificanceFilter createCaseSignificanceFilter();
+
+  /**
+   * Returns a new object of class '<em>Language Code Filter</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Language Code Filter</em>'.
+   * @generated
+   */
+  LanguageCodeFilter createLanguageCodeFilter();
+
+  /**
+   * Returns a new object of class '<em>Query Disjunction</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Query Disjunction</em>'.
+   * @generated
+   */
+  QueryDisjunction createQueryDisjunction();
+
+  /**
+   * Returns a new object of class '<em>Query Conjunction</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Query Conjunction</em>'.
+   * @generated
+   */
+  QueryConjunction createQueryConjunction();
+
+  /**
+   * Returns a new object of class '<em>Query Exclusion</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Query Exclusion</em>'.
+   * @generated
+   */
+  QueryExclusion createQueryExclusion();
 
   /**
    * Returns a new object of class '<em>Disjunction</em>'.

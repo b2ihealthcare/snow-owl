@@ -15,50 +15,49 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Ecl Filter</b></em>'.
+ * A representation of the model object '<em><b>Language Code Filter</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.EclFilter#getEcl <em>Ecl</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter#getLanguageCode <em>Language Code</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getEclFilter()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getLanguageCodeFilter()
  * @model
  * @generated
  */
-public interface EclFilter extends Filter
+public interface LanguageCodeFilter extends PropertyFilter
 {
   /**
-   * Returns the value of the '<em><b>Ecl</b></em>' containment reference.
+   * Returns the value of the '<em><b>Language Code</b></em>' attribute.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Ecl</em>' containment reference isn't clear,
+   * If the meaning of the '<em>Language Code</em>' attribute isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Ecl</em>' containment reference.
-   * @see #setEcl(Script)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getEclFilter_Ecl()
-   * @model containment="true"
+   * @return the value of the '<em>Language Code</em>' attribute.
+   * @see #setLanguageCode(String)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getLanguageCodeFilter_LanguageCode()
+   * @model
    * @generated
    */
-  Script getEcl();
+  String getLanguageCode();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.EclFilter#getEcl <em>Ecl</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter#getLanguageCode <em>Language Code</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Ecl</em>' containment reference.
-   * @see #getEcl()
+   * @param value the new value of the '<em>Language Code</em>' attribute.
+   * @see #getLanguageCode()
    * @generated
    */
-  void setEcl(Script value);
+  void setLanguageCode(String value);
 
-} // EclFilter
+} // LanguageCodeFilter

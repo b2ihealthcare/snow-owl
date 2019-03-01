@@ -392,19 +392,20 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		throw new NotImplementedException("Not implemented ECL feature: %s", eObject.eClass().getName());
 	}
 	
+	static boolean canExtractIds(Expression expression) {
+		return expression instanceof Predicate && ID.equals(((Predicate) expression).getField());
+	}
+	
 	/*Extract SNOMED CT IDs from the given expression if it is either a String/Long single/multi-valued predicate and the field is equal to RevisionDocument.Fields.ID*/
-	private static Set<String> extractIds(Expression expression) {
-		if (expression instanceof Predicate) {
-			final Predicate predicate = (Predicate) expression;
-			if (ID.equals(predicate.getField())) {
-				if (predicate instanceof StringSetPredicate) {
-					return ((StringSetPredicate) predicate).values();
-				} else if (predicate instanceof StringPredicate) {
-					return Collections.singleton(((StringPredicate) expression).getArgument());
-				}
-			}
+	/*package*/ static Set<String> extractIds(Expression expression) {
+		if (!canExtractIds(expression)) {
+			throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
 		}
-		throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
+		if (expression instanceof StringSetPredicate) {
+			return ((StringSetPredicate) expression).values();
+		} else {
+			return Collections.singleton(((StringPredicate) expression).getArgument());
+		}
 	}
 	
 	/**

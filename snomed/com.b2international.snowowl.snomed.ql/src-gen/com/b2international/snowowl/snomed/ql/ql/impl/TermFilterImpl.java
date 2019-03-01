@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
+import com.b2international.snowowl.snomed.ql.ql.LexicalSearchType;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 
@@ -32,13 +33,34 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  * The following features are implemented:
  * </p>
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.TermFilterImpl#getLexicalSearchType <em>Lexical Search Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.TermFilterImpl#getTerm <em>Term</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class TermFilterImpl extends FilterImpl implements TermFilter
+public class TermFilterImpl extends PropertyFilterImpl implements TermFilter
 {
+  /**
+   * The default value of the '{@link #getLexicalSearchType() <em>Lexical Search Type</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getLexicalSearchType()
+   * @generated
+   * @ordered
+   */
+  protected static final LexicalSearchType LEXICAL_SEARCH_TYPE_EDEFAULT = LexicalSearchType.MATCH;
+
+  /**
+   * The cached value of the '{@link #getLexicalSearchType() <em>Lexical Search Type</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getLexicalSearchType()
+   * @generated
+   * @ordered
+   */
+  protected LexicalSearchType lexicalSearchType = LEXICAL_SEARCH_TYPE_EDEFAULT;
+
   /**
    * The default value of the '{@link #getTerm() <em>Term</em>}' attribute.
    * <!-- begin-user-doc -->
@@ -85,6 +107,29 @@ public class TermFilterImpl extends FilterImpl implements TermFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  public LexicalSearchType getLexicalSearchType()
+  {
+    return lexicalSearchType;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public void setLexicalSearchType(LexicalSearchType newLexicalSearchType)
+  {
+    LexicalSearchType oldLexicalSearchType = lexicalSearchType;
+    lexicalSearchType = newLexicalSearchType == null ? LEXICAL_SEARCH_TYPE_EDEFAULT : newLexicalSearchType;
+    if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.TERM_FILTER__LEXICAL_SEARCH_TYPE, oldLexicalSearchType, lexicalSearchType));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public String getTerm()
   {
     return term;
@@ -113,6 +158,8 @@ public class TermFilterImpl extends FilterImpl implements TermFilter
   {
     switch (featureID)
     {
+      case QlPackage.TERM_FILTER__LEXICAL_SEARCH_TYPE:
+        return getLexicalSearchType();
       case QlPackage.TERM_FILTER__TERM:
         return getTerm();
     }
@@ -129,6 +176,9 @@ public class TermFilterImpl extends FilterImpl implements TermFilter
   {
     switch (featureID)
     {
+      case QlPackage.TERM_FILTER__LEXICAL_SEARCH_TYPE:
+        setLexicalSearchType((LexicalSearchType)newValue);
+        return;
       case QlPackage.TERM_FILTER__TERM:
         setTerm((String)newValue);
         return;
@@ -146,6 +196,9 @@ public class TermFilterImpl extends FilterImpl implements TermFilter
   {
     switch (featureID)
     {
+      case QlPackage.TERM_FILTER__LEXICAL_SEARCH_TYPE:
+        setLexicalSearchType(LEXICAL_SEARCH_TYPE_EDEFAULT);
+        return;
       case QlPackage.TERM_FILTER__TERM:
         setTerm(TERM_EDEFAULT);
         return;
@@ -163,6 +216,8 @@ public class TermFilterImpl extends FilterImpl implements TermFilter
   {
     switch (featureID)
     {
+      case QlPackage.TERM_FILTER__LEXICAL_SEARCH_TYPE:
+        return lexicalSearchType != LEXICAL_SEARCH_TYPE_EDEFAULT;
       case QlPackage.TERM_FILTER__TERM:
         return TERM_EDEFAULT == null ? term != null : !TERM_EDEFAULT.equals(term);
     }
@@ -180,7 +235,9 @@ public class TermFilterImpl extends FilterImpl implements TermFilter
     if (eIsProxy()) return super.toString();
 
     StringBuffer result = new StringBuffer(super.toString());
-    result.append(" (term: ");
+    result.append(" (lexicalSearchType: ");
+    result.append(lexicalSearchType);
+    result.append(", term: ");
     result.append(term);
     result.append(')');
     return result.toString();

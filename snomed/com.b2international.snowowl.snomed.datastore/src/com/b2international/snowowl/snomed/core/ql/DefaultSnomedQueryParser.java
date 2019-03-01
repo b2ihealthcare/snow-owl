@@ -37,7 +37,6 @@ import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.SyntaxException;
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.ql.Query;
 
 /**
@@ -54,7 +53,7 @@ public class DefaultSnomedQueryParser implements SnomedQueryParser {
 	}
 
 	@Override
-	public Constraint parse(String expression) {
+	public Query parse(String expression) {
 		if (expression == null) {
 			throw new BadRequestException("Expression cannot be null.");
 		} else if (StringUtils.isEmpty(expression)) {
@@ -70,9 +69,9 @@ public class DefaultSnomedQueryParser implements SnomedQueryParser {
 					}
 					throw new SyntaxException("QL", errors);
 				} else {
-					final Query dm = (Query) parseResult.getRootASTElement();
+					final Query query = (Query) parseResult.getRootASTElement();
 					final Resource resource = new ResourceImpl();
-					resource.getContents().add(dm);
+					resource.getContents().add(query);
 					final List<Issue> issues = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
 					if (!issues.isEmpty()) {
 						final Map<Pair<Integer, Integer>, String> errors = newHashMap();
@@ -85,7 +84,7 @@ public class DefaultSnomedQueryParser implements SnomedQueryParser {
 							throw new SyntaxException("QL", errors);
 						}
 					}
-					return dm.getConstraint();
+					return query;
 				}
 			}
 		}

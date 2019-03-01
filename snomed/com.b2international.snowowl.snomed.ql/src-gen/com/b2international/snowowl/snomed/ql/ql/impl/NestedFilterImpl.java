@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
@@ -35,22 +35,22 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.NestedFilterImpl#getConstraint <em>Constraint</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.NestedFilterImpl#getNested <em>Nested</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class NestedFilterImpl extends FilterImpl implements NestedFilter
+public class NestedFilterImpl extends PropertyFilterImpl implements NestedFilter
 {
   /**
-   * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.
+   * The cached value of the '{@link #getNested() <em>Nested</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getConstraint()
+   * @see #getNested()
    * @generated
    * @ordered
    */
-  protected Constraint constraint;
+  protected Filter nested;
 
   /**
    * <!-- begin-user-doc -->
@@ -78,9 +78,9 @@ public class NestedFilterImpl extends FilterImpl implements NestedFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public Constraint getConstraint()
+  public Filter getNested()
   {
-    return constraint;
+    return nested;
   }
 
   /**
@@ -88,13 +88,13 @@ public class NestedFilterImpl extends FilterImpl implements NestedFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetConstraint(Constraint newConstraint, NotificationChain msgs)
+  public NotificationChain basicSetNested(Filter newNested, NotificationChain msgs)
   {
-    Constraint oldConstraint = constraint;
-    constraint = newConstraint;
+    Filter oldNested = nested;
+    nested = newNested;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.NESTED_FILTER__CONSTRAINT, oldConstraint, newConstraint);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.NESTED_FILTER__NESTED, oldNested, newNested);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -105,20 +105,20 @@ public class NestedFilterImpl extends FilterImpl implements NestedFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setConstraint(Constraint newConstraint)
+  public void setNested(Filter newNested)
   {
-    if (newConstraint != constraint)
+    if (newNested != nested)
     {
       NotificationChain msgs = null;
-      if (constraint != null)
-        msgs = ((InternalEObject)constraint).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.NESTED_FILTER__CONSTRAINT, null, msgs);
-      if (newConstraint != null)
-        msgs = ((InternalEObject)newConstraint).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.NESTED_FILTER__CONSTRAINT, null, msgs);
-      msgs = basicSetConstraint(newConstraint, msgs);
+      if (nested != null)
+        msgs = ((InternalEObject)nested).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.NESTED_FILTER__NESTED, null, msgs);
+      if (newNested != null)
+        msgs = ((InternalEObject)newNested).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.NESTED_FILTER__NESTED, null, msgs);
+      msgs = basicSetNested(newNested, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.NESTED_FILTER__CONSTRAINT, newConstraint, newConstraint));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.NESTED_FILTER__NESTED, newNested, newNested));
   }
 
   /**
@@ -131,8 +131,8 @@ public class NestedFilterImpl extends FilterImpl implements NestedFilter
   {
     switch (featureID)
     {
-      case QlPackage.NESTED_FILTER__CONSTRAINT:
-        return basicSetConstraint(null, msgs);
+      case QlPackage.NESTED_FILTER__NESTED:
+        return basicSetNested(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -147,8 +147,8 @@ public class NestedFilterImpl extends FilterImpl implements NestedFilter
   {
     switch (featureID)
     {
-      case QlPackage.NESTED_FILTER__CONSTRAINT:
-        return getConstraint();
+      case QlPackage.NESTED_FILTER__NESTED:
+        return getNested();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -163,8 +163,8 @@ public class NestedFilterImpl extends FilterImpl implements NestedFilter
   {
     switch (featureID)
     {
-      case QlPackage.NESTED_FILTER__CONSTRAINT:
-        setConstraint((Constraint)newValue);
+      case QlPackage.NESTED_FILTER__NESTED:
+        setNested((Filter)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -180,8 +180,8 @@ public class NestedFilterImpl extends FilterImpl implements NestedFilter
   {
     switch (featureID)
     {
-      case QlPackage.NESTED_FILTER__CONSTRAINT:
-        setConstraint((Constraint)null);
+      case QlPackage.NESTED_FILTER__NESTED:
+        setNested((Filter)null);
         return;
     }
     super.eUnset(featureID);
@@ -197,8 +197,8 @@ public class NestedFilterImpl extends FilterImpl implements NestedFilter
   {
     switch (featureID)
     {
-      case QlPackage.NESTED_FILTER__CONSTRAINT:
-        return constraint != null;
+      case QlPackage.NESTED_FILTER__NESTED:
+        return nested != null;
     }
     return super.eIsSet(featureID);
   }

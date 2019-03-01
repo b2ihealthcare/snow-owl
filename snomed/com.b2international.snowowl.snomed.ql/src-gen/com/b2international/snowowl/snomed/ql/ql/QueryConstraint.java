@@ -19,14 +19,14 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Constraint</b></em>'.
+ * A representation of the model object '<em><b>Query Constraint</b></em>'.
  * <!-- end-user-doc -->
  *
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getConstraint()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getQueryConstraint()
  * @model
  * @generated
  */
-public interface Constraint extends EObject
+public interface QueryConstraint extends EObject
 {
-} // Constraint
+} // QueryConstraint
