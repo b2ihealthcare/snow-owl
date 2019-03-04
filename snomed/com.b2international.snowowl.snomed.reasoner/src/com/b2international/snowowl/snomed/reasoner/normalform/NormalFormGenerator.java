@@ -92,53 +92,63 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		LOGGER.info(">>> Distribution normal form generation");
 
-		final Set<Long> graphTypeIds = reasonerTaxonomy.getPropertyChains()
-				.stream()
-				.map(PropertyChain::getDestinationType)
-				.collect(Collectors.toSet());
-
-		// Initialize node graphs for properties we need to traverse
-		LOGGER.info("--- Initializing node graphs for types: {}", graphTypeIds);
-		graphTypeIds.forEach(id -> transitiveNodeGraphs.put(id, new NodeGraph()));
-		
 		final LongList entries = reasonerTaxonomy.getIterationOrder();
-		LongSet previousLayer = null;
-		LongSet currentLayer = PrimitiveSets.newLongOpenHashSet();
-
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Generating distribution normal form...", entries.size() * 2);
 
 		try {
 
-			// Round 1: build alternative hierarchies
-			for (final LongIterator itr = entries.iterator(); itr.hasNext(); /* empty */) {
-				final long conceptId = itr.next();
-
-				if (conceptId == ReasonerTaxonomyInferrer.DEPTH_CHANGE) {
-					if (previousLayer != null) {
-						invalidate(previousLayer);
-					}
-
-					previousLayer = currentLayer;
-					currentLayer = PrimitiveSets.newLongOpenHashSet();
-					continue;
-				}
-
-				precomputeProperties(conceptId, false);
-				
-				final Collection<StatementFragment> inferredNonIsAFragments = statementCache.get(conceptId);
-				inferredNonIsAFragments.stream()
-					.filter(r -> transitiveNodeGraphs.keySet().contains(r.getTypeId()))
-					.forEachOrdered(r -> transitiveNodeGraphs.get(r.getTypeId())
-							.addParent(conceptId, r.getDestinationId()));
-			}
+			LongSet previousLayer = null;
+			LongSet currentLayer = PrimitiveSets.newLongOpenHashSet();
 			
-			// Clear the last layer of concepts
-			previousLayer = null;
-			currentLayer = PrimitiveSets.newLongOpenHashSet();
-			statementCache.clear();
-			concreteDomainCache.clear();
+			final Set<Long> graphTypeIds = reasonerTaxonomy.getPropertyChains()
+					.stream()
+					.map(PropertyChain::getDestinationType)
+					.collect(Collectors.toSet());
+
+			// The first round can be skipped entirely, if no type IDs participate in a property chain
+			final boolean propertyChainsPresent = !graphTypeIds.isEmpty();
+			
+			if (propertyChainsPresent) {
+			
+				// Initialize node graphs for properties we need to traverse
+				LOGGER.info("--- Initializing node graphs for types: {}", graphTypeIds);
+				graphTypeIds.forEach(id -> transitiveNodeGraphs.put(id, new NodeGraph()));
+			
+
+				// Round 1: build alternative hierarchies
+				for (final LongIterator itr = entries.iterator(); itr.hasNext(); /* empty */) {
+					final long conceptId = itr.next();
+	
+					if (conceptId == ReasonerTaxonomyInferrer.DEPTH_CHANGE) {
+						if (previousLayer != null) {
+							invalidate(previousLayer);
+						}
+	
+						previousLayer = currentLayer;
+						currentLayer = PrimitiveSets.newLongOpenHashSet();
+						continue;
+					}
+	
+					precomputeProperties(conceptId, false);
+					
+					final Collection<StatementFragment> inferredNonIsAFragments = statementCache.get(conceptId);
+					inferredNonIsAFragments.stream()
+						.filter(r -> transitiveNodeGraphs.keySet().contains(r.getTypeId()))
+						.forEachOrdered(r -> transitiveNodeGraphs.get(r.getTypeId())
+								.addParent(conceptId, r.getDestinationId()));
+				}
+				
+				// Clear the last layer of concepts
+				previousLayer = null;
+				currentLayer = PrimitiveSets.newLongOpenHashSet();
+				statementCache.clear();
+				concreteDomainCache.clear();
+				
+			} else {
+				LOGGER.info("--- Node graphs computation skipped, no types used for property chaining");
+			}
 		
-			LOGGER.info("--- Use property graphs for hierarchy computation");
+			LOGGER.info("--- Use node graphs for hierarchy computation");
 			
 			// Round 2: record changes using the hierarchies
 			for (final LongIterator itr = entries.iterator(); itr.hasNext(); /* empty */) {
@@ -154,7 +164,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 					continue;
 				}
 
-				precomputeProperties(conceptId, true);
+				// Run costly comparison of property chain hierarchies only if there are any
+				precomputeProperties(conceptId, propertyChainsPresent);
 
 				final Collection<StatementFragment> existingStatements = reasonerTaxonomy.getExistingInferredRelationships().get(conceptId);
 				final Collection<StatementFragment> targetStatements = getTargetRelationships(conceptId);
