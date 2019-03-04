@@ -15,7 +15,12 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification;
 
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -23,12 +28,19 @@ import org.eclipse.core.runtime.OperationCanceledException;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
+import com.google.common.collect.Queues;
+
+import io.reactivex.Observable;
+import io.reactivex.observers.DisposableObserver;
 
 /**
  * Represents an abstract operation which requires the classification of the
@@ -89,46 +101,81 @@ public abstract class ClassifyOperation<T> {
 
 		try {
 
-			final String classificationId = ClassificationRequests.prepareCreateClassification()
-					.setReasonerId(reasonerId)
-					.setUserId(userId)
-					.addAllConcepts(additionalConcepts)
-					.setParentLockContext(parentLockContext)
-					.build(repositoryId, branch)
-					.execute(getEventBus())
-					.getSync();
+			final String classificationId = UUID.randomUUID().toString(); 
+			final Notifications notifications = getServiceForClass(Notifications.class);
+			final BlockingQueue<RemoteJobEntry> jobQueue = Queues.newArrayBlockingQueue(1); 
+			final Observable<RemoteJobEntry> jobObservable = notifications.ofType(RemoteJobNotification.class)
+					.filter(RemoteJobNotification::isChanged)
+					.filter(notification -> notification.getJobIds().contains(classificationId))
+					.concatMap(notification -> JobRequests.prepareSearch()
+							.one()
+							.filterById(classificationId)
+							.buildAsync()
+							.execute(getEventBus()))
+					.map(RemoteJobs::first)
+					.map(Optional<RemoteJobEntry>::get)
+					.filter(RemoteJobEntry::isDone);
+			
+			// "One-shot" subscription; it should self-destruct after the first notification
+			jobObservable.subscribe(new DisposableObserver<RemoteJobEntry>() {
+				@Override 
+				public void onComplete() { dispose(); }
+				
+				@Override 
+				public void onError(final Throwable t) { dispose(); }
+				
+				@Override 
+				public void onNext(final RemoteJobEntry job) {
+					try {
+						jobQueue.put(job);
+					} catch (InterruptedException e) {
+						throw new SnowowlRuntimeException("Interrupted while trying to add a remote job entry to the queue.", e);
+					} finally {
+						dispose();
+					}
+				}
+			});
+
+			ClassificationRequests.prepareCreateClassification()
+				.setClassificationId(classificationId)
+				.setReasonerId(reasonerId)
+				.setUserId(userId)
+				.addAllConcepts(additionalConcepts)
+				.setParentLockContext(parentLockContext)
+				.build(repositoryId, branch)
+				.get();
 
 			while (true) {
 
 				if (monitor.isCanceled()) {
 					throw new OperationCanceledException();
 				}
-
-				final RemoteJobEntry jobEntry = getEntry(classificationId);
-
-				switch (jobEntry.getState()) {
-				case SCHEDULED: //$FALL-THROUGH$
-				case RUNNING:
-				case CANCEL_REQUESTED:
-					break;
-				case FINISHED:
-					try {
-						return processResults(classificationId);
-					} finally {
-						deleteEntry(classificationId);
-					}
-				case CANCELED:
-					deleteEntry(classificationId);
-					throw new OperationCanceledException();
-				case FAILED:
-					deleteEntry(classificationId);
-					throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
-				default:
-					throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
-				}
-
+				
 				try {
-					TimeUnit.SECONDS.sleep(CHECK_JOB_INTERVAL_SECONDS);
+					
+					final RemoteJobEntry jobEntry = jobQueue.poll(CHECK_JOB_INTERVAL_SECONDS, TimeUnit.SECONDS);
+
+					switch (jobEntry.getState()) {
+						case SCHEDULED: //$FALL-THROUGH$
+						case RUNNING:
+						case CANCEL_REQUESTED:
+							break;
+						case FINISHED:
+							try {
+								return processResults(classificationId);
+							} finally {
+								deleteEntry(classificationId);
+							}
+						case CANCELED:
+							deleteEntry(classificationId);
+							throw new OperationCanceledException();
+						case FAILED:
+							deleteEntry(classificationId);
+							throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
+						default:
+							throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
+					}
+
 				} catch (final InterruptedException e) {
 					// Nothing to do
 				}
@@ -137,13 +184,6 @@ public abstract class ClassifyOperation<T> {
 		} finally {
 			monitor.done();
 		}
-	}
-
-	private RemoteJobEntry getEntry(final String classificationId) {
-		return JobRequests.prepareGet(classificationId)
-				.buildAsync()
-				.execute(getEventBus())
-				.getSync();
 	}
 
 	private void deleteEntry(final String classificationId) {
