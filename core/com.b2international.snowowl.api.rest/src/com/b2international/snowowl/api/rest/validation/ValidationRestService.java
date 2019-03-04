@@ -125,7 +125,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<?>> beginValidation(
+	public DeferredResult<ResponseEntity<Void>> beginValidation(
 			@ApiParam(value="Validation parameters")
 			@RequestBody 
 			final ValidationRestInput validationInput,
