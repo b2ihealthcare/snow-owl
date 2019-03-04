@@ -505,9 +505,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					case RELATIONSHIP: {
 						final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 						final String typeId = relationshipItem.getComponentId();
-						int occurrences = zeroGroupOccurrences.get(typeId);
+						int occurrences = zeroGroupOccurrences.getOrDefault(typeId, 0);
 						final Map<String, String> destinationsById = concept.getRelationships()
-								.stream()
+ 								.stream()
 								.filter(r -> typeId.equals(r.getTypeId())
 										&& r.getGroup() == 0
 										&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
