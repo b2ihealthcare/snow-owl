@@ -154,7 +154,10 @@ public abstract class ClassifyOperation<T> {
 				try {
 					
 					final RemoteJobEntry jobEntry = jobQueue.poll(CHECK_JOB_INTERVAL_SECONDS, TimeUnit.SECONDS);
-
+					if (jobEntry == null) {
+						continue;
+					}
+					
 					switch (jobEntry.getState()) {
 						case SCHEDULED: //$FALL-THROUGH$
 						case RUNNING:
