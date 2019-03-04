@@ -87,7 +87,11 @@ public final class InternalSctIdMultimap implements IInternalSctIdMultimap {
 
 	@Override
 	public LongSet get(final long key) {
-		final int internalId = internalIdMap.getInternalIdChecked(key);
+		final int internalId = internalIdMap.getInternalId(key);
+		if (internalId == InternalIdMap.NO_INTERNAL_ID) {
+			return PrimitiveSets.newLongOpenHashSet();
+		}
+		
 		final IntSet values = internalIdMultimap.get(internalId);
 		if (values == null) {
 			return PrimitiveSets.newLongOpenHashSet();

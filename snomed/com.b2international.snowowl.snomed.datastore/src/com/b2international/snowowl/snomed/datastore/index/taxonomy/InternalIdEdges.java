@@ -105,7 +105,10 @@ public final class InternalIdEdges {
 	}
 
 	public LongSet getDestinations(final long key, final boolean direct) {
-		final int internalId = internalIdMap.getInternalIdChecked(key);
+		final int internalId = internalIdMap.getInternalId(key);
+		if (internalId == InternalIdMap.NO_INTERNAL_ID) {
+			return PrimitiveSets.newLongOpenHashSet();
+		}
 
 		if (direct) {
 			final int[] destinations = edges[internalId];
