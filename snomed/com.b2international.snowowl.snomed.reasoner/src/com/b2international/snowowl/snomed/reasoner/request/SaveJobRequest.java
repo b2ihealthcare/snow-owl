@@ -377,7 +377,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		
 		final String mergerName = merger.getClass().getSimpleName();
 		LOG.info("Reasoner service will use {} for equivalent concept merging.", mergerName);
+		
 		final Set<String> conceptIdsToSkip = merger.merge(equivalentConcepts);
+		final Set<String> conceptIdsToKeep = equivalentConcepts.keySet()
+				.stream()
+				.map(SnomedConcept::getId)
+				.collect(Collectors.toSet());
+		
+		assigner.collectRelationshipNamespacesAndModules(conceptIdsToKeep, context);
 		
 		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
 			
@@ -398,7 +405,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					removeOrDeactivate(bulkRequestBuilder, relationship);
 				}
 			}
-			
+		}
+		
+		assigner.clear();
+		assigner.collectConcreteDomainModules(conceptIdsToKeep, context);
+		
+		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
 			for (final SnomedReferenceSetMember member : conceptToKeep.getMembers()) {
 				if (member.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
 					member.setId(null);
@@ -412,6 +424,8 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				}
 			}
 		}
+		
+		assigner.clear();
 		
 		for (final SnomedConcept conceptToRemove : equivalentConcepts.values()) {
 			// Check if the concept needs to be removed or deactivated
