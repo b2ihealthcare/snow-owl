@@ -397,7 +397,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
 					relationship.setId(null);
 					addComponent(bulkRequestBuilder, assigner, relationship);
-				} else if (relationship.isActive()) {
+				} else if (!relationship.isActive()) {
 					removeOrDeactivate(bulkRequestBuilder, relationship);
 				}
 			}
@@ -406,7 +406,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
 					relationship.setId(null);
 					addComponent(bulkRequestBuilder, assigner, relationship);
-				} else if (relationship.isActive()) {
+				} else if (!relationship.isActive()) {
 					removeOrDeactivate(bulkRequestBuilder, relationship);
 				}
 			}
@@ -424,7 +424,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					// Trim the prefix from the ID to restore its original form
 					member.setId(member.getId().substring(IEquivalentConceptMerger.PREFIX_UPDATED.length()));
 					bulkRequestBuilder.add(member.toUpdateRequest());
-				} else if (member.isActive()) {
+				} else if (!member.isActive()) {
 					removeOrDeactivate(bulkRequestBuilder, member);
 				}
 			}
@@ -466,7 +466,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					.build();
 		} else {
 			request = SnomedRequests
-					.prepareDeleteRelationship(concept.getId())
+					.prepareDeleteConcept(concept.getId())
 					.build();
 		}
 	
