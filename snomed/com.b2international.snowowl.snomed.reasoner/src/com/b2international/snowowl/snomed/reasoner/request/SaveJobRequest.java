@@ -262,10 +262,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			for (final RelationshipChange change : nextChanges) {
 				final ReasonerRelationship relationship = change.getRelationship();
 
+				if (conceptIdsToSkip.contains(relationship.getSourceId()) || conceptIdsToSkip.contains(relationship.getDestinationId())) {
+					continue;
+				}
+				
 				// Do not reference concepts which were handled by the equivalent concept merger
-				if (ChangeNature.INFERRED.equals(change.getChangeNature())
-						&& !conceptIdsToSkip.contains(relationship.getSourceId()) 
-						&& !conceptIdsToSkip.contains(relationship.getDestinationId())) {
+				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
 					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
 				} else {
 					removeOrDeactivate(bulkRequestBuilder, relationship);
@@ -307,9 +309,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			for (final ConcreteDomainChange change : nextChanges) {
 				final ReasonerConcreteDomainMember referenceSetMember = change.getConcreteDomainMember();
 
+				if (conceptIdsToSkip.contains(referenceSetMember.getReferencedComponentId())) {
+					continue;
+				}
+				
 				// Do not reference concepts which were handled by the equivalent concept merger
-				if (ChangeNature.INFERRED.equals(change.getChangeNature())
-						&& !conceptIdsToSkip.contains(referenceSetMember.getReferencedComponentId())) {
+				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
 					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
 				} else {
 					removeOrDeactivate(bulkRequestBuilder, referenceSetMember);
