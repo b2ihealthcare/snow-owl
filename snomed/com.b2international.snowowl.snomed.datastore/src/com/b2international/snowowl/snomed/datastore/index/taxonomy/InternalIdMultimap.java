@@ -102,7 +102,11 @@ public final class InternalIdMultimap<T> {
 
 	@SuppressWarnings("unchecked")
 	public Collection<T> get(final long key) {
-		final int internalId = internalIdMap.getInternalIdChecked(key);
+		final int internalId = internalIdMap.getInternalId(key);
+		if (internalId == InternalIdMap.NO_INTERNAL_ID) {
+			return ImmutableList.of();
+		}
+		
 		final ImmutableList<T> values = (ImmutableList<T>) internalIdMultimap.get(internalId);
 		if (values == null) {
 			return ImmutableList.of();
