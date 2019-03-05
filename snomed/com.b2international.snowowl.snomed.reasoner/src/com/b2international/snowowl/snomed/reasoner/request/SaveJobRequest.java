@@ -330,9 +330,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		
 		// XXX: Restrict merging to active components only
 		final String expand = "equivalentConcepts(expand("
-				+ "members(active:true),"
+				+ "descriptions(active:true),"
 				+ "relationships(active:true),"
-				+ "inboundRelationships(active:true)))";
+				+ "inboundRelationships(active:true),"
+				+ "members(active:true)))";
 		
 		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.setLimit(SCROLL_LIMIT)
