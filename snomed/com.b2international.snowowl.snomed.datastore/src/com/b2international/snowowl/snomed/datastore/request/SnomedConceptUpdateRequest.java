@@ -255,11 +255,11 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			// Inactive --> Active: concept reactivation, clear indicator and association targets
 			// (using default values at all times)
 			
-			if (inactivationIndicator != null) {
+			if (inactivationIndicator != null && InactivationIndicator.RETIRED != inactivationIndicator) {
 				throw new BadRequestException("Cannot reactivate concept and retain or change its inactivation indicator at the same time.");
 			}
 			
-			if (associationTargets != null) {
+			if (!CompareUtils.isEmpty(associationTargets)) {
 				throw new BadRequestException("Cannot reactivate concept and retain or change its historical association targets at the same time.");
 			}
 			
