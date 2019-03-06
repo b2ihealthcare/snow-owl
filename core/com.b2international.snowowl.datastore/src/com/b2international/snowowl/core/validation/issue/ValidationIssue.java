@@ -25,6 +25,7 @@ import java.util.Map;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -51,6 +52,7 @@ public final class ValidationIssue implements Serializable {
 		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
 		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
 		public static final String AFFECTED_COMPONENT_LABELS_PREFIX = AFFECTED_COMPONENT_LABELS + ".prefix";
+		public static final String AFFECTED_COMPONENT_LABELS_ORIGINAL= AFFECTED_COMPONENT_LABELS + ".original";
 		public static final String WHITELISTED = "whitelisted";
 		public static final String DETAILS = "details";
 	}
@@ -68,6 +70,7 @@ public final class ValidationIssue implements Serializable {
 	
 	@Text(analyzer = Analyzers.TOKENIZED)
 	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
+	@Keyword(alias="original")
 	private List<String> affectedComponentLabels = Collections.emptyList();
 	
 	private Map<String, Object> details = null;
