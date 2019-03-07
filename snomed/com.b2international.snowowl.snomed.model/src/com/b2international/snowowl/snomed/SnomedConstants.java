@@ -148,6 +148,8 @@ public abstract class SnomedConstants {
 		public static final String DESCRIPTION_FORMAT_TYPE_ROOT_CONCEPT = "900000000000539002";
 		public static final String DESCRIPTION_FORMAT_PLAIN_TEXT = "900000000000540000";
 		
+		public static final String DEVICE = "49062001";
+		
 		//ref sets
 		public static final String REFSET_ROOT_CONCEPT = "900000000000455006";
 		public static final String REFSET_ALL = REFSET_ROOT_CONCEPT;
