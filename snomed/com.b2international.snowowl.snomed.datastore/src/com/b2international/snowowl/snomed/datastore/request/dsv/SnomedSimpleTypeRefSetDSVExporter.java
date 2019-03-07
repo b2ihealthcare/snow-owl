@@ -504,59 +504,64 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 					case RELATIONSHIP: {
 						final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
-						final String typeId = relationshipItem.getComponentId();
-						int occurrences = zeroGroupOccurrences.getOrDefault(typeId, 0);
-						final Map<String, String> destinationsById = concept.getRelationships()
- 								.stream()
-								.filter(r -> typeId.equals(r.getTypeId())
-										&& r.getGroup() == 0
-										&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
-										|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
-								.collect(Collectors.toMap(
-										SnomedRelationship::getId, 
-										r -> getPreferredTerm(r.getDestination())));
+						for (Integer propertyGroup : propertyCount.keySet()) {
+							final String typeId = relationshipItem.getComponentId();
+							int occurrences = zeroGroupOccurrences.getOrDefault(typeId, 0);
+							final Map<String, String> destinationsById = concept.getRelationships()
+									.stream()
+									.filter(r -> typeId.equals(r.getTypeId())
+											&& r.getGroup() == propertyGroup 
+											&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
+													|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
+									.collect(Collectors.toMap(
+											SnomedRelationship::getId, 
+											r -> getPreferredTerm(r.getDestination())));
 
-						addCells(dataRow, occurrences, includeRelationshipId, destinationsById);
+							addCells(dataRow, occurrences, includeRelationshipId, destinationsById);
+						}
 						break;
 					}
 
 					case DATAYPE: {
 						final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
-						final String typeId = datatypeItem.getComponentId();
-						int occurrences = zeroGroupOccurrences.getOrDefault(typeId, 0);
-						
-						if (occurrences < 1) {
+						for (Integer propertyGroup : propertyCount.keySet()) {
+							Map<String, Integer> groupedOccurrences = propertyCount.getOrDefault(propertyGroup, NO_OCCURRENCES);
+							final String typeId = datatypeItem.getComponentId();
+							int occurrences = groupedOccurrences.getOrDefault(typeId, 0);
+							
+							if (occurrences < 1) {
+								break;
+							}
+							
+							final List<String> properties = concept.getMembers()
+									.stream()
+									.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
+											&& m.isActive()
+											&& typeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID))
+											&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == 0 
+											&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
+													|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
+									.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
+									.map(p -> {
+										if (datatypeItem.isBooleanDatatype()) {
+											return "1".equals(p) ? "Yes" : "No";
+										} else {
+											return p.toString();
+										}
+									})
+									.sorted()
+									.collect(Collectors.toList());
+							
+							for (String value : properties) {
+								dataRow.add(value);
+								occurrences--;
+							}
+							while (occurrences > 0) {
+								dataRow.add("");
+								occurrences--;
+							}
+						}
 							break;
-						}
-						
-						final List<String> properties = concept.getMembers()
-								.stream()
-								.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
-										&& m.isActive()
-										&& typeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID))
-										&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == 0 
-										&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
-										|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
-								.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
-								.map(p -> {
-									if (datatypeItem.isBooleanDatatype()) {
-										return "1".equals(p) ? "Yes" : "No";
-									} else {
-										return p.toString();
-									}
-								})
-								.sorted()
-								.collect(Collectors.toList());
-
-						for (String value : properties) {
-							dataRow.add(value);
-							occurrences--;
-						}
-						while (occurrences > 0) {
-							dataRow.add("");
-							occurrences--;
-						}
-						break;
 					}
 					
 					case PREFERRED_TERM:
