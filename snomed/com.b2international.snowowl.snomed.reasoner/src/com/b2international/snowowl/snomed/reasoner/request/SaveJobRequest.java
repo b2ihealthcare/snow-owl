@@ -466,7 +466,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					.build();
 		} else {
 			request = SnomedRequests
-					.prepareDeleteRelationship(concept.getId())
+					.prepareDeleteConcept(concept.getId())
 					.build();
 		}
 	
