@@ -74,12 +74,12 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		try {
 			UUID.fromString(uuid);
 		} catch (final IllegalArgumentException e) {
-			uuidInvalid.add(String.format("Invalid UUID '%s' in effective time '%s' in file '%s'", uuid, row.get(1), releaseFileName));
+			uuidInvalid.add(String.format("Invalid UUID '%s' in effective time '%s' in file '%s'", uuid, row.get(COLUMN_EFFECTIVE_TIME), releaseFileName));
 			return;
 		}
 		
 		if (!uuids.add(String.format("%s|%s", uuid, row.get(COLUMN_EFFECTIVE_TIME)))) {
-			uuidNotUnique.add(String.format("UUID '%s' and effective time '%s' is not unique in file '%s'", uuid, row.get(1), releaseFileName));
+			uuidNotUnique.add(String.format("UUID '%s' and effective time '%s' is not unique in file '%s'", uuid, row.get(COLUMN_EFFECTIVE_TIME), releaseFileName));
 		}
 	}
 
@@ -102,7 +102,7 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 			}
 			
 			final String uuid = row.get(0);
-			final String effectiveTime = getSafeEffectiveTime(row.get(1));
+			final String effectiveTime = getSafeEffectiveTime(row.get(COLUMN_EFFECTIVE_TIME));
 			
 			referencedComponentNotExist.add(getMissingComponentMessage(uuid, effectiveTime, componentId));
 		}
@@ -131,7 +131,7 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	protected void validateNotEmptyFieldValue(String fieldValue, String fieldName, List<String> row, List<String> results) {
 		if (Strings.isNullOrEmpty(fieldValue)) {
 			final String uuid = row.get(0);
-			final String safeEffectiveTime = getSafeEffectiveTime(row.get(1));
+			final String safeEffectiveTime = getSafeEffectiveTime(row.get(COLUMN_EFFECTIVE_TIME));
 			results.add(String.format(EMPTY_FIELD_VALIDATION_MESSAGE, getName(), uuid, fieldName, safeEffectiveTime));
 		}
 	}
