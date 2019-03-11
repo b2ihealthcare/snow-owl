@@ -17,8 +17,11 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,7 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -53,6 +57,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMultimap;
@@ -206,13 +212,62 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 
 		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
-		final String newDefinitionStatusId = definitionStatus.getConceptId();
+		final Optional<SnomedReferenceSetMember> axiomMember = members.stream().filter(member -> SnomedRefSetType.OWL_AXIOM == member.type()).findAny();		
+		
+			if (axiomMember.isPresent()) {
+				// Calculate the definition status
+				final Set<SnomedReferenceSetMember> owlAxiomMembers = members.stream()
+						.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type())
+						.collect(Collectors.toSet());
+				
+				final String newDefinitionStatusId = calculateDefinitionStatusFromAxioms(owlAxiomMembers, existingDefinitionStatusId);
+				return updateDefinitionStatusIfPossible(context, concept, existingDefinitionStatusId, newDefinitionStatusId);
+			} else {
+				final String newDefinitionStatusId = definitionStatus.getConceptId();
+				return updateDefinitionStatusIfPossible(context, concept, existingDefinitionStatusId, newDefinitionStatusId);
+			}
+		
+	}
+
+	private boolean updateDefinitionStatusIfPossible(final TransactionContext context, final Concept concept, final String existingDefinitionStatusId, final String newDefinitionStatusId) {
 		if (!existingDefinitionStatusId.equals(newDefinitionStatusId)) {
 			concept.setDefinitionStatus(context.lookup(newDefinitionStatusId, Concept.class));
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	private String calculateDefinitionStatusFromAxioms(Set<SnomedReferenceSetMember> owlAxiomMembers, String existingDefinitionStatusId) {
+		String definitionStatusId = existingDefinitionStatusId;
+		// Tokenize members on "(: check if subClassOf OR equivalentclasses follows up with id or not"
+		for (SnomedReferenceSetMember axiomMember : owlAxiomMembers) {
+			final String owlAxiom = (String) axiomMember.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION);
+			final StringTokenizer tokenizer = new StringTokenizer(owlAxiom.toLowerCase(Locale.ENGLISH), "(:");
+			final String firstToken = tokenizer.nextToken();
+			if (firstToken.equals("subclassof")) {
+				final String supposedId = tokenizer.nextToken();
+
+				if (SnomedIdentifiers.isConceptIdentifier(supposedId)) {
+					definitionStatusId = Concepts.FULLY_DEFINED;
+				} else {
+					continue;
+				}
+			} else if (firstToken.equals("equivalentclasses")) {
+				final String supposedId = tokenizer.nextToken();
+
+				if (SnomedIdentifiers.isConceptIdentifier(supposedId)) {
+					definitionStatusId = Concepts.PRIMITIVE;
+				} else {
+					continue;
+				}
+				
+			} else {
+				continue;
+			}
+		}
+		
+		return definitionStatusId;
 	}
 
 	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final Concept concept) {
