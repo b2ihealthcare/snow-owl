@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-Version: 6.13.0.qualifier
+Bundle-Version: 6.13.0
 Bundle-Name: Snow Owl Administrative Web Services
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.api.rest;singleton:=true
@@ -22,7 +22,13 @@ Import-Package: com.b2international.commons,
  com.b2international.snowowl.core.events,
  com.b2international.snowowl.core.events.util,
  com.b2international.snowowl.core.exceptions,
+ com.b2international.snowowl.core.internal.validation,
  com.b2international.snowowl.core.request,
+ com.b2international.snowowl.core.validation,
+ com.b2international.snowowl.core.validation.issue,
+ com.b2international.snowowl.core.validation.rule,
+ com.b2international.snowowl.datastore,
+ com.b2international.snowowl.datastore.remotejobs,
  com.b2international.snowowl.datastore.request,
  com.b2international.snowowl.datastore.request.job,
  com.b2international.snowowl.datastore.request.repository,
@@ -53,7 +59,7 @@ Require-Bundle: com.google.guava;bundle-version="[18.0.0,19.0.0)",
  org.scala-lang.scala-library;bundle-version="2.10.6",
  com.fasterxml.jackson.module.jackson-module-paranamer;bundle-version="2.8.10",
  com.thoughtworks.paranamer;bundle-version="2.8.0",
- com.b2international.snowowl.datastore
+ com.fasterxml.jackson.dataformat.jackson-dataformat-csv;bundle-version="2.8.10"
 Bundle-ClassPath: .,
  WEB-INF/lib/aopalliance-1.0.jar,
  WEB-INF/lib/classmate-1.1.0.jar,

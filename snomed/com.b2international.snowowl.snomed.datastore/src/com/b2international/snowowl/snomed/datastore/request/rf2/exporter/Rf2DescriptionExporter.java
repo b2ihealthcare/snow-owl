@@ -99,7 +99,7 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 						description.getConceptId(),							// conceptId
 						description.getLanguageCode(),						// languageCode
 						description.getTypeId(),							// typeId
-						description.getTerm(),								// term
+						description.getTerm().replaceAll("[\n\r\t]+", " "),	// term (line breaks replaced with spaces)
 						description.getCaseSignificance().getConceptId()));	// caseSignificanceId
 	}
 }

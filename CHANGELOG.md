@@ -1,6 +1,29 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.13.0
+
+### Added
+- SNOMED CT Validation API (#307)
+  * Validate the content of SNOMED CT with custom queries and scripts
+- Support sorting of validation issues by label (8b59181)
+- SNOMED CT Query Language improvements (#306)
+  * Support `active`, `moduleId` filters on `Concept` and `Description` components
+  * Support `languageCode`, `typeId`, `caseSignificanceId`, `preferredIn`, `acceptableIn` and `languageRefSetId` filters on SNOMED CT Descriptions
+  * Support regular expressions and exact term matching in `term` filter
+  * Add `{{...}}` syntax to match the official SNOMED CT Query Language draft syntax
+
+### Performance
+- Ignore property chain hierarchies collection if no type IDs make use of this functionality, to speed up normal form computation (a31ce0c)
+  
+### Bugs
+- Replace line break and tab characters with empty spaces when exporting `query` and `term` fields in RF2 (#304, 920a0e2)
+- Fix issues with Simple type Reference Set DSV export (#309)
+- Fix invalid validation errors when trying to import SNAPSHOT RF2 with Unpublished effective times (#308)
+- Fix errors when trying to classify relationships with inactive source/destination concepts (fa540a8)
+- Fix errors when trying to expand inactive `ancestors` or `descendants` in SNOMED CT Concept API (86f0aa0)
+- Fix UUID validation in SNOMED CT RF2 import validator (#315)
+
 ## 6.12.1
 
 ### Changed
@@ -9,7 +32,7 @@ All notable changes to this project will be documented in this file.
 ### Bugs
 - Fix RF2 import lock timeout issue (#303)
 
-## 6.12.0  
+## 6.12.0
 
 ### Added
 - SNOMED CT Query Language feature (#298)
