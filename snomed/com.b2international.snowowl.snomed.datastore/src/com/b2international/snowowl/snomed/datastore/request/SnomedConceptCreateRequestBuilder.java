@@ -20,7 +20,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
@@ -34,7 +33,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
  */
 public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedConceptCreateRequestBuilder> {
 
-	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
 	private List<SnomedDescriptionCreateRequest> descriptions = newArrayList();
 	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
 	private List<SnomedRefSetMemberCreateRequest> members = newArrayList();
@@ -114,11 +112,6 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	
 	// Concept property builders
 
-	public SnomedConceptCreateRequestBuilder setDefinitionStatus(DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
-		return getSelf();
-	}
-	
 	public SnomedConceptCreateRequestBuilder setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
 		return getSelf();
@@ -143,7 +136,6 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	@Override
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedConceptCreateRequest req = (SnomedConceptCreateRequest) request;
-		req.setDefinitionStatus(definitionStatus);
 		req.setSubclassDefinitionStatus(subclassDefinitionStatus);
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
