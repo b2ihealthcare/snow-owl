@@ -21,8 +21,7 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 	public SnomedConceptCreateRequest createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {
 		final SnomedConceptCreateRequestBuilder builder = SnomedRequests
 				.prepareNewConcept()
-				.setModuleId(getModuleOrDefault(concept))
-				.setDefinitionStatus(concept.getDefinitionStatus());
+				.setModuleId(getModuleOrDefault(concept));
 		
 		String conceptId = concept.getConceptId();
 		if (conceptId != null) {
