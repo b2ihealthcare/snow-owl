@@ -31,7 +31,7 @@
 		<module>snomed</module>
 		<module>tests</module>
 		<module>releng</module>
-		<module>documentation</module>
+<!-- 		<module>documentation</module> -->
 	</modules>
 
 	<build>
