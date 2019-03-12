@@ -287,7 +287,7 @@ public final class ReasonerTaxonomyInferrer {
 			}
 			
 			final long conceptId = ontology.getConceptId(entity);
-			if (conceptId == DEPTH_CHANGE) { continue; }
+			if (conceptId == -1L) { continue; }  // This OWL class does not correspond to a SNOMED CT concept
 			if (!processedConceptIds.contains(conceptId)) { return false; }
 		}
 
@@ -297,7 +297,7 @@ public final class ReasonerTaxonomyInferrer {
 	private LongSet collectConceptIds(final Node<OWLClass> node, final LongSet conceptIds) {
 		for (final OWLClass entity : node) {
 			final long conceptId = ontology.getConceptId(entity);
-			if (conceptId == DEPTH_CHANGE) { continue; }
+			if (conceptId == -1L) { continue; } // This OWL class does not correspond to a SNOMED CT concept
 			conceptIds.add(conceptId);
 		}
 
