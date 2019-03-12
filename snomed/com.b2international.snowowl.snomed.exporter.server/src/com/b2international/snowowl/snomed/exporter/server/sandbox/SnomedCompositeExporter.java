@@ -38,14 +38,17 @@ import java.util.Map;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
@@ -103,8 +106,13 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 			if (!hasNext) {
 				
 				while (branchesToExport.hasNext()) {
+					
+					// reset index access counter
+					getIndexServerService().getBranchService(subExporter.getBranchPath());
+					
 					// close current sub exporter
 					subExporter.close();
+					
 					IBranchPath nextBranchPath = branchesToExport.next();
 					// open sub exporter for the next branch path
 					subExporter = new SnomedSubExporter(nextBranchPath, this);
@@ -130,7 +138,17 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 
 	@Override
 	public void close() throws Exception {
+		Iterator<IBranchPath> branches = getBranchesToExport();
+		while (branches.hasNext()) {
+			// reset index access counter for all branches
+			getIndexServerService().getBranchService(branches.next());
+		}
 		subExporter.close();
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private final IndexServerService getIndexServerService() {
+		return (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
 	}
 	
 	@Override

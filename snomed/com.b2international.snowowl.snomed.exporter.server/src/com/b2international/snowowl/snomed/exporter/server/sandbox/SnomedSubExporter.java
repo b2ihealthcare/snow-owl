@@ -75,6 +75,9 @@ public class SnomedSubExporter extends AbstractIterator<String> implements Itera
 		return endOfData();
 	}
 
+	public IBranchPath getBranchPath() {
+		return branchPath;
+	}
 
 	/*returns with the server side index service.*/
 	@SuppressWarnings("rawtypes")
