@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -212,30 +213,51 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	}
 
 	private boolean updateDefinitionStatus(final TransactionContext context, final Concept concept) {
-		if (null == definitionStatus) {
-			return false;
-		}
-
-		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
-		final String incomingDefinitionStatusId = definitionStatus.getConceptId();
-		final Optional<SnomedReferenceSetMember> axiomMember = Optional.ofNullable(members)
+		final String incomingDefinitionStatusId = definitionStatus == null ? DefinitionStatus.PRIMITIVE.getConceptId() : definitionStatus.getConceptId();
+		
+		final Optional<SnomedReferenceSetMember> newAxiomMember = Optional.ofNullable(members)
 				.map(Collection::stream)
 				.orElseGet(Stream::empty)
-					.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type())
+					.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getReferenceSetId()))
 					.findAny();
 		
-		if (axiomMember.isPresent()) {
+		final Set<String> previousOwlExpressions = getPreviousOwlExpressions(concept.getId(), context);
+		
+		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
+		final String calculatedPreviousDefinitionStatusId = calculateDefinitionStatusFromOwlExpressions(previousOwlExpressions, existingDefinitionStatusId);
+		
+		if (!newAxiomMember.isPresent() && !calculatedPreviousDefinitionStatusId.equals(existingDefinitionStatusId)) {
+			concept.setDefinitionStatus(context.lookup(calculatedPreviousDefinitionStatusId, Concept.class));
+			return true;
+		}
+		
+		if (newAxiomMember.isPresent()) {
 			// Calculate the definition status
-			final Set<SnomedReferenceSetMember> owlAxiomMembers = members.stream()
-					.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type())
+			final Set<String> newOwlExpressions = members.stream()
+					.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getReferenceSetId()))
+					.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 					.collect(Collectors.toSet());
 			
-			final String newDefinitionStatusId = calculateDefinitionStatusFromAxioms(owlAxiomMembers, existingDefinitionStatusId);
+			final String newDefinitionStatusId = calculateDefinitionStatusFromOwlExpressions(newOwlExpressions, existingDefinitionStatusId);
 			return updateDefinitionStatusIfPossible(context, concept, existingDefinitionStatusId, newDefinitionStatusId);
 		} else {
 			return updateDefinitionStatusIfPossible(context, concept, existingDefinitionStatusId, incomingDefinitionStatusId);
 		}
 		
+	}
+	
+	private Set<String> getPreviousOwlExpressions(String conceptId, TransactionContext context) {
+		final SnomedReferenceSetMembers axiomMembers = SnomedRequests.prepareSearchMember()
+			.filterByReferencedComponent(conceptId)
+			.filterByRefSet(Concepts.REFSET_OWL_AXIOM)
+			.build()
+			.execute(context);
+		
+		return Optional.ofNullable(axiomMembers.getItems())
+			.map(Collection::stream)
+			.orElseGet(Stream::empty)
+			.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
+			.collect(Collectors.toSet());
 	}
 
 	private boolean updateDefinitionStatusIfPossible(final TransactionContext context, final Concept concept, final String existingDefinitionStatusId, final String newDefinitionStatusId) {
@@ -247,12 +269,11 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 	}
 
-	private String calculateDefinitionStatusFromAxioms(Set<SnomedReferenceSetMember> owlAxiomMembers, String existingDefinitionStatusId) {
-		// Tokenize members on "(:" 
+	private String calculateDefinitionStatusFromOwlExpressions(Set<String> owlExpressions, String existingDefinitionStatusId) {
+		// Tokenize expressions on "(:" 
 			// Check if subclassof OR equivalentclasses follows up with id or not
-		for (SnomedReferenceSetMember axiomMember : owlAxiomMembers) {
-			final String owlAxiom = (String) axiomMember.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION);
-			final StringTokenizer tokenizer = new StringTokenizer(owlAxiom.toLowerCase(Locale.ENGLISH), "(:");
+		for (String owlExpression : owlExpressions) {
+			final StringTokenizer tokenizer = new StringTokenizer(owlExpression.toLowerCase(Locale.ENGLISH), "(:");
 			final String firstToken = tokenizer.nextToken();
 			if (firstToken.equals(SUBCLASSOF)) {
 				final String conceptId = tokenizer.nextToken().trim();
@@ -461,9 +482,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (getModuleId() != null) {
 			ids.add(getModuleId());
 		}
-		if (definitionStatus != null) {
-			ids.add(definitionStatus.getConceptId());
-		}
+
+		ids.addAll(ImmutableList.of(Concepts.PRIMITIVE, Concepts.FULLY_DEFINED));
+		
 		if (inactivationIndicator != null) {
 			ids.add(inactivationIndicator.getConceptId());
 		}
