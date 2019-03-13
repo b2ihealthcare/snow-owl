@@ -22,6 +22,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
@@ -53,11 +55,20 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
+import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
+import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
+import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
+import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 import com.b2international.snowowl.test.commons.snomed.DocumentBuilders;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -145,6 +156,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 		return DocumentBuilders.concept(id).effectiveTime(effectiveTime);
 	}
 	
+	protected final SnomedConstraintDocument.Builder constraint(AttributeConstraint constraint) {
+		return DocumentBuilders.constraint(constraint).effectiveTime(generateRandomEffectiveTime());
+	}
+	
 	protected final SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
 		return DocumentBuilders.description(id, type, term).effectiveTime(effectiveTime);
 	}
@@ -160,7 +175,35 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
 		return DocumentBuilders.member(id, referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(effectiveTime);
 	}
-
+	
+	protected final HierarchyConceptSetDefinition hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {
+		HierarchyConceptSetDefinition predicateRange = MrcmFactory.eINSTANCE.createHierarchyConceptSetDefinition();
+		predicateRange.setActive(true);
+		predicateRange.setUuid(UUID.randomUUID().toString());
+		predicateRange.setConceptId(focusConceptId);
+		predicateRange.setInclusionType(inclusionType);
+		return predicateRange;
+	}
+	
+	protected final RelationshipPredicate relationshipPredicate(ConceptSetDefinition predicateType, ConceptSetDefinition predicateRange) {
+		RelationshipPredicate conceptModelPredicate = MrcmFactory.eINSTANCE.createRelationshipPredicate();
+		conceptModelPredicate.setActive(true);
+		conceptModelPredicate.setUuid(UUID.randomUUID().toString());
+		conceptModelPredicate.setAttribute(predicateType);
+		conceptModelPredicate.setRange(predicateRange);
+		return conceptModelPredicate;
+	}
+	
+	protected final AttributeConstraint attributeConstraint(ConceptSetDefinition conceptSetDefinition, ConceptModelPredicate conceptModelPredicate) {
+		AttributeConstraint attributeConstraint = MrcmFactory.eINSTANCE.createAttributeConstraint();
+		attributeConstraint.setActive(true);
+		attributeConstraint.setDomain(conceptSetDefinition);
+		attributeConstraint.setUuid(UUID.randomUUID().toString());
+		attributeConstraint.setForm(ConstraintForm.ALL_FORMS);
+		attributeConstraint.setPredicate(conceptModelPredicate);
+		return attributeConstraint;
+	}
+	
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {
 		super.configureMapper(mapper);
@@ -186,7 +229,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.of(SnomedConceptDocument.class, SnomedRelationshipIndexEntry.class, SnomedDescriptionIndexEntry.class,
+		return ImmutableList.of(SnomedConceptDocument.class, SnomedConstraintDocument.class, SnomedRelationshipIndexEntry.class, SnomedDescriptionIndexEntry.class,
 				SnomedRefSetMemberIndexEntry.class, ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class);
 	}
 
@@ -203,5 +246,17 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 			}
 		}
 	}
+	
+	private final long generateRandomEffectiveTime() {
+		if (EffectiveTimes.UNSET_EFFECTIVE_TIME == effectiveTime) {
+			return EffectiveTimes.UNSET_EFFECTIVE_TIME;
+		}
+		
+		final Random rnd = new Random();
+		long randomEffectiveTime = rnd.nextInt(1000) + 1;
+		
+		return randomEffectiveTime > 500 ? EffectiveTimes.UNSET_EFFECTIVE_TIME : randomEffectiveTime;
+	}
+
 
 }
