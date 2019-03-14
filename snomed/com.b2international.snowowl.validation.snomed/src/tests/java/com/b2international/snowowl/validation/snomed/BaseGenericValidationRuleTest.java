@@ -117,6 +117,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 			// Char Types
 			writer.put(nextStorageKey(), concept(Concepts.CHARACTERISTIC_TYPE).parents(ROOT_CONCEPTL).build());
 			writer.put(nextStorageKey(), concept(Concepts.ADDITIONAL_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build());
+			writer.put(nextStorageKey(), concept(Concepts.DEFINING_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build());
+			writer.put(nextStorageKey(), concept(Concepts.QUALIFYING_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build());
+			writer.put(nextStorageKey(), concept(Concepts.INFERRED_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build());
+			writer.put(nextStorageKey(), concept(Concepts.STATED_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build());
 			// Description types
 			writer.put(nextStorageKey(), concept(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build());
 			writer.put(nextStorageKey(), concept(Concepts.SYNONYM).parents(DESCRIPTION_TYPEL).build());
