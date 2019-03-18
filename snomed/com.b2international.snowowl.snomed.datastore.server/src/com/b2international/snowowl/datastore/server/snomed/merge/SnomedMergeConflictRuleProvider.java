@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Collection;
 import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
 import com.b2international.snowowl.datastore.cdo.IMergeConflictRuleProvider;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedInvalidRelationshipMergeConflictRule;
-import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedLanguageRefsetMembersMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedRefsetMemberReferencingDetachedComponentRule;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.collect.ImmutableList;
@@ -35,7 +34,6 @@ public class SnomedMergeConflictRuleProvider implements IMergeConflictRuleProvid
 	public SnomedMergeConflictRuleProvider() {
 		rules = ImmutableList.<IMergeConflictRule>builder()
 				.add(new SnomedRefsetMemberReferencingDetachedComponentRule())
-				.add(new SnomedLanguageRefsetMembersMergeConflictRule())
 				.add(new SnomedInvalidRelationshipMergeConflictRule())
 				.build();
 	}
