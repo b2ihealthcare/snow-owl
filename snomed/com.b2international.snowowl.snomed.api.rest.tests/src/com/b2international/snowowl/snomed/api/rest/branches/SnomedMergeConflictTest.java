@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -414,7 +415,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals("Concept", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 	}
-
+	
+	@Ignore("Acceptability conflict rule has been removed")
 	@Test
 	public void differentAcceptabilityMergeConflict() throws Exception {
 		String descriptionId = createNewTextDefinition(branchPath, SnomedApiTestConstants.UK_PREFERRED_MAP);
@@ -537,6 +539,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(0, conflict.getConflictingAttributes().size());
 	}
 
+	@Ignore("Acceptability conflict rule has been removed")
 	@Test
 	public void noRebaseNewPreferredTerm() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
