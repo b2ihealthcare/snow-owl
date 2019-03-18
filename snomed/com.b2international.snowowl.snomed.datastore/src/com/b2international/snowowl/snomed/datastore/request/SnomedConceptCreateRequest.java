@@ -64,7 +64,6 @@ import com.google.common.collect.Multiset;
 public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest {
 
 	private static final String EQUIVALENTCLASSES = "equivalentclasses";
-	private static final String SUBCLASSOF = "subclassof";
 	
 	@Size(min = 2)
 	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
@@ -151,20 +150,14 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 			final StringTokenizer tokenizer = new StringTokenizer(owlExpression.toLowerCase(Locale.ENGLISH).trim(), "(:");
 			final String firstToken = tokenizer.nextToken();
 			
-			if (firstToken.equals(SUBCLASSOF)) {
+			if (firstToken.equals(EQUIVALENTCLASSES)) {
 				final String conceptId = tokenizer.nextToken().trim();
-				
-				if (SnomedIdentifiers.isConceptIdentifier(conceptId)) {
-					return DefinitionStatus.PRIMITIVE;
-				}
-			} else if(firstToken.equals(EQUIVALENTCLASSES)) {
-				final String conceptId = tokenizer.nextToken().trim();
-				
+
 				if (SnomedIdentifiers.isConceptIdentifier(conceptId)) {
 					return DefinitionStatus.FULLY_DEFINED;
 				}
 			}
-			
+			 
 		}
 		
 		// If there are no owl members on the newly created concept use fall back

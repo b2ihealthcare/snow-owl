@@ -77,7 +77,6 @@ import com.google.common.collect.Sets;
 public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateRequest {
 
 	private static final String EQUIVALENTCLASSES = "equivalentclasses";
-	private static final String SUBCLASSOF = "subclassof";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedConceptUpdateRequest.class);
 
@@ -224,7 +223,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		final Set<String> previousOwlExpressions = getPreviousOwlExpressions(concept.getId(), context);
 		
 		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
-		final String calculatedPreviousDefinitionStatusId = calculateDefinitionStatusFromOwlExpressions(previousOwlExpressions, existingDefinitionStatusId);
+		final String calculatedPreviousDefinitionStatusId = calculateDefinitionStatusFromOwlExpressions(previousOwlExpressions);
 		
 		if (!newAxiomMember.isPresent() && !calculatedPreviousDefinitionStatusId.equals(existingDefinitionStatusId)) {
 			concept.setDefinitionStatus(context.lookup(calculatedPreviousDefinitionStatusId, Concept.class));
@@ -238,7 +237,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 					.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 					.collect(Collectors.toSet());
 			
-			final String newDefinitionStatusId = calculateDefinitionStatusFromOwlExpressions(newOwlExpressions, existingDefinitionStatusId);
+			final String newDefinitionStatusId = calculateDefinitionStatusFromOwlExpressions(newOwlExpressions);
 			return updateDefinitionStatusIfPossible(context, concept, existingDefinitionStatusId, newDefinitionStatusId);
 		} else {
 			return updateDefinitionStatusIfPossible(context, concept, existingDefinitionStatusId, incomingDefinitionStatusId);
@@ -269,29 +268,23 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 	}
 
-	private String calculateDefinitionStatusFromOwlExpressions(Set<String> owlExpressions, String existingDefinitionStatusId) {
+	private String calculateDefinitionStatusFromOwlExpressions(Set<String> owlExpressions) {
+		// XXX: Always look for and prefer equivalentClasses, it means the concept is FULLY_DEFINED otherwise PRIMITIVE
 		// Tokenize expressions on "(:" 
-			// Check if subclassof OR equivalentclasses follows up with id or not
+			// Check if equivalentclasses follows up with valid SCT ID
 		for (String owlExpression : owlExpressions) {
 			final StringTokenizer tokenizer = new StringTokenizer(owlExpression.toLowerCase(Locale.ENGLISH), "(:");
 			final String firstToken = tokenizer.nextToken();
-			if (firstToken.equals(SUBCLASSOF)) {
-				final String conceptId = tokenizer.nextToken().trim();
-
-				if (SnomedIdentifiers.isConceptIdentifier(conceptId)) {
-					return Concepts.PRIMITIVE;
-				}
-			} else if (firstToken.equals(EQUIVALENTCLASSES)) {
+			if (firstToken.equals(EQUIVALENTCLASSES)) {
 				final String conceptId = tokenizer.nextToken().trim();
 
 				if (SnomedIdentifiers.isConceptIdentifier(conceptId)) {
 					return Concepts.FULLY_DEFINED;
 				}
-				
-			} 
+			}
 		}
 		
-		return existingDefinitionStatusId;
+		return Concepts.PRIMITIVE;
 	}
 
 	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final Concept concept) {
