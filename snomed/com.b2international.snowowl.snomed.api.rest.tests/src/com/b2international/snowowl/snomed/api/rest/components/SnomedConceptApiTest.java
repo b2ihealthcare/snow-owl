@@ -794,7 +794,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
 				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
-				.putAll(ImmutableMap.<String, Object>of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression))
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression)
 				.build();
 
 		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
@@ -824,7 +824,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
 				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
-				.putAll(ImmutableMap.<String, Object>of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlEquivalentClassesExpression))
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlEquivalentClassesExpression)
 				.build();
 
 		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
@@ -849,11 +849,11 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithOwlAxiomMemberWithComplexSubClassOfExpressionShouldDefaultToPrimitive() throws Exception {
-		final String owlEquivalentClassesExpression = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:73211009 ObjectSomeValuesFrom(:100106001 :100102001))) :8801005)";
+		final String owlSubClassOfExpression = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:73211009 ObjectSomeValuesFrom(:100106001 :100102001))) :8801005)";
 		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
 				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
-				.putAll(ImmutableMap.<String, Object>of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlEquivalentClassesExpression))
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubClassOfExpression)
 				.build();
 		
 		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
