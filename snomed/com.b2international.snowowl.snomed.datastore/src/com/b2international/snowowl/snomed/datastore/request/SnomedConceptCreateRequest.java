@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,9 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,7 +48,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
@@ -63,8 +60,6 @@ import com.google.common.collect.Multiset;
  */
 public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest {
 
-	private static final String EQUIVALENTCLASSES = "equivalentclasses";
-	
 	@Size(min = 2)
 	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
 	
@@ -146,22 +141,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 			.map(req -> req.getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 			.collect(Collectors.toSet());
 		
-		for (String owlExpression : owlExpressions) {
-			final StringTokenizer tokenizer = new StringTokenizer(owlExpression.toLowerCase(Locale.ENGLISH).trim(), "(:");
-			final String firstToken = tokenizer.nextToken();
-			
-			if (firstToken.equals(EQUIVALENTCLASSES)) {
-				final String conceptId = tokenizer.nextToken().trim();
-
-				if (SnomedIdentifiers.isConceptIdentifier(conceptId)) {
-					return DefinitionStatus.FULLY_DEFINED;
-				}
-			}
-			 
-		}
-		
-		// If there are no owl members on the newly created concept use fall back
-		return DefinitionStatus.PRIMITIVE;
+		return SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(owlExpressions);
 	}
 	
 	private void convertDescriptions(TransactionContext context, final String conceptId) {
