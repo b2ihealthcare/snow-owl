@@ -957,7 +957,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void testUpdateConceptDefinitionStatusWithAxiomMember() {
+	public void testUpdateConceptDefinitionStatusWithEquivalentClassesAxiomMember() {
 		final String conceptId = createNewConcept(branchPath);
 
 		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS));
@@ -989,6 +989,47 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		// Verify that definition status was updated to FULLY DEFINED
 		assertEquals(DefinitionStatus.FULLY_DEFINED, updatedConcept.getDefinitionStatus());
+	}
+	
+	public void testUpdateConceptDefinitionStatusWithSubClassOfAxiomMemberShouldChangeToPrimitive() {
+		final String conceptId = createNewConcept(branchPath);
+
+		// Update the definition status on concept
+		final Map<?, ?> definitionStatusUpdateRequestBody = ImmutableMap.<String, Object>builder()
+				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("commitComment", "Changed definition status of concept to fully defined")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, definitionStatusUpdateRequestBody).statusCode(204);
+		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS));
+		// Add a reference set member
+		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
+		newMember.setId(UUID.randomUUID().toString());
+		newMember.setActive(true);
+		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setProperties(properties);
+		newMember.setType(SnomedRefSetType.OWL_AXIOM);
+		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
+
+		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
+				.add(newMember)
+				.build();
+
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("members", SnomedReferenceSetMembers.of(changedMembers))
+				.put("commitComment", "Add new reference set member via concept update")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
+		
+		final SnomedConcept updatedConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "members()")
+				.statusCode(200)
+				.extract().as(SnomedConcept.class);
+
+		assertEquals(1, updatedConcept.getMembers().getTotal());
+		
+		// Verify that definition status was updated to FULLY DEFINED
+		assertEquals(DefinitionStatus.PRIMITIVE, updatedConcept.getDefinitionStatus());
 	}
 	
 }
