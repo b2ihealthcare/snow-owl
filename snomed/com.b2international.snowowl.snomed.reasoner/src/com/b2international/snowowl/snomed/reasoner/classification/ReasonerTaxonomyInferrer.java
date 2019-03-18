@@ -60,6 +60,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Ordering;
 
 /**
  * @since
@@ -250,7 +251,11 @@ public final class ReasonerTaxonomyInferrer {
 	private void addEquivalentConcepts(final LongSet conceptIds) {
 		final Set<String> conceptIdsAsString = LongSets.toStringSet(conceptIds);
 
-		// Try to get a representative element that is already persisted; if no such item exists, we will use the first element 
+		/*
+		 * Try to get the smallest SCTID (using natural ordering for Strings) that is
+		 * already persisted; if no such item exists, we will use the smallest SCTID
+		 * using the same ordering.
+		 */
 		final String representativeId = SnomedRequests.prepareSearchConcept()
 				.one()
 				.filterByIds(conceptIdsAsString)
@@ -260,7 +265,7 @@ public final class ReasonerTaxonomyInferrer {
 				.execute(branchContext)
 				.first()
 				.map(SnomedConcept::getId)
-				.orElseGet(() -> conceptIdsAsString.iterator().next());
+				.orElseGet(() -> Ordering.natural().min(conceptIdsAsString));
 
 		conceptIdsAsString.remove(representativeId);
 		equivalentConcepts.putAll(representativeId, conceptIdsAsString);
