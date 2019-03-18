@@ -61,13 +61,6 @@
 			</modules>
 		</profile>
 		<profile>
-			<!-- Include modules here that need to be versioned but not part of any build task -->
-			<id>included-for-versioning</id>
-			<modules>
-				<module>com.b2international.snowowl.server.deploy</module>
-			</modules>
-		</profile>
-		<profile>
       		<id>dependencies</id>
       		<modules>
       			<module>system.bundle.package.exporter</module>

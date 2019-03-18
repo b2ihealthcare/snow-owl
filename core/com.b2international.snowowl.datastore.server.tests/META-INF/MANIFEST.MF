@@ -8,5 +8,5 @@ Fragment-Host: com.b2international.snowowl.datastore.server;bundle-version="4.1.
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit;bundle-version="4.11.0",
  org.assertj.core;bundle-version="1.7.1",
- org.mockito.mockito-all;bundle-version="1.9.5",
+ org.mockito;bundle-version="2.13.0",
  com.b2international.snowowl.test.dependencies
