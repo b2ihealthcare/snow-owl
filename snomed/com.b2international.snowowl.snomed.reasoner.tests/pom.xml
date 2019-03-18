@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
-		<version>6.13.0-SNAPSHOT</version>
+		<version>6.13.1-SNAPSHOT</version>
 		<artifactId>snomed-parent</artifactId>
 	</parent>
 	<artifactId>com.b2international.snowowl.snomed.reasoner.tests</artifactId>
@@ -22,12 +22,17 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>ch.qos.logback.classic</id>
-								<versionRange>${logback.versionRange}</versionRange>
+								<versionRange>${logback.version}</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>ch.qos.logback.core</id>
-								<versionRange>${logback.versionRange}</versionRange>
+								<versionRange>${logback.version}</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.snowowl.logging.logbackconfiguration</id>
+								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>

@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>6.13.0</version>
+		<version>6.13.1-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
@@ -33,6 +33,7 @@
 		
 		<!-- SNOMED CT Classification Support -->
 		<module>com.b2international.snowowl.snomed.reasoner</module>
+		<module>com.b2international.snowowl.snomed.reasoner.tests</module>
 		
 		<!-- SNOMED CT SemanticEngine -->
 		<module>com.b2international.snowowl.snomed.semanticengine</module>
