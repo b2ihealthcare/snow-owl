@@ -26,6 +26,8 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.reasoner.OWLReasonerRuntimeException;
+import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.branch.Branch;
@@ -140,6 +142,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 
 		} catch (final OWLOntologyCreationException e) {
 			throw new ReasonerApiException("Exception caught while creating ontology instance.", e);
+		} catch (final ReasonerInterruptedException | OWLReasonerRuntimeException e) {
+			throw new ReasonerApiException("Exception caught while classifying the ontology.", e);	
 		}
 	}
 
