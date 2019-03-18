@@ -1,9 +1,12 @@
 package scripts
 
+import groovy.transform.Immutable
+
 import com.b2international.index.Hits
 import com.b2international.index.query.Expression
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
+import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
@@ -18,11 +21,15 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
 import com.google.common.base.Strings
+import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Lists
+import com.google.common.collect.Multimap
 import com.google.common.collect.Sets
 
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 List<ComponentIdentifier> issues = Lists.newArrayList()
+String oneMandatoryIsAPerConceptRuleId = "b93819e3-2679-46f6-a35d-3a749842d83e"
+
 def mrcmRules = SnomedRequests.prepareSearchConstraint()
 		.all()
 		.build()
@@ -31,10 +38,17 @@ def mrcmRules = SnomedRequests.prepareSearchConstraint()
 		.filter({SnomedConstraint constraint -> constraint.getPredicate() instanceof SnomedCardinalityPredicate
 			? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate() instanceof SnomedRelationshipPredicate
 			: constraint.getPredicate() instanceof SnomedRelationshipPredicate})
+		.filter({SnomedConstraint constraint -> !constraint.getId().equals(oneMandatoryIsAPerConceptRuleId)})
 		.collect();
 		
-def getApplicableConcepts = { SnomedConceptSetDefinition conceptSetDefinition ->
-	def conceptSetExpression = conceptSetDefinition.toEcl()
+def multimapBuilder = ImmutableMultimap.builder()
+for (SnomedConstraint constraint : mrcmRules) {
+	multimapBuilder.put(constraint.getDomain().toEcl(), constraint)	
+}
+
+Multimap<String, SnomedConstraint> mrcmRulesByDomain = multimapBuilder.build()
+
+def getApplicableConcepts = { String conceptSetExpression ->
 	def expression = Expressions.builder()
 		.filter(EclExpression.of(conceptSetExpression).resolveToExpression(ctx).getSync())
 		.build()
@@ -49,7 +63,11 @@ def getApplicableConcepts = { SnomedConceptSetDefinition conceptSetDefinition ->
 	Set<String> conceptIds = Sets.newHashSet()
 	searcher.search(conceptSetQuery)
 		.each({ids -> conceptIds.addAll(ids)})
-	return conceptIds	
+	return conceptIds
+}
+
+def getCachedApplicableConcepts = { String conceptSetExpression ->
+	return getApplicableConcepts(conceptSetExpression)
 }.memoize()
 		
 def getApplicableRules = { String conceptId ->
@@ -57,7 +75,7 @@ def getApplicableRules = { String conceptId ->
 	for (SnomedConstraint constraint: mrcmRules) {
 		
 		SnomedConceptSetDefinition domain = constraint.domain
-		if (getApplicableConcepts(domain).contains(conceptId)) {
+		if (getCachedApplicableConcepts(domain.toEcl()).contains(conceptId)) {
 			applicableConstraints.add(constraint)
 		}
 	}
@@ -65,59 +83,90 @@ def getApplicableRules = { String conceptId ->
 	return applicableConstraints
 }.memoize()
 
-SnomedRelationshipSearchRequestBuilder  requestBuilder = SnomedRequests.prepareSearchRelationship()
-		.filterByActive(true)
-		.all()
-		.setFields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID,
-			SnomedRelationshipIndexEntry.Fields.TYPE_ID,
-			SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
-			SnomedRelationshipIndexEntry.Fields.ID)
-
 if (params.isUnpublishedOnly) {
-	requestBuilder.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-}
-		
-Expression where = requestBuilder.build().prepareQuery(ctx);
+	SnomedRelationshipSearchRequestBuilder  requestBuilder = SnomedRequests.prepareSearchRelationship()
+			.filterByActive(true)
+			.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+			.all()
 
-final Query<String[]> relationshipQuery = Query.select(String[].class)
+	Expression where = requestBuilder.build().prepareQuery(ctx);
+
+	final Query<String[]> relationshipQuery = Query.select(String[].class)
 	.from(SnomedRelationshipIndexEntry.class)
-	.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID,
-		SnomedRelationshipIndexEntry.Fields.TYPE_ID,
+	.fields(SnomedRelationshipIndexEntry.Fields.ID,
+		SnomedRelationshipIndexEntry.Fields.SOURCE_ID,
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
-		SnomedRelationshipIndexEntry.Fields.ID,
+		SnomedRelationshipIndexEntry.Fields.TYPE_ID,
 		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID)
 	.where(where)
 	.limit(Integer.MAX_VALUE)
 	.build();
 
-Iterable<Hits<String[]>> queryResult = ctx.service(RevisionSearcher.class).search(relationshipQuery);
+	Iterable<Hits<String[]>> queryResult = ctx.service(RevisionSearcher.class).search(relationshipQuery);
 
-queryResult.each { hit ->
-	def sourceId = hit[0]
-	def typeId = hit[1]
-	def destinationId = hit[2]
-	def relationshipId = hit[3]
-	def charTypeId = hit[4]
-	
-	def applicableRules = getApplicableRules(sourceId)
-	
-	for (SnomedConstraint constraint : applicableRules) {
-		SnomedRelationshipPredicate predicate
-		if (constraint.getPredicate() instanceof SnomedCardinalityPredicate) {
-			predicate = ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate()
-		} else {
-			predicate = constraint.getPredicate()
+	queryResult.each { hit ->
+		def relationshipId = hit[0]
+		def sourceId = hit[1]
+		def destinationId = hit[2]
+		def typeId = hit[3]
+		def charTypeId = hit[4]
+
+		def applicableRules = getApplicableRules(sourceId)
+
+		for (SnomedConstraint constraint : applicableRules) {
+			SnomedRelationshipPredicate predicate
+			if (constraint.getPredicate() instanceof SnomedCardinalityPredicate) {
+				predicate = ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate()
+			} else {
+				predicate = constraint.getPredicate()
+			}
+
+			if (predicate.getAttributeExpression().equals(typeId)) {
+				if (getCachedApplicableConcepts(predicate.getRangeExpression()).contains(destinationId)) {
+					def predicateCharType = predicate.getCharacteristicTypeId()
+					if (!Strings.isNullOrEmpty(predicateCharType) && !charTypeId.equals(predicateCharType)) {
+						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
+					}
+				} else {
+					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
+				}
+			}
 		}
+	}
+} else {
+	for (String domainExpression : mrcmRulesByDomain.keySet()) {
+		Set<String> domain = getApplicableConcepts(domainExpression)
+		
+		for (SnomedConstraint constraint : mrcmRulesByDomain.get(domainExpression)) {
+			SnomedRelationshipPredicate predicate = constraint.getPredicate() instanceof SnomedCardinalityPredicate
+					? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate()
+					: constraint.getPredicate()
 
-		if (predicate.getAttributeExpression().equals(typeId)) {
-			 if (getApplicableConcepts(predicate.getRange()).contains(destinationId)) {
-				 def predicateCharType = predicate.getCharacteristicTypeId()
-				 if (!Strings.isNullOrEmpty(predicateCharType) && !charTypeId.equals(predicateCharType)) {
-					 issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
-				 }
-			 } else {
-				 issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))				 
-			 }
+			final String attributeExpression = predicate.getAttributeExpression()
+			final String rangeExpression = predicate.getRangeExpression()
+			final String charType = predicate.getCharacteristicTypeId()
+
+			final ExpressionBuilder expressionBuilder = Expressions.builder()
+					.filter(SnomedRelationshipIndexEntry.Expressions.active())
+					.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(domain))
+					.filter(SnomedRelationshipIndexEntry.Expressions.typeId(attributeExpression))
+					.mustNot(SnomedRelationshipIndexEntry.Expressions.destinationIds(getCachedApplicableConcepts(rangeExpression)))
+
+			if (!Strings.isNullOrEmpty(charType)) {
+				expressionBuilder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(charType))
+			}
+
+			final Query<String> query = Query.select(String.class)
+					.from(SnomedRelationshipIndexEntry.class)
+					.fields(SnomedRelationshipIndexEntry.Fields.ID)
+					.where(expressionBuilder.build())
+					.limit(10000)
+					.build()
+
+			searcher.scroll(query).forEach({ hit ->
+				String id = hit[0]
+				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
+			})
 		}
 	}
 }
