@@ -22,9 +22,6 @@
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
 		<kotlin.version>1.2.51</kotlin.version>
-		<protege.version>5.0.0-beta-21</protege.version>
-		<owlapi.version>4.1.3</owlapi.version>
-		<elk.version>0.4.3</elk.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.0.0</tycho.version>
 		<tycho-extras.version>1.0.0</tycho-extras.version>
@@ -291,68 +288,6 @@
 			<artifactId>log4j-over-slf4j</artifactId>
 			<version>${slf4j.version}</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>protege-common</artifactId>
-			<version>${protege.version}</version>
-			<scope>provided</scope>
-			<exclusions>
-				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
-				<exclusion>
-    				<groupId>org.apache.felix</groupId>
-  					<artifactId>org.apache.felix.main</artifactId>
-        		</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>protege-editor-core</artifactId>
-			<version>${protege.version}</version>
-			<scope>provided</scope>
-			<exclusions>
-				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
-				<exclusion>
-          			<groupId>org.eclipse.equinox</groupId>
-  					<artifactId>org.eclipse.equinox.common</artifactId>
-        		</exclusion>
-				<exclusion>
-          			<groupId>org.eclipse.equinox</groupId>
-  					<artifactId>org.eclipse.equinox.registry</artifactId>
-        		</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>protege-editor-owl</artifactId>
-			<version>${protege.version}</version>
-			<scope>provided</scope>
-			<exclusions>
-				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
-        		<exclusion>
-		          	<groupId>log4j</groupId>
-  					<artifactId>log4j</artifactId>
-		        </exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.owlapi</groupId>
-			<artifactId>owlapi-osgidistribution</artifactId>
-			<version>${owlapi.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.semanticweb.elk</groupId>
-			<artifactId>elk-protege</artifactId>
-			<version>${elk.version}</version>
-			<scope>provided</scope>
-			<exclusions>
-				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
-				<exclusion>
-					<groupId>log4j</groupId>
-  					<artifactId>log4j</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

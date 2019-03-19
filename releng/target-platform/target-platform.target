@@ -38,6 +38,7 @@
 <unit id="osgi.enterprise.source" version="4.2.0.v201108120515"/>
 <unit id="org.ccil.cowan.tagsoup" version="1.2.0.v201202211000"/>
 <unit id="org.mockito" version="2.13.0.v20180426-1843"/>
+<unit id="javax.ws.rs" version="2.0.1.v201504171603"/>
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
