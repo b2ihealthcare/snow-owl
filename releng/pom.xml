@@ -34,38 +34,9 @@
 		</plugins>
 	</build>
 	
-	<profiles>
-		<profile>
-			<id>target_site</id>
-			<modules>
-				<module>system.bundle.package.exporter</module>
-				<module>com.b2international.snowowl.server.target.update</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>site</id>
-			<modules>
-				<module>com.b2international.snowowl.server.update</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>dist</id>
-			<activation>
-				<property>
-					<name>dist</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<modules>
-				<module>distribution</module>
-			</modules>
-		</profile>
-		<profile>
-      		<id>dependencies</id>
-      		<modules>
-      			<module>system.bundle.package.exporter</module>
-      		</modules>
-    	</profile>
-	</profiles>
+	<modules>
+		<module>com.b2international.snowowl.server.update</module>
+		<module>distribution</module>
+	</modules>
 	
 </project>
