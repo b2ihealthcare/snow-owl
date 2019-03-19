@@ -777,35 +777,6 @@
 
 	<profiles>
 		<profile>
-			<id>dependencies</id>
-			<repositories>
-				<repository>
-					<id>eclipse-4.3</id>
-					<url>http://download.eclipse.org/eclipse/updates/4.3/R-4.3.2-201402211700/</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>latest_orbit_site</id>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository</url>
-					<layout>p2</layout>
-				</repository>
-			</repositories>
-		</profile>
-		<profile>
-			<id>tp_dependencies</id>
-			<properties>
-				<target.platform.version>6.10.0-SNAPSHOT</target.platform.version>
-				<target.platform.url>${nexus.url}/content/unzip/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.target.update/${target.platform.version}/com.b2international.snowowl.server.target.update-${target.platform.version}.zip-unzip/</target.platform.url>
-			</properties>
-			<repositories>
-				<repository>
-					<id>tp</id>
-					<url>${target.platform.url}</url>
-					<layout>p2</layout>
-				</repository>
-			</repositories>
-		</profile>
-		<profile>
 			<id>docs</id>
 			<activation>
 				<property>
