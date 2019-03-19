@@ -32,22 +32,17 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>org.eclipse.jetty.osgi.boot</id>
-								<versionRange>[8.1.0,8.2.0)</versionRange>
+								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>ch.qos.logback.classic</id>
-								<versionRange>[1.0.7,1.0.8)</versionRange>
+								<versionRange>${logback.versionRange}</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>ch.qos.logback.core</id>
-								<versionRange>[1.0.7,1.0.8)</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>ch.qos.logback.slf4j</id>
-								<versionRange>[1.0.7,1.0.8)</versionRange>
+								<versionRange>${logback.versionRange}</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>

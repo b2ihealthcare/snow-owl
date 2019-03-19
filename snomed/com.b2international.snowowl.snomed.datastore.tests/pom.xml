@@ -22,17 +22,12 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>ch.qos.logback.classic</id>
-								<versionRange>${logback.version}</versionRange>
+								<versionRange>${logback.versionRange}</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>ch.qos.logback.core</id>
-								<versionRange>${logback.version}</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>ch.qos.logback.slf4j</id>
-								<versionRange>${logback.version}</versionRange>
+								<versionRange>${logback.versionRange}</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>

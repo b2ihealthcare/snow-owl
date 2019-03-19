@@ -381,6 +381,12 @@
       		<version>${jetty.version}</version>
       		<scope>provided</scope>
     	</dependency>
+    	<dependency>
+	    	<groupId>org.apache.servicemix.specs</groupId>
+		    <artifactId>org.apache.servicemix.specs.jaxp-api-1.4</artifactId>
+		    <version>2.9.0</version>
+		    <scope>provided</scope>
+    	</dependency>
 	</dependencies>
 
 	<build>
@@ -419,26 +425,29 @@
 				<configuration>
 					<resolver>p2</resolver>
 					<pomDependencies>consider</pomDependencies>
+					<target>
+						<artifact>
+							<groupId>${project.groupId}</groupId>
+							<artifactId>target-platform</artifactId>
+							<version>${project.version}</version>
+						</artifact>
+					</target>
 					<filters>
-						<!-- work around Equinox bug 348045 -->
-						<!-- Removes the extension bundle from the available bundles for the
-							javax.servlet package -->
-						<filter>
-							<type>java-package</type>
-							<id>javax.servlet</id>
-							<restrictTo>
-								<type>osgi-bundle</type>
-								<id>javax.servlet</id>
-								<versionRange>[2.6.0,3.1.0)</versionRange>
-							</restrictTo>
-						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
-							<id>com.ibm.icu</id>
+							<id>org.eclipse.osgi</id>
 							<restrictTo>
-								<versionRange>[50.0.0,51.0.0)</versionRange>
+								<versionRange>[3.9.1,3.10.0]</versionRange>
 							</restrictTo>
 						</filter>
+						<!-- work around Equinox bug 348045 -->
+						<!-- Removes the extension bundle from the available bundles for the 
+							javax.servlet package -->
+						<filter>
+            				<type>p2-installable-unit</type>
+            				<id>org.eclipse.equinox.servletbridge.extensionbundle</id>
+            				<removeAll />
+         				</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.codehaus.groovy</id>
@@ -555,7 +564,7 @@
 						<!-- Restrict SLF4J version to Virgo 3.7.0 compatible version -->
 						<filter>
 							<type>p2-installable-unit</type>
-							<id>org.slf4j.api</id>
+							<id>slf4j.api</id>
 							<restrictTo>
 								<versionRange>${slf4j.version}</versionRange>
 							</restrictTo>
@@ -638,6 +647,11 @@
 							<restrictTo>
 								<versionRange>${commons.collections.version}</versionRange>
 							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.slf4j.api</id>
+							<removeAll />
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>

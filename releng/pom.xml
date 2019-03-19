@@ -36,6 +36,7 @@
 	
 	<modules>
 		<module>com.b2international.snowowl.server.update</module>
+		<module>target-platform</module>
 		<module>distribution</module>
 	</modules>
 	
