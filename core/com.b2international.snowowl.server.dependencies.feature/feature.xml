@@ -250,13 +250,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="javax.activation"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.antlr.runtime"
          download-size="0"
          install-size="0"
@@ -778,13 +771,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.slf4j.log4j"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.yaml.snakeyaml"
          download-size="0"
          install-size="0"
@@ -838,14 +824,6 @@ Visit us at http://b2i.sg
          download-size="0"
          install-size="0"
          version="0.0.0"/>
-
-   <plugin
-         id="system.bundle.package.exporter"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
 
    <plugin
          id="org.apache.el"
@@ -975,13 +953,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.fasterxml.jackson.dataformat.jackson-dataformat-cbor"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.slf4j.api"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -1198,11 +1169,47 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="ch.qos.logback.slf4j"
+         id="com.diffplug.osgi.extension.sun.misc"
          download-size="0"
          install-size="0"
          version="0.0.0"
          fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="com.diffplug.osgi.extension.sun.reflect"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="jcl.over.slf4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="jul.to.slf4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="log4j.over.slf4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="slf4j.api"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
          unpack="false"/>
 
 </feature>
