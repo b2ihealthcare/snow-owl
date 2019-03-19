@@ -36,10 +36,10 @@
 		<module>com.b2international.snowowl.snomed.reasoner.tests</module>
 		
 		<!-- SNOMED CT SemanticEngine -->
-		<module>com.b2international.snowowl.snomed.semanticengine</module>
-		<module>com.b2international.snowowl.snomed.semanticengine.test</module>
-		<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module>
-		<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module>
+<!-- 		<module>com.b2international.snowowl.snomed.semanticengine</module> -->
+<!-- 		<module>com.b2international.snowowl.snomed.semanticengine.test</module> -->
+<!-- 		<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module> -->
+<!-- 		<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module> -->
 		
 		<!-- SNOMED CT MRCM Support -->
 		<module>com.b2international.snowowl.snomed.mrcm.model</module>
@@ -50,7 +50,7 @@
 		
 		<!-- SNOMED CT DSLs -->
 		<module>com.b2international.snowowl.snomed.dsl</module>
-		<module>com.b2international.snowowl.snomed.scg</module>
+<!-- 		<module>com.b2international.snowowl.snomed.scg</module> -->
 		<module>com.b2international.snowowl.snomed.ecl</module>
 		<module>com.b2international.snowowl.snomed.ql</module>
 		<module>com.b2international.snowowl.snomed.ecl.tests</module>
