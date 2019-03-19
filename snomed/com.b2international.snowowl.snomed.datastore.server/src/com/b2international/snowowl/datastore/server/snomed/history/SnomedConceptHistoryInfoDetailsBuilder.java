@@ -16,33 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.history;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.ACCEPTABILITY_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CASE_SIGNIFICANCE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CHARACTERISTIC_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CORRELATION_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DEFINITION_STATUS_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_FORMAT_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_LENGTH_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_TERM_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.EXHAUSTIVE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_TARGET_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODIFIER_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.OPERATOR_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.RELATIONSHIP_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.RELEASED_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.SOURCE_EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.STATUS_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.TARGET_EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNION_GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNIT_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_ID_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.*;
 
 import java.text.DateFormat;
 import java.util.Collection;
@@ -82,6 +56,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
 
 /**
@@ -297,6 +272,9 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 				} else {
 					return "Unknown change on status feature for '" + changedObject + "'.";
 				}
+			} else if (SERIALIZED_VALUE_FEATURE_NAME.equals(featureName)) {
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
+						getReferencedComponentLabel((SnomedConcreteDataTypeRefSetMember) changedObject)).toString();
 			}
 		} else if (changedObject instanceof SnomedComplexMapRefSetMember) {
 			if (CORRELATION_ID_FEATURE_NAME.equals(featureName)) {
@@ -557,6 +535,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 					map.put(VALUE_ID_FEATURE_NAME, "value");
 					map.put(SOURCE_EFFECTIVE_TIME_FEATURE_NAME, "source effective time");
 					map.put(TARGET_EFFECTIVE_TIME_FEATURE_NAME, "target effective time");
+					map.put(SERIALIZED_VALUE_FEATURE_NAME, "value");
 				}
 			}
 		}
