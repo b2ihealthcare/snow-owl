@@ -543,16 +543,21 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	}
 	
 	private String getReferencedComponentLabel(final SnomedRefSetMember member) {
-		switch (member.getReferencedComponentType()) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
-			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
-				return getConceptLabel(getConcept(member.getReferencedComponentId(), member.cdoView()));
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-				return getDescriptionLabel(getDescription(member.getReferencedComponentId(), member.cdoView()));
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-				return getRelationshipLabel(getRelationship(member.getReferencedComponentId(), member.cdoView()));
-			default:
-				throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + member.getReferencedComponentType());
+		try {
+			switch (member.getReferencedComponentType()) {
+				case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
+				case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
+					return getConceptLabel(getConcept(member.getReferencedComponentId(), member.cdoView()));
+				case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+					return getDescriptionLabel(getDescription(member.getReferencedComponentId(), member.cdoView()));
+				case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+					return getRelationshipLabel(getRelationship(member.getReferencedComponentId(), member.cdoView()));
+				default:
+					throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + member.getReferencedComponentType());
+			}
+		} catch (final InvalidCacheLoadException e) {
+			// Component could not be loaded, fall back to referenced component ID
+			return member.getReferencedComponentId();
 		}
 	}
 
