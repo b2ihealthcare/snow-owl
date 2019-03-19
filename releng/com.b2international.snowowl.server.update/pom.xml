@@ -210,7 +210,7 @@
 								<configuration>
 									<resources>
 										<resource>
-											<directory>../com.b2international.snowowl.server.update/assembly/h2</directory>
+											<directory>assembly/h2</directory>
 											<includes>
 												<include>snowowl_config.yml</include>
 											</includes>
