@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,7 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 import com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.IdRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -255,21 +257,47 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					.map(RelationshipChange::getRelationship)
 					.map(ReasonerRelationship::getSourceId)
 					.collect(Collectors.toSet());
+			
+			final Set<String> originRelationshipIds = nextChanges.stream()
+					.filter(change -> ChangeNature.INFERRED.equals(change.getChangeNature()))
+					.map(RelationshipChange::getRelationship)
+					.map(ReasonerRelationship::getOriginId)
+					.filter(id -> id != null)
+					.collect(Collectors.toSet());
 
-			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
+			final Map<String, String> originSourceIds = SnomedRequests.prepareSearchRelationship()
+				.setLimit(originRelationshipIds.size())
+				.filterByIds(originRelationshipIds)
+				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
+				.build()
+				.execute(context)
+				.stream()
+				.collect(Collectors.toMap(
+						SnomedRelationship::getId, // keys: ID of the "origin" relationship  
+						SnomedRelationship::getSourceId)); // values: source concept ID of the "origin" relationship
+			
 			conceptIds.removeAll(conceptIdsToSkip);
 			namespaceAndModuleAssigner.collectRelationshipNamespacesAndModules(conceptIds, context);
 
 			for (final RelationshipChange change : nextChanges) {
 				final ReasonerRelationship relationship = change.getRelationship();
 
+				// Relationship changes related to merged concepts should not be applied
 				if (conceptIdsToSkip.contains(relationship.getSourceId()) || conceptIdsToSkip.contains(relationship.getDestinationId())) {
 					continue;
 				}
 				
-				// Do not reference concepts which were handled by the equivalent concept merger
 				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
-					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
+					
+					/*
+					 * Do not "infer" any relationship that is passed down from a concept that was
+					 * already merged by the equivalent concept merging step
+					 */
+					final String originSourceId = originSourceIds.get(relationship.getOriginId());
+					if (!conceptIdsToSkip.contains(originSourceId)) {
+						addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
+					}
+					
 				} else {
 					removeOrDeactivate(bulkRequestBuilder, relationship);
 				}
@@ -303,6 +331,23 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					.map(m -> m.getReferencedComponentId())
 					.collect(Collectors.toSet());
 
+			final Set<String> originMemberIds = nextChanges.stream()
+					.filter(change -> ChangeNature.INFERRED.equals(change.getChangeNature()))
+					.map(ConcreteDomainChange::getConcreteDomainMember)
+					.map(ReasonerConcreteDomainMember::getOriginMemberId)
+					.filter(id -> id != null)
+					.collect(Collectors.toSet());
+			
+			final Map<String, String> originReferencedComponentIds = SnomedRequests.prepareSearchMember()
+					.setLimit(originMemberIds.size())
+					.filterByIds(originMemberIds)
+					.build()
+					.execute(context)
+					.stream()
+					.collect(Collectors.toMap(
+							m -> m.getId(), // keys: ID of the "origin" CD member
+							m -> m.getReferencedComponent().getId())); // values: referenced component ID of the "origin" CD member
+
 			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
 			conceptIds.removeAll(conceptIdsToSkip);
 			namespaceAndModuleAssigner.collectConcreteDomainModules(conceptIds, context);
@@ -310,13 +355,22 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			for (final ConcreteDomainChange change : nextChanges) {
 				final ReasonerConcreteDomainMember referenceSetMember = change.getConcreteDomainMember();
 
+				// CD member changes related to merged concepts should not be applied
 				if (conceptIdsToSkip.contains(referenceSetMember.getReferencedComponentId())) {
 					continue;
 				}
 				
-				// Do not reference concepts which were handled by the equivalent concept merger
 				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
-					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
+					
+					/*
+					 * Do not "infer" any CD member that is passed down from a concept that was
+					 * already merged by the equivalent concept merging step
+					 */
+					final String originReferencedComponentId = originReferencedComponentIds.get(referenceSetMember.getOriginMemberId());
+					if (!conceptIdsToSkip.contains(originReferencedComponentId)) {
+						addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
+					}
+					
 				} else {
 					removeOrDeactivate(bulkRequestBuilder, referenceSetMember);
 				}
