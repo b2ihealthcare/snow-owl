@@ -19,6 +19,8 @@ package com.b2international.snowowl.validation.snomed;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
+import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -27,9 +29,14 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
+import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 
 /**
  * 
@@ -111,6 +118,41 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, d1.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, d2.getId()));
+	}
+	
+	@Test
+	public void rule_mrcm_constraint() throws Exception {
+		final String ruleId = "rule_mrcm_constraint";
+		indexRule(ruleId);
+		
+		//Create MRCM rule
+		final HierarchyConceptSetDefinition conceptSetDefinition = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF);
+		final HierarchyConceptSetDefinition predicateType = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
+		final HierarchyConceptSetDefinition predicateRange = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
+		final RelationshipPredicate conceptModelPredicate = relationshipPredicate(predicateType, predicateRange);
+		
+		final AttributeConstraint attributeConstraint = attributeConstraint(conceptSetDefinition, conceptModelPredicate);
+		long attributeConsrtaintStorageKey = nextStorageKey();
+		((InternalCDOObject) attributeConstraint).cdoInternalSetID(CDOIDUtil.createLong(attributeConsrtaintStorageKey));
+	
+		final SnomedConstraintDocument constraint = constraint(attributeConstraint).build();
+		indexRevision(MAIN, attributeConsrtaintStorageKey, constraint);
+		
+		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.group(1).build();
+		indexRevision(MAIN, nextStorageKey(), relationship1);
+		
+		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+				.group(1).build();
+		indexRevision(MAIN, nextStorageKey(), relationship2);
+		
+		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+				.group(2).build();
+		indexRevision(MAIN, nextStorageKey(), relationship3);
+		
+		ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()));
 	}
 	
 }

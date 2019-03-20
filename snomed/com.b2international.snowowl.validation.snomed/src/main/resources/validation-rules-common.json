@@ -16,5 +16,14 @@
     "checkType": "NORMAL",
     "type": "script-groovy",
     "implementation": "scripts/ruleSnomedCommon2.groovy"
-  }
+  },
+  {
+  	"id": "rule_mrcm_constraint",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Relationships must follow MRCM rules.",
+    "severity": "ERROR",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule_mrcm_constraint.groovy"
+  },
 ]
