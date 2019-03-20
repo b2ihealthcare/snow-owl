@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.datastore.request;
+
+import java.util.Collections;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.options.Options;
@@ -60,6 +62,10 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponent(Iterable<String> referencedComponentIds) {
 		return addOption(OptionKey.REFERENCED_COMPONENT, Collections3.toImmutableSet(referencedComponentIds));
+	}
+	
+	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final SnomedRefSetType refSetType) {
+		return filterByRefSetType(Collections.singleton(refSetType));
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final Iterable<SnomedRefSetType> refSetTypes) {
