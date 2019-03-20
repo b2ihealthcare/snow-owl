@@ -159,8 +159,10 @@ if (params.isUnpublishedOnly) {
 					.limit(10000)
 					.build()
 
-			searcher.scroll(query).forEach({ id ->
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
+			searcher.scroll(query).forEach({ hits ->
+				hits.forEach({ id ->
+					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
+				})
 			})
 		}
 	}
