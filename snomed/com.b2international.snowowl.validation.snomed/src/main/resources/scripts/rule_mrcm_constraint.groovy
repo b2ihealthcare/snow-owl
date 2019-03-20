@@ -121,13 +121,9 @@ if (params.isUnpublishedOnly) {
 				predicate = constraint.getPredicate()
 			}
 
-			if (predicate.getAttributeExpression().equals(typeId)) {
-				if (getCachedApplicableConcepts(predicate.getRangeExpression()).contains(destinationId)) {
-					def predicateCharType = predicate.getCharacteristicTypeId()
-					if (!Strings.isNullOrEmpty(predicateCharType) && !charTypeId.equals(predicateCharType)) {
-						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
-					}
-				} else {
+			def predicateCharType = predicate.getCharacteristicTypeId()
+			if (predicate.getAttributeExpression().equals(typeId) && (Strings.isNullOrEmpty(predicateCharType) || charTypeId.equals(predicateCharType))) {
+				if (!getCachedApplicableConcepts(predicate.getRangeExpression()).contains(destinationId)) {
 					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
 				}
 			}
