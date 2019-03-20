@@ -53,7 +53,7 @@ def getApplicableConcepts = { String conceptSetExpression ->
 		.filter(EclExpression.of(conceptSetExpression).resolveToExpression(ctx).getSync())
 		.build()
 	
-	Query<String[]> conceptSetQuery = Query.select(String[].class)
+	Query<String> conceptSetQuery = Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
 		.where(expression)
@@ -62,7 +62,7 @@ def getApplicableConcepts = { String conceptSetExpression ->
 	
 	Set<String> conceptIds = Sets.newHashSet()
 	searcher.search(conceptSetQuery)
-		.each({ids -> conceptIds.addAll(ids)})
+		.each({id -> conceptIds.add(id)})
 	return conceptIds
 }
 
@@ -163,8 +163,7 @@ if (params.isUnpublishedOnly) {
 					.limit(10000)
 					.build()
 
-			searcher.scroll(query).forEach({ hit ->
-				String id = hit[0]
+			searcher.scroll(query).forEach({ id ->
 				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
 			})
 		}
