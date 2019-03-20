@@ -23,6 +23,7 @@
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
+		<snomed.owl.toolkit.version>2.3.1</snomed.owl.toolkit.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.0.0</tycho.version>
 		<tycho-extras.version>1.0.0</tycho-extras.version>
@@ -386,6 +387,13 @@
 		    <artifactId>org.apache.servicemix.specs.jaxp-api-1.4</artifactId>
 		    <version>2.9.0</version>
 		    <scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>org.snomed.otf</groupId>
+			<artifactId>snomed-owl-toolkit</artifactId>
+			<version>${snomed.owl.toolkit.version}</version>
+			<classifier>bundle</classifier>
+			<scope>provided</scope>
     	</dependency>
 	</dependencies>
 
@@ -820,6 +828,16 @@
         		<updatePolicy>never</updatePolicy>
     		</snapshots>
 		</repository>
+		<repository>
+        	<id>snomed-international-releases</id>
+        	<url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
+        	<releases>
+           		<enabled>true</enabled>
+        	</releases>
+        	<snapshots>
+          		<enabled>false</enabled>
+        	</snapshots>
+     	</repository>
 	</repositories>
 
 </project>
