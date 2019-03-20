@@ -25,5 +25,5 @@
     "checkType": "EXPENSIVE",
     "type": "script-groovy",
     "implementation": "scripts/rule_mrcm_constraint.groovy"
-  },
+  }
 ]

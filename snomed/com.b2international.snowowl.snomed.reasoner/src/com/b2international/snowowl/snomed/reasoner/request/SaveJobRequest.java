@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collections;
 import java.util.List;
@@ -388,12 +389,28 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				.stream()
 				.map(SnomedConcept::getId)
 				.collect(Collectors.toSet());
+
+		// Prepare to provide namespace-module for inbound relationship source concepts as well
+		final Set<String> relationshipChangeConceptIds = newHashSet(conceptIdsToKeep);
 		
-		assigner.collectRelationshipNamespacesAndModules(conceptIdsToKeep, context);
+		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
+			for (final SnomedRelationship relationship : conceptToKeep.getInboundRelationships()) {
+				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
+					relationshipChangeConceptIds.add(relationship.getSourceId());
+				}
+			}
+		}
+		
+		assigner.collectRelationshipNamespacesAndModules(relationshipChangeConceptIds, context);
 		
 		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
 			
 			for (final SnomedRelationship relationship : conceptToKeep.getInboundRelationships()) {
+				// Already handled as another concept's outbound relationship
+				if (relationship.getId() == null) {
+					continue;
+				}
+				
 				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
 					relationship.setId(null);
 					addComponent(bulkRequestBuilder, assigner, relationship);
@@ -403,6 +420,11 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			}
 			
 			for (final SnomedRelationship relationship : conceptToKeep.getRelationships()) {
+				// Already handled as another concept's inbound relationship
+				if (relationship.getId() == null) {
+					continue;
+				}
+				
 				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
 					relationship.setId(null);
 					addComponent(bulkRequestBuilder, assigner, relationship);
@@ -412,6 +434,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			}
 		}
 		
+		// CD members are always "outbound", however, so the concept SCTID set can be reduced
 		assigner.clear();
 		assigner.collectConcreteDomainModules(conceptIdsToKeep, context);
 		
