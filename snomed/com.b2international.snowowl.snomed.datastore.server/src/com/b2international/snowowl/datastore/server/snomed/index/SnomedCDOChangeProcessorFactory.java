@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
+import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
@@ -33,9 +33,11 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
-		final ApplicationContext context = ApplicationContext.getInstance();
-		final RevisionIndex index = context.getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-		return new SnomedCDOChangeProcessor(branchPath, index);
+		return new RepositoryRequest<>(SnomedDatastoreActivator.REPOSITORY_UUID,
+			new BranchRequest<>(branchPath.getPath(), branchContext -> {
+				return new SnomedCDOChangeProcessor(branchContext);
+			})
+		).execute(SnowOwlApplication.INSTANCE.getEnviroment());
 	}
 	
 	@Override

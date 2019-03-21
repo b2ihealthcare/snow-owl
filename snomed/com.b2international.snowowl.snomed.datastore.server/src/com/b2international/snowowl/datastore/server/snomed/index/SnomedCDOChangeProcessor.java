@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -58,6 +58,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.google.common.collect.ImmutableList;
@@ -70,11 +71,14 @@ import com.google.common.collect.Sets;
  */
 public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 
+	private final SnomedOWLExpressionConverter expressionConverter;
+	
 	private Taxonomy inferredTaxonomy;
 	private Taxonomy statedTaxonomy;
 	
-	SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index) {
-		super(branchPath, index);
+	SnomedCDOChangeProcessor(final BranchContext context) {
+		super(context.branch().branchPath(), context.service(RevisionIndex.class));
+		this.expressionConverter = new SnomedOWLExpressionConverter(context);
 	}
 	
 	/*updates the documents in the indexes based on the dirty, detached and new components.*/
@@ -203,7 +207,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new DescriptionChangeProcessor())
 				.add(new RelationshipChangeProcessor())
-				.add(new RefSetMemberChangeProcessor())
+				.add(new RefSetMemberChangeProcessor(expressionConverter))
 				.add(new ConstraintChangeProcessor())
 				.build();
 	}

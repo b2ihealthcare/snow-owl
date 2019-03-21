@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.snomed.core.ecl.TestBranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.Iterables;
@@ -31,7 +33,7 @@ import com.google.common.collect.Iterables;
  */
 public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 	
-	private RefSetMemberChangeProcessor processor = new RefSetMemberChangeProcessor();
+	private RefSetMemberChangeProcessor processor = new RefSetMemberChangeProcessor(new SnomedOWLExpressionConverter(TestBranchContext.on(MAIN).build()));
 
 	@Test
 	public void newMember() throws Exception {
