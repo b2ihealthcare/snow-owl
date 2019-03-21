@@ -17,14 +17,13 @@ package com.b2international.snowowl.snomed.reasoner;
 
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-
 import com.b2international.index.Index;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.PostRunCapableBootstrapFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
@@ -32,15 +31,13 @@ import com.b2international.snowowl.snomed.reasoner.classification.Classification
 /**
  * @since 7.0
  */
-public final class SnomedReasonerBootstrap extends DefaultBootstrapFragment {
+public final class SnomedReasonerBootstrap extends DefaultBootstrapFragment implements PostRunCapableBootstrapFragment {
 
 	@Override
-	public void run(final SnowOwlConfiguration configuration, 
-			final Environment env, 
-			final IProgressMonitor monitor) throws Exception {
-
+	public void postRun(SnowOwlConfiguration configuration, Environment env) {
+		
 		if (env.isServer() || env.isEmbedded()) {
-
+			
 			final RepositoryManager repositoryManager = env.service(RepositoryManager.class);
 			final Repository repository = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID);
 			final Index repositoryIndex = repository.service(Index.class);
@@ -52,5 +49,6 @@ public final class SnomedReasonerBootstrap extends DefaultBootstrapFragment {
 			
 			env.services().registerService(ClassificationTracker.class, classificationTracker);
 		}
+		
 	}
 }
