@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -286,16 +286,6 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertDocEquals(member, actual);
 	}
 	
-	private SnomedOWLExpressionConverterResult toSnomedOWLRelationships(String referencedComponentId, String owlExpression) {
-		return index().read(RevisionBranch.MAIN_PATH, searcher -> {
-			return new SnomedOWLExpressionConverter(
-				TestBranchContext.on(searcher.branch())
-					.with(RevisionSearcher.class, searcher)
-				.build()
-			).toSnomedOWLRelationships(referencedComponentId, owlExpression);
-		});
-	}
-
 	@Test
 	public void indexOWLAxiomMember_UngroupedProperties() throws Exception {
 		final String referencedComponentId = "245567007";
@@ -378,6 +368,65 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		);
 		assertThat(actual.getGciAxiomRelationships()).isEmpty();
 		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexOWLAxiomMember_GCIAxiom() throws Exception {
+		final String referencedComponentId = "231907006";
+		final String owlExpression = ""
+				+ "SubClassOf("
+				+ "	ObjectIntersectionOf("
+				+ "		:193783008 "
+				+ "		ObjectSomeValuesFrom(:609096000 "
+				+ "			ObjectIntersectionOf("
+				+ "				ObjectSomeValuesFrom(:116676008 :23583003) "
+				+ "				ObjectSomeValuesFrom(:246075003 :19551004) "
+				+ "				ObjectSomeValuesFrom(:363698007 :65431007) "
+				+ "				ObjectSomeValuesFrom(:370135005 :441862004)"
+				+ "			)"
+				+ "		)"
+				+ "	)"
+				+ "	:231907006"
+				+ ")";
+		final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
+				.referencedComponentId(referencedComponentId)
+				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.field(Fields.OWL_EXPRESSION, owlExpression)
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
+				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
+				.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals(owlExpression, actual.getOwlExpression());
+		assertThat(actual.getClassAxiomRelationships()).isEmpty();
+		assertEquals(
+			// expected
+			ImmutableList.of(
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "193783008", 0),
+				new SnomedOWLRelationshipDocument("116676008", "23583003", 1),
+				new SnomedOWLRelationshipDocument("246075003", "19551004", 1),
+				new SnomedOWLRelationshipDocument("363698007", "65431007", 1),
+				new SnomedOWLRelationshipDocument("370135005", "441862004", 1)
+			), 
+			// actual
+			actual.getGciAxiomRelationships()
+		);
+		assertDocEquals(member, actual);
+	}
+	
+	private SnomedOWLExpressionConverterResult toSnomedOWLRelationships(String referencedComponentId, String owlExpression) {
+		return index().read(RevisionBranch.MAIN_PATH, searcher -> {
+			return new SnomedOWLExpressionConverter(
+				TestBranchContext.on(searcher.branch())
+					.with(RevisionSearcher.class, searcher)
+				.build()
+			).toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		});
 	}
 	
 }
