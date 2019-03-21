@@ -25,6 +25,7 @@ import org.eclipse.emf.cdo.server.StoreThreadLocal;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -42,6 +43,7 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -56,11 +58,15 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConst
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
@@ -94,9 +100,11 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		collectIds(statedSourceIds, statedDestinationIds, commitChangeSet.getDirtyComponents(Relationship.class), CharacteristicType.STATED_RELATIONSHIP);
 		collectIds(inferredSourceIds, inferredDestinationIds, commitChangeSet.getNewComponents(Relationship.class), CharacteristicType.INFERRED_RELATIONSHIP);
 		collectIds(inferredSourceIds, inferredDestinationIds, commitChangeSet.getDirtyComponents(Relationship.class), CharacteristicType.INFERRED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, commitChangeSet.getNewComponents(SnomedOWLExpressionRefSetMember.class));
+		collectIds(statedSourceIds, statedDestinationIds, commitChangeSet.getDirtyComponents(SnomedOWLExpressionRefSetMember.class));
 		
-		final Collection<CDOID> detachedCdoIds = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP);
-		final Iterable<SnomedRelationshipIndexEntry> detachedRelationships = index.get(SnomedRelationshipIndexEntry.class, CDOIDUtils.createCdoIdToLong(detachedCdoIds));
+		final Collection<CDOID> detachedRelationshipCdoIds = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP);
+		final Iterable<SnomedRelationshipIndexEntry> detachedRelationships = index.get(SnomedRelationshipIndexEntry.class, CDOIDUtils.createCdoIdToLong(detachedRelationshipCdoIds));
 		
 		for (SnomedRelationshipIndexEntry detachedRelationship : detachedRelationships) {
 			if (detachedRelationship.getCharacteristicType().equals(CharacteristicType.STATED_RELATIONSHIP)) {
@@ -106,6 +114,13 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 				inferredSourceIds.add(detachedRelationship.getSourceId());
 				inferredDestinationIds.add(detachedRelationship.getDestinationId());
 			}
+		}
+		
+		final Collection<CDOID> detachedOwlMemberCdoIds = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER);
+		final Iterable<SnomedRefSetMemberIndexEntry> detachedOwlMembers = index.get(SnomedRefSetMemberIndexEntry.class, CDOIDUtils.createCdoIdToLong(detachedOwlMemberCdoIds));
+
+		for (SnomedRefSetMemberIndexEntry detachedOwlMember : detachedOwlMembers) {
+			collectIds(statedSourceIds, statedDestinationIds, detachedOwlMember.getReferencedComponentId(), detachedOwlMember.getOwlExpression());
 		}
 		
 		final LongSet statedConceptIds = PrimitiveSets.newLongOpenHashSet();
@@ -212,11 +227,29 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 				.build();
 	}
 	
-	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Iterable<Relationship> newRelationships, CharacteristicType characteristicType) {
-		for (Relationship newRelationship : newRelationships) {
-			if (newRelationship.getCharacteristicType().getId().equals(characteristicType.getConceptId())) {
+	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Iterable<Relationship> relationships, CharacteristicType characteristicType) {
+		for (Relationship newRelationship : relationships) {
+			if (Concepts.IS_A.equals(newRelationship.getType().getId()) && newRelationship.getCharacteristicType().getId().equals(characteristicType.getConceptId())) {
 				sourceIds.add(newRelationship.getSource().getId());
 				destinationIds.add(newRelationship.getDestination().getId());
+			}
+		}
+	}
+	
+	private void collectIds(Set<String> sourceIds, Set<String> destinationIds, Iterable<SnomedOWLExpressionRefSetMember> owlMembers) {
+		for (SnomedOWLExpressionRefSetMember owlMember : owlMembers) {
+			collectIds(sourceIds, destinationIds, owlMember.getReferencedComponentId(), owlMember.getOwlExpression());
+		}
+	}
+
+	private void collectIds(Set<String> sourceIds, Set<String> destinationIds, String referencedComponentId, String owlExpression) {
+		SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		if (!CompareUtils.isEmpty(result.getClassAxiomRelationships())) {
+			for (SnomedOWLRelationshipDocument classAxiom : result.getClassAxiomRelationships()) {
+				if (Concepts.IS_A.equals(classAxiom.getTypeId())) {
+					sourceIds.add(referencedComponentId);
+					destinationIds.add(classAxiom.getDestinationId());
+				}
 			}
 		}
 	}
@@ -238,14 +271,14 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		final Runnable inferredRunnable = CDOServerUtils.withAccessor(new Runnable() {
 			@Override
 			public void run() {
-				inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, inferredConceptIds, checkCycles);
+				inferredTaxonomy = Taxonomies.inferred(searcher, expressionConverter, commitChangeSet, inferredConceptIds, checkCycles);
 			}
 		}, accessor);
 		
 		final Runnable statedRunnable = CDOServerUtils.withAccessor(new Runnable() {
 			@Override
 			public void run() {
-				statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, statedConceptIds, checkCycles);
+				statedTaxonomy = Taxonomies.stated(searcher, expressionConverter, commitChangeSet, statedConceptIds, checkCycles);
 			}
 		}, accessor);
 		

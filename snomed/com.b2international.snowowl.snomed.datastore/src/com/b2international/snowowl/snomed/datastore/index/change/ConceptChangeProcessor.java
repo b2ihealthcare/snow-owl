@@ -361,12 +361,11 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		return dirtyConceptIds;
 	}
 	
-	private Set<String> registerConceptAndDescendants(LongCollection relationshipIds, ISnomedTaxonomyBuilder taxonomy) {
+	private Set<String> registerConceptAndDescendants(LongCollection relationships, ISnomedTaxonomyBuilder taxonomy) {
 		final Set<String> ids = newHashSet();
-		final LongIterator relationshipIdIterator = relationshipIds.iterator();
-		while (relationshipIdIterator.hasNext()) {
-			String relationshipId = Long.toString(relationshipIdIterator.next());
-			String conceptId = taxonomy.getSourceNodeId(relationshipId);
+		final LongIterator relationshipIterator = relationships.iterator();
+		while (relationshipIterator.hasNext()) {
+			String conceptId = taxonomy.getSourceNodeId(relationshipIterator.next());
 			ids.add(conceptId);
 			ids.addAll(LongSets.toStringSet(taxonomy.getAllDescendantNodeIds(conceptId)));
 		}

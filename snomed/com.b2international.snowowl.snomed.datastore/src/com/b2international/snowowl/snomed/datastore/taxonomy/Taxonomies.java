@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -37,8 +39,11 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
@@ -48,20 +53,23 @@ public final class Taxonomies {
 	private Taxonomies() {
 	}
 	
-	public static Taxonomy inferred(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, boolean checkCycles) {
-		return buildTaxonomy(searcher, commitChangeSet, conceptIds, CharacteristicType.INFERRED_RELATIONSHIP, checkCycles);
+	public static Taxonomy inferred(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, boolean checkCycles) {
+		return buildTaxonomy(searcher, expressionConverter, commitChangeSet, conceptIds, CharacteristicType.INFERRED_RELATIONSHIP, checkCycles);
 	}
 	
-	public static Taxonomy stated(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, boolean checkCycles) {
-		return buildTaxonomy(searcher, commitChangeSet, conceptIds, CharacteristicType.STATED_RELATIONSHIP, checkCycles);
+	public static Taxonomy stated(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, boolean checkCycles) {
+		return buildTaxonomy(searcher, expressionConverter, commitChangeSet, conceptIds, CharacteristicType.STATED_RELATIONSHIP, checkCycles);
 	}
 
-	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
+	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
 		try {
+			// merge stated relationships and OWL axiom relationships into a single array
+			ImmutableList.Builder<String[]> isaStatementsBuilder = ImmutableList.builder();
+			
 			final String characteristicTypeId = characteristicType.getConceptId();
-			final Query<String[]> query = Query.select(String[].class)
+			final Query<String[]> activeStatedISARelationshipsQuery = Query.select(String[].class)
 					.from(SnomedRelationshipIndexEntry.class)
-					.fields(SnomedDocument.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+					.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 					.where(Expressions.builder()
 							.filter(active())
 							.filter(typeId(Concepts.IS_A))
@@ -71,14 +79,49 @@ public final class Taxonomies {
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
-			final Hits<String[]> hits = searcher.search(query);
+			Hits<String[]> activeIsaRelationships = searcher.search(activeStatedISARelationshipsQuery);
+			activeIsaRelationships.forEach(isaStatementsBuilder::add);
+			activeIsaRelationships = null;
 			
-			final SnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
+			if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
+				// search existing axioms defined for the given set of conceptIds
+				final Query<SnomedRefSetMemberIndexEntry> activeAxiomISARelationshipsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
+						.where(Expressions.builder()
+								.filter(active())
+								.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(LongSets.toStringSet(conceptIds)))
+								.filter(Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, 
+										Expressions.builder()
+											.filter(typeId(Concepts.IS_A))
+											.filter(destinationIds(LongSets.toStringSet(conceptIds)))
+										.build()
+										))
+								.build())
+						.limit(Integer.MAX_VALUE)
+						.build();
+				Hits<SnomedRefSetMemberIndexEntry> activeAxiomISARelationships = searcher.search(activeAxiomISARelationshipsQuery);
+				activeAxiomISARelationships.forEach(owlMember -> {
+					if (!CompareUtils.isEmpty(owlMember.getClassAxiomRelationships())) {
+						for (SnomedOWLRelationshipDocument classAxiom : owlMember.getClassAxiomRelationships()) {
+							if (Concepts.IS_A.equals(classAxiom.getTypeId())) {
+								isaStatementsBuilder.add(new String[] { owlMember.getReferencedComponentId(), classAxiom.getDestinationId() });
+							}
+						}
+					}
+				});
+				activeAxiomISARelationships = null;
+			}
+			
+			
+			Collection<String[]> isaStatements = isaStatementsBuilder.build();
+			
+			final SnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, isaStatements);
 			oldTaxonomy.setCheckCycles(checkCycles);
-			final SnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
+			final SnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, isaStatements);
 			newTaxonomy.setCheckCycles(checkCycles);
+			isaStatements = null;
+			
 			oldTaxonomy.build();
-			SnomedTaxonomyUpdateRunnable taxonomyUpdate = new SnomedTaxonomyUpdateRunnable(searcher, commitChangeSet, newTaxonomy, characteristicTypeId);
+			SnomedTaxonomyUpdateRunnable taxonomyUpdate = new SnomedTaxonomyUpdateRunnable(searcher, expressionConverter, commitChangeSet, newTaxonomy, characteristicTypeId);
 			taxonomyUpdate.run();
 			final LongSet newKeys = newTaxonomy.getEdges().keySet();
 			final LongSet oldKeys = oldTaxonomy.getEdges().keySet();

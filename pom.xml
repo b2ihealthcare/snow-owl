@@ -44,6 +44,31 @@
 		<module>releng</module>
 	</modules>
 
+	<repositories>
+		<repository>
+			<id>protege-mvn-repo</id>
+			<url>https://b2ihealthcare.github.io/protege/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+        		<enabled>false</enabled>
+        		<updatePolicy>never</updatePolicy>
+    		</snapshots>
+		</repository>
+		<repository>
+        	<id>snomed-international-releases</id>
+        	<url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
+        	<releases>
+           		<enabled>true</enabled>
+        	</releases>
+        	<snapshots>
+          		<enabled>false</enabled>
+        	</snapshots>
+     	</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -815,29 +840,4 @@
 		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
 	</scm>
 	
-	<repositories>
-		<repository>
-			<id>protege-mvn-repo</id>
-			<url>https://b2ihealthcare.github.io/protege/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-        		<enabled>false</enabled>
-        		<updatePolicy>never</updatePolicy>
-    		</snapshots>
-		</repository>
-		<repository>
-        	<id>snomed-international-releases</id>
-        	<url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
-        	<releases>
-           		<enabled>true</enabled>
-        	</releases>
-        	<snapshots>
-          		<enabled>false</enabled>
-        	</snapshots>
-     	</repository>
-	</repositories>
-
 </project>

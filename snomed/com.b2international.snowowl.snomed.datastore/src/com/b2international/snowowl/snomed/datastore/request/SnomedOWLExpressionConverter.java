@@ -52,7 +52,8 @@ public final class SnomedOWLExpressionConverter {
 	}
 
 	public SnomedOWLExpressionConverterResult toSnomedOWLRelationships(String referencedComponentId, String owlExpression) {
-		if (Strings.isNullOrEmpty(owlExpression)) {
+		// skip empty or unparseable axioms
+		if (Strings.isNullOrEmpty(owlExpression) || owlExpression.startsWith("Prefix") || owlExpression.startsWith("Ontology")) {
 			return SnomedOWLExpressionConverterResult.EMPTY;
 		}
 		
@@ -96,16 +97,15 @@ public final class SnomedOWLExpressionConverter {
 			.all()
 			.filterByActive(true)
 			.filterByProps(Options.builder()
-					.put(SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED, true)
+					.put(SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED, false)
 					.build())
 			.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
-			.setFields(SnomedRefSetMemberIndexEntry.Fields.ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 			.build()
 			.execute(context)
 			.stream()
 			.map(SnomedReferenceSetMember::getReferencedComponent)
 			.map(SnomedCoreComponent::getId)
-			.map(Long::parseLong)
+			.map(Long::valueOf)
 			.collect(Collectors.toSet());
 	}
 	

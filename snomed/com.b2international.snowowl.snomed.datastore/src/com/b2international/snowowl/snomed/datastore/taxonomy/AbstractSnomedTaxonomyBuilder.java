@@ -117,9 +117,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		
 		// refresh all RelationshipMini concepts, since they may have been modified
 		for (final LongIterator keys = edges.keySet().iterator(); keys.hasNext(); /* nothing */) {
-			
-			final long relationshipId = keys.next(); //keep iterating
-			final long[] statement = edges.get(relationshipId);
+			final long[] statement = edges.get(keys.next());
 			
 
 			final long destinationId = statement[0];
@@ -129,13 +127,13 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			
 			final int sourceConceptInternalId = getNodes().getInternalId(sourceId);
 			if (sourceConceptInternalId < 0) {
-				invalidRelationships.add(new InvalidRelationship(relationshipId, sourceId, destinationId, MissingConcept.SOURCE));
+				invalidRelationships.add(new InvalidRelationship(sourceId, destinationId, MissingConcept.SOURCE));
 				edgeSkipped |= true;
 			}
 			
 			final int destinationConceptInternalId = getNodes().getInternalId(destinationId);
 			if (destinationConceptInternalId < 0) {
-				invalidRelationships.add(new InvalidRelationship(relationshipId, sourceId, destinationId, MissingConcept.DESTINATION));
+				invalidRelationships.add(new InvalidRelationship(sourceId, destinationId, MissingConcept.DESTINATION));
 				edgeSkipped |= true;
 			}
 
@@ -198,19 +196,27 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			return;
 		}
 
-		final String id = edge.getId();
+		final long id = createEdgeKey(edge);
 		
 		if (!edge.isCurrent()) { //if inactivated remove instead
-			getEdges().remove(Long.parseLong(id));
+			getEdges().remove(id);
 			dirty = true;
 			return;
 		}
 		
-		getEdges().put(Long.parseLong(id), new long [] {
+		getEdges().put(id, new long [] {
 				Long.parseLong(edge.getDestinationId()), //value ID
 				Long.parseLong(edge.getSoureId())}); //object ID
 
 		dirty = true;
+	}
+
+	protected final long createEdgeKey(TaxonomyBuilderEdge edge) {
+		return createEdgeKey(edge.getSoureId(), edge.getDestinationId());
+	}
+
+	protected final int createEdgeKey(String soureId, String destinationId) {
+		return String.format("%s_%s", soureId, destinationId).hashCode();
 	}
 
 	/*
@@ -241,15 +247,6 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 	/*
 	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#containsEdge(java.lang.String)
-	 */
-	@Override
-	public boolean containsEdge(final String edgeId) {
-		return getEdges().containsKey(Long.parseLong(edgeId));
-	}
-	
-	/*
-	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#removeEdge(com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder.TaxonomyEdge)
 	 */
 	@Override
@@ -261,7 +258,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			return;
 		}
 
-		getEdges().remove(Long.parseLong(edge.getId()));
+		getEdges().remove(createEdgeKey(edge));
 
 		dirty = true;
 	}
@@ -354,13 +351,13 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	}
 
 	@Override
-	public String getSourceNodeId(final String edgeId) {
-		return Long.toString(getEdges0(Long.parseLong(edgeId))[1]);
+	public String getSourceNodeId(final long edgeId) {
+		return Long.toString(getEdges0(edgeId)[1]);
 	}
 
 	@Override
-	public String getDestinationNodeId(final String edgeId) {
-		return Long.toString(getEdges0(Long.parseLong(edgeId))[0]);
+	public String getDestinationNodeId(final long edgeId) {
+		return Long.toString(getEdges0(edgeId)[0]);
 	}
 
 	public abstract LongBidiMapWithInternalId getNodes();
@@ -429,8 +426,8 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		return processElements(Long.parseLong(conceptId), processingFunction, ancestorInternalIds);		
 	}
 
-	private long[] getEdges0(final long statementId) {
-		return getEdges().get(statementId);
+	private long[] getEdges0(final long statementUniqueKey) {
+		return getEdges().get(statementUniqueKey);
 	}
 
 	private LongSet processElements(final long conceptId, final IntToLongFunction function, final BitSet bitSet) {

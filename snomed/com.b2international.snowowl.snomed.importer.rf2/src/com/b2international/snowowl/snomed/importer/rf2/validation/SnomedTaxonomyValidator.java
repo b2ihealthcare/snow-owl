@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,8 +134,8 @@ public class SnomedTaxonomyValidator {
 			
 			if (!invalidRelationships.isEmpty()) {
 				
-				String messageWithEffectiveTime = "'%s' relationship refers to an inactive concept '%s' (%s) in effective time '%s'";
-				String messageWithOutEffectiveTime = "'%s' relationship refers to an inactive concept '%s' (%s)";
+				String messageWithEffectiveTime = "ISA Relationship [%s -> %s] refers to an inactive concept '%s' (%s) in effective time '%s'";
+				String messageWithOutEffectiveTime = "ISA Relationship [%s -> %s] refers to an inactive concept '%s' (%s)";
 				
 				List<String> validationMessages = invalidRelationships.asMap().entrySet().stream().flatMap(entry -> {
 					
@@ -144,17 +144,15 @@ public class SnomedTaxonomyValidator {
 					
 					return relationships.stream().map(relationship -> {
 						
-						String relationshipId = String.valueOf(relationship.getRelationshipId());
-						
 						String missingReference = MissingConcept.DESTINATION == relationship.getMissingConcept()
 								? String.valueOf(relationship.getDestinationId()) : String.valueOf(relationship.getSourceId());
 								
 						String missingReferenceLabel = relationship.getMissingConcept().getLabel();
 						
 						if (!Strings.isNullOrEmpty(effectiveTime)) {
-							return String.format(messageWithEffectiveTime, relationshipId, missingReference, missingReferenceLabel, effectiveTime);
+							return String.format(messageWithEffectiveTime, relationship.getSourceId(), relationship.getDestinationId(), missingReference, missingReferenceLabel, effectiveTime);
 						} else {
-							return String.format(messageWithOutEffectiveTime, relationshipId, missingReference, missingReferenceLabel);
+							return String.format(messageWithOutEffectiveTime, relationship.getSourceId(), relationship.getDestinationId(), missingReference, missingReferenceLabel);
 						}
 								
 					});

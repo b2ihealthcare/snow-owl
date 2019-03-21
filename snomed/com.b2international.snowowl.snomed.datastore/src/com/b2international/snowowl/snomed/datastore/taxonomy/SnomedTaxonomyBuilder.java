@@ -77,7 +77,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 		}
 		
 		for (final String[] statement : isAStatements) {
-			edges.put(Long.parseLong(statement[0]), new long[] { Long.parseLong(statement[2]), Long.parseLong(statement[1]) });
+			edges.put(createEdgeKey(statement[0], statement[1]), new long[] { Long.parseLong(statement[1]), Long.parseLong(statement[0]) });
 		}
 		
 		setDirty(true);

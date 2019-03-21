@@ -244,7 +244,7 @@ public final class ImportUtil {
 	private Collection<String[]> getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
-				.fields(SnomedDocument.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+				.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 				.where(Expressions.builder()
 						.filter(SnomedRelationshipIndexEntry.Expressions.active(true))
 						.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))

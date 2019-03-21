@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,32 +18,35 @@ package com.b2international.snowowl.snomed.datastore.taxonomy;
 import java.io.IOException;
 import java.util.Map;
 
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 /**
@@ -53,47 +56,40 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("repository");
 
-	private static final Function<CDOObject, EClass> GET_ECLASS_FUNCTION = new Function<CDOObject, EClass>() {
-		@Override public EClass apply(CDOObject input) {
-			return input.eClass();
-		}
-	};
-	
-	private static Function<Component, String> GET_SCT_ID_FUNCTION = new Function<Component, String>() {
-		@Override public String apply(final Component component) {
-			return Preconditions.checkNotNull(component, "Component argument cannot be null.").getId();
-		}
-	};
-
 	private final ICDOCommitChangeSet commitChangeSet;
 	private final ISnomedTaxonomyBuilder taxonomyBuilder;
 	private final String characteristicTypeId;
 	private final RevisionSearcher searcher;
+	private final SnomedOWLExpressionConverter expressionConverter;
 	
 	private SnomedTaxonomyStatus status;
 
-	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher, CDOTransaction transaction,
+	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher,
+			SnomedOWLExpressionConverter expressionConverter,
+			CDOTransaction transaction,
 			ISnomedTaxonomyBuilder taxonomyBuilder, 
 			String characteristicTypeId) {
 		
-		this(searcher, new CDOCommitChangeSet(transaction, 
+		this(searcher, expressionConverter, new CDOCommitChangeSet(transaction, 
 						transaction.getSession().getUserID(), 
 						transaction.getCommitComment(), 
 						transaction.getNewObjects().values(), 
 						transaction.getDirtyObjects().values(), 
-						Maps.transformValues(transaction.getDetachedObjects(), GET_ECLASS_FUNCTION), 
+						Maps.transformValues(transaction.getDetachedObjects(), EObject::eClass), 
 						transaction.getRevisionDeltas(), 
 						-1L),
 				taxonomyBuilder,
 				characteristicTypeId);
 	}
 			
-	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher, 
+	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher,
+			SnomedOWLExpressionConverter expressionConverter,
 			ICDOCommitChangeSet commitChangeSet, 
 			ISnomedTaxonomyBuilder taxonomyBuilder, 
 			String characteristicTypeId) {
 
 		this.searcher = searcher;
+		this.expressionConverter = expressionConverter;
 		this.commitChangeSet = commitChangeSet;
 		this.taxonomyBuilder = taxonomyBuilder;
 		this.characteristicTypeId = characteristicTypeId;
@@ -123,17 +119,17 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		final Iterable<CDOID> deletedRelationships = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP);
 		
 		//SCT ID - relationships
-		final Map<String, Relationship> _newRelationships = Maps.newHashMap(Maps.uniqueIndex(newRelationships, GET_SCT_ID_FUNCTION));
+		final Map<String, Relationship> _newRelationships = Maps.newHashMap(Maps.uniqueIndex(newRelationships, Relationship::getId));
 		
 		//SCT ID - concepts
-		final Map<String, Concept> _newConcepts = Maps.newHashMap(Maps.uniqueIndex(newConcepts, GET_SCT_ID_FUNCTION));
+		final Map<String, Concept> _newConcepts = Maps.newHashMap(Maps.uniqueIndex(newConcepts, Concept::getId));
 		
 		for (final Relationship newRelationship : newRelationships) {
-			taxonomyBuilder.addEdge(createEdge(newRelationship));
+			taxonomyBuilder.addEdge(createEdge(newRelationship.isActive(), newRelationship.getSource().getId(), newRelationship.getType().getId(), newRelationship.getDestination().getId(), newRelationship.getCharacteristicType().getId()));
 		}
 		
 		for (final Relationship dirtyRelationship : dirtyRelationships) {
-			taxonomyBuilder.addEdge(createEdge(dirtyRelationship));
+			taxonomyBuilder.addEdge(createEdge(dirtyRelationship.isActive(), dirtyRelationship.getSource().getId(), dirtyRelationship.getType().getId(), dirtyRelationship.getDestination().getId(), dirtyRelationship.getCharacteristicType().getId()));
 		}
 		
 		// lookup all deleted relationship documents
@@ -165,6 +161,36 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 			}
 			taxonomyBuilder.removeEdge(createEdge(relationship));
 		}
+		
+		if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
+			final Iterable<SnomedOWLExpressionRefSetMember> newOwlMembers = commitChangeSet.getNewComponents(SnomedOWLExpressionRefSetMember.class);
+			final Iterable<SnomedOWLExpressionRefSetMember> dirtyOwlMembers = commitChangeSet.getDirtyComponents(SnomedOWLExpressionRefSetMember.class);
+			for (SnomedOWLExpressionRefSetMember owlMember : Iterables.concat(newOwlMembers, dirtyOwlMembers)) {
+				SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(owlMember.getReferencedComponentId(), owlMember.getOwlExpression());
+				if (!CompareUtils.isEmpty(result.getClassAxiomRelationships())) {
+					result.getClassAxiomRelationships().forEach(classAxiom -> {
+						taxonomyBuilder.addEdge(createEdge(owlMember.isActive(), owlMember.getReferencedComponentId(), classAxiom.getTypeId(), classAxiom.getDestinationId(), Concepts.STATED_RELATIONSHIP));
+					});
+				}
+			}
+			
+			final Iterable<CDOID> deletedOwlAxioms = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER);
+			// look up all deleted owl axioms
+			final Iterable<SnomedRefSetMemberIndexEntry> deletedAxiomEntries;
+			try {
+				deletedAxiomEntries = searcher.get(SnomedRefSetMemberIndexEntry.class, CDOIDUtils.createCdoIdToLong(deletedOwlAxioms));
+			} catch (IOException e) {
+				throw new SnowowlRuntimeException(e);
+			}
+			for (final SnomedRefSetMemberIndexEntry detachedOwlMember : deletedAxiomEntries) {
+				if (!CompareUtils.isEmpty(detachedOwlMember.getClassAxiomRelationships())) {
+					detachedOwlMember.getClassAxiomRelationships().forEach(classAxiom -> {
+						taxonomyBuilder.removeEdge(createEdge(detachedOwlMember.isActive(), detachedOwlMember.getReferencedComponentId(), classAxiom.getTypeId(), classAxiom.getDestinationId(), Concepts.STATED_RELATIONSHIP));
+					});
+				}
+			}
+		}
+		
 		for (final Concept newConcept : newConcepts) {
 			taxonomyBuilder.addNode(createNode(newConcept));
 		}
@@ -225,22 +251,24 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	}
 	
 	/*creates a taxonomy edge instance based on the given SNOMED CT relationship*/
-	private TaxonomyBuilderEdge createEdge(final Relationship relationship) {
+	private TaxonomyBuilderEdge createEdge(
+			boolean active,
+			String sourceId, 
+			String typeId,
+			String destinationId,
+			String statementCharacteristicTypeId) {
 		return new TaxonomyBuilderEdge() {
 			@Override public boolean isCurrent() {
-				return relationship.isActive();
-			}
-			@Override public String getId() {
-				return relationship.getId();
+				return active;
 			}
 			@Override public boolean isValid() {
-				return Concepts.IS_A.equals(relationship.getType().getId()) && characteristicTypeId.equals(relationship.getCharacteristicType().getId());
+				return Concepts.IS_A.equals(typeId) && characteristicTypeId.equals(statementCharacteristicTypeId);
 			}
 			@Override public String getSoureId() {
-				return relationship.getSource().getId();
+				return sourceId;
 			}
 			@Override public String getDestinationId() {
-				return relationship.getDestination().getId();
+				return destinationId;
 			}
 		};
 	}
@@ -254,9 +282,6 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		return new TaxonomyBuilderEdge() {
 			@Override public boolean isCurrent() {
 				return relationship.isActive();
-			}
-			@Override public String getId() {
-				return relationship.getId();
 			}
 			@Override public boolean isValid() {
 				return Concepts.IS_A.equals(relationship.getTypeId()) && characteristicTypeId.equals(relationship.getCharacteristicTypeId());

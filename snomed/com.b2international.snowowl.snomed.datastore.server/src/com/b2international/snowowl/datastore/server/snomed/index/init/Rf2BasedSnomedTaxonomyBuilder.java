@@ -109,7 +109,6 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	public void applyEdgeChanges(final String relationshipFilePath) {
 		parseFile(relationshipFilePath, 10, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
-				final String id = record.get(0);
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final String sourceId = record.get(4);
 				final String destinationId = record.get(5);
@@ -119,9 +118,6 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 				addEdge(new TaxonomyBuilderEdge() {
 					@Override public boolean isCurrent() {
 						return active;
-					}
-					@Override public String getId() {
-						return id;
 					}
 					@Override public boolean isValid() {
 						return Concepts.IS_A.equals(typeId) && characteristicTypeId.equals(rowCharacteristicTypeId);

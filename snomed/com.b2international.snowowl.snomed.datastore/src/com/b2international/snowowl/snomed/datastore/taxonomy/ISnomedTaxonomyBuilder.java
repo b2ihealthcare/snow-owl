@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,6 @@ public interface ISnomedTaxonomyBuilder {
 
 	boolean containsNode(final String nodeId);
 
-	boolean containsEdge(final String edgeId);
-
 	void removeEdge(final TaxonomyBuilderEdge edge);
 
 	void removeNode(final TaxonomyBuilderNode node);
@@ -57,9 +55,9 @@ public interface ISnomedTaxonomyBuilder {
 
 	LongSet getAllAncestorNodeIds(final String nodeId);
 
-	String getSourceNodeId(final String edgeId);
+	String getSourceNodeId(final long edgeId);
 
-	String getDestinationNodeId(final String edgeId);
+	String getDestinationNodeId(final long edgeId);
 	
 	/**
 	 * Workaround to avoid autoboxing.
@@ -88,14 +86,14 @@ public interface ISnomedTaxonomyBuilder {
 
 	static interface TaxonomyItem {
 		
-		String getId();
-		
 		boolean isCurrent();
 		
 	}
 	
 	public static interface TaxonomyBuilderNode extends TaxonomyItem {
 
+		String getId();
+		
 		static TaxonomyBuilderNode of(SnomedConcept concept) {
 			final boolean active = concept.isActive();
 			final String id = concept.getId();
@@ -122,7 +120,6 @@ public interface ISnomedTaxonomyBuilder {
 		boolean isValid();
 		
 		static TaxonomyBuilderEdge of(SnomedRelationship relationship) {
-			final String id = relationship.getId();
 			final boolean active = relationship.isActive();
 			final String sourceId = relationship.getSourceId();
 			final String destinationId = relationship.getDestinationId();
@@ -130,11 +127,6 @@ public interface ISnomedTaxonomyBuilder {
 				@Override
 				public boolean isCurrent() {
 					return active;
-				}
-				
-				@Override
-				public String getId() {
-					return id;
 				}
 				
 				@Override

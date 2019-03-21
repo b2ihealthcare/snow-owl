@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,10 @@ import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.ecl.TestBranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -69,14 +71,15 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	private Collection<String> availableImages = newHashSet(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT, Concepts.NAMESPACE_ROOT);
 	private LongSet statedChangedConceptIds = PrimitiveSets.newLongOpenHashSet();
 	private LongSet inferredChangedConceptIds = PrimitiveSets.newLongOpenHashSet();
+	private SnomedOWLExpressionConverter expressionConverter = new SnomedOWLExpressionConverter(TestBranchContext.on(MAIN).build());
 	
 	private ConceptChangeProcessor process() {
 		return index().read(MAIN, new RevisionIndexRead<ConceptChangeProcessor>() {
 			@Override
 			public ConceptChangeProcessor execute(RevisionSearcher searcher) throws IOException {
 				final ICDOCommitChangeSet commitChangeSet = createChangeSet();
-				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, inferredChangedConceptIds, true);
-				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, statedChangedConceptIds, true);
+				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, expressionConverter, commitChangeSet, inferredChangedConceptIds, true);
+				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, expressionConverter, commitChangeSet, statedChangedConceptIds, true);
 				final ConceptChangeProcessor processor = new ConceptChangeProcessor(DoiData.DEFAULT_SCORE, availableImages, statedTaxonomy, inferredTaxonomy);
 				processor.process(commitChangeSet, searcher);
 				return processor;

@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
@@ -34,9 +35,11 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
 		return new RepositoryRequest<>(SnomedDatastoreActivator.REPOSITORY_UUID,
-			new BranchRequest<>(branchPath.getPath(), branchContext -> {
-				return new SnomedCDOChangeProcessor(branchContext);
-			})
+			new BranchRequest<>(branchPath.getPath(), 
+				new RevisionIndexReadRequest<>(branchContext -> {
+					return new SnomedCDOChangeProcessor(branchContext);
+				})
+			)
 		).execute(SnowOwlApplication.INSTANCE.getEnviroment());
 	}
 	
