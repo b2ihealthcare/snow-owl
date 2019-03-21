@@ -20,24 +20,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -88,17 +79,6 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 	private final String componentId;
 	private final Class<C> componentType;
 	private final String inactivationRefSetId;
-
-	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
-		@Override
-		public String load(final TransactionContext context) throws Exception {
-			final String latestReleaseBranch = SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
-			if (latestReleaseBranch == null) {
-				return Branch.MAIN_PATH;
-			}
-			return latestReleaseBranch;
-		}
-	});
 
 	private String inactivationValueId;
 
@@ -181,18 +161,13 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 		}
 	}
 
-	private String getLatestReleaseBranch(final TransactionContext context) {
-		final String latestVersion = referenceBranchFunction.apply(context);
-		return  latestVersion == Branch.MAIN_PATH ? null : latestVersion;
-	}
-
 	private void ensureMemberActive(final TransactionContext context, final SnomedAttributeValueRefSetMember existingMember) {
 
 		if (!existingMember.isActive()) {
 
 			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating attribute-value member {}.", existingMember.getUuid()); }
 			existingMember.setActive(true);
-			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
+			updateEffectiveTime(context, existingMember);
 
 		} else {
 			if (LOG.isDebugEnabled()) { LOG.debug("Attribute-value member {} already active, not updating.", existingMember.getUuid()); }
@@ -210,53 +185,28 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating attribute-value member {}.", existingMember.getUuid()); }
 			existingMember.setActive(false);
-			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
+			updateEffectiveTime(context, existingMember);
 
 		} else {
 			if (LOG.isDebugEnabled()) { LOG.debug("Attribute-value member {} already inactive, not updating.", existingMember.getUuid()); }
 		}
 	}
 
-	private void updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedAttributeValueRefSetMember existingMember) {
+	private void updateEffectiveTime(final TransactionContext context, final SnomedAttributeValueRefSetMember existingMember) {
 
-		if (existingMember.isReleased() &&  !Strings.isNullOrEmpty(referenceBranch)) {
-
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
-					.execute(context.service(IEventBus.class))
-					.getSync();
-
-			boolean restoreEffectiveTime = true;
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getValueId().equals(referenceMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID));
-
-			if (restoreEffectiveTime) {
-
-				if (LOG.isDebugEnabled()) { 
-					LOG.debug("Restoring effective time on attribute-value member {} to reference value {}.", 
-							existingMember.getUuid(), 
-							EffectiveTimes.format(referenceMember.getEffectiveTime(), DateFormats.SHORT));
-				}
-
-				existingMember.setEffectiveTime(referenceMember.getEffectiveTime());
-
-			} else {
-				unsetEffectiveTime(existingMember);
-			}
-
-		} else {
-			unsetEffectiveTime(existingMember);
-		}
+		SnomedComponentUpdateRequest.tryUpdateMemberEffectiveTime(
+			context, existingMember,
+			branch -> SnomedRequests.prepareGetMember(existingMember.getUuid())
+						.build(context.id(), branch)
+						.execute(context.service(IEventBus.class))
+						.getSync(),
+			(cdoMember, snomedMember) -> 
+				!(cdoMember.isActive() ^ snomedMember.isActive()) &&
+				cdoMember.getModuleId().equals(snomedMember.getModuleId()) &&
+				cdoMember.getReferencedComponentId().equals(snomedMember.getReferencedComponent().getId()) &&
+				cdoMember.getValueId().equals(snomedMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID))
+		);
+		
 	}
 
-	private void unsetEffectiveTime(final SnomedAttributeValueRefSetMember existingMember) {
-
-		if (existingMember.isSetEffectiveTime()) {
-			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on attribute-value member {}.", existingMember.getUuid()); }
-			existingMember.unsetEffectiveTime();
-		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on attribute-value member {} already unset, not updating.", existingMember.getUuid()); }
-		}
-	}
 }

@@ -15,12 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -33,8 +29,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -44,8 +38,6 @@ import com.google.common.collect.Multimap;
  * @since 4.5
  */
 public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateRequest {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedDescriptionUpdateRequest.class);
 
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
@@ -104,32 +96,28 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		updateAcceptability(context, description);
 
 		if (changed) {
-			if (description.isSetEffectiveTime()) {
-				description.unsetEffectiveTime();
-			} else {
-				if (description.isReleased()) {
-					long start = new Date().getTime();
-					final String branchPath = getLatestReleaseBranch(context);
-					if (!Strings.isNullOrEmpty(branchPath)) {
-						final IEventBus bus = context.service(IEventBus.class);
-						final SnomedDescription releasedDescription = SnomedRequests
-								.prepareGetDescription(getComponentId())
-								.build(context.id(), branchPath)
-								.execute(bus)
-								.getSync();
-						
-						if (!isDifferentToPreviousRelease(description, releasedDescription)) {
-							description.setEffectiveTime(releasedDescription.getEffectiveTime());
-						}
-						LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
-					}
-				}
-			}
+			
+			tryUpdateEffectiveTime(
+				context, description,
+				branch -> SnomedRequests.prepareGetDescription(getComponentId())
+							.build(context.id(), branch)
+							.execute(context.service(IEventBus.class))
+							.getSync(),
+				(cdoDescription, snomedDescription) -> 
+					!(cdoDescription.isActive() ^ snomedDescription.isActive()) &&
+					cdoDescription.getModule().getId().equals(snomedDescription.getModuleId()) &&
+					cdoDescription.getConcept().getId().equals(snomedDescription.getConceptId()) &&
+					cdoDescription.getLanguageCode().equals(snomedDescription.getLanguageCode()) && 
+					cdoDescription.getType().getId().equals(snomedDescription.getTypeId()) &&
+					cdoDescription.getTerm().equals(snomedDescription.getTerm()) &&
+					cdoDescription.getCaseSignificance().getId().equals(snomedDescription.getCaseSignificance().getConceptId())
+			);
+			
 		}
-		
+			
 		return changed;
 	}
-
+	
 	private void updateAcceptability(TransactionContext context, final Description description) {
 		final SnomedDescriptionAcceptabilityUpdateRequest acceptabilityUpdate = new SnomedDescriptionAcceptabilityUpdateRequest();
 		acceptabilityUpdate.setAcceptability(acceptability);
@@ -207,18 +195,6 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		
 		inactivationUpdateRequest.setInactivationValueId(inactivationIndicator.getConceptId());
 		inactivationUpdateRequest.execute(context);
-	}
-
-	private boolean isDifferentToPreviousRelease(Description description, SnomedDescription releasedDescription) {
-		if (releasedDescription.isActive() != description.isActive()) return true;
-		if (!releasedDescription.getModuleId().equals(description.getModule().getId())) return true;
-		if (!releasedDescription.getConceptId().equals(description.getConcept().getId())) return true;
-		if (!releasedDescription.getLanguageCode().equals(description.getLanguageCode())) return true;
-		if (!releasedDescription.getTypeId().equals(description.getType().getId())) return true;
-		if (!releasedDescription.getTerm().equals(description.getTerm())) return true;
-		if (!releasedDescription.getCaseSignificance().getConceptId().equals(description.getCaseSignificance().getId())) return true;
-
-		return false;
 	}
 
 	private boolean updateCaseSignificance(final TransactionContext context, final Description description, final CaseSignificance newCaseSignificance) {

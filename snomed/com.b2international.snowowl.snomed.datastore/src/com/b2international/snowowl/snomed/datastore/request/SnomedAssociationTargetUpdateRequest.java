@@ -22,8 +22,6 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -31,15 +29,9 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.google.common.base.Function;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -88,13 +80,6 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 
 	private final String componentId;
 	private final Class<C> componentType;
-	
-	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
-		@Override
-		public String load(TransactionContext context) throws Exception {
-			return SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
-		}
-	});
 	
 	private Multimap<AssociationType, String> newAssociationTargets;
 
@@ -190,17 +175,13 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 		}
 	}
 
-	private String getLatestReleaseBranch(final TransactionContext context) {
-		return referenceBranchFunction.apply(context);
-	}
-
 	private void ensureMemberActive(final TransactionContext context, final SnomedAssociationRefSetMember existingMember) {
 		
 		if (!existingMember.isActive()) {
 			
 			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating association member {}.", existingMember.getUuid()); }
 			existingMember.setActive(true);
-			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
+			updateEffectiveTime(context, existingMember);
 			
 		} else {
 			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} already active, not updating.", existingMember.getUuid()); }
@@ -218,58 +199,28 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 
 			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating association member {}.", existingMember.getUuid()); }
 			existingMember.setActive(false);
-			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
+			updateEffectiveTime(context, existingMember);
 			
 		} else {
 			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} is released and already inactive, not updating.", existingMember.getUuid()); }
 		}
 	}
 
-	private void updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedAssociationRefSetMember existingMember) {
+	private void updateEffectiveTime(final TransactionContext context, final SnomedAssociationRefSetMember existingMember) {
 		
-		if (existingMember.isReleased()) {
-			
-			// The most recently versioned representation should always exist if the member has already been released once
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
-					.execute(context.service(IEventBus.class))
-					.getSync();
-
-			final SnomedConcept targetComponent = (SnomedConcept) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
-			
-			boolean restoreEffectiveTime = true;
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getTargetComponentId().equals(targetComponent.getId());
-
-			if (restoreEffectiveTime) {
-
-				if (LOG.isDebugEnabled()) { 
-					LOG.debug("Restoring effective time on association member {} to reference value {}.", 
-							existingMember.getUuid(), 
-							EffectiveTimes.format(referenceMember.getEffectiveTime(), DateFormats.SHORT));
-				}
-
-				existingMember.setEffectiveTime(referenceMember.getEffectiveTime());
-				
-			} else {
-				unsetEffectiveTime(existingMember);
-			}
-			
-		} else {
-			
-			// If it is unreleased, the effective time should be unset, but it doesn't hurt to double-check
-			unsetEffectiveTime(existingMember);
-		}
+		SnomedComponentUpdateRequest.tryUpdateMemberEffectiveTime(
+			context, existingMember,
+			branch -> SnomedRequests.prepareGetMember(existingMember.getUuid())
+						.build(context.id(), branch)
+						.execute(context.service(IEventBus.class))
+						.getSync(),
+			(cdoMember, snomedMember) -> 
+				!(cdoMember.isActive() ^ snomedMember.isActive()) &&
+				cdoMember.getModuleId().equals(snomedMember.getModuleId()) &&
+				cdoMember.getReferencedComponentId().equals(snomedMember.getReferencedComponent().getId()) &&
+				cdoMember.getTargetComponentId().equals(snomedMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT))
+		);
+		
 	}
 	
-	private void unsetEffectiveTime(SnomedAssociationRefSetMember existingMember) {
-		
-		if (existingMember.isSetEffectiveTime()) {
-			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on association member {}.", existingMember.getUuid()); }
-			existingMember.unsetEffectiveTime();
-		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on association member {} already unset, not updating.", existingMember.getUuid()); }
-		}
-	}
 }
