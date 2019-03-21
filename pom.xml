@@ -23,7 +23,7 @@
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
-		<snomed.owl.toolkit.version>2.3.1</snomed.owl.toolkit.version>
+		<snomed.owl.toolkit.version>2.3.2</snomed.owl.toolkit.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.0.0</tycho.version>
 		<tycho-extras.version>1.0.0</tycho-extras.version>
