@@ -594,7 +594,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String query;
 		// OWL Axiom
 		private String owlExpression;
-		private List<SnomedOWLRelationshipDocument> additionalAxiomRelationships;
+		private List<SnomedOWLRelationshipDocument> classAxiomRelationships;
 		private List<SnomedOWLRelationshipDocument> gciAxiomRelationships;
 		// MRCM Domain
 		private String domainConstraint;
@@ -837,8 +837,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		public Builder additionalAxiomRelationships(List<SnomedOWLRelationshipDocument> additionalAxiomRelationships) {
-			this.additionalAxiomRelationships = Collections3.toImmutableList(additionalAxiomRelationships);
+		public Builder classAxiomRelationships(List<SnomedOWLRelationshipDocument> classAxiomRelationships) {
+			this.classAxiomRelationships = Collections3.toImmutableList(classAxiomRelationships);
 			return getSelf();
 		}
 		
@@ -997,7 +997,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			doc.query = query;
 			// OWL Axiom
 			doc.owlExpression = owlExpression;
-			doc.additionalAxiomRelationships = additionalAxiomRelationships;
+			doc.classAxiomRelationships = classAxiomRelationships;
 			doc.gciAxiomRelationships = gciAxiomRelationships;
 			
 			// MRCM Domain
@@ -1081,7 +1081,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private String query;
 	// OWL Axiom
 	private String owlExpression;
-	private List<SnomedOWLRelationshipDocument> additionalAxiomRelationships;
+	private List<SnomedOWLRelationshipDocument> classAxiomRelationships;
 	private List<SnomedOWLRelationshipDocument> gciAxiomRelationships;
 
 	// MRCM Domain
@@ -1291,8 +1291,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return owlExpression;
 	}
 	
-	public List<SnomedOWLRelationshipDocument> getAdditionalAxiomRelationships() {
-		return additionalAxiomRelationships;
+	public List<SnomedOWLRelationshipDocument> getClassAxiomRelationships() {
+		return classAxiomRelationships;
 	}
 	
 	public List<SnomedOWLRelationshipDocument> getGciAxiomRelationships() {

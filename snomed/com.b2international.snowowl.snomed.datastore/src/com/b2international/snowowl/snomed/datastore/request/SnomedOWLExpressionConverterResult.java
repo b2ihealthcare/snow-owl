@@ -26,16 +26,16 @@ public final class SnomedOWLExpressionConverterResult {
 
 	public static final SnomedOWLExpressionConverterResult EMPTY = new SnomedOWLExpressionConverterResult(null, null);
 	
-	private final List<SnomedOWLRelationshipDocument> additionalAxiomRelationships;
+	private final List<SnomedOWLRelationshipDocument> classAxiomRelationships;
 	private final List<SnomedOWLRelationshipDocument> gciAxiomRelationships;
 
-	public SnomedOWLExpressionConverterResult(List<SnomedOWLRelationshipDocument> additionalAxiomRelationships, List<SnomedOWLRelationshipDocument> gciAxiomRelationships) {
-		this.additionalAxiomRelationships = additionalAxiomRelationships;
+	public SnomedOWLExpressionConverterResult(List<SnomedOWLRelationshipDocument> classAxiomRelationships, List<SnomedOWLRelationshipDocument> gciAxiomRelationships) {
+		this.classAxiomRelationships = classAxiomRelationships;
 		this.gciAxiomRelationships = gciAxiomRelationships;
 	}
 	
-	public List<SnomedOWLRelationshipDocument> getAdditionalAxiomRelationships() {
-		return additionalAxiomRelationships;
+	public List<SnomedOWLRelationshipDocument> getClassAxiomRelationships() {
+		return classAxiomRelationships;
 	}
 	
 	public List<SnomedOWLRelationshipDocument> getGciAxiomRelationships() {

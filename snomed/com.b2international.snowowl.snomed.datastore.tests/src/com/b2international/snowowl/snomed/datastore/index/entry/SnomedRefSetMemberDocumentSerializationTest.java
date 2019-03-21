@@ -273,7 +273,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.field(Fields.OWL_EXPRESSION, owlExpression)
-				.additionalAxiomRelationships(owlRelationships.getAdditionalAxiomRelationships())
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
 				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
 				.build();
 		
@@ -281,7 +281,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
 		assertEquals(owlExpression, actual.getOwlExpression());
-		assertEquals(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.ROOT_CONCEPT, 0)), actual.getAdditionalAxiomRelationships());
+		assertEquals(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.ROOT_CONCEPT, 0)), actual.getClassAxiomRelationships());
 		assertThat(actual.getGciAxiomRelationships()).isEmpty();
 		assertDocEquals(member, actual);
 	}
@@ -307,7 +307,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.field(Fields.OWL_EXPRESSION, owlExpression)
-				.additionalAxiomRelationships(owlRelationships.getAdditionalAxiomRelationships())
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
 				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
 				.build();
 		
@@ -324,7 +324,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				new SnomedOWLRelationshipDocument("272741003", "24028007", 0)
 			), 
 			// actual
-			actual.getAdditionalAxiomRelationships()
+			actual.getClassAxiomRelationships()
 		);
 		assertThat(actual.getGciAxiomRelationships()).isEmpty();
 		assertDocEquals(member, actual);
@@ -356,7 +356,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.field(Fields.OWL_EXPRESSION, owlExpression)
-				.additionalAxiomRelationships(owlRelationships.getAdditionalAxiomRelationships())
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
 				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
 				.build();
 		
@@ -374,7 +374,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				new SnomedOWLRelationshipDocument("405813007", "81802002", 2)
 			), 
 			// actual
-			actual.getAdditionalAxiomRelationships()
+			actual.getClassAxiomRelationships()
 		);
 		assertThat(actual.getGciAxiomRelationships()).isEmpty();
 		assertDocEquals(member, actual);
