@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs
 - Fix incorrect update of members when more than 50 members were present for a concept (b224370)
-- Fix occasional startup failure due to incorrect initialization phase used in the reasoner modele (#325)
+- Fix occasional startup failure due to incorrect initialization phase used in the reasoner module (#325)
 - Fix DSV export group occurence bug (c494229)
 
 ### Performance
