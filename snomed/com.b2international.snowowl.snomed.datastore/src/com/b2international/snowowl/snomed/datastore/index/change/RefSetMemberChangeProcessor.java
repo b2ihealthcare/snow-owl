@@ -58,13 +58,17 @@ public final class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 	}
 
 	private void convertOwlExpression(SnomedRefSetMember member, final Builder doc) {
-		if (member instanceof SnomedOWLExpressionRefSetMember) {
-			SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(member.getReferencedComponentId(), ((SnomedOWLExpressionRefSetMember) member).getOwlExpression());
-			doc
-				.classAxiomRelationships(result.getClassAxiomRelationships())
-				.gciAxiomRelationships(result.getGciAxiomRelationships());
-				
+		if (!member.isActive()) {
+			return;
 		}
+		if (!(member instanceof SnomedOWLExpressionRefSetMember)) {
+			return;
+		}
+		
+		SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(member.getReferencedComponentId(), ((SnomedOWLExpressionRefSetMember) member).getOwlExpression());
+		doc
+			.classAxiomRelationships(result.getClassAxiomRelationships())
+			.gciAxiomRelationships(result.getGciAxiomRelationships());
 	}
 	
 }
