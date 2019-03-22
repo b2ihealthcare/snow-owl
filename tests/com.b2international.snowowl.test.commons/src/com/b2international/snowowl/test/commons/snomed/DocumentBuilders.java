@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,19 +95,19 @@ public abstract class DocumentBuilders {
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String typeId, final BigDecimal value) {
-		return concreteDomain(referencedComponentId, typeId, value, DataType.DECIMAL);
+	public static SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String typeId, final BigDecimal value, final String characteristicTypeId) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.DECIMAL, characteristicTypeId);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder integerMember(final String referencedComponentId, final String typeId, final int value) {
-		return concreteDomain(referencedComponentId, typeId, value, DataType.INTEGER);
+	public static SnomedRefSetMemberIndexEntry.Builder integerMember(final String referencedComponentId, final String typeId, final int value, final String characteristicTypeId) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.INTEGER, characteristicTypeId);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String typeId, final String value) {
-		return concreteDomain(referencedComponentId, typeId, value, DataType.STRING);
+	public static SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String typeId, final String value, final String characteristicTypeId) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.STRING, characteristicTypeId);
 	}
 
-	public static SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String typeId, final Object value, final DataType type) {
+	public static SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String typeId, final Object value, final DataType type, final String characteristicTypeId) {
 		return SnomedRefSetMemberIndexEntry.builder()
 				.id(UUID.randomUUID().toString())
 				.active(true)
@@ -116,7 +116,7 @@ public abstract class DocumentBuilders {
 				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
-				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)
+				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId)
 				.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)
 				.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, 0)
 				.field(Fields.DATA_TYPE, type)

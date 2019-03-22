@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
+import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -72,7 +73,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	@Nullable
 	@JsonProperty
 	private String expression;
-
+	
 	void setExpression(String expression) {
 		this.expression = expression;
 	}
@@ -156,7 +157,10 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	
 	protected Promise<Expression> eval(BranchContext context, final DomainQuery query) {
 		final String ecl = context.service(SnomedQuerySerializer.class).serialize(query.getEcl());
-		final Promise<Expression> eclExpression = SnomedRequests.prepareEclEvaluation(ecl).build().execute(context);
+		final Promise<Expression> eclExpression = SnomedRequests.prepareEclEvaluation(ecl)
+				.setExpressionForm(Trees.INFERRED_FORM) //TODO support STATED mode here
+				.build()
+				.execute(context);
 		if (query.getFilter() != null) {
 			return Promise.all(evaluate(context, query.getFilter()), eclExpression).then(subExpressions -> {
 				Expression domainFilter = (Expression) subExpressions.get(0);
@@ -200,7 +204,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final ModuleFilter moduleFilter) {
-		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(moduleFilter.getModuleId()))
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(moduleFilter.getModuleId()), Trees.INFERRED_FORM)
 				.resolve(context)
 				.then(SnomedDocument.Expressions::modules);
 	}
@@ -224,25 +228,25 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final TypeFilter typeFilter) {
-		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(typeFilter.getType()))
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(typeFilter.getType()), Trees.INFERRED_FORM)
 				.resolve(context)
 				.then(SnomedDescriptionIndexEntry.Expressions::types);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final PreferredInFilter preferredInFilter) {
-		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(preferredInFilter.getLanguageRefSetId()))
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(preferredInFilter.getLanguageRefSetId()), Trees.INFERRED_FORM)
 				.resolve(context)
 				.then(SnomedDescriptionIndexEntry.Expressions::preferredIn);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final AcceptableInFilter acceptableInFilter) {
-		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(acceptableInFilter.getLanguageRefSetId()))
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(acceptableInFilter.getLanguageRefSetId()), Trees.INFERRED_FORM)
 				.resolve(context)
 				.then(SnomedDescriptionIndexEntry.Expressions::acceptableIn);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final LanguageRefSetFilter languageRefSetFilter) {
-		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(languageRefSetFilter.getLanguageRefSetId()))
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(languageRefSetFilter.getLanguageRefSetId()), Trees.INFERRED_FORM)
 				.resolve(context)
 				.then(languageReferenceSetIds -> {
 					return Expressions.builder()
@@ -253,7 +257,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final CaseSignificanceFilter caseSignificanceFilter) {
-		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(caseSignificanceFilter.getCaseSignificanceId()))
+		return EclExpression.of(context.service(SnomedQuerySerializer.class).serialize(caseSignificanceFilter.getCaseSignificanceId()), Trees.INFERRED_FORM)
 				.resolve(context)
 				.then(SnomedDescriptionIndexEntry.Expressions::caseSignificances);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,11 +107,15 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="term", required=false) 
 			final String termFilter,
 
-			@ApiParam(value="The ECL expression to match")
+			@ApiParam(value="The ECL expression to match on the inferred form")
 			@RequestParam(value="ecl", required=false) 
 			final String eclFilter,
 			
-			@ApiParam(value="The SNOMED CT Query expression to match")
+			@ApiParam(value="The ECL expression to match on the stated form")
+			@RequestParam(value="statedEcl", required=false) 
+			final String statedEclFilter,
+			
+			@ApiParam(value="The SNOMED CT Query expression to match (inferred form only)")
 			@RequestParam(value="query", required=false) 
 			final String queryFilter,
 			
@@ -158,6 +162,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByDefinitionStatus(definitionStatusFilter)
 					.filterByNamespace(namespaceFilter)
 					.filterByEcl(eclFilter)
+					.filterByStatedEcl(statedEclFilter)
 					.filterByQuery(queryFilter)
 					.filterByTerm(termFilter)
 					.filterByDescriptionLanguageRefSet(extendedLocales)

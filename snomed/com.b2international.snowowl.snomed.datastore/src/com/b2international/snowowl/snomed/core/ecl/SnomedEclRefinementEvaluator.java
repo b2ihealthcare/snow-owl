@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -93,7 +94,8 @@ import com.google.common.collect.Sets;
  */
 final class SnomedEclRefinementEvaluator {
 
-	static final Set<String> ALLOWED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
+	static final Set<String> STATED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.STATED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
+	static final Set<String> INFERRED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
 	private static final int UNBOUNDED_CARDINALITY = -1;
 	private static final Range<Long> ANY_GROUP = Range.closed(0L, Long.MAX_VALUE);
 	
@@ -101,9 +103,11 @@ final class SnomedEclRefinementEvaluator {
 	private final PolymorphicDispatcher<Promise<Collection<Property>>> groupRefinementDispatcher = PolymorphicDispatcher.createForSingleTarget("evalGroup", 3, 3, this);
 	
 	private final EclExpression focusConcepts;
+	private final String expressionForm;
 	
 	public SnomedEclRefinementEvaluator(EclExpression focusConcepts) {
 		this.focusConcepts = focusConcepts;
+		this.expressionForm = focusConcepts.getExpressionForm();
 	}
 	
 	public Promise<Expression> evaluate(BranchContext context, Refinement refinement) {
@@ -388,7 +392,7 @@ final class SnomedEclRefinementEvaluator {
 			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(((AttributeComparison) comparison).getConstraint()));
 			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : focusConceptIds;
 			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : destinationConceptFilter;
-			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped);
+			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped, expressionForm);
 		} else if (comparison instanceof DataTypeComparison) {
 			if (refinement.isReversed()) {
 				throw new BadRequestException("Reversed flag is not supported in data type based comparison (string/numeric)");
@@ -483,7 +487,7 @@ final class SnomedEclRefinementEvaluator {
 			SearchResourceRequest.Operator operator) {
 		
 		final Options propFilter = Options.builder()
-				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, ALLOWED_CHARACTERISTIC_TYPES)
+				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, getCharacteristicTypes(expressionForm))
 				.put(SnomedRf2Headers.FIELD_TYPE_ID, typeIds)
 				.put(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, type)
 				.put(SnomedRf2Headers.FIELD_VALUE, value)
@@ -497,6 +501,7 @@ final class SnomedEclRefinementEvaluator {
 			.filterByReferencedComponent(focusConceptIds)
 			.filterByRefSetType(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE))
 			.filterByProps(propFilter)
+			.setEclExpressionForm(expressionForm)
 			.build(context.id(), context.branchPath())
 			.execute(context.service(IEventBus.class));
 	}
@@ -568,7 +573,8 @@ final class SnomedEclRefinementEvaluator {
 			final Collection<String> sourceFilter, 
 			final Collection<String> typeFilter,
 			final Collection<String> destinationFilter,
-			final boolean groupedRelationshipsOnly) {
+			final boolean groupedRelationshipsOnly,
+			final String expressionForm) {
 
 		final ImmutableList.Builder<String> fieldsToLoad = ImmutableList.builder();
 		fieldsToLoad.add(ID, SOURCE_ID,	DESTINATION_ID);
@@ -582,7 +588,8 @@ final class SnomedEclRefinementEvaluator {
 				.filterBySource(sourceFilter)
 				.filterByType(typeFilter)
 				.filterByDestination(destinationFilter)
-				.filterByCharacteristicTypes(ALLOWED_CHARACTERISTIC_TYPES)
+				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
+				.setEclExpressionForm(expressionForm)
 				.setFields(fieldsToLoad.build());
 		
 		// if a grouping refinement, then filter relationships with group >= 1
@@ -594,6 +601,10 @@ final class SnomedEclRefinementEvaluator {
 				.build(context.id(), context.branchPath())
 				.execute(context.service(IEventBus.class))
 				.then(input -> input.stream().map(r -> new Property(r.getId(), r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup())).collect(Collectors.toSet()));
+	}
+	
+	static Set<String> getCharacteristicTypes(String expressionForm) {
+		return Trees.INFERRED_FORM.equals(expressionForm) ? INFERRED_CHARACTERISTIC_TYPES : STATED_CHARACTERISTIC_TYPES;
 	}
 	
 	// Helper Throwable class to quickly return from attribute constraint evaluation when all matches are valid

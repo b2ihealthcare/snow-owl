@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,11 +32,13 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -47,18 +49,33 @@ import com.google.common.collect.Multimaps;
 public final class EclExpression {
 
 	private final String ecl;
+	private final String expressionForm;
 	
 	private Promise<Set<String>> promise;
 	private Promise<Expression> expressionPromise;
 	private Promise<SnomedConcepts> conceptPromise;
 	private Promise<Multimap<String, Integer>> conceptsWithGroups;
 
-	private EclExpression(String ecl) {
+	private EclExpression(String ecl, String expressionForm) {
 		this.ecl = ecl.trim();
+		this.expressionForm = expressionForm;
+		Preconditions.checkArgument(isInferred() || isStated(), "Allowed expression forms are 'inferred', 'stated' but was '%s'", expressionForm);
 	}
 	
 	public String getEcl() {
 		return ecl;
+	}
+	
+	public String getExpressionForm() {
+		return expressionForm;
+	}
+	
+	public boolean isInferred() {
+		return Trees.INFERRED_FORM.equals(expressionForm);
+	}
+
+	public boolean isStated() {
+		return Trees.STATED_FORM.equals(expressionForm);
 	}
 	
 	public boolean isAnyExpression() {
@@ -104,38 +121,40 @@ public final class EclExpression {
 	public Promise<Expression> resolveToExpression(final BranchContext context) {
 		if (expressionPromise == null) {
 			expressionPromise = SnomedRequests.prepareEclEvaluation(ecl)
+					.setExpressionForm(expressionForm)
 					.build()
 					.execute(context);
 		}
 		return expressionPromise;
 	}
 	
-	public static EclExpression of(String ecl) {
-		return new EclExpression(ecl);
+	public static EclExpression of(String ecl, String expressionForm) {
+		return new EclExpression(ecl, expressionForm);
 	}
 
 	public Promise<Expression> resolveToExclusionExpression(final BranchContext context, final Set<String> excludedMatches) {
 		return resolveToExpression(context)
-				.then(new Function<Expression, Expression>() {
-					@Override
-					public Expression apply(Expression it) {
-						if (!excludedMatches.isEmpty()) {
-							return Expressions.builder().filter(it).mustNot(RevisionDocument.Expressions.ids(excludedMatches)).build();
-						} else {
-							return it;
-						}
+				.then(it -> {
+					if (!excludedMatches.isEmpty()) {
+						return Expressions.builder().filter(it).mustNot(RevisionDocument.Expressions.ids(excludedMatches)).build();
+					} else {
+						return it;
 					}
 				});
 	}
 	
 	public Promise<Multimap<String, Integer>> resolveToConceptsWithGroups(final BranchContext context) {
 		if (conceptsWithGroups == null) {
+			final Set<String> characteristicTypes = isInferred()
+					? SnomedEclRefinementEvaluator.INFERRED_CHARACTERISTIC_TYPES
+					: SnomedEclRefinementEvaluator.STATED_CHARACTERISTIC_TYPES;
 			conceptsWithGroups = SnomedRequests.prepareSearchRelationship()
 					.all()
 					.filterByActive(true)
-					.filterByCharacteristicTypes(SnomedEclRefinementEvaluator.ALLOWED_CHARACTERISTIC_TYPES)
+					.filterByCharacteristicTypes(characteristicTypes)
 					.filterBySource(ecl)
 					.filterByGroup(1, Integer.MAX_VALUE)
+					.setEclExpressionForm(expressionForm)
 					.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.GROUP)
 					.build(context.id(), context.branchPath())
 					.execute(context.service(IEventBus.class))
