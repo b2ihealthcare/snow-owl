@@ -479,7 +479,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		
 	private void writeValues(BufferedWriter writer, SnomedConcepts chunk) throws IOException {
 		List<String> dataRow = newArrayList();
-		Map<String, Integer> zeroGroupOccurrences = propertyCount.getOrDefault(0, NO_OCCURRENCES);
 		
 		for (SnomedConcept concept : chunk) {
 			dataRow.clear();
@@ -506,7 +505,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 						for (Integer propertyGroup : propertyCount.keySet()) {
 							final String typeId = relationshipItem.getComponentId();
-							int occurrences = zeroGroupOccurrences.getOrDefault(typeId, 0);
+							Map<String, Integer> groupOccurrences = propertyCount.getOrDefault(propertyGroup, NO_OCCURRENCES);
+							
+							int occurrences = groupOccurrences.getOrDefault(typeId, 0);
 							final Map<String, String> destinationsById = concept.getRelationships()
 									.stream()
 									.filter(r -> typeId.equals(r.getTypeId())
