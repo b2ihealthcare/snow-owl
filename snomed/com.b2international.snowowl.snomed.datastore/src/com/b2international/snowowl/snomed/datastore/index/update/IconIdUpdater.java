@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.Set;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
@@ -30,11 +30,11 @@ import com.google.common.primitives.Longs;
  */
 public class IconIdUpdater {
 	
-	private final ISnomedTaxonomyBuilder inferredTaxonomy;
-	private final ISnomedTaxonomyBuilder statedTaxonomy;
+	private final TaxonomyGraph inferredTaxonomy;
+	private final TaxonomyGraph statedTaxonomy;
 	private final Collection<String> availableImages;
 	
-	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, Collection<String> availableImages) {
+	public IconIdUpdater(TaxonomyGraph inferredTaxonomy, TaxonomyGraph statedTaxonomy, Collection<String> availableImages) {
 		this.inferredTaxonomy = inferredTaxonomy;
 		this.statedTaxonomy = statedTaxonomy;
 		this.availableImages = availableImages;
@@ -59,20 +59,20 @@ public class IconIdUpdater {
 		return iconId == null ? Concepts.ROOT_CONCEPT : iconId;
 	}
 	
-	private String getParentIcon(String componentId, ISnomedTaxonomyBuilder taxonomyBuilder) {
-		if (componentId == null || !taxonomyBuilder.containsNode(componentId)) {
+	private String getParentIcon(String componentId, TaxonomyGraph taxonomyBuilder) {
+		if (componentId == null || !taxonomyBuilder.containsNode(Long.parseLong(componentId))) {
 			return null;
 		}
 		final Set<String> visitedNodes = Sets.newHashSet();
 		return getParentFrom(componentId, taxonomyBuilder, visitedNodes);
 	}
 	
-	private String getParentFrom(final String conceptId, ISnomedTaxonomyBuilder taxonomyBuilder, final Set<String> visitedNodes) {
+	private String getParentFrom(final String conceptId, TaxonomyGraph taxonomyBuilder, final Set<String> visitedNodes) {
 		if (visitedNodes.add(conceptId)) {
 			if (this.availableImages.contains(conceptId)) {
 				return conceptId;
 			}
-			final LongSet ancestorNodeIds = taxonomyBuilder.getAncestorNodeIds(conceptId);
+			final LongSet ancestorNodeIds = taxonomyBuilder.getAncestorNodeIds(Long.parseLong(conceptId));
 			if (ancestorNodeIds.size() == 0) {
 				return null;
 			}

@@ -581,10 +581,10 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		// index the ROOT concept as existing concept
 		final long rootConceptId = Long.parseLong(Concepts.ROOT_CONCEPT);
 		final Concept concept1 = createConcept(generateConceptId());
-		final Concept concept2 = createConcept(Concepts.NAMESPACE_ROOT);
+		final Concept namespaceRoot = createConcept(Concepts.NAMESPACE_ROOT);
 		
 		final long concept1Id = Long.parseLong(concept1.getId());
-		final long concept2Id = Long.parseLong(concept2.getId());
+		final long concept2Id = Long.parseLong(namespaceRoot.getId());
 		
 		statedChangedConceptIds.add(rootConceptId);
 		statedChangedConceptIds.add(concept1Id);
@@ -597,10 +597,11 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		indexRevision(MAIN, nextStorageKey(), doc(concept1)
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
 				.build());
-		indexRevision(MAIN, nextStorageKey(), doc(concept2).build());
+		indexRevision(MAIN, nextStorageKey(), doc(namespaceRoot).build());
 		
 		// change destination from ROOT to concept 2
-		statedRelationship.setDestination(concept2);
+		statedRelationship.setDestination(namespaceRoot);
+		registerSetRevisionDelta(statedRelationship, SnomedPackage.Literals.RELATIONSHIP__DESTINATION, Concepts.ROOT_CONCEPT, namespaceRoot);
 		registerDirty(statedRelationship);
 
 		final ConceptChangeProcessor processor = process();

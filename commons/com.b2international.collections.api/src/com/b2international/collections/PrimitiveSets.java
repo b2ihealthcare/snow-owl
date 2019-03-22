@@ -140,4 +140,54 @@ public abstract class PrimitiveSets {
 			return FACTORY.newLongOpenHashSet(source);
 		}
 	}
+	
+	/**
+	 * Returns with the difference of two sets. The
+	 * returned set contains all elements that are contained by {@code set1} and
+	 * not contained by {@code set2}. {@code set2} may also contain elements not
+	 * present in {@code set1}; these are simply ignored. The iteration order of
+	 * the returned set matches that of {@code set1}.
+	 * @param set1 Cannot be {@code null}.
+	 * @param set2 Cannot be {@code null}.
+	 * @return a view of the difference of the two sets.
+	 */
+	public static IntSet difference(IntSet set1, IntSet set2) {
+		checkNotNull(set1, "The set1 argument cannot be null.");
+		checkNotNull(set2, "The set2 argument cannot be null.");
+
+		if (set1.isEmpty()) { //nothing to do
+			return PrimitiveSets.newIntOpenHashSetWithExpectedSize(1);
+		}
+
+		final IntSet result = PrimitiveSets.newIntOpenHashSet(set1);
+		result.removeAll(set2);
+		return result;
+	}
+
+	/**
+	 * Returns with the intersection of two sets. The
+	 * returned set contains all elements that are contained by both backing sets.
+	 * The iteration order of the returned set matches that of {@code set1}.
+	 *
+	 * <p><b>Note:</b> The returned view performs slightly better when {@code
+	 * set1} is the smaller of the two sets. If you have reason to believe one of
+	 * your sets will generally be smaller than the other, pass it first.
+	 * 
+	 * @param set1 Cannot be {@code null}.
+	 * @param set2 Cannot be {@code null}.
+	 * @return a view of the intersection of the two sets.
+	 */
+	public static IntSet intersection(IntSet set1, IntSet set2) {
+		checkNotNull(set1, "The set1 argument cannot be null.");
+		checkNotNull(set2, "The set2 argument cannot be null.");
+
+		if (set1.isEmpty()) { //nothing to do
+			return PrimitiveSets.newIntOpenHashSetWithExpectedSize(1);
+		}
+
+		final IntSet result = PrimitiveSets.newIntOpenHashSet(set1);
+		result.retainAll(set2);
+		return result;
+	}
+	
 }

@@ -30,8 +30,8 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.ints.IntIterator;
+import com.b2international.collections.ints.IntSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -57,8 +57,8 @@ import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberCha
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
-import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
+import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -246,6 +246,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	 */
 	private void update(SnomedConceptDocument.Builder doc, Concept concept, SnomedConceptDocument currentVersion) {
 		final String id = concept != null ? concept.getId() : currentVersion.getId();
+		final long idLong = Long.parseLong(id);
 		final boolean active = concept != null ? concept.isActive() : currentVersion.isActive();
 		
 		doc.active(active)
@@ -256,8 +257,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.primitive(concept != null ? concept.isPrimitive() : currentVersion.isPrimitive())
 			.doi(doiData.getDoiScore(id));
 		
-		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(id);
-		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(id);
+		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
+		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);
 		
 		if (inStated || inInferred) {
 			iconId.update(id, active, doc);
@@ -361,12 +362,12 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		return dirtyConceptIds;
 	}
 	
-	private Set<String> registerConceptAndDescendants(LongCollection relationships, ISnomedTaxonomyBuilder taxonomy) {
+	private Set<String> registerConceptAndDescendants(IntSet edgeInternalIds, TaxonomyGraph taxonomy) {
 		final Set<String> ids = newHashSet();
-		final LongIterator relationshipIterator = relationships.iterator();
-		while (relationshipIterator.hasNext()) {
-			String conceptId = taxonomy.getSourceNodeId(relationshipIterator.next());
-			ids.add(conceptId);
+		final IntIterator edgeInternalIdsIterator = edgeInternalIds.iterator();
+		while (edgeInternalIdsIterator.hasNext()) {
+			long conceptId = taxonomy.getSourceNodeId(edgeInternalIdsIterator.next());
+			ids.add(Long.toString(conceptId));
 			ids.addAll(LongSets.toStringSet(taxonomy.getAllDescendantNodeIds(conceptId)));
 		}
 		return ids;

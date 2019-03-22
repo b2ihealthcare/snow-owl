@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,24 +21,25 @@ import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
 
 /**
  * @since 4.3
  */
 public class ParentageUpdater {
 
-	private final ISnomedTaxonomyBuilder taxonomyBuilder;
+	private final TaxonomyGraph graph;
 	private final boolean stated;
 
-	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, boolean stated) {
-		this.taxonomyBuilder = taxonomyBuilder;
+	public ParentageUpdater(TaxonomyGraph graph, boolean stated) {
+		this.graph = graph;
 		this.stated = stated;
 	}
 	
 	public void update(final String id, SnomedConceptDocument.Builder doc) {
-		LongSet parents = PrimitiveSets.newLongOpenHashSet(getParentIds(id));
-		LongSet ancestors = PrimitiveSets.newLongOpenHashSet(getAncestorIds(id));
+		long idLong = Long.parseLong(id);
+		LongSet parents = PrimitiveSets.newLongOpenHashSet(getParentIds(idLong));
+		LongSet ancestors = PrimitiveSets.newLongOpenHashSet(getAncestorIds(idLong));
 		
 		// index/add ROOT_ID if parentIds are empty
 		if (parents.isEmpty()) {
@@ -56,22 +57,22 @@ public class ParentageUpdater {
 		}
 	}
 
-	protected LongCollection getParentIds(final String conceptId) {
-		if (taxonomyBuilder.containsNode(conceptId)) {
-			return taxonomyBuilder.getAncestorNodeIds(conceptId);
+	protected LongCollection getParentIds(final long conceptId) {
+		if (graph.containsNode(conceptId)) {
+			return graph.getAncestorNodeIds(conceptId);
 		}
 		return LongCollections.emptySet();
 	}
 
-	protected LongCollection getAncestorIds(final String conceptId) {
-		if (taxonomyBuilder.containsNode(conceptId)) {
-			return taxonomyBuilder.getAllIndirectAncestorNodeIds(conceptId);
+	protected LongCollection getAncestorIds(final long conceptId) {
+		if (graph.containsNode(conceptId)) {
+			return graph.getAllIndirectAncestorNodeIds(conceptId);
 		}
 		return LongCollections.emptySet();
 	}
 	
-	protected ISnomedTaxonomyBuilder getTaxonomyBuilder() {
-		return taxonomyBuilder;
+	protected TaxonomyGraph getGraph() {
+		return graph;
 	}
 
 }
