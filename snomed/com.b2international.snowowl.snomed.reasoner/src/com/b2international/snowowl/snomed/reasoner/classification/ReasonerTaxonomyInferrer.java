@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.Platform;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -59,6 +60,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Ordering;
 
 /**
  * @since
@@ -75,6 +77,8 @@ public final class ReasonerTaxonomyInferrer {
 	private static final String EXTENSION_POINT_ID = "org.protege.editor.owl.inference_reasonerfactory";
 	private static final String CLASS_ELEMENT = "class";
 	private static final String VALUE_ATTRIBUTE = "value";
+
+	private static final String PRECOMPUTE_PROPERTY = "com.b2international.snowowl.snomed.reasoner.precomputeInferences";
 
 	private final DelegateOntology ontology;
 	private final OWLReasoner reasoner;
@@ -140,6 +144,10 @@ public final class ReasonerTaxonomyInferrer {
 			Deque<Node<OWLClass>> firstLayer = new LinkedList<Node<OWLClass>>();
 			Deque<Node<OWLClass>> secondLayer = new LinkedList<Node<OWLClass>>();
 			final Set<Node<OWLClass>> deferredNodes = newHashSet();
+			
+			if (Boolean.getBoolean(PRECOMPUTE_PROPERTY)) {
+				reasoner.precomputeInferences(InferenceType.CLASS_HIERARCHY);
+			}
 			
 			final NodeSet<OWLClass> initialSubClasses = reasoner.getSubClasses(ontology.getOWLThing(), true);
 			final Set<Node<OWLClass>> initialNodes = initialSubClasses.getNodes();
@@ -243,7 +251,11 @@ public final class ReasonerTaxonomyInferrer {
 	private void addEquivalentConcepts(final LongSet conceptIds) {
 		final Set<String> conceptIdsAsString = LongSets.toStringSet(conceptIds);
 
-		// Try to get a representative element that is already persisted; if no such item exists, we will use the first element 
+		/*
+		 * Try to get the smallest SCTID (using natural ordering for Strings) that is
+		 * already persisted; if no such item exists, we will use the smallest SCTID
+		 * using the same ordering.
+		 */
 		final String representativeId = SnomedRequests.prepareSearchConcept()
 				.one()
 				.filterByIds(conceptIdsAsString)
@@ -253,7 +265,7 @@ public final class ReasonerTaxonomyInferrer {
 				.execute(branchContext)
 				.first()
 				.map(SnomedConcept::getId)
-				.orElseGet(() -> conceptIdsAsString.iterator().next());
+				.orElseGet(() -> Ordering.natural().min(conceptIdsAsString));
 
 		conceptIdsAsString.remove(representativeId);
 		equivalentConcepts.putAll(representativeId, conceptIdsAsString);
@@ -280,7 +292,7 @@ public final class ReasonerTaxonomyInferrer {
 			}
 			
 			final long conceptId = ontology.getConceptId(entity);
-			if (conceptId == DEPTH_CHANGE) { continue; }
+			if (conceptId == -1L) { continue; }  // This OWL class does not correspond to a SNOMED CT concept
 			if (!processedConceptIds.contains(conceptId)) { return false; }
 		}
 
@@ -290,7 +302,7 @@ public final class ReasonerTaxonomyInferrer {
 	private LongSet collectConceptIds(final Node<OWLClass> node, final LongSet conceptIds) {
 		for (final OWLClass entity : node) {
 			final long conceptId = ontology.getConceptId(entity);
-			if (conceptId == DEPTH_CHANGE) { continue; }
+			if (conceptId == -1L) { continue; } // This OWL class does not correspond to a SNOMED CT concept
 			conceptIds.add(conceptId);
 		}
 

@@ -179,6 +179,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 
 	private Set<String> getPreviousMemberIds(Concept concept, TransactionContext context) {
 		SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
+			.all()
 			.filterByReferencedComponent(concept.getId())
 			.build()
 			.execute(context);

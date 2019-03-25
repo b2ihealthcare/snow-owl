@@ -16,9 +16,11 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -43,13 +46,18 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.IdRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -64,12 +72,11 @@ import com.b2international.snowowl.snomed.reasoner.domain.ReasonerConcreteDomain
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
-import com.b2international.snowowl.snomed.reasoner.equivalence.EquivalentConceptMerger;
+import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import com.google.common.primitives.Longs;
 
 /**
  * Represents a request that saves pre-recorded changes of a classification,
@@ -83,8 +90,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private static final int SCROLL_LIMIT = 10_000;
 	private static final String SCROLL_KEEP_ALIVE = "5m";
-	
-	private static final long SMP_ROOT = Long.parseLong(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT);
 
 	@NotEmpty
 	private String classificationId;
@@ -126,19 +131,19 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		this.commitComment = commitComment;
 	}
 	
-	void setModuleId(String moduleId) {
+	void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
 	}
 	
-	void setNamespace(String namespace) {
+	void setNamespace(final String namespace) {
 		this.namespace = namespace;
 	}
 	
-	void setFixEquivalences(boolean fixEquivalences) {
+	void setFixEquivalences(final boolean fixEquivalences) {
 		this.fixEquivalences = fixEquivalences;
 	}
 	
-	void setHandleConcreteDomains(boolean handleConcreteDomains) {
+	void setHandleConcreteDomains(final boolean handleConcreteDomains) {
 		this.handleConcreteDomains = handleConcreteDomains;
 	}
 	
@@ -217,7 +222,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
 
 		final SnomedNamespaceAndModuleAssigner assigner = createNamespaceAndModuleAssigner(context);
-		final Set<String> conceptIdsToSkip = mergeEquivalentConcepts(context, bulkRequestBuilder);
+		final Set<String> conceptIdsToSkip = mergeEquivalentConcepts(context, bulkRequestBuilder, assigner);
 		applyRelationshipChanges(context, bulkRequestBuilder, assigner, conceptIdsToSkip);
 
 		if (handleConcreteDomains) {
@@ -252,16 +257,47 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					.map(RelationshipChange::getRelationship)
 					.map(ReasonerRelationship::getSourceId)
 					.collect(Collectors.toSet());
+			
+			final Set<String> originRelationshipIds = nextChanges.stream()
+					.filter(change -> ChangeNature.INFERRED.equals(change.getChangeNature()))
+					.map(RelationshipChange::getRelationship)
+					.map(ReasonerRelationship::getOriginId)
+					.filter(id -> id != null)
+					.collect(Collectors.toSet());
 
-			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
+			final Map<String, String> originSourceIds = SnomedRequests.prepareSearchRelationship()
+				.setLimit(originRelationshipIds.size())
+				.filterByIds(originRelationshipIds)
+				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
+				.build()
+				.execute(context)
+				.stream()
+				.collect(Collectors.toMap(
+						SnomedRelationship::getId, // keys: ID of the "origin" relationship  
+						SnomedRelationship::getSourceId)); // values: source concept ID of the "origin" relationship
+			
 			conceptIds.removeAll(conceptIdsToSkip);
 			namespaceAndModuleAssigner.collectRelationshipNamespacesAndModules(conceptIds, context);
 
 			for (final RelationshipChange change : nextChanges) {
 				final ReasonerRelationship relationship = change.getRelationship();
 
+				// Relationship changes related to merged concepts should not be applied
+				if (conceptIdsToSkip.contains(relationship.getSourceId()) || conceptIdsToSkip.contains(relationship.getDestinationId())) {
+					continue;
+				}
+				
 				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
-					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
+					
+					/*
+					 * Do not "infer" any relationship that is passed down from a concept that was
+					 * already merged by the equivalent concept merging step
+					 */
+					final String originSourceId = originSourceIds.get(relationship.getOriginId());
+					if (!conceptIdsToSkip.contains(originSourceId)) {
+						addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
+					}
+					
 				} else {
 					removeOrDeactivate(bulkRequestBuilder, relationship);
 				}
@@ -269,49 +305,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		}
 
 		namespaceAndModuleAssigner.clear();
-	}
-
-	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
-			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
-			final ReasonerRelationship relationship) {
-
-		final String sourceId = relationship.getSourceId();
-		final String moduleId = namespaceAndModuleAssigner.getRelationshipModuleId(sourceId);
-		final String namespace = namespaceAndModuleAssigner.getRelationshipNamespace(sourceId);
-
-		final SnomedRelationshipCreateRequestBuilder createRequest = SnomedRequests.prepareNewRelationship()
-				.setIdFromNamespace(namespace)
-				.setTypeId(relationship.getTypeId())
-				.setActive(true)
-				.setCharacteristicType(relationship.getCharacteristicType())
-				.setSourceId(relationship.getSourceId())
-				.setDestinationId(relationship.getDestinationId())
-				.setDestinationNegated(relationship.isDestinationNegated())
-				.setGroup(relationship.getGroup())
-				.setUnionGroup(relationship.getUnionGroup())
-				.setModifier(relationship.getModifier())
-				.setModuleId(moduleId);
-
-		bulkRequestBuilder.add(createRequest);
-	}
-
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
-			final ReasonerRelationship relationship) {
-
-		final Request<TransactionContext, Boolean> request;
-
-		if (relationship.isReleased()) {
-			request = SnomedRequests
-					.prepareUpdateRelationship(relationship.getOriginId())
-					.setActive(false)
-					.build();
-		} else {
-			request = SnomedRequests
-					.prepareDeleteRelationship(relationship.getOriginId())
-					.build();
-		}
-
-		bulkRequestBuilder.add(request);
 	}
 
 	private void applyConcreteDomainChanges(final BranchContext context, 
@@ -338,6 +331,23 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					.map(m -> m.getReferencedComponentId())
 					.collect(Collectors.toSet());
 
+			final Set<String> originMemberIds = nextChanges.stream()
+					.filter(change -> ChangeNature.INFERRED.equals(change.getChangeNature()))
+					.map(ConcreteDomainChange::getConcreteDomainMember)
+					.map(ReasonerConcreteDomainMember::getOriginMemberId)
+					.filter(id -> id != null)
+					.collect(Collectors.toSet());
+			
+			final Map<String, String> originReferencedComponentIds = SnomedRequests.prepareSearchMember()
+					.setLimit(originMemberIds.size())
+					.filterByIds(originMemberIds)
+					.build()
+					.execute(context)
+					.stream()
+					.collect(Collectors.toMap(
+							m -> m.getId(), // keys: ID of the "origin" CD member
+							m -> m.getReferencedComponent().getId())); // values: referenced component ID of the "origin" CD member
+
 			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
 			conceptIds.removeAll(conceptIdsToSkip);
 			namespaceAndModuleAssigner.collectConcreteDomainModules(conceptIds, context);
@@ -345,8 +355,22 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			for (final ConcreteDomainChange change : nextChanges) {
 				final ReasonerConcreteDomainMember referenceSetMember = change.getConcreteDomainMember();
 
+				// CD member changes related to merged concepts should not be applied
+				if (conceptIdsToSkip.contains(referenceSetMember.getReferencedComponentId())) {
+					continue;
+				}
+				
 				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
-					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
+					
+					/*
+					 * Do not "infer" any CD member that is passed down from a concept that was
+					 * already merged by the equivalent concept merging step
+					 */
+					final String originReferencedComponentId = originReferencedComponentIds.get(referenceSetMember.getOriginMemberId());
+					if (!conceptIdsToSkip.contains(originReferencedComponentId)) {
+						addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, referenceSetMember);
+					}
+					
 				} else {
 					removeOrDeactivate(bulkRequestBuilder, referenceSetMember);
 				}
@@ -356,58 +380,20 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		namespaceAndModuleAssigner.clear();
 	}
 
-	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
-			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
-			final ReasonerConcreteDomainMember member) {
+	private Set<String> mergeEquivalentConcepts(final BranchContext context, 
+			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
+			final SnomedNamespaceAndModuleAssigner assigner) {
 
-		final String referencedComponentId = member.getReferencedComponentId();
-		final String moduleId = namespaceAndModuleAssigner.getConcreteDomainModuleId(referencedComponentId);
-
-		final Request<TransactionContext, String> createRequest = SnomedRequests.prepareNewMember()
-				.setActive(true)
-				.setModuleId(moduleId)
-				.setReferencedComponentId(referencedComponentId)
-				.setReferenceSetId(member.getReferenceSetId())
-				.setProperties(ImmutableMap.of(
-						SnomedRf2Headers.FIELD_TYPE_ID, member.getTypeId(),
-						SnomedRf2Headers.FIELD_VALUE, member.getSerializedValue(),
-						SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, member.getGroup(),
-						SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, member.getCharacteristicTypeId()))
-				.build();
-
-		bulkRequestBuilder.add(createRequest);
-	}
-
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
-			final ReasonerConcreteDomainMember concreteDomain) {
-		
-		final Request<TransactionContext, Boolean> request;
-
-		if (concreteDomain.isReleased()) {
-			request = SnomedRequests
-					.prepareUpdateMember()
-					.setMemberId(concreteDomain.getOriginMemberId())
-					.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, false))
-					.build();
-		} else {
-			request = SnomedRequests
-					.prepareDeleteMember(concreteDomain.getOriginMemberId())
-					.build();
-		}
-
-		bulkRequestBuilder.add(request);
-	}
-
-	private Set<String> mergeEquivalentConcepts(final BranchContext context, final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
 		if (!fixEquivalences) {
 			return Collections.emptySet();
 		}
 		
 		// XXX: Restrict merging to active components only
 		final String expand = "equivalentConcepts(expand("
-				+ "members(active:true),"
+				+ "descriptions(active:true),"
 				+ "relationships(active:true),"
-				+ "inboundRelationships(active:true)))";
+				+ "inboundRelationships(active:true),"
+				+ "members(active:true)))";
 		
 		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.setLimit(SCROLL_LIMIT)
@@ -419,6 +405,11 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				new SearchResourceRequestIterator<>(equivalentConceptRequest, 
 						r -> r.build().execute(context));
 
+		// Are there any equivalent concepts present?
+		if (!equivalentConceptIterator.hasNext()) {
+			return Collections.emptySet();
+		}
+		
 		final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts = HashMultimap.create();
 
 		while (equivalentConceptIterator.hasNext()) {
@@ -431,25 +422,101 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 				final List<SnomedConcept> conceptsToRemove = newArrayList(equivalentSet.getEquivalentConcepts());
 				final SnomedConcept conceptToKeep = conceptsToRemove.remove(0);
-
-				// FIXME: make equivalence set to fix user-selectable; currently, only descendants of SMP are auto-merged
-				final List<Long> statedParents = Longs.asList(conceptToKeep.getStatedParentIds());
-				final List<Long> statedAncestors = Longs.asList(conceptToKeep.getStatedAncestorIds());
-				if (statedParents.contains(SMP_ROOT) || statedAncestors.contains(SMP_ROOT)) {
-					equivalentConcepts.putAll(conceptToKeep, conceptsToRemove);
-				}
+				equivalentConcepts.putAll(conceptToKeep, conceptsToRemove);
 			}
 		}
 
-		if (!equivalentConcepts.isEmpty()) {
-			final EquivalentConceptMerger merger = new EquivalentConceptMerger(bulkRequestBuilder, equivalentConcepts);
-			merger.merge();
+		// Were all equivalent concepts unsatisfiable?
+		if (equivalentConcepts.isEmpty()) {
+			return Collections.emptySet();
 		}
 		
-		return equivalentConcepts.values()
+		final IEquivalentConceptMerger merger = Extensions.getFirstPriorityExtension(
+				IEquivalentConceptMerger.EXTENSION_POINT, 
+				IEquivalentConceptMerger.class);
+		
+		final String mergerName = merger.getClass().getSimpleName();
+		LOG.info("Reasoner service will use {} for equivalent concept merging.", mergerName);
+		
+		final Set<String> conceptIdsToSkip = merger.merge(equivalentConcepts);
+		final Set<String> conceptIdsToKeep = equivalentConcepts.keySet()
 				.stream()
 				.map(SnomedConcept::getId)
 				.collect(Collectors.toSet());
+
+		// Prepare to provide namespace-module for inbound relationship source concepts as well
+		final Set<String> relationshipChangeConceptIds = newHashSet(conceptIdsToKeep);
+		
+		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
+			for (final SnomedRelationship relationship : conceptToKeep.getInboundRelationships()) {
+				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
+					relationshipChangeConceptIds.add(relationship.getSourceId());
+				}
+			}
+		}
+		
+		assigner.collectRelationshipNamespacesAndModules(relationshipChangeConceptIds, context);
+		
+		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
+			
+			for (final SnomedRelationship relationship : conceptToKeep.getInboundRelationships()) {
+				// Already handled as another concept's outbound relationship
+				if (relationship.getId() == null) {
+					continue;
+				}
+				
+				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
+					relationship.setId(null);
+					addComponent(bulkRequestBuilder, assigner, relationship);
+				} else if (!relationship.isActive()) {
+					removeOrDeactivate(bulkRequestBuilder, relationship);
+				}
+			}
+			
+			for (final SnomedRelationship relationship : conceptToKeep.getRelationships()) {
+				// Already handled as another concept's inbound relationship
+				if (relationship.getId() == null) {
+					continue;
+				}
+				
+				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
+					relationship.setId(null);
+					addComponent(bulkRequestBuilder, assigner, relationship);
+				} else if (!relationship.isActive()) {
+					removeOrDeactivate(bulkRequestBuilder, relationship);
+				}
+			}
+		}
+		
+		// CD members are always "outbound", however, so the concept SCTID set can be reduced
+		assigner.clear();
+		assigner.collectConcreteDomainModules(conceptIdsToKeep, context);
+		
+		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
+			for (final SnomedReferenceSetMember member : conceptToKeep.getMembers()) {
+				if (member.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
+					member.setId(null);
+					addComponent(bulkRequestBuilder, assigner, member);
+				} else if (member.getId().startsWith(IEquivalentConceptMerger.PREFIX_UPDATED)) { 
+					// Trim the prefix from the ID to restore its original form
+					member.setId(member.getId().substring(IEquivalentConceptMerger.PREFIX_UPDATED.length()));
+					bulkRequestBuilder.add(member.toUpdateRequest());
+				} else if (!member.isActive()) {
+					removeOrDeactivate(bulkRequestBuilder, member);
+				}
+			}
+		}
+		
+		assigner.clear();
+		
+		for (final SnomedConcept conceptToRemove : equivalentConcepts.values()) {
+			// Check if the concept needs to be removed or deactivated
+			if (!conceptToRemove.isActive()) {
+				removeOrDeactivate(bulkRequestBuilder, conceptToRemove);
+			}
+		}
+		
+		return conceptIdsToSkip;
 	}
 
 	private SnomedNamespaceAndModuleAssigner createNamespaceAndModuleAssigner(final BranchContext context) {
@@ -463,5 +530,207 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final String assignerName = assigner.getClass().getSimpleName();
 		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assignerName);
 		return assigner;
+	}
+
+	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, final SnomedConcept concept) {
+		final Request<TransactionContext, Boolean> request;
+	
+		if (concept.isReleased()) {
+			request = SnomedRequests
+					.prepareUpdateConcept(concept.getId())
+					.setActive(false)
+					.setInactivationIndicator(InactivationIndicator.RETIRED)
+					.build();
+		} else {
+			request = SnomedRequests
+					.prepareDeleteConcept(concept.getId())
+					.build();
+		}
+	
+		bulkRequestBuilder.add(request);
+	}
+
+	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedRelationship relationship) {
+		removeOrDeactivateRelationship(bulkRequestBuilder, relationship.isReleased(), relationship.getId());
+	}
+
+	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
+			final ReasonerRelationship relationship) {
+		removeOrDeactivateRelationship(bulkRequestBuilder, relationship.isReleased(), relationship.getOriginId());
+	}
+
+	private void removeOrDeactivateRelationship(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
+			final boolean released, final String relationshipId) {
+		
+		final Request<TransactionContext, Boolean> request;
+		
+		if (released) {
+			request = SnomedRequests
+					.prepareUpdateRelationship(relationshipId)
+					.setActive(false)
+					.build();
+		} else {
+			request = SnomedRequests
+					.prepareDeleteRelationship(relationshipId)
+					.build();
+		}
+	
+		bulkRequestBuilder.add(request);
+	}
+
+	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedReferenceSetMember member) {
+		removeOrDeactivateMember(bulkRequestBuilder, member.isReleased(), member.getId());
+	}
+
+	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
+			final ReasonerConcreteDomainMember member) {
+		removeOrDeactivateMember(bulkRequestBuilder, member.isReleased(), member.getOriginMemberId());
+	}
+
+	private void removeOrDeactivateMember(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
+			final boolean released, final String memberId) {
+		
+		final Request<TransactionContext, Boolean> request;
+		
+		if (released) {
+			request = SnomedRequests
+					.prepareUpdateMember()
+					.setMemberId(memberId)
+					.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, false))
+					.build();
+		} else {
+			request = SnomedRequests
+					.prepareDeleteMember(memberId)
+					.build();
+		}
+	
+		bulkRequestBuilder.add(request);
+	}
+
+	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			final ReasonerRelationship relationship) {
+	
+		final String sourceId = relationship.getSourceId();
+		final String typeId = relationship.getTypeId();
+		final String destinationId = relationship.getDestinationId();
+		final boolean destinationNegated = relationship.isDestinationNegated();
+		final CharacteristicType characteristicType = relationship.getCharacteristicType();
+		final int group = relationship.getGroup();
+		final int unionGroup = relationship.getUnionGroup();
+		final RelationshipModifier modifier = relationship.getModifier();
+		
+		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
+				sourceId, typeId, destinationId, destinationNegated,
+				characteristicType, group, unionGroup, modifier);
+	}
+	
+
+	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			final SnomedRelationship relationship) {
+
+		final String sourceId = relationship.getSourceId();
+		final String typeId = relationship.getTypeId();
+		final String destinationId = relationship.getDestinationId();
+		final boolean destinationNegated = relationship.isDestinationNegated();
+		final CharacteristicType characteristicType = relationship.getCharacteristicType();
+		final int group = relationship.getGroup();
+		final int unionGroup = relationship.getUnionGroup();
+		final RelationshipModifier modifier = relationship.getModifier();
+		
+		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
+				sourceId, typeId, destinationId, destinationNegated,
+				characteristicType, group, unionGroup, modifier);
+	}
+
+	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			final String sourceId,
+			final String typeId, 
+			final String destinationId, 
+			final boolean destinationNegated,
+			final CharacteristicType characteristicType, 
+			final int group, 
+			final int unionGroup,
+			final RelationshipModifier modifier) {
+		
+		final String moduleId = namespaceAndModuleAssigner.getRelationshipModuleId(sourceId);
+		final String namespace = namespaceAndModuleAssigner.getRelationshipNamespace(sourceId);
+	
+		final SnomedRelationshipCreateRequestBuilder createRequest = SnomedRequests.prepareNewRelationship()
+				.setIdFromNamespace(namespace)
+				.setTypeId(typeId)
+				.setActive(true)
+				.setCharacteristicType(characteristicType)
+				.setSourceId(sourceId)
+				.setDestinationId(destinationId)
+				.setDestinationNegated(destinationNegated)
+				.setGroup(group)
+				.setUnionGroup(unionGroup)
+				.setModifier(modifier)
+				.setModuleId(moduleId);
+	
+		bulkRequestBuilder.add(createRequest);
+	}
+
+	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			final ReasonerConcreteDomainMember member) {
+	
+		final String referencedComponentId = member.getReferencedComponentId();
+		final String referenceSetId = member.getReferenceSetId();
+		final String typeId = member.getTypeId();
+		final String serializedValue = member.getSerializedValue();
+		final int group = member.getGroup();
+		final String characteristicTypeId = member.getCharacteristicTypeId();
+		
+		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
+				referencedComponentId, referenceSetId, typeId,
+				serializedValue, group, characteristicTypeId);
+	}
+
+	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			final SnomedReferenceSetMember member) {
+		
+		final String referencedComponentId = member.getReferencedComponent().getId();
+		final String referenceSetId = member.getReferenceSetId();
+		final String typeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID);
+		final String serializedValue = (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
+		final int group = (Integer) member.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
+		final String characteristicTypeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
+		
+		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
+				referencedComponentId, referenceSetId, typeId,
+				serializedValue, group, characteristicTypeId);
+	}
+	
+	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			final String referencedComponentId,
+			final String referenceSetId, 
+			final String typeId, 
+			final String serializedValue, 
+			final int group,
+			final String characteristicTypeId) {
+		
+		final String moduleId = namespaceAndModuleAssigner.getConcreteDomainModuleId(referencedComponentId);
+	
+		final Request<TransactionContext, String> createRequest = SnomedRequests.prepareNewMember()
+				.setActive(true)
+				.setModuleId(moduleId)
+				.setReferencedComponentId(referencedComponentId)
+				.setReferenceSetId(referenceSetId)
+				.setProperties(ImmutableMap.of(
+						SnomedRf2Headers.FIELD_TYPE_ID, typeId,
+						SnomedRf2Headers.FIELD_VALUE, serializedValue,
+						SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, group,
+						SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId))
+				.build();
+	
+		bulkRequestBuilder.add(createRequest);
 	}
 }

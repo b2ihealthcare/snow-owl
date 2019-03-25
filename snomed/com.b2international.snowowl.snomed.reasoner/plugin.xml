@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="equivalentConceptMerger" name="Equivalent Concept Merger" schema="schema/equivalentConceptMerger.exsd"/>
    <extension
          point="com.b2international.snowowl.core.bootstrapFragments">
       <bootstrapFragment
@@ -18,5 +19,12 @@
       <classLoaderProvider
             class="com.b2international.snowowl.snomed.reasoner.SnomedReasonerClassLoaderProvider">
       </classLoaderProvider>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.snomed.reasoner.equivalentConceptMerger">
+      <equivalentConceptMerger
+            class="com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger$Default"
+            priority="10">
+      </equivalentConceptMerger>
    </extension>
 </plugin>

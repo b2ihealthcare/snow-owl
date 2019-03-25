@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-Version: 6.13.1.qualifier
+Bundle-Version: 6.14.0.qualifier
 Bundle-Name: Snow Owl Administrative Web Services
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.api.rest;singleton:=true
@@ -35,6 +35,7 @@ Import-Package: com.b2international.commons,
  com.b2international.snowowl.datastore.request.system,
  com.b2international.snowowl.eventbus,
  com.b2international.snowowl.terminologyregistry.core.request,
+ io.reactivex,
  javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0",
  javax.validation.constraints,
