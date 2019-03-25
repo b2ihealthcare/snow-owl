@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,6 +121,53 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void ruleSnomedCommon3() throws Exception {
+		final String ruleId = "snomed-common-3";
+		indexRule(ruleId);
+
+		// Relationships with deprecated characteristic types
+		SnomedRelationshipIndexEntry relationshipWithDefiningCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.DEFINING_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithDefiningCharType);
+		
+		SnomedRelationshipIndexEntry relationshipWithQualifingCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.QUALIFYING_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithQualifingCharType);
+
+		
+		// Relationships with acceptable characteristic types
+		SnomedRelationshipIndexEntry  relationshipWithStatedCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithStatedCharType);
+
+		SnomedRelationshipIndexEntry relationshipWithInferredCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithInferredCharType);
+		
+		SnomedRelationshipIndexEntry relationshipWithAdditionalCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.ADDITIONAL_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithAdditionalCharType);
+		
+		SnomedRelationshipIndexEntry relationshipWithCharTypeOutsideOfCharTypeHierarchy = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.ROOT_CONCEPT)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithCharTypeOutsideOfCharTypeHierarchy);
+
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues,
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipWithDefiningCharType.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipWithQualifingCharType.getId())
+		);
+
+	}
+	
+  @Test
 	public void rule_mrcm_constraint() throws Exception {
 		final String ruleId = "rule_mrcm_constraint";
 		indexRule(ruleId);
