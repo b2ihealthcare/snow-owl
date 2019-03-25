@@ -85,7 +85,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.importer.ImportException;
 import com.b2international.snowowl.snomed.importer.Importer;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
@@ -236,35 +236,22 @@ public final class ImportUtil {
 
 	private RepositoryState loadRepositoryState(RevisionSearcher searcher) throws IOException {
 		final LongCollection conceptIds = getConceptIds(searcher);
-		final Collection<String[]> statedStatements = getStatements(searcher, Concepts.STATED_RELATIONSHIP);
-		final Collection<String[]> inferredStatements = getStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
+		final Collection<Object[]> statedStatements = Taxonomies.getAllStatements(searcher, Concepts.STATED_RELATIONSHIP);
+		final Collection<Object[]> inferredStatements = Taxonomies.getAllStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
 		return new RepositoryState(conceptIds, statedStatements, inferredStatements);
 	}
 
-	private Collection<String[]> getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
-		final Query<String[]> query = Query.select(String[].class)
-				.from(SnomedRelationshipIndexEntry.class)
-				.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
-				.where(Expressions.builder()
-						.filter(SnomedRelationshipIndexEntry.Expressions.active(true))
-						.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
-						.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
-						.build())
-				.limit(Integer.MAX_VALUE)
-				.build();
-		return searcher.search(query).getHits();
-	}
-	
 	private LongCollection getConceptIds(RevisionSearcher searcher) throws IOException {
-		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
+		final Query<String> query = Query.select(String.class)
+				.from(SnomedConceptDocument.class)
 				.fields(SnomedDocument.Fields.ID)
 				.where(Expressions.matchAll())
 				.limit(Integer.MAX_VALUE)
 				.build();
-		final Hits<SnomedConceptDocument> hits = searcher.search(query);
+		final Hits<String> hits = searcher.search(query);
 		final LongCollection conceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(hits.getTotal());
-		for (SnomedConceptDocument hit : hits) {
-			conceptIds.add(Long.parseLong(hit.getId()));
+		for (String hit : hits) {
+			conceptIds.add(Long.parseLong(hit));
 		}
 		return conceptIds;
 	}

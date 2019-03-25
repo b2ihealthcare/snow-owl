@@ -29,11 +29,13 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -65,62 +67,8 @@ public final class Taxonomies {
 
 	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
 		try {
-			// merge stated relationships and OWL axiom relationships into a single array
-			ImmutableList.Builder<Object[]> isaStatementsBuilder = ImmutableList.builder();
-			
 			final String characteristicTypeId = characteristicType.getConceptId();
-			final Set<String> concepts = LongSets.toStringSet(conceptIds);
-			
-			final Query<String[]> activeStatedISARelationshipsQuery = Query.select(String[].class)
-					.from(SnomedRelationshipIndexEntry.class)
-					.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
-					.where(Expressions.builder()
-							.filter(active())
-							.filter(typeId(Concepts.IS_A))
-							.filter(characteristicTypeId(characteristicTypeId))
-							.filter(sourceIds(concepts))
-							.filter(destinationIds(concepts))
-							.build())
-					.limit(Integer.MAX_VALUE)
-					.build();
-			Hits<String[]> activeIsaRelationships = searcher.search(activeStatedISARelationshipsQuery);
-			activeIsaRelationships.forEach(activeIsaRelationship -> {
-				isaStatementsBuilder.add(new Object[] { activeIsaRelationship[0], Long.parseLong(activeIsaRelationship[1]), new long[] { Long.parseLong(activeIsaRelationship[2]) } });
-			});
-			activeIsaRelationships = null;
-			
-			if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
-				// search existing axioms defined for the given set of conceptIds
-				final Query<SnomedRefSetMemberIndexEntry> activeAxiomISARelationshipsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
-						.where(Expressions.builder()
-								.filter(active())
-								.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(concepts))
-								.filter(Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, 
-										Expressions.builder()
-											.filter(typeId(Concepts.IS_A))
-											.filter(destinationIds(concepts))
-										.build()
-										))
-								.build())
-						.limit(Integer.MAX_VALUE)
-						.build();
-				Hits<SnomedRefSetMemberIndexEntry> activeAxiomISARelationships = searcher.search(activeAxiomISARelationshipsQuery);
-				activeAxiomISARelationships.forEach(owlMember -> {
-					if (!CompareUtils.isEmpty(owlMember.getClassAxiomRelationships())) {
-						long[] destinationIds = owlMember.getClassAxiomRelationships()
-							.stream()
-							.filter(classAxiom -> Concepts.IS_A.equals(classAxiom.getTypeId()))
-							.map(SnomedOWLRelationshipDocument::getDestinationId)
-							.mapToLong(Long::parseLong)
-							.toArray();
-						isaStatementsBuilder.add(new Object[] { owlMember.getId(), Long.parseLong(owlMember.getReferencedComponentId()), destinationIds });
-					}
-				});
-				activeAxiomISARelationships = null;
-			}
-			
-			
-			Collection<Object[]> isaStatements = isaStatementsBuilder.build();
+			Collection<Object[]> isaStatements = getStatements(searcher, conceptIds, characteristicTypeId, true);
 			
 			final TaxonomyGraph oldTaxonomy = new TaxonomyGraph(conceptIds.size(), isaStatements.size());
 			oldTaxonomy.setCheckCycles(checkCycles);
@@ -174,6 +122,76 @@ public final class Taxonomies {
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
+	}
+	
+	private static Collection<Object[]> getStatements(RevisionSearcher searcher, LongCollection conceptIds, String characteristicTypeId, boolean filterByConceptIds) throws IOException {
+		// merge stated relationships and OWL axiom relationships into a single array
+		ImmutableList.Builder<Object[]> isaStatementsBuilder = ImmutableList.builder();
+		
+		final Set<String> concepts = LongSets.toStringSet(conceptIds);
+		
+		ExpressionBuilder activeIsaRelationshipQuery = Expressions.builder()
+				.filter(active())
+				.filter(typeId(Concepts.IS_A))
+				.filter(characteristicTypeId(characteristicTypeId));
+
+		if (filterByConceptIds) {
+			activeIsaRelationshipQuery
+				.filter(sourceIds(concepts))
+				.filter(destinationIds(concepts));
+		}
+		
+		final Query<String[]> activeStatedISARelationshipsQuery = Query.select(String[].class)
+				.from(SnomedRelationshipIndexEntry.class)
+				.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+				.where(activeIsaRelationshipQuery.build())
+				.limit(Integer.MAX_VALUE)
+				.build();
+		Hits<String[]> activeIsaRelationships = searcher.search(activeStatedISARelationshipsQuery);
+		activeIsaRelationships.forEach(activeIsaRelationship -> {
+			isaStatementsBuilder.add(new Object[] { activeIsaRelationship[0], Long.parseLong(activeIsaRelationship[1]), new long[] { Long.parseLong(activeIsaRelationship[2]) } });
+		});
+		activeIsaRelationships = null;
+		
+		if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
+			// search existing axioms defined for the given set of conceptIds
+			ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.builder()
+					.filter(active())
+					.filter(Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, 
+						Expressions.builder()
+							.filter(typeId(Concepts.IS_A))
+							.filter(destinationIds(concepts))
+						.build()
+					));
+			
+			if (filterByConceptIds) {
+				activeOwlAxiomMemberQuery.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(concepts));
+			}
+			
+			final Query<SnomedRefSetMemberIndexEntry> activeAxiomISARelationshipsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
+					.where(activeOwlAxiomMemberQuery.build())
+					.limit(Integer.MAX_VALUE)
+					.build();
+			Hits<SnomedRefSetMemberIndexEntry> activeAxiomISARelationships = searcher.search(activeAxiomISARelationshipsQuery);
+			activeAxiomISARelationships.forEach(owlMember -> {
+				if (!CompareUtils.isEmpty(owlMember.getClassAxiomRelationships())) {
+					long[] destinationIds = owlMember.getClassAxiomRelationships()
+						.stream()
+						.filter(classAxiom -> Concepts.IS_A.equals(classAxiom.getTypeId()))
+						.map(SnomedOWLRelationshipDocument::getDestinationId)
+						.mapToLong(Long::parseLong)
+						.toArray();
+					isaStatementsBuilder.add(new Object[] { owlMember.getId(), Long.parseLong(owlMember.getReferencedComponentId()), destinationIds });
+				}
+			});
+			activeAxiomISARelationships = null;
+		}
+		
+		return isaStatementsBuilder.build();
+	}
+
+	public static Collection<Object[]> getAllStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
+		return getStatements(searcher, LongCollections.emptySet(), characteristicTypeId, false);
 	}
 	
 }
