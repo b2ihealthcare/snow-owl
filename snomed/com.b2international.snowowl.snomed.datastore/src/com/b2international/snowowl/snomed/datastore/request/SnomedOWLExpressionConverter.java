@@ -22,13 +22,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.snomed.otf.owltoolkit.conversion.AxiomRelationshipConversionService;
-import org.snomed.otf.owltoolkit.conversion.ConversionException;
 import org.snomed.otf.owltoolkit.domain.AxiomRepresentation;
 import org.snomed.otf.owltoolkit.domain.Relationship;
 
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -44,6 +44,7 @@ import com.google.common.base.Suppliers;
  */
 public final class SnomedOWLExpressionConverter {
 
+	private static final Logger LOG = LoggerFactory.getLogger(SnomedOWLExpressionConverter.class);
 	private final BranchContext context;
 	private final Supplier<AxiomRelationshipConversionService> conversionService = Suppliers.memoize(() -> new AxiomRelationshipConversionService(getUngroupedRelationshipTypes()));
 
@@ -87,8 +88,9 @@ public final class SnomedOWLExpressionConverter {
 				.collect(Collectors.toList());
 			
 			return new SnomedOWLExpressionConverterResult(gci ? null : axiomRelationships, gci ? axiomRelationships : null);
-		} catch (ConversionException e) {
-			throw new SnowowlRuntimeException(e);
+		} catch (Exception e) {
+			LOG.error("Failed to convert OWL axiom to relationship representations for concept " + referencedComponentId, e);
+			return SnomedOWLExpressionConverterResult.EMPTY;
 		}
 	}
 
