@@ -66,7 +66,7 @@ public final class Taxonomies {
 	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
 		try {
 			// merge stated relationships and OWL axiom relationships into a single array
-			ImmutableList.Builder<String[]> isaStatementsBuilder = ImmutableList.builder();
+			ImmutableList.Builder<Object[]> isaStatementsBuilder = ImmutableList.builder();
 			
 			final String characteristicTypeId = characteristicType.getConceptId();
 			final Set<String> concepts = LongSets.toStringSet(conceptIds);
@@ -84,7 +84,9 @@ public final class Taxonomies {
 					.limit(Integer.MAX_VALUE)
 					.build();
 			Hits<String[]> activeIsaRelationships = searcher.search(activeStatedISARelationshipsQuery);
-			activeIsaRelationships.forEach(isaStatementsBuilder::add);
+			activeIsaRelationships.forEach(activeIsaRelationship -> {
+				isaStatementsBuilder.add(new Object[] { activeIsaRelationship[0], Long.parseLong(activeIsaRelationship[1]), new long[] { Long.parseLong(activeIsaRelationship[2]) } });
+			});
 			activeIsaRelationships = null;
 			
 			if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
@@ -105,18 +107,20 @@ public final class Taxonomies {
 				Hits<SnomedRefSetMemberIndexEntry> activeAxiomISARelationships = searcher.search(activeAxiomISARelationshipsQuery);
 				activeAxiomISARelationships.forEach(owlMember -> {
 					if (!CompareUtils.isEmpty(owlMember.getClassAxiomRelationships())) {
-						for (SnomedOWLRelationshipDocument classAxiom : owlMember.getClassAxiomRelationships()) {
-							if (Concepts.IS_A.equals(classAxiom.getTypeId())) {
-								isaStatementsBuilder.add(new String[] { owlMember.getReferencedComponentId(), classAxiom.getDestinationId() });
-							}
-						}
+						long[] destinationIds = owlMember.getClassAxiomRelationships()
+							.stream()
+							.filter(classAxiom -> Concepts.IS_A.equals(classAxiom.getTypeId()))
+							.map(SnomedOWLRelationshipDocument::getDestinationId)
+							.mapToLong(Long::parseLong)
+							.toArray();
+						isaStatementsBuilder.add(new Object[] { owlMember.getId(), Long.parseLong(owlMember.getReferencedComponentId()), destinationIds });
 					}
 				});
 				activeAxiomISARelationships = null;
 			}
 			
 			
-			Collection<String[]> isaStatements = isaStatementsBuilder.build();
+			Collection<Object[]> isaStatements = isaStatementsBuilder.build();
 			
 			final TaxonomyGraph oldTaxonomy = new TaxonomyGraph(conceptIds.size(), isaStatements.size());
 			oldTaxonomy.setCheckCycles(checkCycles);
@@ -135,6 +139,10 @@ public final class Taxonomies {
 			}
 			
 			// populate edges
+			for (Object[] isaStatement : isaStatements) {
+				oldTaxonomy.addEdge((String) isaStatement[0], (long) isaStatement[1], (long[]) isaStatement[2]);
+				newTaxonomy.addEdge((String) isaStatement[0], (long) isaStatement[1], (long[]) isaStatement[2]);
+			}
 			
 			isaStatements = null;
 			
