@@ -21,11 +21,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.snomed.core.ecl.TestBranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.google.common.collect.Iterables;
 
 /**

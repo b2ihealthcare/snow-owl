@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
@@ -57,6 +58,8 @@ import com.google.inject.Injector;
  * @since 5.15.1
  */
 public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
+
+	private static final Injector INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 	
 	private static final String ROOT_CONCEPT = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_ACTIVE_INGREDIENT = Concepts.HAS_ACTIVE_INGREDIENT;
@@ -68,10 +71,9 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 	@Before
 	public void setup() {
 		super.setup();
-		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
+				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
+				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.build();

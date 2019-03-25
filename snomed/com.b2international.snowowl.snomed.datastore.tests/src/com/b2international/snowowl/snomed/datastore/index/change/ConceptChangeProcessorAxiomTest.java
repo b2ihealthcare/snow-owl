@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.google.common.collect.Sets.newHashSet;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -36,9 +36,8 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.ecl.TestBranchContext;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -47,6 +46,7 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 

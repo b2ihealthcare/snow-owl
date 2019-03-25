@@ -20,7 +20,9 @@ import static com.b2international.snowowl.datastore.index.RevisionDocument.Expre
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.*;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.decimalMember;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.integerMember;
@@ -68,6 +70,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
@@ -79,6 +82,8 @@ import com.google.inject.Injector;
 @RunWith(Parameterized.class)
 public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 
+	private static final Injector INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+	
 	private static final String ROOT_ID = Concepts.ROOT_CONCEPT;
 	private static final String OTHER_ID = Concepts.ABBREVIATION;
 	private static final String HAS_ACTIVE_INGREDIENT = Concepts.HAS_ACTIVE_INGREDIENT;
@@ -139,10 +144,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Before
 	public void setup() {
 		super.setup();
-		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
+				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
+				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.build();

@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.ql;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +43,6 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
-import com.b2international.snowowl.snomed.core.ecl.TestBranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -52,6 +51,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -64,6 +64,8 @@ import com.google.inject.Injector;
 public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 
 	private static final String ROOT_ID = Concepts.ROOT_CONCEPT;
+	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+	private static final Injector QUERY_INJECTOR = new QLStandaloneSetup().createInjectorAndDoEMFRegistration();
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -82,13 +84,11 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Before
 	public void setup() {
 		super.setup();
-		final Injector eclInjector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-		final Injector queryInjector = new QLStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(eclInjector.getInstance(IParser.class), eclInjector.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(eclInjector.getInstance(ISerializer.class)))
-				.with(SnomedQueryParser.class, new DefaultSnomedQueryParser(queryInjector.getInstance(IParser.class), queryInjector.getInstance(IResourceValidator.class)))
-				.with(SnomedQuerySerializer.class, new DefaultSnomedQuerySerializer(queryInjector.getInstance(ISerializer.class)))
+				.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
+				.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)))
+				.with(SnomedQueryParser.class, new DefaultSnomedQueryParser(QUERY_INJECTOR.getInstance(IParser.class), QUERY_INJECTOR.getInstance(IResourceValidator.class)))
+				.with(SnomedQuerySerializer.class, new DefaultSnomedQuerySerializer(QUERY_INJECTOR.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.build();
