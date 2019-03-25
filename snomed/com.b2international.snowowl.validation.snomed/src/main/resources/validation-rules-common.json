@@ -30,7 +30,7 @@
   	"id": "rule_mrcm_constraint",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationships must follow MRCM rules.",
-    "severity": "ERROR",
+    "severity": "WARNING",
     "checkType": "EXPENSIVE",
     "type": "script-groovy",
     "implementation": "scripts/rule_mrcm_constraint.groovy"
