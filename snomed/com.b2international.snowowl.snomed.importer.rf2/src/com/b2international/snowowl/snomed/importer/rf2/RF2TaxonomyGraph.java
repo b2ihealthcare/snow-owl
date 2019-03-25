@@ -22,15 +22,16 @@ import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.List;
 
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraphStatus;
-import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
+import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraphStatus;
 
 /**
  * Taxonomy graph built from RF2 release files.
@@ -102,7 +103,20 @@ public final class RF2TaxonomyGraph {
 	}
 
 	public void init(RepositoryState repositoryState) {
+		// populate nodes
+		LongIterator conceptIdsIt = repositoryState.getConceptIds().iterator();
+		while (conceptIdsIt.hasNext()) {
+			long nodeId = conceptIdsIt.next();
+			if (IComponent.ROOT_IDL == nodeId) {
+				continue;
+			}
+			graph.addNode(nodeId);
+		}
 		
+		// populate edges
+		for (Object[] isaStatement : Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId) ? repositoryState.getStatedStatements() : repositoryState.getInferredStatements()) {
+			graph.addEdge((String) isaStatement[0], (long) isaStatement[1], (long[]) isaStatement[2]);
+		}
 	}
 	
 }
