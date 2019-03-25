@@ -11,15 +11,6 @@
 		<version>6.13.1-SNAPSHOT</version>
 	</parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.semanticweb.elk</groupId>
-			<artifactId>elk-protege</artifactId>
-			<version>0.4.2</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
