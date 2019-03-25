@@ -37,6 +37,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.collections.longs.LongValueMap;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -174,13 +175,18 @@ public final class ComponentLookup<C extends CDOObject> {
 				final Multimap<Class<? extends SnomedDocument>, String> idsByType = Multimaps.index(componentIds, id -> SnomedDocument.getType(SnomedIdentifiers.getComponentCategory(id)));
 				for (Class<? extends SnomedDocument> type : idsByType.keySet()) {
 					// execute queries for each type and based on the current clazz extract either refset or concept storage keys
-					final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.ids(componentIds)).limit(componentIds.size()).build();
-					final Hits<? extends SnomedDocument> hits = index.search(query);
-					for (SnomedDocument doc : hits) {
+					final Query<String[]> query = Query.select(String[].class)
+							.from(type)
+							.fields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY)
+							.where(SnomedDocument.Expressions.ids(componentIds))
+							.limit(componentIds.size())
+							.build();
+					final Hits<String[]> hits = index.search(query);
+					for (String[] doc : hits) {
 						if (SnomedRefSet.class.isAssignableFrom(clazz)) {
-							map.put(doc.getId(), ((SnomedConceptDocument) doc).getRefSetStorageKey());
+							map.put(doc[0], Long.parseLong(doc[2]));
 						} else {
-							map.put(doc.getId(), doc.getStorageKey());
+							map.put(doc[0], Long.parseLong(doc[1]));
 						}
 					}
 				}
