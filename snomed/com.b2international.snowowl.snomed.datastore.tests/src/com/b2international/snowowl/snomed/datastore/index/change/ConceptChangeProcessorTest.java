@@ -34,7 +34,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.Concept;
@@ -47,11 +47,10 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.ecl.TestBranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -68,16 +67,21 @@ import com.google.common.collect.Iterables;
  */
 public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 
+	private static final BranchContext CONTEXT = TestBranchContext.on(MAIN).build();
+
 	private Collection<String> availableImages = newHashSet(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT, Concepts.NAMESPACE_ROOT);
 	private LongSet statedChangedConceptIds = PrimitiveSets.newLongOpenHashSet();
 	private LongSet inferredChangedConceptIds = PrimitiveSets.newLongOpenHashSet();
-	private SnomedOWLExpressionConverter expressionConverter = new SnomedOWLExpressionConverter(TestBranchContext.on(MAIN).build());
+	
 	
 	private ConceptChangeProcessor process() {
 		return index().read(MAIN, new RevisionIndexRead<ConceptChangeProcessor>() {
 			@Override
 			public ConceptChangeProcessor execute(RevisionSearcher searcher) throws IOException {
 				final ICDOCommitChangeSet commitChangeSet = createChangeSet();
+				final SnomedOWLExpressionConverter expressionConverter = new SnomedOWLExpressionConverter(CONTEXT.inject()
+						.bind(RevisionSearcher.class, searcher)
+						.build());
 				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, expressionConverter, commitChangeSet, inferredChangedConceptIds, true);
 				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, expressionConverter, commitChangeSet, statedChangedConceptIds, true);
 				final ConceptChangeProcessor processor = new ConceptChangeProcessor(DoiData.DEFAULT_SCORE, availableImages, statedTaxonomy, inferredTaxonomy);
@@ -1153,30 +1157,4 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
-	private Builder doc(final Concept concept) {
-		return SnomedConceptDocument.builder()
-				.id(concept.getId())
-				.iconId(Concepts.ROOT_CONCEPT)
-				.active(concept.isActive())
-				.released(concept.isReleased())
-				.exhaustive(concept.isExhaustive())
-				.moduleId(concept.getModule().getId())
-				.effectiveTime(EffectiveTimes.getEffectiveTime(concept.getEffectiveTime()))
-				.primitive(Concepts.PRIMITIVE.equals(concept.getDefinitionStatus().getId()))
-				.parents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.ancestors(PrimitiveSets.newLongOpenHashSet())
-				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet());
-	}
-
-	private Concept createConcept(final String id) {
-		final Concept concept = getConcept(id);
-		withCDOID(concept, nextStorageKey());
-		concept.setActive(true);
-		concept.setDefinitionStatus(getConcept(Concepts.FULLY_DEFINED));
-		concept.setModule(module());
-		concept.setExhaustive(false);
-		return concept;
-	}
-
 }

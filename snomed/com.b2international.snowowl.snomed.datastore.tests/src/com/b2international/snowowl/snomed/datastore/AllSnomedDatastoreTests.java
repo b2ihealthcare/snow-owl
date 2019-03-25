@@ -26,6 +26,7 @@ import com.b2international.snowowl.snomed.core.ql.SnomedQueryEvaluationRequestTe
 import com.b2international.snowowl.snomed.core.tree.TerminologyTreeTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceRegressionTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
+import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessorAxiomTest;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessorTest;
@@ -64,6 +65,7 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	RefSetMemberChangeProcessorTest.class,
 	ConstraintChangeProcessorTest.class,
 	ConceptChangeProcessorTest.class,
+	ConceptChangeProcessorAxiomTest.class,
 	SnomedEclEvaluationRequestTest.class,
 	SnomedStatedEclEvaluationTest.class,
 	SnomedEclRewriterTest.class,
