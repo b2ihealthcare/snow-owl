@@ -35,10 +35,10 @@ public final class ReasonerConcreteDomainMember implements Serializable {
 	
 	/*
 	 * Note that the rest of the values below can be completely different (or even
-	 * absent) when compared to the "origin" relationship, especially if the change
-	 * is a new inference!
+	 * absent) when compared to the "origin" concrete domain member, especially if
+	 * the change is a new inference!
 	 */
-	private boolean released;
+	private Boolean released;
 	private SnomedCoreComponent referencedComponent;
 	private String referenceSetId;
 	private Integer group;
@@ -61,11 +61,11 @@ public final class ReasonerConcreteDomainMember implements Serializable {
 		this.originMemberId = originMemberId;
 	}
 
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return released;
 	}
 
-	public void setReleased(final boolean released) {
+	public void setReleased(final Boolean released) {
 		this.released = released;
 	}
 
