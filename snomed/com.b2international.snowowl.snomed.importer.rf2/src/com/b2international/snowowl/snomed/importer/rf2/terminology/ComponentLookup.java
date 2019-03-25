@@ -52,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -175,19 +176,22 @@ public final class ComponentLookup<C extends CDOObject> {
 				final Multimap<Class<? extends SnomedDocument>, String> idsByType = Multimaps.index(componentIds, id -> SnomedDocument.getType(SnomedIdentifiers.getComponentCategory(id)));
 				for (Class<? extends SnomedDocument> type : idsByType.keySet()) {
 					// execute queries for each type and based on the current clazz extract either refset or concept storage keys
+					ImmutableList.Builder<String> fields = ImmutableList.builder();
+					fields.add(SnomedDocument.Fields.ID);
+					if (SnomedConceptDocument.class.isAssignableFrom(type) && SnomedRefSet.class.isAssignableFrom(clazz)) {
+						fields.add(SnomedConceptDocument.Fields.REFSET_STORAGEKEY);
+					} else {
+						fields.add(Revision.STORAGE_KEY);
+					}
 					final Query<String[]> query = Query.select(String[].class)
 							.from(type)
-							.fields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY)
+							.fields(fields.build())
 							.where(SnomedDocument.Expressions.ids(componentIds))
 							.limit(componentIds.size())
 							.build();
 					final Hits<String[]> hits = index.search(query);
 					for (String[] doc : hits) {
-						if (SnomedRefSet.class.isAssignableFrom(clazz)) {
-							map.put(doc[0], Long.parseLong(doc[2]));
-						} else {
-							map.put(doc[0], Long.parseLong(doc[1]));
-						}
+						map.put(doc[0], Long.parseLong(doc[1]));
 					}
 				}
 				return map;
