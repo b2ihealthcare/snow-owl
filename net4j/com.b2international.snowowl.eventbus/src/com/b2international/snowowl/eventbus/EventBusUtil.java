@@ -23,6 +23,7 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.internal.eventbus.EventBus;
+import com.b2international.snowowl.internal.eventbus.ExecutorServiceFactory;
 import com.b2international.snowowl.internal.eventbus.WorkerExecutorServiceFactory;
 
 /**
@@ -86,7 +87,16 @@ public class EventBusUtil {
 	 * @return an {@link EventBus} with the specified description and number of workers, using a shared queue for distributing tasks
 	 */
 	public static IEventBus getWorkerBus(String name, int numberOfWorkers) {
-		final IEventBus bus = new EventBus(name, numberOfWorkers, new WorkerExecutorServiceFactory());
+		final IEventBus bus = new EventBus(name, numberOfWorkers, numberOfWorkers == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory());
+		LifecycleUtil.activate(bus);
+		return bus;
+	}
+	
+	/**
+	 * @return an {@link EventBus} with the specified description and 1 direct thread worker.
+	 */
+	public static IEventBus getDirectBus(String name) {
+		final IEventBus bus = new EventBus(name, 1, ExecutorServiceFactory.DIRECT);
 		LifecycleUtil.activate(bus);
 		return bus;
 	}
