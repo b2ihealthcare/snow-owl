@@ -21,6 +21,8 @@ import java.util.Map;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 6.14
@@ -71,6 +73,16 @@ public final class ReasonerDescription implements Serializable {
 
 	public void setConcept(final SnomedConcept concept) {
 		this.concept = concept;
+	}
+	
+	@JsonProperty
+	public String getConceptId() {
+		return getConcept() == null ? null : getConcept().getId();
+	}
+	
+	@JsonIgnore
+	public void setConceptId(final String conceptId) {
+		setConcept(new SnomedConcept(conceptId));
 	}
 
 	public SnomedConcept getType() {

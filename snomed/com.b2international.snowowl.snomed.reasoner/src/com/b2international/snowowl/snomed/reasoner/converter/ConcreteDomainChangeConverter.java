@@ -33,7 +33,6 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -81,22 +80,41 @@ public final class ConcreteDomainChangeConverter
 		resource.setChangeNature(entry.getNature());
 
 		/*
-		 * - Inferred members: ID refers to the "origin" member ID (it will point to a stated or "grouped additional" CD member) 
-		 * - Redundant members: ID refers to the member that should be removed or deactivated
+		 * New members: ID refers to the "origin" member ID 
+		 * Updated members: ID refers to the member that should be updated in place
+		 * Redundant members: ID refers to the member that should be removed or deactivated
 		 */
 		final ReasonerConcreteDomainMember concreteDomainMember = new ReasonerConcreteDomainMember(entry.getMemberId());
+		
+		// Released flag is the "origin" member's released state for updated and redundant members, false for new members
+		concreteDomainMember.setReleased(entry.isReleased());
 
-		if (ChangeNature.INFERRED.equals(entry.getNature())) {
-			/*
-			 * Inferences carry information about the group which can differ from the values
-			 * on the "origin" member, so make note of it here. Characteristic type is
-			 * always "inferred".
-			 */
-			concreteDomainMember.setReferencedComponentId(entry.getReferencedComponentId());
-			concreteDomainMember.setGroup(entry.getGroup());
-		} else {
-			// Redundant CD members only need the ID and released flag populated to do the delete/inactivation
-			concreteDomainMember.setReleased(entry.isReleased());
+		switch (entry.getNature()) {
+			case NEW:
+				/*
+				 * New members are referring to: 
+				 * - a different component 
+				 * - in another relationship group
+				 * - with a potentially different characteristic type 
+				 */
+				concreteDomainMember.setReferencedComponentId(entry.getReferencedComponentId());
+				concreteDomainMember.setGroup(entry.getGroup());
+				concreteDomainMember.setCharacteristicTypeId(entry.getCharacteristicTypeId());
+				break;
+				
+			case UPDATED:
+				// Updates change the serialized value on an existing member
+				concreteDomainMember.setSerializedValue(entry.getSerializedValue());
+				break;
+				
+			case REDUNDANT:
+				// Redundant CD members only need the UUID and released flag populated to do the delete/inactivation
+				break;
+				
+			default:
+				throw new IllegalStateException(String.format("Unexpected CD member change '%s' found with UUID '%s'.", 
+						entry.getNature(), 
+						entry.getMemberId()));
 		}
 		
 		resource.setConcreteDomainMember(concreteDomainMember);
@@ -120,7 +138,6 @@ public final class ConcreteDomainChangeConverter
 		final boolean inferredOnly = expandOptions.getBoolean("inferredOnly");
 
 		final Options cdMemberExpandOptions = expandOptions.getOptions("expand");
-		
 		final Options referencedComponentOptions = cdMemberExpandOptions.getOptions(REFERENCED_COMPONENT);
 		final boolean needsReferencedComponent = cdMemberExpandOptions.keySet().contains(REFERENCED_COMPONENT);
 
@@ -128,17 +145,20 @@ public final class ConcreteDomainChangeConverter
 			final Collection<ConcreteDomainChange> itemsForCurrentBranch = itemsByBranch.get(branch);
 
 			/*
-			 * Expand referenced component on the member currently set on each item first,
-			 * as it might have changed when compared to the "origin" member.
+			 * Expand referenced component on "new" members via a separate search request,
+			 * they will be different from the referenced component on the "origin" member.
 			 */
 			if (needsReferencedComponent) {
 				final List<ReasonerConcreteDomainMember> blankMembers = itemsForCurrentBranch.stream()
-						.filter(c -> !inferredOnly || ChangeNature.INFERRED.equals(c.getChangeNature()))
+						.filter(c -> ChangeNature.NEW.equals(c.getChangeNature()))
 						.map(ConcreteDomainChange::getConcreteDomainMember)
 						.collect(Collectors.toList());
 
-				final Multimap<String, ReasonerConcreteDomainMember> membersByReferencedComponent = Multimaps.index(blankMembers, m -> m.getReferencedComponent().getId());
-				final Multimap<ComponentCategory, String> referencedComponentsByCategory = Multimaps.index(membersByReferencedComponent.keySet(), SnomedIdentifiers::getComponentCategory);
+				final Multimap<String, ReasonerConcreteDomainMember> membersByReferencedComponent = Multimaps.index(blankMembers, 
+						ReasonerConcreteDomainMember::getReferencedComponentId);
+				
+				final Multimap<ComponentCategory, String> referencedComponentsByCategory = Multimaps.index(membersByReferencedComponent.keySet(), 
+						SnomedIdentifiers::getComponentCategory);
 
 				for (final Entry<ComponentCategory, Collection<String>> categoryEntry : referencedComponentsByCategory.asMap().entrySet()) {
 					expandComponentCategory(branch, 
@@ -152,59 +172,83 @@ public final class ConcreteDomainChangeConverter
 			/*
 			 * Then fetch all the required members (these will have a referenced component
 			 * ID that should no longer be copied on inferred members). Note that the same "origin"
-			 * member might be used for multiple inferred counterparts.
+			 * member might be used for multiple eg. "new" counterparts.
 			 */
-			final Set<String> memberIds = itemsForCurrentBranch.stream()
-					.filter(c -> !inferredOnly || ChangeNature.INFERRED.equals(c.getChangeNature()))
+			final Set<String> cdMemberUuids = itemsForCurrentBranch.stream()
+					.filter(c -> !inferredOnly || ChangeNature.NEW.equals(c.getChangeNature()))
 					.map(c -> c.getConcreteDomainMember().getOriginMemberId())
 					.collect(Collectors.toSet());
 
-			final Request<BranchContext, SnomedReferenceSetMembers> memberSearchRequest = SnomedRequests.prepareSearchMember()
-					.filterByIds(memberIds)
-					.setLimit(memberIds.size())
+			final Request<BranchContext, SnomedReferenceSetMembers> cdMemberSearchRequest = SnomedRequests.prepareSearchMember()
+					.filterByIds(cdMemberUuids)
+					.setLimit(cdMemberUuids.size())
 					.setExpand(cdMemberExpandOptions)
 					.setLocales(locales())
 					.build();
 
-			final SnomedReferenceSetMembers concreteDomainMembers = new BranchRequest<>(branch, 
-				new RevisionIndexReadRequest<>(memberSearchRequest))
-				.execute(context());
+			final SnomedReferenceSetMembers cdMembers = new BranchRequest<>(branch, 
+				new RevisionIndexReadRequest<>(cdMemberSearchRequest))
+					.execute(context());
 			
-			final Map<String, SnomedReferenceSetMember> membersByUuid = Maps.uniqueIndex(concreteDomainMembers, SnomedReferenceSetMember::getId);
+			final Map<String, SnomedReferenceSetMember> cdMembersByUuid = Maps.uniqueIndex(cdMembers, SnomedReferenceSetMember::getId);
 
 			/*
-			 * Finally, set the member on the change item, but preserve the "adjusted" properties:
-			 * 
-			 * - inferred referenced component ID
-			 * - inferred relationship group
+			 * Finally, set the member on the change item, but preserve the properties that
+			 * were already set in "toResource"
 			 */
 			for (final ConcreteDomainChange item : itemsForCurrentBranch) {
 				final ReasonerConcreteDomainMember reasonerMember = item.getConcreteDomainMember();
 				final String memberUuid = reasonerMember.getOriginMemberId();
-				
-				if (ChangeNature.INFERRED.equals(item.getChangeNature())) {
-					final SnomedReferenceSetMember expandedMember = membersByUuid.get(memberUuid);
-					final Map<String, Object> expandedProperties = expandedMember.getProperties();
-					
-					reasonerMember.setCharacteristicTypeId(Concepts.INFERRED_RELATIONSHIP);
-					// reasonerMember.setGroup(...) is already set
-					// reasonerMember.setReferencedComponent(...) is already set
-					reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
-					reasonerMember.setReleased(false);
-					reasonerMember.setSerializedValue((String) expandedProperties.get(SnomedRf2Headers.FIELD_VALUE));
-					reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID));
-					
-				} else if (!inferredOnly) {
-					final SnomedReferenceSetMember expandedMember = membersByUuid.get(memberUuid);
-					final Map<String, Object> expandedProperties = expandedMember.getProperties();
 
-					reasonerMember.setCharacteristicTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
-					reasonerMember.setGroup((Integer) expandedProperties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP));
-					reasonerMember.setReferencedComponent(expandedMember.getReferencedComponent());
-					reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
-					// reasonerMember.setReleased(...) is already set
-					reasonerMember.setSerializedValue((String) expandedProperties.get(SnomedRf2Headers.FIELD_VALUE));
-					reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID)); 
+				switch (item.getChangeNature()) {
+					case NEW: {
+							final SnomedReferenceSetMember expandedMember = cdMembersByUuid.get(memberUuid);
+							final Map<String, Object> expandedProperties = expandedMember.getProperties();
+
+							// reasonerMember.setCharacteristicTypeId(...) is already set
+							// reasonerMember.setGroup(...) is already set
+							// reasonerMember.setReferencedComponent(...) is already set (or expanded)
+							reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
+							// reasonerMember.setReleased(...) is already set
+							reasonerMember.setSerializedValue((String) expandedProperties.get(SnomedRf2Headers.FIELD_VALUE));
+							reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID));
+						}
+						break;
+						
+					case UPDATED:
+						if (!inferredOnly) {
+							final SnomedReferenceSetMember expandedMember = cdMembersByUuid.get(memberUuid);
+							final Map<String, Object> expandedProperties = expandedMember.getProperties();
+							
+							reasonerMember.setCharacteristicTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
+							reasonerMember.setGroup((Integer) expandedProperties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP));
+							reasonerMember.setReferencedComponent(expandedMember.getReferencedComponent());
+							reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
+							// reasonerMember.setReleased(...) is already set
+							// reasonerMember.setSerializedValue(...) is already set
+							reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID)); 
+						}
+						break;
+						
+					case REDUNDANT:
+						if (!inferredOnly) {
+							final SnomedReferenceSetMember expandedMember = cdMembersByUuid.get(memberUuid);
+							final Map<String, Object> expandedProperties = expandedMember.getProperties();
+							
+							reasonerMember.setCharacteristicTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
+							reasonerMember.setGroup((Integer) expandedProperties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP));
+							reasonerMember.setReferencedComponent(expandedMember.getReferencedComponent());
+							reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
+							// reasonerMember.setReleased(...) is already set
+							reasonerMember.setSerializedValue((String) expandedProperties.get(SnomedRf2Headers.FIELD_VALUE));
+							reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID)); 
+						}
+						break;
+						
+					default:
+						throw new IllegalStateException(String.format("Unexpected CD member change '%s' found with UUID '%s'.", 
+								item.getChangeNature(), 
+								item.getConcreteDomainMember().getOriginMemberId()));
 				}
 			}
 		}
@@ -217,13 +261,17 @@ public final class ConcreteDomainChangeConverter
 
 		final Map<String, String> branchesByClassificationIdMap = ClassificationRequests.prepareSearchClassification()
 				.filterByIds(classificationTaskIds)
-				.all()
+				.setLimit(classificationTaskIds.size())
 				.build()
 				.execute(context())
 				.stream()
-				.collect(Collectors.toMap(ClassificationTask::getId, ClassificationTask::getBranch));
+				.collect(Collectors.toMap(
+						ClassificationTask::getId, 
+						ClassificationTask::getBranch));
 
-		final Multimap<String, ConcreteDomainChange> itemsByBranch = Multimaps.index(results, r -> branchesByClassificationIdMap.get(r.getClassificationId()));
+		final Multimap<String, ConcreteDomainChange> itemsByBranch = Multimaps.index(results, 
+				r -> branchesByClassificationIdMap.get(r.getClassificationId()));
+		
 		return itemsByBranch;
 	}
 
@@ -234,36 +282,31 @@ public final class ConcreteDomainChangeConverter
 			final Options componentOptions, 
 			final Multimap<String, ReasonerConcreteDomainMember> membersByReferencedComponent) {
 
-		final SearchResourceRequestBuilder<?, BranchContext, ? extends CollectionResource<? extends SnomedCoreComponent>> search = 
+		final SearchResourceRequestBuilder<?, BranchContext, ? extends CollectionResource<? extends SnomedCoreComponent>> searchRequestBuilder = 
 				createSearchRequestBuilder(category);
 
-		search
-			.filterByIds(componentIds)
+		searchRequestBuilder.filterByIds(componentIds)
 			.setLimit(componentIds.size())
 			.setLocales(locales())
 			.setExpand(componentOptions.get("expand", Options.class));
 
-		final CollectionResource<? extends SnomedCoreComponent> components = new BranchRequest<>(branch, 
-			new RevisionIndexReadRequest<>(search.build()))
-			.execute(context());
+		final CollectionResource<? extends SnomedCoreComponent> referencedComponents = new BranchRequest<>(branch, 
+			new RevisionIndexReadRequest<>(searchRequestBuilder.build()))
+				.execute(context());
 
-		for (final SnomedCoreComponent component : components) {
-			for (final ReasonerConcreteDomainMember member : membersByReferencedComponent.get(component.getId())) {
-				member.setReferencedComponent(component);
+		for (final SnomedCoreComponent referencedComponent : referencedComponents) {
+			for (final ReasonerConcreteDomainMember member : membersByReferencedComponent.get(referencedComponent.getId())) {
+				member.setReferencedComponent(referencedComponent);
 			}
 		}
 	}
 
 	private SearchResourceRequestBuilder<?, BranchContext, ? extends CollectionResource<? extends SnomedCoreComponent>> createSearchRequestBuilder(final ComponentCategory category) {
 		switch (category) {
-		case CONCEPT:
-			return SnomedRequests.prepareSearchConcept();
-		case DESCRIPTION:
-			return SnomedRequests.prepareSearchDescription();
-		case RELATIONSHIP:
-			return SnomedRequests.prepareSearchRelationship();
-		default: 
-			throw new UnsupportedOperationException("Category is not supported in referenced component expansion");
+			case CONCEPT: return SnomedRequests.prepareSearchConcept();
+			case DESCRIPTION: return SnomedRequests.prepareSearchDescription();
+			case RELATIONSHIP: return SnomedRequests.prepareSearchRelationship();
+			default: throw new UnsupportedOperationException("Category '" + category + "' is not supported in referenced component expansion.");
 		}
 	}
 }
