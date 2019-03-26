@@ -23,6 +23,8 @@
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
+		<jaxb.api.version>2.3.0</jaxb.api.version>
+		<javax.activation.version>1.2.0</javax.activation.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.0.0</tycho.version>
 		<tycho-extras.version>1.0.0</tycho-extras.version>
@@ -49,6 +51,18 @@
 			<artifactId>jackson-core</artifactId>
 			<version>${jackson.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		  <groupId>javax.xml.bind</groupId>
+		  <artifactId>jaxb-api</artifactId>
+		  <version>${jaxb.api.version}</version>
+		  <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.activation</groupId>
+		    <artifactId>javax.activation</artifactId>
+		    <version>${javax.activation.version}</version>
+		    <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
