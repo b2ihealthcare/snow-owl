@@ -291,8 +291,15 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 				case REDUNDANT:
 					relationships.removeIf(r -> r.getId().equals(relationship.getOriginId()));
 					break;
+				
+				case UPDATED:
+					relationships.stream()
+						.filter(r -> r.getId().equals(relationship.getOriginId()))
+						.findFirst()
+						.ifPresent(r -> ((SnomedBrowserRelationship) r).setGroupId(relationship.getGroup()));
+					break;
 					
-				case INFERRED:
+				case NEW:
 					final SnomedBrowserRelationship inferred = new SnomedBrowserRelationship();
 					inferred.setType(new SnomedBrowserRelationshipType(relationship.getTypeId()));
 					inferred.setSourceId(relationship.getSourceId());
@@ -312,6 +319,11 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 					relationships.add(inferred);
 					break;
+					
+				default:
+					throw new IllegalStateException(String.format("Unexpected relationship change '%s' found with SCTID '%s'.", 
+							relationshipChange.getChangeNature(), 
+							relationshipChange.getRelationship().getOriginId()));
 			}
 		}
 		
