@@ -58,14 +58,14 @@ public class CsvMessageConverter extends AbstractHttpMessageConverter<Collection
 			output.getHeaders().set(CONTENT_DISPOSITION, ATTACHMENT);
 			try (OutputStream out = output.getBody()) {
 				final CsvMapper mapper = new CsvMapper();
+				mapper.readerFor(Collection.class);
+				
 				// XXX The mapper is auto closing the writer after the first write out for some reason
 				mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 				
-				CsvSchema schema = mapper.schemaFor(items.iterator().next().getClass()).withHeader().withColumnSeparator('\t');
-				ObjectWriter writer = mapper.writer(schema);
-				for (Object item : items) {
-					writer.writeValue(out,  item);
-				}
+				final CsvSchema schema = mapper.schemaFor(items.iterator().next().getClass()).withHeader().withColumnSeparator('\t');
+				final ObjectWriter writer = mapper.writer(schema);
+				writer.writeValues(out).writeAll(items);
 			}
 		}
 	}
