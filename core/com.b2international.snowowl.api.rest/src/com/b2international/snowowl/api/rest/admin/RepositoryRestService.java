@@ -37,11 +37,12 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Spring controller for exposing repository related administration functionalities.
