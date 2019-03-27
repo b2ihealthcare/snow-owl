@@ -21,24 +21,9 @@ Export-Package: com.b2international.commons,
  com.b2international.commons.status,
  com.b2international.commons.tree.emf,
  com.b2international.commons.validation,
- gr.forth.ics.graph,
- gr.forth.ics.graph.algo,
- gr.forth.ics.graph.algo.transitivity,
- gr.forth.ics.graph.event,
- gr.forth.ics.graph.io,
- gr.forth.ics.graph.io.gml,
- gr.forth.ics.graph.io.pajek,
- gr.forth.ics.graph.layout,
- gr.forth.ics.graph.layout.circular,
- gr.forth.ics.graph.layout.forces2d,
- gr.forth.ics.graph.layout.random,
- gr.forth.ics.graph.metrics,
- gr.forth.ics.graph.path,
- gr.forth.ics.util,
  javax.annotation,
  javax.annotation.concurrent,
- javax.annotation.meta,
- net.jodah.typetools
+ javax.annotation.meta
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.core.net;bundle-version="1.2.200",
  org.eclipse.core.databinding;bundle-version="1.4.0";visibility:=reexport,
@@ -58,7 +43,4 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.h2;bundle-version="[1.3.0,2.0.0)";resolution:=optional
 Bundle-Activator: com.b2international.commons.CommonsActivator
 Import-Package: org.slf4j;version="1.7.2"
-Bundle-ClassPath: .,
- lib/flexigraph.jar,
- lib/jsr305-1.3.9.jar,
- lib/typetools-0.4.8.jar
+Bundle-ClassPath: .
