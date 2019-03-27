@@ -18,11 +18,18 @@
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
 		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
-		<guava.version>[18.0.0,19.0.0)</guava.version>
+		<guava.version>18.0</guava.version>
+		<guava.versionRange>[18.0.0,19.0.0)</guava.versionRange>
 		<groovy.version>[2.4.0,2.5.0)</groovy.version>
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
+		<jbcrypt.version>0.4.1</jbcrypt.version>
+		<typetools.version>0.4.8</typetools.version>
+		<hdrhistogram.version>2.1.10</hdrhistogram.version>
+		<commons.logging.version>1.2</commons.logging.version>
+		<commons.codec.version>1.10</commons.codec.version>
+		<fastutil.version>8.2.2</fastutil.version>
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<!-- Build tool/compiler versions -->
@@ -46,23 +53,12 @@
 	</modules>
 
 	<dependencies>
+		<!-- Add new dependencies here at the end of the dependency list -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 			<version>${jackson.version}</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-		  <groupId>javax.xml.bind</groupId>
-		  <artifactId>jaxb-api</artifactId>
-		  <version>${jaxb.api.version}</version>
-		  <scope>provided</scope>
-		</dependency>
-		<dependency>
-		    <groupId>com.sun.activation</groupId>
-		    <artifactId>javax.activation</artifactId>
-		    <version>${javax.activation.version}</version>
-		    <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -119,26 +115,8 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-jsonSchema</artifactId>
-			<version>${jackson.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-scala_2.10</artifactId>
-			<version>${jackson.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-guava</artifactId>
-			<version>${jackson.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
 			<version>${jackson.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -205,7 +183,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<version>${guava.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -317,6 +295,42 @@
 		  	<scope>provided</scope>
 		</dependency>
 		<dependency>
+	        <groupId>de.svenkubiak</groupId>
+	        <artifactId>jBCrypt</artifactId>
+	        <version>${jbcrypt.version}</version>
+	        <scope>provided</scope>
+    	</dependency>
+    	<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>typetools</artifactId>
+			<version>${typetools.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hdrhistogram</groupId>
+		    <artifactId>HdrHistogram</artifactId>
+		    <version>${hdrhistogram.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+    		<groupId>commons-codec</groupId>
+    		<artifactId>commons-codec</artifactId>
+    		<version>${commons.codec.version}</version>
+    		<scope>provided</scope>
+		</dependency>
+		<dependency>
+    		<groupId>commons-logging</groupId>
+    		<artifactId>commons-logging</artifactId>
+    		<version>${commons.logging.version}</version>
+    		<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+			<version>${fastutil.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
     		<artifactId>jetty-continuation</artifactId>
     		<version>${jetty.version}</version>
@@ -396,11 +410,47 @@
       		<scope>provided</scope>
     	</dependency>
     	<dependency>
+    		<groupId>com.fasterxml</groupId>
+    		<artifactId>classmate</artifactId>
+    		<version>1.3.4</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>org.mapstruct</groupId>
+    		<artifactId>mapstruct</artifactId>
+    		<version>1.2.0.Final</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>io.swagger</groupId>
+    		<artifactId>swagger-annotations</artifactId>
+    		<version>1.5.14</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>io.swagger</groupId>
+    		<artifactId>swagger-models</artifactId>
+    		<version>1.5.14</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
 	    	<groupId>org.apache.servicemix.specs</groupId>
 		    <artifactId>org.apache.servicemix.specs.jaxp-api-1.4</artifactId>
 		    <version>2.9.0</version>
 		    <scope>provided</scope>
     	</dependency>
+		<dependency>
+		  <groupId>javax.xml.bind</groupId>
+		  <artifactId>jaxb-api</artifactId>
+		  <version>${jaxb.api.version}</version>
+		  <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.activation</groupId>
+		    <artifactId>javax.activation</artifactId>
+		    <version>${javax.activation.version}</version>
+		    <scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -501,7 +551,7 @@
 							<type>eclipse-plugin</type>
 							<id>com.google.guava</id>
 							<restrictTo>
-								<versionRange>${guava.version}</versionRange>
+								<versionRange>${guava.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>

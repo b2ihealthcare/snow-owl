@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.core.net.proxy.IProxyService;
@@ -31,6 +32,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.prefs.PreferencesService;
 
+import com.b2international.commons.CommonsActivator;
 import com.google.common.base.Strings;
 import com.google.common.io.Resources;
 
@@ -42,6 +44,13 @@ public class PlatformUtil {
 	public static final String UNQUALIFIED = "qualifier";
 
 	private PlatformUtil() {
+	}
+	
+	/**
+	 * @return <code>true</code> if the platform is running in dev mode, otherwise <code>false</code>.
+	 */
+	public static final boolean isDevVersion() {
+		return isDevVersion(CommonsActivator.PLUGIN_ID);
 	}
 
 	/**
@@ -137,7 +146,7 @@ public class PlatformUtil {
 	 * @throws RuntimeException
 	 *             - if something happens during conversion.
 	 */
-	public static String toAbsolutePath(Class<?> contextClass, String resourceClassPathLocation) {
+	public static Path toAbsolutePath(Class<?> contextClass, String resourceClassPathLocation) {
 		return toAbsolutePath(toFileURL(contextClass, resourceClassPathLocation));
 	}
 
@@ -147,20 +156,20 @@ public class PlatformUtil {
 	 * @param fileURL
 	 * @return
 	 */
-	public static String toAbsolutePath(URL fileURL) {
+	public static Path toAbsolutePath(URL fileURL) {
 		try {
 			fileURL = new URL(fileURL.toString().replaceAll(" ", "%20"));
-			return Paths.get(fileURL.toURI()).toString();
+			return Paths.get(fileURL.toURI());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
 	/**
-	 * @param url
+	 * @param bundleUrl
 	 * @return
 	 */
-	public static String toAbsoluteBundlePath(URL bundleUrl) {
+	public static Path toAbsoluteBundlePath(URL bundleUrl) {
 		return toAbsolutePath(getBundleFileURL(bundleUrl));
 	}
 
@@ -172,7 +181,7 @@ public class PlatformUtil {
 	 * @param path
 	 * @return
 	 */
-	public static String toAbsolutePathBundleEntry(Class<?> contextClass, String path) {
+	public static Path toAbsolutePathBundleEntry(Class<?> contextClass, String path) {
 		final Bundle bundle = checkNotNull(FrameworkUtil.getBundle(contextClass), "Bundle not found for %s", contextClass);
 		return toAbsoluteBundlePath(checkNotNull(bundle.getEntry(path), "Bundle entry not found at %s in bundle %s", path, bundle.getSymbolicName()));
 	}
