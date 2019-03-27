@@ -26,16 +26,17 @@ import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 import com.b2international.snowowl.snomed.api.ISnomedConceptHistoryService;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Api("History")
+@Api(value = "History", description="History", tags = { "history" })
 @RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })

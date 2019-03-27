@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,19 +41,20 @@ import com.b2international.snowowl.snomed.api.rest.domain.MergeRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 4.1
  */
-@Api("Branches")
+@Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
 @RequestMapping(value="/merges", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-public class SnomedBranchMergingController extends AbstractRestService {
+public class SnomedBranchMergingRestService extends AbstractRestService {
 
 	@Autowired
 	private IEventBus bus;
@@ -82,7 +83,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			.execute(bus)
 			.getSync();
 		
-		final URI linkUri = linkTo(SnomedBranchMergingController.class).slash(merge.getId()).toUri();
+		final URI linkUri = linkTo(SnomedBranchMergingRestService.class).slash(merge.getId()).toUri();
 		return Responses.accepted(linkUri).build();
 	}
 	

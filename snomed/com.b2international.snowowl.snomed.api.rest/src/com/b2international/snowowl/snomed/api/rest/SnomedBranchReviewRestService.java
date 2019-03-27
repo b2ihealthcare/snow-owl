@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,20 +42,21 @@ import com.b2international.snowowl.snomed.api.rest.domain.CreateReviewRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Provides REST endpoints for computing Reviewerences between branches.
  * 
  * @since 4.2
  */
-@Api("Branches")
+@Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
 @RequestMapping(value="/reviews", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-public class SnomedBranchReviewController extends AbstractRestService {
+public class SnomedBranchReviewRestService extends AbstractRestService {
 
 	@Autowired
 	private IEventBus bus;
@@ -72,7 +73,7 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
 		ApiValidation.checkInput(request);
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewController.class);
+		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewRestService.class);
 		RepositoryRequests
 			.reviews()
 			.prepareCreate()
