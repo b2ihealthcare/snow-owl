@@ -31,6 +31,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.Date;
@@ -475,7 +476,44 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(ConflictType.HAS_INACTIVE_REFERENCE, conflict.getType());
 		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
 	}
+	
+	@Test
+	public void reportOnlyActiveRelationshipsWithInactiveReference() {
+		
+		String conceptId = createNewConcept(branchPath);
 
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+		
+		String inactivateRelationshipId = createNewRelationship(a, Concepts.ROOT_CONCEPT, Concepts.HAS_DOSE_FORM, conceptId);
+		
+		inactivateConcept(a, conceptId);
+		
+		getComponent(a, SnomedComponentType.RELATIONSHIP, inactivateRelationshipId).statusCode(200).body("active", equalTo(false));
+		
+		String relationshipToReportId = createNewRelationship(a, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
+
+		Collection<MergeConflict> conflicts = merge(a, branchPath, "Merge active and inactive relationships with inactive reference")
+				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
+				.extract().as(Merge.class)
+				.getConflicts();
+
+		assertTrue(conflicts.stream().noneMatch(c -> inactivateRelationshipId.equals(c.getComponentId())));
+		
+		assertEquals(1, conflicts.size());
+
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+				.property("destinationId")
+				.value(conceptId)
+				.build();
+
+		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
+
+		assertEquals(relationshipToReportId, conflict.getComponentId());
+		assertEquals("Relationship", conflict.getComponentType());
+		assertEquals(ConflictType.HAS_INACTIVE_REFERENCE, conflict.getType());
+		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
+	}
 
 	@Test
 	public void noMergeNewDescriptionToUnrelatedBranch() {
