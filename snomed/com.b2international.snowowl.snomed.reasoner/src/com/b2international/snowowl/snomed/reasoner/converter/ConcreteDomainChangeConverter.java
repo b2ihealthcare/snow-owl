@@ -139,18 +139,23 @@ public final class ConcreteDomainChangeConverter
 
 		final Options cdMemberExpandOptions = expandOptions.getOptions("expand");
 		final Options referencedComponentOptions = cdMemberExpandOptions.getOptions(REFERENCED_COMPONENT);
-		final boolean needsReferencedComponent = cdMemberExpandOptions.keySet().contains(REFERENCED_COMPONENT);
+		
+		/*
+		 * Remove this option from the member expand options map, so that member search
+		 * does not expand the referenced component again
+		 */
+		final boolean needsReferencedComponent = cdMemberExpandOptions.keySet().remove(REFERENCED_COMPONENT);
 
 		for (final String branch : itemsByBranch.keySet()) {
 			final Collection<ConcreteDomainChange> itemsForCurrentBranch = itemsByBranch.get(branch);
 
 			/*
-			 * Expand referenced component on "new" members via a separate search request,
-			 * they will be different from the referenced component on the "origin" member.
+			 * Expand referenced component on members via a separate search request, as they
+			 * can be different from the referenced component on the "origin" member
 			 */
 			if (needsReferencedComponent) {
 				final List<ReasonerConcreteDomainMember> blankMembers = itemsForCurrentBranch.stream()
-						.filter(c -> ChangeNature.NEW.equals(c.getChangeNature()))
+						.filter(c -> !inferredOnly || ChangeNature.NEW.equals(c.getChangeNature()))
 						.map(ConcreteDomainChange::getConcreteDomainMember)
 						.collect(Collectors.toList());
 
@@ -222,7 +227,7 @@ public final class ConcreteDomainChangeConverter
 							
 							reasonerMember.setCharacteristicTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
 							reasonerMember.setGroup((Integer) expandedProperties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP));
-							reasonerMember.setReferencedComponent(expandedMember.getReferencedComponent());
+							// reasonerMember.setReferencedComponent(...) is already set (or expanded)
 							reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
 							// reasonerMember.setReleased(...) is already set
 							// reasonerMember.setSerializedValue(...) is already set
@@ -237,7 +242,7 @@ public final class ConcreteDomainChangeConverter
 							
 							reasonerMember.setCharacteristicTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
 							reasonerMember.setGroup((Integer) expandedProperties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP));
-							reasonerMember.setReferencedComponent(expandedMember.getReferencedComponent());
+							// reasonerMember.setReferencedComponent(...) is already set (or expanded)
 							reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
 							// reasonerMember.setReleased(...) is already set
 							reasonerMember.setSerializedValue((String) expandedProperties.get(SnomedRf2Headers.FIELD_VALUE));
