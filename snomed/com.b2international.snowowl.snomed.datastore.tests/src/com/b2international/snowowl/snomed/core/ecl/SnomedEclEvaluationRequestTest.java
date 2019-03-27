@@ -23,11 +23,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.decimalMember;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.integerMember;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.relationship;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.stringMember;
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -63,6 +59,7 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -89,6 +86,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String HAS_ACTIVE_INGREDIENT = Concepts.HAS_ACTIVE_INGREDIENT;
 	private static final String SUBSTANCE = Concepts.SUBSTANCE;
 	
+	private static final long SUBSTANCEL = Long.parseLong(SUBSTANCE);
+	
 	// random IDs
 	private static final String TRIPHASIL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String PANADOL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
@@ -108,10 +107,14 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String INGREDIENT6 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_BOSS = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_ROOT = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final long DRUG_ROOTL = Long.parseLong(DRUG_ROOT);
+	
 	private static final String HAS_TRADE_NAME = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String PREFERRED_STRENGTH = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_1_MG = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_1D_MG = RandomSnomedIdentiferGenerator.generateConceptId();
+
+	private static final String AXIOM = "axiom";
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -120,7 +123,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	private BranchContext context;
 	
-	private String expressionForm;
+	private final String expressionForm;
 	
 	public SnomedEclEvaluationRequestTest(String expressionForm) {
 		this.expressionForm = expressionForm;
@@ -130,7 +133,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 			{ Trees.INFERRED_FORM },
-			{ Trees.STATED_FORM }
+			{ Trees.STATED_FORM },
+			{ AXIOM } // special test parameter to indicate stated form on axiom members
 		});
 	}
 
@@ -144,11 +148,15 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Before
 	public void setup() {
 		super.setup();
+		SnomedCoreConfiguration config = new SnomedCoreConfiguration();
+		config.setConcreteDomainSupported(true);
+		
 		context = TestBranchContext.on(MAIN)
 				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
+				.with(SnomedCoreConfiguration.class, config)
 				.build();
 	}
 	
@@ -159,7 +167,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	private Expression eval(String expression) {
 		return new RevisionIndexReadRequest<>(SnomedRequests.prepareEclEvaluation(expression)
-				.setExpressionForm(expressionForm)
+				.setExpressionForm(isInferred() ? Trees.INFERRED_FORM : Trees.STATED_FORM) // use the isInferred method decide on inferred vs stated form (this will provide support for axioms as well)
 				.build())
 				.execute(context)
 				.getSync();		
@@ -223,8 +231,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void memberOfNested() throws Exception {
 		indexRevision(MAIN, nextStorageKey(), concept(Concepts.SYNONYM)
-				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.REFSET_DESCRIPTION_TYPE)))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.REFSET_DESCRIPTION_TYPE)))
+				.parents(Long.parseLong(Concepts.REFSET_DESCRIPTION_TYPE))
+				.statedParents(Long.parseLong(Concepts.REFSET_DESCRIPTION_TYPE))
 				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build());
@@ -300,8 +308,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public void parentOf() throws Exception {
 		// SCT Core module has a single parent in this test case
 		indexRevision(MAIN, STORAGE_KEY1, concept(Concepts.MODULE_SCT_CORE)
-				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT)))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT)))
+				.parents(Long.parseLong(Concepts.MODULE_ROOT))
+				.statedParents(Long.parseLong(Concepts.MODULE_ROOT))
 				.build());
 		final Expression actual = eval(">!"+Concepts.MODULE_SCT_CORE);
 		final Expression expected = ids(Collections.singleton(Concepts.MODULE_ROOT));
@@ -313,9 +321,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		// SCT Core module has a single parent and a single ancestor in this test case
 		indexRevision(MAIN, STORAGE_KEY1, concept(Concepts.MODULE_SCT_CORE)
 				.ancestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
-				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT)))
+				.parents(Long.parseLong(Concepts.MODULE_ROOT))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT)))
+				.statedParents(Long.parseLong(Concepts.MODULE_ROOT))
 				.build());
 		final Expression actual = eval(">"+Concepts.MODULE_SCT_CORE);
 		final Expression expected = ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT));
@@ -327,9 +335,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		// SCT Core module has a single parent and a single ancestor in this test case
 		indexRevision(MAIN, STORAGE_KEY1, concept(Concepts.MODULE_SCT_CORE)
 				.ancestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
-				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT)))
+				.parents(Long.parseLong(Concepts.MODULE_ROOT))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT)))
+				.statedParents(Long.parseLong(Concepts.MODULE_ROOT))
 				.build());
 		final Expression actual = eval(">>"+Concepts.MODULE_SCT_CORE);
 		final Expression expected = ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT, Concepts.MODULE_SCT_CORE));
@@ -543,10 +551,16 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public void refinementCardinalityZeroToZeroNotEquals() throws Exception {
 		generateDrugHierarchy();
 		indexRevision(MAIN, nextStorageKey(), concept(DRUG_WITH_INVALID_HAI)
-				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+				.parents(DRUG_ROOTL)
+				.statedParents(DRUG_ROOTL)
 				.build());
-		indexRevision(MAIN, nextStorageKey(), relationship(DRUG_WITH_INVALID_HAI, HAS_ACTIVE_INGREDIENT, DRUG_WITH_INVALID_HAI, getCharacteristicType()).group(0).build());
+		if (isAxiom()) {
+			indexRevision(MAIN, nextStorageKey(), classAxioms(DRUG_WITH_INVALID_HAI, 
+				HAS_ACTIVE_INGREDIENT, DRUG_WITH_INVALID_HAI, 0
+			).build());
+		} else {
+			indexRevision(MAIN, nextStorageKey(), relationship(DRUG_WITH_INVALID_HAI, HAS_ACTIVE_INGREDIENT, DRUG_WITH_INVALID_HAI, getCharacteristicType()).group(0).build());
+		}
 		
 		final Expression actual = eval(String.format("<%s: [0..0] %s != <%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected =	Expressions.builder()
@@ -1173,45 +1187,57 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		index().write(MAIN, currentTime(), writer -> {
 			// substances
 			writer.put(nextStorageKey(), concept(INGREDIENT1)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
+					.parents(SUBSTANCEL)
+					.statedParents(SUBSTANCEL)
 					.build());
 			writer.put(nextStorageKey(), concept(INGREDIENT2)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
+					.parents(SUBSTANCEL)
+					.statedParents(SUBSTANCEL)
 					.build());
 			writer.put(nextStorageKey(), concept(INGREDIENT3)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
+					.parents(SUBSTANCEL)
+					.statedParents(SUBSTANCEL)
 					.build());
 			// drugs
 			writer.put(nextStorageKey(), concept(ABACAVIR_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), concept(PANADOL_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), concept(TRIPHASIL_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), concept(AMOXICILLIN_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			// has active ingredient relationships
-			writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1, getCharacteristicType()).group(0).build());
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1, getCharacteristicType()).group(0).build());
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2, getCharacteristicType()).group(0).build());
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2, getCharacteristicType()).group(0).build());
 			
+			if (isAxiom()) {
+				writer.put(nextStorageKey(), classAxioms(PANADOL_TABLET, 
+					HAS_ACTIVE_INGREDIENT, INGREDIENT1, 0
+				).build());
+				writer.put(nextStorageKey(), classAxioms(TRIPHASIL_TABLET, 
+					HAS_ACTIVE_INGREDIENT, INGREDIENT1, 0,
+					HAS_ACTIVE_INGREDIENT, INGREDIENT2, 0,
+					HAS_BOSS, INGREDIENT2, 0
+				).build());
+			} else {
+				writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1, getCharacteristicType()).group(0).build());
+				writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1, getCharacteristicType()).group(0).build());
+				writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2, getCharacteristicType()).group(0).build());
+				writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2, getCharacteristicType()).group(0).build());
+			}
 			// XXX: This relationship's characteristicType setting is here for a reason so in ecl searches we won't find this
 			writer.put(nextStorageKey(), relationship(AMOXICILLIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1, getCharacteristicType())
 					.group(0)
 					.characteristicTypeId(isInferred() ? Concepts.STATED_RELATIONSHIP : Concepts.INFERRED_RELATIONSHIP) // inverse!
 					.build());
+			
 			// trade names
 			writer.put(nextStorageKey(), stringMember(PANADOL_TABLET, HAS_TRADE_NAME, "PANADOL", getCharacteristicType()).build());
 			writer.put(nextStorageKey(), stringMember(TRIPHASIL_TABLET, HAS_TRADE_NAME, "TRIPHASIL", getCharacteristicType()).build());
@@ -1225,6 +1251,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 			writer.commit();
 			return null;
 		});
+	}
+
+	private boolean isAxiom() {
+		return AXIOM.equals(expressionForm);
 	}
 
 	private boolean isInferred() {
@@ -1257,37 +1287,56 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		index().write(MAIN, currentTime(), writer -> {
 			// substances
 			writer.put(nextStorageKey(), concept(INGREDIENT1)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
+					.parents(SUBSTANCEL)
+					.statedParents(SUBSTANCEL)
 					.build());
 			writer.put(nextStorageKey(), concept(INGREDIENT2)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
+					.parents(SUBSTANCEL)
+					.statedParents(SUBSTANCEL)
 					.build());
 			
 			//drugs
 			writer.put(nextStorageKey(), concept(ABACAVIR_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), concept(PANADOL_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), concept(TRIPHASIL_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			
-			writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1, getCharacteristicType()).group(1).build());
-			writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_BOSS, INGREDIENT2, getCharacteristicType()).group(1).build());
-			writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_TRADE_NAME, INGREDIENT2, getCharacteristicType()).group(1).build());
-			writer.put(nextStorageKey(), relationship(ABACAVIR_TABLET, HAS_BOSS, INGREDIENT1, getCharacteristicType()).group(1).build());
-			writer.put(nextStorageKey(), relationship(ABACAVIR_TABLET, HAS_TRADE_NAME, INGREDIENT1, getCharacteristicType()).group(1).build());
+			if (isAxiom()) {
+				writer.put(nextStorageKey(), classAxioms(PANADOL_TABLET, 
+					HAS_ACTIVE_INGREDIENT, INGREDIENT1, 1,
+					HAS_BOSS, INGREDIENT2, 1,
+					HAS_TRADE_NAME, INGREDIENT2, 1
+				).build());
+				writer.put(nextStorageKey(), classAxioms(ABACAVIR_TABLET, 
+					HAS_BOSS, INGREDIENT1, 1,
+					HAS_TRADE_NAME, INGREDIENT1, 1
+				).build());
+				writer.put(nextStorageKey(), classAxioms(TRIPHASIL_TABLET, 
+					HAS_ACTIVE_INGREDIENT, INGREDIENT2, 2,
+					HAS_BOSS, INGREDIENT2, 2,
+					HAS_TRADE_NAME, INGREDIENT2, 1
+				).build());
+				
+			} else {
+				writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1, getCharacteristicType()).group(1).build());
+				writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_BOSS, INGREDIENT2, getCharacteristicType()).group(1).build());
+				writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_TRADE_NAME, INGREDIENT2, getCharacteristicType()).group(1).build());
+				writer.put(nextStorageKey(), relationship(ABACAVIR_TABLET, HAS_BOSS, INGREDIENT1, getCharacteristicType()).group(1).build());
+				writer.put(nextStorageKey(), relationship(ABACAVIR_TABLET, HAS_TRADE_NAME, INGREDIENT1, getCharacteristicType()).group(1).build());
+				
+				writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2, getCharacteristicType()).group(2).build());
+				writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2, getCharacteristicType()).group(2).build());
+				writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_TRADE_NAME, INGREDIENT2, getCharacteristicType()).group(1).build());
+			}
 			
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2, getCharacteristicType()).group(2).build());
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2, getCharacteristicType()).group(2).build());
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_TRADE_NAME, INGREDIENT2, getCharacteristicType()).group(1).build());
 			
 			writer.commit();
 			return null;
@@ -1312,14 +1361,20 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private void generateTisselKit() {
 		index().write(MAIN, currentTime(), writer -> {
 			writer.put(nextStorageKey(), concept(INGREDIENT4)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
+					.parents(SUBSTANCEL)
+					.statedParents(SUBSTANCEL)
 					.build());
 			writer.put(nextStorageKey(), concept(TISSEL_KIT)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
-			writer.put(nextStorageKey(), relationship(TISSEL_KIT, HAS_ACTIVE_INGREDIENT, INGREDIENT4, getCharacteristicType()).group(0).build());
+			if (isAxiom()) {
+				writer.put(nextStorageKey(), classAxioms(TISSEL_KIT, 
+					HAS_ACTIVE_INGREDIENT, INGREDIENT4, 0
+				).build());
+			} else {
+				writer.put(nextStorageKey(), relationship(TISSEL_KIT, HAS_ACTIVE_INGREDIENT, INGREDIENT4, getCharacteristicType()).group(0).build());
+			}
 			
 			writer.commit();
 			return null;
@@ -1348,43 +1403,64 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private void generateDrugsWithGroups() {
 		index().write(MAIN, currentTime(), writer -> {
 			writer.put(nextStorageKey(), concept(INGREDIENT5)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
+					.parents(SUBSTANCEL)
+					.statedParents(SUBSTANCEL)
 					.build());
 			writer.put(nextStorageKey(), concept(INGREDIENT6)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE)))
+					.parents(SUBSTANCEL)
+					.statedParents(SUBSTANCEL)
 					.build());
 			
 			writer.put(nextStorageKey(), concept(EPOX_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), concept(ASPIRIN_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), concept(ALGOFLEX_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), concept(TRIPLEX_TABLET)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			
-			writer.put(nextStorageKey(), relationship(EPOX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5, getCharacteristicType()).group(0).build());
+			if (isAxiom()) {
+				writer.put(nextStorageKey(), classAxioms(EPOX_TABLET, 
+					HAS_ACTIVE_INGREDIENT, INGREDIENT5, 0
+				).build());
+				writer.put(nextStorageKey(), classAxioms(ASPIRIN_TABLET, 
+					HAS_ACTIVE_INGREDIENT, INGREDIENT5, 1,
+					HAS_BOSS, INGREDIENT6, 1
+				).build());
+				writer.put(nextStorageKey(), classAxioms(ALGOFLEX_TABLET, 
+					HAS_ACTIVE_INGREDIENT, INGREDIENT5, 1,
+					HAS_BOSS, INGREDIENT6, 1,
+					HAS_ACTIVE_INGREDIENT, INGREDIENT6, 2,
+					HAS_BOSS, INGREDIENT5, 2
+				).build());
+				writer.put(nextStorageKey(), classAxioms(TRIPLEX_TABLET, 
+						HAS_ACTIVE_INGREDIENT, INGREDIENT5, 1,
+						HAS_BOSS, INGREDIENT6, 2)
+				.build());
+			} else {
+				writer.put(nextStorageKey(), relationship(EPOX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5, getCharacteristicType()).group(0).build());
+				
+				writer.put(nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5, getCharacteristicType()).group(1).build());
+				writer.put(nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_BOSS, INGREDIENT6, getCharacteristicType()).group(1).build());
+				
+				writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5, getCharacteristicType()).group(1).build());
+				writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT6, getCharacteristicType()).group(1).build());
+				writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT6, getCharacteristicType()).group(2).build());
+				writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT5, getCharacteristicType()).group(2).build());
+				
+				writer.put(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5, getCharacteristicType()).group(1).build());
+				writer.put(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_BOSS, INGREDIENT6, getCharacteristicType()).group(2).build());
+			}
 			
-			writer.put(nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5, getCharacteristicType()).group(1).build());
-			writer.put(nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_BOSS, INGREDIENT6, getCharacteristicType()).group(1).build());
-			
-			writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5, getCharacteristicType()).group(1).build());
-			writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT6, getCharacteristicType()).group(1).build());
-			writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT6, getCharacteristicType()).group(2).build());
-			writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT5, getCharacteristicType()).group(2).build());
-			
-			writer.put(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5, getCharacteristicType()).group(1).build());
-			writer.put(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_BOSS, INGREDIENT6, getCharacteristicType()).group(2).build());
 	
 			writer.commit();
 			return null;
@@ -1395,8 +1471,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private void generateDrugWithIntegerStrengthOfValueOne() {
 		index().write(MAIN, currentTime(), writer -> {
 			writer.put(nextStorageKey(), concept(DRUG_1_MG)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), integerMember(DRUG_1_MG, PREFERRED_STRENGTH, 1, getCharacteristicType()).build());
 			writer.commit();
@@ -1407,8 +1483,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private void generateDrugWithDecimalStrengthOfValueOne() {
 		index().write(MAIN, currentTime(), writer -> {
 			writer.put(nextStorageKey(), concept(DRUG_1D_MG)
-					.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
-					.statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT)))
+					.parents(DRUG_ROOTL)
+					.statedParents(DRUG_ROOTL)
 					.build());
 			writer.put(nextStorageKey(), decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d), getCharacteristicType()).build());
 			writer.commit();

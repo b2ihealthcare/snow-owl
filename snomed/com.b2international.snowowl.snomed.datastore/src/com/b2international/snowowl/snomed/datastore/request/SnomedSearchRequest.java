@@ -113,12 +113,7 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 		if (optionValues.isEmpty()) {
 			return null;
 		}
-		Collection<String> idFilter = FluentIterable.from(optionValues).transform(new Function<String, String>() {
-			@Override
-			public String apply(String input) {
-				return input.trim();
-			}
-		}).toSet();
+		Collection<String> idFilter = FluentIterable.from(optionValues).transform(String::trim).toSet();
 		if (idFilter.size() == 1) {
 			// if only a single item is available in the typeIdFilter
 			final String expression = Iterables.getOnlyElement(idFilter);

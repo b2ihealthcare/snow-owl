@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
@@ -338,7 +339,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final Collection<String> sourceFilter = Collections.singleton(serializer.serializeWithoutTerms(dotted.getConstraint()));
 		final Collection<String> typeFilter = Collections.singleton(serializer.serializeWithoutTerms(dotted.getAttribute()));
-		return SnomedEclRefinementEvaluator.evalRelationships(context, sourceFilter, typeFilter, Collections.emptySet(), false, expressionForm)
+		return SnomedEclRefinementEvaluator.evalStatements(context, sourceFilter, typeFilter, Collections.singleton(Ecl.ANY), false, expressionForm)
 				.then(new Function<Collection<SnomedEclRefinementEvaluator.Property>, Set<String>>() {
 					@Override
 					public Set<String> apply(Collection<SnomedEclRefinementEvaluator.Property> input) {

@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -71,11 +72,15 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 	@Before
 	public void setup() {
 		super.setup();
+		SnomedCoreConfiguration config = new SnomedCoreConfiguration();
+		config.setConcreteDomainSupported(true);
+		
 		context = TestBranchContext.on(MAIN)
 				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
+				.with(SnomedCoreConfiguration.class, config)
 				.build();
 	}
 	

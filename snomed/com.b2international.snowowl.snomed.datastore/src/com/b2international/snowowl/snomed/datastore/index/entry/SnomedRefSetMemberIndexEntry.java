@@ -201,6 +201,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		// MRCM module scope
 		public static final String MRCM_RULE_REFSET_ID = SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
 		public static final String CLASS_AXIOM_RELATIONSHIP = "classAxiomRelationships";
+		public static final String GCI_AXIOM_RELATIONSHIP = "gciAxiomRelationships";
 	}
 	
 	public static Builder builder() {

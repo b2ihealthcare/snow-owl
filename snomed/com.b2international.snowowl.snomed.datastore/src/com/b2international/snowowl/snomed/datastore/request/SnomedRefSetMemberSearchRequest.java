@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,7 +117,22 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				queryBuilder.filter(acceptabilityIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)) {
-				queryBuilder.filter(relationshipGroup(propsFilter.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class)));
+				final String operatorKey = SearchResourceRequest.operator(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
+				SearchResourceRequest.Operator op;
+				if (propKeys.remove(operatorKey)) {
+					op = propsFilter.get(operatorKey, Operator.class);
+				} else {
+					op = SearchResourceRequest.Operator.EQUALS;
+				}
+				switch (op) {
+				case EQUALS:
+					queryBuilder.filter(relationshipGroup(propsFilter.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class)));
+					break;
+				case NOT_EQUALS:
+					queryBuilder.mustNot(relationshipGroup(propsFilter.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class)));
+					break;
+				default: throw new NotImplementedException("Unsupported relationship group operator %s", op);
+				}
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
 				queryBuilder.filter(characteristicTypeIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class)));
