@@ -55,7 +55,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("Code Systems")
+@Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
 @RestController
 @RequestMapping(
 		value = "/codesystems",

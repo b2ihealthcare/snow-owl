@@ -33,7 +33,7 @@ import io.swagger.annotations.ApiOperation;
 /**
  * @since 5.8
  */
-@Api("Server Info")
+@Api(value = "Server info", description="Info", tags = { "info" })
 @Controller
 public class ServerInfoRestApi extends AbstractAdminRestService {
 

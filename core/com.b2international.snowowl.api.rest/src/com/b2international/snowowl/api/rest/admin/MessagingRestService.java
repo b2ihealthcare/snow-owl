@@ -31,16 +31,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Spring controller for exposing {@link IMessagingService} functionality.
  * 
  */
+@Api(value = "Administration", description="Administration", tags = { "administration" })
 @RestController
 @RequestMapping(value={"/messages"}, consumes={ MediaType.TEXT_PLAIN_VALUE }, produces={ MediaType.TEXT_PLAIN_VALUE })
-@Api("Administration")
-@ApiIgnore
 public class MessagingRestService extends AbstractAdminRestService {
 
 	@Autowired

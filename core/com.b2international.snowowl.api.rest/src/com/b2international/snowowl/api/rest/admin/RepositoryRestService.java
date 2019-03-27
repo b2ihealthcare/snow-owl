@@ -47,7 +47,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * Spring controller for exposing repository related administration functionalities.
  */
-@Api("Repositories")
+@Api(value = "Repositories", description="Repositories", tags = { "repositories" })
 @Controller
 @RequestMapping(value="/repositories", produces={ MediaType.APPLICATION_JSON_VALUE })
 public class RepositoryRestService extends AbstractAdminRestService {

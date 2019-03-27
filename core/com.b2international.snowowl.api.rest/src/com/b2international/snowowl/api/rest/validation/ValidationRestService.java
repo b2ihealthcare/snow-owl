@@ -83,7 +83,7 @@ import io.swagger.annotations.ApiResponses;
  * 
  * @since 6.13
  */
-@Api("Validations")
+@Api(value = "Validations", description="Validations", tags = { "validations" })
 @Controller
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class ValidationRestService extends AbstractAdminRestService {
