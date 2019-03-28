@@ -210,7 +210,7 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	
 	@Bean
 	public ISnomedBrowserService browserService() {
-		return new SnomedBrowserService();
+		return new SnomedBrowserService(eventBus());
 	}
 	
 	@Bean

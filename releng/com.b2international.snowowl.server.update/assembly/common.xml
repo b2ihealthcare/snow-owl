@@ -74,6 +74,7 @@
 			<excludes>
 				<exclude>**/*osgi.enterprise*.jar</exclude>
 				<exclude>**/*system.bundle.package.exporter*.jar</exclude>
+				<exclude>slf4j.api*.jar</exclude>
 				<exclude>org.slf4j.api*.jar</exclude>
 				<exclude>org.slf4j.logback*.jar</exclude>
 				<exclude>*logback*.jar</exclude>

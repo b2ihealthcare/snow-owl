@@ -15,17 +15,14 @@
  */
 package com.b2international.commons.options;
 
-import static java.util.Collections.emptySet;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -72,8 +69,7 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	}
 	
 	@Override
-	@Nullable
-	public final <T> T get(@Nullable final String key, @Nullable final Class<T> expectedType) throws IllegalArgumentException {
+	public final <T> T get(final String key, final Class<T> expectedType) throws IllegalArgumentException {
 		if (key != null && expectedType != null) {
 			final Object value = get(key);
 			if (value != null) {
@@ -131,8 +127,7 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 		return containsKey(key) ? get(key, Options.class) : OptionsBuilder.newBuilder().build();
 	}
 	
-	@Nonnull
-	protected final Iterable<String> toImmutableStringList(@Nullable final Iterable<Object> elements) {
+	protected final Iterable<String> toImmutableStringList(final Iterable<Object> elements) {
 		if (elements == null) {
 			return Collections.emptyList();
 		}

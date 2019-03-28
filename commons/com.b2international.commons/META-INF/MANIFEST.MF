@@ -19,10 +19,7 @@ Export-Package: com.b2international.commons,
  com.b2international.commons.platform,
  com.b2international.commons.status,
  com.b2international.commons.tree.emf,
- com.b2international.commons.validation,
- javax.annotation,
- javax.annotation.concurrent,
- javax.annotation.meta
+ com.b2international.commons.validation
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.core.net;bundle-version="1.2.200",
  org.eclipse.emf.ecore;bundle-version="2.10.0";visibility:=reexport,

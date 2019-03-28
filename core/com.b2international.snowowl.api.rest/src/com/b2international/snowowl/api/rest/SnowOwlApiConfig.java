@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -117,8 +118,8 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public ICodeSystemVersionService codeSystemVersionService() {
-		return new CodeSystemVersionServiceImpl();
+	public ICodeSystemVersionService codeSystemVersionService(@Autowired ICodeSystemService codeSystemService) {
+		return new CodeSystemVersionServiceImpl(codeSystemService);
 	}
 	
 	@Bean

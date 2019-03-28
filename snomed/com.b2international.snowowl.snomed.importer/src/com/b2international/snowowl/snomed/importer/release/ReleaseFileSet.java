@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 
@@ -158,7 +156,6 @@ public class ReleaseFileSet {
 	 * @return a file path for the component, or an empty string if no matching
 	 * path could be found
 	 */
-	@Nullable
 	public String getFileName(List<String> relativeLocations, ReleaseComponentType type, ContentSubType contentSubType) {
 		
 		if (CompareUtils.isEmpty(relativeLocations)) {

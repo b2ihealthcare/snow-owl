@@ -49,8 +49,7 @@
 								org.eclipse.jdt.debug,
 								org.eclipse.jdt.launching,
 								icu4j,
-								log4j,
-								jsr305
+								log4j
 							</excludeArtifactIds>
 						</configuration>
 					</execution>

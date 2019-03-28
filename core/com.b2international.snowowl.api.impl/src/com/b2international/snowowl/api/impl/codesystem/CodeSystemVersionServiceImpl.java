@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
-import javax.annotation.Resource;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
@@ -83,9 +81,12 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		return toSortedCodeSystemVersionList(versions);
 	}
 	
-	@Resource
 	private ICodeSystemService codeSystems;
 
+	public CodeSystemVersionServiceImpl(ICodeSystemService codeSystems) {
+		this.codeSystems = codeSystems;
+	}
+	
 	@Override
 	public ICodeSystemVersion getCodeSystemVersionById(final String shortName, final String versionId) {
 		checkNotNull(shortName, "Short name may not be null.");

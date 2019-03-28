@@ -29,8 +29,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongCollection;
@@ -236,7 +234,7 @@ public class SnomedTaxonomyValidator {
 		return invalidRelationships;
 	}
 
-	private String getFilePath(@Nullable final File file) {
+	private String getFilePath(final File file) {
 		return null == file ?  null : file.getPath();
 	}
 	
