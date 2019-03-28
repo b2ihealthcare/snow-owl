@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
@@ -34,6 +35,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -43,7 +45,17 @@ import com.google.common.collect.Lists;
 public abstract class FhirApiProvider {
 	
 	//TODO: should this be grabbed from the server preferences or from the request?
-	protected String displayLanguage = "en-us";
+	public static final String NHS_REALM_LANGUAGE_REFSET_ID = "999000671000001103";
+	public static ExtendedLocale NHS_REALM_LOCALE = ExtendedLocale.valueOf("en-x-" +  NHS_REALM_LANGUAGE_REFSET_ID);
+
+	public static final String NHS_REALM_CLINICAL_LANGUAGE_REFSET_ID = "999001261000000100";
+	public static ExtendedLocale NHS_REALM_CLINICAL_LOCALE = ExtendedLocale.valueOf("en-x-" +  NHS_REALM_CLINICAL_LANGUAGE_REFSET_ID);
+	
+	public static final String NHS_REALM_PHARMACY_LANGUAGE_REFSET_ID = "999000691000001104";
+	public static ExtendedLocale NHS_REALM_PHARMACY_LOCALE = ExtendedLocale.valueOf("en-x-" +  NHS_REALM_PHARMACY_LANGUAGE_REFSET_ID);
+	public static ExtendedLocale INT_LOCALE = ExtendedLocale.valueOf("en-us");
+	
+	protected List<ExtendedLocale> locales = ImmutableList.of(INT_LOCALE, NHS_REALM_PHARMACY_LOCALE, NHS_REALM_CLINICAL_LOCALE, NHS_REALM_LOCALE);
 	
 	/**
 	 * @return the {@link IEventBus} service to access terminology resources.

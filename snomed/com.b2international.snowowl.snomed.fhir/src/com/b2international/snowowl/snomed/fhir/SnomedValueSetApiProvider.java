@@ -105,7 +105,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
-						.map(r -> buildSimpleTypeValueSet(r, codeSystemVersion, displayLanguage))
+						.map(r -> buildSimpleTypeValueSet(r, codeSystemVersion, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
@@ -121,13 +121,13 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.filterByActive(true)
 				.filterById(logicalId.getMemberId())
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, logicalId.getBranchPath())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
-						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, displayLanguage))
+						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
@@ -153,13 +153,13 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.one()
 				.filterById(logicalId.getMemberId())
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, logicalId.getBranchPath())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
-						.map(member -> buildExpandedQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, displayLanguage))
+						.map(member -> buildExpandedQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
@@ -180,7 +180,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.execute(getBus())
 			.then(refsets -> {
 				return refsets.stream()
-					.map(r -> buildExpandedSimpleTypeValueSet(r, codeSystemVersion, displayLanguage))
+					.map(r -> buildExpandedSimpleTypeValueSet(r, codeSystemVersion, locales))
 					.map(ValueSet.Builder::build)
 					.collect(Collectors.toList());
 			})
@@ -292,7 +292,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			Optional<SnomedConcept> validatedConceptOptional = SnomedRequests.prepareSearchConcept()
 				.filterById(componentId)
 				.filterByActive(true)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("pt()")
 				.build(getRepositoryId(), codeSystemVersion.getPath())
 				.execute(getBus())
@@ -310,7 +310,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			//reference set should exist
 			try {
 				SnomedConcept snomedConcept = SnomedRequests.prepareGetConcept(queryPart.getQueryValue())
-					.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+					.setLocales(locales)
 					.setExpand("pt()")
 					.build(repositoryId, codeSystemVersion.getPath())
 					.execute(getBus())
@@ -334,7 +334,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.filterByActive(true)
 				.filterByReferencedComponent(componentId)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, codeSystemVersion.getPath())
 				.execute(getBus())
@@ -356,7 +356,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.filterByActive(true)
 				.filterByReferencedComponent(componentId)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, codeSystemVersion.getPath())
 				.execute(getBus())
@@ -377,7 +377,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByEcl("<<" + queryPart.getQueryValue())
 				.filterById(componentId)
 				.filterByActive(true)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("pt()")
 				.build(repositoryId, codeSystemVersion.getPath())
 				.execute(getBus())
@@ -414,7 +414,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterById(valueSetLogicalId.getMemberId())
 				.filterByActive(true)
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, valueSetLogicalId.getBranchPath())
 				.execute(getBus())
@@ -434,7 +434,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.all()
 				.filterByEcl(eclExpression)
 				.filterByActive(true)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("pt()")
 				.build(repositoryId, valueSetLogicalId.getBranchPath())
 				.execute(getBus())
@@ -482,7 +482,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.filterByActive(true)
 			.filterById(refsetId)
 			.filterByType(SnomedRefSetType.SIMPLE)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
 			.build(repositoryId, branchPath)
 			.execute(getBus())
@@ -518,7 +518,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.filterByActive(true)
 			.filterByType(SnomedRefSetType.SIMPLE)
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ all +")")
 			.build(repositoryId, codeSystemVersion.getPath())
 			.execute(getBus())
@@ -557,7 +557,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		builder.status(PublicationStatus.ACTIVE)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
-			.language(displayLanguage)
+			.language(locales.get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersionId())
 			.identifier(identifier)
 			.url(uri.toUri())
@@ -605,7 +605,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		builder.status(PublicationStatus.ACTIVE)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
-			.language(displayLanguage)
+			.language(locales.get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersionId())
 			.identifier(identifier)
 			.url(uri.toUri());
@@ -621,7 +621,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		SnomedConceptSearchRequestBuilder snomedConceptSearchRequestBuilder = SnomedRequests.prepareSearchConcept()
 			.filterByEcl("<<" + parentConceptId)
 			.filterByActive(true)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.setExpand("pt()");
 		
 		if (fetchAll) {
@@ -657,7 +657,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		return builder.build();
 	}
 
-	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersionEntry codeSystemVersion, String displayLanguage) {
+	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersionEntry codeSystemVersion, List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
 		
@@ -677,7 +677,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.all()
 			.filterByEcl(eclExpression)
 			.filterByActive(true)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.setExpand("pt()")
 			.build(repositoryId, logicalId.getBranchPath())
 			.execute(getBus())
@@ -710,7 +710,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.expansion(expansionBuilder.build());
 	}
 	
-	private ValueSet.Builder buildSimpleTypeValueSet(final SnomedComponent snomedComponent, final CodeSystemVersionEntry codeSystemVersion, final String displayLanguage) {
+	private ValueSet.Builder buildSimpleTypeValueSet(final SnomedComponent snomedComponent, final CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), snomedComponent.getId());
 		
@@ -731,7 +731,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		return builder.addCompose(compose);
 	}
 	
-	private ValueSet.Builder buildExpandedSimpleTypeValueSet(SnomedReferenceSet referenceSet, CodeSystemVersionEntry codeSystemVersion, String displayLanguage) {
+	private ValueSet.Builder buildExpandedSimpleTypeValueSet(SnomedReferenceSet referenceSet, CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), referenceSet.getId());
 		
@@ -781,7 +781,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
-						.map(r -> buildSimpleTypeValueSet(r, csve, displayLanguage))
+						.map(r -> buildSimpleTypeValueSet(r, csve, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
@@ -808,13 +808,13 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.QUERY))
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.filterByActive(true)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, csve.getPath())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
-						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), csve, displayLanguage))
+						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), csve, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 					
@@ -836,7 +836,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.filterByActive(true)
 			.filterById(componentId)
 			.filterByType(SnomedRefSetType.SIMPLE)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
+			.setLocales(locales);
 		
 		return searchBuilder;
 	}
@@ -864,7 +864,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		builder
 			.status(snomedComponent.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
-			.language(displayLanguage)
+			.language(locales.get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersionId())
 			.identifier(identifier)
 			.url(uri.toUri());
@@ -879,17 +879,18 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
 			.setExpand("pt()")
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.build(getRepositoryId(), codeSystemVersion.getPath())
 			.execute(getBus())
 			.getSync();
 		
+		//TODO: potential NPE if there is no pt in a given language refset
 		builder.name(refsetConcept.getPt().getTerm())
 			.title(refsetConcept.getPt().getTerm());
 	}
 
 
-	private ValueSet.Builder buildQueryTypeValueSet(final SnomedReferenceSetMember refsetMember, final SnomedConcept referencedComponent, final CodeSystemVersionEntry codeSystemVersion, final String displayLanguage) {
+	private ValueSet.Builder buildQueryTypeValueSet(final SnomedReferenceSetMember refsetMember, final SnomedConcept referencedComponent, final CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
 	
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
 		

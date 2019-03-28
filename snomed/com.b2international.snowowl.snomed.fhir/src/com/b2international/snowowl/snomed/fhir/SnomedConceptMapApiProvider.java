@@ -86,13 +86,13 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 				.all()
 				.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
 				.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.build(repositoryId, csve.getPath())
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
-						.map(r -> buildConceptMap(r, csve, displayLanguage))
+						.map(r -> buildConceptMap(r, csve, locales))
 						.map(ConceptMap.Builder::build)
 						.collect(Collectors.toList());
 				})
@@ -114,7 +114,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			.filterById(logicalId.getComponentId())
 			.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:" + Integer.MAX_VALUE +")")
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 			.build(repositoryId,logicalId.getBranchPath())
 			.execute(getBus())
@@ -123,7 +123,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			.findFirst()
 			.orElseThrow(() -> new NotFoundException("Could not find map type refset '%s'.", logicalId.toString()));
 		
-		ConceptMap.Builder conceptMapBuilder = buildConceptMap(snomedReferenceSet, codeSystemVersion, displayLanguage);
+		ConceptMap.Builder conceptMapBuilder = buildConceptMap(snomedReferenceSet, codeSystemVersion, locales);
 		
 		return conceptMapBuilder.build();
 	}
@@ -194,7 +194,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 				.setExpand("referencedComponent(expand(pt()))")
 				.filterByRefSet(logicalId.getComponentId())
 				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
 				
 
@@ -273,7 +273,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 				.setExpand("referencedComponent(expand(pt()))")
 				.filterByRefSet(refsetIds)
 				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
 				
 
@@ -327,7 +327,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		return builder.build();
 	}
 
-	private ConceptMap.Builder buildConceptMap(SnomedReferenceSet snomedReferenceSet, CodeSystemVersionEntry codeSystemVersion, String displayLanguage) {
+	private ConceptMap.Builder buildConceptMap(SnomedReferenceSet snomedReferenceSet, CodeSystemVersionEntry codeSystemVersion, List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), snomedReferenceSet.getId());
 		ConceptMap.Builder conceptMapBuilder = ConceptMap.builder(logicalId.toString());
@@ -337,7 +337,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		//Need the query to grab the preferred term of the reference set
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
 			.setExpand("pt()")
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.build(getRepositoryId(), codeSystemVersion.getPath())
 			.execute(getBus())
 			.getSync();
@@ -346,7 +346,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			.title(refsetConcept.getPt().getTerm())
 			.status(snomedReferenceSet.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
-			.language(displayLanguage)
+			.language(locales.get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersionId());
 	
 		//ID metadata
