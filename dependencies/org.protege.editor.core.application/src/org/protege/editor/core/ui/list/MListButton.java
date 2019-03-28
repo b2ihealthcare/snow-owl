@@ -1,7 +1,5 @@
 package org.protege.editor.core.ui.list;
 
-import org.omg.CORBA.TypeCodePackage.Bounds;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
