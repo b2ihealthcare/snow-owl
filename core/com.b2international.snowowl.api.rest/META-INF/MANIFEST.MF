@@ -3,8 +3,7 @@ Bundle-Version: 6.14.0.qualifier
 Bundle-Name: Snow Owl Administrative Web Services
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.api.rest;singleton:=true
-Import-Package: javax.annotation;version="1.2.0",
- javax.servlet;version="2.6.0",
+Import-Package: javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0",
  javax.validation.constraints,
  org.eclipse.core.runtime;version="3.4.0",

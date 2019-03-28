@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.reasoner.ontology;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.StringReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
@@ -34,11 +34,42 @@ import java.util.function.LongPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.coode.owlapi.functionalparser.OWLFunctionalSyntaxParser;
-import org.coode.owlapi.functionalparser.ParseException;
 import org.eclipse.net4j.util.StringUtil;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParser;
+import org.semanticweb.owlapi.io.StringDocumentSource;
+import org.semanticweb.owlapi.model.AxiomType;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassAxiom;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
+import org.semanticweb.owlapi.model.OWLDisjointUnionAxiom;
+import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
+import org.semanticweb.owlapi.model.OWLLogicalAxiom;
+import org.semanticweb.owlapi.model.OWLNamedObjectVisitor;
+import org.semanticweb.owlapi.model.OWLNamedObjectVisitorEx;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLObjectAllValuesFrom;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
+import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
+import org.semanticweb.owlapi.model.OWLObjectVisitor;
+import org.semanticweb.owlapi.model.OWLObjectVisitorEx;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyID;
+import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLPropertyExpression;
+import org.semanticweb.owlapi.model.OWLPropertyRange;
+import org.semanticweb.owlapi.model.OWLQuantifiedObjectRestriction;
+import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
+import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
+import org.semanticweb.owlapi.model.OWLSubPropertyAxiom;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
+import org.semanticweb.owlapi.util.OWLObjectTypeIndexProvider;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,7 +196,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		}
 	}
 
-	private final class SubPropertyAxiomIterator<R extends OWLPropertyRange, P extends OWLPropertyExpression<R, P>, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
+	private final class SubPropertyAxiomIterator<R extends OWLPropertyRange, P extends OWLPropertyExpression, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
 		private final long attributeRootId;
 		private final LongIterator childIterator;
 		private final LongFunction<P> propertyFactory;
@@ -258,14 +289,16 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private final class FunctionalSyntaxAxiomIterator extends AbstractIterator<OWLLogicalAxiom> {
+		
+		private static final String ontologyDocStart = "Prefix(:=<http://snomed.info/id/>) Ontology(";
+		private static final String ontologyDocEnd = ")";
+		
 		private final Iterator<String> axiomIterator;
-		private final OWLFunctionalSyntaxParser parser;
+		private final OWLFunctionalSyntaxOWLParser parser;
 		
 		public FunctionalSyntaxAxiomIterator(final Stream<String> axiomStream) {
 			this.axiomIterator = axiomStream.iterator();
-			this.parser = new OWLFunctionalSyntaxParser(new StringReader(""));
-			parser.setUp(DelegateOntology.this, new OWLOntologyLoaderConfiguration());
-			parser.setPrefixes(prefixManager);
+			this.parser = new OWLFunctionalSyntaxOWLParser();
 		}
 
 		@Override
@@ -275,15 +308,21 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			}
 			
 			final String axiomString = axiomIterator.next();
-			parser.ReInit(new StringReader(axiomString));
 			
 			try {
-				final OWLLogicalAxiom parsedAxiom = (OWLLogicalAxiom) parser.Axiom();
-				return parsedAxiom;
+				OWLOntology ontology;
+				try {
+					ontology = getOWLOntologyManager().loadOntologyFromOntologyDocument(
+							new StringDocumentSource(ontologyDocStart + ontologyDocEnd));
+				} catch (OWLOntologyCreationException e) {
+					throw new RuntimeException(e);
+				}
+				parser.parse(new StringDocumentSource(ontologyDocStart + axiomString + ontologyDocEnd), ontology, new OWLOntologyLoaderConfiguration());
+				return (OWLLogicalAxiom) ontology.getAxioms().iterator().next();
 			} catch (final ClassCastException e) {
 				LOGGER.warn("Encountered non-logical OWL axiom '{}'", axiomString, e);
 				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
-			} catch (final ParseException e) {
+			} catch (final IOException e) {
 				LOGGER.warn("Couldn't parse OWL axiom '{}'", axiomString, e);
 				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
 			}
@@ -346,6 +385,11 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			this.neverGroupedIds = PRE_2018_NEVER_GROUPED_TYPE_IDS;
 		}
 	}
+	
+	@Override
+	protected int index() {
+		return OWLObjectTypeIndexProvider.ONTOLOGY;
+	}
 
 	@Override
 	protected int compareObjectOfSameType(final OWLObject object) {
@@ -385,6 +429,16 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		return newHashSet(this);
 	}
 
+	@Override
+	public final void accept(final OWLNamedObjectVisitor visitor) {
+		visitor.visit(this);
+	}
+
+	@Override
+	public final <O> O accept(final OWLNamedObjectVisitorEx<O> visitor) {
+		return visitor.visit(this);
+	}
+	
 	@Override
 	public final void accept(final OWLObjectVisitor visitor) {
 		visitor.visit(this);
@@ -849,7 +903,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		try {
 			encodedValue = URLEncoder.encode(serializedValue, Charsets.UTF_8.name());
 			encodedValue = StringUtil.replace(encodedValue, FIND, REPLACE);
-			encodedValue = String.format("label_%s_%s", encodedValue, owl2Datatype.getShortName());
+			encodedValue = String.format("label_%s_%s", encodedValue, owl2Datatype.getShortForm());
 		} catch (final UnsupportedEncodingException e) {
 			throw new IllegalArgumentException("Cannot encode literal: '" + serializedValue + "'.", e);
 		}

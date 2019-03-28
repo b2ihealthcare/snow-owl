@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.ontology;
 
+import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.io.OWLOntologyDocumentSource;
-import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -33,20 +33,9 @@ import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxon
 public final class DelegateOntologyFactory implements OWLOntologyFactory {
 
 	private final ReasonerTaxonomy taxonomy;
-	private OWLOntologyManager owlOntologyManager;
 
 	public DelegateOntologyFactory(final ReasonerTaxonomy taxonomy) {
 		this.taxonomy = taxonomy;
-	}
-
-	@Override
-	public OWLOntologyManager getOWLOntologyManager() {
-		return owlOntologyManager;
-	}
-
-	@Override
-	public void setOWLOntologyManager(final OWLOntologyManager owlOntologyManager) {
-		this.owlOntologyManager = owlOntologyManager;
 	}
 
 	@Override
@@ -60,27 +49,21 @@ public final class DelegateOntologyFactory implements OWLOntologyFactory {
 	}
 
 	@Override
-	public OWLOntology createOWLOntology(final OWLOntologyID ontologyID, 
+	public OWLOntology createOWLOntology(final OWLOntologyManager manager,
+			final OWLOntologyID ontologyID, 
 			final IRI ontologyIRI, 
 			final OWLOntologyCreationHandler handler)
 			throws OWLOntologyCreationException {
 		
-		final DelegateOntology owlOntology = new DelegateOntology(owlOntologyManager, ontologyID, taxonomy);
+		final DelegateOntology owlOntology = new DelegateOntology(manager, ontologyID, taxonomy);
 		handler.ontologyCreated(owlOntology);
-		handler.setOntologyFormat(owlOntology, new RDFXMLOntologyFormat());
+		handler.setOntologyFormat(owlOntology, new RDFXMLDocumentFormat());
 		return owlOntology;
 	}
 
 	@Override
-	public OWLOntology loadOWLOntology(final OWLOntologyDocumentSource documentSource, 
-			final OWLOntologyCreationHandler handler) 
-			throws OWLOntologyCreationException {
-		
-		throw new OWLOntologyCreationException("This ontology factory does not support loading OWL ontologies.");
-	}
-
-	@Override
-	public OWLOntology loadOWLOntology(final OWLOntologyDocumentSource documentSource, 
+	public OWLOntology loadOWLOntology(final OWLOntologyManager manager, 
+			final OWLOntologyDocumentSource documentSource, 
 			final OWLOntologyCreationHandler handler,
 			final OWLOntologyLoaderConfiguration configuration) throws OWLOntologyCreationException {
 		

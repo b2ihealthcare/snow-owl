@@ -23,6 +23,9 @@
 		<groovy.version>[2.4.0,2.5.0)</groovy.version>
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
+		<protege.version>5.0.1-b2i</protege.version>
+		<owlapi.version>4.5.10</owlapi.version>
+		<elk.version>0.4.3</elk.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.4.8</typetools.version>
@@ -33,14 +36,29 @@
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<!-- Build tool/compiler versions -->
-		<tycho.version>1.2.0</tycho.version>
-		<tycho-extras.version>1.2.0</tycho-extras.version>
+		<tycho.version>1.3.0</tycho.version>
+		<tycho-extras.version>1.3.0</tycho-extras.version>
 		<xtend.compiler.version>2.11.0</xtend.compiler.version>
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
 		<customer>community</customer>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>protege-mvn-repo</id>
+			<url>https://b2ihealthcare.github.io/protege/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+        		<enabled>false</enabled>
+        		<updatePolicy>never</updatePolicy>
+    		</snapshots>
+		</repository>
+	</repositories>
 
 	<modules>
 		<module>commons</module>
@@ -329,6 +347,68 @@
 			<artifactId>fastutil</artifactId>
 			<version>${fastutil.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>protege-common</artifactId>
+			<version>${protege.version}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+				<exclusion>
+    				<groupId>org.apache.felix</groupId>
+  					<artifactId>org.apache.felix.main</artifactId>
+        		</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>protege-editor-core</artifactId>
+			<version>${protege.version}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+				<exclusion>
+          			<groupId>org.eclipse.equinox</groupId>
+  					<artifactId>org.eclipse.equinox.common</artifactId>
+        		</exclusion>
+				<exclusion>
+          			<groupId>org.eclipse.equinox</groupId>
+  					<artifactId>org.eclipse.equinox.registry</artifactId>
+        		</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>protege-editor-owl</artifactId>
+			<version>${protege.version}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
+        		<exclusion>
+		          	<groupId>log4j</groupId>
+  					<artifactId>log4j</artifactId>
+		        </exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-osgidistribution</artifactId>
+			<version>${owlapi.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.semanticweb.elk</groupId>
+			<artifactId>elk-protege</artifactId>
+			<version>${elk.version}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
+				<exclusion>
+					<groupId>log4j</groupId>
+  					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
@@ -717,11 +797,6 @@
 							<id>org.slf4j.api</id>
 							<removeAll />
 						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>javax.annotation</id>
-							<removeAll />
-		 				</filter>
 					</filters>
 					<environments>
 						<environment>
@@ -871,19 +946,4 @@
 		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
 	</scm>
 	
-	<repositories>
-		<repository>
-			<id>protege-mvn-repo</id>
-			<url>https://b2ihealthcare.github.io/protege/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-        		<enabled>false</enabled>
-        		<updatePolicy>never</updatePolicy>
-    		</snapshots>
-		</repository>
-	</repositories>
-
 </project>

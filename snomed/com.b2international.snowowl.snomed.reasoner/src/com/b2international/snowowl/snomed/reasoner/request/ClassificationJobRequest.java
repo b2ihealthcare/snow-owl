@@ -50,6 +50,7 @@ import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiExcepti
 import com.b2international.snowowl.snomed.reasoner.normalform.NormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFactory;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Encapsulates the computation-intensive part of a classification.
@@ -128,7 +129,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		}
 		
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.addOntologyFactory(new DelegateOntologyFactory(taxonomy));
+		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomy)));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + Concepts.MODULE_SCT_CORE); // TODO: custom moduleId in ontology IRI?
 
 		try {
