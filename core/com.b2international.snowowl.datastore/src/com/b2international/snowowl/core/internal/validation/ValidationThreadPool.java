@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package com.b2international.snowowl.core.internal.validation;
 
 import java.util.UUID;
-
-import javax.xml.bind.ValidationException;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -57,7 +55,7 @@ public final class ValidationThreadPool {
 				if (event.getResult().isOK()) {
 					promise.resolve(Boolean.TRUE);
 				} else {
-					promise.reject(new ValidationException(String.format("Validation job failed with status %s.", event.getResult())));
+					promise.reject(new RuntimeException(String.format("Validation job failed with status %s.", event.getResult())));
 				}
 			}
 

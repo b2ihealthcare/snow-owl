@@ -11,7 +11,7 @@
 		<version>6.14.0-SNAPSHOT</version>
 	</parent>
 	
-		<properties>
+	<properties>
 		<restassured.version>3.2.0</restassured.version>
 	</properties>
 
