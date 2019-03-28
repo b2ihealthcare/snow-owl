@@ -19,8 +19,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.security.Principal;
 
-import javax.annotation.Resource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -64,7 +62,8 @@ public class CodeSystemRestService extends AbstractRestService {
 
 	@Autowired
 	private ICodeSystemService delegate;
-	@Resource
+	
+	@Autowired
 	private IEventBus bus;
 
 	@ApiOperation(

@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxon
 import com.b2international.snowowl.snomed.reasoner.exceptions.OntologyException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFactory;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.0
@@ -91,7 +92,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 
 		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.addOntologyFactory(new DelegateOntologyFactory(taxonomy));
+		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomy)));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + ontologyModuleId);
 
 		try {
