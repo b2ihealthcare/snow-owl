@@ -42,11 +42,6 @@
 <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20190226160451/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.jetty.bundles.f.feature.group" version="8.1.14.201311072346"/>
-<unit id="org.eclipse.jetty.bundles.f.source.feature.group" version="8.1.14.201311072346"/>
-<repository location="http://download.eclipse.org/jetty/updates/jetty-bundles-8.x/8.1.14.v20131031/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.codehaus.groovy.headless.feature.feature.group" version="2.9.2.xx-201801060157-e43j8-RELEASE"/>
 <unit id="org.codehaus.groovy.jdt.patch.feature.group" version="2.9.2.xx-201801060157-e43j8-RELEASE"/>
 <unit id="org.codehaus.groovy24.feature.feature.group" version="2.9.2.xx-201801060157-e43j8-RELEASE"/>
