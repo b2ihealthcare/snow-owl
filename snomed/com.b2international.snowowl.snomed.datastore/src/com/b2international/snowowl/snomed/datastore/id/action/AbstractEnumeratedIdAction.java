@@ -19,7 +19,7 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierEnumeratedRequestBuilder;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -45,7 +45,7 @@ abstract class AbstractEnumeratedIdAction extends AbstractIdAction<Boolean> {
 	
 	@Override
 	public final String toString() {
-		return Objects.toStringHelper(this).add("componentIds", componentIds).toString();
+		return MoreObjects.toStringHelper(this).add("componentIds", componentIds).toString();
 	}
 
 }

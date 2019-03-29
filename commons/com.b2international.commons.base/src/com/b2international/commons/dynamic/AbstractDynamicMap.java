@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
@@ -85,7 +86,7 @@ public abstract class AbstractDynamicMap extends AbstractDynamicValue implements
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("propertyKey", propertyKey).add("value", value).toString();
+			return MoreObjects.toStringHelper(this).add("propertyKey", propertyKey).add("value", value).toString();
 		}
 	}
 	

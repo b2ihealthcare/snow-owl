@@ -27,8 +27,8 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.ContainerIdProvider;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Predicate;
 
 /**
@@ -201,7 +201,7 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 	}
 
 	protected ToStringHelper toStringHelper() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("id", getId())
 				.add("label", getLabel())
 				.add("iconId", getIconId())

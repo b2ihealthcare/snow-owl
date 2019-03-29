@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
+
+import java.util.List;
+import java.util.Map;
+
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSetMultimap.Builder;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 4.0
@@ -37,6 +45,18 @@ public abstract class AbstractSnomedComponentRestUpdate {
 
 	public void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
+	}
+	
+	protected static Multimap<AssociationType, String> getAssociationTargetsMultimap(Map<AssociationType, List<String>> associationTargets) {
+		if (associationTargets == null) {
+			return null;
+		} else {
+			Builder<AssociationType, String> result = ImmutableSetMultimap.<AssociationType, String>builder();
+			associationTargets.forEach((associationType, values) -> {
+				result.putAll(associationType, values);
+			});
+			return result.build();
+		}
 	}
 
 }

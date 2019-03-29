@@ -17,7 +17,7 @@ package com.b2international.commons;
 
 import java.io.Serializable;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 /**
@@ -88,7 +88,7 @@ public class Triple<A, B, C> implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("A", a).add("B", b).add("C", c).toString();
+		return MoreObjects.toStringHelper(this).add("A", a).add("B", b).add("C", c).toString();
 	}
 
 	/* (non-Javadoc)

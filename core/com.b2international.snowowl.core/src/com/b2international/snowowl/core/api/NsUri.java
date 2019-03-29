@@ -17,8 +17,10 @@ package com.b2international.snowowl.core.api;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.eclipse.emf.ecore.EPackage;
+
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 /**Wrapper for the namespace URI of an {@link EPackage}. <br>This class has an overridden {@link #equals(Object)} and {@link #hashCode()} based on the wrapped
@@ -79,7 +81,7 @@ public final class NsUri {
 	 */
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("NS URI", nsUri).toString();
+		return MoreObjects.toStringHelper(this).add("NS URI", nsUri).toString();
 	}
 	
 	/**Returns {@code true} if the given {@link NsUri} instance is either {@code null} or the {@link #NULL_IMPL NULL} instance.*/

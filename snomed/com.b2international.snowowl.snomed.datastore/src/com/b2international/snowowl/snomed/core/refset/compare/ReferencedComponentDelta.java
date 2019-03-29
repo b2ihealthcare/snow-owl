@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.refset.compare;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * Represents a reference set member delta.
@@ -126,7 +126,7 @@ public final class ReferencedComponentDelta {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("refComponent", referencedComponentId)
 				.add("deltaKind", deltaKind).toString();
 	}

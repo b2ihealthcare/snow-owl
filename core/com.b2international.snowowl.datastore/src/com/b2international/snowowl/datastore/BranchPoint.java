@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 /**
@@ -110,7 +110,7 @@ import com.google.common.base.Preconditions;
 	 */
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("Branch", branchPath.getPath())
 				.add("Timestamp", timestamp)
 				.add("UUID", uuid)

@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
@@ -94,7 +95,7 @@ public class ReleaseIdentifier {
 	@Override
 	public String toString() {
 		
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("countryNamespacePair", countryNamespacePair)
 				.add("releaseDate", releaseDate)
 				.toString();

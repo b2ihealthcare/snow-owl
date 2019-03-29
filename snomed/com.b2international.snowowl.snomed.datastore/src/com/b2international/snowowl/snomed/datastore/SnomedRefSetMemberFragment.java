@@ -24,8 +24,8 @@ import javax.annotation.Nullable;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
  * Bare minimum representation of a SNOMED&nbsp;CT reference set member.
@@ -111,7 +111,7 @@ public class SnomedRefSetMemberFragment implements Serializable {
 	
 	@Override
 	public String toString() {
-		final ToStringHelper toStringHelper = Objects.toStringHelper(this).add("uuid", uuid).add("source ID", sourceId);
+		final ToStringHelper toStringHelper = MoreObjects.toStringHelper(this).add("uuid", uuid).add("source ID", sourceId);
 		if (null != targetId) {
 			toStringHelper.add("target ID", targetId);
 		}

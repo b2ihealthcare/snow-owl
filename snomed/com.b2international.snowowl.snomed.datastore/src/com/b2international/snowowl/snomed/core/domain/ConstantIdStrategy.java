@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 4.6
@@ -40,6 +40,6 @@ public class ConstantIdStrategy implements IdGenerationStrategy {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("id", id).toString();
+		return MoreObjects.toStringHelper(this).add("id", id).toString();
 	}
 }

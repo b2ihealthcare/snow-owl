@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -210,6 +210,6 @@ public class DynamicListImpl extends AbstractDynamicMap implements DynamicList {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("valueList", valueList).toString();
+		return MoreObjects.toStringHelper(this).add("valueList", valueList).toString();
 	}
 }

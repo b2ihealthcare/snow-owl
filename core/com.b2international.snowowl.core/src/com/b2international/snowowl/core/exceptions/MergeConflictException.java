@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.snowowl.core.merge.MergeConflict;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 4.7
@@ -53,6 +53,6 @@ public class MergeConflictException extends ConflictException {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("details", details).toString();
+		return MoreObjects.toStringHelper(this).add("details", details).toString();
 	}
 }

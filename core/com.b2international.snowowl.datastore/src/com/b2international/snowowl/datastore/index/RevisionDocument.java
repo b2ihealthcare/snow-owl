@@ -29,8 +29,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.IComponent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
 
 /**
  * @since 4.7
@@ -177,7 +177,7 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	}
 
 	@Override
-	protected ToStringHelper doToString() {
+	protected MoreObjects.ToStringHelper doToString() {
 		return super.doToString()
 				.add("id", id)
 				.add("label", label)

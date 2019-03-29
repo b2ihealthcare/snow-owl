@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.osgi.service.prefs.PreferencesService;
 
-import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.metrics.DefaultMetricsProvider;
@@ -28,7 +25,7 @@ import com.b2international.snowowl.core.events.metrics.MetricsConfiguration;
 import com.b2international.snowowl.core.events.metrics.MetricsProvider;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.login.LoginConfiguration;
-import com.b2international.snowowl.core.setup.BootstrapFragment;
+import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 
@@ -36,7 +33,7 @@ import com.b2international.snowowl.core.setup.ModuleConfig;
  * @since 3.3
  */
 @ModuleConfig(fieldName = "metrics", type = MetricsConfiguration.class)
-public class SnowOwlApplicationBootstrap implements BootstrapFragment {
+public class SnowOwlApplicationBootstrap extends DefaultBootstrapFragment {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
@@ -56,13 +53,6 @@ public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 		
 		// TODO support initial values for feature toggles
 		env.services().registerService(FeatureToggles.class, new FeatureToggles());
-	}
-
-	@Override
-	public void run(SnowOwlConfiguration configuration, Environment environment, IProgressMonitor monitor) {
-		if (!environment.isEmbedded() && environment.isClient()) {
-			PlatformUtil.enableSystemProxies(CoreActivator.getContext());
-		}
 	}
 
 }

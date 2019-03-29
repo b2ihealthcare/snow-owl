@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 4.5
@@ -35,6 +35,6 @@ public class NamespaceIdStrategy implements IdGenerationStrategy {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("namespace", namespace).toString();
+		return MoreObjects.toStringHelper(this).add("namespace", namespace).toString();
 	}
 }

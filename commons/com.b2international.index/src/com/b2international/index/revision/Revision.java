@@ -29,8 +29,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 4.7
@@ -116,8 +115,8 @@ public abstract class Revision implements WithId {
 		return doToString().toString();
 	}
 	
-	protected ToStringHelper doToString() {
-		return Objects.toStringHelper(this)
+	protected MoreObjects.ToStringHelper doToString() {
+		return MoreObjects.toStringHelper(this)
 				.add(DocumentMapping._ID, _id)
 				.add(STORAGE_KEY, storageKey)
 				.add(Revision.BRANCH_PATH, branchPath)

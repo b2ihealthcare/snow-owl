@@ -15,7 +15,7 @@
  */
 package com.b2international.commons.dynamic;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * An implementation of {@link DynamicValue} that captures a single {@link Object}. 
@@ -55,6 +55,6 @@ public class DynamicValueImpl extends AbstractDynamicValue {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("value", value).toString();
+		return MoreObjects.toStringHelper(this).add("value", value).toString();
 	}
 }

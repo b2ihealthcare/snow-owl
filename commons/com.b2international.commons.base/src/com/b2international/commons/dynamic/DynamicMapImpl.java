@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
@@ -136,6 +136,6 @@ public class DynamicMapImpl extends AbstractDynamicMap {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("valueMap", valueMap).toString();
+		return MoreObjects.toStringHelper(this).add("valueMap", valueMap).toString();
 	}
 }

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 4.7
@@ -79,7 +79,7 @@ public final class InvalidRelationship {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("relationshipId", relationshipId)
 				.add("sourceId", sourceId)
 				.add("destinationId", destinationId)
