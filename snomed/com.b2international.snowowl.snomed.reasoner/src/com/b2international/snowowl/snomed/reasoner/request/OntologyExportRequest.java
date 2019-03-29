@@ -92,7 +92,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 
 		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomy)));
+		ontologyManager.getOntologyFactories().add(new DelegateOntologyFactory(taxonomy));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + ontologyModuleId);
 
 		try {
