@@ -18,13 +18,13 @@
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
 		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
-		<guava.version>18.0</guava.version>
+		<guava.version>21.0</guava.version>
 		<guava.versionRange>[18.0.0,19.0.0)</guava.versionRange>
 		<groovy.version>[2.4.0,2.5.0)</groovy.version>
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
-		<xtext.version>[2.11.0,2.13.0)</xtext.version>
-		<jetty.version>9.4.5.v20170502</jetty.version>
-		<protege.version>5.0.2-b2i</protege.version>
+		<xtext.version>[2.17.0,2.18.0)</xtext.version>
+		<jetty.version>9.4.10.v20180503</jetty.version>
+		<protege.version>5.0.3-b2i</protege.version>
 		<owlapi.version>4.5.10</owlapi.version>
 		<elk.version>0.4.3</elk.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
@@ -129,12 +129,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-jaxb-annotations</artifactId>
-			<version>${jackson.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-guava</artifactId>
 			<version>${jackson.version}</version>
 			<scope>provided</scope>
 		</dependency>
