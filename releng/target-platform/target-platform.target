@@ -7,9 +7,11 @@
 <repository location="http://download.eclipse.org/eclipse/updates/4.3/R-4.3.2-201402211700/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-	<unit id="org.eclipse.net4j.feature.group" version="4.1.0.v20120612-0600"/>
-	<unit id="org.eclipse.net4j.db.feature.group" version="4.1.0.v20120609-0625"/>
-	<repository location="http://download.eclipse.org/modeling/emf/cdo/updates/releases/4.1/"/>
+<unit id="org.eclipse.net4j.db" version="4.1.0.v20120607-1600"/>
+<unit id="org.eclipse.net4j.db.h2" version="4.0.100.v20120607-1600"/>
+<unit id="org.eclipse.net4j.jvm" version="4.1.0.v20120607-1039"/>
+<unit id="org.eclipse.net4j.tcp" version="4.1.0.v20120609-0625"/>
+<repository location="https://download.eclipse.org/modeling/emf/cdo/drops/R20120612-1449/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="javax.el" version="2.2.0.v201303151357"/>
@@ -40,11 +42,6 @@
 <unit id="org.mockito" version="2.13.0.v20180426-1843"/>
 <unit id="javax.ws.rs" version="2.0.1.v201504171603"/>
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.jetty.bundles.f.feature.group" version="8.1.14.201311072346"/>
-<unit id="org.eclipse.jetty.bundles.f.source.feature.group" version="8.1.14.201311072346"/>
-<repository location="http://download.eclipse.org/jetty/updates/jetty-bundles-8.x/8.1.14.v20131031/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.codehaus.groovy.headless.feature.feature.group" version="2.9.2.xx-201801060157-e43j8-RELEASE"/>
