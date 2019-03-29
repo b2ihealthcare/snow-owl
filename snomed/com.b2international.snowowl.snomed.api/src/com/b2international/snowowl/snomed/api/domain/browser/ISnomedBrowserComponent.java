@@ -17,11 +17,15 @@ package com.b2international.snowowl.snomed.api.domain.browser;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+
 /**
  * Holds common properties of components appearing in the IHTSDO SNOMED CT Browser.
  */
 public interface ISnomedBrowserComponent extends IStatusWithModuleIdProvider {
 
 	/** @return the component effective time (in {@code yyyyMMdd} format in JSON responses) */
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
 	Date getEffectiveTime();
 }

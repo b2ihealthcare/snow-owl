@@ -20,6 +20,8 @@ import java.util.Date;
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -48,6 +50,7 @@ public abstract class SnomedComponent extends BaseComponent {
 	 * 
 	 * @return the component's effective time
 	 */
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
 	public Date getEffectiveTime() {
 		return effectiveTime;
 	}
@@ -82,6 +85,7 @@ public abstract class SnomedComponent extends BaseComponent {
 		this.active = active;
 	}
 
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
 	public void setEffectiveTime(final Date effectiveTime) {
 		this.effectiveTime = effectiveTime;
 	}
