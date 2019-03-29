@@ -331,9 +331,30 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id, requestBody).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id, "inactivationProperties()").statusCode(200)
-		.body("active", equalTo(false))
-		.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.name()))
-		.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(description1Id));
+			.body("active", equalTo(false))
+			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.name()))
+			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(description1Id));
+	}
+	
+	@Test
+	public void inactivateWithIndicatorAndAssociationTargets() {
+		String description1Id = createNewDescription(branchPath);
+		String description2Id = createNewDescription(branchPath);
+		String description3Id = createNewDescription(branchPath);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("associationTargets", ImmutableMap.of(AssociationType.POSSIBLY_EQUIVALENT_TO.name(), ImmutableList.of(description1Id, description3Id)))
+				.put("commitComment", "Inactivated description with indicator and association target")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id, "inactivationProperties()").statusCode(200)
+			.body("active", equalTo(false))
+			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.name()))
+			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(description1Id))
+			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(description3Id));
 	}
 
 	@Test
@@ -595,7 +616,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.accept(ContentType.JSON)
 		.queryParam("term", "<<")
-		.get("/{path}/descriptions", branchPath)
+		.get("/{path}/descriptions", branchPath.getPath())
 		.then()
 		.statusCode(200);
 	}

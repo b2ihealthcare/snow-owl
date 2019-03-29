@@ -20,19 +20,13 @@ import com.b2international.snowowl.core.ApplicationContext
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException
 import com.b2international.snowowl.identity.IdentityProvider
 import com.b2international.snowowl.identity.IdentityWriter
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.guava.GuavaModule
 import com.google.common.base.Joiner
 import com.google.common.base.Preconditions
 import com.google.common.base.Splitter
 import io.restassured.RestAssured
-import io.restassured.config.ObjectMapperConfig
-import io.restassured.config.RestAssuredConfig
 import io.restassured.http.ContentType
-import io.restassured.mapper.factory.Jackson2ObjectMapperFactory
 import io.restassured.response.Response
 import io.restassured.specification.RequestSpecification
-import java.lang.reflect.Type
 import java.util.List
 import java.util.Map
 import java.util.concurrent.atomic.AtomicBoolean
@@ -92,14 +86,6 @@ class RestExtensions {
 			
 			// Enable logging on failed requests
 			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-			// add custom 
-			val mapper = new ObjectMapper()
-			mapper.registerModule(new GuavaModule)
-			RestAssuredConfig.config().objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
-				override create(Type arg0, String arg1) {
-					return mapper
-				}
-			}))
 			
 			// add the user to the current identity provider
 			try {

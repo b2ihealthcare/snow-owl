@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -26,6 +28,8 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 
@@ -189,8 +193,14 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 * 
 	 * @return related association targets, or {@code null} if the concept is still active
 	 */
+	@JsonIgnore
 	public Multimap<AssociationType, String> getAssociationTargets() {
 		return associationTargets;
+	}
+
+	@JsonProperty("associationTargets")
+	public Map<AssociationType, Collection<String>> getAssociationTargetsAsMap() {
+		return associationTargets == null ? null : associationTargets.asMap();
 	}
 
 	/**

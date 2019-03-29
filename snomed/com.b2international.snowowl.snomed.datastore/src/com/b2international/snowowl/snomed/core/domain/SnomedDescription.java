@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -173,8 +174,14 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	 * 
 	 * @return related association targets, or {@code null} if the description is still active
 	 */
+	@JsonIgnore
 	public Multimap<AssociationType, String> getAssociationTargets() {
 		return associationTargets;
+	}
+
+	@JsonProperty("associationTargets")
+	public Map<AssociationType, Collection<String>> getAssociationTargetsAsMap() {
+		return associationTargets == null ? null : associationTargets.asMap();
 	}
 
 	@JsonIgnore

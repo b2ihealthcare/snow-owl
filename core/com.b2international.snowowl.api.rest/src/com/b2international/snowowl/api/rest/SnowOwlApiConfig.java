@@ -65,7 +65,6 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Charsets;
 
 import springfox.documentation.schema.AlternateTypeRule;
@@ -163,7 +162,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 	public ObjectMapper objectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.setVisibility(PropertyAccessor.CREATOR, Visibility.ANY);
-		objectMapper.registerModule(new GuavaModule());
 		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
 		final ISO8601DateFormat df = new ISO8601DateFormat();
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));

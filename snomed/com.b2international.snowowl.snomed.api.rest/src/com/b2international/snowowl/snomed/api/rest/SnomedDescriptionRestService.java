@@ -304,23 +304,10 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
-		final SnomedDescriptionRestUpdate update = body.getChange();
-
-		SnomedRequests
-			.prepareUpdateDescription(descriptionId)
-			.setActive(update.isActive())
-			.setModuleId(update.getModuleId())
-			.setAssociationTargets(update.getAssociationTargets())
-			.setInactivationIndicator(update.getInactivationIndicator())
-			.setCaseSignificance(update.getCaseSignificance())
-			.setAcceptability(update.getAcceptability())
-			.setTypeId(update.getTypeId())
-			.setTerm(update.getTerm())
-			.setLanguageCode(update.getLanguageCode())
+		body.getChange().toRequestBuilder(descriptionId)
 			.build(repositoryId, branchPath, userId, commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
-		
 	}
 
 	@ApiOperation(
