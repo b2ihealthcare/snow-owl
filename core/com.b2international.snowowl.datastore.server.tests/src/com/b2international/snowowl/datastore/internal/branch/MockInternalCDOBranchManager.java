@@ -48,7 +48,7 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 	
 	public MockInternalCDOBranchManager(CDOTimeProvider clock) {
 		this.clock = clock;
-		when(delegate.getTimeProvider()).thenReturn(clock);
+//		when(delegate.getTimeProvider()).thenReturn(clock);
 	}
 	
 	private AtomicInteger branchIds = new AtomicInteger(CDOBranch.MAIN_BRANCH_ID);
@@ -148,7 +148,7 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 	
 	private CDOBranchPoint mockBase(InternalCDOBranch parent, long baseTimestamp) {
 		final CDOBranchPoint base = mock(CDOBranchPoint.class);
-		when(base.getBranch()).thenReturn(parent);
+//		when(base.getBranch()).thenReturn(parent);
 		when(base.getTimeStamp()).thenReturn(baseTimestamp);
 		return base;
 	}
@@ -179,7 +179,6 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 		final CDOBranchPoint base = mockBase(parent, clock.getTimeStamp());
 		mockBranchID(branch, branchIds.getAndIncrement());
 		when(branch.getBase()).thenReturn(base);
-		when(branch.isMainBranch()).thenReturn(CDOBranch.MAIN_BRANCH_NAME.equals(name));
 		mockBasePath(parent, branch);
 		if (parent == null) {
 			mockBranchPath(branch, "", name);
@@ -187,7 +186,6 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 			mockBranchPath(branch, parent.getPathName().concat(Branch.SEPARATOR), name);
 		}
 		mockBranchCreation(branch);
-		mockChildren(branch);
 		return branch;
 	}
 
@@ -204,7 +202,4 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 		when(branch.getBasePath()).thenReturn(basePath);
 	}
 
-	private void mockChildren(InternalCDOBranch branch) {
-		when(branch.getBranches()).thenReturn(new InternalCDOBranch[0]);
-	}
 }

@@ -72,18 +72,19 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Spring controller for exposing validation functionality.
  * 
  * @since 6.13
  */
-@Api("Validations")
+@Api(value = "Validations", description="Validations", tags = { "validations" })
 @Controller
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class ValidationRestService extends AbstractAdminRestService {

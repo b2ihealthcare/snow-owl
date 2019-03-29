@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class MrcmImportExportTest {
 	public void importTest() throws Exception {
 		// default/old MRCM import file contains 58 rules
 		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final Path path = Paths.get(PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_defaults.xmi"));
+		final Path path = PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_defaults.xmi");
 		
 		try (final InputStream stream = Files.newInputStream(path, StandardOpenOption.READ)) {
 			Services.service(MrcmImporter.class).doImport("test", stream);

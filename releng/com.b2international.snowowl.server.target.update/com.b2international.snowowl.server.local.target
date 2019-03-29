@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="Snow Owl Server Local Platform Definition" sequenceNumber="16">
-<locations>
-<location path="${eclipse_home}/target_platform" type="Directory"/>
-<location path="${eclipse_home}/target_platform/reasoners" type="Directory"/>
-</locations>
-</target>

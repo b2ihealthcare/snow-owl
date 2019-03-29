@@ -15,16 +15,26 @@
 		<jackson.version>2.8.11</jackson.version>
 		<jackson.databind.version>2.8.11.2</jackson.databind.version>
 		<netty.version>4.1.16.Final</netty.version>
-		<slf4j.version>[1.7.2,1.7.3)</slf4j.version>
-		<logback.version>[1.0.7,1.0.8)</logback.version>
-		<guava.version>[18.0.0,19.0.0)</guava.version>
+		<slf4j.version>1.7.25</slf4j.version>
+		<logback.version>1.2.3</logback.version>
+		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
+		<guava.version>18.0</guava.version>
+		<guava.versionRange>[18.0.0,19.0.0)</guava.versionRange>
 		<groovy.version>[2.4.0,2.5.0)</groovy.version>
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
-		<kotlin.version>1.1.51</kotlin.version>
+		<jetty.version>9.4.5.v20170502</jetty.version>
+		<jbcrypt.version>0.4.1</jbcrypt.version>
+		<typetools.version>0.4.8</typetools.version>
+		<hdrhistogram.version>2.1.10</hdrhistogram.version>
+		<commons.logging.version>1.2</commons.logging.version>
+		<commons.codec.version>1.10</commons.codec.version>
+		<fastutil.version>8.2.2</fastutil.version>
+		<jaxb.api.version>2.3.0</jaxb.api.version>
+		<javax.activation.version>1.2.0</javax.activation.version>
 		<!-- Build tool/compiler versions -->
-		<tycho.version>1.0.0</tycho.version>
-		<tycho-extras.version>1.0.0</tycho-extras.version>
+		<tycho.version>1.2.0</tycho.version>
+		<tycho-extras.version>1.2.0</tycho-extras.version>
 		<xtend.compiler.version>2.11.0</xtend.compiler.version>
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
@@ -41,6 +51,407 @@
 		<module>tests</module>
 		<module>releng</module>
 	</modules>
+
+	<dependencies>
+		<!-- Add new dependencies here at the end of the dependency list -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.databind.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-cbor</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-smile</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-csv</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-afterburner</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-jaxb-annotations</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-guava</artifactId>
+			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.25</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.4.7</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>javax.persistence</artifactId>
+			<version>2.0.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.3.174</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>1.7.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.17</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.reactivex.rxjava2</groupId>
+			<artifactId>rxjava</artifactId>
+			<version>2.0.7</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.reactivestreams</groupId>
+		    <artifactId>reactive-streams</artifactId>
+		    <version>1.0.0</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>edu.stanford.protege</groupId>
+			<artifactId>org.semanticweb.owl.owlapi</artifactId>
+			<version>3.4.4</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-buffer</artifactId>
+		    <version>${netty.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-codec</artifactId>
+		    <version>${netty.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-codec-http</artifactId>
+		    <version>${netty.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-common</artifactId>
+		    <version>${netty.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-handler</artifactId>
+		    <version>${netty.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-resolver</artifactId>
+		    <version>${netty.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-transport</artifactId>
+		    <version>${netty.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.diffplug.osgi</groupId>
+			<artifactId>com.diffplug.osgi.extension.sun.misc</artifactId>
+			<version>0.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+  			<groupId>com.diffplug.osgi</groupId>
+  			<artifactId>com.diffplug.osgi.extension.sun.reflect</artifactId>
+  			<version>0.0.0</version>
+  			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-osgi</artifactId>
+			<version>4.5.3</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		  	<groupId>org.apache.httpcomponents</groupId>
+		  	<artifactId>httpcore-osgi</artifactId>
+		  	<version>4.4.10</version>
+		  	<scope>provided</scope>
+		</dependency>
+		<dependency>
+		  	<groupId>org.apache.httpcomponents</groupId>
+		  	<artifactId>httpasyncclient-osgi</artifactId>
+		  	<version>4.1.4</version>
+		  	<scope>provided</scope>
+		</dependency>
+		<dependency>
+	        <groupId>de.svenkubiak</groupId>
+	        <artifactId>jBCrypt</artifactId>
+	        <version>${jbcrypt.version}</version>
+	        <scope>provided</scope>
+    	</dependency>
+    	<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>typetools</artifactId>
+			<version>${typetools.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hdrhistogram</groupId>
+		    <artifactId>HdrHistogram</artifactId>
+		    <version>${hdrhistogram.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+    		<groupId>commons-codec</groupId>
+    		<artifactId>commons-codec</artifactId>
+    		<version>${commons.codec.version}</version>
+    		<scope>provided</scope>
+		</dependency>
+		<dependency>
+    		<groupId>commons-logging</groupId>
+    		<artifactId>commons-logging</artifactId>
+    		<version>${commons.logging.version}</version>
+    		<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+			<version>${fastutil.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+    		<artifactId>jetty-continuation</artifactId>
+    		<version>${jetty.version}</version>
+    		<scope>provided</scope>
+    	</dependency>
+   		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+     		<artifactId>jetty-deploy</artifactId>
+     		<version>${jetty.version}</version>
+     		<scope>provided</scope>
+   		</dependency>
+   		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+    		<artifactId>jetty-http</artifactId>
+    		<version>${jetty.version}</version>
+    		<scope>provided</scope>
+   		</dependency>
+    	<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+     		<artifactId>jetty-io</artifactId>
+     		<version>${jetty.version}</version>
+     		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+			<groupId>org.eclipse.jetty.osgi</groupId>
+      		<artifactId>jetty-osgi-boot</artifactId>
+      		<version>${jetty.version}</version>
+      		<scope>provided</scope>
+      		<exclusions>
+      			<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+      			<exclusion>
+          			<groupId>org.eclipse.osgi</groupId>
+  					<artifactId>org.eclipse.osgi</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.eclipse.osgi</groupId>
+  					<artifactId>org.eclipse.osgi.services</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.ow2.asm</groupId>
+      				<artifactId>asm</artifactId>
+      			</exclusion>
+      			<exclusion>
+        			<groupId>org.ow2.asm</groupId>
+      				<artifactId>asm-commons</artifactId>
+        		</exclusion>
+      		</exclusions>
+    	</dependency>
+    	<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+      		<artifactId>jetty-security</artifactId>
+      		<version>${jetty.version}</version>
+      		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+      		<artifactId>jetty-servlet</artifactId>
+      		<version>${jetty.version}</version>
+      		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+      		<artifactId>jetty-util</artifactId>
+      		<version>${jetty.version}</version>
+      		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+      		<artifactId>jetty-webapp</artifactId>
+      		<version>${jetty.version}</version>
+      		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+      		<artifactId>jetty-xml</artifactId>
+      		<version>${jetty.version}</version>
+      		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>com.fasterxml</groupId>
+    		<artifactId>classmate</artifactId>
+    		<version>1.3.4</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>org.mapstruct</groupId>
+    		<artifactId>mapstruct</artifactId>
+    		<version>1.2.0.Final</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>io.swagger</groupId>
+    		<artifactId>swagger-annotations</artifactId>
+    		<version>1.5.14</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>io.swagger</groupId>
+    		<artifactId>swagger-models</artifactId>
+    		<version>1.5.14</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+	    	<groupId>org.apache.servicemix.specs</groupId>
+		    <artifactId>org.apache.servicemix.specs.jaxp-api-1.4</artifactId>
+		    <version>2.9.0</version>
+		    <scope>provided</scope>
+    	</dependency>
+		<dependency>
+		  <groupId>javax.xml.bind</groupId>
+		  <artifactId>jaxb-api</artifactId>
+		  <version>${jaxb.api.version}</version>
+		  <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.activation</groupId>
+		    <artifactId>javax.activation</artifactId>
+		    <version>${javax.activation.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -78,26 +489,29 @@
 				<configuration>
 					<resolver>p2</resolver>
 					<pomDependencies>consider</pomDependencies>
+					<target>
+						<artifact>
+							<groupId>${project.groupId}</groupId>
+							<artifactId>target-platform</artifactId>
+							<version>${project.version}</version>
+						</artifact>
+					</target>
 					<filters>
-						<!-- work around Equinox bug 348045 -->
-						<!-- Removes the extension bundle from the available bundles for the
-							javax.servlet package -->
-						<filter>
-							<type>java-package</type>
-							<id>javax.servlet</id>
-							<restrictTo>
-								<type>osgi-bundle</type>
-								<id>javax.servlet</id>
-								<versionRange>[2.6.0,3.1.0)</versionRange>
-							</restrictTo>
-						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
-							<id>com.ibm.icu</id>
+							<id>org.eclipse.osgi</id>
 							<restrictTo>
-								<versionRange>[50.0.0,51.0.0)</versionRange>
+								<versionRange>[3.9.1,3.10.0]</versionRange>
 							</restrictTo>
 						</filter>
+						<!-- work around Equinox bug 348045 -->
+						<!-- Removes the extension bundle from the available bundles for the 
+							javax.servlet package -->
+						<filter>
+            				<type>p2-installable-unit</type>
+            				<id>org.eclipse.equinox.servletbridge.extensionbundle</id>
+            				<removeAll />
+         				</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.codehaus.groovy</id>
@@ -137,7 +551,7 @@
 							<type>eclipse-plugin</type>
 							<id>com.google.guava</id>
 							<restrictTo>
-								<versionRange>${guava.version}</versionRange>
+								<versionRange>${guava.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
@@ -214,7 +628,7 @@
 						<!-- Restrict SLF4J version to Virgo 3.7.0 compatible version -->
 						<filter>
 							<type>p2-installable-unit</type>
-							<id>org.slf4j.api</id>
+							<id>slf4j.api</id>
 							<restrictTo>
 								<versionRange>${slf4j.version}</versionRange>
 							</restrictTo>
@@ -223,21 +637,14 @@
 							<type>p2-installable-unit</type>
 							<id>ch.qos.logback.classic</id>
 							<restrictTo>
-								<versionRange>${logback.version}</versionRange>
+								<versionRange>${logback.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>ch.qos.logback.core</id>
 							<restrictTo>
-								<versionRange>${logback.version}</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>ch.qos.logback.slf4j</id>
-							<restrictTo>
-								<versionRange>${logback.version}</versionRange>
+								<versionRange>${logback.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<!-- Restrict Jackson bundles to the selected version -->
@@ -304,6 +711,11 @@
 							<restrictTo>
 								<versionRange>${commons.collections.version}</versionRange>
 							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.slf4j.api</id>
+							<removeAll />
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>
@@ -429,324 +841,6 @@
 
 	<profiles>
 		<profile>
-			<id>dependencies</id>
-			<dependencies>
-				<dependency>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-annotations</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-					<version>${jackson.databind.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.dataformat</groupId>
-					<artifactId>jackson-dataformat-cbor</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.dataformat</groupId>
-					<artifactId>jackson-dataformat-yaml</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.dataformat</groupId>
-					<artifactId>jackson-dataformat-smile</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.dataformat</groupId>
-					<artifactId>jackson-dataformat-csv</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.dataformat</groupId>
-					<artifactId>jackson-dataformat-xml</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.module</groupId>
-					<artifactId>jackson-module-afterburner</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.module</groupId>
-					<artifactId>jackson-module-jaxb-annotations</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.module</groupId>
-					<artifactId>jackson-module-jsonSchema</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.module</groupId>
-					<artifactId>jackson-module-scala_2.10</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.datatype</groupId>
-					<artifactId>jackson-datatype-guava</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.jaxrs</groupId>
-					<artifactId>jackson-jaxrs-json-provider</artifactId>
-					<version>${jackson.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-core</artifactId>
-					<version>3.0.2</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-jvm</artifactId>
-					<version>3.0.2</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-json</artifactId>
-					<version>3.0.2</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-logback</artifactId>
-					<version>3.0.2</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-servlet</artifactId>
-					<version>3.0.2</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-annotation</artifactId>
-					<version>3.0.2</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-healthchecks</artifactId>
-					<version>3.0.2</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>mysql</groupId>
-					<artifactId>mysql-connector-java</artifactId>
-					<version>5.1.25</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.healthmarketscience.jackcess</groupId>
-					<artifactId>jackcess</artifactId>
-					<version>1.2.9</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.thoughtworks.xstream</groupId>
-					<artifactId>xstream</artifactId>
-					<version>1.4.7</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.eclipse.persistence</groupId>
-					<artifactId>javax.persistence</artifactId>
-					<version>2.0.5</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.h2database</groupId>
-					<artifactId>h2</artifactId>
-					<version>1.3.174</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.assertj</groupId>
-					<artifactId>assertj-core</artifactId>
-					<version>1.7.1</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.yaml</groupId>
-					<artifactId>snakeyaml</artifactId>
-					<version>1.17</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>io.reactivex.rxjava2</groupId>
-					<artifactId>rxjava</artifactId>
-					<version>2.0.7</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-				    <groupId>org.reactivestreams</groupId>
-				    <artifactId>reactive-streams</artifactId>
-				    <version>1.0.0</version>
-				    <scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.mockito</groupId>
-					<artifactId>mockito-all</artifactId>
-					<version>1.9.5</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>edu.stanford.protege</groupId>
-					<artifactId>org.semanticweb.owl.owlapi</artifactId>
-					<version>3.4.4</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>commons-collections</groupId>
-					<artifactId>commons-collections</artifactId>
-					<version>3.2.2</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>com.google.guava</groupId>
-					<artifactId>guava</artifactId>
-					<version>18.0</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-				    <groupId>io.netty</groupId>
-				    <artifactId>netty-buffer</artifactId>
-				    <version>${netty.version}</version>
-				    <scope>provided</scope>
-				</dependency>
-				<dependency>
-				    <groupId>io.netty</groupId>
-				    <artifactId>netty-codec</artifactId>
-				    <version>${netty.version}</version>
-				    <scope>provided</scope>
-				</dependency>
-				<dependency>
-				    <groupId>io.netty</groupId>
-				    <artifactId>netty-codec-http</artifactId>
-				    <version>${netty.version}</version>
-				    <scope>provided</scope>
-				</dependency>
-				<dependency>
-				    <groupId>io.netty</groupId>
-				    <artifactId>netty-common</artifactId>
-				    <version>${netty.version}</version>
-				    <scope>provided</scope>
-				</dependency>
-				<dependency>
-				    <groupId>io.netty</groupId>
-				    <artifactId>netty-handler</artifactId>
-				    <version>${netty.version}</version>
-				    <scope>provided</scope>
-				</dependency>
-				<dependency>
-				    <groupId>io.netty</groupId>
-				    <artifactId>netty-resolver</artifactId>
-				    <version>${netty.version}</version>
-				    <scope>provided</scope>
-				</dependency>
-				<dependency>
-				    <groupId>io.netty</groupId>
-				    <artifactId>netty-transport</artifactId>
-				    <version>${netty.version}</version>
-				    <scope>provided</scope>
-				</dependency>
-				<dependency>
-			    	<groupId>org.jetbrains.kotlin</groupId>
-				    <artifactId>kotlin-osgi-bundle</artifactId>
-				    <version>${kotlin.version}</version>
-   				    <scope>provided</scope>
-				</dependency>
-			</dependencies>
-			<repositories>
-				<repository>
-					<id>emf</id>
-					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.12/core/</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>xtend_xpand</id>
-					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/xpand/R201306110406</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>xtext</id>
-					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.11.0/</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>mwe</id>
-					<url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.9.0/</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>eclipse-4.3</id>
-					<url>http://download.eclipse.org/eclipse/updates/4.3/R-4.3.2-201402211700/</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>cdo</id>
-					<url>http://download.eclipse.org/modeling/emf/cdo/updates/releases/4.1/</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>latest_orbit_site</id>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>jetty</id>
-					<url>http://download.eclipse.org/jetty/updates/jetty-bundles-8.x/8.1.14.v20131031/</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
-					<id>groovy</id>
-					<url>http://dist.springsource.org/release/GRECLIPSE/e4.3-j8/</url>
-					<layout>p2</layout>
-				</repository>
-			</repositories>
-		</profile>
-		<profile>
-			<id>tp_dependencies</id>
-			<properties>
-				<target.platform.version>6.10.0-SNAPSHOT</target.platform.version>
-				<target.platform.url>${nexus.url}/content/unzip/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.target.update/${target.platform.version}/com.b2international.snowowl.server.target.update-${target.platform.version}.zip-unzip/</target.platform.url>
-			</properties>
-			<repositories>
-				<repository>
-					<id>tp</id>
-					<url>${target.platform.url}</url>
-					<layout>p2</layout>
-				</repository>
-			</repositories>
-		</profile>
-		<profile>
 			<id>docs</id>
 			<activation>
 				<property>
@@ -776,5 +870,20 @@
 		<connection>scm:git:ssh://github.com/b2ihealthcare/snow-owl.git</connection>
 		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
 	</scm>
+	
+	<repositories>
+		<repository>
+			<id>protege-mvn-repo</id>
+			<url>https://b2ihealthcare.github.io/protege/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+        		<enabled>false</enabled>
+        		<updatePolicy>never</updatePolicy>
+    		</snapshots>
+		</repository>
+	</repositories>
 
 </project>

@@ -25,21 +25,21 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule
 import com.google.common.base.Joiner
 import com.google.common.base.Preconditions
 import com.google.common.base.Splitter
-import com.jayway.restassured.RestAssured
-import com.jayway.restassured.config.ObjectMapperConfig
-import com.jayway.restassured.config.RestAssuredConfig
-import com.jayway.restassured.http.ContentType
-import com.jayway.restassured.mapper.factory.Jackson2ObjectMapperFactory
-import com.jayway.restassured.response.Response
-import com.jayway.restassured.specification.RequestSpecification
-import java.io.File
+import io.restassured.RestAssured
+import io.restassured.config.ObjectMapperConfig
+import io.restassured.config.RestAssuredConfig
+import io.restassured.http.ContentType
+import io.restassured.mapper.factory.Jackson2ObjectMapperFactory
+import io.restassured.response.Response
+import io.restassured.specification.RequestSpecification
+import java.lang.reflect.Type
 import java.util.List
 import java.util.Map
 import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.commons.lang.text.StrSubstitutor
 import org.hamcrest.CoreMatchers
 
-import static com.jayway.restassured.RestAssured.*
+import static io.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
 
@@ -96,7 +96,7 @@ class RestExtensions {
 			val mapper = new ObjectMapper()
 			mapper.registerModule(new GuavaModule)
 			RestAssuredConfig.config().objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
-				override create(Class arg0, String arg1) {
+				override create(Type arg0, String arg1) {
 					return mapper
 				}
 			}))
@@ -182,7 +182,7 @@ class RestExtensions {
 	}
 	
 	def static RequestSpecification withFile(RequestSpecification it, String file, Class<?> cp) {
-		multiPart(new File(PlatformUtil.toAbsolutePath(cp, file)))
+		multiPart(PlatformUtil.toAbsolutePath(cp, file).toFile)
 	}
 	
 	// Simple REST operations

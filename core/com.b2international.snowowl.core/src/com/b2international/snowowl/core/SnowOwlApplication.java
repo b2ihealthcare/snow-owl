@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.core;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -29,7 +31,9 @@ import javax.validation.Validator;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
+import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +56,11 @@ public enum SnowOwlApplication {
 
 	private static final String NEW_LINE = "\r\n"; //$NON-NLS-1$
 	private static final String DEFAULT_CONFIGURATION_FILE_NAME = "snowowl_config"; //$NON-NLS-1$
-	private static final String[] SUPPORTED_CONFIG_EXTENSIONS = new String[]{"yml", "yaml", "json"};
+	
+	private static final String[] SUPPORTED_CONFIG_EXTENSIONS = new String[]{"yml"};
+	private static final String SNOWOWL_HOME = "snowowl.home";
+	private static final String OSGI_INSTALL_AREA = "osgi.install.area";
+	
 	private static final Logger LOG = LoggerFactory.getLogger(SnowOwlApplication.class);
 
 	private AtomicBoolean running = new AtomicBoolean(false);
@@ -102,16 +110,32 @@ public enum SnowOwlApplication {
 		if (!isRunning()) {
 			LOG.info("Bootstrapping Snow Owl...");
 			this.bootstrap = new Bootstrap(fragments);
-			this.configuration = createConfiguration(bootstrap, configPath);
-			this.environment = new Environment(bootstrap, configuration);
+			final File homeDirectory = getHomeDirectory(bootstrap.getBundleContext());
+			checkArgument(homeDirectory.exists() && homeDirectory.isDirectory(), "Snow Owl HOME directory at '%s' must be an existing directory.", homeDirectory);
+			this.configuration = createConfiguration(bootstrap, homeDirectory, configPath);
+			this.environment = new Environment(bootstrap, homeDirectory, configuration);
 			logEnvironment();
 			this.bootstrap.init(this.configuration, this.environment);
 		}
 	}
+	
+	private File getHomeDirectory(BundleContext context) {
+		String homeDirectory = System.getProperty(SNOWOWL_HOME);
+		if (Strings.isNullOrEmpty(homeDirectory)) {
+			String installArea = context.getProperty(OSGI_INSTALL_AREA);
+			try {
+				return URIUtil.toFile(URIUtil.fromString(installArea));
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			return new File(homeDirectory);
+		}
+	}
 
-	private SnowOwlConfiguration createConfiguration(Bootstrap bootstrap, String configPath) throws Exception {
+	private SnowOwlConfiguration createConfiguration(Bootstrap bootstrap, File homeDirectory, String configPath) throws Exception {
 		if (Strings.isNullOrEmpty(configPath)) {
-			configPath = getDefaultConfigPath(bootstrap);
+			configPath = getDefaultConfigPath(homeDirectory);
 		}
 		final Validator validator = ValidationUtil.getValidator();
 		final ConfigurationFactory<SnowOwlConfiguration> factory = new ConfigurationFactory<SnowOwlConfiguration>(SnowOwlConfiguration.class, validator);
@@ -119,9 +143,9 @@ public enum SnowOwlApplication {
 		return configPath != null ? factory.build(new FileConfigurationSourceProvider(), configPath) : factory.build();
 	}
 	
-	private String getDefaultConfigPath(Bootstrap bootstrap) {
+	private String getDefaultConfigPath(File homeDirectory) {
 		for (String supportedExtension : SUPPORTED_CONFIG_EXTENSIONS) {
-			final File configFile = new File(bootstrap.getInstallationDirectory(), String.format("%s.%s", DEFAULT_CONFIGURATION_FILE_NAME, supportedExtension));
+			final File configFile = new File(homeDirectory, String.format("%s.%s", DEFAULT_CONFIGURATION_FILE_NAME, supportedExtension));
 			if (configFile.exists()) {
 				return configFile.getAbsolutePath();
 			}
@@ -130,8 +154,8 @@ public enum SnowOwlApplication {
 	}
 
 	private void logEnvironment() {
-		LOG.info(String.format("Application installation directory: %s", this.environment.getInstallationDirectory()));
-		LOG.info(String.format("Application configuration directory: %s", this.environment.getConfigDirectory()));
+		LOG.info(String.format("Application home directory: %s", this.environment.getHomeDirectory()));
+		LOG.info(String.format("Application config directory: %s", this.environment.getConfigDirectory()));
 		LOG.info(String.format("Application data directory: %s", this.environment.getDataDirectory()));
 		LOG.info(String.format("Application defaults directory: %s", this.environment.getDefaultsDirectory()));
 	}

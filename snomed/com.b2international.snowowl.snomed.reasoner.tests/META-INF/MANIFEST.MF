@@ -8,6 +8,5 @@ Fragment-Host: com.b2international.snowowl.snomed.reasoner
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit;bundle-version="4.11.0",
  org.assertj.core;bundle-version="1.7.1",
- org.mockito.mockito-all;bundle-version="1.9.5",
  com.b2international.index.tests.tools,
  com.b2international.collections.jackson
