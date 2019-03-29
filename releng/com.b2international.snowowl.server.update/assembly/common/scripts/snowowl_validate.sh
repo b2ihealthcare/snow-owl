@@ -50,7 +50,9 @@ SLEEP_INTERVAL=60
 IS_UNPUBLISHED_VALIDATION=true
 
 # Rules to validate (id-s of rules)
-RULES_TO_VALIDATE=("34" "38a" "38b" "45a" "45b" "53" "54" "55" "74" "75" "77a" "77b" "78a" "78b" "79" "80" "83" "84" "110" "113" "115a" "115b" "115c" "148" "150" "158" "160" "161" "179" "187" "204" "205" "212" "check_VMPP_Has_VMP" "check_AMPP_Has_AMP" "266" "278" "281" "289a" "289b" "291" "293" "305" "326" "370" "371" "387" "390" "400" "401" "402" "424" "425" "428" "429" "456" "473" "482" "532a" "532b" "544" "547" "636" "snomed-common-1" "snomed-common-2")
+# Manually change this if you would like to run the validation with specified rules. e.g.: ("x" "z" "w")
+# By default the validation will be running on all rules
+RULES_TO_VALIDATE=()
 
 # Base URL of the Snow Owl server
 SNOW_OWL_BASE_URL="http://localhost:8080"
@@ -126,20 +128,31 @@ validate_variables() {
 }
 
 initiate_validation() {
-    
-    RULEIDS_JSON_ARRAY="["
-    FIRST="first"
-    for i in ${!RULES_TO_VALIDATE[@]}; do
-        if [[ ${FIRST} = "first" ]]; then
-            RULEIDS_JSON_ARRAY=''${RULEIDS_JSON_ARRAY}' "'"${RULES_TO_VALIDATE[i]},"'"'
-            FIRST=""
-        else
-            RULEIDS_JSON_ARRAY=''${RULEIDS_JSON_ARRAY}', "'"${RULES_TO_VALIDATE[i]}"'"'
-        fi
-    done
 
-    RULEIDS_JSON_ARRAY="${RULEIDS_JSON_ARRAY}]"
-    VALIDATION_CONFIG_POST_INPUT='{"branch": "'"${BRANCH_TO_VALIDATE}"'", "isUnpublishedValidation": "'"${IS_UNPUBLISHED_VALIDATION}"'", "codeSystemShortName": "'"${CODE_SYSTEM_SHORT_NAME}"'", "ruleIds": '${RULEIDS_JSON_ARRAY}'}'
+   if [[ ${#RULES_TO_VALIDATE[@]} -eq 0 ]]; then
+         echo "Couldn't find predefined rules to validate, using all rules as default."
+        VALIDATION_CONFIG_POST_INPUT='{"branch": "'"${BRANCH_TO_VALIDATE}"'", "isUnpublishedValidation": "'"${IS_UNPUBLISHED_VALIDATION}"'", "codeSystemShortName": "'"${CODE_SYSTEM_SHORT_NAME}"'"}'
+    else
+        
+        RULEIDS_JSON_ARRAY="["
+        if [[ ${#RULES_TO_VALIDATE[@]} -eq 1 ]]; then
+          RULEIDS_JSON_ARRAY=''${RULEIDS_JSON_ARRAY}'"'"${RULES_TO_VALIDATE[i]}"'"'
+
+        else
+          FIRST="first"
+          for i in ${!RULES_TO_VALIDATE[@]}; do
+              if [[ ${FIRST} = "first" ]]; then
+                  RULEIDS_JSON_ARRAY=''${RULEIDS_JSON_ARRAY}' "'"${RULES_TO_VALIDATE[i]}"'"'
+                  FIRST=""
+              else
+                  RULEIDS_JSON_ARRAY=''${RULEIDS_JSON_ARRAY}', "'"${RULES_TO_VALIDATE[i]}"'"'
+              fi
+          done
+        fi
+        RULEIDS_JSON_ARRAY="${RULEIDS_JSON_ARRAY}]"
+        VALIDATION_CONFIG_POST_INPUT='{"branch": "'"${BRANCH_TO_VALIDATE}"'", "isUnpublishedValidation": "'"${IS_UNPUBLISHED_VALIDATION}"'", "codeSystemShortName": "'"${CODE_SYSTEM_SHORT_NAME}"'", "ruleIds": '${RULEIDS_JSON_ARRAY}'}'
+    fi
+
     VALIDATION_ENDPOINT="${SNOW_OWL_BASE_URL}${VALIDATIONS_POST_ENDPOINT}"
 
     VALIDATION_TYPE_TEXT=

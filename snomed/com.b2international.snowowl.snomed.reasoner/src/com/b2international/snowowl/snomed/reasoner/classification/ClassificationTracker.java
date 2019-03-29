@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.classification;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
@@ -42,7 +43,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdMultimap;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdSet;
@@ -223,7 +223,7 @@ public final class ClassificationTracker implements IDisposableService {
 					.reasonerId(reasonerId)
 					.userId(userId)
 					.branch(branch)
-					.creationDate(Dates.todayGmt())
+					.creationDate(new Date())
 					.status(ClassificationStatus.SCHEDULED)
 					.build();
 

@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.admin.AbstractAdminRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
@@ -50,9 +51,9 @@ import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.ValidationResult;
@@ -71,18 +72,19 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Spring controller for exposing validation functionality.
  * 
  * @since 6.13
  */
-@Api("Validations")
+@Api(value = "Validations", description="Validations", tags = { "validations" })
 @Controller
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class ValidationRestService extends AbstractAdminRestService {
@@ -131,7 +133,6 @@ public class ValidationRestService extends AbstractAdminRestService {
 			final ValidationRestInput validationInput,
 
 			final Principal principal) {
-		ApiValidation.checkInput(validationInput);
 
 		final String codeSystemShortName = validationInput.codeSystemShortName();
 		final CodeSystemEntry codeSystem = getCodeSystem(codeSystemShortName);
@@ -233,10 +234,22 @@ public class ValidationRestService extends AbstractAdminRestService {
 			@ApiParam(value="The unique validation identifier.")
 			@PathVariable(value="validationId")
 			final String validationId,
-			
+
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
-			final int limit) {
+			final int limit,
+			
+			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false) 
+			final String scrollKeepAlive,
+			
+			@ApiParam(value="A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false) 
+			final String scrollId,
+			
+			@ApiParam(value="The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false) 
+			final String searchAfter) {
 		
 		final RemoteJobEntry validationJob = getValidationJobById(validationId);
 		
@@ -244,9 +257,11 @@ public class ValidationRestService extends AbstractAdminRestService {
 			final String branchPath = getBranchFromJob(validationJob);
 			
 			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
-					.all()
-					.filterByBranchPath(branchPath)
 					.setLimit(limit)
+					.setScrollId(scrollId)
+					.setScroll(scrollKeepAlive)
+					.setSearchAfter(searchAfter)
+					.filterByBranchPath(branchPath)
 					.buildAsync()
 					.execute(bus));
 		} else {
@@ -266,11 +281,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 	public @ResponseBody DeferredResult<Collection<Object>> getValidationResultsAsCsv(
 			@ApiParam(value="The unique validation identifier.")
 			@PathVariable(value="validationId")
-			final String validationId,
-			
-			@ApiParam(value="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false)   
-			final int limit) {
+			final String validationId) {
 		
 	final RemoteJobEntry validationJob = getValidationJobById(validationId);
 		
@@ -280,7 +291,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
 					.all()
 					.filterByBranchPath(branchPath)
-					.setLimit(limit)
+					.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
 					.buildAsync()
 					.execute(bus)
 					.then(issues -> {
