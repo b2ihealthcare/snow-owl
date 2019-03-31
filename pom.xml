@@ -24,6 +24,7 @@
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
+		<elk.version>0.4.2</elk.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.4.8</typetools.version>
 		<hdrhistogram.version>2.1.10</hdrhistogram.version>
@@ -450,6 +451,19 @@
 		    <artifactId>javax.activation</artifactId>
 		    <version>${javax.activation.version}</version>
 		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.semanticweb.elk</groupId>
+			<artifactId>elk-protege</artifactId>
+			<version>${elk.version}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
+				<exclusion>
+					<groupId>log4j</groupId>
+  					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
