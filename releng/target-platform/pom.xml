@@ -49,7 +49,10 @@
 								org.eclipse.jdt.debug,
 								org.eclipse.jdt.launching,
 								icu4j,
-								log4j
+								log4j,
+								guice,
+								guice-assistedinject,
+								guice-multibindings
 							</excludeArtifactIds>
 						</configuration>
 					</execution>
