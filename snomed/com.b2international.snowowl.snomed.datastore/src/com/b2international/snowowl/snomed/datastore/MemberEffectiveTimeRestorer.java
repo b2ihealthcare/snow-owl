@@ -53,18 +53,16 @@ public abstract class MemberEffectiveTimeRestorer implements IEffectiveTimeResto
 
 		}
 		
-		if (previousVersion == null) {
-			// XXX: Didnd't find previous version of member, can't restore effective time
-		} else {
+		if (previousVersion != null && !memberToRestore.isSetEffectiveTime()) {
 			boolean canRestore = true;
 			canRestore &= !memberToRestore.isActive() ^ previousVersion.isActive();
 			canRestore &= memberToRestore.getModuleId().equals(previousVersion.getModuleId());
-
+	
 			if (canRestore && canRestoreMemberEffectiveTime(memberToRestore, previousVersion)) {
 				memberToRestore.setEffectiveTime(previousVersion.getEffectiveTime());
 			}
-
 		}
+
 	}
 	
 	/**
