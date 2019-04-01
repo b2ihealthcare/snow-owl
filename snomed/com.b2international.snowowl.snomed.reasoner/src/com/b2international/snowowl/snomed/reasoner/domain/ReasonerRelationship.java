@@ -35,8 +35,8 @@ public final class ReasonerRelationship implements Serializable {
 	 * absent) when compared to the "origin" relationship, especially if the change
 	 * is a new inference!
 	 */
-	private boolean released;
-	private boolean destinationNegated;
+	private Boolean released;
+	private Boolean destinationNegated;
 	private Integer group;
 	private Integer unionGroup;
 	private CharacteristicType characteristicType;
@@ -65,11 +65,11 @@ public final class ReasonerRelationship implements Serializable {
 		this.originId = originId;
 	}
 	
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return released;
 	}
 	
-	public void setReleased(final boolean released) {
+	public void setReleased(final Boolean released) {
 		this.released = released;
 	}
 	
@@ -102,7 +102,7 @@ public final class ReasonerRelationship implements Serializable {
 	 * 
 	 * @return {@code true} if the destination concept is negated, {@code false} if it should be interpreted normally
 	 */
-	public boolean isDestinationNegated() {
+	public Boolean isDestinationNegated() {
 		return destinationNegated;
 	}
 
@@ -184,7 +184,7 @@ public final class ReasonerRelationship implements Serializable {
 		setType(new SnomedConcept(typeId));
 	}
 	
-	public void setDestinationNegated(final boolean destinationNegated) {
+	public void setDestinationNegated(final Boolean destinationNegated) {
 		this.destinationNegated = destinationNegated;
 	}
 
