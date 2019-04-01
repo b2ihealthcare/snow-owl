@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,15 @@
  */
 package com.b2international.snowowl.test.commons.snomed;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
+
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import com.b2international.collections.PrimitiveSets;
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -29,6 +34,7 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConst
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -107,19 +113,39 @@ public abstract class DocumentBuilders {
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String typeId, final BigDecimal value) {
-		return concreteDomain(referencedComponentId, typeId, value, DataType.DECIMAL);
+	public static SnomedRefSetMemberIndexEntry.Builder classAxioms(final String sourceId, final Object...axioms) {
+		checkArgument(!CompareUtils.isEmpty(axioms), "At least one axiom must be provided");
+		checkArgument(axioms.length % 3 == 0, "Each axiom should have 3 arguments [typeId:String, destinationId:String, group:Integer].");
+		int numberOfAxioms = (int) axioms.length / 3;
+		final List<SnomedOWLRelationshipDocument> classAxioms = newArrayListWithCapacity(numberOfAxioms);
+		for (int i = 0; i < numberOfAxioms; i++) {
+			int offset = i * 3;
+			classAxioms.add(new SnomedOWLRelationshipDocument((String) axioms[offset], (String) axioms[offset + 1], (int) axioms[offset + 2]));
+		}
+		
+		return SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(sourceId)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(classAxioms);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder integerMember(final String referencedComponentId, final String typeId, final int value) {
-		return concreteDomain(referencedComponentId, typeId, value, DataType.INTEGER);
+	public static SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String typeId, final BigDecimal value, final String characteristicTypeId) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.DECIMAL, characteristicTypeId);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String typeId, final String value) {
-		return concreteDomain(referencedComponentId, typeId, value, DataType.STRING);
+	public static SnomedRefSetMemberIndexEntry.Builder integerMember(final String referencedComponentId, final String typeId, final int value, final String characteristicTypeId) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.INTEGER, characteristicTypeId);
+	}
+	
+	public static SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String typeId, final String value, final String characteristicTypeId) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.STRING, characteristicTypeId);
 	}
 
-	public static SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String typeId, final Object value, final DataType type) {
+	public static SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String typeId, final Object value, final DataType type, final String characteristicTypeId) {
 		return SnomedRefSetMemberIndexEntry.builder()
 				.id(UUID.randomUUID().toString())
 				.active(true)
@@ -128,7 +154,7 @@ public abstract class DocumentBuilders {
 				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
-				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)
+				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId)
 				.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)
 				.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, 0)
 				.field(Fields.DATA_TYPE, type)

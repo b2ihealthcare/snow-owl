@@ -59,12 +59,7 @@ import io.restassured.response.ValidatableResponse;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
-	private static final String OWL_EXPRESSION = "SubClassOf("
-			+ "ObjectIntersectionOf("
-				+ "sct:73211009 Diabetes mellitus (disorder)"
-				+ "ObjectSomeValuesFrom("
-				+ "sct:42752001 Due to (attribute)sct:64572001 Disease (disorder))) "
-				+ "sct:8801005 Secondary diabetes mellitus (disorder))";
+	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :8801005)";
 
 	private void importArchive(final String fileName) {
 		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA);

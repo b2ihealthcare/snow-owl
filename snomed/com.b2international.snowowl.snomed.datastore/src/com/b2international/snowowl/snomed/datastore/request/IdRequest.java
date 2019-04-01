@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -55,6 +54,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
@@ -222,14 +222,13 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 		
 		try {
 			
-			final Query<? extends SnomedComponentDocument> getComponentsById = Query.select(documentClass)
+			final Query<String> getComponentsById = Query.select(String.class).from(documentClass)
 					.fields(RevisionDocument.Fields.ID)
 					.where(RevisionDocument.Expressions.ids(ids))
 					.limit(ids.size())
 					.build();
 			
-			final Hits<? extends SnomedComponentDocument> hits = context.service(RevisionSearcher.class).search(getComponentsById);
-			return FluentIterable.from(hits).transform(SnomedComponentDocument::getId).toSet();
+			return Sets.newHashSet(context.service(RevisionSearcher.class).search(getComponentsById));
 			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);

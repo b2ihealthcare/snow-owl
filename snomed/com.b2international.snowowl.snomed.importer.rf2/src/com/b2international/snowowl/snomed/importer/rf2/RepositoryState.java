@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import com.b2international.collections.longs.LongCollection;
 public final class RepositoryState {
 
 	private final LongCollection conceptIds;
-	private final Collection<String[]> statedStatements;
-	private final Collection<String[]> inferredStatements;
+	private final Collection<Object[]> statedStatements;
+	private final Collection<Object[]> inferredStatements;
 
-	public RepositoryState(LongCollection conceptIds, Collection<String[]> statedStatements, Collection<String[]> inferredStatements) {
+	public RepositoryState(LongCollection conceptIds, Collection<Object[]> statedStatements, Collection<Object[]> inferredStatements) {
 		this.conceptIds = conceptIds;
 		this.statedStatements = statedStatements;
 		this.inferredStatements = inferredStatements;
@@ -39,11 +39,11 @@ public final class RepositoryState {
 		return conceptIds;
 	}
 	
-	public Collection<String[]> getInferredStatements() {
+	public Collection<Object[]> getInferredStatements() {
 		return inferredStatements;
 	}
 	
-	public Collection<String[]> getStatedStatements() {
+	public Collection<Object[]> getStatedStatements() {
 		return statedStatements;
 	}
 	

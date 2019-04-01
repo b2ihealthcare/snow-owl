@@ -21,10 +21,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.RevisionHash;
@@ -198,6 +200,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		// MRCM module scope
 		public static final String MRCM_RULE_REFSET_ID = SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
+		public static final String CLASS_AXIOM_RELATIONSHIP = "classAxiomRelationships";
+		public static final String GCI_AXIOM_RELATIONSHIP = "gciAxiomRelationships";
 	}
 	
 	public static Builder builder() {
@@ -480,6 +484,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.MRCM_RULE_REFSET_ID, refSetIds);
 		}
 		
+		public static Expression grouped(boolean grouped) {
+			return match(Fields.MRCM_GROUPED, grouped);
+		}
+		
 		public static Expression values(DataType type, Collection<? extends Object> values) {
 			switch (type) {
 			case STRING: 
@@ -588,6 +596,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String query;
 		// OWL Axiom
 		private String owlExpression;
+		private List<SnomedOWLRelationshipDocument> classAxiomRelationships;
+		private List<SnomedOWLRelationshipDocument> gciAxiomRelationships;
 		// MRCM Domain
 		private String domainConstraint;
 		private String parentDomain;
@@ -824,8 +834,18 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder owlExpression(String owlExpression) {
+		public Builder owlExpression(String owlExpression) {
 			this.owlExpression = owlExpression;
+			return getSelf();
+		}
+		
+		public Builder classAxiomRelationships(List<SnomedOWLRelationshipDocument> classAxiomRelationships) {
+			this.classAxiomRelationships = Collections3.toImmutableList(classAxiomRelationships);
+			return getSelf();
+		}
+		
+		public Builder gciAxiomRelationships(List<SnomedOWLRelationshipDocument> gciAxiomRelationships) {
+			this.gciAxiomRelationships = Collections3.toImmutableList(gciAxiomRelationships);
 			return getSelf();
 		}
 		
@@ -979,6 +999,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			doc.query = query;
 			// OWL Axiom
 			doc.owlExpression = owlExpression;
+			doc.classAxiomRelationships = classAxiomRelationships;
+			doc.gciAxiomRelationships = gciAxiomRelationships;
 			
 			// MRCM Domain
 			doc.domainConstraint = domainConstraint;
@@ -1061,6 +1083,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private String query;
 	// OWL Axiom
 	private String owlExpression;
+	private List<SnomedOWLRelationshipDocument> classAxiomRelationships;
+	private List<SnomedOWLRelationshipDocument> gciAxiomRelationships;
 
 	// MRCM Domain
 	private String domainConstraint;
@@ -1267,6 +1291,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public String getOwlExpression() {
 		return owlExpression;
+	}
+	
+	public List<SnomedOWLRelationshipDocument> getClassAxiomRelationships() {
+		return classAxiomRelationships;
+	}
+	
+	public List<SnomedOWLRelationshipDocument> getGciAxiomRelationships() {
+		return gciAxiomRelationships;
 	}
 	
 	public String getDomainConstraint() {

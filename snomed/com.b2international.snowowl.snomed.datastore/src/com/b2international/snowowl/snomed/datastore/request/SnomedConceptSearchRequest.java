@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryExpression;
+import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
@@ -72,9 +73,14 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		DESCRIPTION_TYPE,
 
 		/**
-		 * ECL expression to match
+		 * ECL expression to match on the inferred form
 		 */
 		ECL,
+		
+		/**
+		 * ECL expression to match on the state form
+		 */
+		STATED_ECL,
 		
 		/**
 		 * Snomed CT Query expression to match
@@ -172,7 +178,12 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 
 		if (containsKey(OptionKey.ECL)) {
 			final String ecl = getString(OptionKey.ECL);
-			queryBuilder.filter(EclExpression.of(ecl).resolveToExpression(context).getSync());
+			queryBuilder.filter(EclExpression.of(ecl, Trees.INFERRED_FORM).resolveToExpression(context).getSync());
+		}
+		
+		if (containsKey(OptionKey.STATED_ECL)) {
+			final String ecl = getString(OptionKey.STATED_ECL);
+			queryBuilder.filter(EclExpression.of(ecl, Trees.STATED_FORM).resolveToExpression(context).getSync());
 		}
 		
 		if (containsKey(OptionKey.QUERY)) {

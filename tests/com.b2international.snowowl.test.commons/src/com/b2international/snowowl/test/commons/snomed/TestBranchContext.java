@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.eventbus.EventBusUtil;
@@ -97,7 +96,7 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 			final Branch mockBranch = Mockito.mock(Branch.class);
 			when(mockBranch.path()).thenReturn(branch);
 			context = new TestBranchContext(repositoryId, mockBranch);
-			final IEventBus bus = EventBusUtil.getWorkerBus(repositoryId, Runtime.getRuntime().availableProcessors());
+			final IEventBus bus = EventBusUtil.getDirectBus(repositoryId);
 			bus.registerHandler(Request.ADDRESS, new IHandler<IMessage>() {
 				@Override
 				public void handle(IMessage message) {
@@ -108,8 +107,6 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 						message.reply(innerReq.execute(context));
 					} catch (WrappedException e) {
 						message.fail(e.getCause());
-					} catch (ApiException e) {
-						message.fail(e);
 					} catch (Throwable e) {
 						message.fail(e);
 					}

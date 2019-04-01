@@ -48,10 +48,13 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.snomed.Concept;
@@ -66,7 +69,9 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -308,6 +313,47 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		description.setTerm("Term");
 		description.setType(getConcept(typeId));
 		return description;
+	}
+	
+	protected Builder doc(final Concept concept) {
+		return SnomedConceptDocument.builder()
+				.id(concept.getId())
+				.iconId(Concepts.ROOT_CONCEPT)
+				.active(concept.isActive())
+				.released(concept.isReleased())
+				.exhaustive(concept.isExhaustive())
+				.moduleId(concept.getModule().getId())
+				.effectiveTime(EffectiveTimes.getEffectiveTime(concept.getEffectiveTime()))
+				.primitive(Concepts.PRIMITIVE.equals(concept.getDefinitionStatus().getId()))
+				.parents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.ancestors(PrimitiveSets.newLongOpenHashSet())
+				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet());
+	}
+	
+	protected SnomedRefSetMemberIndexEntry.Builder doc(final SnomedOWLExpressionRefSetMember member) {
+		return SnomedRefSetMemberIndexEntry.builder(member);
+	}
+
+	protected Concept createConcept(final String id) {
+		final Concept concept = getConcept(id);
+		withCDOID(concept, nextStorageKey());
+		concept.setActive(true);
+		concept.setDefinitionStatus(getConcept(Concepts.FULLY_DEFINED));
+		concept.setModule(module());
+		concept.setExhaustive(false);
+		return concept;
+	}
+	
+	protected SnomedOWLExpressionRefSetMember createOwlAxiom(final String referencedComponentId, final String owlExpression) {
+		SnomedOWLExpressionRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedOWLExpressionRefSetMember();
+		withCDOID(member, nextStorageKey());
+		member.setUuid(UUID.randomUUID().toString());
+		member.setActive(true);
+		member.setOwlExpression(owlExpression);
+		member.setReferencedComponentId(referencedComponentId);
+		member.setRefSet(getRegularRefSet(Concepts.REFSET_OWL_AXIOM, SnomedTerminologyComponentConstants.CONCEPT_NUMBER));
+		return member;
 	}
 
 }

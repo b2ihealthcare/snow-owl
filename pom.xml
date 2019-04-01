@@ -33,6 +33,7 @@
 		<fastutil.version>8.2.2</fastutil.version>
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
+		<snomed.owl.toolkit.version>2.3.2</snomed.owl.toolkit.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
 		<tycho-extras.version>1.2.0</tycho-extras.version>
@@ -52,6 +53,31 @@
 		<module>tests</module>
 		<module>releng</module>
 	</modules>
+
+	<repositories>
+		<repository>
+			<id>protege-mvn-repo</id>
+			<url>https://b2ihealthcare.github.io/protege/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+        		<enabled>false</enabled>
+        		<updatePolicy>never</updatePolicy>
+    		</snapshots>
+		</repository>
+		<repository>
+        	<id>snomed-international-releases</id>
+        	<url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
+        	<releases>
+           		<enabled>true</enabled>
+        	</releases>
+        	<snapshots>
+          		<enabled>false</enabled>
+        	</snapshots>
+     	</repository>
+	</repositories>
 
 	<dependencies>
 		<!-- Add new dependencies here at the end of the dependency list -->
@@ -453,6 +479,13 @@
 		    <scope>provided</scope>
 		</dependency>
 		<dependency>
+    		<groupId>org.snomed.otf</groupId>
+			<artifactId>snomed-owl-toolkit</artifactId>
+			<version>${snomed.owl.toolkit.version}</version>
+			<classifier>bundle</classifier>
+			<scope>provided</scope>
+    	</dependency>
+    	<dependency>
 			<groupId>org.semanticweb.elk</groupId>
 			<artifactId>elk-protege</artifactId>
 			<version>${elk.version}</version>
@@ -885,19 +918,4 @@
 		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
 	</scm>
 	
-	<repositories>
-		<repository>
-			<id>protege-mvn-repo</id>
-			<url>https://b2ihealthcare.github.io/protege/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-        		<enabled>false</enabled>
-        		<updatePolicy>never</updatePolicy>
-    		</snapshots>
-		</repository>
-	</repositories>
-
 </project>

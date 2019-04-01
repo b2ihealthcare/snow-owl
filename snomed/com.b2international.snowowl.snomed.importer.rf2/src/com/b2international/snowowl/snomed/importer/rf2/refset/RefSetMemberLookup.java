@@ -33,13 +33,13 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.collections.longs.LongValueMap;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.ComponentLookup;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -124,13 +124,15 @@ public class RefSetMemberLookup {
 			@Override
 			public LongValueMap<String> execute(RevisionSearcher index) throws IOException {
 				final LongValueMap<String> map = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(componentIds.size());
-				final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
+				final Query<String[]> query = Query.select(String[].class)
+						.from(SnomedRefSetMemberIndexEntry.class)
+						.fields(SnomedRefSetMemberIndexEntry.Fields.ID, Revision.STORAGE_KEY)
 						.where(SnomedRefSetMemberIndexEntry.Expressions.ids(componentIds))
 						.limit(componentIds.size())
 						.build();
-				final Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
-				for (SnomedDocument doc : hits) {
-					map.put(doc.getId(), doc.getStorageKey());
+				final Hits<String[]> hits = index.search(query);
+				for (String[] doc : hits) {
+					map.put(doc[0], Long.parseLong(doc[1]));
 				}
 				return map;
 			}
