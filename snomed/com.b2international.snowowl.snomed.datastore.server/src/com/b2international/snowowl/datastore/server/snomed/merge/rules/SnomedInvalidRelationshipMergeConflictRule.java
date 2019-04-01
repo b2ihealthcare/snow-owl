@@ -98,32 +98,37 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 			
 		for (Relationship relationship : newOrDirtyRelationships) {
 			
-			if (inactiveConceptIds.contains(relationship.getSource().getId())) {
-				conflicts.add(MergeConflictImpl.builder()
-								.componentId(relationship.getId())
-								.componentType("Relationship")
-								.conflictingAttribute(ConflictingAttributeImpl.builder().property("sourceId").value(relationship.getSource().getId()).build())
-								.type(ConflictType.HAS_INACTIVE_REFERENCE)
-								.build());	
+			if (relationship.isActive()) {
+				
+				if (inactiveConceptIds.contains(relationship.getSource().getId())) {
+					conflicts.add(MergeConflictImpl.builder()
+							.componentId(relationship.getId())
+							.componentType("Relationship")
+							.conflictingAttribute(ConflictingAttributeImpl.builder().property("sourceId").value(relationship.getSource().getId()).build())
+							.type(ConflictType.HAS_INACTIVE_REFERENCE)
+							.build());	
+				}
+				
+				if (inactiveConceptIds.contains(relationship.getDestination().getId())) {
+					conflicts.add(MergeConflictImpl.builder()
+							.componentId(relationship.getId())
+							.componentType("Relationship")
+							.conflictingAttribute(ConflictingAttributeImpl.builder().property("destinationId").value(relationship.getDestination().getId()).build())
+							.type(ConflictType.HAS_INACTIVE_REFERENCE)
+							.build());
+				}
+				
+				if (inactiveConceptIds.contains(relationship.getType().getId())) {
+					conflicts.add(MergeConflictImpl.builder()
+							.componentId(relationship.getId())
+							.componentType("Relationship")
+							.conflictingAttribute(ConflictingAttributeImpl.builder().property("typeId").value(relationship.getType().getId()).build())
+							.type(ConflictType.HAS_INACTIVE_REFERENCE)
+							.build());
+				}
+				
 			}
 			
-			if (inactiveConceptIds.contains(relationship.getDestination().getId())) {
-				conflicts.add(MergeConflictImpl.builder()
-						.componentId(relationship.getId())
-						.componentType("Relationship")
-						.conflictingAttribute(ConflictingAttributeImpl.builder().property("destinationId").value(relationship.getDestination().getId()).build())
-						.type(ConflictType.HAS_INACTIVE_REFERENCE)
-						.build());
-			}
-			
-			if (inactiveConceptIds.contains(relationship.getType().getId())) {
-				conflicts.add(MergeConflictImpl.builder()
-						.componentId(relationship.getId())
-						.componentType("Relationship")
-						.conflictingAttribute(ConflictingAttributeImpl.builder().property("typeId").value(relationship.getType().getId()).build())
-						.type(ConflictType.HAS_INACTIVE_REFERENCE)
-						.build());
-			}
 		}
 		
 		return conflicts;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.util.Map;
 import java.util.Set;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.google.common.collect.ImmutableSet;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.ValidatableResponse;
+
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 2.0
@@ -38,7 +38,7 @@ public abstract class SnomedImportRestRequests {
 
 	public static ValidatableResponse uploadImportFile(String importId, Class<?> testClass, String importFile) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.multiPart(new File(PlatformUtil.toAbsolutePath(testClass, importFile)))
+				.multiPart(PlatformUtil.toAbsolutePath(testClass, importFile).toFile())
 				.post("/imports/{id}/archive", importId)
 				.then();
 	}

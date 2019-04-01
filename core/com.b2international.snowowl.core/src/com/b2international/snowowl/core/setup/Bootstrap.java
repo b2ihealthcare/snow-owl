@@ -18,13 +18,10 @@ package com.b2international.snowowl.core.setup;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.URIUtil;
 import org.osgi.framework.BundleContext;
 
 import com.b2international.commons.platform.Extensions;
@@ -38,12 +35,9 @@ public class Bootstrap {
 
 	public static final String BOOTSTAP_FRAGMENTS_EXT = "com.b2international.snowowl.core.bootstrapFragments";
 
-	private static final String OSGI_INSTALL_AREA = "osgi.install.area";
-
 	private Collection<BootstrapFragment> extensions;
 
 	private BundleContext bundleContext = CoreActivator.getContext();
-	private String installDirectory = bundleContext.getProperty(OSGI_INSTALL_AREA);
 
 	/**
 	 * Constructs a new {@link Bootstrap} initializer with additionally defined fragments.
@@ -66,20 +60,6 @@ public class Bootstrap {
 	 */
 	public BundleContext getBundleContext() {
 		return bundleContext;
-	}
-
-	/**
-	 * Returns the current installation directory of the SnowOwl Application.
-	 * 
-	 * @return
-	 * @since 3.4
-	 */
-	public File getInstallationDirectory() {
-		try {
-			return URIUtil.toFile(URIUtil.fromString(installDirectory));
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	/**

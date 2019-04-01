@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,9 @@ import java.util.Map;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.ValidatableResponse;
+
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * A set of assert methods related to the branching support in the REST API.
@@ -104,7 +105,7 @@ public abstract class SnomedBranchingRestRequests {
 		return givenAuthenticatedRequest(SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.put("/branches/{path}", branchPath)
+				.put("/branches/{path}", branchPath.getPath())
 				.then();
 	}
 

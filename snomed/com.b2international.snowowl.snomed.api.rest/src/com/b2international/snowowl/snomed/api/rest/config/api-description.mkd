@@ -1,0 +1,416 @@
+This describes the resources that make up the official Snow Owl® SNOMED CT Terminology API. If you have any problems or requests please contact [support](mailto:support@b2i.sg).
+
+## Current Version
+
+SNOMED CT API endpoints currently have version **v3**. You have to explicitly set the version of the API via path parameter. For example:
+
+    GET /snomed-ct/v3/branches
+
+## Media Types
+
+Custom media types are used in the API to let consumers choose the format of the data they wish to receive. This is done by adding one of the following types to the Accept header when you make a request. Media types are specific to resources, allowing them to change independently and support formats that other resources don’t.
+
+The most basic media types the API supports are:
+
+1.  application/vnd.com.b2international.snowowl+json (default)
+2.  application/vnd.org.ihtsdo.browser+json (ihtsdo.browser)
+
+The generic JSON media type (application/json) is available as well, but we encourage you to explicitly set the accepted content type before sending your request.
+
+## Schema
+
+All data is sent and received as JSON. Blank fields are omitted instead of being included as `null`.
+
+All non-effective time timestamps are returned in ISO 8601 format:
+
+    YYYY-MM-DDTHH:MM:SSZ
+
+Effective Time values are sent and received in short format:
+
+    yyyyMMdd
+
+## Hypermedia
+
+All POST requests return `Location` headers pointing to the created resource instead of including either the identifier or the entire created resource in the response body. These are meant to provide explicit URLs so that proper API clients don’t need to construct URLs on their own. It is highly recommended that API clients use these. Doing so will make future upgrades of the API easier for developers. All URLs are expected to be proper RFC 6570 URI templates.
+
+Example Location Header:
+
+    http://example.com/snowowl/snomed-ct/v3/MAIN/concepts/123456789
+
+## Pagination
+
+Requests that return multiple items will be paginated to 50 items by default. You can specify further pages with the combination of offset and limit parameter.
+
+## Link/Resource expansion
+
+Where applicable, the `expand` query parameter will include nested objects in the response, to avoid having to issue multiple requests to the server.
+
+Expanded properties should be followed by parentheses and separated by commas; any options for the expanded property should be given within the parentheses, including properties to expand. Typical values for parameters are given in the "Implementation Notes" section of each endpoint.
+
+    GET /snowowl/snomed-ct/v3/MAIN/concepts?offset=0&limit=50&expand=fsn(),descriptions()
+
+Response:
+
+    {
+      "items": [
+        {
+          "id": "100005",
+          "released": true,
+          ...
+          "fsn": {
+            "id": "2709997016",
+            "term": "SNOMED RT Concept (special concept)",
+            ...
+          },
+          "descriptions": {
+            "items": [
+              {
+                "id": "208187016",
+                "released": true,
+                ...
+              },
+            ],
+            "offset": 0,
+            "limit": 5,
+            "total": 5
+          }
+        },
+        ...
+      ],
+      "offset": 0,
+      "limit": 50,
+      "total": 421657
+    }
+
+## Client Errors
+
+There are three possible types of client errors on API calls that receive request bodies:
+
+1.  Sending invalid JSON will result in a `400 Bad Request` response:
+
+        Status: 400 Bad Request 
+        {
+          "status" : "400",
+          "message" : "Invalid JSON representation",
+          "developerMessage" : "detailed information about the error for developers"
+        }
+
+2.  Sending valid JSON content but invalid representation will result in a `400 Bad Request` response:
+
+        Status: 400 Bad Request 
+        {
+          "status" : "400",
+          "message" : "2 Validation errors",
+          "developerMessage" : "Input representation syntax or validation errors. Check input values.",
+          "violations" : ["violation_message_1", "violation_message_2"]
+        }
+
+3.  Conflicts will result in a `409 Conflict` response:
+
+        Status: 409 Conflict 
+        {
+          "status" : "409",
+          "message" : "Cannot merge source 'branch1' into target 'MAIN'."
+        }
+
+## Server Errors
+
+1.  In certain circumstances, Snow Owl might fail to process and respond to a request and responds with a `500 Internal Server Error`.
+
+        Status: 500 Internal Server Error 
+        {
+          "status" : "500",
+          "message" : "Something went wrong during the processing of your request.",
+          "developerMessage" : "detailed information about the error for developers"
+        }
+
+To troubleshoot these please examine the log files at {SERVER_HOME}/serviceability/logs/log.log, and/or contact [support](mailto:support@b2i.sg).
+
+# Branching
+
+Snow Owl provides branching support for terminology repositories. In each repository there is an always existing and _UP_TO_DATE_ branch called **MAIN**. The `MAIN` repository represents the latest working version of your terminology.
+
+You can create your own branches and create/edit/delete components and other resources on them. Branches are identified with their full path, which should always start with _MAIN_. For example the branch `MAIN/a/b/c/d` represents a branch under the parent `MAIN/a/b/c` with name `d`.
+
+Later you can decide to either delete the branch or merge the branch back to its parent. To properly merge a branch back into its parent, sometimes it is required to rebase (synchronize) it first with its parent to get the latest changes. This can be decided via the state attribute of the branch, which represents the current state compared to its parent state.
+
+## Branch states
+
+There are five different branch states available:
+
+1.  UP_TO_DATE - the branch is up-to-date with its parent there are no changes neither on the branch or on its parent
+2.  FORWARD - the branch has at least one commit while the parent is still unchanged. Merging a branch requires this state, otherwise it will return a HTTP 409 Conflict.
+3.  BEHIND - the parent of the branch has at least one commit while the branch is still unchanged. The branch can be safely rebased with its parent.
+4.  DIVERGED - both parent and branch have at least one commit. The branch must be rebased first before it can be safely merged back to its parent.
+5.  STALE - the branch is no longer in relation with its former parent, and should be deleted.
+
+_NOTE: Snow Owl supports merging of unrelated (STALE) branches. So branch `MAIN/a` can be merged into `MAIN/b`, there does not have to be a direct parent-child relationship between the two branches._
+
+## Reviews
+
+Reviews for current terminology changes committed to the source or target branch can be conducted by creating a review resource. The created resource can be polled to keep track of the state of computations; initially the resource returns PENDING state, but when the change set on a branch is computed, it will be in the CURRENT state. Unsuccessful attempts will be marked with FAILED state.
+
+A review identifier can be added to merge requests as an optional property. If the source or target branch state is different from the values captured when creating the review, the merge/rebase attempt will be rejected. This can happen, for example, when additional commits are added to the source or the target branch while a review is in progress; the review resource state becomes STALE in such cases.
+
+Reviews and concept change sets have a limited lifetime. CURRENT reviews are kept for 15 minutes, while review objects in any other states are valid for 5 minutes by default. The values can be changed in the server's configuration file.
+
+### Get a branch
+
+    GET /branches/:path
+
+Response
+
+    Status: 200 OK
+    {
+      "name": "MAIN",
+      "baseTimestamp": 1431957421204,
+      "headTimestamp": 1431957421204,
+      "deleted": false,
+      "path": "MAIN",
+      "state": "UP_TO_DATE"
+    }
+
+### Get all branches
+
+    GET /branches
+
+Response
+
+    Status: 200 OK
+    {
+      "items": [
+        {
+          "name": "MAIN",
+          "baseTimestamp": 1431957421204,
+          "headTimestamp": 1431957421204,
+          "deleted": false,
+          "path": "MAIN",
+          "state": "UP_TO_DATE"
+        }
+      ]
+    }
+
+### Create a branch
+
+    POST /branches
+
+Input
+
+    {
+      "parent" : "MAIN",
+      "name" : "branchName",
+      "metadata": {}
+    }
+
+Response
+
+    Status: 201 Created
+    Location: http://localhost:8080/snowowl/snomed-ct/v3/branches/MAIN/branchName
+
+### Delete a branch
+
+    DELETE /branches/:path
+
+Response
+
+    Status: 204 No content
+
+## Merging
+
+### Perform a merge (former promotion)
+
+    POST /merges
+
+Input
+
+    {
+      "source" : "MAIN/branchName",
+      "target" : "MAIN"
+    }
+
+Response
+
+    Status: 202 Accepted
+    Location: http://localhost:8080/snowowl/snomed-ct/v3/merges/2f4d3b5b-3020-4e8e-b046-b8266967d7dc
+
+### Perform a rebase (former synchronization)
+
+    POST /merges
+
+Input
+
+    {
+      "source" : "MAIN",
+      "target" : "MAIN/branchName"
+    }
+
+Response
+
+    Status: 202 Accepted
+    Location: http://localhost:8080/snowowl/snomed-ct/v3/merges/c82c443d-f3f4-4409-9cdb-a744da336936
+
+### Perform a merge with review identifier
+
+    POST /merges
+
+Input
+
+    {
+      "source" : "MAIN/branchName",
+      "target" : "MAIN",
+      "reviewId" : "63e3187d-b2dd-4824-8078-893679fed93e" 
+    }
+
+Successful response
+
+    Status: 202 Accepted
+    Location: http://localhost:8080/snowowl/snomed-ct/v3/merges/0da14d74-f796-409f-900b-b175c0909de1
+
+Failure response
+
+    {
+      "status": 409,
+      "code": 0,
+      "message": "Target branch 'MAIN' did not match with stored state on review identifier '63e3187d-b2dd-4824-8078-893679fed93e'.",
+      "developerMessage": "Target branch 'MAIN' did not match with stored state on review identifier '63e3187d-b2dd-4824-8078-893679fed93e'."
+    }
+
+### Monitor progress of a merge or rebase
+
+    GET /merges/c82c443d-f3f4-4409-9cdb-a744da336936
+
+Response
+
+    {
+      "id": "c82c443d-f3f4-4409-9cdb-a744da336936",
+      "source": "MAIN",
+      "target": "MAIN/branchName",
+      "status": "COMPLETED",
+      "scheduledDate": "2016-02-29T13:52:45Z",
+      "startDate": "2016-02-29T13:52:45Z",
+      "endDate": "2016-02-29T13:53:06Z"
+    }
+
+### Remove merge or rebase queue item
+
+    DELETE /merges/c82c443d-f3f4-4409-9cdb-a744da336936
+
+Response
+
+    Status: 204 No content
+
+## Reviews
+
+### Create a review
+
+    POST /reviews
+
+Input
+
+    {
+      "source": "MAIN/a/b",
+      "target": "MAIN/a"
+    }
+
+Response
+
+    Status: 201 Created
+    Location: http://localhost:8080/snowowl/snomed-ct/v3/reviews/b5e8cb6b-419e-4180-9391-b938b50ef18b
+
+### Get a review
+
+    GET /reviews/:id
+
+Response
+
+    Status: 200 OK
+    {
+      "id": "b5e8cb6b-419e-4180-9391-b938b50ef18b",
+      "lastUpdated": "2015-07-13T08:44:05Z",
+      "status": "CURRENT",
+      "source": {
+        "path": "MAIN/a/b",
+        "baseTimestamp": 1434556231935,
+        "headTimestamp": 1434556613118
+      },
+      "target": {
+        "path": "MAIN/a",
+        "baseTimestamp": 1429542539277,
+        "headTimestamp": 1436776409395
+      }
+    }
+
+### Get concept changes for review
+
+    GET /reviews/:id/concept-changes
+
+Response
+
+    Status: 200 OK
+    {
+      "id": "b5e8cb6b-419e-4180-9391-b938b50ef18b",
+      "changedConcepts": [
+        "302509004"
+      ]
+    }
+
+### Delete a review
+
+    DELETE /reviews/:id
+
+Response
+
+    Status: 204 No content
+
+# Reference Set API
+
+Two categories make up Snow Owl's Reference Set API:
+
+1.  **Reference Sets** category to get, search, create and modify reference sets
+2.  **Reference Set Members** category to get, search, create and modify reference set members
+
+Basic operations like create, update, delete are supported for both category.
+
+## Actions API
+
+On top of the basic operations, reference sets and members support actions. Actions have an _action_ property to specify which action to execute, the rest of the JSON properties will be used as body for the Action.
+
+Supported reference set actions are:
+
+1.  **sync** - synchronize all members of a query type reference set by executing their query and comparing the results with the current members of their referenced target reference set
+
+Supported reference set member actions are:
+
+1.  **create** - create a reference set member (uses the same body as POST /members)
+2.  **update** - update a reference set member (uses the same body as PUT /members)
+3.  **delete** - delete a reference set member
+4.  **sync** - synchronize a single member by executing the query and comparing the results with the current members of the referenced target reference set
+
+For example the following will sync a query type reference set member's referenced component with the result of the reevaluated member's ESCG query
+
+    POST /members/:id/actions
+    {
+      "commitComment": "Sync member's target reference set",
+      "action": "sync"
+    }
+
+## Bulk API
+
+Members list of a single reference set can be modified by using the following bulk-like update endpoint:
+
+    PUT /:path/refsets/:id/members
+
+Input
+
+    {
+      "commitComment": "Updating members of my simple type reference set",
+      "requests": [
+      	{
+      	  "action": "create|update|delete|sync",
+      	  "action-specific-props": ...
+      	}
+      ]
+    }
+
+The request body should contain the commitComment property and a request array. The request array must contain actions (see Actions API) that are enabled for the given set of reference set members. Member create actions can omit the _referenceSetId_ parameter, those will use the one defined as path parameter in the URL. For example by using this endpoint you can create, update and delete members of a reference set at once in one single commit.
+

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.test.commons;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
@@ -88,8 +89,8 @@ public class SnowOwlAppRule extends ExternalResource {
 	 *
 	 * @param configPath
 	 */
-	public SnowOwlAppRule config(String configPath) {
-		this.configPath = configPath;
+	public SnowOwlAppRule config(Path configPath) {
+		this.configPath = configPath.toString();
 		return this;
 	}
 
