@@ -50,11 +50,11 @@ public abstract class ComponentEffectiveTimeRestorer implements IEffectiveTimeRe
 		}
 		
 		if (previousVersion == null) {
-			throw new IllegalStateException("Previous version of released component could not be found. ID: " + componentToRestore.getId() + ", branch: " + branchPath);
+			// XXX: Didnd't find previous version of component, can't restore effective time
 		} else {
-			boolean canRestore = false;
-			canRestore |= componentToRestore.isActive() ^ previousVersion.isActive();
-			canRestore |= componentToRestore.getModule().getId().equals(previousVersion.getModuleId());
+			boolean canRestore = true;
+			canRestore &= !componentToRestore.isActive() ^ previousVersion.isActive();
+			canRestore &= componentToRestore.getModule().getId().equals(previousVersion.getModuleId());
 
 			if (canRestore && canRestoreComponentEffectiveTime(componentToRestore, previousVersion)) {
 				componentToRestore.setEffectiveTime(previousVersion.getEffectiveTime());

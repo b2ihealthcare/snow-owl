@@ -65,7 +65,7 @@ public class ExtendedMapMemberEffectiveTimeRestorer extends MemberEffectiveTimeR
 			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 

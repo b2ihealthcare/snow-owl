@@ -30,7 +30,7 @@ public final class AttributeValueMemberEffectiveTimeRestorer extends MemberEffec
 		SnomedAttributeValueRefSetMember attributeValueMemberToRestore = (SnomedAttributeValueRefSetMember) memberToRestore;
 		final String previousValueId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID);
 		
-		return previousValueId != null && !previousValueId.equals(attributeValueMemberToRestore.getValueId());
+		return previousValueId != null && previousValueId.equals(attributeValueMemberToRestore.getValueId());
 	}
 
 

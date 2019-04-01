@@ -54,11 +54,11 @@ public abstract class MemberEffectiveTimeRestorer implements IEffectiveTimeResto
 		}
 		
 		if (previousVersion == null) {
-			throw new IllegalStateException("Previous version of released component could not be found. ID: " + memberToRestore.getUuid() + ", branch: " + branchPath);
+			// XXX: Didnd't find previous version of member, can't restore effective time
 		} else {
-			boolean canRestore = false;
-			canRestore |= !memberToRestore.isActive() ^ previousVersion.isActive();
-			canRestore |= memberToRestore.getModuleId().equals(previousVersion.getModuleId());
+			boolean canRestore = true;
+			canRestore &= !memberToRestore.isActive() ^ previousVersion.isActive();
+			canRestore &= memberToRestore.getModuleId().equals(previousVersion.getModuleId());
 
 			if (canRestore && canRestoreMemberEffectiveTime(memberToRestore, previousVersion)) {
 				memberToRestore.setEffectiveTime(previousVersion.getEffectiveTime());
