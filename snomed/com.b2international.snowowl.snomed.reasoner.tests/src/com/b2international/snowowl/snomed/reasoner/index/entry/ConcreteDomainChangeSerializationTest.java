@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.revision.BaseRevisionIndexTest;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,23 +48,69 @@ public class ConcreteDomainChangeSerializationTest extends BaseRevisionIndexTest
 	}
 
 	@Test
-	public void indexClassificationTask() throws Exception {
+	public void indexNewConcreteDomain() throws Exception {
 		final String id = randomUUID();
 		final String classificationId = randomUUID();
 
 		final ConcreteDomainChangeDocument expected = ConcreteDomainChangeDocument.builder()
+				.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
 				.classificationId(classificationId)
 				.group(1)
 				.memberId(randomUUID())
-				.nature(ChangeNature.INFERRED)
+				.nature(ChangeNature.NEW)
 				.referencedComponentId("12345678901")
-				.released(false)
+				.released(Boolean.FALSE)
+				.serializedValue("500")
 				.build();
 
 		indexDocument(id, expected);
 
 		final ConcreteDomainChangeDocument actual = rawIndex()
 				.read(r -> r.get(ConcreteDomainChangeDocument.class, id));
+		
+		assertDocEquals(expected, actual);
+	}
+	
+	@Test
+	public void indexUpdatedConcreteDomain() throws Exception {
+		final String id = randomUUID();
+		final String classificationId = randomUUID();
+		
+		final ConcreteDomainChangeDocument expected = ConcreteDomainChangeDocument.builder()
+				.classificationId(classificationId)
+				.memberId(randomUUID())
+				.nature(ChangeNature.UPDATED)
+				.referencedComponentId("12345678901")
+				.released(Boolean.TRUE)
+				.serializedValue("500")
+				.build();
+		
+		indexDocument(id, expected);
+		
+		final ConcreteDomainChangeDocument actual = rawIndex()
+				.read(r -> r.get(ConcreteDomainChangeDocument.class, id));
+		
+		assertDocEquals(expected, actual);
+	}
+	
+	@Test
+	public void indexRedundantConcreteDomain() throws Exception {
+		final String id = randomUUID();
+		final String classificationId = randomUUID();
+		
+		final ConcreteDomainChangeDocument expected = ConcreteDomainChangeDocument.builder()
+				.classificationId(classificationId)
+				.memberId(randomUUID())
+				.nature(ChangeNature.REDUNDANT)
+				.referencedComponentId("12345678901")
+				.released(Boolean.TRUE)
+				.build();
+		
+		indexDocument(id, expected);
+		
+		final ConcreteDomainChangeDocument actual = rawIndex()
+				.read(r -> r.get(ConcreteDomainChangeDocument.class, id));
+		
 		assertDocEquals(expected, actual);
 	}
 }

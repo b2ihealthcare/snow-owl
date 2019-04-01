@@ -8,7 +8,7 @@
 	<display-name>com.b2international.snowowl.snomed.api.rest.config</display-name>
 
 	<welcome-file-list>
-		<welcome-file>/static/index.html</welcome-file>
+		<welcome-file>static/index.html</welcome-file>
 	</welcome-file-list>
 
 	<servlet>

@@ -105,7 +105,7 @@ public abstract class SnomedBranchingRestRequests {
 		return givenAuthenticatedRequest(SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.put("/branches/{path}", branchPath)
+				.put("/branches/{path}", branchPath.getPath())
 				.then();
 	}
 

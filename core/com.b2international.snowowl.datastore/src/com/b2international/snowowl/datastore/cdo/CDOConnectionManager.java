@@ -40,6 +40,7 @@ import org.eclipse.net4j.connector.ConnectorException;
 import org.eclipse.net4j.connector.IConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
 import org.eclipse.net4j.signal.ISignalProtocol;
+import org.eclipse.net4j.signal.RemoteException;
 import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.signal.heartbeat.HeartBeatProtocol;
 import org.eclipse.net4j.tcp.TCPUtil;
@@ -370,7 +371,13 @@ import com.google.common.collect.Maps;
 			}
 		}
 
-		super.doActivate();
+		try {
+			super.doActivate();
+		} catch (final RemoteException e) {
+			doDeactivate();
+			LOGGER.error("Exception caught while activating connection manager, connection aborted", e);
+			throw e;
+		} 
 	}
 
 	@Override

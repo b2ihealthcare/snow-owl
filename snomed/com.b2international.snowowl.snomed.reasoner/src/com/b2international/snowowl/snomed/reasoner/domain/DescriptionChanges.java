@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,32 +23,32 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 6.12 (originally introduced in 7.x)
+ * @since 6.14
  */
-public final class ConcreteDomainChanges extends PageableCollectionResource<ConcreteDomainChange> {
+public final class DescriptionChanges extends PageableCollectionResource<DescriptionChange> {
 
 	/**
-	 * Instantiates an empty pageable collection for concrete domain changes.
+	 * Instantiates an empty pageable collection for description changes.
 	 * 
 	 * @param limit of items for a single page
 	 * @param total number of items in the result set
 	 */
-	public ConcreteDomainChanges(final int limit, final int total) {
+	public DescriptionChanges(final int limit, final int total) {
 		super(Collections.emptyList(), null, null, limit, total);
 	}
 
 	/**
-	 * Instantiates a pageable collection of concrete domain changes.
+	 * Instantiates a pageable collection of description changes.
 	 * 
-	 * @param list of @link {@link ConcreteDomainChange}s
+	 * @param list of @link {@link DescriptionChange}s
 	 * @param scrollId for paging the result set continuously
 	 * @param searchAfter for paging the result set with a live cursor
 	 * @param limit of items for a single page
 	 * @param total number of items in the result set
 	 */
 	@JsonCreator
-	public ConcreteDomainChanges(
-			@JsonProperty("items") final List<ConcreteDomainChange> items, 
+	public DescriptionChanges(
+			@JsonProperty("items") final List<DescriptionChange> items, 
 			@JsonProperty("scrollId") final String scrollId,
 			@JsonProperty("searchAfter") final String searchAfter,
 			@JsonProperty("limit") final int limit, 
