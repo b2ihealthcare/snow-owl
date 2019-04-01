@@ -26,12 +26,6 @@ import com.b2international.commons.emf.NsUriProvider;
  */
 public interface ICDORepositoryManager extends ICDOContainer<ICDORepository> {
 
-	/**Disconnects all users from the all managed repositories.*/
-	void disconnectAll(final ISessionOperationCallback... callbacks);
-	
-	/**Disconnects all users from all managed repositories except ones those unique IDs are specified.*/
-	void disconnect(final Iterable<String> userId, final ISessionOperationCallback... callbacks);
-
 	/**Sends a message to all users from the all managed repositories.*/
 	void sendMessageToAll(final String message, final ISessionOperationCallback... callbacks);
 	
