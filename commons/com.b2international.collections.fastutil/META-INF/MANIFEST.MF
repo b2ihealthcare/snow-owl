@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Fastutil based implementation of Collections API
 Bundle-SymbolicName: com.b2international.collections.fastutil;singleton:=true
-Bundle-Version: 6.13.1.qualifier
+Bundle-Version: 6.14.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Fragment-Host: com.b2international.collections.api
 Export-Package: com.b2international.collections,
@@ -10,17 +10,6 @@ Export-Package: com.b2international.collections,
  com.b2international.collections.floats;x-internal:=true,
  com.b2international.collections.ints;x-internal:=true,
  com.b2international.collections.longs;x-internal:=true,
- com.b2international.collections.objects;x-internal:=true,
- it.unimi.dsi.fastutil;x-internal:=true,
- it.unimi.dsi.fastutil.booleans;x-internal:=true,
- it.unimi.dsi.fastutil.bytes;x-internal:=true,
- it.unimi.dsi.fastutil.chars;x-internal:=true,
- it.unimi.dsi.fastutil.doubles;x-internal:=true,
- it.unimi.dsi.fastutil.floats;x-internal:=true,
- it.unimi.dsi.fastutil.ints;x-internal:=true,
- it.unimi.dsi.fastutil.io;x-internal:=true,
- it.unimi.dsi.fastutil.longs;x-internal:=true,
- it.unimi.dsi.fastutil.objects;x-internal:=true,
- it.unimi.dsi.fastutil.shorts;x-internal:=true
-Bundle-ClassPath: .,
- lib/fastutil-7.0.12.jar
+ com.b2international.collections.objects;x-internal:=true
+Bundle-ClassPath: .
+Require-Bundle: it.unimi.dsi.fastutil;bundle-version="8.2.2"

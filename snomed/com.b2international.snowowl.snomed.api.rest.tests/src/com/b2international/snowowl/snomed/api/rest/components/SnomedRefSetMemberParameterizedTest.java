@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,37 @@ package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_CARDINALITY;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_CARDINALITY_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_IN_GROUP_CARDINALITY;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_IN_GROUP_CARDINALITY_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_RULE;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_RULE_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.CONTENT_TYPE_ID;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.CONTENT_TYPE_ID_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_CONSTRAINT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_CONSTRAINT_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_ID;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_ID_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_POSTCOORDINATION_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_PRECOORDINATION;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_PRECOORDINATION_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.EDITORIAL_GUIDE_REFERENCE;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_AXIOM_1;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_AXIOM_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_ONTOLOGY_1;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_ONTOLOGY_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PARENT_DOMAIN;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_CONSTRAINT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_CONSTRAINT_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_REFINEMENT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RANGE_CONSTRAINT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RANGE_CONSTRAINT_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_REFSET_ID;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_REFSET_ID_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_STRENGTH_ID;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_STRENGTH_ID_2;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
@@ -63,7 +93,8 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.response.ValidatableResponse;
+
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 5.7

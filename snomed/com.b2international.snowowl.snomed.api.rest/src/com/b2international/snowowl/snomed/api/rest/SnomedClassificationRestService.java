@@ -67,16 +67,17 @@ import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Api("Classifications")
+@Api(value = "Classifications", description="Classifications", tags = { "classifications" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {
@@ -291,8 +292,15 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 				case REDUNDANT:
 					relationships.removeIf(r -> r.getId().equals(relationship.getOriginId()));
 					break;
+				
+				case UPDATED:
+					relationships.stream()
+						.filter(r -> r.getId().equals(relationship.getOriginId()))
+						.findFirst()
+						.ifPresent(r -> ((SnomedBrowserRelationship) r).setGroupId(relationship.getGroup()));
+					break;
 					
-				case INFERRED:
+				case NEW:
 					final SnomedBrowserRelationship inferred = new SnomedBrowserRelationship();
 					inferred.setType(new SnomedBrowserRelationshipType(relationship.getTypeId()));
 					inferred.setSourceId(relationship.getSourceId());
@@ -312,6 +320,11 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 					relationships.add(inferred);
 					break;
+					
+				default:
+					throw new IllegalStateException(String.format("Unexpected relationship change '%s' found with SCTID '%s'.", 
+							relationshipChange.getChangeNature(), 
+							relationshipChange.getRelationship().getOriginId()));
 			}
 		}
 		

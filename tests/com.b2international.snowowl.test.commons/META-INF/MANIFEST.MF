@@ -2,14 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Test Commons
 Bundle-SymbolicName: com.b2international.snowowl.test.commons
-Bundle-Version: 6.13.1.qualifier
+Bundle-Version: 6.14.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.junit;bundle-version="4.11.0",
+ org.junit;bundle-version="4.12.0",
  org.eclipse.xtend.lib;bundle-version="[2.11.0,2.13.0)",
  org.mockito;bundle-version="2.13.0",
  org.apache.commons.lang;bundle-version="2.6.0",
- com.b2international.restassured-all;bundle-version="2.4.0";visibility:=reexport,
+ com.b2international.restassured-all;bundle-version="[3.2.0,3.3.0)";visibility:=reexport,
  com.b2international.snowowl.datastore.server;visibility:=reexport,
  com.b2international.snowowl.test.dependencies;visibility:=reexport,
  com.b2international.snowowl.snomed.importer,

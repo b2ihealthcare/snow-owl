@@ -187,6 +187,8 @@ rem ------------------------------
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
+	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.stream.XMLInputFactory=com.sun.xml.internal.fastinfoset.stax.factory.StAXInputFactory
+	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.stream.XMLOutputFactory=com.sun.xml.internal.fastinfoset.stax.factory.StAXOutputFactory
 	set JAVA_OPTS=%JAVA_OPTS% -XX:+AlwaysLockClassLoader
 	set JAVA_OPTS=%JAVA_OPTS% -Dosgi.classloader.type=nonparallel
 	set JAVA_OPTS=%JAVA_OPTS% -Djava.awt.headless=true

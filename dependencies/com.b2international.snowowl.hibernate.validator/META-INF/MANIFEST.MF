@@ -22,6 +22,7 @@ Export-Package: com.b2international.snowowl.hibernate.validator,javax.
  ernate.validator.resourceloading,org.hibernate.validator.valuehandling
 Import-Package: com.sun.el;version="2.2.0";resolution:=optional,
  javax.el;version="2.2.0",
+ javax.xml.bind,
  org.apache.el;version="7.0.35";resolution:=optional,
  org.apache.el.lang;version="7.0.35";resolution:=optional,
  org.apache.el.parser;version="7.0.35";resolution:=optional,

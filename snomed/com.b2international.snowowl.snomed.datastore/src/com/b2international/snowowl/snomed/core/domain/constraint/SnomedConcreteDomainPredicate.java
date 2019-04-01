@@ -95,7 +95,7 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 		final SnomedConcreteDomainPredicate copy = new SnomedConcreteDomainPredicate();
 
 		copy.setActive(isActive());
-		copy.setAttribute(getAttribute());
+		copy.setAttribute(getAttribute().deepCopy(date, userName));
 		copy.setAuthor(userName);
 		copy.setCharacteristicTypeId(getCharacteristicTypeId());
 		copy.setRange(getRange());

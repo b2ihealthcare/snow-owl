@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * @since 7.0
+ * @since 6.12 (originally introduced in 7.x)
  */
 @Doc(type="concretedomainchange")
 @JsonDeserialize(builder=ConcreteDomainChangeDocument.Builder.class)
@@ -49,6 +49,10 @@ public final class ConcreteDomainChangeDocument {
 		public static Expression referencedComponentId(final String referencedComponentId) {
 			return exactMatch(Fields.REFERENCED_COMPONENT_ID, referencedComponentId);
 		}
+		
+		public static Expression referencedComponentId(final Iterable<String> referencedComponentIds) {
+			return matchAny(Fields.REFERENCED_COMPONENT_ID, referencedComponentIds);
+		}
 	}
 
 	public static Builder builder() {
@@ -62,8 +66,10 @@ public final class ConcreteDomainChangeDocument {
 		private ChangeNature nature;
 		private String memberId;
 		private String referencedComponentId;
-		private int group;
-		private boolean released;
+		private Integer group;
+		private Boolean released;
+		private String characteristicTypeId;
+		private String serializedValue;
 
 		@JsonCreator
 		private Builder() {
@@ -90,43 +96,62 @@ public final class ConcreteDomainChangeDocument {
 			return this;
 		}
 
-		public Builder group(int group) {
+		public Builder group(Integer group) {
 			this.group = group;
 			return this;
 		}
 		
-		public Builder released(final boolean released) {
+		public Builder released(final Boolean released) {
 			this.released = released;
 			return this;
 		}
 		
+		public Builder characteristicTypeId(final String characteristicTypeId) {
+			this.characteristicTypeId = characteristicTypeId;
+			return this;
+		}
+		
+		public Builder serializedValue(final String serializedValue) {
+			this.serializedValue = serializedValue;
+			return this;
+		}
+
 		public ConcreteDomainChangeDocument build() {
 			return new ConcreteDomainChangeDocument(classificationId, 
 					nature, 
 					memberId, 
 					referencedComponentId,
 					group,
-					released);
+					released,
+					characteristicTypeId,
+					serializedValue);
 		}
 	}
 
+	/** The identifier of the classification run this change belongs to */
 	private final String classificationId;
+	/** The type of this classification change */
 	private final ChangeNature nature;
-
-	// The origin (stated) UUID of the CD member for inferences, or the UUID of the member to remove/inactivate
+	/** The UUID of the "origin" CD member for inferences, or the UUID of the member to remove/inactivate **/
 	private final String memberId; 
-
-	// Values that should be changed on the original member, before saving/presenting it as an inference
+	/** {@code true} if the CD member has been released, {@code false} otherwise */
+	private final Boolean released;
+	
+	// Values that should be changed on the "origin" CD member, before saving/presenting it as an inference
+	
 	private final String referencedComponentId;
-	private final int group; 
-	private final boolean released;
+	private final Integer group;
+	private final String characteristicTypeId;
+	private final String serializedValue; 
 
 	private ConcreteDomainChangeDocument(final String classificationId, 
 			final ChangeNature nature, 
 			final String memberId,
 			final String referencedComponentId, 
-			final int group,
-			final boolean released) {
+			final Integer group,
+			final Boolean released, 
+			final String characteristicTypeId,
+			final String serializedValue) {
 
 		this.classificationId = classificationId;
 		this.nature = nature;
@@ -134,6 +159,8 @@ public final class ConcreteDomainChangeDocument {
 		this.referencedComponentId = referencedComponentId;
 		this.group = group;
 		this.released = released;
+		this.characteristicTypeId = characteristicTypeId;
+		this.serializedValue = serializedValue;
 	}
 
 	public String getClassificationId() {
@@ -152,12 +179,20 @@ public final class ConcreteDomainChangeDocument {
 		return referencedComponentId;
 	}
 	
-	public int getGroup() {
+	public Integer getGroup() {
 		return group;
 	}
 	
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return released;
+	}
+	
+	public String getCharacteristicTypeId() {
+		return characteristicTypeId;
+	}
+	
+	public String getSerializedValue() {
+		return serializedValue;
 	}
 
 	@Override
@@ -175,6 +210,10 @@ public final class ConcreteDomainChangeDocument {
 		builder.append(group);
 		builder.append(", released=");
 		builder.append(released);
+		builder.append(", characteristicTypeId=");
+		builder.append(characteristicTypeId);
+		builder.append(", serializedValue=");
+		builder.append(serializedValue);
 		builder.append("]");
 		return builder.toString();
 	}

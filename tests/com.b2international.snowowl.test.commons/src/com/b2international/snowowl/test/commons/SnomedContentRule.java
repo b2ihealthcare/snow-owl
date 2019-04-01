@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class SnomedContentRule extends ExternalResource {
 		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystem");
 		this.codeSystemBranchPath = checkNotNull(branchPath, "branchPath");
 		this.contentType = checkNotNull(contentType, "contentType");
-		this.importArchive = new File(PlatformUtil.toAbsolutePathBundleEntry(relativeClass, importArchivePath));
+		this.importArchive = PlatformUtil.toAbsolutePathBundleEntry(relativeClass, importArchivePath).toFile();
 	}
 
 	@Override

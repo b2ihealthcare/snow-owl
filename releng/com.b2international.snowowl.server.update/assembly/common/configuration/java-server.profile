@@ -198,7 +198,8 @@ org.osgi.framework.system.packages = \
  org.xml.sax,\
  org.xml.sax.ext,\
  org.xml.sax.helpers,\
- sun.misc
+ sun.misc,\
+ sun.reflect
 org.osgi.framework.bootdelegation = \
  org.eclipse.virgo.nano.authentication,\
  javax.*,\
@@ -210,7 +211,8 @@ org.osgi.framework.bootdelegation = \
  org.xml.*,\
  sun.*,\
  sun.misc.*,\
- com.sun.*
+ com.sun.*,\
+ sun.reflect.*
 org.osgi.framework.executionenvironment = \
  OSGi/Minimum-1.0,\
  OSGi/Minimum-1.1,\
