@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,7 +26,30 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class MRCMAttributeRangeMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedMRCMAttributeRangeRefSetMember attributeRangeMemberToRestore = (SnomedMRCMAttributeRangeRefSetMember) memberToRestore;
+
+		final String previousRangedConstraint = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT);
+		final String previousAttributeRule = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE);
+		final String previousRuleStrengthId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID);
+		final String previousContentTypeId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID);
+
+		if (previousRangedConstraint != null && !previousRangedConstraint.equals(attributeRangeMemberToRestore.getRangeConstraint())) {
+			return false;
+		}
+
+		if (previousAttributeRule != null && !previousAttributeRule.equals(attributeRangeMemberToRestore.getAttributeRule())) {
+			return false;
+		}
+
+		if (previousRuleStrengthId != null && !previousRuleStrengthId.equals(attributeRangeMemberToRestore.getRuleStrengthId())) {
+			return false;
+		}
+
+		if (previousContentTypeId != null && !previousContentTypeId.equals(attributeRangeMemberToRestore.getContentTypeId())) {
+			return false;
+		}
+
 		return true;
 	}
 

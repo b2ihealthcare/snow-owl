@@ -16,21 +16,37 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * @since 6.14
  */
-public class DescriptionEffectiveTimeRestorer extends ComponentEffectiveTimeRestorer {
+public final class DescriptionEffectiveTimeRestorer extends ComponentEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreComponentEffectiveTime(Component componentToRestore, Component previousVersion) {
-		return false;
+	protected boolean canRestoreComponentEffectiveTime(Component componentToRestore, SnomedComponent previousVersion) {
+		final Description descriptionToRestore = (Description) componentToRestore;
+		final SnomedDescription previousDescriptionVersion = (SnomedDescription) previousVersion;
+		
+		if (!descriptionToRestore.getConcept().getId().equals(previousDescriptionVersion.getConceptId())) return false;
+		if (!descriptionToRestore.getLanguageCode().equals(previousDescriptionVersion.getLanguageCode())) return false;
+		if (!descriptionToRestore.getType().getId().equals(previousDescriptionVersion.getTypeId())) return false;
+		if (!descriptionToRestore.getTerm().equals(previousDescriptionVersion.getTerm())) return false;
+		if (!descriptionToRestore.getCaseSignificance().getId().equals(previousDescriptionVersion.getCaseSignificance().getConceptId())) return false;
+		
+		return true;
 	}
 
 	@Override
-	protected Component getVersionedComponent(String branch) {
-		return null;
+	protected SnomedComponent getVersionedComponent(String branch, String componentId) {
+		return SnomedRequests.prepareGetDescription(componentId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.get();
 	}
+
 
 
 

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,7 +24,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class SimpleMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
 		return true;
 	}
 

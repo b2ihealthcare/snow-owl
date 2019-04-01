@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,7 +26,20 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class DescriptionTypeMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedDescriptionTypeRefSetMember descriptionTypeMemberToRestore = (SnomedDescriptionTypeRefSetMember) memberToRestore;
+
+		final String previousDescriptionFormat = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
+		final Integer previousDescriptionLength = (Integer) previousMember.getProperties().get(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH);
+
+		if (previousDescriptionFormat != null && !previousDescriptionFormat.equals(descriptionTypeMemberToRestore.getDescriptionFormat())) {
+			return false;
+		}
+
+		if (previousDescriptionLength != null && previousDescriptionLength.intValue() != descriptionTypeMemberToRestore.getDescriptionLength()) {
+			return false;
+		}
+		
 		return true;
 	}
 

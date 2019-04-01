@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.commons.ClassUtils;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,7 +27,40 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class MRCMAttributeDomainMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedMRCMAttributeDomainRefSetMember domainMemberToRestore = (SnomedMRCMAttributeDomainRefSetMember) memberToRestore;
+
+		final String previousDomainId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID);
+		final Boolean previousdGrouped = ClassUtils.checkAndCast(previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_GROUPED), Boolean.class);		
+		final String previousAttributeCardinality = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY);
+		final String previousAtributeInGroupCardinality = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY);
+		final String previousRuleStrengthId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID);
+		final String previousContentTypeId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID);
+
+		if (previousDomainId != null && !previousDomainId.equals(domainMemberToRestore.getDomainId())) {
+			return false;
+		}
+
+		if (previousdGrouped != null && previousdGrouped.booleanValue() ^ domainMemberToRestore.isGrouped()) {
+			return false;
+		}
+
+		if (previousAttributeCardinality != null && !previousAttributeCardinality.equals(domainMemberToRestore.getAttributeCardinality())) {
+			return false;
+		}
+
+		if (previousAtributeInGroupCardinality != null && !previousAtributeInGroupCardinality.equals(domainMemberToRestore.getAttributeInGroupCardinality())) {
+			return false;
+		}
+
+		if (previousRuleStrengthId != null && !previousRuleStrengthId.equals(domainMemberToRestore.getRuleStrengthId())) {
+			return false;
+		}
+
+		if (previousContentTypeId != null && !previousContentTypeId.equals(domainMemberToRestore.getContentTypeId())) {
+			return false;
+		}
+
 		return true;
 	}
 

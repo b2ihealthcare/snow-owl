@@ -15,16 +15,23 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
  * @since 6.14
  */
-public class AssociationMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
+public final class AssociationMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
-		return true;
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedAssociationRefSetMember associationMemberToRestore = (SnomedAssociationRefSetMember) memberToRestore;
+		final String previousMemberTargetComponentId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
+		
+		return previousMemberTargetComponentId != null && previousMemberTargetComponentId.equals(associationMemberToRestore.getTargetComponentId());
 	}
 
+	
 }

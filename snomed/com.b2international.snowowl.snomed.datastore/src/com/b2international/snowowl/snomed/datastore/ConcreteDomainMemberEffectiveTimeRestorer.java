@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,8 +26,31 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class ConcreteDomainMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
-		return false;
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedConcreteDataTypeRefSetMember concreteDataTypeMemberToRestore = (SnomedConcreteDataTypeRefSetMember) memberToRestore;
+
+		final String previousValue = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
+		final Integer previousRelationshipGroup = (Integer) previousMember.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
+		final String previousTyoeId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID);
+		final String previousCharTypeId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
+
+		if (previousCharTypeId != null && !previousCharTypeId.equals(concreteDataTypeMemberToRestore.getCharacteristicTypeId())) {
+			return false;
+		}
+
+		if (previousValue != null && !previousValue.equals(concreteDataTypeMemberToRestore.getSerializedValue())) {
+			return false;
+		}
+
+		if (previousTyoeId != null && !previousTyoeId.equals(concreteDataTypeMemberToRestore.getTypeId())) {
+			return false;
+		}
+
+		if (previousRelationshipGroup != null && previousRelationshipGroup.intValue() != (concreteDataTypeMemberToRestore.getGroup())) {
+			return false;
+		}
+
+		return true;
 	}
 
 }

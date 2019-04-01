@@ -16,23 +16,37 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * @since 6.14
  */
-public class RelationshipEffectiveTimeRestorer extends ComponentEffectiveTimeRestorer {
+public final class RelationshipEffectiveTimeRestorer extends ComponentEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreComponentEffectiveTime(Component componentToRestore, Component previousVersion) {
-		// TODO Auto-generated method stub
-		return false;
+	protected boolean canRestoreComponentEffectiveTime(Component componentToRestore, SnomedComponent previousVersion) {
+		final Relationship relationshipToRestore = (Relationship) componentToRestore;
+		final SnomedRelationship previousRelationshipVersion = (SnomedRelationship) previousVersion;
+		
+		if (!relationshipToRestore.getSource().getId().equals(previousRelationshipVersion.getSourceId())) return false;
+		if (!relationshipToRestore.getType().getId().equals(previousRelationshipVersion.getTypeId())) return false;
+		if (!relationshipToRestore.getDestination().getId().equals(previousRelationshipVersion.getDestinationId())) return false;
+		if (relationshipToRestore.getGroup() != previousRelationshipVersion.getGroup().intValue()) return false;
+		if (relationshipToRestore.getUnionGroup() != previousRelationshipVersion.getUnionGroup().intValue()) return false;
+		if (!relationshipToRestore.getCharacteristicType().getId().equals(previousRelationshipVersion.getCharacteristicType().getConceptId())) return false;
+		if (!relationshipToRestore.getModifier().getId().equals(previousRelationshipVersion.getModifier().getConceptId())) return false;
+		
+		return true;
 	}
 
 	@Override
-	protected Component getVersionedComponent(String branch) {
-		// TODO Auto-generated method stub
-		return null;
+	protected SnomedComponent getVersionedComponent(String branch, String componentId) {
+		return SnomedRequests.prepareGetRelationship(componentId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.get();
 	}
-
 
 }

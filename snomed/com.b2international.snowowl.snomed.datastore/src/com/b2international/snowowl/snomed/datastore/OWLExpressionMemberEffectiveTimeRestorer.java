@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,9 +26,11 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class OWLExpressionMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
-		return true;
-	}
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedOWLExpressionRefSetMember owlExpressionMemberToRestore = (SnomedOWLExpressionRefSetMember) memberToRestore;
+		final String previousOwlExpression = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION);
 
+		return previousOwlExpression != null && previousOwlExpression.equals(owlExpressionMemberToRestore.getOwlExpression());
+	}
 
 }

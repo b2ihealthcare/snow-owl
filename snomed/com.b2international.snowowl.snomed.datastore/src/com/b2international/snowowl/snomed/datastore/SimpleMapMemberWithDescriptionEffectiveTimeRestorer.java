@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 
 /**
  * @since 6.14
@@ -23,7 +26,19 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class SimpleMapMemberWithDescriptionEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedSimpleMapRefSetMember mapMemberToRestore = (SnomedSimpleMapRefSetMember) memberToRestore;
+		final String previousMapTargetId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET);
+		final String previousMapTargetDescription = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION);
+
+		if (previousMapTargetId != null && !previousMapTargetId.equals(mapMemberToRestore.getMapTargetComponentId())) {
+			return false;
+		}
+
+		if (previousMapTargetDescription != null && !previousMapTargetDescription.equals(mapMemberToRestore.getMapTargetComponentDescription())) {
+			return false;
+		}
+
 		return true;
 	}
 

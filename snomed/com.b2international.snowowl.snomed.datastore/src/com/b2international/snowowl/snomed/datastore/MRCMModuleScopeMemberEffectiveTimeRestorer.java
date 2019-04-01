@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,8 +26,12 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class MRCMModuleScopeMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
-		return true;
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedMRCMModuleScopeRefSetMember moduleMemberToRestore = (SnomedMRCMModuleScopeRefSetMember) memberToRestore;
+		final String previousMrcmRuleRefsetId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID);
+
+		return previousMrcmRuleRefsetId != null && previousMrcmRuleRefsetId.equals(moduleMemberToRestore.getMrcmRuleRefsetId());
 	}
+
 
 }

@@ -29,7 +29,6 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;

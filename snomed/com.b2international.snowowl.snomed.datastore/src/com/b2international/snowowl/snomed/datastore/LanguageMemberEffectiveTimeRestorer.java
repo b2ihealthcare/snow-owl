@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,9 +26,13 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class LanguageMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
-		// TODO Auto-generated method stub
-		return false;
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedLanguageRefSetMember languageMemberToRestore = (SnomedLanguageRefSetMember) memberToRestore;
+
+		final String previousAcceptabilityId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
+
+		return previousAcceptabilityId != null && previousAcceptabilityId.equals(languageMemberToRestore.getAcceptabilityId());
 	}
+
 
 }

@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,8 +26,47 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class MRCMDomainMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedMRCMDomainRefSetMember domainMemberToRestore = (SnomedMRCMDomainRefSetMember) memberToRestore;
+
+		final String previousDomainConstraint = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT);
+		final String previousParentDomain = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN);
+		final String previousProximalPrimitiveConstraint = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT);
+		final String previousProximalPrimitiveRefinement = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT);
+		final String previousDomainTemplateForPrecoordination = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION);
+		final String previousDomainTemplateForPostcoordination = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION);
+		final String previousEditorialGuideReference = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE);
+
+		if (previousDomainConstraint != null && !previousDomainConstraint.equals(domainMemberToRestore.getDomainConstraint())) {
+			return false;
+		}
+
+		if (previousParentDomain != null && !previousParentDomain.equals(domainMemberToRestore.getParentDomain())) {
+			return false;
+		}
+
+		if (previousProximalPrimitiveConstraint != null && !previousProximalPrimitiveConstraint.equals(domainMemberToRestore.getProximalPrimitiveConstraint())) {
+			return false;
+		}
+
+		if (previousProximalPrimitiveRefinement != null && !previousProximalPrimitiveRefinement.equals(domainMemberToRestore.getProximalPrimitiveRefinement())) {
+			return false;
+		}
+
+		if (previousDomainTemplateForPrecoordination != null && !previousDomainTemplateForPrecoordination.equals(domainMemberToRestore.getDomainTemplateForPrecoordination())) {
+			return false;
+		}
+
+		if (previousDomainTemplateForPostcoordination != null && !previousDomainTemplateForPostcoordination.equals(domainMemberToRestore.getDomainTemplateForPostcoordination())) {
+			return false;
+		}
+
+		if (previousEditorialGuideReference != null && !previousEditorialGuideReference.equals(domainMemberToRestore.getEditorialGuideReference())) {
+			return false;
+		}
+
 		return true;
 	}
+
 
 }

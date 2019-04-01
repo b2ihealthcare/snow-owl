@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 
 /**
  * @since 6.14
@@ -23,8 +26,11 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class SimpleMapMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
-		return true;
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedSimpleMapRefSetMember simpleMapMemberToRestore = (SnomedSimpleMapRefSetMember) memberToRestore;
+		final String previousMapTargetId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET);
+
+		return previousMapTargetId != null && previousMapTargetId.equals(simpleMapMemberToRestore.getMapTargetComponentId());
 	}
 
 }

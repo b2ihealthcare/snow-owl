@@ -17,21 +17,27 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.util.List;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 
 public abstract class ComponentEffectiveTimeRestorer implements IEffectiveTimeRestorer<Component> {
 	
 	@Override
 	public void tryRestoreEffectiveTime(String branchPath, Component componentToRestore) {
 		final List<String> branchesForPreviousVersion = getAvailableVersionPaths(branchPath);
-		Component previousVersion = null;
+		SnomedComponent previousVersion = null;
 
 		for (String branch : branchesForPreviousVersion) {
 
 			try {
 
-				previousVersion = getVersionedComponent(branch);
+				previousVersion = getVersionedComponent(branch, componentToRestore.getId());
 
 				if (previousVersion != null) {
 					break;
@@ -47,13 +53,8 @@ public abstract class ComponentEffectiveTimeRestorer implements IEffectiveTimeRe
 			throw new IllegalStateException("Previous version of released component could not be found. ID: " + componentToRestore.getId() + ", branch: " + branchPath);
 		} else {
 			boolean canRestore = false;
-			if (componentToRestore.isActive() && previousVersion.isActive()) {
-				canRestore = true;
-			}
-			
-			if (componentToRestore.getModule().getId().equals(previousVersion.getModule().getId())) {
-				canRestore = true;
-			}
+			canRestore |= componentToRestore.isActive() ^ previousVersion.isActive();
+			canRestore |= componentToRestore.getModule().getId().equals(previousVersion.getModuleId());
 
 			if (canRestore && canRestoreComponentEffectiveTime(componentToRestore, previousVersion)) {
 				componentToRestore.setEffectiveTime(previousVersion.getEffectiveTime());
@@ -62,7 +63,18 @@ public abstract class ComponentEffectiveTimeRestorer implements IEffectiveTimeRe
 		}
 	}
 	
-	protected abstract boolean canRestoreComponentEffectiveTime(Component componentToRestore, Component previousVersion);
+	/**
+	 * Method to check specific properties on component types eg.: ({@link Relationship}, {@link Description}, {@link Concept}).
+	 * 
+	 * @param componentToRestore
+	 * @param previousVersion the latest released version of the component above.
+	 * @return
+	 */
+	protected abstract boolean canRestoreComponentEffectiveTime(Component componentToRestore, SnomedComponent previousVersion);
 
-	protected abstract Component getVersionedComponent(String branch);
+	protected abstract SnomedComponent getVersionedComponent(String branch, String componentId);
+	
+	protected IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
 }

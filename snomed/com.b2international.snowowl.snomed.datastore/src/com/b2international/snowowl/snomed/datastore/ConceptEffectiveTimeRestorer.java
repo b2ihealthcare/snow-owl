@@ -16,20 +16,29 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * @since 6.14
  */
-public class ConceptEffectiveTimeRestorer extends ComponentEffectiveTimeRestorer {
+public final class ConceptEffectiveTimeRestorer extends ComponentEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreComponentEffectiveTime(Component componentToRestore, Component previousVersion) {
-		return false;
+	protected boolean canRestoreComponentEffectiveTime(Component componentToRestore, SnomedComponent previousVersion) {
+		final Concept conceptToRestore = (Concept) componentToRestore;
+		final SnomedConcept previousVersionConcept = (SnomedConcept) previousVersion;
+		
+		return conceptToRestore.getDefinitionStatus().getId().equals(previousVersionConcept.getDefinitionStatus().getConceptId());
 	}
 
 	@Override
-	protected Component getVersionedComponent(String branch) {
-		return null;
+	protected SnomedComponent getVersionedComponent(String branch, String conceptId) {
+		return SnomedRequests.prepareGetConcept(conceptId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.get();
 	}
 
 

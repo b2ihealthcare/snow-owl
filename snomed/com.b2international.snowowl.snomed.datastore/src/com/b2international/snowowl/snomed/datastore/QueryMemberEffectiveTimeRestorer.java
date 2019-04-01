@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -23,8 +26,11 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 public class QueryMemberEffectiveTimeRestorer extends MemberEffectiveTimeRestorer {
 
 	@Override
-	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore) {
-		return true;
+	protected boolean canRestoreMemberEffectiveTime(SnomedRefSetMember memberToRestore, SnomedReferenceSetMember previousMember) {
+		final SnomedQueryRefSetMember queryMemberToRestore = (SnomedQueryRefSetMember) memberToRestore;
+		final String previousQuery = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
+
+		return previousQuery != null && previousQuery.equals(queryMemberToRestore.getQuery());
 	}
 
 }
