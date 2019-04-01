@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.taxonomy;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.6
@@ -36,9 +37,9 @@ public final class Taxonomy {
 		Preconditions.checkState(!newTaxonomy.isDirty(), "Builder for representing the new state of the taxonomy has dirty state.");
 		this.oldTaxonomy = oldTaxonomy;
 		this.status = status;
-		this.newEdges = newEdges;
-		this.changedEdges = changedEdges;
-		this.detachedEdges = detachedEdges;
+		this.newEdges = ImmutableSet.copyOf(newEdges);
+		this.changedEdges = ImmutableSet.copyOf(changedEdges);
+		this.detachedEdges = ImmutableSet.copyOf(detachedEdges);
 	}
 	
 	public TaxonomyGraph getNewTaxonomy() {
