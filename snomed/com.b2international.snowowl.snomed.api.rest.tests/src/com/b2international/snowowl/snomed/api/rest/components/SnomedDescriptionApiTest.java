@@ -761,12 +761,12 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(true))
  		.body("effectiveTime", nullValue());
 
-		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
-				.put("active", false)
+		Map<?, ?> reactivationRequestBody = ImmutableMap.builder()
+				.put("active", true)
 				.put("commitComment", "Inactivated description")
 				.build();
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivationRequestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, reactivationRequestBody).statusCode(204);
 
 		// Getting the description back to its originally released state should restore the effective time
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)

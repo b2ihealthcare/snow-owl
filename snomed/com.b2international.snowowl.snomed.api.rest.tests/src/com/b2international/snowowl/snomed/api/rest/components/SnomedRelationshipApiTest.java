@@ -473,7 +473,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void restoreEffectiveTimeOnReleasedDescription() throws Exception {
+	public void restoreEffectiveTimeOnReleasedRelationship() throws Exception {
 		final String relationshipId = createNewRelationship(branchPath);
 
 		final String shortName = "SNOMEDCT-REL-1";
@@ -486,8 +486,13 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		.body("active", equalTo(true))
 		.body("released", equalTo(true))
 		.body("effectiveTime", equalTo(effectiveDate));
+		
+		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated relationship")
+				.build();
 
-		inactivateDescription(branchPath, relationshipId);
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, inactivationRequestBody).statusCode(204);
 
 		// An inactivation should unset the effective time field
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
@@ -495,12 +500,12 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(true))
  		.body("effectiveTime", nullValue());
 
-		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
-				.put("active", false)
+		Map<?, ?> reactivationRequestBody = ImmutableMap.builder()
+				.put("active", true)
 				.put("commitComment", "Inactivated relationships")
 				.build();
 
-		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, inactivationRequestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, reactivationRequestBody).statusCode(204);
 
 		// Getting the relationship back to its originally released state should restore the effective time
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
