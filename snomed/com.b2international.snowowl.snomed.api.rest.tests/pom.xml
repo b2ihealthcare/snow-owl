@@ -69,17 +69,10 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<useUIThread>false</useUIThread>
-					<argLine>-Xms512m -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090</argLine>
+					<argLine>-Xms1g -Xmx1g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090</argLine>
 					<includes>
 						<include>**/AllSnomedApiTests.java</include>
 					</includes>
-					<bundleStartLevel>
-						<bundle>
-							<id>org.eclipse.jetty.osgi.boot</id>
-							<level>3</level>
-							<autoStart>true</autoStart>
-						</bundle>
-					</bundleStartLevel>
 				</configuration>
 			</plugin>
 		</plugins>

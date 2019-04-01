@@ -64,14 +64,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<useUIThread>false</useUIThread>
-					<argLine>-XX:MaxPermSize=256m -Xms512m -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090</argLine>
-					<bundleStartLevel>
-						<bundle>
-							<id>org.eclipse.jetty.osgi.boot</id>
-							<level>3</level>
-							<autoStart>true</autoStart>
-						</bundle>
-					</bundleStartLevel>
+					<argLine>-Xms1g -Xmx1g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090</argLine>
 				</configuration>
 			</plugin>
 		</plugins>
