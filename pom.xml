@@ -484,6 +484,22 @@
 			<version>${snomed.owl.toolkit.version}</version>
 			<classifier>bundle</classifier>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude Guice 4.0 transitive dependencies -->
+				<exclusion>
+          			<groupId>com.google.inject</groupId>
+          			<artifactId>guice</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>com.google.inject.extensions</groupId>
+          			<artifactId>guice-assistedinject</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>com.google.inject.extensions</groupId>
+          			<artifactId>guice-multibindings</artifactId>
+        		</exclusion>
+        		
+			</exclusions>
     	</dependency>
     	<dependency>
 			<groupId>org.semanticweb.elk</groupId>
