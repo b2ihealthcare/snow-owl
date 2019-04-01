@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,13 +81,13 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipId;
 	private boolean includeInactiveMembers;
-	private Collection<AbstractSnomedDsvExportItem> exportItems;
+	private List<AbstractSnomedDsvExportItem> exportItems;
 	private List<ExtendedLocale> locales;
 	private Joiner joiner;
 	private String lineSeparator;
 	
 	private Map<String, Integer> descriptionCount; // maximum number of descriptions by type
-	private Map<Integer, Map<String, Integer>> propertyCount; // maximum number of properties by group and type
+	private Map<Integer, Map<String, Integer>> propertyCountByGroup; // maximum number of properties by group and type
 
 
 	/**
@@ -159,7 +158,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 */
 	private void computeHeader() {
 		descriptionCount = newHashMap();
-		propertyCount = newHashMap();
+		propertyCountByGroup = newHashMap();
 		
 		SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> conceptIterator = getMemberConceptIterator(HEADER_EXPAND);
 		while (conceptIterator.hasNext()) {
@@ -197,7 +196,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						matchingRelationships.entrySet()
 								.stream()
 								.forEach(entry -> {
-									propertyCount.compute(entry.getKey(), (key, oldValue) -> {
+									propertyCountByGroup.compute(entry.getKey(), (key, oldValue) -> {
 										Map<String, Integer> propertyCountForGroup = ofNullable(oldValue).orElseGet(HashMap::new);
 										propertyCountForGroup.merge(relationshipTypeId, entry.getValue(), Math::max);
 										return propertyCountForGroup;
@@ -222,7 +221,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						matchingMembers.entrySet()
 								.stream()
 								.forEach(entry -> {
-									propertyCount.compute(entry.getKey(), (key, oldValue) -> {
+									propertyCountByGroup.compute(entry.getKey(), (key, oldValue) -> {
 										Map<String, Integer> propertyCountForGroup = ofNullable(oldValue).orElseGet(HashMap::new);
 										propertyCountForGroup.merge(dataTypeId, entry.getValue(), Math::max);
 										return propertyCountForGroup;
@@ -238,7 +237,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	}
 	
 	private void writeHeader(BufferedWriter writer) throws IOException {
-		
 		Map<String, String> descriptionTypeIdMap = createTypeIdMap(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT);
 		Map<String, String> propertyTypeIdMap = createTypeIdMap(Concepts.CONCEPT_MODEL_ATTRIBUTE); // includes object and data attributes
 		List<String> propertyHeader = newArrayList();
@@ -283,66 +281,73 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					String typeId = relationshipItem.getComponentId();
 					String displayName = propertyTypeIdMap.getOrDefault(typeId, relationshipItem.getDisplayName());
-
-					// Relationship groups will be added to the end, so only consider occurrences in group 0
-					Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(0, NO_OCCURRENCES);
-					int occurrences = occurrencesByType.getOrDefault(typeId, 0);
-					if (occurrences < 1) {
-						continue;
-					}
-						
-					if (occurrences < 2) {
-						if (includeRelationshipId) {
-							propertyHeader.add(displayName);
-							propertyHeader.add(displayName);
-							detailHeader.add("ID");
-							detailHeader.add("Destination");
-						} else {
-							propertyHeader.add(displayName);
-							detailHeader.add("");
+					
+					for (Integer group : propertyCountByGroup.keySet() ) {
+						Map<String, Integer> occurrencesByType = propertyCountByGroup.getOrDefault(group, NO_OCCURRENCES);
+						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
+						if (occurrences < 1) {
+							continue;
 						}
-					} else {
-						for (int j = 1; j <= occurrences; j++) {
-							String numberedDisplayName = String.format("%s (%s)", displayName, j);
+							
+						String groupTag = group == 0 ? "" : String.format(" (AG%s)", group);
+						if (occurrences < 2) {
 							if (includeRelationshipId) {
-								propertyHeader.add(numberedDisplayName);
-								propertyHeader.add(numberedDisplayName);
+								String groupedDisplayName = displayName + groupTag;
+								propertyHeader.add(groupedDisplayName);
+								propertyHeader.add(groupedDisplayName);
 								detailHeader.add("ID");
 								detailHeader.add("Destination");
 							} else {
-								propertyHeader.add(numberedDisplayName);
+								propertyHeader.add(displayName);
 								detailHeader.add("");
+							}
+						} else {
+							for (int j = 1; j <= occurrences; j++) {
+								String numberedDisplayName = String.format("%s (%s)%s", displayName, j, groupTag);
+								if (includeRelationshipId) {
+									propertyHeader.add(numberedDisplayName);
+									propertyHeader.add(numberedDisplayName);
+									detailHeader.add("ID");
+									detailHeader.add("Destination");
+								} else {
+									propertyHeader.add(numberedDisplayName);
+									detailHeader.add("");
+								}
 							}
 						}
 					}
+					
 					break;
 				}
-					
+				
 				case DATAYPE: {
 					ComponentIdSnomedDsvExportItem dataTypeItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					String typeId = dataTypeItem.getComponentId();
 					String displayName = propertyTypeIdMap.getOrDefault(typeId, dataTypeItem.getDisplayName());
 
-					// Relationship groups will be added to the end, so only consider occurrences in group 0
-					Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(0, NO_OCCURRENCES);
-					int occurrences = occurrencesByType.getOrDefault(typeId, 0);
-					if (occurrences < 1) {
-						continue;
-					}
-						
-					if (occurrences < 2) {
-						propertyHeader.add(displayName);
-						detailHeader.add("");
-					} else {
-						for (int j = 1; j <= occurrences; j++) {
-							String numberedDisplayName = String.format("%s (%s)", displayName, j);
-							propertyHeader.add(numberedDisplayName);
-							detailHeader.add("");
+					for (Integer groupId : propertyCountByGroup.keySet() ) {
+						Map<String, Integer> occurrencesByType = propertyCountByGroup.getOrDefault(groupId, NO_OCCURRENCES);
+						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
+						if (occurrences < 1) {
+							continue;
 						}
+						
+						String groupTag = groupId == 0 ? "" : String.format(" (AG%s)", groupId);
+						if (occurrences < 2) {
+							String groupedDisplayName = displayName + groupTag;
+							propertyHeader.add(groupedDisplayName);
+							detailHeader.add("");
+						} else {
+							for (int j = 1; j <= occurrences; j++) {
+								String numberedDisplayName = String.format("%s (%s)%s", displayName, j, groupTag);
+								propertyHeader.add(numberedDisplayName);
+								detailHeader.add("");
+							}
+						}						
 					}
 					break;
 				}
-					
+				
 				case PREFERRED_TERM:
 					if (includeDescriptionId) {
 						propertyHeader.add(exportItem.getDisplayName());
@@ -362,84 +367,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			}
 		}
 		
-		// Revisit non-zero property groups
-		for (Integer groupId : propertyCount.keySet()) {
-			if (groupId == 0) {
-				continue;
-			}
-			
-			for (AbstractSnomedDsvExportItem exportItem : exportItems) {
-				switch (exportItem.getType()) {
-					case RELATIONSHIP: {
-						ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
-						String typeId = relationshipItem.getComponentId();
-						String displayName = propertyTypeIdMap.getOrDefault(typeId, relationshipItem.getDisplayName());
-	
-						Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(groupId, NO_OCCURRENCES);
-						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
-						if (occurrences < 1) {
-							continue;
-						}
-							
-						if (occurrences < 2) {
-							if (includeRelationshipId) {
-								String groupedDisplayName = String.format("%s (AG%s)", displayName, groupId);
-								propertyHeader.add(groupedDisplayName);
-								propertyHeader.add(groupedDisplayName);
-								detailHeader.add("ID");
-								detailHeader.add("Destination");
-							} else {
-								propertyHeader.add(displayName);
-								detailHeader.add("");
-							}
-						} else {
-							for (int j = 1; j <= occurrences; j++) {
-								String numberedDisplayName = String.format("%s (%s) (AG%s)", displayName, j, groupId);
-								if (includeRelationshipId) {
-									propertyHeader.add(numberedDisplayName);
-									propertyHeader.add(numberedDisplayName);
-									detailHeader.add("ID");
-									detailHeader.add("Destination");
-								} else {
-									propertyHeader.add(numberedDisplayName);
-									detailHeader.add("");
-								}
-							}
-						}
-						break;
-					}
-						
-					case DATAYPE: {
-						ComponentIdSnomedDsvExportItem dataTypeItem = (ComponentIdSnomedDsvExportItem) exportItem;
-						String typeId = dataTypeItem.getComponentId();
-						String displayName = propertyTypeIdMap.getOrDefault(typeId, dataTypeItem.getDisplayName());
-	
-						Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(groupId, NO_OCCURRENCES);
-						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
-						if (occurrences < 1) {
-							continue;
-						}
-							
-						if (occurrences < 2) {
-							String groupedDisplayName = String.format("%s (AG%s)", displayName, groupId);
-							propertyHeader.add(groupedDisplayName);
-							detailHeader.add("");
-						} else {
-							for (int j = 1; j <= occurrences; j++) {
-								String numberedDisplayName = String.format("%s (%s) (AG%s)", displayName, j, groupId);
-								propertyHeader.add(numberedDisplayName);
-								detailHeader.add("");
-							}
-						}
-						break;
-					}
-					
-					default:
-						break;
-				}
-			}
-		}
-
 		// write the header to the file
 		writer.write(joiner.join(propertyHeader));
 		writer.write(lineSeparator);
@@ -503,9 +430,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 					case RELATIONSHIP: {
 						final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
-						for (Integer propertyGroup : propertyCount.keySet()) {
+						for (Integer propertyGroup : propertyCountByGroup.keySet()) {
 							final String typeId = relationshipItem.getComponentId();
-							Map<String, Integer> groupOccurrences = propertyCount.getOrDefault(propertyGroup, NO_OCCURRENCES);
+							Map<String, Integer> groupOccurrences = propertyCountByGroup.getOrDefault(propertyGroup, NO_OCCURRENCES);
 							
 							int occurrences = groupOccurrences.getOrDefault(typeId, 0);
 							final Map<String, String> destinationsById = concept.getRelationships()
@@ -515,7 +442,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 											&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
 													|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
 									.collect(Collectors.toMap(
-											SnomedRelationship::getId, 
+											SnomedRelationship::getDestinationId, 
 											r -> getPreferredTerm(r.getDestination())));
 
 							addCells(dataRow, occurrences, includeRelationshipId, destinationsById);
@@ -525,8 +452,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 					case DATAYPE: {
 						final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
-						for (Integer propertyGroup : propertyCount.keySet()) {
-							Map<String, Integer> groupedOccurrences = propertyCount.getOrDefault(propertyGroup, NO_OCCURRENCES);
+						for (Integer propertyGroup : propertyCountByGroup.keySet()) {
+							Map<String, Integer> groupedOccurrences = propertyCountByGroup.getOrDefault(propertyGroup, NO_OCCURRENCES);
 							final String typeId = datatypeItem.getComponentId();
 							int occurrences = groupedOccurrences.getOrDefault(typeId, 0);
 							
@@ -539,7 +466,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
 											&& m.isActive()
 											&& typeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID))
-											&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == 0 
+											&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == propertyGroup 
 											&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
 													|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
 									.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
@@ -562,7 +489,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 								occurrences--;
 							}
 						}
-							break;
+						break;
 					}
 					
 					case PREFERRED_TERM:

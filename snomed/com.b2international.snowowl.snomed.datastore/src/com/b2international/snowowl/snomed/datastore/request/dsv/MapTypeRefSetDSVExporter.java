@@ -179,9 +179,9 @@ public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			case STATUS_ID:
 				return String.valueOf(member.isActive() ? 1 : 0);
 			case STATUS_LABEL:
-				return member.isActive() ? "active" : "inactive";
+				return member.getReferencedComponent().isActive() ? "active" : "inactive";
 			case EFFECTIVE_TIME:
-				return EffectiveTimes.format(member.getEffectiveTime());
+				return EffectiveTimes.format(member.getReferencedComponent().getEffectiveTime());
 			case MODULE_ID:
 				return member.getModuleId();
 			case MODULE_LABEL:
