@@ -30,8 +30,6 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.b2international.collections.ints.IntIterator;
-import com.b2international.collections.ints.IntSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -362,11 +360,10 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		return dirtyConceptIds;
 	}
 	
-	private Set<String> registerConceptAndDescendants(IntSet edgeInternalIds, TaxonomyGraph taxonomy) {
+	private Set<String> registerConceptAndDescendants(Set<String> edgeIds, TaxonomyGraph taxonomy) {
 		final Set<String> ids = newHashSet();
-		final IntIterator edgeInternalIdsIterator = edgeInternalIds.iterator();
-		while (edgeInternalIdsIterator.hasNext()) {
-			long conceptId = taxonomy.getSourceNodeId(edgeInternalIdsIterator.next());
+		for (String edgeId : edgeIds) {
+			long conceptId = taxonomy.getSourceNodeId(edgeId);
 			ids.add(Long.toString(conceptId));
 			ids.addAll(LongSets.toStringSet(taxonomy.getAllDescendantNodeIds(conceptId)));
 		}

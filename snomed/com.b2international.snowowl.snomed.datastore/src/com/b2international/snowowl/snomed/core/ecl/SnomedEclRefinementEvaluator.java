@@ -596,7 +596,7 @@ final class SnomedEclRefinementEvaluator {
 		final Collection<String> typeIds = evalToConceptIds(context, typeFilter, expressionForm);
 		final Collection<String> destinationIds = evalToConceptIds(context, destinationFilter, expressionForm);
 		
-		final SnomedRelationshipSearchRequestBuilder req = SnomedRequests.prepareSearchRelationship()
+		final SnomedRelationshipSearchRequestBuilder searchRelationships = SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true) 
 				.filterBySource(sourceIds)
@@ -608,18 +608,18 @@ final class SnomedEclRefinementEvaluator {
 		
 		// if a grouping refinement, then filter relationships with group >= 1
 		if (groupedRelationshipsOnly) {
-			req.filterByGroup(1, Integer.MAX_VALUE);
+			searchRelationships.filterByGroup(1, Integer.MAX_VALUE);
 		}
 		
-		Promise<Collection<Property>> then = req.build(context.id(), context.branchPath())
+		Promise<Collection<Property>> relationshipSearch = searchRelationships.build(context.id(), context.branchPath())
 			.execute(context.service(IEventBus.class))
 			.then(input -> input.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup())).collect(Collectors.toSet()));
 		
 		if (Trees.STATED_FORM.equals(expressionForm)) {
 			final Set<Property> axiomStatements = evalAxiomStatements(context, groupedRelationshipsOnly, sourceIds, typeIds, destinationIds);
-			return then.then(relationshipStatements -> ImmutableSet.<Property>builder().addAll(relationshipStatements).addAll(axiomStatements).build());
+			return relationshipSearch.then(relationshipStatements -> ImmutableSet.<Property>builder().addAll(relationshipStatements).addAll(axiomStatements).build());
 		} else {
-			return then;
+			return relationshipSearch;
 		}
 		
 	}
@@ -668,11 +668,11 @@ final class SnomedEclRefinementEvaluator {
 				activeOwlAxiomMemberQuery.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(sourceIds));
 			}
 			
-			final Query<SnomedRefSetMemberIndexEntry> activeAxiomISARelationshipsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
+			final Query<SnomedRefSetMemberIndexEntry> activeAxiomStatementsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
 					.where(activeOwlAxiomMemberQuery.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
-			return context.service(RevisionSearcher.class).search(activeAxiomISARelationshipsQuery)
+			return context.service(RevisionSearcher.class).search(activeAxiomStatementsQuery)
 				.stream()
 				.filter(owlMember -> !CompareUtils.isEmpty(owlMember.getClassAxiomRelationships()))
 				.flatMap(owlMember -> {

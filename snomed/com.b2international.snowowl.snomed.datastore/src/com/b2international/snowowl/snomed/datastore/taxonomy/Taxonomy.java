@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import com.b2international.collections.ints.IntSet;
+import java.util.Set;
+
 import com.google.common.base.Preconditions;
 
 /**
@@ -25,12 +26,12 @@ public final class Taxonomy {
 	
 	private final TaxonomyGraph newTaxonomy;
 	private final TaxonomyGraph oldTaxonomy;
-	private final IntSet newEdges;
-	private final IntSet changedEdges;
-	private final IntSet detachedEdges;
+	private final Set<String> newEdges;
+	private final Set<String> changedEdges;
+	private final Set<String> detachedEdges;
 	private final TaxonomyGraphStatus status;
 
-	public Taxonomy(TaxonomyGraph newTaxonomy, TaxonomyGraph oldTaxonomy, TaxonomyGraphStatus status, IntSet newEdges, IntSet changedEdges, IntSet detachedEdges) {
+	public Taxonomy(TaxonomyGraph newTaxonomy, TaxonomyGraph oldTaxonomy, TaxonomyGraphStatus status, Set<String> newEdges, Set<String> changedEdges, Set<String> detachedEdges) {
 		this.newTaxonomy = newTaxonomy;
 		Preconditions.checkState(!newTaxonomy.isDirty(), "Builder for representing the new state of the taxonomy has dirty state.");
 		this.oldTaxonomy = oldTaxonomy;
@@ -52,15 +53,15 @@ public final class Taxonomy {
 		return status;
 	}
 
-	public IntSet getNewEdges() {
+	public Set<String> getNewEdges() {
 		return newEdges;
 	}
 	
-	public IntSet getChangedEdges() {
+	public Set<String> getChangedEdges() {
 		return changedEdges;
 	}
 	
-	public IntSet getDetachedEdges() {
+	public Set<String> getDetachedEdges() {
 		return detachedEdges;
 	}
 
