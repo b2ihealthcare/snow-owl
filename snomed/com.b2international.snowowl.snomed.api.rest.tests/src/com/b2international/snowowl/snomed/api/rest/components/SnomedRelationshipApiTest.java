@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranchRecursively;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
@@ -25,10 +28,12 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRelationshipRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateDescription;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -465,5 +470,42 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 		
+	}
+	
+	@Test
+	public void restoreEffectiveTimeOnReleasedDescription() throws Exception {
+		final String relationshipId = createNewRelationship(branchPath);
+
+		final String shortName = "SNOMEDCT-REL-1";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		final String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		// After versioning, the relationship should be released and have an effective time set on it
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("active", equalTo(true))
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(effectiveDate));
+
+		inactivateDescription(branchPath, relationshipId);
+
+		// An inactivation should unset the effective time field
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("active", equalTo(false))
+		.body("released", equalTo(true))
+ 		.body("effectiveTime", nullValue());
+
+		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated relationships")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, inactivationRequestBody).statusCode(204);
+
+		// Getting the relationship back to its originally released state should restore the effective time
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("active", equalTo(true))
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(effectiveDate));
 	}
 }
