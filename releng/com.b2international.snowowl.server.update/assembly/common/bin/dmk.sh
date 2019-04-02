@@ -196,8 +196,8 @@ then
                     -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl \
                     -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl \
                     -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl \
-                    -Djavax.xml.stream.XMLInputFactory=com.sun.xml.internal.fastinfoset.stax.factory.StAXInputFactory \
-                    -Djavax.xml.stream.XMLOutputFactory=com.sun.xml.internal.fastinfoset.stax.factory.StAXOutputFactory \
+                    -Djavax.xml.stream.XMLInputFactory=com.sun.xml.internal.stream.XMLInputFactoryImpl \
+                    -Djavax.xml.stream.XMLOutputFactory=com.sun.xml.internal.stream.XMLOutputFactoryImpl \
                     -Djava.awt.headless=true \
                     -XX:+AlwaysLockClassLoader \
                     -Dosgi.classloader.type=nonparallel \
