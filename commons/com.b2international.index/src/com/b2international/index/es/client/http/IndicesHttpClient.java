@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
@@ -56,7 +59,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return client.indices().exists(new GetIndexRequest().indices(indices), RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException("Couldn't check the existence of ES indices " + indices, e);
+			throw new IndexException("Couldn't check the existence of ES indices " + Arrays.toString(indices), e);
 		}
 	}
 
@@ -75,6 +78,24 @@ public final class IndicesHttpClient implements IndicesClient {
 			return client.indices().refresh(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(req.indices())), e);
+		}
+	}
+	
+	@Override
+	public GetMappingsResponse getMapping(GetMappingsRequest req) {
+		try {
+			return client.indices().getMapping(req, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			throw new IndexException(String.format("Failed to get mapping '%s' of types %s.", Arrays.toString(req.indices()), Arrays.toString(req.types())), e);
+		}
+	}
+	
+	@Override
+	public AcknowledgedResponse updateMapping(PutMappingRequest req) throws IOException {
+		try {
+			return client.indices().putMapping(req, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			throw new IndexException(String.format("Failed to put mapping '%s' of types %s.", Arrays.toString(req.indices()), req.type()), e);
 		}
 	}
 	
