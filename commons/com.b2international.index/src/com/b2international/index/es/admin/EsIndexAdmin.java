@@ -18,6 +18,7 @@ package com.b2international.index.es.admin;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -171,27 +172,28 @@ public final class EsIndexAdmin implements IndexAdmin {
 					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.get(type).getSourceAsMap());
 					final JsonNode diff = JsonDiff.asJson(currentTypeMapping, newTypeMapping, DIFF_FLAGS);
 					final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
-					boolean doUpdate = false;
+					Set<String> compatibleChanges = newHashSet();
+					Set<String> uncompatibleChanges = newHashSet();
 					for (ObjectNode change : Iterables.filter(diffNode, ObjectNode.class)) {
 						String prop = change.get("path").asText().substring(1);
 						switch (change.get("op").asText()) {
 						case "add":
-							doUpdate = true;
+							compatibleChanges.add(prop);
 							break;
 						case "move":
 						case "replace":
-							throw new IndexException(String.format("Cannot migrate index '%s' to new mapping with breaking change on property '%s'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, prop), null);
+							uncompatibleChanges.add(prop);
+							break;
 						default:
 							break;
 						}
 					}
-					if (doUpdate) {
-						for (ObjectNode change : Iterables.filter(diffNode, ObjectNode.class)) {
-							String prop = change.get("path").asText().substring(1);
-							if (change.get("op").asText().equals("add")) {
-								log.info("Applying mapping changes on property {} in index {}", prop, index);
-							}
-						}
+					if (!uncompatibleChanges.isEmpty()) {
+						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, uncompatibleChanges);
+					} else if (!compatibleChanges.isEmpty()) {
+						compatibleChanges.forEach(prop -> {
+							log.info("Applying mapping changes on property {} in index {}", prop, index);
+						});
 						AcknowledgedResponse response = client.indices().updateMapping(new PutMappingRequest(index).type(type).source(typeMapping));
 						checkState(response.isAcknowledged(), "Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString());
 					}
