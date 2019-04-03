@@ -136,8 +136,8 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 			
 			for (SnomedConceptDocument statedDestinationConcept : index.search(statedDestinationConceptsQuery)) {
 				statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
-				statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
-				statedConceptIds.addAll(statedDestinationConcept.getStatedAncestors());
+				if (statedDestinationConcept.getStatedParents() != null) { statedConceptIds.addAll(statedDestinationConcept.getStatedParents()); }
+				if (statedDestinationConcept.getStatedAncestors() != null) { statedConceptIds.addAll(statedDestinationConcept.getStatedAncestors()); }
 			}
 		}
 		
@@ -150,8 +150,8 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 			
 			for (SnomedConceptDocument inferredDestinationConcept : index.search(inferredDestinationConceptsQuery)) {
 				inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
-				inferredConceptIds.addAll(inferredDestinationConcept.getParents());
-				inferredConceptIds.addAll(inferredDestinationConcept.getAncestors());
+				if (inferredDestinationConcept.getParents() != null) { inferredConceptIds.addAll(inferredDestinationConcept.getParents()); }
+				if (inferredDestinationConcept.getAncestors() != null) { inferredConceptIds.addAll(inferredDestinationConcept.getAncestors()); }
 			}
 		}
 		
@@ -168,8 +168,8 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 			
 			for (SnomedConceptDocument statedSourceConcept : index.search(statedSourceConceptsQuery)) {
 				statedConceptIds.add(Long.parseLong(statedSourceConcept.getId()));
-				statedConceptIds.addAll(statedSourceConcept.getStatedParents());
-				statedConceptIds.addAll(statedSourceConcept.getStatedAncestors());
+				if (statedSourceConcept.getStatedParents() != null) { statedConceptIds.addAll(statedSourceConcept.getStatedParents()); }
+				if (statedSourceConcept.getStatedAncestors() != null) { statedConceptIds.addAll(statedSourceConcept.getStatedAncestors()); }
 			}
 		}
 		
@@ -186,8 +186,8 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 			
 			for (SnomedConceptDocument inferredSourceConcept : index.search(inferredSourceConceptsQuery)) {
 				inferredConceptIds.add(Long.parseLong(inferredSourceConcept.getId()));
-				inferredConceptIds.addAll(inferredSourceConcept.getParents());
-				inferredConceptIds.addAll(inferredSourceConcept.getAncestors());
+				if (inferredSourceConcept.getParents() != null) { inferredConceptIds.addAll(inferredSourceConcept.getParents()); }
+				if (inferredSourceConcept.getAncestors() != null) { inferredConceptIds.addAll(inferredSourceConcept.getAncestors()); }
 			}
 		}
 		
