@@ -43,14 +43,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.UnexpectedTypeException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
-import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
@@ -95,7 +93,6 @@ import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
@@ -114,7 +111,7 @@ import com.google.common.collect.Sets;
  * 
  */
 public class SnomedEditingContext extends BaseSnomedEditingContext {
-
+	
 	private SnomedRefSetEditingContext refSetEditingContext;
 	private Concept moduleConcept;
 	private String nameSpace;
@@ -171,7 +168,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	@Override
 	protected <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type) {
-		if (type.isAssignableFrom(Concept.class)) {
+		if (Concept.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByIds(componentIds)
@@ -179,7 +176,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
-		} else if (type.isAssignableFrom(Description.class)) {
+		} else if (Description.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchDescription()
 					.all()
 					.filterByIds(componentIds)
@@ -187,7 +184,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
-		} else if (type.isAssignableFrom(Relationship.class)) {
+		} else if (Relationship.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchRelationship()
 					.all()
 					.filterByIds(componentIds)
@@ -195,7 +192,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
-		} else if (type.isAssignableFrom(SnomedRefSetMember.class)) {
+		} else if (SnomedRefSetMember.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchMember()
 					.all()
 					.filterByIds(componentIds)
@@ -203,7 +200,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
-		} else if (type.isAssignableFrom(SnomedRefSet.class)) {
+		} else if (SnomedRefSet.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchRefSet()
 					.all()
 					.filterByIds(componentIds)
@@ -795,90 +792,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			}
 		}
 		
-		final List<CDORevisionKey> changedObjects = transaction.getChangeSetData().getChangedObjects();
+		new EffectiveTimeRestorer(getBranch()).restoreEffectiveTimes(transaction.getChangeSetData().getChangedObjects().stream()
+				.map(cdoKey -> transaction.getObject(cdoKey.getID()))::iterator);
+	}
 
-		final Set<Component> changedReleasedComponents = changedObjects.stream()
-			.map(cdoKey -> transaction.getObject(cdoKey.getID()))
-			.filter(Component.class::isInstance)
-			.map(Component.class::cast)
-			.filter(Component::isReleased)
-			.collect(Collectors.toSet());
-		
-		final Set<SnomedRefSetMember> changedReleasedMembers = changedObjects.stream()
-			.map(cdoKey -> transaction.getObject(cdoKey.getID()))
-			.filter(SnomedRefSetMember.class::isInstance)
-			.map(SnomedRefSetMember.class::cast)
-			.filter(SnomedRefSetMember::isReleased)
-			.collect(Collectors.toSet());
-		
-
-		final String branchPath = getTransaction().getBranch().getPathName();
-		for (Component changedReleasedComponent : changedReleasedComponents) {
-			final IEffectiveTimeRestorer<Component> componentRestorer = getComponentRestorer(changedReleasedComponent);
-			componentRestorer.tryRestoreEffectiveTime(branchPath, changedReleasedComponent);
-		}
-		
-		for (SnomedRefSetMember changedReleasedMember : changedReleasedMembers) {
-			final IEffectiveTimeRestorer<SnomedRefSetMember> memberRestorer = getRefSetMemberRestorer(changedReleasedMember.getRefSet().getType());
-			memberRestorer.tryRestoreEffectiveTime(branchPath, changedReleasedMember);
-		}
-		
-	}
-	
-	private IEffectiveTimeRestorer<Component> getComponentRestorer(Component component) {
-		if (component instanceof Concept) {
-			return new ConceptEffectiveTimeRestorer();
-		} else if (component instanceof Description) {
-			return new DescriptionEffectiveTimeRestorer();
-		} else if (component instanceof Relationship) {
-			return new RelationshipEffectiveTimeRestorer();
-		} else {
-			throw new UnexpectedTypeException("Unexpected component type '" + component.getClass() + "'.");
-		}
-	}
-	
-	private IEffectiveTimeRestorer<SnomedRefSetMember> getRefSetMemberRestorer(SnomedRefSetType refSetType) {
-		switch (refSetType) {
-		case ASSOCIATION:
-			return new AssociationMemberEffectiveTimeRestorer();
-		case ATTRIBUTE_VALUE:
-			return new AttributeValueMemberEffectiveTimeRestorer();
-		case COMPLEX_MAP:
-			return new ComplexMapMemberEffectiveTimeRestorer();
-		case CONCRETE_DATA_TYPE:
-			return new ConcreteDomainMemberEffectiveTimeRestorer();
-		case DESCRIPTION_TYPE:
-			return new DescriptionTypeMemberEffectiveTimeRestorer();
-		case EXTENDED_MAP:
-			return new ExtendedMapMemberEffectiveTimeRestorer();
-		case LANGUAGE:
-			return new LanguageMemberEffectiveTimeRestorer();
-		case MODULE_DEPENDENCY:
-			return new ModuleDependencyMemberEffectiveTimeRestorer();
-		case QUERY:
-			return new QueryMemberEffectiveTimeRestorer();
-		case SIMPLE: 
-			return new SimpleMemberEffectiveTimeRestorer();
-		case SIMPLE_MAP:
-			return new SimpleMapMemberEffectiveTimeRestorer();
-		case SIMPLE_MAP_WITH_DESCRIPTION:
-			return new SimpleMapMemberWithDescriptionEffectiveTimeRestorer();
-		case OWL_AXIOM: //$FALL-THROUGH$
-		case OWL_ONTOLOGY:
-			return new OWLExpressionMemberEffectiveTimeRestorer();
-		case MRCM_DOMAIN:
-			return new MRCMDomainMemberEffectiveTimeRestorer();
-		case MRCM_ATTRIBUTE_DOMAIN:
-			return new MRCMAttributeDomainMemberEffectiveTimeRestorer();
-		case MRCM_ATTRIBUTE_RANGE:
-			return new MRCMAttributeRangeMemberEffectiveTimeRestorer();
-		case MRCM_MODULE_SCOPE:
-			return new MRCMModuleScopeMemberEffectiveTimeRestorer();
-		default: 
-			throw new UnexpectedTypeException("Unexpected reference set type '" + refSetType + "'.");
-		}
-	}
-	
 	private Set<SnomedRefSetMember> getReferringRefSetMembers(Iterable<String> deletedIds) {
 		return SnomedRequests.prepareSearchMember()
 				.all()
