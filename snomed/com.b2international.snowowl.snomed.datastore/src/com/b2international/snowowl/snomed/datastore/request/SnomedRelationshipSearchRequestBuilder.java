@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -40,7 +39,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 	}
 
 	public SnomedRelationshipSearchRequestBuilder filterBySource(Iterable<String> sourceIds) {
-		return addOption(OptionKey.SOURCE, Collections3.toImmutableSet(sourceIds));
+		return addOption(OptionKey.SOURCE, sourceIds);
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByType(String typeId) {
@@ -56,7 +55,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 	}
 
 	public SnomedRelationshipSearchRequestBuilder filterByDestination(Iterable<String> destinationIds) {
-		return addOption(OptionKey.DESTINATION, Collections3.toImmutableSet(destinationIds));
+		return addOption(OptionKey.DESTINATION, destinationIds);
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicType(String characteristicType) {

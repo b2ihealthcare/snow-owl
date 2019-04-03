@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import java.io.IOException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
@@ -36,5 +39,9 @@ public interface IndicesClient {
 	AcknowledgedResponse delete(DeleteIndexRequest req) throws IOException;
 
 	RefreshResponse refresh(RefreshRequest req) throws IOException;
+
+	GetMappingsResponse getMapping(GetMappingsRequest req) throws IOException;
+	
+	AcknowledgedResponse updateMapping(PutMappingRequest req) throws IOException;
 	
 }
