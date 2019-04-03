@@ -71,6 +71,9 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	private SnomedRefSetCreateRequest refSetRequest;
 
 	@NotNull
+	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
+	
+	@NotNull
 	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 
 	SnomedConceptCreateRequest() {
@@ -78,6 +81,10 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	
 	void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
+	}
+	
+	void setDefinitionStatus(DefinitionStatus definitionStatus) {
+		this.definitionStatus = definitionStatus;
 	}
 	
 	void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
@@ -121,13 +128,25 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 
 	private Concept convertConcept(final TransactionContext context) {
+		final DefinitionStatus newDefinitionStatus;
+		final Set<String> newAxiomExpressions = getOwlAxiomExpressions();
+
+		if (!newAxiomExpressions.isEmpty()) {
+			newDefinitionStatus = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newAxiomExpressions);
+		} else {
+			if (definitionStatus == null) {
+				throw new BadRequestException("No axiom members or definition status was set for concept");
+			}
+			newDefinitionStatus = definitionStatus;
+		}
+		
 		try {
 			final String conceptId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			return SnomedComponents.newConcept()
 					.withId(conceptId)
 					.withActive(isActive())
 					.withModule(getModuleId())
-					.withDefinitionStatus(calculateDefinitionStatus())
+					.withDefinitionStatus(newDefinitionStatus)
 					.withExhaustive(subclassDefinitionStatus.isExhaustive())
 					.build(context);
 		} catch (final ComponentNotFoundException e) {
@@ -135,13 +154,12 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		}
 	}
 
-	private DefinitionStatus calculateDefinitionStatus() {
-		final Set<String> owlExpressions = Optional.ofNullable(members).map(Collection::stream).orElseGet(Stream::empty)
+	private Set<String> getOwlAxiomExpressions() {
+		return Optional.ofNullable(members).map(Collection::stream).orElseGet(Stream::empty)
 			.filter(req -> req.hasProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 			.map(req -> req.getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 			.collect(Collectors.toSet());
 		
-		return SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(owlExpressions);
 	}
 	
 	private void convertDescriptions(TransactionContext context, final String conceptId) {
