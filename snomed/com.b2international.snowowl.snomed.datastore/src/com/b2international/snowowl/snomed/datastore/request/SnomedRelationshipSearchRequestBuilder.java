@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequest.OptionKey;
 
@@ -79,7 +78,11 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.GROUP_MIN, groupMin).addOption(OptionKey.GROUP_MAX, groupMax);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByModifier(RelationshipModifier modifier) {
+	public SnomedRelationshipSearchRequestBuilder filterByModifier(String modifier) {
+		return addOption(OptionKey.MODIFIER, modifier);
+	}
+	
+	public SnomedRelationshipSearchRequestBuilder filterByModifier(Iterable<String> modifier) {
 		return addOption(OptionKey.MODIFIER, modifier);
 	}
 	

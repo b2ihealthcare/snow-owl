@@ -16,6 +16,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConceptSe
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate
 import com.b2international.snowowl.snomed.core.ecl.EclExpression
+import com.b2international.snowowl.snomed.core.tree.Trees
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder
@@ -50,7 +51,7 @@ Multimap<String, SnomedConstraint> mrcmRulesByDomain = multimapBuilder.build()
 
 def getApplicableConcepts = { String conceptSetExpression ->
 	def expression = Expressions.builder()
-		.filter(EclExpression.of(conceptSetExpression).resolveToExpression(ctx).getSync())
+		.filter(EclExpression.of(conceptSetExpression, Trees.INFERRED_FORM).resolveToExpression(ctx).getSync())
 		.build()
 	
 	Query<String> conceptSetQuery = Query.select(String.class)

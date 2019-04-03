@@ -60,7 +60,9 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	@Override
 	protected ImportAction commit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
 		final ImportAction action = super.commit(subMonitor, formattedEffectiveTime);
-		getComponentLookup().registerNewComponentStorageKeys();
+		if (ImportAction.CONTINUE.equals(action)) {
+			getComponentLookup().registerNewComponentStorageKeys();
+		}
 		return action;
 	}
 	
