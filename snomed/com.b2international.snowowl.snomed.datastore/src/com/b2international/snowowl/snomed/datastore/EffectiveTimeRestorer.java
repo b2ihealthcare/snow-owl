@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,7 +68,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -82,13 +82,10 @@ import com.google.common.primitives.Longs;
  */
 public final class EffectiveTimeRestorer {
 	
-	private final String branchPath;
-
-	public EffectiveTimeRestorer(final String branchPath) {
-		this.branchPath = branchPath;
-	}
-	
-	public void restoreEffectiveTimes(Iterable<CDOObject> componentsToRestore) {
+	public void restoreEffectiveTimes(Iterable<CDOObject> componentsToRestore, String branchPath) {
+		final List<String> branchesForPreviousVersion = getAvailableVersionPaths(branchPath);
+		if (branchesForPreviousVersion.isEmpty()) return;
+		
 		final Multimap<Class<?>, EObject> componentsByType = ArrayListMultimap.create();
 		componentsToRestore
 			.forEach(object -> {
@@ -101,9 +98,7 @@ public final class EffectiveTimeRestorer {
 			});
 		if (componentsByType.isEmpty())	return;
 		
-		final List<String> branchesForPreviousVersion = getAvailableVersionPaths();
 		for (String branch : branchesForPreviousVersion) {
-			
 			for (Class<?> componentType : ImmutableSet.copyOf(componentsByType.keySet())) {
 				final Set<String> componentIds = componentsByType.get(componentType).stream().map(object -> getId(object)).collect(Collectors.toSet());
 				final Map<String, ? extends IComponent> previousVersions = Maps.uniqueIndex(fetchPreviousVersions(componentIds, componentType, branch), IComponent::getId);
@@ -119,6 +114,10 @@ public final class EffectiveTimeRestorer {
 				}
 			}
 		}
+		
+		if (!componentsByType.isEmpty()) {
+			throw new IllegalStateException("There were components which could not be restored: " + componentsByType.toString());
+		}
 	}
 	
 	private boolean canRestoreEffectiveTime(EObject componentToRestore, Object previousVersion) {
@@ -126,8 +125,8 @@ public final class EffectiveTimeRestorer {
 			if (componentToRestore instanceof Concept && previousVersion instanceof SnomedConcept) {
 				final Concept conceptToRestore = (Concept) componentToRestore;
 				final SnomedConcept previousConcept = (SnomedConcept) previousVersion;
-				return conceptToRestore.isActive() == previousConcept.isActive() 
-						&& conceptToRestore.getModule().getId().equals(previousConcept.getModuleId()) 
+				return conceptToRestore.isActive() == previousConcept.isActive()
+						&& conceptToRestore.getModule().getId().equals(previousConcept.getModuleId())
 						&& conceptToRestore.getDefinitionStatus().getId().equals(previousConcept.getDefinitionStatus().getConceptId());
 						
 			} else if (componentToRestore instanceof Description && previousVersion instanceof SnomedDescription) {
@@ -188,7 +187,7 @@ public final class EffectiveTimeRestorer {
 				if (previousMember.getProperties().containsKey(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME)) {
 					final Date previousSourceEffectiveDate = (Date) previousMember.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
 
-					if (!Objects.equal(previousSourceEffectiveDate, memberToRestore.getSourceEffectiveTime())) {
+					if (!Objects.equals(previousSourceEffectiveDate, memberToRestore.getSourceEffectiveTime())) {
 						return false;
 					}
 				}
@@ -196,7 +195,7 @@ public final class EffectiveTimeRestorer {
 				if (previousMember.getProperties().containsKey(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
 					final Date previousTargetEffectiveDate = (Date) previousMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
 
-					if (!Objects.equal(previousTargetEffectiveDate, memberToRestore.getTargetEffectiveTime())) {
+					if (!Objects.equals(previousTargetEffectiveDate, memberToRestore.getTargetEffectiveTime())) {
 						return false;
 					}
 				}
@@ -204,29 +203,29 @@ public final class EffectiveTimeRestorer {
 				return memberToRestore.isActive() == previousMember.isActive() && memberToRestore.getModuleId().equals(previousMember.getModuleId());
 			} else if (componentToRestore instanceof SnomedMRCMAttributeDomainRefSetMember) {
 				final SnomedMRCMAttributeDomainRefSetMember memberToRestore = (SnomedMRCMAttributeDomainRefSetMember) componentToRestore;
-				final Boolean previousdGrouped = ClassUtils.checkAndCast(previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_GROUPED), Boolean.class);		
+				final Boolean previousGrouped = ClassUtils.checkAndCast(previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_GROUPED), Boolean.class);		
 				final String previousAttributeCardinality = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY);
-				final String previousAtributeInGroupCardinality = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY);
+				final String previousAttributeInGroupCardinality = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY);
 				final String previousRuleStrengthId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID);
 				final String previousContentTypeId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID);
 				
-				if (previousdGrouped != null && previousdGrouped.booleanValue() != memberToRestore.isGrouped()) {
+				if (previousGrouped != null && previousGrouped.booleanValue() != memberToRestore.isGrouped()) {
 					return false;
 				}
 
-				if (previousAttributeCardinality != null && !previousAttributeCardinality.equals(memberToRestore.getAttributeCardinality())) {
+				if (!Objects.equals(previousAttributeCardinality, memberToRestore.getAttributeCardinality())) {
 					return false;
 				}
 
-				if (previousAtributeInGroupCardinality != null && !previousAtributeInGroupCardinality.equals(memberToRestore.getAttributeInGroupCardinality())) {
+				if (!Objects.equals(previousAttributeInGroupCardinality, memberToRestore.getAttributeInGroupCardinality())) {
 					return false;
 				}
 
-				if (previousRuleStrengthId != null && !previousRuleStrengthId.equals(memberToRestore.getRuleStrengthId())) {
+				if (!Objects.equals(previousRuleStrengthId, memberToRestore.getRuleStrengthId())) {
 					return false;
 				}
 
-				if (previousContentTypeId != null && !previousContentTypeId.equals(memberToRestore.getContentTypeId())) {
+				if (!Objects.equals(previousContentTypeId, memberToRestore.getContentTypeId())) {
 					return false;
 				}
 
@@ -238,19 +237,19 @@ public final class EffectiveTimeRestorer {
 				final String previousRuleStrengthId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID);
 				final String previousContentTypeId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID);
 
-				if (previousRangedConstraint != null && !previousRangedConstraint.equals(memberToRestore.getRangeConstraint())) {
+				if (!Objects.equals(previousRangedConstraint, memberToRestore.getRangeConstraint())) {
 					return false;
 				}
 
-				if (previousAttributeRule != null && !previousAttributeRule.equals(memberToRestore.getAttributeRule())) {
+				if (!Objects.equals(previousAttributeRule, memberToRestore.getAttributeRule())) {
 					return false;
 				}
 
-				if (previousRuleStrengthId != null && !previousRuleStrengthId.equals(memberToRestore.getRuleStrengthId())) {
+				if (!Objects.equals(previousRuleStrengthId, memberToRestore.getRuleStrengthId())) {
 					return false;
 				}
 
-				if (previousContentTypeId != null && !previousContentTypeId.equals(memberToRestore.getContentTypeId())) {
+				if (!Objects.equals(previousContentTypeId, memberToRestore.getContentTypeId())) {
 					return false;
 				}
 
@@ -265,31 +264,31 @@ public final class EffectiveTimeRestorer {
 				final String previousDomainTemplateForPostcoordination = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION);
 				final String previousEditorialGuideReference = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE);
 
-				if (previousDomainConstraint != null && !previousDomainConstraint.equals(memberToRestore.getDomainConstraint())) {
+				if (!Objects.equals(previousDomainConstraint, memberToRestore.getDomainConstraint())) {
 					return false;
 				}
 
-				if (previousParentDomain != null && !previousParentDomain.equals(memberToRestore.getParentDomain())) {
+				if (!Objects.equals(previousParentDomain, memberToRestore.getParentDomain())) {
 					return false;
 				}
 
-				if (previousProximalPrimitiveConstraint != null && !previousProximalPrimitiveConstraint.equals(memberToRestore.getProximalPrimitiveConstraint())) {
+				if (!Objects.equals(previousProximalPrimitiveConstraint, memberToRestore.getProximalPrimitiveConstraint())) {
 					return false;
 				}
 
-				if (previousProximalPrimitiveRefinement != null && !previousProximalPrimitiveRefinement.equals(memberToRestore.getProximalPrimitiveRefinement())) {
+				if (!Objects.equals(previousProximalPrimitiveRefinement, memberToRestore.getProximalPrimitiveRefinement())) {
 					return false;
 				}
 
-				if (previousDomainTemplateForPrecoordination != null && !previousDomainTemplateForPrecoordination.equals(memberToRestore.getDomainTemplateForPrecoordination())) {
+				if (!Objects.equals(previousDomainTemplateForPrecoordination, memberToRestore.getDomainTemplateForPrecoordination())) {
 					return false;
 				}
 
-				if (previousDomainTemplateForPostcoordination != null && !previousDomainTemplateForPostcoordination.equals(memberToRestore.getDomainTemplateForPostcoordination())) {
+				if (!Objects.equals(previousDomainTemplateForPostcoordination, memberToRestore.getDomainTemplateForPostcoordination())) {
 					return false;
 				}
 
-				if (previousEditorialGuideReference != null && !previousEditorialGuideReference.equals(memberToRestore.getEditorialGuideReference())) {
+				if (!Objects.equals(previousEditorialGuideReference, memberToRestore.getEditorialGuideReference())) {
 					return false;
 				}
 
@@ -320,7 +319,7 @@ public final class EffectiveTimeRestorer {
 				final String previousCorrelationId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_CORRELATION_ID);
 				final String previousMapCategoryId = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
 
-				if (previousMapTargetId != null && !previousMapTargetId.equals(memberToRestore.getMapTargetComponentId())) {
+				if (!Objects.equals(previousMapTargetId, memberToRestore.getMapTargetComponentId())) {
 					return false;
 				}
 
@@ -332,20 +331,20 @@ public final class EffectiveTimeRestorer {
 					return false;
 				}
 
-				if (previousMapRule != null && !previousMapRule.equals(memberToRestore.getMapRule())) {
+				if (!Objects.equals(previousMapRule, memberToRestore.getMapRule())) {
 					return false;
 				}
 
-				if (previousMapAdvice != null && !previousMapAdvice.equals(memberToRestore.getMapAdvice())) {
+				if (!Objects.equals(previousMapAdvice, memberToRestore.getMapAdvice())) {
 					return false;
 				}
 
-				if (previousCorrelationId != null && !previousCorrelationId.equals(memberToRestore.getCorrelationId())) {
+				if (!Objects.equals(previousCorrelationId, memberToRestore.getCorrelationId())) {
 					return false;
 				}
 				
 				// Handle extended map
-				if (memberToRestore.getMapCategoryId() != null && !memberToRestore.getMapCategoryId().equals(previousMapCategoryId)) {
+				if (Objects.equals(memberToRestore.getMapCategoryId(), previousMapCategoryId)) {
 					return false;
 				}
 				
@@ -354,7 +353,7 @@ public final class EffectiveTimeRestorer {
 				final SnomedSimpleMapRefSetMember memberToRestore = (SnomedSimpleMapRefSetMember) componentToRestore;
 				final String previousMapTargetDescription = (String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION);
 				
-				if (memberToRestore.getMapTargetComponentDescription() != null && !memberToRestore.getMapTargetComponentDescription().equals(previousMapTargetDescription)) {
+				if (!Objects.equals(memberToRestore.getMapTargetComponentDescription(), previousMapTargetDescription)) {
 					return false;
 				}
 				
@@ -393,10 +392,10 @@ public final class EffectiveTimeRestorer {
 		}
 		
 		// XXX: Should never happen
-		throw new IllegalStateException();
+		throw new IllegalArgumentException("Object was neither instance of Component or SnomedRefSetMember");
 	}
 	
-	private List<String> getAvailableVersionPaths() {
+	private List<String> getAvailableVersionPaths(String branchPath) {
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
