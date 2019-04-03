@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collections;
 
-import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -53,7 +52,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSet(Iterable<String> referenceSetIds) {
-		return addOption(OptionKey.REFSET, Collections3.toImmutableSet(referenceSetIds));
+		return addOption(OptionKey.REFSET, referenceSetIds);
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponent(String referencedComponentId) {
@@ -61,7 +60,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponent(Iterable<String> referencedComponentIds) {
-		return addOption(OptionKey.REFERENCED_COMPONENT, Collections3.toImmutableSet(referencedComponentIds));
+		return addOption(OptionKey.REFERENCED_COMPONENT, referencedComponentIds);
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final SnomedRefSetType refSetType) {
@@ -69,7 +68,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final Iterable<SnomedRefSetType> refSetTypes) {
-		return addOption(OptionKey.REFSET_TYPE, Collections3.toImmutableSet(refSetTypes));
+		return addOption(OptionKey.REFSET_TYPE, refSetTypes);
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByProps(Options memberProps) {

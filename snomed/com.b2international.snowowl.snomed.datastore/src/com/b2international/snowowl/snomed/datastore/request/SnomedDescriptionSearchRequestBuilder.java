@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -137,7 +136,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @return
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByConceptId(Collection<String> conceptIds) {
-		return addOption(OptionKey.CONCEPT, Collections3.toImmutableSet(conceptIds));
+		return addOption(OptionKey.CONCEPT, conceptIds);
 	}
 	
 	/**
@@ -166,7 +165,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @return
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByLanguageCodes(Collection<String> languageCodes) {
-		return addOption(OptionKey.LANGUAGE, Collections3.toImmutableSet(languageCodes));
+		return addOption(OptionKey.LANGUAGE, languageCodes);
 	}
 	
 	/**
