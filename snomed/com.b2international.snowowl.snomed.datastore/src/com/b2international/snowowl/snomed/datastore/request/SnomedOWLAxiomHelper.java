@@ -23,13 +23,15 @@ import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
- * @since 5.16.0
+ * @since 6.14
  */
 public final class SnomedOWLAxiomHelper {
 
 	private static final String EQUIVALENTCLASSES = "equivalentclasses";
 
 	public static DefinitionStatus getDefinitionStatusFromExpressions(Set<String> owlExpressions) {
+		if (owlExpressions.isEmpty()) return null;
+		
 		// XXX: Always look for and prefer equivalentClasses, it means the concept is
 		// FULLY_DEFINED otherwise PRIMITIVE
 		// Tokenize expressions on "(:"
