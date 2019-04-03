@@ -220,14 +220,10 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			// Calculate the definition status
 			newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newOwlAxiomExpressions).getConceptId();
 		} else {
-			final String incomingDefinitionStatusId = definitionStatus == null ? DefinitionStatus.PRIMITIVE.getConceptId() : definitionStatus.getConceptId();
-			final Set<String> previousOwlExpressions = getPreviousOwlExpressions(concept.getId(), context);
+			if (definitionStatus == null) return false;
 			
-			if (previousOwlExpressions.isEmpty()) {
-				newDefinitionStatusId = incomingDefinitionStatusId;
-			} else {
-				newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(previousOwlExpressions).getConceptId();
-			}
+			final String incomingDefinitionStatusId = definitionStatus.getConceptId();
+			newDefinitionStatusId = incomingDefinitionStatusId;
 		}
 		
 		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
@@ -240,22 +236,6 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		
 	}
 	
-	private Set<String> getPreviousOwlExpressions(String conceptId, TransactionContext context) {
-		final SnomedReferenceSetMembers axiomMembers = SnomedRequests.prepareSearchMember()
-			.all()
-			.filterByActive(true)
-			.filterByReferencedComponent(conceptId)
-			.filterByRefSet(Concepts.REFSET_OWL_AXIOM)
-			.build()
-			.execute(context);
-		
-		return Optional.ofNullable(axiomMembers.getItems())
-			.map(Collection::stream)
-			.orElseGet(Stream::empty)
-			.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
-			.collect(Collectors.toSet());
-	}
-
 	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final Concept concept) {
 		if (null == subclassDefinitionStatus) {
 			return false;
