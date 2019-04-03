@@ -118,6 +118,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private boolean uniquenessCheckEnabled = true;
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
 	private SnomedDeletionPlan deletionPlan = new SnomedDeletionPlan();
+	private EffectiveTimeRestorer effectiveTimeRestorer;
 
 	/**
 	 * Creates a new SNOMED CT core components editing context on the specified branch of the SNOMED CT repository.
@@ -143,6 +144,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	private void init(final String namespace) {
 		this.refSetEditingContext = new SnomedRefSetEditingContext(this);
+		this.effectiveTimeRestorer = new EffectiveTimeRestorer();
 		setNamespace(namespace);
 	}
 
@@ -792,8 +794,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			}
 		}
 		
-		new EffectiveTimeRestorer(getBranch()).restoreEffectiveTimes(transaction.getChangeSetData().getChangedObjects().stream()
-				.map(cdoKey -> transaction.getObject(cdoKey.getID()))::iterator);
+		effectiveTimeRestorer.restoreEffectiveTimes(transaction.getChangeSetData().getChangedObjects().stream().map(cdoKey -> transaction.getObject(cdoKey.getID()))::iterator, getBranch());
 	}
 
 	private Set<SnomedRefSetMember> getReferringRefSetMembers(Iterable<String> deletedIds) {
