@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * @since 7.0
+ * @since 6.12 (originally introduced in 7.x)
  */
 @Doc(type="relationshipchange")
 @JsonDeserialize(builder=RelationshipChangeDocument.Builder.class)
@@ -79,7 +79,8 @@ public final class RelationshipChangeDocument {
 		private String destinationId;
 		private Integer group;
 		private Integer unionGroup;
-		private boolean released;
+		private Boolean released;
+		private String characteristicTypeId;
 
 		@JsonCreator
 		private Builder() {
@@ -126,8 +127,13 @@ public final class RelationshipChangeDocument {
 			return this;
 		}
 		
-		public Builder released(final boolean released) {
+		public Builder released(final Boolean released) {
 			this.released = released;
+			return this;
+		}
+
+		public Builder characteristicTypeId(final String characteristicTypeId) {
+			this.characteristicTypeId = characteristicTypeId;
 			return this;
 		}
 
@@ -140,22 +146,28 @@ public final class RelationshipChangeDocument {
 					destinationId,
 					group, 
 					unionGroup,
-					released);
+					released,
+					characteristicTypeId);
 		}
 	}
 
+	/** The identifier of the classification run this change belongs to */
 	private final String classificationId;
+	/** The type of this classification change */
 	private final ChangeNature nature;
-
-	// The origin (stated relationship) SCTID for inferences, or the SCTID of the relationship to remove/inactivate
+	/** The SCTID of the "origin" SCTID for inferences, or the SCTID of the relationship to remove/inactivate */
 	private final String relationshipId; 
+	/** {@code true} if the description has been released, {@code false} otherwise */
+	private final Boolean released;
+	
+	// Values that should be changed on the "origin" CD member, before saving/presenting it as an inference
 
 	private final String sourceId; 
 	private final String typeId;
 	private final String destinationId; 
 	private final Integer group;
 	private final Integer unionGroup;
-	private final boolean released;
+	private final String characteristicTypeId;
 
 	private RelationshipChangeDocument(final String classificationId, 
 			final ChangeNature nature, 
@@ -165,7 +177,8 @@ public final class RelationshipChangeDocument {
 			final String destinationId, 
 			final Integer group, 
 			final Integer unionGroup,
-			final boolean released) {
+			final Boolean released, 
+			final String characteristicTypeId) {
 
 		this.classificationId = classificationId;
 		this.nature = nature;
@@ -176,6 +189,7 @@ public final class RelationshipChangeDocument {
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.released = released;
+		this.characteristicTypeId = characteristicTypeId;
 	}
 
 	public String getClassificationId() {
@@ -210,8 +224,12 @@ public final class RelationshipChangeDocument {
 		return unionGroup;
 	}
 
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return released;
+	}
+	
+	public String getCharacteristicTypeId() {
+		return characteristicTypeId;
 	}
 
 	@Override
@@ -235,6 +253,8 @@ public final class RelationshipChangeDocument {
 		builder.append(unionGroup);
 		builder.append(", released=");
 		builder.append(released);
+		builder.append(", characteristicTypeId=");
+		builder.append(characteristicTypeId);
 		builder.append("]");
 		return builder.toString();
 	}

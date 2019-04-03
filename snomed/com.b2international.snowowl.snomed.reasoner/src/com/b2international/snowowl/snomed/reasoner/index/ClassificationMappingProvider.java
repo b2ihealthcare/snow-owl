@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.google.common.collect.ImmutableSet;
 
 /**
- * @since 7.0
+ * @since 6.12 (originally introduced in 7.x)
  */
 public final class ClassificationMappingProvider implements MappingProvider {
 
@@ -31,6 +31,8 @@ public final class ClassificationMappingProvider implements MappingProvider {
 		return ImmutableSet.<Class<?>>builder()
 				.add(ClassificationTaskDocument.class)
 				.add(EquivalentConceptSetDocument.class)
+				.add(ConceptChangeDocument.class)
+				.add(DescriptionChangeDocument.class)
 				.add(RelationshipChangeDocument.class)
 				.add(ConcreteDomainChangeDocument.class)
 				.build();

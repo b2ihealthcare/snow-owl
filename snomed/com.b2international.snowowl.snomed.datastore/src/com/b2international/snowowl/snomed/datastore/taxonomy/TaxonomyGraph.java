@@ -20,15 +20,13 @@ import static com.google.common.collect.Iterables.isEmpty;
 
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.ints.IntIterator;
-import com.b2international.collections.ints.IntKeyMap;
-import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
@@ -37,6 +35,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * @since 6.14
@@ -68,11 +67,11 @@ public final class TaxonomyGraph {
 	/**
 	 * Map for storing active IS_A type SNOMED CT relationship representations.
 	 */
-	private final IntKeyMap<Edges> edges;
+	private final Map<String, Edges> edges;
 	
 	public TaxonomyGraph(int numberOfExpectedNodes, int numberOfExpectedEdges) {
 		this.nodes = new LongBidiMapWithInternalId(numberOfExpectedNodes);
-		this.edges = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(numberOfExpectedEdges);
+		this.edges = Maps.newHashMapWithExpectedSize(numberOfExpectedEdges);
 	}
 	
 	public void setCheckCycles(boolean checkCycles) {
@@ -115,8 +114,7 @@ public final class TaxonomyGraph {
 		//0 index source/subject concept internal ID
 		//1 index destination/object concept internal ID
 		int numberOfEdges = 0;
-		for (final IntIterator keys = edges.keySet().iterator(); keys.hasNext(); /* nothing */) {
-			final Edges statements = edges.get(keys.next());
+		for (final Edges statements : edges.values()) {
 			final long[] destinationIds = statements.destinationIds;
 			numberOfEdges += destinationIds.length;
 		}
@@ -125,8 +123,7 @@ public final class TaxonomyGraph {
 		int count = 0;
 		
 		// refresh all RelationshipMini concepts, since they may have been modified
-		for (final IntIterator keys = edges.keySet().iterator(); keys.hasNext(); /* nothing */) {
-			final Edges statements = edges.get(keys.next());
+		for (final Edges statements : edges.values()) {
 
 			final long sourceId = statements.sourceId;
 			final long[] destinationIds = statements.destinationIds;
@@ -197,8 +194,7 @@ public final class TaxonomyGraph {
 	}
 	
 	public void addEdge(final String edgeId, final long sourceId, final long[] destinationIds) {
-		final int id = createInternalEdgeId(edgeId);
-		edges.put(id, new Edges(sourceId, destinationIds));
+		edges.put(edgeId, new Edges(sourceId, destinationIds));
 		dirty = true;
 	}
 
@@ -211,7 +207,7 @@ public final class TaxonomyGraph {
 	}
 	
 	public void removeEdge(final String edgeId) {
-		edges.remove(createInternalEdgeId(edgeId));
+		edges.remove(edgeId);
 		dirty = true;
 	}
 	
@@ -262,40 +258,22 @@ public final class TaxonomyGraph {
 		return processElements(conceptId, superTypeMap);
 	}
 
-	public long getSourceNodeId(final int edgeInternalId) {
-		return getEdge(edgeInternalId).sourceId;
+	public long getSourceNodeId(final String edgeId) {
+		return getEdge(edgeId).sourceId;
 	}
 
-	public long[] getDestinationNodeIds(final int edgeInternalId) {
-		return getEdge(edgeInternalId).destinationIds;
+	public long[] getDestinationNodeIds(final String edgeId) {
+		return getEdge(edgeId).destinationIds;
 	}
 	
-	public IntSet getEdgeIds() {
+	public Set<String> getEdgeIds() {
 		return edges.keySet();
 	}
 	
-	Edges getEdge(int edgeInternalId) {
-		return edges.get(edgeInternalId);
+	Edges getEdge(String edgeId) {
+		return edges.get(edgeId);
 	}
 
-//	/**
-//	 * (non-API)
-//	 * 
-//	 * Returns with the internal ID of the node.
-//	 * @param nodeId the unique SNOMED&nbsp;CT ID of the concept. 
-//	 * @return the internal ID of the node.
-//	 */
-//	public int getInternalId(final long nodeId) {
-//		checkState();
-//		final int $ = nodes.getInternalId(nodeId);
-//		if ($ < 0) {
-//			final String msg = "Concept does not exists with ID: " + nodeId;
-//			LOGGER.error(msg);
-//			throw new SnowowlRuntimeException(msg);
-//		}
-//		return $;
-//	}
-	
 	/* 
 	 * Returns with the SNOMED&nbsp;CT ID of the concept for the 
 	 * internal concept ID argument.
@@ -305,10 +283,6 @@ public final class TaxonomyGraph {
 	private long getNodeId(final int internalNodeId) {
 		checkState();
 		return nodes.get(internalNodeId);
-	}
-	
-	private final int createInternalEdgeId(String statementId) {
-		return statementId.hashCode();
 	}
 	
 	private LongSet getAndProcessAncestors(final long conceptId) {

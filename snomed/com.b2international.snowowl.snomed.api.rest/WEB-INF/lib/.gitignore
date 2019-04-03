@@ -1,0 +1,4 @@
+# Ignore everything in this directory except .gitignore itself; this is needed so git keeps the empty directory intact.
+
+*
+!.gitignore

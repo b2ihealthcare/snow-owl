@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,14 @@ public enum ChangeNature {
 	 * instance based on another component (with some properties adjusted as
 	 * appropriate).
 	 */
-	INFERRED,
+	NEW,
 
+	/**
+	 * The component exists; it should be update in place, using the properties on
+	 * the component change object.
+	 */
+	UPDATED,
+	
 	/**
 	 * The component exists; it should be removed or deactivated, depending on
 	 * whether it has been published earlier.

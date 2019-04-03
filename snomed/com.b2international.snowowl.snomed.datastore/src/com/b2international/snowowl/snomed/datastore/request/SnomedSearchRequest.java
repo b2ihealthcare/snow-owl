@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -111,7 +112,7 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 
 	protected final Collection<String> evaluateEclFilter(BranchContext context, Collection<String> optionValues) {
 		if (optionValues.isEmpty()) {
-			return null;
+			return Collections.emptySet();
 		}
 		Collection<String> idFilter = FluentIterable.from(optionValues).transform(String::trim).toSet();
 		if (idFilter.size() == 1) {

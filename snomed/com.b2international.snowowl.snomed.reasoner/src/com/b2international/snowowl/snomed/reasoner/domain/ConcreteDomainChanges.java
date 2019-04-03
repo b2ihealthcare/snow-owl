@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,11 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 7.0
+ * @since 6.12 (originally introduced in 7.x)
  */
 public final class ConcreteDomainChanges extends PageableCollectionResource<ConcreteDomainChange> {
 
@@ -41,7 +40,7 @@ public final class ConcreteDomainChanges extends PageableCollectionResource<Conc
 	/**
 	 * Instantiates a pageable collection of concrete domain changes.
 	 * 
-	 * @param list of @link {@link SnomedConcept}s
+	 * @param list of @link {@link ConcreteDomainChange}s
 	 * @param scrollId for paging the result set continuously
 	 * @param searchAfter for paging the result set with a live cursor
 	 * @param limit of items for a single page

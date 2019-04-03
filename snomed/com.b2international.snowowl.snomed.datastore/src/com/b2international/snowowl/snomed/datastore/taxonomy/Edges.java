@@ -35,7 +35,7 @@ final class Edges {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(sourceId, destinationIds);
+		return Objects.hash(sourceId, Arrays.hashCode(destinationIds));
 	}
 	
 	@Override

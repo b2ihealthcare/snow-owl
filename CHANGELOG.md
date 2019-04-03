@@ -1,6 +1,25 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.13.1
+
+### Added
+- New MRCM attribute range validation rule (#319)
+
+### Changes
+- Numerous improvements to classification time equivalent concept merging functionality (#318)
+
+### Removed
+- Acceptability merge conflict rule (#321)
+
+### Bugs
+- Fix incorrect update of members when more than 50 members were present for a concept (b224370)
+- Fix occasional startup failure due to incorrect initialization phase used in the reasoner module (#325)
+- Fix DSV export group occurence bug (c494229)
+
+### Performance
+- Normal form generation performance improvements (#318)
+
 ## 6.13.0
 
 ### Added

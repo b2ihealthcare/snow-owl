@@ -25,9 +25,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.ints.IntIterator;
-import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongIterator;
@@ -48,6 +45,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.7
@@ -98,16 +96,14 @@ public final class Taxonomies {
 			
 			final TaxonomyGraphUpdater updater = new TaxonomyGraphUpdater(searcher, expressionConverter, commitChangeSet, characteristicTypeId);
 			final TaxonomyGraphStatus updateResult = updater.update(newTaxonomy);
-			final IntSet newKeys = newTaxonomy.getEdgeIds();
-			final IntSet oldKeys = oldTaxonomy.getEdgeIds();
+			final Set<String> newKeys = newTaxonomy.getEdgeIds();
+			final Set<String> oldKeys = oldTaxonomy.getEdgeIds();
 			
 			// new edges
-			final IntSet newEdges = PrimitiveSets.difference(newKeys, oldKeys);
+			final Set<String> newEdges = Sets.difference(newKeys, oldKeys);
 			// changed edges
-			final IntIterator pcEdges = PrimitiveSets.intersection(newKeys, oldKeys).iterator();
-			final IntSet changedEdges = PrimitiveSets.newIntOpenHashSet();
-			while (pcEdges.hasNext()) {
-				final int nextEdge = pcEdges.next();
+			final Set<String> changedEdges = Sets.newHashSet();
+			for (String nextEdge : Sets.intersection(newKeys, oldKeys)) {
 				Edges oldValue = oldTaxonomy.getEdge(nextEdge);
 				Edges newValue = newTaxonomy.getEdge(nextEdge);
 				if (!oldValue.equals(newValue)) {
@@ -116,7 +112,7 @@ public final class Taxonomies {
 			}
 			
 			// detached edges
-			final IntSet detachedEdges = PrimitiveSets.difference(oldKeys, newKeys);
+			final Set<String> detachedEdges = Sets.difference(oldKeys, newKeys);
 			
 			return new Taxonomy(newTaxonomy, oldTaxonomy, updateResult, newEdges, changedEdges, detachedEdges);
 		} catch (IOException e) {
@@ -156,16 +152,27 @@ public final class Taxonomies {
 		if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
 			// search existing axioms defined for the given set of conceptIds
 			ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.builder()
-					.filter(active())
-					.filter(Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, 
-						Expressions.builder()
-							.filter(typeId(Concepts.IS_A))
-							.filter(destinationIds(concepts))
-						.build()
-					));
+					.filter(active());
 			
 			if (filterByConceptIds) {
-				activeOwlAxiomMemberQuery.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(concepts));
+				activeOwlAxiomMemberQuery
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(concepts))
+					.filter(
+						Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, 
+							Expressions.builder()
+								.filter(typeId(Concepts.IS_A))
+								.filter(destinationIds(concepts))
+							.build()
+						)
+					);
+			} else {
+				activeOwlAxiomMemberQuery.filter(
+					Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, 
+						Expressions.builder()
+							.filter(typeId(Concepts.IS_A))
+						.build()
+					)
+				);
 			}
 			
 			final Query<SnomedRefSetMemberIndexEntry> activeAxiomISARelationshipsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
