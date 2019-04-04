@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -167,7 +168,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 					throw new BadRequestException("%s filter cannot contain null values", key);
 				}
 			}
-			optionsBuilder.put(key, value);
+			optionsBuilder.put(key, Collections3.toImmutableSet((Iterable<?>) value));
 		} else if (value != null) {
 			optionsBuilder.put(key, value);
 		}
