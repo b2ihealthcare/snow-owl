@@ -718,14 +718,19 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		final Set<OWLClassExpression> intersection = Sets.newHashSet();
 		final LongSet superTypeIds = taxonomy.getStatedAncestors()
 				.getDestinations(conceptId, true);
-
+		
 		for (final LongIterator itr = superTypeIds.iterator(); itr.hasNext(); /* empty */) {
 			final long parentId = itr.next();
 			addParent(parentId, intersection);
 		}
 
-		final Collection<StatementFragment> statedNonIsAFragments = taxonomy.getStatedNonIsARelationships()
+		final Collection<StatementFragment> statedNonIsAFragments = taxonomy
+				.getStatedNonIsARelationships()
 				.get(conceptId);
+
+		final Collection<ConcreteDomainFragment> statedConcreteDomainMembers = taxonomy
+				.getStatedConcreteDomainMembers()
+				.get(Long.toString(conceptId));
 
 		// "Never grouped" relationships are added directly to the OWL object intersection
 		statedNonIsAFragments.stream()
@@ -735,20 +740,18 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			.stream()
 			.forEachOrdered(ug -> addUnionGroup(ug, intersection));
 
-		// Others are wrapped in roleGroups
+		// Ungrouped concept concrete domain members are also added directly
+		statedConcreteDomainMembers.stream()
+			.filter(c -> c.getGroup() == 0)
+			.forEachOrdered(c -> addConcreteDomainMember(c, intersection));
+
+		// Remaining stated relationships are wrapped in roleGroups
 		statedNonIsAFragments.stream()
 			.filter(r -> !isNeverGrouped(r))
 			.collect(Collectors.groupingBy(StatementFragment::getGroup))
 			.entrySet()
 			.stream()
 			.forEachOrdered(g -> addGroup(conceptId, g, intersection));
-
-		// "Never grouped" concept concrete domain members are also added directly
-		taxonomy.getStatedConcreteDomainMembers()
-			.get(Long.toString(conceptId))
-			.stream()
-			.filter(c -> c.getGroup() == 0)
-			.forEachOrdered(c -> addConcreteDomainMember(c, intersection));
 
 		return intersection;
 	}
@@ -760,10 +763,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	private boolean isNeverGrouped(final StatementFragment r) {
 		return neverGroupedIds.contains(r.getTypeId()) && r.getGroup() == 0;
-	}
-
-	private boolean isActiveIngredient(final StatementFragment r) {
-		return HAS_ACTIVE_INGREDIENT == r.getTypeId() && r.getUnionGroup() == 0;
 	}
 
 	private void addUnionGroup(final Entry<Integer, List<StatementFragment>> unionGroup, final Set<OWLClassExpression> intersection) {
@@ -803,30 +802,18 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			.entrySet()
 			.stream()
 			.forEachOrdered(ug -> addUnionGroup(ug, groupIntersection));
-		
-		taxonomy.getStatedConcreteDomainMembers()
-			.get(Long.toString(conceptId))
-			.stream()
-			.filter(c -> c.getGroup() == group.getKey())
-			.forEachOrdered(c -> addConcreteDomainMember(c, groupIntersection));
 
 		if (group.getKey() > 0) {
-
-			final Set<StatementFragment> activeIngredientRelationships = group.getValue()
-					.stream()
-					.filter(r -> isActiveIngredient(r))
-					.collect(Collectors.toSet());
-
-			if (activeIngredientRelationships.size() > 1) {
-				throw new IllegalStateException(String.format("Multiple 'has active ingredient' relationships were found in group %s of concept %s.", group.getKey(), conceptId));
-			} else if (activeIngredientRelationships.size() == 1) {
-				// Add it in never-grouped form to the outer intersection 
-				final StatementFragment r = Iterables.getOnlyElement(activeIngredientRelationships);
-				intersection.add(getRelationshipExpression(r.getTypeId(), r.getDestinationId(), r.isDestinationNegated(), r.isUniversal()));
-			}
-
+			
+			// CD members should only be considered in non-zero groups
+			taxonomy.getStatedConcreteDomainMembers()
+				.get(Long.toString(conceptId))
+				.stream()
+				.filter(c -> c.getGroup() == group.getKey())
+				.forEachOrdered(c -> addConcreteDomainMember(c, groupIntersection));
+			
 			intersection.add(getRoleGroupExpression(getOWLObjectIntersectionOf(groupIntersection)));
-
+			
 		} else {
 			groupIntersection.forEach(ce -> {
 				final OWLClassExpression singleGroupExpression = getRoleGroupExpression(ce);

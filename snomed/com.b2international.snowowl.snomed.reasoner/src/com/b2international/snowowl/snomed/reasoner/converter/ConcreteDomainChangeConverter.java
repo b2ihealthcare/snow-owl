@@ -88,6 +88,7 @@ public final class ConcreteDomainChangeConverter
 		
 		// Released flag is the "origin" member's released state for updated and redundant members, false for new members
 		concreteDomainMember.setReleased(entry.isReleased());
+		concreteDomainMember.setReferencedComponentId(entry.getReferencedComponentId());
 
 		switch (entry.getNature()) {
 			case NEW:
@@ -97,7 +98,6 @@ public final class ConcreteDomainChangeConverter
 				 * - in another relationship group
 				 * - with a potentially different characteristic type 
 				 */
-				concreteDomainMember.setReferencedComponentId(entry.getReferencedComponentId());
 				concreteDomainMember.setGroup(entry.getGroup());
 				concreteDomainMember.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 				break;
