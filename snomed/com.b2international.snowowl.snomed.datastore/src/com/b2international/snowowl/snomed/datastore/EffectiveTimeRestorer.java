@@ -28,6 +28,8 @@ import javax.validation.UnexpectedTypeException;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.ecore.EObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -82,6 +84,8 @@ import com.google.common.primitives.Longs;
  */
 public final class EffectiveTimeRestorer {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(EffectiveTimeRestorer.class);
+	
 	public void restoreEffectiveTimes(Iterable<CDOObject> componentsToRestore, String branchPath) {
 		final Multimap<Class<?>, EObject> componentsByType = ArrayListMultimap.create();
 		componentsToRestore
@@ -120,7 +124,12 @@ public final class EffectiveTimeRestorer {
 		}
 		
 		if (!componentsByType.isEmpty()) {
-			throw new IllegalStateException("There were components which could not be restored: " + componentsByType.toString());
+			LOG.warn("There were components which could not be restored, {}.", 
+				componentsByType.values()
+					.stream()
+					.map(this::getId)
+					.collect(Collectors.toSet())
+			);
 		}
 	}
 	
