@@ -68,6 +68,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSet
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
@@ -357,7 +358,7 @@ public final class EffectiveTimeRestorer {
 				}
 				
 				// Handle extended map
-				if (!Objects.equals(memberToRestore.getMapCategoryId(), previousMapCategoryId)) {
+				if (SnomedRefSetType.EXTENDED_MAP == memberToRestore.getRefSet().getType() && !Objects.equals(memberToRestore.getMapCategoryId(), previousMapCategoryId)) {
 					return false;
 				}
 				
