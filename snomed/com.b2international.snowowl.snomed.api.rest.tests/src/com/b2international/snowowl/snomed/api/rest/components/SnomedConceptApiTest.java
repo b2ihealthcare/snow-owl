@@ -285,6 +285,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		// After versioning, the concept should be released and have an effective time set on it
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
+		.body("active", equalTo(true))
 		.body("released", equalTo(true))
 		.body("effectiveTime", equalTo(effectiveDate));
 
@@ -292,13 +293,15 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		// An inactivation should unset the effective time field
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
+		.body("active", equalTo(false))
 		.body("released", equalTo(true))
-		.body("effectiveTime", nullValue());
+ 		.body("effectiveTime", nullValue());
 
 		reactivateConcept(branchPath, conceptId);
 
 		// Getting the concept back to its originally released state should restore the effective time
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
+		.body("active", equalTo(true))
 		.body("released", equalTo(true))
 		.body("effectiveTime", equalTo(effectiveDate));
 	}

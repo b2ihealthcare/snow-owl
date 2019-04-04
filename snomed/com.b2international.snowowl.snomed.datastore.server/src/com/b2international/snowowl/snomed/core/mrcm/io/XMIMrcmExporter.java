@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.LogUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
@@ -43,8 +43,8 @@ public class XMIMrcmExporter {
 	private static final Logger LOG = LoggerFactory.getLogger(XMIMrcmExporter.class);
 	
 	public void doExport(String user, OutputStream stream) {
-		final IBranchPath branch = BranchPathUtils.createMainPath();
-		try (SnomedEditingContext context = new SnomedEditingContext(branch)) {
+		final String branch = Branch.MAIN_PATH;
+		try (SnomedEditingContext context = new SnomedEditingContext(BranchPathUtils.createPath(branch))) {
 			LogUtils.logExportActivity(LOG, user, branch, "Exporting MRCM rules...");
 
 			final ResourceSet resourceSet = new ResourceSetImpl();

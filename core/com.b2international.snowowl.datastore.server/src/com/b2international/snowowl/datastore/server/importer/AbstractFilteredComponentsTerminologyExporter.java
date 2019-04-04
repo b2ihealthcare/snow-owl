@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.b2international.snowowl.datastore.server.importer;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-
 /**
  * Abstract exporter to export a set of terminology components.
  * 
@@ -28,7 +26,7 @@ public abstract class AbstractFilteredComponentsTerminologyExporter extends Abst
 
 	private final Collection<String> componentIds;
 
-	public AbstractFilteredComponentsTerminologyExporter(final String userId, final IBranchPath branchPath, final Collection<String> componentIds) {
+	public AbstractFilteredComponentsTerminologyExporter(final String userId, final String branchPath, final Collection<String> componentIds) {
 		super(userId, branchPath);
 		this.componentIds = componentIds;
 	}

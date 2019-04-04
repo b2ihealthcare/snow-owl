@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.commons.AlphaNumericComparator;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -78,7 +77,7 @@ public abstract class AbstractTerminologyExcelExporter<T, M> extends AbstractFil
 	private final CellStyle BOLD_STYLE;
 
 
-	public AbstractTerminologyExcelExporter(final String userId, final IBranchPath branchPath, final Collection<String> componentIds) {
+	public AbstractTerminologyExcelExporter(final String userId, final String branchPath, final Collection<String> componentIds) {
 		super(userId, branchPath, componentIds);
 
 		final Font headerFont = workbook.createFont();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,12 @@ package com.b2international.snowowl.snomed.datastore;
 
 import org.slf4j.Logger;
 
+import com.b2international.snowowl.core.domain.BranchContext;
+
 /**
  */
-public interface ISnomedPostProcessorContext {
+public interface ISnomedPostProcessorContext extends BranchContext {
 
-	/**
-	 * @return the branch path this importer is working on
-	 */
-	String branch();
-	
 	/**
 	 * @return the identifier of the user associated with this import
 	 */

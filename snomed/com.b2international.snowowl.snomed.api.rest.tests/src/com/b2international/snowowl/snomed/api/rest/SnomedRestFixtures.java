@@ -355,23 +355,23 @@ public abstract class SnomedRestFixtures {
 
 	@SuppressWarnings("unchecked")
 	public static void reactivateConcept(IBranchPath conceptPath, String id) {
-		Map<String, Object> concept = getComponent(conceptPath, SnomedComponentType.CONCEPT, id, "descriptions()", "relationships()")
+		final Map<String, Object> concept = getComponent(conceptPath, SnomedComponentType.CONCEPT, id, "descriptions()", "relationships()")
 				.statusCode(200)
 				.extract().as(Map.class);
 
-		Map<String, Object> reactivationRequest = Maps.newHashMap(concept);
+		final Map<String, Object> reactivationRequest = Maps.newHashMap(concept);
 		reactivationRequest.put("active", true);
 		reactivationRequest.remove("inactivationIndicator");
 		reactivationRequest.remove("associationTargets");
 		reactivationRequest.put("commitComment", "Reactivated concept");
 
-		Map<String, Object> relationships = (Map<String, Object>) reactivationRequest.get("relationships");
-		List<Map<String, Object>> relationshipItems = (List<Map<String, Object>>) relationships.get("items");
+		final Map<String, Object> relationships = (Map<String, Object>) reactivationRequest.get("relationships");
+		final List<Map<String, Object>> relationshipItems = (List<Map<String, Object>>) relationships.get("items");
 		relationshipItems.get(0).put("active", true);
 
 		updateComponent(conceptPath, SnomedComponentType.CONCEPT, id, reactivationRequest).statusCode(204);
 	}
-
+	
 	public static void changeCaseSignificance(IBranchPath descriptionPath, String descriptionId) {
 		changeCaseSignificance(descriptionPath, descriptionId, CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE);
 	}

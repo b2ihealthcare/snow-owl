@@ -738,4 +738,41 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertThat(numberOfResults).isZero();
 	}
 	
+	@Test
+	public void restoreEffectiveTimeOnReleasedDescription() throws Exception {
+		final String descriptionId = createNewDescription(branchPath);
+
+		final String shortName = "SNOMEDCT-DESC-1";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		final String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		// After versioning, the description should be released and have an effective time set on it
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
+		.body("active", equalTo(true))
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(effectiveDate));
+
+		inactivateDescription(branchPath, descriptionId);
+
+		// An inactivation should unset the effective time field
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
+		.body("active", equalTo(false))
+		.body("released", equalTo(true))
+ 		.body("effectiveTime", nullValue());
+
+		Map<?, ?> reactivationRequestBody = ImmutableMap.builder()
+				.put("active", true)
+				.put("commitComment", "Inactivated description")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, reactivationRequestBody).statusCode(204);
+
+		// Getting the description back to its originally released state should restore the effective time
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
+		.body("active", equalTo(true))
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(effectiveDate));
+	}
+	
 }
