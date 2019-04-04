@@ -69,7 +69,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
@@ -324,11 +323,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 						.field(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId())
 						.field(Fields.CORRELATION_ID, mapRefSetMember.getCorrelationId())
 						.field(Fields.MAP_GROUP, Integer.valueOf(mapRefSetMember.getMapGroup()))
-						.field(Fields.MAP_ADVICE, Strings.nullToEmpty(mapRefSetMember.getMapAdvice()))
+						.field(Fields.MAP_ADVICE, mapRefSetMember.getMapAdvice())
 						.field(Fields.MAP_PRIORITY, Integer.valueOf(mapRefSetMember.getMapPriority()))
-						.field(Fields.MAP_RULE, Strings.nullToEmpty(mapRefSetMember.getMapRule()))
+						.field(Fields.MAP_RULE, mapRefSetMember.getMapRule())
 						// extended refset
-						.field(Fields.MAP_CATEGORY_ID, Strings.nullToEmpty(mapRefSetMember.getMapCategoryId()));
+						.field(Fields.MAP_CATEGORY_ID, mapRefSetMember.getMapCategoryId());
 			}
 			
 			@Override
