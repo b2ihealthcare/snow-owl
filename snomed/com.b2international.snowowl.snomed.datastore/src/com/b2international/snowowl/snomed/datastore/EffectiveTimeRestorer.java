@@ -83,20 +83,24 @@ import com.google.common.primitives.Longs;
 public final class EffectiveTimeRestorer {
 	
 	public void restoreEffectiveTimes(Iterable<CDOObject> componentsToRestore, String branchPath) {
-		final List<String> branchesForPreviousVersion = getAvailableVersionPaths(branchPath);
-		if (branchesForPreviousVersion.isEmpty()) return;
-		
 		final Multimap<Class<?>, EObject> componentsByType = ArrayListMultimap.create();
 		componentsToRestore
-			.forEach(object -> {
-				if (object instanceof Component && ((Component) object).isReleased() && !((Component) object).isSetEffectiveTime()) {
-					componentsByType.put(object.eClass().getInstanceClass(), object);
-				}
-				if (object instanceof SnomedRefSetMember && ((SnomedRefSetMember) object).isReleased() && !((SnomedRefSetMember) object).isSetEffectiveTime()) {
-					componentsByType.put(SnomedRefSetMember.class, object);
-				}
-			});
-		if (componentsByType.isEmpty())	return;
+		.forEach(object -> {
+			if (object instanceof Component && ((Component) object).isReleased() && !((Component) object).isSetEffectiveTime()) {
+				componentsByType.put(object.eClass().getInstanceClass(), object);
+			}
+			if (object instanceof SnomedRefSetMember && ((SnomedRefSetMember) object).isReleased() && !((SnomedRefSetMember) object).isSetEffectiveTime()) {
+				componentsByType.put(SnomedRefSetMember.class, object);
+			}
+		});
+		if (componentsByType.isEmpty())	{
+			return;
+		}
+		
+		final List<String> branchesForPreviousVersion = getAvailableVersionPaths(branchPath);
+		if (branchesForPreviousVersion.isEmpty()) {
+			return;
+		}
 		
 		for (String branch : branchesForPreviousVersion) {
 			for (Class<?> componentType : ImmutableSet.copyOf(componentsByType.keySet())) {
