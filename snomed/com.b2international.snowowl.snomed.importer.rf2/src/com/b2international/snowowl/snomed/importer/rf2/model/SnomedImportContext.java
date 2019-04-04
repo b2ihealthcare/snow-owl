@@ -32,9 +32,9 @@ import com.b2international.snowowl.core.domain.DefaultBranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.server.internal.CDOBranchContext;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.ISnomedPostProcessorContext;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.importer.rf2.refset.RefSetMemberLookup;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.ComponentLookup;
@@ -46,7 +46,7 @@ import com.google.common.base.Supplier;
 /**
  * Collects common import state objects and makes them available to importers.
  */
-public class SnomedImportContext extends DefaultBranchContext implements ISnomedPostProcessorContext, AutoCloseable {
+public class SnomedImportContext extends CDOBranchContext implements AutoCloseable {
 
 	private Logger logger;
 
@@ -80,6 +80,7 @@ public class SnomedImportContext extends DefaultBranchContext implements ISnomed
 	public SnomedImportContext(final RepositoryContext context, final String branchPath) {
 		super(context, getBranch(context, branchPath), branchPath);
 		this.index = context.service(RevisionIndex.class);
+//		bind(RevisionSearcher.class, this.index.read);
 	}
 
 	private static Branch getBranch(RepositoryContext context, final String branchPath) {
@@ -131,7 +132,6 @@ public class SnomedImportContext extends DefaultBranchContext implements ISnomed
 	 * 
 	 * @return the importing user's identifier
 	 */
-	@Override
 	public String getUserId() {
 		return userId;
 	}
@@ -318,7 +318,6 @@ public class SnomedImportContext extends DefaultBranchContext implements ISnomed
 	 * 
 	 * @return the logger to use for reporting messages
 	 */
-	@Override
 	public Logger getLogger() {
 		return logger;
 	}

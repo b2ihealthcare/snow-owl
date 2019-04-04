@@ -70,6 +70,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
@@ -99,8 +100,6 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescrip
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -436,13 +435,7 @@ public final class ImportUtil {
 	private ImmutableList<String> getAsStringList(final LongSet longIds) {
 		final long[] longIdArray = longIds.toArray();
 		Arrays.sort(longIdArray);
-		
-		return FluentIterable.from(Longs.asList(longIdArray)).transform(new Function<Long, String>() {
-			@Override
-			public String apply(Long input) {
-				return String.valueOf(input);
-			}
-		}).toList();
+		return FluentIterable.from(Longs.asList(longIdArray)).transform(String::valueOf).toList();
 	}
 
 	private IEventBus getEventBus() {
@@ -515,15 +508,17 @@ public final class ImportUtil {
 	}
 
 	private void postProcess(final SnomedImportContext context) {
-		for (final ISnomedImportPostProcessor processor : Extensions.getExtensions(SNOMED_IMPORT_POST_PROCESSOR_EXTENSION, ISnomedImportPostProcessor.class)) {
-			processor.postProcess(context);
-		}
+		new RevisionIndexReadRequest<Void>(readContext -> {
+			for (final ISnomedImportPostProcessor processor : Extensions.getExtensions(SNOMED_IMPORT_POST_PROCESSOR_EXTENSION, ISnomedImportPostProcessor.class)) {
+				processor.postProcess(readContext, context.getUserId(), context.getLogger());
+			}
+			return null;
+		}).execute(context);
 	}
 
 	public static long parseLong(final String componentId) {
-
 		try {
-			return Long.parseLong(Preconditions.checkNotNull(componentId, "componentId"));
+			return Long.parseLong(componentId);
 		} catch (final NumberFormatException e) {
 			throw new IllegalArgumentException(MessageFormat.format("Couldn''t convert component ID to a long: ''{0}''.", componentId));
 		}
