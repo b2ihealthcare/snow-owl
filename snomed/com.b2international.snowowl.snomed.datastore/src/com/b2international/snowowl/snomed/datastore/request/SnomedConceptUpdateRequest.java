@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,6 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentStatusConflictException;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -43,13 +41,11 @@ import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
@@ -149,27 +145,10 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		
 		changed |= processInactivation(context, concept);
 
-		if (changed) {
-			if (concept.isSetEffectiveTime()) {
-				concept.unsetEffectiveTime();
-			} else {
-				if (concept.isReleased()) {
-					long start = new Date().getTime();
-					final String branchPath = getLatestReleaseBranch(context);
-					if (!Strings.isNullOrEmpty(branchPath)) {
-						final SnomedConcept releasedConcept = SnomedRequests.prepareGetConcept(getComponentId())
-								.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-								.execute(context.service(IEventBus.class))
-								.getSync();
-						if (!isDifferentToPreviousRelease(concept, releasedConcept)) {
-							concept.setEffectiveTime(releasedConcept.getEffectiveTime());
-						}
-						LOGGER.trace("Previous version comparison took {}", new Date().getTime() - start);
-					}
-				}
-			}
+		if (changed && concept.isSetEffectiveTime()) {
+			concept.unsetEffectiveTime();
 		}
-		
+
 		return changed;
 	}
 
@@ -192,13 +171,6 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	private FluentIterable<SnomedReferenceSetMember> getUpdateableMembers(Iterable<SnomedReferenceSetMember> members) {
 		return FluentIterable.from(members)
 				.filter(m -> !FILTERED_REFSET_IDS.contains(m.getReferenceSetId()));
-	}
-
-	private boolean isDifferentToPreviousRelease(Concept concept, SnomedConcept releasedConcept) {
-		if (releasedConcept.isActive() != concept.isActive()) return true;
-		if (!releasedConcept.getModuleId().equals(concept.getModule().getId())) return true;
-		if (!releasedConcept.getDefinitionStatus().getConceptId().equals(concept.getDefinitionStatus().getId())) return true;
-		return false;
 	}
 
 	private boolean updateDefinitionStatus(final TransactionContext context, final Concept concept) {
