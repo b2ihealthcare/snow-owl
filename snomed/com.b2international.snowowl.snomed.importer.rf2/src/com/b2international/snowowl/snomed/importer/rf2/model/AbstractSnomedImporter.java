@@ -174,7 +174,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	 * @param message the message to log.
 	 */
 	protected void log(final String message, Object...arguments) {
-		LogUtils.logImportActivity(IMPORT_LOGGER, userIdSupplier.get(), branchPathSupplier.get(), message, arguments);
+		LogUtils.logImportActivity(IMPORT_LOGGER, userIdSupplier.get(), branchPathSupplier.get().getPath(), message, arguments);
 	}
 	
 	protected SnomedImportConfiguration<T> getImportConfiguration() {

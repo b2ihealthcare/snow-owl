@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonom
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RF2TaxonomyGraph;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
+import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
@@ -76,12 +77,17 @@ public class SnomedTaxonomyValidator {
 	private final File relationshipsFile;
 	private final boolean snapshot;
 	// current store state
+	private final SnomedImportContext context;
 	private final String characteristicType;
 	private final RepositoryState repositoryState;
 
-	public SnomedTaxonomyValidator(final ImportConfiguration configuration,
+
+	public SnomedTaxonomyValidator(
+			final SnomedImportContext context,
+			final ImportConfiguration configuration,
 			final RepositoryState repositoryState,
 			final String characteristicType) {
+		this.context = context;
 		this.repositoryState = repositoryState;
 		this.characteristicType = characteristicType;
 		this.snapshot = SNAPSHOT.equals(configuration.getContentSubType());
@@ -176,7 +182,7 @@ public class SnomedTaxonomyValidator {
 	}
 
 	private Multimap<String, InvalidRelationship> processTaxonomy() throws IOException {
-		final RF2TaxonomyGraph graph = new RF2TaxonomyGraph(characteristicType);
+		final RF2TaxonomyGraph graph = new RF2TaxonomyGraph(context, characteristicType);
 		graph.init(repositoryState);
 		
 		final Multimap<String, InvalidRelationship> invalidRelationships = ArrayListMultimap.create();

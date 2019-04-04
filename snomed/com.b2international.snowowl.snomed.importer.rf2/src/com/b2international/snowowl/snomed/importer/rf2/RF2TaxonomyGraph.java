@@ -23,13 +23,19 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import com.b2international.collections.longs.LongIterator;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
 import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
 import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraphStatus;
 
@@ -44,10 +50,12 @@ public final class RF2TaxonomyGraph {
 	
 	private final TaxonomyGraph graph;
 	private final String characteristicTypeId;
+	private final SnomedOWLExpressionConverter owlExpressionConverter;
 	
-	public RF2TaxonomyGraph(String characteristicTypeId) {
+	public RF2TaxonomyGraph(BranchContext context, String characteristicTypeId) {
 		this.characteristicTypeId = characteristicTypeId;
 		this.graph = new TaxonomyGraph(EXPECTED_SIZE, EXPECTED_SIZE);
+		this.owlExpressionConverter = new SnomedOWLExpressionConverter(context);
 	}
 	
 	public TaxonomyGraph getGraph() {
@@ -77,6 +85,30 @@ public final class RF2TaxonomyGraph {
 						final long sourceId = Long.parseLong(record.get(4));
 						final long[] destinationIds = new long[] {Long.parseLong(record.get(5))};
 						graph.addEdge(id, sourceId, destinationIds);
+					}
+				} else {
+					graph.removeEdge(id);
+				}
+			}
+		});
+	}
+	
+	public void applyAxioms(final String owlExpressionFile) {
+		parseFile(owlExpressionFile, SnomedRf2Headers.OWL_EXPRESSION_HEADER.length, new RecordParserCallback<String>() {
+			@Override public void handleRecord(final int recordCount, final List<String> record) {
+				final String id = record.get(0);
+				if (ACTIVE_STATUS.equals(record.get(2))) {
+					String referencedComponentId = record.get(5);
+					String owlExpression = record.get(6);
+					SnomedOWLExpressionConverterResult result = owlExpressionConverter.toSnomedOWLRelationships(referencedComponentId, owlExpression);
+					if (!CompareUtils.isEmpty(result.getClassAxiomRelationships())) {
+						long[] destinationIds = result.getClassAxiomRelationships()
+								.stream()
+								.filter(classAxiom -> Concepts.IS_A.equals(classAxiom.getTypeId()))
+								.map(SnomedOWLRelationshipDocument::getDestinationId)
+								.mapToLong(Long::parseLong)
+								.toArray();
+						graph.addEdge(id, Long.parseLong(referencedComponentId), destinationIds);
 					}
 				} else {
 					graph.removeEdge(id);

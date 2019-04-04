@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,11 @@ import org.slf4j.Logger;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.DefaultBranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.ISnomedPostProcessorContext;
@@ -42,7 +46,7 @@ import com.google.common.base.Supplier;
 /**
  * Collects common import state objects and makes them available to importers.
  */
-public class SnomedImportContext implements ISnomedPostProcessorContext, AutoCloseable {
+public class SnomedImportContext extends DefaultBranchContext implements ISnomedPostProcessorContext, AutoCloseable {
 
 	private Logger logger;
 
@@ -73,8 +77,13 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	private String codeSystemShortName;
 	private final RevisionIndex index;
 
-	public SnomedImportContext(RevisionIndex index) {
-		this.index = index;
+	public SnomedImportContext(final RepositoryContext context, final String branchPath) {
+		super(context, getBranch(context, branchPath), branchPath);
+		this.index = context.service(RevisionIndex.class);
+	}
+
+	private static Branch getBranch(RepositoryContext context, final String branchPath) {
+		return RepositoryRequests.branching().prepareGet(branchPath).build().execute(context);
 	}
 
 	@Override
@@ -210,11 +219,6 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 		}
 	}
 	
-	@Override
-	public String branch() {
-		return editingContext.getBranch();
-	}
-
 	/**
 	 * Returns the editing context used for applying modifications on the SNOMED CT terminology, based on the incoming
 	 * import files.

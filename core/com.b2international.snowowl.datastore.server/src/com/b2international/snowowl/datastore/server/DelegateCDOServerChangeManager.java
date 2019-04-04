@@ -288,7 +288,7 @@ public class DelegateCDOServerChangeManager {
 	 * @param processor
 	 */
 	protected void logUserActivity(final ICDOCommitChangeSet cdoCommitChangeSet, IndexCommitChangeSet indexCommitChangeSet) {
-		LogUtils.logUserEvent(LOGGER, cdoCommitChangeSet.getUserId(), branchPath, indexCommitChangeSet.getDescription());
+		LogUtils.logUserEvent(LOGGER, cdoCommitChangeSet.getUserId(), branchPath.getPath(), indexCommitChangeSet.getDescription());
 	}
 
 	/*performs a rollback in the lightweight stores held by the CDO change processor instances.*/

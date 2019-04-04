@@ -39,11 +39,9 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.LogUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierValidator;
@@ -54,6 +52,7 @@ import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
+import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -76,24 +75,24 @@ public final class SnomedValidationContext {
 	
 	private final Map<String, Boolean> componentStatus = newHashMap();
 	
-	private final String requestingUserId;
-	private final IBranchPath branchPath;
+	private final SnomedImportContext context;
 	private final Logger logger;
 	private final Set<String> effectiveTimes = newHashSet();
 	private final RevisionSearcher searcher;
 	private final RepositoryState repositoryState;
 	
-	public SnomedValidationContext(final RevisionSearcher searcher, 
-			final String requestingUserId, 
+	public SnomedValidationContext(
+			final SnomedImportContext context, 
+			final RevisionSearcher searcher, 
 			final ImportConfiguration configuration, 
 			final Logger logger,
 			final RepositoryState repositoryState) {
+		this.context = context;
 		this.searcher = searcher;
 		this.logger = logger;
-		this.requestingUserId = requestingUserId;
 		this.configuration = configuration;
 		this.repositoryState = repositoryState;
-		this.branchPath = BranchPathUtils.createPath(configuration.getBranchPath());
+		
 		try {
 			addReleaseFilesForValidating();
 			addRefSetFilesForValidating();
@@ -238,7 +237,7 @@ public final class SnomedValidationContext {
 	public Collection<SnomedValidationDefect> validate(IProgressMonitor monitor) {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, 3);
 		logger.info("Validating release files...");
-		LogUtils.logImportActivity(logger, requestingUserId, branchPath, "Validating RF2 release files.");
+		LogUtils.logImportActivity(logger, context.getUserId(), context.branchPath(), "Validating RF2 release files.");
 
 		preValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 		doValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
@@ -247,11 +246,11 @@ public final class SnomedValidationContext {
 		final Collection<SnomedValidationDefect> validationResult = newHashSet();
 
 		if (configuration.isValidReleaseFile(configuration.getStatedRelationshipFile())) {
-			validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
+			validationResult.addAll(new SnomedTaxonomyValidator(context, configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
 		}
 		
 		if (configuration.isValidReleaseFile(configuration.getRelationshipFile())) {
-			validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
+			validationResult.addAll(new SnomedTaxonomyValidator(context, configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
 		}
 		
 		this.defects.forEach((file, defects) -> {

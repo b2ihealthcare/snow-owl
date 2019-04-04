@@ -54,7 +54,7 @@ public abstract class AbstractTerminologyImportJob extends Job {
 	 * @param message the message to be logged.
 	 */
 	protected void logImportActivity(final String message) {
-		LogUtils.logImportActivity(LOGGER, userId, branchPath, message);
+		LogUtils.logImportActivity(LOGGER, userId, branchPath.getPath(), message);
 	}
 	
 	/**
@@ -63,7 +63,7 @@ public abstract class AbstractTerminologyImportJob extends Job {
 	 * @param message the message to be logged.
 	 */
 	protected void logImportWarning(final String message) {
-		LogUtils.logImportWarning(LOGGER, userId, branchPath, message);
+		LogUtils.logImportWarning(LOGGER, userId, branchPath.getPath(), message);
 	}
 	
 	protected boolean isImportTypeClear() {
