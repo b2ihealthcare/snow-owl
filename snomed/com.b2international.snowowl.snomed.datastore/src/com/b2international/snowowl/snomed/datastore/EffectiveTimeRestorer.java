@@ -344,7 +344,7 @@ public final class EffectiveTimeRestorer {
 				}
 				
 				// Handle extended map
-				if (Objects.equals(memberToRestore.getMapCategoryId(), previousMapCategoryId)) {
+				if (!Objects.equals(memberToRestore.getMapCategoryId(), previousMapCategoryId)) {
 					return false;
 				}
 				
