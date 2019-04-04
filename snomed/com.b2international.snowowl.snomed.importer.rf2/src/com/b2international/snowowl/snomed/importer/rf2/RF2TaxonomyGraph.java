@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.List;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.csv.CsvLexer.EOL;
@@ -62,8 +63,8 @@ public final class RF2TaxonomyGraph {
 		return graph;
 	}
 	
-	public void applyNodeChanges(final String conceptFilePath) {
-		parseFile(conceptFilePath, 5, new RecordParserCallback<String>() {
+	public void applyNodeChanges(final File conceptFile) {
+		parseFile(conceptFile, 5, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				if (ACTIVE_STATUS.equals(record.get(2))) {
 					graph.addNode(record.get(0));
@@ -74,8 +75,8 @@ public final class RF2TaxonomyGraph {
 		});
 	}
 	
-	public void applyEdgeChanges(final String relationshipFilePath) {
-		parseFile(relationshipFilePath, 10, new RecordParserCallback<String>() {
+	public void applyEdgeChanges(final File relationshipFile) {
+		parseFile(relationshipFile, 10, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				final String id = record.get(0);
 				if (ACTIVE_STATUS.equals(record.get(2))) {
@@ -93,7 +94,7 @@ public final class RF2TaxonomyGraph {
 		});
 	}
 	
-	public void applyAxioms(final String owlExpressionFile) {
+	public void applyAxioms(final File owlExpressionFile) {
 		parseFile(owlExpressionFile, SnomedRf2Headers.OWL_EXPRESSION_HEADER.length, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				final String id = record.get(0);
@@ -117,16 +118,16 @@ public final class RF2TaxonomyGraph {
 		});
 	}
 	
-	private void parseFile(final String filePath, final int columnCount, final RecordParserCallback<String> callback) {
+	private void parseFile(final File file, final int columnCount, final RecordParserCallback<String> callback) {
 		
-		if (null == filePath) {
+		if (null == file || file.getPath().isEmpty()) {
 			return; //nothing to process
 		}
 		
-		try (final Reader reader = new FileReader(new File(filePath))) {
+		try (final Reader reader = new FileReader(file)) {
 			new CsvParser(reader, CSV_SETTINGS, callback, columnCount).parse();
 		} catch (final IOException e) {
-			throw new SnowowlRuntimeException(MessageFormat.format("Exception caught while parsing file ''{0}''.", filePath));
+			throw new SnowowlRuntimeException(MessageFormat.format("Exception caught while parsing file ''{0}''.", file));
 		}
 	}
 
@@ -134,9 +135,9 @@ public final class RF2TaxonomyGraph {
 		return graph.update();
 	}
 
-	public void init(RepositoryState repositoryState) {
+	public void init(LongCollection conceptIds, Iterable<Object[]> isaStatements) {
 		// populate nodes
-		LongIterator conceptIdsIt = repositoryState.getConceptIds().iterator();
+		LongIterator conceptIdsIt = conceptIds.iterator();
 		while (conceptIdsIt.hasNext()) {
 			long nodeId = conceptIdsIt.next();
 			if (IComponent.ROOT_IDL == nodeId) {
@@ -146,7 +147,7 @@ public final class RF2TaxonomyGraph {
 		}
 		
 		// populate edges
-		for (Object[] isaStatement : Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId) ? repositoryState.getStatedStatements() : repositoryState.getInferredStatements()) {
+		for (Object[] isaStatement : isaStatements) {
 			graph.addEdge((String) isaStatement[0], (long) isaStatement[1], (long[]) isaStatement[2]);
 		}
 	}

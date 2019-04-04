@@ -23,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -409,6 +410,14 @@ public abstract class AbstractSnomedValidator {
 		conceptIdDescriptionStatus.add(row.get(2)); // status
 		
 		return conceptIdDescriptionStatus;
+	}
+	
+	public File getReleaseFile() {
+		try {
+			return new File(releaseUrl.toURI());
+		} catch (URISyntaxException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 	
 	/**

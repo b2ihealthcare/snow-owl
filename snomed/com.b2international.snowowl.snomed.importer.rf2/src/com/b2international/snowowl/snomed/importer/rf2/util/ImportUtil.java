@@ -32,7 +32,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -49,12 +48,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.platform.Extensions;
-import com.b2international.index.Hits;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
@@ -85,8 +80,6 @@ import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.importer.ImportException;
 import com.b2international.snowowl.snomed.importer.Importer;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
@@ -94,7 +87,6 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSetSelectors;
-import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.b2international.snowowl.snomed.importer.rf2.SnomedCompositeImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.SnomedCompositeImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
@@ -235,28 +227,6 @@ public final class ImportUtil {
 		return file;
 	}
 
-	private RepositoryState loadRepositoryState(RevisionSearcher searcher) throws IOException {
-		final LongCollection conceptIds = getConceptIds(searcher);
-		final Collection<Object[]> statedStatements = Taxonomies.getAllStatements(searcher, Concepts.STATED_RELATIONSHIP);
-		final Collection<Object[]> inferredStatements = Taxonomies.getAllStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
-		return new RepositoryState(conceptIds, statedStatements, inferredStatements);
-	}
-
-	private LongCollection getConceptIds(RevisionSearcher searcher) throws IOException {
-		final Query<String> query = Query.select(String.class)
-				.from(SnomedConceptDocument.class)
-				.fields(SnomedDocument.Fields.ID)
-				.where(Expressions.matchAll())
-				.limit(Integer.MAX_VALUE)
-				.build();
-		final Hits<String> hits = searcher.search(query);
-		final LongCollection conceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(hits.getTotal());
-		for (String hit : hits) {
-			conceptIds.add(Long.parseLong(hit));
-		}
-		return conceptIds;
-	}
-	
 	private SnomedImportResult doImportInternal(final SnomedImportContext context, final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Importing release files...", 17);
 		final SnomedImportResult result = new SnomedImportResult();
@@ -487,8 +457,7 @@ public final class ImportUtil {
 		return context.service(RevisionIndex.class).read(configuration.getBranchPath(), new RevisionIndexRead<Boolean>() {
 			@Override
 			public Boolean execute(RevisionSearcher index) throws IOException {
-				final RepositoryState repositoryState = loadRepositoryState(index);
-				final SnomedValidationContext validator = new SnomedValidationContext(context, index, configuration, IMPORT_LOGGER, repositoryState);
+				final SnomedValidationContext validator = new SnomedValidationContext(context, index, configuration, IMPORT_LOGGER);
 				
 				final Set<SnomedValidationDefect> defects = result.getValidationDefects();
 				defects.addAll(validator.validate(subMonitor.newChild(1)));

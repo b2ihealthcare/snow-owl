@@ -28,14 +28,18 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.LogUtils;
@@ -46,12 +50,13 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierValidator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.importer.ImportException;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
@@ -79,19 +84,16 @@ public final class SnomedValidationContext {
 	private final Logger logger;
 	private final Set<String> effectiveTimes = newHashSet();
 	private final RevisionSearcher searcher;
-	private final RepositoryState repositoryState;
 	
 	public SnomedValidationContext(
 			final SnomedImportContext context, 
 			final RevisionSearcher searcher, 
 			final ImportConfiguration configuration, 
-			final Logger logger,
-			final RepositoryState repositoryState) {
+			final Logger logger) {
 		this.context = context;
 		this.searcher = searcher;
 		this.logger = logger;
 		this.configuration = configuration;
-		this.repositoryState = repositoryState;
 		
 		try {
 			addReleaseFilesForValidating();
@@ -234,7 +236,7 @@ public final class SnomedValidationContext {
 		return logger;
 	}
 
-	public Collection<SnomedValidationDefect> validate(IProgressMonitor monitor) {
+	public Collection<SnomedValidationDefect> validate(IProgressMonitor monitor) throws IOException {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, 3);
 		logger.info("Validating release files...");
 		LogUtils.logImportActivity(logger, context.getUserId(), context.branchPath(), "Validating RF2 release files.");
@@ -245,12 +247,25 @@ public final class SnomedValidationContext {
 
 		final Collection<SnomedValidationDefect> validationResult = newHashSet();
 
-		if (configuration.isValidReleaseFile(configuration.getStatedRelationshipFile())) {
-			validationResult.addAll(new SnomedTaxonomyValidator(context, configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
+		Optional<File> owlRefSetValidator = releaseFileValidators.stream()
+			.filter(SnomedOWLExpressionRefSetValidator.class::isInstance)
+			.map(SnomedOWLExpressionRefSetValidator.class::cast)
+			.filter(validator -> validator.getReleaseFileName().contains("OwlAxiom") || validator.getReleaseFileName().contains("OwlExpression"))
+			.map(AbstractSnomedValidator::getReleaseFile)
+			.findFirst();
+			
+		LongCollection conceptIds = null;
+		
+		if (configuration.isValidReleaseFile(configuration.getStatedRelationshipFile()) || owlRefSetValidator.isPresent()) {
+			conceptIds = conceptIds == null ? getConceptIds() : conceptIds;
+			final Collection<Object[]> statedStatements = Taxonomies.getAllStatements(searcher, Concepts.STATED_RELATIONSHIP);
+			validationResult.addAll(new SnomedTaxonomyValidator(context, conceptIds, statedStatements, configuration, owlRefSetValidator.orElse(null), Concepts.STATED_RELATIONSHIP).validate());
 		}
 		
 		if (configuration.isValidReleaseFile(configuration.getRelationshipFile())) {
-			validationResult.addAll(new SnomedTaxonomyValidator(context, configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
+			conceptIds = conceptIds == null ? getConceptIds() : conceptIds;
+			final Collection<Object[]> inferredStatements = Taxonomies.getAllStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
+			validationResult.addAll(new SnomedTaxonomyValidator(context, conceptIds, inferredStatements, configuration, null, Concepts.INFERRED_RELATIONSHIP).validate());
 		}
 		
 		this.defects.forEach((file, defects) -> {
@@ -260,6 +275,21 @@ public final class SnomedValidationContext {
 		});
 
 		return validationResult;
+	}
+	
+	private LongCollection getConceptIds() throws IOException {
+		final Query<String> query = Query.select(String.class)
+				.from(SnomedConceptDocument.class)
+				.fields(SnomedDocument.Fields.ID)
+				.where(Expressions.matchAll())
+				.limit(Integer.MAX_VALUE)
+				.build();
+		final Hits<String> hits = searcher.search(query);
+		final LongCollection conceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(hits.getTotal());
+		for (String hit : hits) {
+			conceptIds.add(Long.parseLong(hit));
+		}
+		return conceptIds;
 	}
 
 	/*package*/ void registerComponent(final String sourceFile, ComponentCategory category, String componentId, boolean status) throws AlreadyExistsException {
