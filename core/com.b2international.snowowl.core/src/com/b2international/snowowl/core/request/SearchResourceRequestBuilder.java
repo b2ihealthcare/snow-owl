@@ -138,7 +138,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B sortBy(List<Sort> sorts) {
-		addOption(OptionKey.SORT_BY, ImmutableList.copyOf(sorts));
+		optionsBuilder.put(OptionKey.SORT_BY.name(), ImmutableList.copyOf(sorts));
 		return getSelf();
 	}
 	
@@ -162,9 +162,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	protected final B addOption(String key, Object value) {
 		if (value instanceof Iterable<?>) {
 			for (final Object val : (Iterable<?>)value) {
-				if (val instanceof SearchResourceRequest.Sort) {
-					// ignore sort fields
-				} else if (val == null) {
+				if (val == null) {
 					throw new BadRequestException("%s filter cannot contain null values", key);
 				}
 			}
