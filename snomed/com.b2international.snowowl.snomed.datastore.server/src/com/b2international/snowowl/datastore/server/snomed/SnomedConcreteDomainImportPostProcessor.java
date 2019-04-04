@@ -160,7 +160,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			ISnomedPostProcessorContext context, List<RequestBuilder<TransactionContext, ?>> requests) {
 
 		if (!conceptExists(conceptId, context)) {
-			requests.add(createConcept(conceptId, fsn, pt, parentId, context));
+			requests.add(createConcept(conceptId, fsn, pt, parentId));
 			context.getLogger().info("Created required concept for data type reference sets: '{}'", conceptId);
 		}
 
@@ -170,7 +170,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			ISnomedPostProcessorContext context, List<RequestBuilder<TransactionContext, ?>> requests) {
 
 		if (!conceptExists(conceptId, context)) {
-			requests.add(createConcept(conceptId, fsn, pt, parentId, context));
+			requests.add(createConcept(conceptId, fsn, pt, parentId));
 			context.getLogger().info("Created {} identifier concept with id: '{}'", pt.toLowerCase(), conceptId);
 		}
 
@@ -205,7 +205,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			.setType(SnomedRefSetType.CONCRETE_DATA_TYPE);
 	}
 
-	private SnomedConceptCreateRequestBuilder createConcept(final String identifierConceptId, final String fsnTerm, final String ptTerm, final String parent, final BranchContext context) {
+	private SnomedConceptCreateRequestBuilder createConcept(final String identifierConceptId, final String fsnTerm, final String ptTerm, final String parent) {
 		return SnomedRequests.prepareNewConcept()
 				.setId(identifierConceptId)
 				.setActive(true)
