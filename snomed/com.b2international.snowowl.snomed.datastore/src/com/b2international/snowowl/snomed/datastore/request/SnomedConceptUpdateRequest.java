@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.ecore.EObject;
@@ -35,6 +39,7 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -49,8 +54,10 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -174,20 +181,34 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	}
 
 	private boolean updateDefinitionStatus(final TransactionContext context, final Concept concept) {
-		if (null == definitionStatus) {
-			return false;
+		final Set<String> newOwlAxiomExpressions = Optional.ofNullable(members)
+				.map(Collection::stream)
+				.orElseGet(Stream::empty)
+					.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getReferenceSetId()))
+					.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
+					.collect(Collectors.toSet());
+		
+		final String newDefinitionStatusId;
+		if (!newOwlAxiomExpressions.isEmpty()) {
+			// Calculate the definition status
+			newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newOwlAxiomExpressions).getConceptId();
+		} else {
+			if (definitionStatus == null) return false;
+			
+			final String incomingDefinitionStatusId = definitionStatus.getConceptId();
+			newDefinitionStatusId = incomingDefinitionStatusId;
 		}
-
+		
 		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
-		final String newDefinitionStatusId = definitionStatus.getConceptId();
-		if (!existingDefinitionStatusId.equals(newDefinitionStatusId)) {
+		if (!newDefinitionStatusId.equals(existingDefinitionStatusId)) {
 			concept.setDefinitionStatus(context.lookup(newDefinitionStatusId, Concept.class));
 			return true;
 		} else {
 			return false;
 		}
+		
 	}
-
+	
 	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final Concept concept) {
 		if (null == subclassDefinitionStatus) {
 			return false;
@@ -376,9 +397,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (getModuleId() != null) {
 			ids.add(getModuleId());
 		}
-		if (definitionStatus != null) {
-			ids.add(definitionStatus.getConceptId());
-		}
+
+		ids.addAll(ImmutableList.of(Concepts.PRIMITIVE, Concepts.FULLY_DEFINED));
+		
 		if (inactivationIndicator != null) {
 			ids.add(inactivationIndicator.getConceptId());
 		}

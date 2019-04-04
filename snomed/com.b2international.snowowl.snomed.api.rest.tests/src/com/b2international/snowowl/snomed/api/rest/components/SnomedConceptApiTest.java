@@ -27,13 +27,32 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRelationshipRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.reactivateConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.reserveComponentId;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -54,6 +73,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -68,6 +88,7 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -767,6 +788,252 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		 assertEquals(1, conceptWithInboundRelationship.getInboundRelationships().getItems().size());
 		 final SnomedRelationship expandedInboundRelationship = Iterables.getOnlyElement(conceptWithInboundRelationship.getInboundRelationships());
 		 assertEquals(inboundRelationshipId, expandedInboundRelationship.getId());
+	}
+	
+	@Test
+	public void createConceptWithOwlAxiomMemberWithSubClassOfExpression() throws Exception {
+		final String owlSubclassOfExpression = String.format("SubClassOf(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS);
+		
+		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression)
+				.build();
+
+		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.put("members", ImmutableList.of(memberRequestBody))
+				.put("commitComment", "Created concept with owl axiom reference set member")
+				.build();
+
+		final String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
+			.setExpand("members()")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync();
+		
+		assertNotNull(conceptWithAxiomMember);
+		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
+		assertEquals(DefinitionStatus.PRIMITIVE, conceptWithAxiomMember.getDefinitionStatus()); 
+	}
+	
+	@Test
+	public void createConceptWithOwlAxiomMemberWithEquivalentClassesExpression() throws Exception {
+		final String owlEquivalentClassesExpression = String.format("EquivalentClasses(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS);
+		
+		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlEquivalentClassesExpression)
+				.build();
+
+		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.put("members", ImmutableList.of(memberRequestBody))
+				.put("commitComment", "Created concept with owl axiom reference set member")
+				.build();
+
+		final String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
+			.setExpand("members()")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync();
+		
+		assertNotNull(conceptWithAxiomMember);
+		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
+		assertEquals(DefinitionStatus.FULLY_DEFINED, conceptWithAxiomMember.getDefinitionStatus()); 
+	}
+
+	@Test
+	public void createConceptWithOwlAxiomMemberWithComplexSubClassOfExpressionShouldDefaultToPrimitive() throws Exception {
+		final String owlSubClassOfExpression = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:73211009 ObjectSomeValuesFrom(:100106001 :100102001))) :8801005)";
+		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubClassOfExpression)
+				.build();
+		
+		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.put("members", ImmutableList.of(memberRequestBody))
+				.put("commitComment", "Created concept with owl axiom reference set member")
+				.build();
+		
+		final String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
+				.setExpand("members()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+		
+		assertNotNull(conceptWithAxiomMember);
+		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
+		assertEquals(DefinitionStatus.PRIMITIVE, conceptWithAxiomMember.getDefinitionStatus()); 
+	}
+	
+	@Test
+	public void createConceptWithoutOwlAxiomMembersConceptDefinitionStatusShouldDefaultToPrimitive() throws Exception {
+		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created concept")
+				.build();
+		
+		final String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		final SnomedConcept concept = SnomedRequests.prepareGetConcept(conceptId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+		
+		assertNotNull(concept);
+		assertEquals(DefinitionStatus.PRIMITIVE, concept.getDefinitionStatus()); 
+	}
+	
+	@Test
+	public void testUpdateConceptDefinitionStatusWithoutAxiomMembers() {
+		final String conceptId = createNewConcept(branchPath);
+
+		// Update the definition status on concept
+		Map<?, ?> updateRequestBody = ImmutableMap.<String, Object>builder()
+				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("commitComment", "Changed definition status of concept to fully defined")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
+
+		// Verify change of definition status on concept
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "").statusCode(200)
+			.body("definitionStatus", equalTo(DefinitionStatus.FULLY_DEFINED.toString()));
+	}
+	
+	@Test
+	public void testUpdateConceptDefinitionStatusWithAxiomMembersShouldNotChange() {
+		final String conceptId = createNewConcept(branchPath);
+
+		// Update the definition status on concept
+		final Map<?, ?> definitionStatusUpdateRequestBody = ImmutableMap.<String, Object>builder()
+				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("commitComment", "Changed definition status of concept to fully defined")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, definitionStatusUpdateRequestBody).statusCode(204);
+		
+		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS));
+		// Add a reference set member
+		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
+		newMember.setId(UUID.randomUUID().toString());
+		newMember.setActive(true);
+		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setProperties(properties);
+		newMember.setType(SnomedRefSetType.OWL_AXIOM);
+		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
+
+		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
+				.add(newMember)
+				.build();
+
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("members", SnomedReferenceSetMembers.of(changedMembers))
+				.put("definitionStatus", DefinitionStatus.PRIMITIVE)
+				.put("commitComment", "Add new reference set member via concept update")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
+		
+		final SnomedConcept updatedConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "members()")
+				.statusCode(200)
+				.extract().as(SnomedConcept.class);
+
+		assertEquals(1, updatedConcept.getMembers().getTotal());
+		
+		// Verify that definition status is still fully defined
+		assertEquals(DefinitionStatus.FULLY_DEFINED, updatedConcept.getDefinitionStatus());
+	}
+	
+	@Test
+	public void testUpdateConceptDefinitionStatusWithEquivalentClassesAxiomMember() {
+		final String conceptId = createNewConcept(branchPath);
+
+		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS));
+		// Add a reference set member
+		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
+		newMember.setId(UUID.randomUUID().toString());
+		newMember.setActive(true);
+		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setProperties(properties);
+		newMember.setType(SnomedRefSetType.OWL_AXIOM);
+		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
+
+		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
+				.add(newMember)
+				.build();
+
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("members", SnomedReferenceSetMembers.of(changedMembers))
+				.put("commitComment", "Add new reference set member via concept update")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
+		
+		final SnomedConcept updatedConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "members()")
+				.statusCode(200)
+				.extract().as(SnomedConcept.class);
+
+		assertEquals(1, updatedConcept.getMembers().getTotal());
+		
+		// Verify that definition status was updated to FULLY DEFINED
+		assertEquals(DefinitionStatus.FULLY_DEFINED, updatedConcept.getDefinitionStatus());
+	}
+	
+	@Test
+	public void testUpdateConceptDefinitionStatusWithSubClassOfAxiomMemberShouldChangeToPrimitive() {
+		final String conceptId = createNewConcept(branchPath);
+
+		// Update the definition status on concept
+		final Map<?, ?> definitionStatusUpdateRequestBody = ImmutableMap.<String, Object>builder()
+				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("commitComment", "Changed definition status of concept to fully defined")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, definitionStatusUpdateRequestBody).statusCode(204);
+		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS));
+		// Add a reference set member
+		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
+		newMember.setId(UUID.randomUUID().toString());
+		newMember.setActive(true);
+		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setProperties(properties);
+		newMember.setType(SnomedRefSetType.OWL_AXIOM);
+		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
+
+		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
+				.add(newMember)
+				.build();
+
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("members", SnomedReferenceSetMembers.of(changedMembers))
+				.put("commitComment", "Add new reference set member via concept update")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
+		
+		final SnomedConcept updatedConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "members()")
+				.statusCode(200)
+				.extract().as(SnomedConcept.class);
+
+		assertEquals(1, updatedConcept.getMembers().getTotal());
+		
+		// Verify that definition status was updated to FULLY DEFINED
+		assertEquals(DefinitionStatus.PRIMITIVE, updatedConcept.getDefinitionStatus());
 	}
 	
 }

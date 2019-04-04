@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -36,6 +38,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
@@ -104,7 +107,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		return ImmutableSet.<String>builder()
 				.add(getModuleId())
-				.add(definitionStatus.getConceptId())
+				.addAll(ImmutableList.of(Concepts.FULLY_DEFINED, Concepts.PRIMITIVE))
 				.addAll(descriptions.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
 				.addAll(relationships.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
 				.addAll(members.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
@@ -125,13 +128,25 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 
 	private Concept convertConcept(final TransactionContext context) {
+		final DefinitionStatus newDefinitionStatus;
+		final Set<String> newAxiomExpressions = getOwlAxiomExpressions();
+
+		if (!newAxiomExpressions.isEmpty()) {
+			newDefinitionStatus = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newAxiomExpressions);
+		} else {
+			if (definitionStatus == null) {
+				throw new BadRequestException("No axiom members or definition status was set for concept");
+			}
+			newDefinitionStatus = definitionStatus;
+		}
+		
 		try {
 			final String conceptId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			return SnomedComponents.newConcept()
 					.withId(conceptId)
 					.withActive(isActive())
 					.withModule(getModuleId())
-					.withDefinitionStatus(definitionStatus)
+					.withDefinitionStatus(newDefinitionStatus)
 					.withExhaustive(subclassDefinitionStatus.isExhaustive())
 					.build(context);
 		} catch (final ComponentNotFoundException e) {
@@ -139,6 +154,14 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		}
 	}
 
+	private Set<String> getOwlAxiomExpressions() {
+		return Optional.ofNullable(members).map(Collection::stream).orElseGet(Stream::empty)
+			.filter(req -> req.hasProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
+			.map(req -> req.getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
+			.collect(Collectors.toSet());
+		
+	}
+	
 	private void convertDescriptions(TransactionContext context, final String conceptId) {
 		final Set<String> requiredDescriptionTypes = newHashSet(Concepts.FULLY_SPECIFIED_NAME, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 		final Multiset<String> preferredLanguageRefSetIds = HashMultiset.create();
