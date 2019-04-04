@@ -991,6 +991,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertEquals(DefinitionStatus.FULLY_DEFINED, updatedConcept.getDefinitionStatus());
 	}
 	
+	@Test
 	public void testUpdateConceptDefinitionStatusWithSubClassOfAxiomMemberShouldChangeToPrimitive() {
 		final String conceptId = createNewConcept(branchPath);
 
