@@ -222,7 +222,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				final String currentUnitEffectiveTimeKey = subUnit.getEffectiveTimeKey();
 				
 				if (!Objects.equal(lastUnitEffectiveTimeKey, currentUnitEffectiveTimeKey)) {
-//					updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
 					createSnomedVersionFor(lastUnitEffectiveTimeKey);
 					lastUnitEffectiveTimeKey = currentUnitEffectiveTimeKey;
 				}
@@ -230,13 +229,12 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				subUnit.doImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 			}
 			
-//			updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
 			createSnomedVersionFor(lastUnitEffectiveTimeKey);
 		}
 	}
 
 	private IBranchPath getImportBranchPath() {
-		return BranchPathUtils.createPath(importContext.getEditingContext().getTransaction());
+		return BranchPathUtils.createPath(importContext.getEditingContext().getBranch());
 	}
 
 	private boolean isRefSetImport(final Iterable<? extends ComponentImportUnit> units) {
@@ -286,78 +284,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		}
 	}
 
-//	private void updateInfrastructure(final List<ComponentImportUnit> units, final IBranchPath branchPath, final String lastUnitEffectiveTimeKey) {
-//
-//		if (0 == importContext.getVisitedConcepts().size() && 0 == importContext.getVisitedRefSets().size()) {
-//			//nothing changed
-//			return;
-//		}
-//		
-//		String conceptFilePath = null;
-//		Set<String> descriptionFilePaths = newHashSet();
-//		String relationshipFilePath = null;
-//		Set<String> languageFilePaths = newHashSet();
-//		String statedRelationshipFilePath = null;
-//		
-//		for (final ComponentImportUnit unit : units) {
-//			
-//			// Consider all reference set files if importing a SNAPSHOT, check matching effective time otherwise 
-//			if (Objects.equal(lastUnitEffectiveTimeKey, unit.getEffectiveTimeKey())) {
-//				final String path = unit.getUnitFile().getAbsolutePath();
-//				
-//				switch (unit.getType()) {
-//					case CONCEPT: 
-//						if (null == conceptFilePath) {
-//							conceptFilePath = path;
-//						}
-//						break;
-//					case DESCRIPTION: 
-//					case TEXT_DEFINITION: 
-//						descriptionFilePaths.add(path); 
-//						break;
-//					case LANGUAGE_TYPE_REFSET: 
-//						languageFilePaths.add(path); 
-//						break;
-//					case RELATIONSHIP: 
-//						if (null == relationshipFilePath) {
-//							relationshipFilePath = path; 
-//						}
-//						break;
-//					case STATED_RELATIONSHIP:
-//						if (null == statedRelationshipFilePath) {
-//							statedRelationshipFilePath = path; 
-//						}
-//					default: /*intentionally ignored*/ break;
-//				}
-//			}
-//		}
-//		
-//		if (null == inferredGraph) {
-//			// First iteration: initialize release file-based builder with existing contents (if any)
-//			inferredGraph = buildTaxonomy(Concepts.INFERRED_RELATIONSHIP);
-//		}
-//		
-//		inferredGraph.applyNodeChanges(conceptFilePath);
-//		inferredGraph.applyEdgeChanges(relationshipFilePath);
-//		inferredGraph.update();
-//		
-//		if (null == statedGraph) {
-//			// First iteration: initialize release file-based builder with existing contents (if any)
-//			statedGraph = buildTaxonomy(Concepts.STATED_RELATIONSHIP);
-//		}
-//		
-//		statedGraph.applyNodeChanges(conceptFilePath);
-//		statedGraph.applyEdgeChanges(statedRelationshipFilePath);
-//		statedGraph.update();
-//	}
-
-//	private RF2TaxonomyGraph buildTaxonomy(final String characteristicTypeId) {
-//		final RF2TaxonomyGraph graph = new RF2TaxonomyGraph(importContext, characteristicTypeId);
-//		graph.init(repositoryState);
-//		return graph;
-//	}
-
-	protected void createSnomedVersionFor(final String lastUnitEffectiveTimeKey) {
+	private void createSnomedVersionFor(final String lastUnitEffectiveTimeKey) {
 		
 		try {
 
