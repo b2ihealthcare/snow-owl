@@ -29,7 +29,7 @@
   {
   	"id": "rule_mrcm_constraint",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Relationships must follow MRCM rules.",
+    "messageTemplate": "Relationship target values must be consistent with MRCM.",
     "severity": "WARNING",
     "checkType": "EXPENSIVE",
     "type": "script-groovy",
