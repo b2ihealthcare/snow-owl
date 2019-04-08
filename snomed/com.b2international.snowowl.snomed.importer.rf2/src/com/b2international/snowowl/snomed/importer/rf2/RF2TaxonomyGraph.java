@@ -66,10 +66,14 @@ public final class RF2TaxonomyGraph {
 	public void applyNodeChanges(final File conceptFile) {
 		parseFile(conceptFile, 5, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
+				final String id = record.get(0);
+				if (SnomedRf2Headers.FIELD_ID.equals(id)) {
+					return;
+				}
 				if (ACTIVE_STATUS.equals(record.get(2))) {
-					graph.addNode(record.get(0));
+					graph.addNode(id);
 				} else {
-					graph.removeNode(record.get(0));
+					graph.removeNode(id);
 				}
 			}
 		});
@@ -79,6 +83,9 @@ public final class RF2TaxonomyGraph {
 		parseFile(relationshipFile, 10, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				final String id = record.get(0);
+				if (SnomedRf2Headers.FIELD_ID.equals(id)) {
+					return;
+				}
 				if (ACTIVE_STATUS.equals(record.get(2))) {
 					final String typeId = record.get(7);
 					final String rowCharacteristicTypeId = record.get(8);
@@ -98,6 +105,9 @@ public final class RF2TaxonomyGraph {
 		parseFile(owlExpressionFile, SnomedRf2Headers.OWL_EXPRESSION_HEADER.length, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				final String id = record.get(0);
+				if (SnomedRf2Headers.FIELD_ID.equals(id)) {
+					return;
+				}
 				if (ACTIVE_STATUS.equals(record.get(2))) {
 					String referencedComponentId = record.get(5);
 					String owlExpression = record.get(6);
