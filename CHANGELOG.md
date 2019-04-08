@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.14.1
+
+### Bugs
+- Fix issue with SNOMED CT RF2 Snapshot file imports (c2a5bcd)
+
 ## 6.14.0
 
 ### Added
