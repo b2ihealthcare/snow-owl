@@ -1,0 +1,41 @@
+#
+# Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+#
+
+# necessary to connect one user to the system otherwise Snow Owl startup fails
+systemUser: true
+
+identity:
+  providers:
+    - file:
+        name: users
+#   - ldap:
+#        uri: <ldap_uri>
+#        baseDn: dc=snowowl,dc=b2international,dc=com
+#        rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
+#        rootDnPassword: <adminpwd>
+#        userIdProperty: uid
+#        usePool: false
+  
+# snomed:
+#  concreteDomainSupport: false
+#  maxReasonerCount: 1
+#  ids:
+#    strategy : EMBEDDED
+
+repository:
+  host: 0.0.0.0
+  port: 2036
+  
+  index:
+    socketTimeout: 60000
+    clusterUrl: ${ES_CLUSTER_URL}
+  
+# monitoring:
+#  enabled: true
+
+  #reviewManager:
+  # Minutes to keep reviews in CURRENT state persisted in the index (default 15 minutes)
+  # keepCurrentMins: 15
+  # Minutes to keep reviews in others states persisted (default 5 minutes)
+  # keepOtherMins: 5
