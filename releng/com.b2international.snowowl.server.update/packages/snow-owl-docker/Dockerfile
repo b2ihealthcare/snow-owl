@@ -1,5 +1,11 @@
-FROM centos:7
+﻿FROM centos:7
 LABEL maintainer="B2i Healthcare <http://b2i.sg/>"
+
+ARG SNOWOWL_VERSION
+ARG ES_CLUSTER_URL_ARG
+
+# Set environment ES_URL variable for Snow Owl 
+ENV ES_CLUSTER_URL ${ES_CLUSTER_URL_ARG}:$ES_CLUSTER_URL
 
 # Install java 1.8 as a pre requirement
 RUN yum -y update -q -e 0 && yum clean all
@@ -12,10 +18,11 @@ ENV JAVA_HOME /etc/alternatives/jre
 
 # Install wget
 RUN yum -y install wget -q -e 0 
+# Download 7.0.0 Snow Owl rpm package
+RUN wget https://github.com/b2ihealthcare/snow-owl/releases/download/v${SNOWOWL_VERSION}/snow-owl-oss-${SNOWOWL_VERSION}.rpm -q
 
-# Download and install 7.0.0 Snow Owl rpm package
-RUN wget https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.rpm -q
-RUN rpm --install snow-owl-oss-7.0.0.rpm
+# Install Snow Owl rpm package
+RUN rpm --install snow-owl-oss-${SNOWOWL_VERSION}.rpm
 
 # Openshift overrides USER and uses ones with randomly uid>1024 and gid=0
 RUN chgrp 0 /usr/share/snowowl/bin/startup.sh && \
@@ -23,13 +30,10 @@ RUN chgrp 0 /usr/share/snowowl/bin/startup.sh && \
     chmod 0775 /usr/share/snowowl/bin/startup.sh
 
 # Overwrite config file after installation
-COPY snowowl.yml /etc/snowowl/snowowl.yml
+COPY /config/snowowl.yml /etc/snowowl/snowowl.yml
 
 # Set environment variable for Snow Owl data folder
 ENV SO_PATH_DATA /var/lib/snowowl:$SO_PATH_DATA
-
-# Set environment ES_URL variable for Snow Owl 
-ENV ES_CLUSTER_URL http://es:9300:$ES_CLUSTER_URL
 
 # Expose necessary ports used by Snow OWl
 EXPOSE 2036 8080
