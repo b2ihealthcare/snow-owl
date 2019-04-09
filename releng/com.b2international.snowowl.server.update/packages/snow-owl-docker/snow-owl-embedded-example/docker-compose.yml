@@ -10,6 +10,3 @@ services:
 
 networks:
   snowowl:
-
-volumes:
-  esdata:
