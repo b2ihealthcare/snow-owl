@@ -17,12 +17,12 @@ services:
       timeout: 1s
       retries: 60
    # ports:
-   #  - 9200:9200
-   #  - 9300:9300
+    #  - 9200:9200
+     # - 9300:9300
 
  
   snowowl:
-    image: 9bc21b40a015
+    image: 2f58a48106da
     container_name: snowowl
     depends_on:
       elasticsearch:
