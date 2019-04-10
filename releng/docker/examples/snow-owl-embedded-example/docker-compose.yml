@@ -1,4 +1,4 @@
-version: '2.2'
+version: '3.7'
 services: 
   snowowl:
     image: # TODO: build an image and upload to Docker Hub
