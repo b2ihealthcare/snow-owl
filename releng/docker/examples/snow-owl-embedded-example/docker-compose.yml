@@ -1,0 +1,15 @@
+version: '3.7'
+services: 
+  snowowl:
+    image: 4a4c60b0c2f9
+    container_name: snowowl
+    networks:
+      - snowowl
+    ports:
+      - 8080:8080
+
+networks:
+  snowowl:
+
+volumes:
+  esdata:

@@ -1,0 +1,45 @@
+#
+# Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+#
+
+gzip: false
+
+identity:
+  providers:
+    - file:
+        name: users
+    - ldap:
+        uri: ldap://arnold:389
+        rootDnPassword: adminpwd
+
+repository:
+  host: 0.0.0.0
+  port: 2036
+  # Index timeout (default)
+  # indexTimeout=240
+  database:
+    type: b2i_mysql
+    datasource: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+    driver: com.mysql.jdbc.Driver
+    scheme: jdbc:mysql://
+    location: localhost:3306/
+    settings: ?useServerPrepStmts=true&useCursorFetch=true
+    username: snowowl
+    password: snowowl
+  index:
+    socketTimeout: 60000
+
+snomed:
+  maxReasonerCount: 1
+  showReasonerUsageWarning: true
+  ids:
+    maxIdGenerationAttempts: 100000
+
+# Request execution metrics (response-time, detailed information about transactions, etc.)
+metrics:
+  enabled: true
+
+tasks:
+  repositoryUrl: http://arnold:9090/bugzilla/
+  user: admin@bugzilla.org
+  password: password
