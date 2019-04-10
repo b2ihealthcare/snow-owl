@@ -1,7 +1,9 @@
 version: '2.2'
 services: 
   snowowl:
-    image: 2f58a48106da
+    image: # TODO: build an image and upload to Docker Hub
+    environment:
+      SO_JAVA_OPTS: "-Xms2g -Xmx2g"
     container_name: snowowl
     networks:
       - snowowl

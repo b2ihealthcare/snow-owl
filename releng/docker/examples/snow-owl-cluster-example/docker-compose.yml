@@ -17,13 +17,15 @@ services:
       timeout: 1s
       retries: 60
    # ports:
-    #  - 9200:9200
-     # - 9300:9300
+   #  - 9200:9200
+   #  - 9300:9300
 
  
   snowowl:
-    image: 2f58a48106da
+    image: # TODO: build an image and upload to Docker Hub
     container_name: snowowl
+    environment:
+      SO_JAVA_OPTS: "-Xms2g -Xmx2g"
     depends_on:
       elasticsearch:
         condition: service_healthy 
