@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.reasoner.ontology;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
@@ -27,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.LongFunction;
@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.net4j.util.StringUtil;
+import org.semanticweb.owlapi.io.OWLOntologyDocumentSource;
+import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import org.semanticweb.owlapi.util.OWLObjectTypeIndexProvider;
@@ -53,6 +55,7 @@ import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdMap
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -97,6 +100,17 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			HAS_DOSE_FORM, 
 			HAS_ACTIVE_INGREDIENT);
 
+	private static final Joiner NEWLINE_JOINER = Joiner.on('\n');
+	
+	private static final String PARSED_ONTOLOGY_START = NEWLINE_JOINER.join(
+			"Prefix(:=<http://snomed.info/id/>)",
+			"Prefix(sct:=<http://snomed.info/id/>)",
+			"Prefix(sctm:=<http://snomed.info/sct/>)",
+			"Prefix(so:=<http://b2international.com/so/>)",
+			"Ontology(");
+	
+	private static final String PARSED_ONTOLOGY_END = ")";
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger("ontology");
 	
 	private final class EntityDeclarationAxiomIterator extends AbstractIterator<OWLDeclarationAxiom> {
@@ -258,15 +272,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	private final class FunctionalSyntaxAxiomIterator extends AbstractIterator<OWLLogicalAxiom> {
 		
-		private static final String ontologyDocStart = "Prefix(:=<http://snomed.info/id/>) Ontology(";
-		private static final String ontologyDocEnd = ")";
-		
 		private final Iterator<String> axiomIterator;
-		private final OWLFunctionalSyntaxOWLParser parser;
 		
 		public FunctionalSyntaxAxiomIterator(final Stream<String> axiomStream) {
 			this.axiomIterator = axiomStream.iterator();
-			this.parser = new OWLFunctionalSyntaxOWLParser();
 		}
 
 		@Override
@@ -276,23 +285,25 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			}
 			
 			final String axiomString = axiomIterator.next();
+			OWLOntology singleAxiomOntology = null;
 			
 			try {
-				OWLOntology ontology;
-				try {
-					ontology = getOWLOntologyManager().loadOntologyFromOntologyDocument(
-							new StringDocumentSource(ontologyDocStart + ontologyDocEnd));
-				} catch (OWLOntologyCreationException e) {
-					throw new RuntimeException(e);
-				}
-				parser.parse(new StringDocumentSource(ontologyDocStart + axiomString + ontologyDocEnd), ontology, new OWLOntologyLoaderConfiguration());
-				return (OWLLogicalAxiom) ontology.getAxioms().iterator().next();
-			} catch (final ClassCastException e) {
+
+				final OWLOntologyDocumentSource singleAxiomOntologySource = new StringDocumentSource(PARSED_ONTOLOGY_START + axiomString + PARSED_ONTOLOGY_END);
+				singleAxiomOntology = getOWLOntologyManager().loadOntologyFromOntologyDocument(singleAxiomOntologySource);
+				final Set<OWLLogicalAxiom> logicalAxioms = singleAxiomOntology.getLogicalAxioms();
+				return logicalAxioms.iterator().next();
+				
+			} catch (final NoSuchElementException e) {
 				LOGGER.warn("Encountered non-logical OWL axiom '{}'", axiomString, e);
 				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
-			} catch (final IOException e) {
+			} catch (final OWLOntologyCreationException e) {
 				LOGGER.warn("Couldn't parse OWL axiom '{}'", axiomString, e);
 				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
+			} finally {
+				if (singleAxiomOntology != null) {
+					getOWLOntologyManager().removeOntology(singleAxiomOntology);
+				}
 			}
 		}
 	}
