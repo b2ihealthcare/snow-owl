@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.ontology;
 
+import org.semanticweb.owlapi.annotations.HasPriority;
 import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.io.OWLOntologyDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxon
 /**
  * @since
  */
+@HasPriority(0.5)
 public final class DelegateOntologyFactory implements OWLOntologyFactory {
 
 	private final ReasonerTaxonomy taxonomy;
