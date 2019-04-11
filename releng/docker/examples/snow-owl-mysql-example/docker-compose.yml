@@ -1,0 +1,51 @@
+version: '3.7'
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql-snowowl
+    environment:
+      MYSQL_ROOT_PASSWORD: "mypassword"
+      MYSQL_USER: "snowowl"
+      MYSQL_PASSWORD: "snowowl"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    restart: always
+    networks:
+      - snowowl
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.0
+    container_name: elasticsearch
+    environment:
+      ES_JAVA_OPTS: "-Xms6g -Xmx6g"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      snowowl:
+        aliases:
+         - es
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://es:9200"]
+      interval: 1s
+      timeout: 1s
+      retries: 60
+
+
+  snowowl:
+    image: 4439290d41cf
+    container_name: snowowl
+    depends_on:
+      mysql:
+      elasticsearch:
+        condition: service_healthy 
+    networks:
+      - snowowl
+    ports:
+      - 8080:8080
+
+networks:
+  snowowl:
+
+volumes:
+  mysqldata:
+  esdata:
