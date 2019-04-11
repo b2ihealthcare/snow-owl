@@ -70,7 +70,8 @@ import com.google.common.util.concurrent.RateLimiter;
  */
 public final class ReasonerTaxonomyInferrer {
 
-	private static final RateLimiter LOG_LIMITER = RateLimiter.create(2.0);
+	// Report every ~5 minutes
+	private static final RateLimiter LOG_LIMITER = RateLimiter.create(1.0 / 300.0);
 	
 	private static class LoggingProgressMonitor implements ReasonerProgressMonitor {
 
