@@ -14,10 +14,6 @@ Visit us at http://b2i.sg
       Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
    </copyright>
 
-   <includes
-         id="org.protege.core.feature"
-         version="4.3.0.b2i"/>
-
    <requires>
       <import plugin="com.b2international.snowowl.datastore"/>
       <import plugin="com.b2international.snowowl.core"/>
@@ -102,6 +98,27 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.snowowl.snomed.ql"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.protege.common"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.protege.editor.core.application"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.protege.editor.owl"
          download-size="0"
          install-size="0"
          version="0.0.0"
