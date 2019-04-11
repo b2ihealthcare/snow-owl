@@ -413,6 +413,7 @@
 					<groupId>log4j</groupId>
   					<artifactId>log4j</artifactId>
 				</exclusion>
+				<!-- Using customized Protege bundles -->
 				<exclusion>
           			<groupId>org.protege</groupId>
           			<artifactId>protege-editor-core-application</artifactId>
