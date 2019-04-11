@@ -22,10 +22,11 @@ ENV JAVA_HOME /etc/alternatives/jre
 RUN mkdir /opt/snowowl
 
 # Create the snowowl user
-#RUN groupadd -g $SGID snowowl && \
-#    adduser -D -u $SUID -G snowowl snowowl
-#
-#RUN chown -R snowowl:snowowl /opt/snowowl
+RUN groupadd -g $SGID snowowl && \
+    adduser -u $SUID -g snowowl snowowl
+
+RUN chown -R snowowl:snowowl /opt/snowowl
+RUN chown -R snowowl:snowowl /usr/share
 
 WORKDIR /usr/share
 
@@ -56,4 +57,8 @@ RUN chgrp 0 /var/log/snowowl && \
 
 RUN ln -sf /opt/snowowl/server/servicability/logs /var/log/snowowl
 
-ENTRYPOINT [/opt/snowowl/server/bin/startup.sh]
+RUN chgrp 0 /opt/snowowl/server/bin/dmk.sh && \
+    chmod g=u /etc/passwd && \
+    chmod 0775 /opt/snowowl/server/bin/dmk.sh
+
+ENTRYPOINT [/opt/snowowl/server/bin/dmk.sh]
