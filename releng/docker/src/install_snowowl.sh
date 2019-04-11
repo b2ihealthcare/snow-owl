@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash 
   
 SERVER_ARCHIVE_PATH=$1
 SERVER_ANCHOR_FILE="snowowl_config.yml"
