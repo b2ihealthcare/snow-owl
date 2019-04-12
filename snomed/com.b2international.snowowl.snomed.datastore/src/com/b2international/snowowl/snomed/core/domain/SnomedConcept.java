@@ -408,9 +408,9 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 				.addMembers(getMembers())
 				.addRelationships(getRelationships())
 				.addDescriptions(getDescriptions())
+				.setDefinitionStatus(getDefinitionStatus())
 				.setId(getId())
 				.setModuleId(getModuleId())
-				.setDefinitionStatus(getDefinitionStatus())
 				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
 				.build();
 	}

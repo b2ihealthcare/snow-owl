@@ -1,0 +1,33 @@
+You can find the script under the server scripts folder: scripts/snowowl_validate.sh
+
+If you run the script with the -h option it will list all available options.
+
+There are three mandatory options that needs to be given to the script.
+	-u For the Snow Owl user that is able to authenticate through the admin REST API
+	-p Password for the above user
+	-t The target folder where the script should save the dsv validation report file.
+	
+There are more options that can be configured:
+	-b Snow Owl base URL, defaults to 'http://localhost:8080'
+	-c Code system shortname of the branch that needs to be validated
+	
+You can change the defaults at the beginning of the script in the Global variables / constants, advanced parameters around line 38.
+
+1, If the script is located on the server where there is a running Snow Owl instance then you can automate it by:
+(You need to install crontab for this, for centOS: 'yum install cronie', for ubuntu : 'apt-get install cron')
+sudo crontab -e
+An editor will appear
+
+	0 0 * * * /path/to/yourShellScript -u <user> -p <password> -c SNOMEDCT -t /path/to/save
+		1: Minutes (0-59)
+		2: Hours (0-23)
+		3: Days (1-31)
+		4: Month (1-12)
+		5: Day of the week(1-7)
+		/path/to/script - Path to the snowowl_validate script
+		
+This will schedule a job that will execute an unpublished validation from a running Snow Owl instance, every day at midnight server time.
+
+2, If the script is located on a local machine you can execute it like this:
+	/path/to/yourShellScript -u "user" -p "password" -c SNOMEDCT -b http://server-ip-or-dns-resolved-name:8080 -t /path/to/save
+

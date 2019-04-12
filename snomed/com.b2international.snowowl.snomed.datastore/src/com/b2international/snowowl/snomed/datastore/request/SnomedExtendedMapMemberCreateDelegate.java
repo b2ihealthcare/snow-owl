@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,10 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.EXTENDED_MAP);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_GROUP);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_PRIORITY);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_RULE);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_ADVICE);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_CORRELATION_ID);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_GROUP);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_RULE);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_ADVICE);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
@@ -81,11 +78,14 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_CORRELATION_ID);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MAP_TARGET);
 		
 		Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
 			.add(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID))
 			.add(getComponentId(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID));
-			
+
 		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))) {
 			requiredComponentIds.add(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET));
 		}

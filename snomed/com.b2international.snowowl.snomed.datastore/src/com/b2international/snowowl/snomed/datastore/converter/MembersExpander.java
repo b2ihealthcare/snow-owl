@@ -54,7 +54,7 @@ class MembersExpander {
 		if (expand.containsKey("members")) {
 			final Options membersOptions = expand.get("members", Options.class);
 			
-			// TODO support limit, offset, filtering, selection
+			// TODO better support for limit, offset, filtering, selection
 			final SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByReferencedComponent(componentIds);

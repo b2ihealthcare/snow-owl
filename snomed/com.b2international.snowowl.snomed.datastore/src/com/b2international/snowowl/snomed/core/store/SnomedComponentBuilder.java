@@ -83,6 +83,10 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 		return getSelf();
 	}
 	
+	protected final boolean isActive() {
+		return active;
+	}
+	
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void init(CB component, TransactionContext context) {

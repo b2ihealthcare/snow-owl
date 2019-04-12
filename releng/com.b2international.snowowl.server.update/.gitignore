@@ -1,2 +1,4 @@
 # This project needs the bin folder to be managed in the repository
 !bin/
+# Also the runtime folder should be excluded
+runtime

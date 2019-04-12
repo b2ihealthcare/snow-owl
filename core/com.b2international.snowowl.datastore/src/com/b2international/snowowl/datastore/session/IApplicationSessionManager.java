@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
 package com.b2international.snowowl.datastore.session;
 
 import java.security.PublicKey;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.security.auth.login.LoginException;
 
-import com.b2international.commons.Pair;
 import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.rpc.RpcSession;
 
 /**
  * The service interface for the application-wide session manager.
@@ -68,12 +71,20 @@ public interface IApplicationSessionManager {
 	 */
 	void authenticate(String userId, String password) throws LoginException;
 
-	/**Returns with an iterable of user ID with session ID of all connected sessions.*/
-	Iterable<Pair<String, String>> getConnectedSessionInfo();
+	/**Returns with a map of all connected users, keyed by session ID.*/
+	Map<Long, String> getConnectedSessionInfo();
 
+	/**
+	 * @param userIds the ID of the users to disconnect
+	 * @param callback the callback to invoke for each successful disconnect operation
+	 * @return <code>true</code> if disconnecting succeeded, <code>false</code> otherwise
+	 */
+	void disconnectSessions(List<String> userIds, Consumer<RpcSession> callback);
+	
 	/**Sets the non-administrator user login flag. {@code true} if the login is enabled, otherwise {@code false}.*/
 	void enableLogins(boolean loginEnabled);
 
 	/**Returns {@code true} if non-administrator login is currently allowed to the managed repositories, otherwise returns with {@code false}.*/
 	boolean isLoginEnabled();
+
 }

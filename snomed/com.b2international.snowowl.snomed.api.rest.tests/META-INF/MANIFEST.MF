@@ -12,7 +12,9 @@ Require-Bundle: org.junit;bundle-version="4.11.0",
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.api,
  com.b2international.snowowl.snomed.api.rest,
- org.assertj.core;bundle-version="1.7.1"
+ org.assertj.core;bundle-version="1.7.1",
+ com.b2international.snowowl.snomed.api.impl,
+ org.semanticweb.elk
 Import-Package: com.b2international.snowowl.snomed.api.impl,
  com.b2international.snowowl.snomed.reasoner.domain,
  org.eclipse.xtext.util

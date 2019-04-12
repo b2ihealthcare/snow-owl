@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ public final class RelationshipChangeDocument {
 	public static class Fields {
 		public static final String CLASSIFICATION_ID = "classificationId";
 		public static final String SOURCE_ID = "sourceId";
+		public static final String DESTINATION_ID = "destinationId";
 	}
 
 	public static class Expressions {
@@ -53,6 +54,14 @@ public final class RelationshipChangeDocument {
 		public static Expression sourceId(final Iterable<String> sourceIds) {
 			return matchAny(Fields.SOURCE_ID, sourceIds);
 		}
+		
+		public static Expression destinationId(final String destinationId) {
+			return exactMatch(Fields.DESTINATION_ID, destinationId);
+		}
+		
+		public static Expression destinationId(final Iterable<String> destinationIds) {
+			return matchAny(Fields.DESTINATION_ID, destinationIds);
+		}
 	}
 
 	public static Builder builder() {
@@ -70,6 +79,8 @@ public final class RelationshipChangeDocument {
 		private String destinationId;
 		private Integer group;
 		private Integer unionGroup;
+		private Boolean released;
+		private String characteristicTypeId;
 
 		@JsonCreator
 		private Builder() {
@@ -115,6 +126,16 @@ public final class RelationshipChangeDocument {
 			this.unionGroup = unionGroup;
 			return this;
 		}
+		
+		public Builder released(final Boolean released) {
+			this.released = released;
+			return this;
+		}
+
+		public Builder characteristicTypeId(final String characteristicTypeId) {
+			this.characteristicTypeId = characteristicTypeId;
+			return this;
+		}
 
 		public RelationshipChangeDocument build() {
 			return new RelationshipChangeDocument(classificationId, 
@@ -124,21 +145,29 @@ public final class RelationshipChangeDocument {
 					typeId,
 					destinationId,
 					group, 
-					unionGroup);
+					unionGroup,
+					released,
+					characteristicTypeId);
 		}
 	}
 
+	/** The identifier of the classification run this change belongs to */
 	private final String classificationId;
+	/** The type of this classification change */
 	private final ChangeNature nature;
-
-	// The origin (stated relationship) SCTID for inferences, or the SCTID of the relationship to remove/inactivate
+	/** The SCTID of the "origin" SCTID for inferences, or the SCTID of the relationship to remove/inactivate */
 	private final String relationshipId; 
+	/** {@code true} if the description has been released, {@code false} otherwise */
+	private final Boolean released;
+	
+	// Values that should be changed on the "origin" CD member, before saving/presenting it as an inference
 
 	private final String sourceId; 
 	private final String typeId;
 	private final String destinationId; 
 	private final Integer group;
 	private final Integer unionGroup;
+	private final String characteristicTypeId;
 
 	private RelationshipChangeDocument(final String classificationId, 
 			final ChangeNature nature, 
@@ -147,7 +176,9 @@ public final class RelationshipChangeDocument {
 			final String typeId, 
 			final String destinationId, 
 			final Integer group, 
-			final Integer unionGroup) {
+			final Integer unionGroup,
+			final Boolean released, 
+			final String characteristicTypeId) {
 
 		this.classificationId = classificationId;
 		this.nature = nature;
@@ -157,6 +188,8 @@ public final class RelationshipChangeDocument {
 		this.destinationId = destinationId;
 		this.group = group;
 		this.unionGroup = unionGroup;
+		this.released = released;
+		this.characteristicTypeId = characteristicTypeId;
 	}
 
 	public String getClassificationId() {
@@ -191,6 +224,14 @@ public final class RelationshipChangeDocument {
 		return unionGroup;
 	}
 
+	public Boolean isReleased() {
+		return released;
+	}
+	
+	public String getCharacteristicTypeId() {
+		return characteristicTypeId;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -210,6 +251,10 @@ public final class RelationshipChangeDocument {
 		builder.append(group);
 		builder.append(", unionGroup=");
 		builder.append(unionGroup);
+		builder.append(", released=");
+		builder.append(released);
+		builder.append(", characteristicTypeId=");
+		builder.append(characteristicTypeId);
 		builder.append("]");
 		return builder.toString();
 	}

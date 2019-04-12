@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ public final class OntologyExportRequestBuilder
 		extends BaseRequestBuilder<OntologyExportRequestBuilder, BranchContext, String> 
 		implements RevisionIndexRequestBuilder<String> {
 
-	private OntologyExportRequest.Type exportType;
+	private OntologyExportType exportType;
 
 	OntologyExportRequestBuilder() {}
 
-	public OntologyExportRequestBuilder setExportType(final OntologyExportRequest.Type exportType) {
+	public OntologyExportRequestBuilder setExportType(final OntologyExportType exportType) {
 		this.exportType = exportType;
 		return this;
 	}

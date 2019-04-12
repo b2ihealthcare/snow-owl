@@ -31,10 +31,8 @@ public final class EquivalentConceptSets extends PageableCollectionResource<Equi
 	/**
 	 * Instantiates an empty pageable collection for equivalent concept sets.
 	 * 
-	 * @param limit
-	 *            - limit of items for a single page
-	 * @param total
-	 *            - total number of items in the result set
+	 * @param limit of items for a single page
+	 * @param total number of items in the result set
 	 */
 	public EquivalentConceptSets(final int limit, final int total) {
 		super(Collections.emptyList(), null, null, limit, total);
@@ -43,20 +41,19 @@ public final class EquivalentConceptSets extends PageableCollectionResource<Equi
 	/**
 	 * Instantiates a pageable collection of equivalent concept sets.
 	 * 
-	 * @param items
-	 *            - list of @link {@link SnomedConcept}s
-	 * @param scrollId
-	 *            - scrollId for paging the result set continuously
-	 * @param searchAfter
-	 *            - searchAfter for paging the result set with a live cursor
-	 * @param limit
-	 *            - limit of items for a single page
-	 * @param total
-	 *            - total number of items in the result set
+	 * @param list of @link {@link SnomedConcept}s
+	 * @param scrollId for paging the result set continuously
+	 * @param searchAfter for paging the result set with a live cursor
+	 * @param limit of items for a single page
+	 * @param total number of items in the result set
 	 */
 	@JsonCreator
-	public EquivalentConceptSets(@JsonProperty("items") final List<EquivalentConceptSet> items, @JsonProperty("scrollId") final String scrollId,
-			@JsonProperty("searchAfter") final String searchAfter, @JsonProperty("limit") final int limit, @JsonProperty("total") final int total) {
+	public EquivalentConceptSets(
+			@JsonProperty("items") final List<EquivalentConceptSet> items, 
+			@JsonProperty("scrollId") final String scrollId,
+			@JsonProperty("searchAfter") final String searchAfter,
+			@JsonProperty("limit") final int limit, 
+			@JsonProperty("total") final int total) {
 		super(items, scrollId, searchAfter, limit, total);
 	}
 }

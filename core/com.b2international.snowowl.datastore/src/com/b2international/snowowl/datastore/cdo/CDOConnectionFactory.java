@@ -15,20 +15,15 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
-import javax.security.auth.login.FailedLoginException;
-import javax.security.auth.login.LoginException;
-
-import org.eclipse.net4j.signal.RemoteException;
-import org.eclipse.net4j.util.lifecycle.LifecycleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.AlreadyLoggedInException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 
 /**
  * {@link CDOConnectionFactory} implementation for activating a {@link CDOConnectionManager}
@@ -40,6 +35,13 @@ public class CDOConnectionFactory {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(CDOConnectionFactory.class);
 	
+	private static final String COULD_NOT_ACTIVATE_PREFIX = "Could not activate TCPClientConnector";
+	private static final String ALREADY_LOGGED_IN_PREFIX = "Already logged in";
+	private static final String REPOSITORY_NOT_FOUND_PREFIX = "org.eclipse.emf.cdo.server.RepositoryNotFoundException: Repository not found: ";
+	private static final String INCORRECT_USER_NAME_OR_PASSWORD = "Incorrect user name or password.";
+	private static final String LOGIN_DISABLED = "Logging in for non-administrator users is temporarily disabled.";
+	private static final String LDAP_CONNECTION_REFUSED = "Connection refused: connect";
+	
 	public void connect(final String username, final String password) throws SnowowlServiceException {
 		connect(new CDOConnectionManager(username, password));
 	}
@@ -50,86 +52,33 @@ public class CDOConnectionFactory {
 		try {
 			
 			Preconditions.checkNotNull(manager, "Connection manager argument cannot be null.");
-			manager.activate();
 			ApplicationContext.getInstance().registerService(CDOConnectionManager.class, manager);
 			
 		} catch (final Throwable t) {
 			
-			if (t instanceof RemoteException) {
-				
-				if (t.getCause() instanceof IllegalStateException) { //assuming root resource of the repository is not initialized yet (server is in startup phase)
-					
-					LOGGER.error("The server is not running! Please contact the administrator.", t.getCause());
-					throw new SnowowlServiceException("The server is not running! Please contact the administrator.");
-					
-				} else if (t.getCause() instanceof SecurityException) {
-					
-					LOGGER.error(t.getCause().getMessage(), t.getCause());
-					throw new SnowowlServiceException(t.getCause().getMessage());
-					
-				}
-				
-			} else if (t instanceof RuntimeException) {
+			final Throwable rootCause = Throwables.getRootCause(t);
+			final String message = Strings.nullToEmpty(StringUtils.getLine(rootCause.getMessage(), "\n", 0))
+					.replace("\r", "");
+			LOGGER.error("Exception caught while connecting to the server.", t);
 			
-				if (t instanceof LifecycleException) {
-                    throw new SnowowlServiceException("The server is not running! Please contact the administrator.");
-				}
-				
-				if (t.getCause() instanceof SnowowlServiceException) {
-					
-					final SnowowlServiceException sse = (SnowowlServiceException) t.getCause();
-					
-					if (sse.getCause() instanceof SecurityException) {
-						
-						if (sse.getCause() instanceof AlreadyLoggedInException) {
-							throw new SnowowlServiceException(sse.getCause().getMessage());
-						}
-						
-						final SecurityException se = (SecurityException) sse.getCause();
-						if (se.getCause() instanceof LoginException && se.getCause().getCause() instanceof LoginException) {
-						
-							if (se.getCause().getCause() instanceof FailedLoginException) {
-								final String message = StringUtils.getLine(se.getCause().getCause().getMessage(), "\n", 0);
-								throw new SnowowlServiceException(message);
-							}
-							
-							//check for communication exception traces
-							if (Strings.nullToEmpty(se.getCause().getCause().getMessage()).startsWith("Cannot bind to LDAP server.\njavax.naming.CommunicationException:")) {
-								throw new SnowowlServiceException("Authentication failed. Cannot bind to LDAP server. Please try again.");
-							}
-							
-						}
-
-						if (se.getCause() == null && !StringUtils.isEmpty(se.getMessage())) {
-							throw new SnowowlServiceException(se.getMessage());
-						}
-						throw new SnowowlServiceException("Authentication failed.");
-					}
-					
-				}
-				
-			} else if (t.getCause() instanceof SnowowlServiceException) {
-				
-				if (t.getCause().getCause() instanceof LifecycleException) {
-					throw new SnowowlServiceException("The server is not running! Please contact the administrator.");
-				} else {
-					throw (SnowowlServiceException) t.getCause();
-				}
-				
-			} else if (t.getCause() instanceof LifecycleException) {
-				
-				throw new SnowowlServiceException("The server is not running! Please contact the administrator.");
-				
-				
-			} else if (t.getCause() instanceof Throwable) {
-				
-				LOGGER.error("Unexpected error while connecting to server.", t.getCause());
-				throw new SnowowlServiceException("Error while connecting: " + StringUtils.getLine(t.getCause().getMessage(), "\n", 0));
-				
+			// FIXME: "Sentiment analysis" for exception messages
+			if (message.startsWith(COULD_NOT_ACTIVATE_PREFIX)) {
+				throw new SnowowlServiceException("The server could not be reached. Please verify the connection URL.");
+			} else if (message.startsWith(ALREADY_LOGGED_IN_PREFIX)) {
+				throw new SnowowlServiceException("Another client with the same user is already connected to the server.");
+			} else if (message.startsWith(REPOSITORY_NOT_FOUND_PREFIX)) {
+				throw new SnowowlServiceException(String.format(
+						"Server does not include support for required component store '%s'. Please verify the connection URL.",
+						message.substring(REPOSITORY_NOT_FOUND_PREFIX.length())));
+			} else if (message.startsWith(INCORRECT_USER_NAME_OR_PASSWORD)) {
+				throw new SnowowlServiceException(message);
+			} else if (message.startsWith(LOGIN_DISABLED)) {
+				throw new SnowowlServiceException(message);
+			} else if (message.startsWith(LDAP_CONNECTION_REFUSED)) {
+				throw new SnowowlServiceException("The LDAP server could not be reached for authentication. Please contact the administrator.");
+			} else {
+				throw new SnowowlServiceException("An unexpected error occurred while connecting to the server. Please contact the administrator.");
 			}
-				
-			LOGGER.error("Unexpected error while connecting to server.", t);
-			throw new SnowowlServiceException("An unexpected error occurred while connecting to the server.");
 		}
 	}
 }

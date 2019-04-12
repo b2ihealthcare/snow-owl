@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,7 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.DESCRIPTION_TYPE);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
@@ -60,6 +59,7 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 	
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
 		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT));
 	}
 }

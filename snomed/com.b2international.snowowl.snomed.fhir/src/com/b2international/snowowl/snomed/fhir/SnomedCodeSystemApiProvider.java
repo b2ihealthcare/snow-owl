@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -52,7 +50,6 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -116,8 +113,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	protected Collection<IConceptProperty> getSupportedConceptProperties() {
 		
 		// what should be the locale here? Likely we need to add the config locale as well
-		final List<ExtendedLocale> locales = newArrayList(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference());
-		locales.add(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US));
+		final List<ExtendedLocale> locales = ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US));
 		
 		final ImmutableList.Builder<IConceptProperty> properties = ImmutableList.builder();
 		

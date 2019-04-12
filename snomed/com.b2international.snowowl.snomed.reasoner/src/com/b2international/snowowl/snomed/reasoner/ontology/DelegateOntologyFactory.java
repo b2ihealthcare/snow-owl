@@ -25,10 +25,10 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 
 /**
- * @since 
+ * @since
  */
 public final class DelegateOntologyFactory implements OWLOntologyFactory {
 

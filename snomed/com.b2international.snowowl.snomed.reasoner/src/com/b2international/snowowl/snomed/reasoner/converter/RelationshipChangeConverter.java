@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -54,8 +55,10 @@ import com.google.common.collect.Multimaps;
  * @since 7.0
  */
 public final class RelationshipChangeConverter 
-extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
+	extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
 
+	private static final String MEMBERS = "members";
+	
 	public RelationshipChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
@@ -76,18 +79,55 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 		resource.setClassificationId(entry.getClassificationId());
 		resource.setChangeNature(entry.getNature());
 
+		/*
+		 * Inferred IS A relationships: ID is null (information is coming from the reasoner)
+		 * Inferred non-IS A relationships: ID refers to the "origin" relationship's ID
+		 * Updated relationships: ID refers to the relationship that should be updated in place 
+		 * Redundant relationships: ID refers to the relationship that should be removed or deactivated
+		 */
 		final ReasonerRelationship relationship = new ReasonerRelationship(entry.getRelationshipId());
-		relationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
-
-		if (ChangeNature.INFERRED.equals(entry.getNature())) {
-			relationship.setSourceId(entry.getSourceId());
-			relationship.setGroup(entry.getGroup());
-			relationship.setUnionGroup(entry.getUnionGroup());
-			
-			if (entry.getRelationshipId() == null) {
-				relationship.setTypeId(entry.getTypeId());
-				relationship.setDestinationId(entry.getDestinationId());
-			}
+		
+		// Released flag is the "origin" relationship's released state for updated and redundant relationships, false for new relationships
+		relationship.setReleased(entry.isReleased());
+		
+		switch (entry.getNature()) {
+			case NEW:
+				/* 
+				 * Inferences carry information about:
+				 * - source
+				 * - group
+				 * - union group
+				 * - characteristic type
+				 * 
+				 * The values will be different on the "origin" relationship, so make note of these here.
+				 */
+				relationship.setSourceId(entry.getSourceId());
+				relationship.setGroup(entry.getGroup());
+				relationship.setUnionGroup(entry.getUnionGroup());
+				relationship.setCharacteristicType(CharacteristicType.getByConceptId(entry.getCharacteristicTypeId()));
+				
+				/*
+				 * Inferred IS A relationships have even more stored information, which we set on the response object.
+				 */
+				if (entry.getRelationshipId() == null) {
+					relationship.setTypeId(entry.getTypeId());
+					relationship.setDestinationId(entry.getDestinationId());
+				}
+				break;
+				
+			case UPDATED:
+				// Updates change the group on an existing relationship
+				relationship.setGroup(entry.getGroup());
+				break;
+				
+			case REDUNDANT:
+				// Redundant relationships only need the SCTID and released flag populated to do the delete/inactivation
+				break;
+				
+			default:
+				throw new IllegalStateException(String.format("Unexpected relationship change '%s' found with SCTID '%s'.", 
+						entry.getNature(), 
+						entry.getRelationshipId()));
 		}
 
 		resource.setRelationship(relationship);
@@ -100,6 +140,159 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 			return;
 		}
 
+		/*
+		 * Depending on the relationship change search request, we might need to issue
+		 * SNOMED CT searches against multiple branches; find out which ones we have.
+		 */
+		final Multimap<String, RelationshipChange> itemsByBranch = getItemsByBranch(results);
+
+		// Check if we only need to load inferred relationships in their entirety
+		final Options expandOptions = expand().getOptions(RelationshipChange.Expand.RELATIONSHIP);
+		final boolean inferredOnly = expandOptions.getBoolean("inferredOnly");
+		
+		final Options relationshipExpandOptions = expandOptions.getOptions("expand");
+		
+		final Options sourceOptions = relationshipExpandOptions.getOptions(SnomedRelationship.Expand.SOURCE);
+		final Options typeOptions = relationshipExpandOptions.getOptions(SnomedRelationship.Expand.TYPE);
+		final Options destinationOptions = relationshipExpandOptions.getOptions(SnomedRelationship.Expand.DESTINATION);
+
+		final boolean needsSource = relationshipExpandOptions.keySet().contains(SnomedRelationship.Expand.SOURCE);
+		final boolean needsType = relationshipExpandOptions.keySet().contains(SnomedRelationship.Expand.TYPE);
+		final boolean needsDestination = relationshipExpandOptions.keySet().contains(SnomedRelationship.Expand.DESTINATION);
+		
+		// Do not allow expansion of members
+		final boolean needsMembers = relationshipExpandOptions.keySet().contains(MEMBERS);
+		if (needsMembers) {
+			throw new BadRequestException("Members can not be expanded on reasoner relationship changes.");
+		}
+		
+		for (final String branch : itemsByBranch.keySet()) {
+			final Collection<RelationshipChange> itemsForCurrentBranch = itemsByBranch.get(branch);
+
+			/*
+			 * Expand concepts on the relationship currently set on each item first, as they
+			 * might have changed when compared to the "origin" relationship.
+			 */
+			if (needsSource) {
+				expandConcepts(branch, 
+						itemsForCurrentBranch, 
+						sourceOptions,
+						ReasonerRelationship::getSourceId,
+						ReasonerRelationship::setSource);
+			}
+
+			if (needsType) {
+				expandConcepts(branch, 
+						itemsForCurrentBranch, 
+						typeOptions, 
+						ReasonerRelationship::getTypeId,
+						ReasonerRelationship::setType);
+			}
+
+			if (needsDestination) {
+				expandConcepts(branch, 
+						itemsForCurrentBranch, 
+						destinationOptions, 
+						ReasonerRelationship::getDestinationId,
+						ReasonerRelationship::setDestination);
+			}
+
+			// Now fetch the rest of the properties for the relationships (except IS As where no ID is recorded)
+			final Set<String> relationshipIds = itemsForCurrentBranch.stream()
+					.filter(c -> !inferredOnly || ChangeNature.NEW.equals(c.getChangeNature()))
+					.map(c -> c.getRelationship().getOriginId())
+					.filter(id -> id != null)
+					.collect(Collectors.toSet());
+
+			final Request<BranchContext, SnomedRelationships> relationshipSearchRequest = SnomedRequests.prepareSearchRelationship()
+					.filterByIds(relationshipIds)
+					.setLimit(relationshipIds.size())
+					.setExpand(relationshipExpandOptions)
+					.setLocales(locales())
+					.build();
+
+			final SnomedRelationships relationships = new BranchRequest<>(branch, 
+					new RevisionIndexReadRequest<>(relationshipSearchRequest))
+					.execute(context());
+
+			final Map<String, SnomedRelationship> relationshipsById = Maps.uniqueIndex(relationships, 
+					SnomedRelationship::getId);
+
+			for (final RelationshipChange item : itemsForCurrentBranch) {
+				final ReasonerRelationship reasonerRelationship = item.getRelationship();
+				final String originId = reasonerRelationship.getOriginId();
+				
+				switch (item.getChangeNature()) {
+					case NEW: 
+						if (originId == null) {
+							
+							// reasonerRelationship.setCharacteristicType(...) is already set
+							// reasonerRelationship.setDestination(...) is already set
+							reasonerRelationship.setDestinationNegated(false);
+							// reasonerRelationship.setGroup(...) is already set
+							reasonerRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
+							// reasonerRelationship.setReleased(...) is already set
+							// reasonerRelationship.setSource(...) is already set
+							// reasonerRelationship.setType(...) is already set
+							// reasonerRelationship.setUnionGroup(...) is already set
+							
+						} else {
+						
+							final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
+							
+							// reasonerRelationship.setCharacteristicType(...) is already set
+							reasonerRelationship.setDestination(expandedRelationship.getDestination());
+							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
+							// reasonerRelationship.setGroup(...) is already set
+							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							// reasonerRelationship.setReleased(...) is already set
+							// reasonerRelationship.setSource(...) is already set
+							reasonerRelationship.setType(expandedRelationship.getType());
+							// reasonerRelationship.setUnionGroup(...) is already set
+						}
+						break;
+						
+					case UPDATED:
+						if (!inferredOnly) {
+							final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
+
+							reasonerRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
+							reasonerRelationship.setDestination(expandedRelationship.getDestination());
+							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
+							// reasonerRelationship.setGroup(...) is already set
+							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							// reasonerRelationship.setReleased(...) is already set
+							reasonerRelationship.setSource(expandedRelationship.getSource());
+							reasonerRelationship.setType(expandedRelationship.getType());
+							reasonerRelationship.setUnionGroup(expandedRelationship.getUnionGroup());
+						}
+						break;
+						
+					case REDUNDANT:
+						if (!inferredOnly) {
+							final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
+
+							reasonerRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
+							reasonerRelationship.setDestination(expandedRelationship.getDestination());
+							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
+							reasonerRelationship.setGroup(expandedRelationship.getGroup());
+							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							// reasonerRelationship.setReleased(...) is already set
+							reasonerRelationship.setSource(expandedRelationship.getSource());
+							reasonerRelationship.setType(expandedRelationship.getType());
+							reasonerRelationship.setUnionGroup(expandedRelationship.getUnionGroup());						}
+						break;
+						
+					default:
+						throw new IllegalStateException(String.format("Unexpected relationship change '%s' found with SCTID '%s'.", 
+								item.getChangeNature(), 
+								item.getRelationship().getOriginId()));
+				}
+			}
+		}
+	}
+
+	private Multimap<String, RelationshipChange> getItemsByBranch(final List<RelationshipChange> results) {
 		final Set<String> classificationTaskIds = results.stream()
 				.map(RelationshipChange::getClassificationId)
 				.collect(Collectors.toSet());
@@ -112,107 +305,20 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 				.stream()
 				.collect(Collectors.toMap(ClassificationTask::getId, ClassificationTask::getBranch));
 
-		final Multimap<String, RelationshipChange> itemsByBranch = Multimaps.index(results, r -> branchesByClassificationIdMap.get(r.getClassificationId()));
-		final Options expandOptions = expand().get(RelationshipChange.Expand.RELATIONSHIP, Options.class);
-
-		final Options sourceOptions = expandOptions.getOptions(SnomedRelationship.Expand.SOURCE);
-		final Options typeOptions = expandOptions.getOptions(SnomedRelationship.Expand.TYPE);
-		final Options destinationOptions = expandOptions.getOptions(SnomedRelationship.Expand.DESTINATION);
-		final boolean inferredOnly = expandOptions.getBoolean("inferredOnly");
-
-		final boolean needsSource = expandOptions.keySet().remove(SnomedRelationship.Expand.SOURCE);
-		final boolean needsType = expandOptions.keySet().remove(SnomedRelationship.Expand.TYPE);
-		final boolean needsDestination = expandOptions.keySet().remove(SnomedRelationship.Expand.DESTINATION);
-
-		for (final String branch : itemsByBranch.keySet()) {
-			final Collection<RelationshipChange> itemsForCurrentBranch = itemsByBranch.get(branch);
-
-			/*
-			 *  Expand concepts on the initial, "blank" relationship of each item first, as they might have changed when compared to
-			 *  the reference relationship.
-			 */
-			if (needsSource) {
-				expandConcepts(branch, 
-						itemsForCurrentBranch, 
-						sourceOptions,
-						inferredOnly,
-						m -> m.getSourceId(), 
-						(r, c) -> r.setSource(c));
-			}
-
-			if (needsType) {
-				expandConcepts(branch, 
-						itemsForCurrentBranch, 
-						typeOptions, 
-						inferredOnly,
-						m -> m.getTypeId(), 
-						(r, c) -> r.setType(c));
-			}
-
-			if (needsDestination) {
-				expandConcepts(branch, 
-						itemsForCurrentBranch, 
-						destinationOptions, 
-						inferredOnly,
-						m -> m.getDestinationId(), 
-						(r, c) -> r.setDestination(c));
-			}
-
-			// Then fetch all relationships
-			final Set<String> relationshipIds = itemsForCurrentBranch.stream()
-					.filter(rc -> !inferredOnly || ChangeNature.INFERRED.equals(rc.getChangeNature()))
-					.map(rc -> rc.getRelationship().getId())
-					.filter(id -> id != null)
-					.collect(Collectors.toSet());
-
-			final Request<BranchContext, SnomedRelationships> relationshipSearchRequest = SnomedRequests.prepareSearchRelationship()
-					.filterByIds(relationshipIds)
-					.all()
-					.setExpand(expandOptions.get("expand", Options.class))
-					.setLocales(locales())
-					.build();
-
-			final SnomedRelationships relationships = new BranchRequest<>(branch, 
-					new RevisionIndexReadRequest<>(relationshipSearchRequest))
-					.execute(context());
-
-			final Map<String, SnomedRelationship> relationshipsById = Maps.uniqueIndex(relationships, SnomedRelationship::getId);
-
-			for (final RelationshipChange item : itemsForCurrentBranch) {
-				final ReasonerRelationship blankRelationship = item.getRelationship();
-				final String relationshipId = blankRelationship.getId();
-				
-				// Add default values if the relationship did not exist earlier 
-				if (!relationshipsById.containsKey(relationshipId)) {
-					blankRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
-				} else {
-					final SnomedRelationship expandedRelationship = relationshipsById.get(relationshipId);
-
-					blankRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
-					blankRelationship.setMembers(expandedRelationship.getMembers());
-					blankRelationship.setModifier(expandedRelationship.getModifier());
-					blankRelationship.setModuleId(expandedRelationship.getModuleId());
-					blankRelationship.setReleased(expandedRelationship.isReleased());
-					
-					if (blankRelationship.getSource() == null) { blankRelationship.setSource(expandedRelationship.getSource()); }
-					if (blankRelationship.getType() == null) { blankRelationship.setType(expandedRelationship.getType()); }
-					if (blankRelationship.getDestination() == null) { blankRelationship.setDestination(expandedRelationship.getDestination()); }
-					if (blankRelationship.getGroup() == null) { blankRelationship.setGroup(expandedRelationship.getGroup()); }
-					if (blankRelationship.getUnionGroup() == null) { blankRelationship.setUnionGroup(expandedRelationship.getUnionGroup()); }
-				}
-			}
-		}
+		final Multimap<String, RelationshipChange> itemsByBranch = Multimaps.index(results, 
+				r -> branchesByClassificationIdMap.get(r.getClassificationId()));
+		
+		return itemsByBranch;
 	}
 
 	private void expandConcepts(final String branch, 
 			final Collection<RelationshipChange> relationshipChanges,
 			final Options options,
-			final boolean inferredOnly,
 			final Function<ReasonerRelationship, String> conceptIdFunction,
 			final BiConsumer<ReasonerRelationship, SnomedConcept> conceptIdConsumer) {
 
 		final List<ReasonerRelationship> blankRelationships = relationshipChanges.stream()
-				.filter(rc -> !inferredOnly || ChangeNature.INFERRED.equals(rc.getChangeNature()))
+				.filter(c -> ChangeNature.NEW.equals(c.getChangeNature()))
 				.map(RelationshipChange::getRelationship)
 				.collect(Collectors.toList());
 
@@ -224,12 +330,14 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 
 		final Request<BranchContext, SnomedConcepts> conceptSearchRequest = SnomedRequests.prepareSearchConcept()
 				.filterByIds(conceptIds)
-				.all()
+				.setLimit(conceptIds.size())
 				.setExpand(options.get("expand", Options.class))
 				.setLocales(locales())
 				.build();
 
-		final SnomedConcepts concepts = new BranchRequest<>(branch, conceptSearchRequest).execute(context());
+		final SnomedConcepts concepts = new BranchRequest<>(branch,
+				new RevisionIndexReadRequest<>(conceptSearchRequest))
+					.execute(context());
 
 		for (final SnomedConcept concept : concepts) {
 			final String conceptId = concept.getId();

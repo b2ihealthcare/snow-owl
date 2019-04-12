@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Provides HTTP basic authentication in the RESTful API. Uses a given {@link IAuthenticationService} to do the actual authentication and responds
+ * Provides HTTP basic authentication in the RESTful API. Uses a given {@link IApplicationSessionManager} to do the actual authentication and responds
  * with an {@link Authentication} according to the result of the auth.
  * 
  * @since 1.0

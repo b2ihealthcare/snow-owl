@@ -15,6 +15,8 @@
  */
 package com.b2international.collections.longs;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * @since 4.7
  */
@@ -47,19 +49,14 @@ public abstract class AbstractLongCollection implements LongCollection {
 
 	@Override
 	public boolean containsAll(LongCollection collection) {
-		final LongIterator itr;
-		final LongCollection other;
-		
 		if (size() < collection.size()) {
-			itr = this.iterator();
-			other = collection;
-		} else {
-			itr = collection.iterator();
-			other = this;
+			return false;
 		}
 		
+		final LongIterator itr = collection.iterator();
+
 		while (itr.hasNext()) {
-			if (!other.contains(itr.next())) {
+			if (!contains(itr.next())) {
 				return false;
 			}
 		}
@@ -69,23 +66,21 @@ public abstract class AbstractLongCollection implements LongCollection {
 
 	@Override
 	public boolean remove(long value) {
-		boolean changed = false;
-		
 		final LongIterator itr = iterator();
 		while (itr.hasNext()) {
 			long current = itr.next();
 			if (current == value) {
 				itr.remove();
-				changed = true;
+				return true;
 			}
 		}
 		
-		return changed;
+		return false;
 	}
 
 	@Override
 	public boolean removeAll(LongCollection collection) {
-		return retainOrRemoveAll(collection, true);
+		return retainOrRemoveAll(collection, false);
 	}
 
 	@Override
@@ -94,12 +89,20 @@ public abstract class AbstractLongCollection implements LongCollection {
 	}
 
 	private boolean retainOrRemoveAll(LongCollection collection, boolean retain) {
+		checkNotNull(collection);
+		
 		boolean changed = false;
 		
 		final LongIterator itr = iterator();
 		while (itr.hasNext()) {
 			long current = itr.next();
-			if (collection.contains(current) ^ retain) {
+			
+			/* 
+			 * Remove "current" from this collection if:
+			 * - the other collection contains "current", in "retain" mode
+			 * - the other collection does not contain "current", in "remove" mode 
+			 */
+			if (collection.contains(current) != retain) {
 				itr.remove();
 				changed = true;
 			}

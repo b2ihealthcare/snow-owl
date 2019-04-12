@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
-
-import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
-import static com.google.common.collect.Sets.newHashSet;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.Collection;
-
-import org.junit.Test;
-
-import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongSet;
-import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
-import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 4.7
@@ -435,6 +413,65 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 //		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 //		assertDocEquals(expected, actual);
 //		assertEquals(0, processor.getNewMappings().size());
+//		assertEquals(0, processor.getDeletions().size());
+//	}
+	
+//	@Test
+//	public void indexNewStatedChildConceptOfRoot() throws Exception {
+//		// index the ROOT concept as existing concept
+//		final long rootConceptId = Long.parseLong(Concepts.ROOT_CONCEPT);
+//		statedChangedConceptIds.add(rootConceptId);
+//		
+//		final Concept concept = createConcept(generateConceptId());
+//		availableImages.add(concept.getId());
+//		registerNew(concept);
+//		
+//		final Relationship relationship = createStatedRelationship(concept.getId(), Concepts.IS_A, Concepts.ROOT_CONCEPT);
+//		concept.getOutboundRelationships().add(relationship);
+//		registerNew(relationship);
+//		
+//		final ConceptChangeProcessor processor = process();
+//		
+//		final SnomedConceptDocument expected = doc(concept)
+//				.iconId(concept.getId())
+//				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
+//				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+//				.build();
+//		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+//		assertDocEquals(expected, actual);
+//		assertEquals(0, processor.getChangedMappings().size());
+//		assertEquals(0, processor.getDeletions().size());
+//	}
+	
+//	@Test
+//	public void indexNewStatedAndInferredChildConceptOfRoot() throws Exception {
+//		// index the ROOT concept as existing concept
+//		final long rootConceptId = Long.parseLong(Concepts.ROOT_CONCEPT);
+//		statedChangedConceptIds.add(rootConceptId);
+//		inferredChangedConceptIds.add(rootConceptId);
+//		
+//		final Concept concept = createConcept(generateConceptId());
+//		registerNew(concept);
+//		
+//		final Relationship statedRelationship = createStatedRelationship(concept.getId(), Concepts.IS_A, Concepts.ROOT_CONCEPT);
+//		concept.getOutboundRelationships().add(statedRelationship);
+//		registerNew(statedRelationship);
+//		
+//		final Relationship inferredRelationship = createInferredRelationship(concept.getId(), Concepts.IS_A, Concepts.ROOT_CONCEPT);
+//		concept.getOutboundRelationships().add(inferredRelationship);
+//		registerNew(inferredRelationship);
+//		
+//		final ConceptChangeProcessor processor = process();
+//		
+//		final SnomedConceptDocument expected = doc(concept)
+//				.parents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
+//				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+//				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
+//				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+//				.build();
+//		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+//		assertDocEquals(expected, actual);
+//		assertEquals(0, processor.getChangedMappings().size());
 //		assertEquals(0, processor.getDeletions().size());
 //	}
 	

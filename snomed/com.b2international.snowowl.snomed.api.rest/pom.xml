@@ -12,9 +12,9 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<spring.version>4.3.10.RELEASE</spring.version>
-		<spring.security.version>4.2.4.RELEASE</spring.security.version>
-		<spring.hateoas.version>0.24.0.RELEASE</spring.hateoas.version>
+		<spring.version>4.3.22.RELEASE</spring.version>
+		<spring.security.version>4.2.11.RELEASE</spring.security.version>
+		<spring.hateoas.version>0.25.1.RELEASE</spring.hateoas.version>
 		<springfox.version>2.8.0</springfox.version>
 	</properties>
 
@@ -133,5 +133,4 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
 </project>

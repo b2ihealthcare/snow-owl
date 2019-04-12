@@ -36,11 +36,10 @@ import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.IHandler;
-import com.b2international.snowowl.eventbus.IMessage;
 
 /**
  * @since 6.4
@@ -104,22 +103,18 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 			final Branch mockBranch = Mockito.mock(Branch.class);
 			when(mockBranch.path()).thenReturn(branch);
 			context = new TestBranchContext(repositoryId, mockBranch);
-			final IEventBus bus = EventBusUtil.getWorkerBus(repositoryId, Runtime.getRuntime().availableProcessors());
-			bus.registerHandler(Request.ADDRESS, new IHandler<IMessage>() {
-				@Override
-				public void handle(IMessage message) {
-					try {
-						final RepositoryRequest<?> repoReq = message.body(RepositoryRequest.class);
-						final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
-						final Request<BranchContext, ?> innerReq = ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next");
-						message.reply(innerReq.execute(context));
-					} catch (WrappedException e) {
-						message.fail(e.getCause());
-					} catch (ApiException e) {
-						message.fail(e);
-					} catch (Throwable e) {
-						message.fail(e);
-					}
+			final IEventBus bus = EventBusUtil.getDirectBus(repositoryId);
+			bus.registerHandler(Request.ADDRESS, message -> {
+				try {
+					final RepositoryRequest<?> repoReq = message.body(RepositoryRequest.class);
+					final IndexReadRequest<?> indexReadReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
+					final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, indexReadReq, "next");
+					final Request<BranchContext, ?> innerReq = ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next");
+					message.reply(innerReq.execute(context));
+				} catch (WrappedException e1) {
+					message.fail(e1.getCause());
+				} catch (Throwable e2) {
+					message.fail(e2);
 				}
 			});
 			with(IEventBus.class, bus);

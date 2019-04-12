@@ -27,9 +27,11 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
+import com.b2international.snowowl.snomed.reasoner.index.ConceptChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.DescriptionChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.google.common.collect.ImmutableList;
@@ -44,7 +46,6 @@ public final class SnomedReasonerBootstrap extends Plugin implements Terminology
 	public void run(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
 			final Index repositoryIndex = env.service(RepositoryManager.class).get(getRepositoryId()).service(Index.class);
-			
 			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 			final int maximumReasonerRuns = snomedConfig.getMaxReasonerRuns();
 			final long cleanUpInterval = TimeUnit.MINUTES.toMillis(5L); // TODO: make this configurable
@@ -59,6 +60,8 @@ public final class SnomedReasonerBootstrap extends Plugin implements Terminology
 		return ImmutableList.<Class<?>>of(
 			ClassificationTaskDocument.class,
 			EquivalentConceptSetDocument.class,
+			ConceptChangeDocument.class,
+			DescriptionChangeDocument.class,
 			RelationshipChangeDocument.class,
 			ConcreteDomainChangeDocument.class
 		);

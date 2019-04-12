@@ -72,6 +72,9 @@ public class Expressions {
 		public Expression build() {
 			if (mustClauses.isEmpty() && mustNotClauses.isEmpty() && shouldClauses.isEmpty() && filterClauses.isEmpty()) {
 				return matchAll();
+			} else if (mustClauses.isEmpty() && mustNotClauses.isEmpty() && shouldClauses.isEmpty() && filterClauses.size() == 1) {
+				// shortcut to reduce number of nested Boolean clauses
+				return filterClauses.get(0);
 			} else {
 				final BoolExpression be = new BoolExpression(mustClauses, mustNotClauses, shouldClauses, filterClauses);
 				be.setMinShouldMatch(minShouldMatch);

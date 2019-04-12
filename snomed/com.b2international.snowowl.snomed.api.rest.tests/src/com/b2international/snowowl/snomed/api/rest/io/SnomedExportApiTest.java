@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.commons.Pair;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
@@ -75,6 +76,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -104,6 +106,7 @@ import com.google.common.collect.Sets;
 public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 	private static final Joiner TAB_JOINER = Joiner.on('\t');
+	private static final List<ExtendedLocale> LOCALES = ImmutableList.of(ExtendedLocale.valueOf("en-gb"), ExtendedLocale.valueOf("en-us"));
 	
 	private static void assertArchiveContainsLines(File exportArchive, Multimap<String, Pair<Boolean, String>> fileToLinesMap) throws Exception {
 		
@@ -303,6 +306,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
 			.setReferenceBranch(branchPath.getPath())
+			.setLocales(LOCALES)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
 		
@@ -313,6 +317,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
 			.setReleaseType(Rf2ReleaseType.SNAPSHOT)
 			.setReferenceBranch(branchPath.getPath())
+			.setLocales(LOCALES)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
 		
@@ -1133,7 +1138,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.put("sct2_TextDefinition", false)
 				.put("der2_cRefset_LanguageDelta", false)
 				.put("der2_ssRefset_ModuleDependency", false)
-				.put("der2_sRefset_OWLAxiomReferenceSet", true)
+				.put("sct2_sRefset_OWLExpression", true)
 				.build();
 				
 		assertArchiveContainsFiles(exportArchive, files);
@@ -1144,7 +1149,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(true, statedLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(true, inferredLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(false, additionalLine));
-		fileToLinesMap.put("der2_sRefset_OWLAxiomReferenceSet", Pair.of(true, owlMemberLine));
+		fileToLinesMap.put("sct2_sRefset_OWLExpression", Pair.of(true, owlMemberLine));
 		
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
@@ -1284,7 +1289,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	public void exportUnpublishedOWLExpressionRefsetMembers() throws Exception {
 		
 		Map<?, ?> owlOntologyRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_ONTOLOGY, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "test expression")
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_ONTOLOGY_1)
 				.put("commitComment", "Created new OWL Ontology reference set member")
 				.build();
 
@@ -1293,7 +1298,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.extract().header("Location"));
 		
 		Map<?, ?> owlAxiomRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "test axiom")
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
 				.put("commitComment", "Created new OWL Axiom reference set member")
 				.build();
 
@@ -1320,7 +1325,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.MODULE_SCT_CORE, 
 				Concepts.REFSET_OWL_ONTOLOGY, 
 				Concepts.ROOT_CONCEPT,
-				"test expression"); 
+				SnomedApiTestConstants.OWL_ONTOLOGY_1); 
 
 		String owlAxiomMemberLine = TAB_JOINER.join(owlAxiomRefsetMemberId, 
 				"", 
@@ -1328,21 +1333,19 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.MODULE_SCT_CORE, 
 				Concepts.REFSET_OWL_AXIOM,
 				Concepts.ROOT_CONCEPT,
-				"test axiom");
+				SnomedApiTestConstants.OWL_AXIOM_1);
 
-		String expectedOwlAxiomDeltaFile = "sct2_sRefset_OWLAxiomDelta";
-		String expectedOwlOntologyDeltaFile = "sct2_sRefset_OWLOntologyDelta";
+		String expectedOwlExpressionDeltaFile = "sct2_sRefset_OWLExpressionDelta";
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
-				.put(expectedOwlAxiomDeltaFile, true)
-				.put(expectedOwlOntologyDeltaFile, true)
+				.put(expectedOwlExpressionDeltaFile, true)
 				.build();
 			
 		assertArchiveContainsFiles(exportArchive, files);
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 
-		fileToLinesMap.put(expectedOwlOntologyDeltaFile, Pair.of(true, owlOntologyMemberLine));
-		fileToLinesMap.put(expectedOwlAxiomDeltaFile, Pair.of(true, owlAxiomMemberLine));
+		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlOntologyMemberLine));
+		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlAxiomMemberLine));
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}

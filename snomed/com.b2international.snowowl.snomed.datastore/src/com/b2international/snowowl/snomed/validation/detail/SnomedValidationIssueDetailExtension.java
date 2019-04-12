@@ -29,8 +29,12 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.swing.SortOrder;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
@@ -39,6 +43,8 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -56,6 +62,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
@@ -64,7 +72,7 @@ import com.google.common.collect.Sets;
  * @since 6.4
  */
 public class SnomedValidationIssueDetailExtension implements ValidationIssueDetailExtension {
-
+	
 	public final static class SnomedIssueDetailFilterFields {
 
 		private SnomedIssueDetailFilterFields() {};
@@ -242,17 +250,20 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		final Set<String> conceptsToFetch = newHashSet();
 
+		final Map<String, String> relationshipFragmentsByRelationshipId= Maps.newHashMap(); 
+		
 		searcher.scroll(Query.select(String[].class)
 			.from(SnomedRelationshipIndexEntry.class)
-			.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.TYPE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+			.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.TYPE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 			.where(SnomedRelationshipIndexEntry.Expressions.ids(issuesByRelationshipId.keySet()))
 			.limit(SCROLL_SIZE)
 			.build())
 			.forEach(hits -> {
 				for (String[] hit : hits) {
-					conceptsToFetch.add(hit[0]);
 					conceptsToFetch.add(hit[1]);
 					conceptsToFetch.add(hit[2]);
+					conceptsToFetch.add(hit[3]);
+					relationshipFragmentsByRelationshipId.put(hit[0], String.format("%s|%s|%s", hit[1], hit[2], hit[3]));
 				}
 			});
 		
@@ -271,6 +282,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					.build()
 				)
 				.limit(SCROLL_SIZE)
+				.sortBy(SortBy.field(SnomedDescriptionIndexEntry.Fields.TYPE_ID, Order.ASC))
 				.build())
 				.forEach(hits -> {
 					for (String[] hit : hits) {
@@ -280,9 +292,19 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 
 		if (!affectedComponentLabelsByConcept.isEmpty()) {
 			issuesByRelationshipId.values().forEach(issue -> {
-				final Collection<String> labels = affectedComponentLabelsByConcept.get(issue.getAffectedComponent().getComponentId());
-				issue.setAffectedComponentLabels(ImmutableList.copyOf(labels));
+				final String[] relationshipFragments = relationshipFragmentsByRelationshipId.get(issue.getAffectedComponent().getComponentId()).split("[|]");
+				
+				final String sourceId = relationshipFragments[0];
+				final String typeId = relationshipFragments[1];
+				final String destinationId = relationshipFragments[2];
+				
+				final String sourceTerm = Iterables.getFirst(affectedComponentLabelsByConcept.get(sourceId), sourceId);
+				final String typeTerm = Iterables.getFirst(affectedComponentLabelsByConcept.get(typeId), typeId);
+				final String destinationTerm = Iterables.getFirst(affectedComponentLabelsByConcept.get(destinationId), destinationId);
+
+				issue.setAffectedComponentLabels(ImmutableList.of(String.format("%s %s %s", sourceTerm, typeTerm, destinationTerm)));
 			});
+			
 		}
 	}
 	

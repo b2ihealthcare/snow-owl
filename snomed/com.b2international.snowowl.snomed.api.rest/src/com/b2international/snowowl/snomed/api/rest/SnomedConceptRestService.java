@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
@@ -40,8 +38,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
@@ -113,9 +109,17 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@RequestParam(value="term", required=false) 
 			final String termFilter,
 
-			@ApiParam(value="The ECL expression to match")
+			@ApiParam(value="The ECL expression to match on the inferred form")
 			@RequestParam(value="ecl", required=false) 
 			final String eclFilter,
+			
+			@ApiParam(value="The ECL expression to match on the stated form")
+			@RequestParam(value="statedEcl", required=false) 
+			final String statedEclFilter,
+			
+			@ApiParam(value="The SNOMED CT Query expression to match (inferred form only)")
+			@RequestParam(value="query", required=false) 
+			final String queryFilter,
 			
 			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
 			@RequestParam(value="scrollKeepAlive", required=false) 
@@ -141,15 +145,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		
 		final SortField sortField = StringUtils.isEmpty(termFilter) 
 				? SearchIndexResourceRequest.DOC_ID 
@@ -168,6 +164,8 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByDefinitionStatus(definitionStatusFilter)
 					.filterByNamespace(namespaceFilter)
 					.filterByEcl(eclFilter)
+					.filterByStatedEcl(statedEclFilter)
+					.filterByQuery(queryFilter)
 					.filterByTerm(termFilter)
 					.filterByDescriptionLanguageRefSet(extendedLocales)
 					.setExpand(expand)
@@ -209,16 +207,8 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales;
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
-
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetConcept(conceptId)

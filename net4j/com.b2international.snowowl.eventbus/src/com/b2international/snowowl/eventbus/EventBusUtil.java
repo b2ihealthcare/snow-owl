@@ -89,4 +89,11 @@ public class EventBusUtil {
 		LifecycleUtil.activate(bus);
 		return bus;
 	}
+	
+	/**
+	 * @return an {@link EventBus} with the specified description and 1 direct thread worker.
+	 */
+	public static IEventBus getDirectBus(String name) {
+		return getWorkerBus(name, 0);
+	}
 }

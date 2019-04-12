@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.google.common.primitives.Longs;
 
 /**
  * Compares {@link ConcreteDomainFragment} instances for ontology change processing. 
- *
  */
 public final class ConcreteDomainChangeOrdering extends Ordering<ConcreteDomainFragment> {
 	
@@ -32,22 +31,18 @@ public final class ConcreteDomainChangeOrdering extends Ordering<ConcreteDomainF
 		// Prevents instantiation
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.google.common.collect.Ordering#compare(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public int compare(final ConcreteDomainFragment left, final ConcreteDomainFragment right) {
 		
-		final int typeDelta = left.getDataType().compareTo(right.getDataType());
-		if (typeDelta != 0) return typeDelta;
+		final int refSetDelta = Longs.compare(left.getRefSetId(), right.getRefSetId());
+		if (refSetDelta != 0) return refSetDelta;
 		
-		final int attributeLabelDelta = Longs.compare(left.getTypeId(), right.getTypeId());
-		if (attributeLabelDelta != 0) return attributeLabelDelta;
-
-		final int groupDelta = Ints.compare(left.getGroup(), right.getGroup()	);
+		final int typeIdDelta = Longs.compare(left.getTypeId(), right.getTypeId());
+		if (typeIdDelta != 0) return typeIdDelta;
+		
+		final int groupDelta = Ints.compare(left.getGroup(), right.getGroup());
 		if (groupDelta != 0) return groupDelta;
-		
+
 		return left.getSerializedValue().compareTo(right.getSerializedValue());
 	}
 }

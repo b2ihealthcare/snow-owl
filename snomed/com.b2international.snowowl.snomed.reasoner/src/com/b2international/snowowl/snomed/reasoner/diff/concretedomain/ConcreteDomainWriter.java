@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.diff.concretedomain;
 
 import com.b2international.index.Writer;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeWriter;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
@@ -31,15 +32,36 @@ public final class ConcreteDomainWriter extends OntologyChangeWriter<ConcreteDom
 	}
 
 	@Override
-	protected void indexChange(final String conceptId, final ConcreteDomainFragment fragment, final ChangeNature nature) {
+	public void indexChange(final String conceptId, final ConcreteDomainFragment fragment, final ChangeNature nature) {
 
-		final ConcreteDomainChangeDocument concreteDomainDoc = ConcreteDomainChangeDocument.builder()
-				.nature(nature)
-				.classificationId(classificationId)
-				.memberId(fragment.getMemberId())
-				.referencedComponentId(conceptId)
-				.build();
-
-		indexChange(concreteDomainDoc);
+		final ConcreteDomainChangeDocument.Builder builder = ConcreteDomainChangeDocument.builder()
+			.nature(nature)
+			.classificationId(classificationId)
+			.memberId(fragment.getMemberId())
+			.referencedComponentId(conceptId);
+		
+		switch (nature) {
+			case NEW:
+				builder.group(fragment.getGroup());
+				builder.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP);
+				builder.released(Boolean.FALSE);
+				break;
+				
+			case UPDATED:
+				builder.serializedValue(fragment.getSerializedValue());
+				builder.released(fragment.isReleased());
+				break;
+				
+			case REDUNDANT:
+				builder.released(fragment.isReleased());
+				break;
+				
+			default:
+				throw new IllegalStateException(String.format("Unexpected CD member change '%s' found with UUID '%s'.", 
+						nature, 
+						fragment.getMemberId()));
+		}
+		
+		indexChange(builder.build());
 	}
 }

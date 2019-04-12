@@ -38,7 +38,6 @@ final class SnomedMRCMModuleScopeMemberCreateDelegate extends SnomedRefSetMember
 	public String execute(final SnomedReferenceSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_MODULE_SCOPE);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
@@ -59,6 +58,7 @@ final class SnomedMRCMModuleScopeMemberCreateDelegate extends SnomedRefSetMember
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID);
 		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
 	}
 

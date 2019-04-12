@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.UUID;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.BranchRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
@@ -37,32 +38,38 @@ public final class ClassificationCreateRequestBuilder
 	private String reasonerId;
 	private String userId;
 	private final List<SnomedConcept> additionalConcepts = newArrayList();
+	private String parentLockContext = DatastoreLockContextDescriptions.ROOT;
 
 	ClassificationCreateRequestBuilder() {}
 
 	public ClassificationCreateRequestBuilder setClassificationId(final String classificationId) {
 		this.classificationId = classificationId;
-		return this;
+		return getSelf();
 	}
 
 	public ClassificationCreateRequestBuilder setReasonerId(final String reasonerId) {
 		this.reasonerId = reasonerId;
-		return this;
+		return getSelf();
 	}
 
 	public ClassificationCreateRequestBuilder setUserId(final String userId) {
 		this.userId = userId;
-		return this;
+		return getSelf();
 	}
 
 	public ClassificationCreateRequestBuilder addConcept(final SnomedConcept additionalConcept) {
 		this.additionalConcepts.add(additionalConcept);
-		return this;
+		return getSelf();
 	}
 
 	public ClassificationCreateRequestBuilder addAllConcepts(final List<SnomedConcept> additionalConcepts) {
 		this.additionalConcepts.addAll(additionalConcepts);
-		return this;
+		return getSelf();
+	}
+	
+	public ClassificationCreateRequestBuilder setParentLockContext(final String parentLockContext) {
+		this.parentLockContext = parentLockContext;
+		return getSelf();
 	}
 
 	@Override
@@ -72,6 +79,7 @@ public final class ClassificationCreateRequestBuilder
 		request.setReasonerId(reasonerId);
 		request.setUserId(userId);
 		request.setAdditionalConcepts(additionalConcepts);
+		request.setParentLockContext(parentLockContext);
 		return request;
 	}
 }

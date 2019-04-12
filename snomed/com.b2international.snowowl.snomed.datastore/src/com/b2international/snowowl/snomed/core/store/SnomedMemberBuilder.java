@@ -70,6 +70,10 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> exte
 		return member;
 	}
 	
+	protected final String getReferencedComponentId() {
+		return referencedComponent;
+	}
+	
 	@Override
 	protected final Builder create() {
 		return SnomedRefSetMemberIndexEntry.builder();

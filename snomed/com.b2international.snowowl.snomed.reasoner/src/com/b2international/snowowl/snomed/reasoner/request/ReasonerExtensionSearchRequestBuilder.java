@@ -18,13 +18,15 @@ package com.b2international.snowowl.snomed.reasoner.request;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
 
 /**
  * @since 7.0
  */
 public final class ReasonerExtensionSearchRequestBuilder 
-		extends BaseRequestBuilder<ReasonerExtensionSearchRequestBuilder, ServiceProvider, ReasonerExtensions> {
+		extends BaseRequestBuilder<ReasonerExtensionSearchRequestBuilder, ServiceProvider, ReasonerExtensions>
+		implements SystemRequestBuilder<ReasonerExtensions> {
 
 	ReasonerExtensionSearchRequestBuilder() { }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,52 +15,54 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import com.b2international.collections.longs.LongSet;
+import java.util.Set;
+
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.6
  */
 public final class Taxonomy {
 	
-	private final ISnomedTaxonomyBuilder newTaxonomy;
-	private final ISnomedTaxonomyBuilder oldTaxonomy;
-	private final LongSet newEdges;
-	private final LongSet changedEdges;
-	private final LongSet detachedEdges;
-	private final SnomedTaxonomyStatus status;
+	private final TaxonomyGraph newTaxonomy;
+	private final TaxonomyGraph oldTaxonomy;
+	private final Set<String> newEdges;
+	private final Set<String> changedEdges;
+	private final Set<String> detachedEdges;
+	private final TaxonomyGraphStatus status;
 
-	public Taxonomy(ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, SnomedTaxonomyStatus status, LongSet newEdges, LongSet changedEdges, LongSet detachedEdges) {
+	public Taxonomy(TaxonomyGraph newTaxonomy, TaxonomyGraph oldTaxonomy, TaxonomyGraphStatus status, Set<String> newEdges, Set<String> changedEdges, Set<String> detachedEdges) {
 		this.newTaxonomy = newTaxonomy;
 		Preconditions.checkState(!newTaxonomy.isDirty(), "Builder for representing the new state of the taxonomy has dirty state.");
 		this.oldTaxonomy = oldTaxonomy;
 		this.status = status;
-		this.newEdges = newEdges;
-		this.changedEdges = changedEdges;
-		this.detachedEdges = detachedEdges;
+		this.newEdges = ImmutableSet.copyOf(newEdges);
+		this.changedEdges = ImmutableSet.copyOf(changedEdges);
+		this.detachedEdges = ImmutableSet.copyOf(detachedEdges);
 	}
 	
-	public ISnomedTaxonomyBuilder getNewTaxonomy() {
+	public TaxonomyGraph getNewTaxonomy() {
 		return newTaxonomy;
 	}
 	
-	public ISnomedTaxonomyBuilder getOldTaxonomy() {
+	public TaxonomyGraph getOldTaxonomy() {
 		return oldTaxonomy;
 	}
 	
-	public SnomedTaxonomyStatus getStatus() {
+	public TaxonomyGraphStatus getStatus() {
 		return status;
 	}
 
-	public LongSet getNewEdges() {
+	public Set<String> getNewEdges() {
 		return newEdges;
 	}
 	
-	public LongSet getChangedEdges() {
+	public Set<String> getChangedEdges() {
 		return changedEdges;
 	}
 	
-	public LongSet getDetachedEdges() {
+	public Set<String> getDetachedEdges() {
 		return detachedEdges;
 	}
 

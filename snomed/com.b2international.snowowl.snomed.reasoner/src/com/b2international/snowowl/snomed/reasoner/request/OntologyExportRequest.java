@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,13 +39,13 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.reasoner.exceptions.OntologyException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFactory;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.0
@@ -54,21 +54,15 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 
 	private static final int PIPE_SIZE = 8192;
 
-	public enum Type {
-		FUNCTIONAL,
-		MANCHESTER,
-		XML
-	}
-
 	@NotNull
-	private Type exportType;
+	private OntologyExportType exportType;
 
 	@NotEmpty
 	private String ontologyModuleId;
 
 	OntologyExportRequest() {}
 
-	public void setExportType(final Type exportType) {
+	public void setExportType(final OntologyExportType exportType) {
 		this.exportType = exportType;
 	}
 
@@ -83,7 +77,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final boolean concreteDomainSupportEnabled = config.isConcreteDomainSupported();
 		
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder();
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(Concepts.UK_MODULES_NOCLASSIFY);
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.finishConcepts();
 		
@@ -97,7 +91,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 
 		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomy)));
+		ontologyManager.getOntologyFactories().add(new DelegateOntologyFactory(taxonomy));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + ontologyModuleId);
 
 		try {

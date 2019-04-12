@@ -15,10 +15,17 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -62,4 +69,14 @@ public abstract class AbstractRestService {
 	@Autowired
 	@Value("${repositoryId}")
 	protected String repositoryId;
+	
+	protected final List<ExtendedLocale> getExtendedLocales(final String acceptLanguage) {
+		try {
+			return AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+	}
 }
