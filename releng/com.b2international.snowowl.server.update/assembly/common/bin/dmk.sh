@@ -183,6 +183,9 @@ then
                     -XX:+AlwaysPreTouch \
                     -Xss1m \
                     -Xloggc:$KERNEL_HOME/serviceability/`date +%F_%H%M-%S`-gc.log \
+					-XX:+UseConcMarkSweepGC \
+                    -XX:CMSInitiatingOccupancyFraction=75 \
+                    -XX:+UseCMSInitiatingOccupancyOnly \
                     -XX:+PrintGCDetails \
 					-XX:+PrintGCDateStamps \
 					-XX:+PrintGCApplicationStoppedTime \
