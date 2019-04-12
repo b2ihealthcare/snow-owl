@@ -1,12 +1,16 @@
 FROM centos:7
 LABEL maintainer="B2i Healthcare <http://b2i.sg/>"
 
-ARG SERVER_ARCHIVE_NAME
+ARG SERVER_ARCHIVE
+ARG ES_CLUSTER_URL_ARG
 
 ARG SUID=1042
 ARG SGID=1042
 
 VOLUME /tmp
+
+# Set environment ES_URL variable for Snow Owl 
+ENV ES_CLUSTER_URL ${ES_CLUSTER_URL_ARG}:$ES_CLUSTER_URL
 
 # Install java 1.8 as a pre requirement
 RUN yum -y update -q -e 0 && yum clean all
@@ -15,6 +19,8 @@ RUN yum install -y \
        java-1.8.0-openjdk-devel -q -e 0
 
 RUN yum -y install unzip -q e 0
+
+RUN yum -y install bash -q e 0
 
 # Set JAVA_HOME environment variable
 ENV JAVA_HOME /etc/alternatives/jre
@@ -47,7 +53,7 @@ RUN rm -rf /usr/share/${SERVER_ARCHIVE_NAME}
 RUN rm -f usr/share/snowowl/bin/install_snowowl.sh
 
 # Overwrite config file after installation
-COPY /config/snowowl_config.yml /opt/snowowl/server/snowowl_config.yml
+COPY /config/snowowl_config_h2.yml /opt/snowowl/server/snowowl_config.yml
 
 RUN mkdir /var/log/snowowl
 
@@ -61,4 +67,10 @@ RUN chgrp 0 /opt/snowowl/server/bin/dmk.sh && \
     chmod g=u /etc/passwd && \
     chmod 0775 /opt/snowowl/server/bin/dmk.sh
 
-ENTRYPOINT [/opt/snowowl/server/bin/dmk.sh]
+RUN chgrp 0 /opt/snowowl/server/bin/startup.sh && \
+    chmod g=u /etc/passwd && \
+    chmod 0775 /opt/snowowl/server/bin/startup.sh
+
+EXPOSE 8080 2036
+
+ENTRYPOINT ["/opt/snowowl/server/bin/startup.sh"]

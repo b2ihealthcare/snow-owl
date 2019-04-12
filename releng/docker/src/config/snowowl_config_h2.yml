@@ -1,0 +1,36 @@
+#
+# Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+#
+
+gzip: false
+
+# Default identity provider is `file`.
+# You can specify users in the `configuration/users` file in the form of <username>:<password>, where the password is BCrypt encrypted hash of the password
+# The default user is `snowowl` with the password of `snowowl`
+# NOTE: it is recommended to change the default username/password in production environments
+# Also Snow Owl supports ldap identity provider see the example below on how to configure it
+identity:
+  providers:
+    - file:
+        name: users
+#    - ldap:
+#        uri: <ldap_uri>
+#        baseDn: dc=snowowl,dc=b2international,dc=com
+#        rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
+#        rootDnPassword: <adminpwd>
+#        userIdProperty: uid
+#        usePool: false
+
+repository:
+  port: 2036
+
+snomed:
+  maxReasonerCount: 1
+  showReasonerUsageWarning: true
+  ids:
+    maxIdGenerationAttempts: 100000
+
+# Request execution metrics (response-time, detailed information about transactions, etc.)
+metrics:
+  enabled: true  
+ 
