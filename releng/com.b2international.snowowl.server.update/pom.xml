@@ -305,28 +305,11 @@
 											<directory>assembly/common/configuration</directory>
 											<includes>
 												<include>users</include>
+												<include>snowowl.yml</include>
 											</includes>
 										</resource>
 									</resources>
 									<outputDirectory>${basedir}/runtime/configuration</outputDirectory>
-								</configuration>
-							</execution>
-							<execution>
-								<id>copy-configuration-snow-owl-config-yml</id>
-								<phase>process-classes</phase>
-								<goals>
-									<goal>copy-resources</goal>
-								</goals>
-								<configuration>
-									<resources>
-										<resource>
-											<directory>assembly/h2</directory>
-											<includes>
-												<include>snowowl_config.yml</include>
-											</includes>
-										</resource>
-									</resources>
-									<outputDirectory>${basedir}/runtime</outputDirectory>
 								</configuration>
 							</execution>
 						</executions>
