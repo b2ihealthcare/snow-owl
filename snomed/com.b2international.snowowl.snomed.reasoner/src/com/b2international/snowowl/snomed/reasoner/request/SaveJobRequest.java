@@ -255,7 +255,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			final RelationshipChanges nextChanges = relationshipIterator.next();
 
 			final Set<String> conceptIds = nextChanges.stream()
-					.filter(change -> ChangeNature.NEW.equals(change.getChangeNature()))
 					.map(RelationshipChange::getRelationship)
 					.map(ReasonerRelationship::getSourceId)
 					.collect(Collectors.toSet());
@@ -345,7 +344,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			final ConcreteDomainChanges nextChanges = concreteDomainIterator.next();
 
 			final Set<String> conceptIds = nextChanges.stream()
-					.filter(c -> ChangeNature.NEW.equals(c.getChangeNature()))
 					.map(ConcreteDomainChange::getConcreteDomainMember)
 					.map(m -> m.getReferencedComponentId())
 					.collect(Collectors.toSet());
