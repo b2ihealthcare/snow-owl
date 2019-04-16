@@ -470,11 +470,11 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void import28ImportConceptAsInactive() {
 		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(404);
 		
 		importArchive("SnomedCT_Release_INT_20150131_concept_as_inactive.zip");
 
-		SnomedConcept concept = getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(200).extract().as(SnomedConcept.class);
+		SnomedConcept concept = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
 		
 		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getParentIds());
 		assertArrayEquals(new long[0], concept.getAncestorIds());
