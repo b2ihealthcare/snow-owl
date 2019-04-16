@@ -2,10 +2,6 @@
 LABEL maintainer="B2i Healthcare <http://b2i.sg/>"
 
 ARG SNOWOWL_VERSION
-ARG ES_CLUSTER_URL_ARG
-
-# Set environment ES_URL variable for Snow Owl 
-ENV ES_CLUSTER_URL ${ES_CLUSTER_URL_ARG}:$ES_CLUSTER_URL
 
 # Install java 1.8 as a pre requirement
 RUN yum -y update -q -e 0 && yum clean all
