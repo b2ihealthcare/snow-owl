@@ -36,7 +36,6 @@ unzip_server() {
 
 	echo "Unzipping server archive"
 
-
 	TMP_SERVER_DIR=$(mktemp -d -p "/usr/share")
 
 	unzip -q "${SERVER_ARCHIVE_PATH}" -d "${TMP_SERVER_DIR}"

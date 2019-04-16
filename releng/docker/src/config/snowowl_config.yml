@@ -8,9 +8,6 @@ identity:
   providers:
     - file:
         name: users
-    - ldap:
-        uri: ldap://arnold:389
-        rootDnPassword: adminpwd
 
 repository:
   host: 0.0.0.0
@@ -22,12 +19,13 @@ repository:
     datasource: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
     driver: com.mysql.jdbc.Driver
     scheme: jdbc:mysql://
-    location: localhost:3306/
+    location: ${MYSQL_URL}
     settings: ?useServerPrepStmts=true&useCursorFetch=true
     username: snowowl
     password: snowowl
   index:
     socketTimeout: 60000
+    clusterUrl: ${ES_CLUSTER_URL}
 
 snomed:
   maxReasonerCount: 1
@@ -39,7 +37,7 @@ snomed:
 metrics:
   enabled: true
 
-tasks:
-  repositoryUrl: http://arnold:9090/bugzilla/
-  user: admin@bugzilla.org
-  password: password
+#tasks:
+#  repositoryUrl: ${BUGZILLA_URL}
+#  user: ${BUGZILLA_USER}
+#  password: ${BUGZILLA_PASSWORD}

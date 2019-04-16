@@ -2,15 +2,11 @@ FROM centos:7
 LABEL maintainer="B2i Healthcare <http://b2i.sg/>"
 
 ARG SERVER_ARCHIVE
-ARG ES_CLUSTER_URL_ARG
 
 ARG SUID=1042
 ARG SGID=1042
 
 VOLUME /tmp
-
-# Set environment ES_URL variable for Snow Owl 
-ENV ES_CLUSTER_URL ${ES_CLUSTER_URL_ARG}:$ES_CLUSTER_URL
 
 # Install java 1.8 as a pre requirement
 RUN yum -y update -q -e 0 && yum clean all
@@ -18,12 +14,10 @@ RUN yum install -y \
        java-1.8.0-openjdk \
        java-1.8.0-openjdk-devel -q -e 0
 
-RUN yum -y install unzip -q e 0
-
-RUN yum -y install bash -q e 0
+RUN yum -y install unzip -q e 0 
 
 # Set JAVA_HOME environment variable
-ENV JAVA_HOME /etc/alternatives/jre
+ENV JAVA_HOME /etc/alternatives/jre_1.8.0_openjdk
 
 RUN mkdir /opt/snowowl
 
@@ -32,11 +26,12 @@ RUN groupadd -g $SGID snowowl && \
     adduser -u $SUID -g snowowl snowowl
 
 RUN chown -R snowowl:snowowl /opt/snowowl
-RUN chown -R snowowl:snowowl /usr/share
 
 WORKDIR /usr/share
 
-COPY ${SERVER_ARCHIVE_NAME} ${SERVER_ARCHIVE_NAME}
+COPY ${SERVER_ARCHIVE} ${SERVER_ARCHIVE}
+
+RUN chown -R snowowl:snowowl /usr/share/${SERVER_ARCHIVE}
 
 RUN mkdir /usr/share/snowowl && mkdir /usr/share/snowowl/bin
 
@@ -46,9 +41,9 @@ RUN chgrp 0 /usr/share/snowowl/bin/install_snowowl.sh && \
     chmod g=u /etc/passwd && \
     chmod 0775 /usr/share/snowowl/bin/install_snowowl.sh
 
-RUN /usr/share/snowowl/bin/install_snowowl.sh /usr/share/${SERVER_ARCHIVE_NAME}
+RUN /usr/share/snowowl/bin/install_snowowl.sh /usr/share/${SERVER_ARCHIVE}
 
-RUN rm -rf /usr/share/${SERVER_ARCHIVE_NAME}
+RUN rm -rf /usr/share/${SERVER_ARCHIVE}
 
 RUN rm -f usr/share/snowowl/bin/install_snowowl.sh
 
@@ -61,7 +56,7 @@ RUN chgrp 0 /var/log/snowowl && \
     chmod g=u /etc/passwd && \
     chmod 0775 /var/log/snowowl
 
-RUN ln -sf /opt/snowowl/server/servicability/logs /var/log/snowowl
+RUN ln -sf /opt/snowowl/server/serviceability/logs /var/log/snowowl
 
 RUN chgrp 0 /opt/snowowl/server/bin/dmk.sh && \
     chmod g=u /etc/passwd && \
@@ -70,6 +65,8 @@ RUN chgrp 0 /opt/snowowl/server/bin/dmk.sh && \
 RUN chgrp 0 /opt/snowowl/server/bin/startup.sh && \
     chmod g=u /etc/passwd && \
     chmod 0775 /opt/snowowl/server/bin/startup.sh
+
+
 
 EXPOSE 8080 2036
 
