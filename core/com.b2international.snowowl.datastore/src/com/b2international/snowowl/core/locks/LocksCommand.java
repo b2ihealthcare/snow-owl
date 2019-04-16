@@ -56,7 +56,7 @@ import picocli.CommandLine.Parameters;
 @CommandLine.Command(
 	name = "locks",
 	header = "Display and manage locks",
-	description = "Displays",
+	description = "Displays locks currently present in the system and offers subcommands to acquire/release them.",
 	subcommands = {
 		HelpCommand.class,
 		LocksCommand.AddLockCommand.class,
