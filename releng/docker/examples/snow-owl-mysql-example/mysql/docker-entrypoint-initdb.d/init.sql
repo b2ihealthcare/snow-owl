@@ -1,0 +1,5 @@
+CREATE DATABASE snomedstore;
+
+GRANT ALL PRIVILEGES ON *.* TO 'snowowl'@'%' IDENTIFIED BY 'snowowl';
+
+FLUSH PRIVILEGES;
