@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   snowowl:
-    image: bbb82d8e229a
+    image: # TODO get image from dockerHub
     container_name: snowowl
     environment: 
       SO_JAVA_OPTS: "-Xms4g -Xmx4g"
