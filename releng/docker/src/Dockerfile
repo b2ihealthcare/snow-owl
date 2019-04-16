@@ -20,6 +20,8 @@ RUN wget https://github.com/b2ihealthcare/snow-owl/releases/download/v${SNOWOWL_
 # Install Snow Owl rpm package
 RUN rpm --install snow-owl-oss-${SNOWOWL_VERSION}.rpm
 
+RUN rm -f snow-owl-oss-${SNOWOWL_VERSION}.rpm
+
 # Openshift overrides USER and uses ones with randomly uid>1024 and gid=0
 RUN chgrp 0 /usr/share/snowowl/bin/startup.sh && \
     chmod g=u /etc/passwd && \
