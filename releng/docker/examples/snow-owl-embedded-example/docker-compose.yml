@@ -1,7 +1,7 @@
 version: '3.7'
 services: 
   snowowl:
-    image: # TODO: build an image and upload to Docker Hub
+    image: b2ici/snow-owl:7.0.0
     environment:
       SO_JAVA_OPTS: "-Xms2g -Xmx2g"
     container_name: snowowl

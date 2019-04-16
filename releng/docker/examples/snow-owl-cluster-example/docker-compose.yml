@@ -16,19 +16,19 @@ services:
       interval: 1s
       timeout: 1s
       retries: 60
-   # ports:
-   #  - 9200:9200
-   #  - 9300:9300
+    ports:
+     - 9200:9200
+     - 9300:9300
 
  
   snowowl:
-    image: # TODO: build an image and upload to Docker Hub
+    image: b2ici/snow-owl:7.0.0
     container_name: snowowl
     environment:
       SO_JAVA_OPTS: "-Xms2g -Xmx2g"
+      ES_CLUSTER_URL: "http://es:9200"
     depends_on:
-      elasticsearch:
-        condition: service_healthy 
+      - elasticsearch
     networks:
       - elastic
     ports:
