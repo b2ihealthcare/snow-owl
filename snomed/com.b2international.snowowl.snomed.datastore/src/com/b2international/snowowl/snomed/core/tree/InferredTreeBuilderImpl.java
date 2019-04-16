@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
+import java.util.List;
+
+import com.b2international.commons.http.ExtendedLocale;
+
 /**
  * @since 4.6
  */
 final class InferredTreeBuilderImpl extends TreeBuilderImpl {
 
+	public InferredTreeBuilderImpl(List<ExtendedLocale> locales) {
+		super(locales);
+	}
+	
 	@Override
 	final String getForm() {
 		return Trees.INFERRED_FORM;

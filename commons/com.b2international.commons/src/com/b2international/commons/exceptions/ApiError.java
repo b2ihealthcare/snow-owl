@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.commons.exceptions;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -31,7 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 4.1
  */
 @JsonDeserialize(builder = ApiError.Builder.class)
-public interface ApiError {
+public interface ApiError extends Serializable {
 
 	/**
 	 * Returns a user-friendly error message, which can be directly used in User interfaces to show the error to the end-user. It should never contain

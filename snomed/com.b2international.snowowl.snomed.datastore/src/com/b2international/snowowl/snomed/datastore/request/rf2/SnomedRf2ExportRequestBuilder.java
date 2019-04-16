@@ -17,7 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -48,6 +50,7 @@ public final class SnomedRf2ExportRequestBuilder
 	private Collection<String> refSets = null;
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
+	private List<ExtendedLocale> locales;
 	
 	SnomedRf2ExportRequestBuilder() {}
 	
@@ -126,6 +129,11 @@ public final class SnomedRf2ExportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ExportRequestBuilder setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<RepositoryContext, Rf2ExportResult> doBuild() {
 		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
@@ -144,6 +152,7 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setRefSets(refSets);
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setExtensionOnly(extensionOnly);
+		req.setLocales(locales);
 		return req;
 	}
 }

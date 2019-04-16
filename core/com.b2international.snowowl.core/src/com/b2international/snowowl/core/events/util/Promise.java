@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.events.util;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -27,20 +28,25 @@ import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
-import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
+
+import io.reactivex.Observable;
+import io.reactivex.Observer;
 
 /**
  * @since 4.1
  * @param <T>
  *            - the type of the return value
  */
-public final class Promise<T> extends AbstractFuture<T> {
+public final class Promise<T> extends Observable<T> implements ListenableFuture<T> {
 
+	private final SettableFuture<T> delegate = SettableFuture.create();
+	
 	/**
 	 * @return
 	 * @since 4.6
@@ -49,9 +55,9 @@ public final class Promise<T> extends AbstractFuture<T> {
 	public T getSync() {
 		try {
 			return get();
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			throw new SnowowlRuntimeException(e);
-		} catch (ExecutionException e) {
+		} catch (final ExecutionException e) {
 			final Throwable cause = e.getCause();
 			if (cause instanceof ApiException) {
 				throw (ApiException) cause;
@@ -71,14 +77,14 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * @since 4.6
 	 */
 	@Beta
-	public T getSync(long timeout, TimeUnit unit) {
+	public T getSync(final long timeout, final TimeUnit unit) {
 		try {
 			return get(timeout, unit);
-		} catch (TimeoutException e) {
+		} catch (final TimeoutException e) {
 			throw new RequestTimeoutException(e);
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			throw new SnowowlRuntimeException(e);
-		} catch (ExecutionException e) {
+		} catch (final ExecutionException e) {
 			final Throwable cause = e.getCause();
 			if (cause instanceof ApiException) {
 				throw (ApiException) cause;
@@ -98,15 +104,15 @@ public final class Promise<T> extends AbstractFuture<T> {
 		Futures.addCallback(this, new FutureCallback<T>() {
 
 			@Override
-			public void onSuccess(T result) {
+			public void onSuccess(final T result) {
 				promise.resolve(result);
 			}
 
 			@Override
-			public void onFailure(Throwable t) {
+			public void onFailure(final Throwable t) {
 				try {
 					promise.resolve(fail.apply(t));
-				} catch (Throwable e) {
+				} catch (final Throwable e) {
 					promise.reject(e);
 				}
 			}
@@ -125,15 +131,15 @@ public final class Promise<T> extends AbstractFuture<T> {
 		Futures.addCallback(this, new FutureCallback<T>() {
 
 			@Override
-			public void onSuccess(T result) {
+			public void onSuccess(final T result) {
 				promise.resolve(result);
 			}
 
 			@Override
-			public void onFailure(Throwable t) {
+			public void onFailure(final Throwable t) {
 				try {
 					promise.resolveWith(fail.apply(t));
-				} catch (Throwable e) {
+				} catch (final Throwable e) {
 					promise.reject(e);
 				}
 			}
@@ -155,16 +161,16 @@ public final class Promise<T> extends AbstractFuture<T> {
 		final Promise<U> transformed = new Promise<>();
 		Futures.addCallback(this, new FutureCallback<T>() {
 			@Override
-			public void onSuccess(T result) {
+			public void onSuccess(final T result) {
 				try {
 					transformed.resolve(then.apply(result));
-				} catch (Throwable t) {
+				} catch (final Throwable t) {
 					onFailure(t);
 				}
 			}
 
 			@Override
-			public void onFailure(Throwable t) {
+			public void onFailure(final Throwable t) {
 				transformed.reject(t);
 			}
 		});
@@ -184,16 +190,16 @@ public final class Promise<T> extends AbstractFuture<T> {
 		final Promise<U> transformed = new Promise<>();
 		Futures.addCallback(this, new FutureCallback<T>() {
 			@Override
-			public void onSuccess(T result) {
+			public void onSuccess(final T result) {
 				try {
 					transformed.resolveWith(then.apply(result));
-				} catch (Throwable t) {
+				} catch (final Throwable t) {
 					onFailure(t);
 				}
 			}
 
 			@Override
-			public void onFailure(Throwable t) {
+			public void onFailure(final Throwable t) {
 				transformed.reject(t);
 			}
 		});
@@ -207,20 +213,20 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 *            - the resolution of this promise
 	 */
 	public final void resolve(T result) {
-		set(result);
+		delegate.set(result);
 	}
 	
-	final void resolveWith(Promise<T> t) {
+	final void resolveWith(final Promise<T> t) {
 		t.then(new Function<T, Void>() {
 			@Override
-			public Void apply(T input) {
+			public Void apply(final T input) {
 				resolve(input);
 				return null;
 			}
 		})
 		.fail(new Function<Throwable, Void>() {
 			@Override
-			public Void apply(Throwable input) {
+			public Void apply(final Throwable input) {
 				reject(input);
 				return null;
 			}
@@ -232,8 +238,8 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * 
 	 * @param throwable
 	 */
-	public final void reject(Throwable throwable) {
-		setException(throwable);
+	public final void reject(final Throwable throwable) {
+		delegate.setException(throwable);
 	}
 
 	/**
@@ -255,7 +261,7 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * @since 4.6
 	 */
 	@Beta
-	public static Promise<List<Object>> all(Iterable<? extends Promise<?>> promises) {
+	public static Promise<List<Object>> all(final Iterable<? extends Promise<?>> promises) {
 		return Promise.wrap(Futures.allAsList(promises));
 	}
 	
@@ -265,7 +271,7 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * @since 4.6
 	 */
 	@Beta
-	public static Promise<List<Object>> all(Promise<?>...promises) {
+	public static Promise<List<Object>> all(final Promise<?>...promises) {
 		return Promise.wrap(Futures.allAsList(promises));
 	}
 	
@@ -275,15 +281,15 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * @return
 	 * @since 6.0
 	 */
-	public static final <T> Promise<T> wrap(ListenableFuture<T> future) {
+	public static final <T> Promise<T> wrap(final ListenableFuture<T> future) {
 		final Promise<T> promise = new Promise<>();
 		Futures.addCallback(future, new FutureCallback<T>() {
 			@Override
-			public void onSuccess(T result) {
+			public void onSuccess(final T result) {
 				promise.resolve(result);
 			}
 			@Override
-			public void onFailure(Throwable t) {
+			public void onFailure(final Throwable t) {
 				promise.reject(t);
 			}
 		});
@@ -298,7 +304,7 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * @since 4.6
 	 */
 	@Beta
-	public static final <T> Promise<T> immediate(T value) {
+	public static final <T> Promise<T> immediate(final T value) {
 		final Promise<T> promise = new Promise<>();
 		promise.resolve(value);
 		return promise;
@@ -309,10 +315,52 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * @param throwable
 	 * @return
 	 */
-	public static final <T> Promise<T> fail(Throwable throwable) {
+	public static final <T> Promise<T> fail(final Throwable throwable) {
 		final Promise<T> promise = new Promise<>();
 		promise.reject(throwable);
 		return promise;
 	}
 
+	@Override
+	protected void subscribeActual(final Observer<? super T> subscriber) {
+		then(result -> {
+			subscriber.onNext(result);
+			subscriber.onComplete();
+			return null;
+		}).fail(throwable -> {
+			subscriber.onError(throwable);
+			subscriber.onComplete();
+			return null;
+		});
+	}
+
+	@Override
+	public boolean cancel(final boolean mayInterruptIfRunning) {
+		return delegate.cancel(mayInterruptIfRunning);
+	}
+
+	@Override
+	public boolean isCancelled() {
+		return delegate.isCancelled();
+	}
+
+	@Override
+	public boolean isDone() {
+		return delegate.isDone();
+	}
+
+	@Override
+	public T get() throws InterruptedException, ExecutionException {
+		return delegate.get();
+	}
+
+	@Override
+	public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+		return delegate.get(timeout, unit);
+	}
+
+	@Override
+	public void addListener(final Runnable listener, final Executor exec) {
+		delegate.addListener(listener, exec);
+	}
 }

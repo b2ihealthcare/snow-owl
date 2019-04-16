@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -97,15 +97,15 @@ public class SnomedClassificationRestService extends AbstractRestService {
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<ClassificationTasks> getAllClassificationRuns(
 			@ApiParam(value="The branch path")
-			@RequestParam(value="branch") 
+			@RequestParam(value="branch", required=false) 
 			final String branch,
 			
 			@ApiParam(value="The classification status")
-			@RequestParam(value="status") 
+			@RequestParam(value="status", required=false) 
 			final ClassificationStatus status,
 
 			@ApiParam(value="The user identifier")
-			@RequestParam(value="userId") 
+			@RequestParam(value="userId", required=false) 
 			final String userId) {
 
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchClassification()
@@ -128,7 +128,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public ResponseEntity<?> beginClassification(
+	public DeferredResult<ResponseEntity<?>> beginClassification(
 			@ApiParam(value="Classification parameters")
 			@RequestBody 
 			final ClassificationRestInput request,
@@ -137,14 +137,18 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		
 		ApiValidation.checkInput(request);
 		
-		final String classificationId = ClassificationRequests.prepareCreateClassification()
+		final ControllerLinkBuilder linkBuilder = linkTo(SnomedClassificationRestService.class)
+				.slash("classifications");
+		
+		return DeferredResults.wrap(ClassificationRequests.prepareCreateClassification()
 				.setReasonerId(request.getReasonerId())
 				.setUserId(principal.getName())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
 				.execute(bus)
-				.getSync();
-		
-		return Responses.created(getClassificationUri(classificationId)).build();
+				.then(id -> {
+					final URI resourceUri = linkBuilder.slash(id).toUri();
+					return Responses.created(resourceUri).build();
+				}));
 	}
 
 	@ApiOperation(
@@ -284,10 +288,17 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			
 			switch (relationshipChange.getChangeNature()) {
 				case REDUNDANT:
-					relationships.removeIf(r -> r.getId().equals(relationship.getId()));
+					relationships.removeIf(r -> r.getId().equals(relationship.getOriginId()));
+					break;
+				
+				case UPDATED:
+					relationships.stream()
+						.filter(r -> r.getId().equals(relationship.getOriginId()))
+						.findFirst()
+						.ifPresent(r -> ((SnomedBrowserRelationship) r).setGroupId(relationship.getGroup()));
 					break;
 					
-				case INFERRED:
+				case NEW:
 					final SnomedBrowserRelationship inferred = new SnomedBrowserRelationship();
 					inferred.setType(new SnomedBrowserRelationshipType(relationship.getTypeId()));
 					inferred.setSourceId(relationship.getSourceId());
@@ -307,6 +318,10 @@ public class SnomedClassificationRestService extends AbstractRestService {
 
 					relationships.add(inferred);
 					break;
+				default:
+					throw new IllegalStateException(String.format("Unexpected relationship change '%s' found with SCTID '%s'.", 
+							relationshipChange.getChangeNature(), 
+							relationshipChange.getRelationship().getOriginId()));
 			}
 		}
 		
@@ -338,7 +353,9 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		
 		// TODO: compare all fields to find out what the client wants us to do, check for conflicts, etc.
 		if (ClassificationStatus.SAVED.equals(updatedRun.getStatus())) {
-			ClassificationRequests.prepareSaveClassification(classificationId, principal.getName())
+			ClassificationRequests.prepareSaveClassification()
+					.setClassificationId(classificationId)
+					.setUserId(principal.getName())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(bus)
 					.getSync();
@@ -365,9 +382,4 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			.getSync();
 	}
 
-	private URI getClassificationUri(final String classificationId) {
-		return linkTo(methodOn(SnomedClassificationRestService.class)
-				.getClassificationRun(classificationId))
-				.toUri();
-	}
 }

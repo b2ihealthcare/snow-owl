@@ -139,16 +139,16 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		}
 	}
 
-	protected final void checkHasProperty(SnomedReferenceSet refSet, String key) {
+	protected final void checkHasProperty(String key) {
 		if (!hasProperty(key)) {
-			throw new BadRequestException("Property '%s' must be set for '%s' reference set members.", key, refSet.getId());
+			throw new BadRequestException("Property '%s' must be set for '%s' reference set members.", key, request.getReferenceSetId());
 		}
 	}
 
-	protected final void checkNonEmptyProperty(SnomedReferenceSet refSet, String key) {
-		checkHasProperty(refSet, key);
+	protected final void checkNonEmptyProperty(String key) {
+		checkHasProperty(key);
 		if (CompareUtils.isEmpty(getProperty(key, Object.class))) {
-			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, refSet.getId());
+			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, request.getReferenceSetId());
 		}
 	}
 

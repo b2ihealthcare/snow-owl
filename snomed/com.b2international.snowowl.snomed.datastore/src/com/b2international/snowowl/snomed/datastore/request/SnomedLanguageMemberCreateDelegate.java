@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.LANGUAGE);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
@@ -59,6 +58,7 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
 		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
 	}
 }

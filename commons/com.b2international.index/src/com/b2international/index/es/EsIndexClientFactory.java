@@ -69,6 +69,6 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 			}
 		}
 		
-		return new EsIndexClient(new EsIndexAdmin(client, name, mappings, settings), mapper);
+		return new EsIndexClient(new EsIndexAdmin(client, mapper, name, mappings, settings), mapper);
 	}
 }

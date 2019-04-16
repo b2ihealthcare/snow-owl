@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,14 @@
  */
 package com.b2international.snowowl.core.console;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.Pair;
 import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 import picocli.CommandLine.HelpCommand;
@@ -49,16 +45,16 @@ public final class UsersCommand extends Command {
 
 	@Override
 	public void run(CommandLineStream out) {
-		final List<Pair<String, String>> info = newArrayList(ApplicationContext.getInstance().getService(IApplicationSessionManager.class).getConnectedSessionInfo());
+		final IApplicationSessionManager sessionManager = ApplicationContext.getServiceForClass(IApplicationSessionManager.class);
+		final Map<Long, String> connectedSessions = sessionManager.getConnectedSessionInfo();
 		
-		if (CompareUtils.isEmpty(info)) {
+		if (CompareUtils.isEmpty(connectedSessions)) {
 			out.println("No users are connected to the server.");
-		} else {
-			Collections.sort(info, (o1, o2) -> Strings.nullToEmpty(o1.getA()).compareTo(Strings.nullToEmpty(o2.getA())));
-			
-			for (final Pair<String, String> pair : info) {
-				out.println("User: %s | session ID: %s", pair.getA(), pair.getB());
-			}
+			return;
+		}
+		
+		for (final Entry<Long, String> session : connectedSessions.entrySet()) {
+			out.println("User: " + session.getValue() + " | session ID: " + session.getKey());
 		}
 	}
 

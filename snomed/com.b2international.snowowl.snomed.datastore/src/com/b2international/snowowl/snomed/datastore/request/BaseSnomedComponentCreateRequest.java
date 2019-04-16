@@ -90,6 +90,10 @@ public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComp
 				.build();
 	}
 	
+	protected final List<SnomedRefSetMemberCreateRequest> members() {
+		return members;
+	}
+	
 	protected void convertMembers(final TransactionContext context, final String referencedComponentId) {
 		for (final SnomedRefSetMemberCreateRequest memberRequest : members) {
 			memberRequest.setReferencedComponentId(referencedComponentId);

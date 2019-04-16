@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,10 +30,8 @@ public final class RelationshipChanges extends PageableCollectionResource<Relati
 	/**
 	 * Instantiates an empty pageable collection for relationship changes.
 	 * 
-	 * @param limit
-	 *            - limit of items for a single page
-	 * @param total
-	 *            - total number of items in the result set
+	 * @param limit of items for a single page
+	 * @param total number of items in the result set
 	 */
 	public RelationshipChanges(final int limit, final int total) {
 		super(Collections.emptyList(), null, null, limit, total);
@@ -43,20 +40,19 @@ public final class RelationshipChanges extends PageableCollectionResource<Relati
 	/**
 	 * Instantiates a pageable collection of relationship changes.
 	 * 
-	 * @param items
-	 *            - list of @link {@link SnomedConcept}s
-	 * @param scrollId
-	 *            - scrollId for paging the result set continuously
-	 * @param searchAfter
-	 *            - searchAfter for paging the result set with a live cursor
-	 * @param limit
-	 *            - limit of items for a single page
-	 * @param total
-	 *            - total number of items in the result set
+	 * @param list of @link {@link RelationshipChange}s
+	 * @param scrollId for paging the result set continuously
+	 * @param searchAfter for paging the result set with a live cursor
+	 * @param limit of items for a single page
+	 * @param total number of items in the result set
 	 */
 	@JsonCreator
-	public RelationshipChanges(@JsonProperty("items") final List<RelationshipChange> items, @JsonProperty("scrollId") final String scrollId,
-			@JsonProperty("searchAfter") final String searchAfter, @JsonProperty("limit") final int limit, @JsonProperty("total") final int total) {
+	public RelationshipChanges(
+			@JsonProperty("items") final List<RelationshipChange> items, 
+			@JsonProperty("scrollId") final String scrollId,
+			@JsonProperty("searchAfter") final String searchAfter,
+			@JsonProperty("limit") final int limit, 
+			@JsonProperty("total") final int total) {
 		super(items, scrollId, searchAfter, limit, total);
 	}
 }

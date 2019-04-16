@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -26,16 +27,22 @@ import org.junit.Test;
 
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
@@ -53,60 +60,48 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		mapper.setSerializationInclusion(Include.NON_NULL);
 	}
 	
-	@Test
-	public void indexSimpleMember() throws Exception {
-		final String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-			.id(id)
+	private Builder createBaseMember() {
+		return SnomedRefSetMemberIndexEntry.builder()
+			.id(UUID.randomUUID().toString())
 			.active(true)
 			.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 			.released(false)
 			.moduleId(Concepts.MODULE_SCT_CORE)
 			.referencedComponentId(Concepts.ROOT_CONCEPT)
-			.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+			.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+	}
+	
+	@Test
+	public void indexSimpleMember() throws Exception {
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 			.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 			.referenceSetType(SnomedRefSetType.ASSOCIATION)
 			.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
-	
+
 	@Test
 	public void indexSimpleMapMember() throws Exception {
-		final String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.released(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(Concepts.ROOT_CONCEPT)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
 				.field(Fields.MAP_TARGET, "A01")
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
 	
 	@Test
 	public void indexLanguageMember() throws Exception {
-		String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.released(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				// TODO use description ID in test case
-				.referencedComponentId(Concepts.ROOT_CONCEPT)
 				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.LANGUAGE)
@@ -114,22 +109,14 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
 	
 	@Test
 	public void indexStringConcreteDomainMember() throws Exception {
-		String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.released(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(Concepts.ROOT_CONCEPT)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(Fields.DATA_TYPE, DataType.STRING)
@@ -137,7 +124,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("TEST", actual.getValue());
 		assertDocEquals(member, actual);
 		
@@ -150,16 +137,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMDomainMemberWithAllFields() throws Exception {
-		
-		String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.released(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(Concepts.ROOT_CONCEPT)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
 				.field(Fields.MRCM_DOMAIN_CONSTRAINT, "domainConstraint")
@@ -172,7 +150,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("domainConstraint", actual.getDomainConstraint());
 		assertEquals("parentDomain", actual.getParentDomain());
 		assertEquals("proximalPrimitiveConstraint", actual.getProximalPrimitiveConstraint());
@@ -185,16 +163,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMDomainMemberWithMandatoryFields() throws Exception {
-		
-		String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.released(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(Concepts.ROOT_CONCEPT)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
 				.field(Fields.MRCM_DOMAIN_CONSTRAINT, "domainConstraint")
@@ -204,7 +173,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("domainConstraint", actual.getDomainConstraint());
 		assertEquals("proximalPrimitiveConstraint", actual.getProximalPrimitiveConstraint());
 		assertEquals("domainTemplateForPrecoordination", actual.getDomainTemplateForPrecoordination());
@@ -223,16 +192,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMAttributeDomainMember() throws Exception {
-		
-		String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.released(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(Concepts.ROOT_CONCEPT)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
 				.field(Fields.MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
@@ -244,7 +204,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(Concepts.ROOT_CONCEPT, actual.getDomainId());
 		assertEquals(Boolean.TRUE, actual.isGrouped());
 		assertEquals("attributeCardinality", actual.getAttributeCardinality());
@@ -256,16 +216,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMAttributeRangeMember() throws Exception {
-		
-		String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.released(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(Concepts.ROOT_CONCEPT)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
 				.field(Fields.MRCM_RANGE_CONSTRAINT, "rangeConstraint")
@@ -275,7 +226,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("rangeConstraint", actual.getRangeConstraint());
 		assertEquals("attributeRule", actual.getAttributeRule());
 		assertEquals(Concepts.ROOT_CONCEPT, actual.getRuleStrengthId());
@@ -285,24 +236,179 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMModuleScopeMember() throws Exception {
-		
-		String id = UUID.randomUUID().toString();
-		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.released(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(Concepts.ROOT_CONCEPT)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_MODULE_SCOPE)
 				.referenceSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
 				.field(Fields.MRCM_RULE_REFSET_ID, "mrcmRuleRefsetId")
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("mrcmRuleRefsetId", actual.getMrcmRuleRefsetId());
 		assertDocEquals(member, actual);
 	}
+	
+	@Test
+	public void indexOWLAxiomMember_ISA() throws Exception {
+		final String referencedComponentId = "410607006";
+		final String owlExpression = "SubClassOf(:410607006 :138875005)";
+		final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
+				.referencedComponentId(referencedComponentId)
+				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.field(Fields.OWL_EXPRESSION, owlExpression)
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
+				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
+				.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
+		assertEquals(owlExpression, actual.getOwlExpression());
+		assertEquals(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.ROOT_CONCEPT, 0)), actual.getClassAxiomRelationships());
+		assertThat(actual.getGciAxiomRelationships()).isEmpty();
+		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexOWLAxiomMember_UngroupedProperties() throws Exception {
+		final String referencedComponentId = "245567007";
+		final String owlExpression = "SubClassOf(:245567007 ObjectIntersectionOf(:245565004 :420479003 :7121006 ObjectSomeValuesFrom(:272741003 :24028007)))";
+		final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
+				.referencedComponentId(referencedComponentId)
+				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.field(Fields.OWL_EXPRESSION, owlExpression)
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
+				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
+				.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
+		assertEquals(owlExpression, actual.getOwlExpression());
+		assertEquals(
+			// expected
+			ImmutableList.of(
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "245565004", 0),
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "420479003", 0),
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "7121006", 0),
+				new SnomedOWLRelationshipDocument("272741003", "24028007", 0)
+			), 
+			// actual
+			actual.getClassAxiomRelationships()
+		);
+		assertThat(actual.getGciAxiomRelationships()).isEmpty();
+		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexOWLAxiomMember_GroupedProperties() throws Exception {
+		final String referencedComponentId = "359728003";
+		final String owlExpression = "EquivalentClasses("
+				+ ":359728003 "
+				+ "ObjectIntersectionOf(:384723003 "
+				+ "		ObjectSomeValuesFrom(:609096000 "
+				+ "			ObjectIntersectionOf("
+				+ "				ObjectSomeValuesFrom(:260686004 :129304002) "
+				+ "				ObjectSomeValuesFrom(:405813007 :245269009)"
+				+ "			)"
+				+ "		) "
+				+ "		ObjectSomeValuesFrom(:609096000 "
+				+ "			ObjectIntersectionOf("
+				+ "				ObjectSomeValuesFrom(:260686004 :129304002) "
+				+ "				ObjectSomeValuesFrom(:405813007 :81802002)"
+				+ "			)"
+				+ "		)"
+				+ "))";
+		final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
+				.referencedComponentId(referencedComponentId)
+				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.field(Fields.OWL_EXPRESSION, owlExpression)
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
+				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
+				.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
+		assertEquals(owlExpression, actual.getOwlExpression());
+		assertEquals(
+			// expected
+			ImmutableList.of(
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "384723003", 0),
+				new SnomedOWLRelationshipDocument("260686004", "129304002", 1),
+				new SnomedOWLRelationshipDocument("405813007", "245269009", 1),
+				new SnomedOWLRelationshipDocument("260686004", "129304002", 2),
+				new SnomedOWLRelationshipDocument("405813007", "81802002", 2)
+			), 
+			// actual
+			actual.getClassAxiomRelationships()
+		);
+		assertThat(actual.getGciAxiomRelationships()).isEmpty();
+		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexOWLAxiomMember_GCIAxiom() throws Exception {
+		final String referencedComponentId = "231907006";
+		final String owlExpression = ""
+				+ "SubClassOf("
+				+ "	ObjectIntersectionOf("
+				+ "		:193783008 "
+				+ "		ObjectSomeValuesFrom(:609096000 "
+				+ "			ObjectIntersectionOf("
+				+ "				ObjectSomeValuesFrom(:116676008 :23583003) "
+				+ "				ObjectSomeValuesFrom(:246075003 :19551004) "
+				+ "				ObjectSomeValuesFrom(:363698007 :65431007) "
+				+ "				ObjectSomeValuesFrom(:370135005 :441862004)"
+				+ "			)"
+				+ "		)"
+				+ "	)"
+				+ "	:231907006"
+				+ ")";
+		final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
+				.referencedComponentId(referencedComponentId)
+				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.field(Fields.OWL_EXPRESSION, owlExpression)
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
+				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
+				.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
+		assertEquals(owlExpression, actual.getOwlExpression());
+		assertThat(actual.getClassAxiomRelationships()).isEmpty();
+		assertEquals(
+			// expected
+			ImmutableList.of(
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "193783008", 0),
+				new SnomedOWLRelationshipDocument("116676008", "23583003", 1),
+				new SnomedOWLRelationshipDocument("246075003", "19551004", 1),
+				new SnomedOWLRelationshipDocument("363698007", "65431007", 1),
+				new SnomedOWLRelationshipDocument("370135005", "441862004", 1)
+			), 
+			// actual
+			actual.getGciAxiomRelationships()
+		);
+		assertDocEquals(member, actual);
+	}
+	
+	private SnomedOWLExpressionConverterResult toSnomedOWLRelationships(String referencedComponentId, String owlExpression) {
+		return index().read(RevisionBranch.MAIN_PATH, searcher -> {
+			return new SnomedOWLExpressionConverter(
+				TestBranchContext.on(searcher.branch())
+					.with(RevisionSearcher.class, searcher)
+				.build()
+			).toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		});
+	}
+	
 }

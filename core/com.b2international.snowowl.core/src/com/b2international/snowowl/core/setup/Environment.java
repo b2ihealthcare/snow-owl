@@ -81,7 +81,7 @@ public final class Environment implements ServiceProvider {
 	public Path getHomePath() {
 		return homePath;
 	}
-	
+
 	/**
 	 * @return the configuration directory path.
 	 */

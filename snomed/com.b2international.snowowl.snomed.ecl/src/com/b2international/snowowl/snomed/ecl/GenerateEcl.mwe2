@@ -43,11 +43,19 @@ Workflow {
             project = StandardProjectConfig {
                 baseName = "com.b2international.snowowl.snomed.ecl"
                 rootPath = rootPath
+                genericIde = {
+                    enabled = true
+                    // Set relative path of IDE project here 
+                    // root = "../../../snow-owl-ext/snomed-ui/com.b2international.snowowl.snomed.ecl.ui"
+                    name = "com.b2international.snowowl.snomed.ecl.ui"
+                }
                 runtimeTest = {
                     enabled = true
                 }
                 eclipsePlugin = {
-                    enabled = false
+                    enabled = true
+                    // Set relative path of Eclipse plugin project here
+                    // root = "../../../snow-owl-ext/snomed-ui/com.b2international.snowowl.snomed.ecl.ui"
                 }
                 eclipsePluginTest = {
                     enabled = false

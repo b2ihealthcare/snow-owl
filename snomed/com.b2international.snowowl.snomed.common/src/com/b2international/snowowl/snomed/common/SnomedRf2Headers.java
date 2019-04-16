@@ -121,6 +121,10 @@ public abstract class SnomedRf2Headers {
 	
 	public static final String FIELD_MRCM_RULE_REFSET_ID = "mrcmRuleRefsetId";
 	
+	public static final String ATTRIBUTE_DESCRIPTION = "attributeDescription";
+	public static final String ATTRIBUTE_TYPE = "attributeType";
+	public static final String ATTRIBUTE_ORDER = "attributeOrder";
+	
 	public static final ImmutableSet<String> MEMBER_FIELDS_WITH_COMPONENT_ID = ImmutableSet.of(
 		// simple map and simple map w/ description
 		FIELD_MAP_TARGET,
@@ -147,7 +151,7 @@ public abstract class SnomedRf2Headers {
 		// MRCM module scope
 		FIELD_MRCM_RULE_REFSET_ID
 	);
-	
+
 	public static final String[] CONCEPT_HEADER = new String[] { 
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
@@ -363,6 +367,18 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFSET_ID, 
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_MRCM_RULE_REFSET_ID
+	};
+	
+	public static final String[] REFSET_DESCRIPTOR_TYPE_HEADER = {
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_REFSET_ID,
+		FIELD_REFERENCED_COMPONENT_ID,
+		ATTRIBUTE_DESCRIPTION,
+		ATTRIBUTE_TYPE,
+		ATTRIBUTE_ORDER
 	};
 	
 	private SnomedRf2Headers() {

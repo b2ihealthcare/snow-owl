@@ -48,6 +48,7 @@ import com.b2international.snowowl.api.rest.codesystem.CodeSystemService;
 import com.b2international.snowowl.api.rest.codesystem.CodeSystemVersionService;
 import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersionProperties;
 import com.b2international.snowowl.api.rest.domain.CodeSystemVersionPropertiesMixin;
+import com.b2international.snowowl.api.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.fasterxml.classmate.TypeResolver;
@@ -174,6 +175,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 
 		converters.add(new ByteArrayHttpMessageConverter());
 		converters.add(new ResourceHttpMessageConverter());
+		converters.add(new CsvMessageConverter());
 
 		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
 		jacksonConverter.setObjectMapper(objectMapper());

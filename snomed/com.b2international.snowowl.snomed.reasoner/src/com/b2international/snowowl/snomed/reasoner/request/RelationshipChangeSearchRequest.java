@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import static com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument.Expressions.classificationId;
+import static com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument.Expressions.destinationId;
 import static com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument.Expressions.sourceId;
 
 import java.util.Collection;
@@ -38,7 +39,8 @@ class RelationshipChangeSearchRequest
 
 	public enum OptionKey {
 		CLASSIFICATION_ID, 
-		SOURCE_ID
+		SOURCE_ID, 
+		DESTINATION_ID
 	}
 
 	@Override
@@ -46,6 +48,7 @@ class RelationshipChangeSearchRequest
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addClassificationIdClause(queryBuilder);
 		addSourceIdClause(queryBuilder);
+		addDestinationIdClause(queryBuilder);
 		return queryBuilder.build();
 	}
 
@@ -60,6 +63,13 @@ class RelationshipChangeSearchRequest
 		if (containsKey(OptionKey.SOURCE_ID)) {
 			final Collection<String> sourceIds = getCollection(OptionKey.SOURCE_ID, String.class);
 			builder.filter(sourceId(sourceIds));
+		}
+	}
+	
+	private void addDestinationIdClause(final ExpressionBuilder builder) {
+		if (containsKey(OptionKey.DESTINATION_ID)) {
+			final Collection<String> destinationIds = getCollection(OptionKey.DESTINATION_ID, String.class);
+			builder.filter(destinationId(destinationIds));
 		}
 	}
 

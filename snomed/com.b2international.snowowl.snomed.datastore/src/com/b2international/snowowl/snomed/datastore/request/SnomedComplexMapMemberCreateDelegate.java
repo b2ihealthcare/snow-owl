@@ -40,12 +40,10 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.COMPLEX_MAP);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_GROUP);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_PRIORITY);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_RULE);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_ADVICE);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_CORRELATION_ID);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_GROUP);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_RULE);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_ADVICE);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
@@ -74,6 +72,8 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MAP_TARGET);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_CORRELATION_ID);
 		
 		Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
 			.add(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID));

@@ -16,5 +16,23 @@
     "checkType": "NORMAL",
     "type": "script-groovy",
     "implementation": "scripts/ruleSnomedCommon2.groovy"
+  },
+  {
+  	"id": "snomed-common-3",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Relationships should not carry deprecated characteristic types.",
+    "severity": "WARNING",
+    "checkType": "FAST",
+    "type": "script-groovy",
+    "implementation": "scripts/ruleSnomedCommon3.groovy"
+  },
+  {
+  	"id": "rule_mrcm_constraint",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Relationship target values must be consistent with MRCM.",
+    "severity": "WARNING",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule_mrcm_constraint.groovy"
   }
 ]

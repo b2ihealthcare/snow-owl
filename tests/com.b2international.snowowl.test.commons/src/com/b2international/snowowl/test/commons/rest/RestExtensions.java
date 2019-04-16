@@ -18,6 +18,7 @@ package com.b2international.snowowl.test.commons.rest;
 import static io.restassured.RestAssured.given;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +34,18 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.IdentityWriter;
 import com.b2international.snowowl.test.commons.json.JsonExtensions;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
+import io.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
@@ -96,6 +102,16 @@ public class RestExtensions {
 			
 			// Enable logging on failed requests
 			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+			
+			// add custom 
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.registerModule(new GuavaModule());
+			RestAssuredConfig.config().objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
+				@Override
+				public ObjectMapper create(Type arg0, String arg1) {
+					return mapper;
+				}
+			}));
 			
 			// add the user to the current identity provider
 			try {

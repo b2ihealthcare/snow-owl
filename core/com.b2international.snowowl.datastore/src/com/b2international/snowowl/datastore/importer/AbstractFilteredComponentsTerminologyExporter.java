@@ -17,8 +17,6 @@ package com.b2international.snowowl.datastore.importer;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-
 /**
  * Abstract exporter to export a set of terminology components.
  * 
@@ -28,7 +26,7 @@ public abstract class AbstractFilteredComponentsTerminologyExporter extends Abst
 
 	private final Collection<String> componentIds;
 
-	public AbstractFilteredComponentsTerminologyExporter(final String userId, final IBranchPath branchPath, final Collection<String> componentIds) {
+	public AbstractFilteredComponentsTerminologyExporter(final String userId, final String branchPath, final Collection<String> componentIds) {
 		super(userId, branchPath);
 		this.componentIds = componentIds;
 	}

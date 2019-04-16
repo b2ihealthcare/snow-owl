@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -50,11 +51,17 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -75,6 +82,8 @@ import com.google.inject.Injector;
  */
 public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTest {
 
+	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+	
 	private static final String ATTRIBUTE = "246061005";
 	private static final Long ATTRIBUTEL = Long.parseLong(ATTRIBUTE);
 	private static final Long ROOT_CONCEPTL = Long.parseLong(Concepts.ROOT_CONCEPT);
@@ -97,10 +106,9 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	
 	@Before
 	public void setup() {
-		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class))).with(Index.class, rawIndex())
+				.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
+				.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class))).with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index()).with(ObjectMapper.class, getMapper())
 				.with(ValidationRepository.class, new ValidationRepository(rawIndex()))
 				.with(ClassLoader.class, SnomedDatastoreActivator.class.getClassLoader())
@@ -120,6 +128,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 			// Char Types
 			.stageNew(concept(Concepts.CHARACTERISTIC_TYPE).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.ADDITIONAL_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build())
+			.stageNew(concept(Concepts.DEFINING_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build())
+			.stageNew(concept(Concepts.QUALIFYING_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build())
+			.stageNew(concept(Concepts.INFERRED_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build())
+			.stageNew(concept(Concepts.STATED_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build())
 			// Description types
 			.stageNew(concept(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.SYNONYM).parents(DESCRIPTION_TYPEL).build())
@@ -137,11 +149,15 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 			.stageNew(concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.REFSET_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.REFSET_LANGUAGE_TYPE).parents(REFSET_ROOTL).build())
-			.commit(1L, UUID.randomUUID().toString(), "Initialize test data");
+			.commit(currentTime(), UUID.randomUUID().toString(), "Initialize test data");
 	}
 	
 	protected final SnomedConceptDocument.Builder concept(final String id) {
 		return DocumentBuilders.concept(id).effectiveTime(effectiveTime);
+	}
+	
+	protected final SnomedConstraintDocument.Builder constraint(SnomedConstraintDocument constraint) {
+		return SnomedConstraintDocument.builder(constraint).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
@@ -159,7 +175,22 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
 		return DocumentBuilders.member(id, referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(effectiveTime);
 	}
-
+	
+	protected final HierarchyDefinitionFragment hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {
+		return new HierarchyDefinitionFragment(UUID.randomUUID().toString(), true, effectiveTime, "test", focusConceptId, inclusionType);
+	}
+	
+	protected final RelationshipPredicateFragment relationshipPredicate(ConceptSetDefinitionFragment predicateType, ConceptSetDefinitionFragment predicateRange) {
+		return new RelationshipPredicateFragment(UUID.randomUUID().toString(), true, effectiveTime, "test", predicateType, predicateRange, null);
+	}
+	
+	protected final SnomedConstraintDocument attributeConstraint(ConceptSetDefinitionFragment conceptSetDefinition, PredicateFragment conceptModelPredicate) {
+		return DocumentBuilders.constraint()
+				.domain(conceptSetDefinition)
+				.predicate(conceptModelPredicate)
+				.build();
+	}
+	
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {
 		super.configureMapper(mapper);
@@ -185,7 +216,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.of(SnomedConceptDocument.class, SnomedRelationshipIndexEntry.class, SnomedDescriptionIndexEntry.class,
+		return ImmutableList.of(SnomedConceptDocument.class, SnomedConstraintDocument.class, SnomedRelationshipIndexEntry.class, SnomedDescriptionIndexEntry.class,
 				SnomedRefSetMemberIndexEntry.class, ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class);
 	}
 
@@ -202,5 +233,17 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 			}
 		}
 	}
+	
+	private final long generateRandomEffectiveTime() {
+		if (EffectiveTimes.UNSET_EFFECTIVE_TIME == effectiveTime) {
+			return EffectiveTimes.UNSET_EFFECTIVE_TIME;
+		}
+		
+		final Random rnd = new Random();
+		long randomEffectiveTime = rnd.nextInt(1000) + 1;
+		
+		return randomEffectiveTime > 500 ? EffectiveTimes.UNSET_EFFECTIVE_TIME : randomEffectiveTime;
+	}
+
 
 }

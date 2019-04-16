@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,28 @@
  */
 package com.b2international.snowowl.snomed.reasoner.domain;
 
+import java.io.Serializable;
+
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.0
  */
-public final class ReasonerRelationship {
+public final class ReasonerRelationship implements Serializable {
 
-	private String id;
-	private boolean released;
-	private String moduleId;
-	private boolean destinationNegated;
+	private String originId;
+
+	/*
+	 * Note that the rest of the values below can be completely different (or even
+	 * absent) when compared to the "origin" relationship, especially if the change
+	 * is a new inference!
+	 */
+	private Boolean released;
+	private Boolean destinationNegated;
 	private Integer group;
 	private Integer unionGroup;
 	private CharacteristicType characteristicType;
@@ -38,60 +44,42 @@ public final class ReasonerRelationship {
 	private SnomedConcept source;
 	private SnomedConcept destination;
 	private SnomedConcept type;
-	private SnomedReferenceSetMembers members;
 
-	public ReasonerRelationship() {
+	// Default constructor is used in JSON de-serialization
+	public ReasonerRelationship() {	}
+	
+	/**
+	 * Creates a new instance of a reasoner preview of a relationship.
+	 * 
+	 * @param originId the SCTID of the relationship this preview is based on (can be <code>null</code>)
+	 */
+	public ReasonerRelationship(final String originId) {
+		setOriginId(originId);
 	}
 	
-	public ReasonerRelationship(String id) {
-		setId(id);
+	public String getOriginId() {
+		return originId;
 	}
 	
-	public String getId() {
-		return id;
+	private void setOriginId(final String originId) {
+		this.originId = originId;
 	}
 	
-	private void setId(String id) {
-		this.id = id;
-	}
-	
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return released;
 	}
 	
-	public void setReleased(boolean released) {
+	public void setReleased(final Boolean released) {
 		this.released = released;
 	}
 	
-	public String getModuleId() {
-		return moduleId;
-	}
-	
-	public void setModuleId(String moduleId) {
-		this.moduleId = moduleId;
-	}
-	
-	public void setMembers(SnomedReferenceSetMembers members) {
-		this.members = members;
-	}
-
-	/**
-	 * Returns the expanded reference set members if any, otherwise it returns a <code>null</code> {@link SnomedReferenceSetMembers}.
-	 * @return
-	 */
-	public SnomedReferenceSetMembers getMembers() {
-		return members;
-	}
-
 	@JsonProperty
 	public String getSourceId() {
 		return getSource() == null ? null : getSource().getId();
 	}
 	
 	/**
-	 * Returns the source concept of this relationship.
-	 * 
-	 * @return
+	 * @return the source concept of this relationship
 	 */
 	public SnomedConcept getSource() {
 		return source;
@@ -103,9 +91,7 @@ public final class ReasonerRelationship {
 	}
 
 	/**
-	 * Returns the destination concept of this relationship.
-	 * 
-	 * @return
+	 * @return the destination concept of this relationship
 	 */
 	public SnomedConcept getDestination() {
 		return destination;
@@ -116,14 +102,12 @@ public final class ReasonerRelationship {
 	 * 
 	 * @return {@code true} if the destination concept is negated, {@code false} if it should be interpreted normally
 	 */
-	public boolean isDestinationNegated() {
+	public Boolean isDestinationNegated() {
 		return destinationNegated;
 	}
 
 	/**
-	 * Returns the type identifier of this relationship.
-	 * 
-	 * @return the relationship type identifier
+	 * @return the type identifier of this relationship
 	 */
 	@JsonProperty
 	public String getTypeId() {
@@ -131,9 +115,7 @@ public final class ReasonerRelationship {
 	}
 
 	/**
-	 * Returns the type concept of this relationship.
-	 * 
-	 * @return
+	 * @return the type concept of this relationship
 	 */
 	public SnomedConcept getType() {
 		return type;
@@ -175,34 +157,34 @@ public final class ReasonerRelationship {
 		return modifier;
 	}
 
-	public void setSource(SnomedConcept source) {
+	public void setSource(final SnomedConcept source) {
 		this.source = source;
 	}
 	
 	@JsonIgnore
-	public void setSourceId(String sourceId) {
+	public void setSourceId(final String sourceId) {
 		setSource(new SnomedConcept(sourceId));
 	}
 
-	public void setDestination(SnomedConcept destination) {
+	public void setDestination(final SnomedConcept destination) {
 		this.destination = destination;
 	}
 	
 	@JsonIgnore
-	public void setDestinationId(String destinationId) {
+	public void setDestinationId(final String destinationId) {
 		setDestination(new SnomedConcept(destinationId));
 	}
 	
-	public void setType(SnomedConcept type) {
+	public void setType(final SnomedConcept type) {
 		this.type = type;
 	}
 	
 	@JsonIgnore
-	public void setTypeId(String typeId) {
+	public void setTypeId(final String typeId) {
 		setType(new SnomedConcept(typeId));
 	}
 	
-	public void setDestinationNegated(final boolean destinationNegated) {
+	public void setDestinationNegated(final Boolean destinationNegated) {
 		this.destinationNegated = destinationNegated;
 	}
 
@@ -221,30 +203,30 @@ public final class ReasonerRelationship {
 	public void setModifier(final RelationshipModifier modifier) {
 		this.modifier = modifier;
 	}
-	
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("ReasonerRelationship [getId()=");
-		builder.append(getId());
-		builder.append(", getModuleId()=");
-		builder.append(getModuleId());
-		builder.append(", getSourceId()=");
-		builder.append(getSourceId());
-		builder.append(", getDestinationId()=");
-		builder.append(getDestinationId());
-		builder.append(", isDestinationNegated()=");
-		builder.append(isDestinationNegated());
-		builder.append(", getTypeId()=");
-		builder.append(getTypeId());
-		builder.append(", getGroup()=");
-		builder.append(getGroup());
-		builder.append(", getUnionGroup()=");
-		builder.append(getUnionGroup());
-		builder.append(", getCharacteristicType()=");
-		builder.append(getCharacteristicType());
-		builder.append(", getModifier()=");
-		builder.append(getModifier());
+		builder.append("ReasonerRelationship [originId=");
+		builder.append(originId);
+		builder.append(", released=");
+		builder.append(released);
+		builder.append(", destinationNegated=");
+		builder.append(destinationNegated);
+		builder.append(", group=");
+		builder.append(group);
+		builder.append(", unionGroup=");
+		builder.append(unionGroup);
+		builder.append(", characteristicType=");
+		builder.append(characteristicType);
+		builder.append(", modifier=");
+		builder.append(modifier);
+		builder.append(", source=");
+		builder.append(source);
+		builder.append(", destination=");
+		builder.append(destination);
+		builder.append(", type=");
+		builder.append(type);
 		builder.append("]");
 		return builder.toString();
 	}

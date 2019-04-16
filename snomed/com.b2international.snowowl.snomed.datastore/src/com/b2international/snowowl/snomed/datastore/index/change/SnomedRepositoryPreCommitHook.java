@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
@@ -31,19 +32,28 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.index.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.google.common.collect.ImmutableList;
@@ -55,12 +65,26 @@ import com.google.common.collect.Sets;
  */
 public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommitHook {
 
-	public SnomedRepositoryPreCommitHook(Logger log) {
+	private final String repositoryId;
+
+	public SnomedRepositoryPreCommitHook(Logger log, String repositoryId) {
 		super(log);
+		this.repositoryId = repositoryId;
 	}
 	
 	@Override
 	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
+		// initialize OWL Expression converter on the current branch
+		SnomedOWLExpressionConverter expressionConverter = new RepositoryRequest<>(repositoryId,
+			new IndexReadRequest<>(
+				new BranchRequest<>(staging.getBranchPath(), 
+					new RevisionIndexReadRequest<>(branchContext -> {
+						return new SnomedOWLExpressionConverter(branchContext);
+					})
+				)
+			)
+		).execute(ApplicationContext.getServiceForClass(Environment.class));
+		
 		final Set<String> statedSourceIds = Sets.newHashSet();
 		final Set<String> statedDestinationIds = Sets.newHashSet();
 		final Set<String> inferredSourceIds = Sets.newHashSet();
@@ -70,16 +94,26 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), CharacteristicType.STATED_RELATIONSHIP);
 		collectIds(inferredSourceIds, inferredDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.INFERRED_RELATIONSHIP);
 		collectIds(inferredSourceIds, inferredDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), CharacteristicType.INFERRED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRefSetMemberIndexEntry.class), expressionConverter);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision), expressionConverter);
 		
-		staging.getRemovedObjects(SnomedRelationshipIndexEntry.class).forEach(detachedRelationship -> {
-			if (detachedRelationship.getCharacteristicType().equals(CharacteristicType.STATED_RELATIONSHIP)) {
-				statedSourceIds.add(detachedRelationship.getSourceId());
-				statedDestinationIds.add(detachedRelationship.getDestinationId());
-			} else {
-				inferredSourceIds.add(detachedRelationship.getSourceId());
-				inferredDestinationIds.add(detachedRelationship.getDestinationId());
-			}
-		});
+		staging.getRemovedObjects(SnomedRelationshipIndexEntry.class)
+			.filter(detachedRelationship -> Concepts.IS_A.equals(detachedRelationship.getTypeId()))
+			.forEach(detachedRelationship -> {
+				if (Concepts.STATED_RELATIONSHIP.equals(detachedRelationship.getCharacteristicTypeId())) {
+					statedSourceIds.add(detachedRelationship.getSourceId());
+					statedDestinationIds.add(detachedRelationship.getDestinationId());
+				} else if (Concepts.INFERRED_RELATIONSHIP.equals(detachedRelationship.getCharacteristicTypeId())) {
+					inferredSourceIds.add(detachedRelationship.getSourceId());
+					inferredDestinationIds.add(detachedRelationship.getDestinationId());
+				}
+			});
+		
+		staging.getRemovedObjects(SnomedRefSetMemberIndexEntry.class)
+			.filter(detachedMember -> SnomedRefSetType.OWL_AXIOM == detachedMember.getReferenceSetType())
+			.forEach(detachedOwlMember -> {
+				collectIds(statedSourceIds, statedDestinationIds, detachedOwlMember.getReferencedComponentId(), detachedOwlMember.getOwlExpression(), expressionConverter);
+			});
 		
 		final LongSet statedConceptIds = PrimitiveSets.newLongOpenHashSet();
 		final LongSet inferredConceptIds = PrimitiveSets.newLongOpenHashSet();
@@ -87,35 +121,40 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		
 		if (!statedDestinationIds.isEmpty()) {
 			final Query<SnomedConceptDocument> statedDestinationConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.STATED_PARENTS, SnomedConceptDocument.Fields.STATED_ANCESTORS)
 					.where(SnomedDocument.Expressions.ids(statedDestinationIds))
 					.limit(statedDestinationIds.size())
 					.build();
 			
 			for (SnomedConceptDocument statedDestinationConcept : index.search(statedDestinationConceptsQuery)) {
 				statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
-				statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
-				statedConceptIds.addAll(statedDestinationConcept.getStatedAncestors());
+				if (statedDestinationConcept.getStatedParents() != null) {
+					statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
+				}
+				if (statedDestinationConcept.getStatedAncestors() != null) {
+					statedConceptIds.addAll(statedDestinationConcept.getStatedAncestors());
+				}
 			}
 		}
 		
 		if (!inferredDestinationIds.isEmpty()) {
 			final Query<SnomedConceptDocument> inferredDestinationConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.PARENTS, SnomedConceptDocument.Fields.ANCESTORS)
 					.where(SnomedDocument.Expressions.ids(inferredDestinationIds))
 					.limit(inferredDestinationIds.size())
 					.build();
 			
 			for (SnomedConceptDocument inferredDestinationConcept : index.search(inferredDestinationConceptsQuery)) {
 				inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
-				inferredConceptIds.addAll(inferredDestinationConcept.getParents());
-				inferredConceptIds.addAll(inferredDestinationConcept.getAncestors());
+				if (inferredDestinationConcept.getParents() != null) {
+					inferredConceptIds.addAll(inferredDestinationConcept.getParents());
+				}
+				if (inferredDestinationConcept.getAncestors() != null) {
+					inferredConceptIds.addAll(inferredDestinationConcept.getAncestors());
+				}
 			}
 		}
 		
 		if (!statedSourceIds.isEmpty()) {
 			final Query<SnomedConceptDocument> statedSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.STATED_PARENTS, SnomedConceptDocument.Fields.STATED_ANCESTORS)
 					.where(Expressions.builder()
 							.should(SnomedConceptDocument.Expressions.ids(statedSourceIds))
 							.should(SnomedConceptDocument.Expressions.statedParents(statedSourceIds))
@@ -126,14 +165,17 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			
 			for (SnomedConceptDocument statedSourceConcept : index.search(statedSourceConceptsQuery)) {
 				statedConceptIds.add(Long.parseLong(statedSourceConcept.getId()));
-				statedConceptIds.addAll(statedSourceConcept.getStatedParents());
-				statedConceptIds.addAll(statedSourceConcept.getStatedAncestors());
+				if (statedSourceConcept.getStatedParents() != null) {
+					statedConceptIds.addAll(statedSourceConcept.getStatedParents());
+				}
+				if (statedSourceConcept.getStatedAncestors() != null) {
+					statedConceptIds.addAll(statedSourceConcept.getStatedAncestors());
+				}
 			}
 		}
 		
 		if (!inferredSourceIds.isEmpty()) {
 			final Query<SnomedConceptDocument> inferredSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.PARENTS, SnomedConceptDocument.Fields.ANCESTORS)
 					.where(Expressions.builder()
 							.should(SnomedConceptDocument.Expressions.ids(inferredSourceIds))
 							.should(SnomedConceptDocument.Expressions.parents(inferredSourceIds))
@@ -144,8 +186,12 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			
 			for (SnomedConceptDocument inferredSourceConcept : index.search(inferredSourceConceptsQuery)) {
 				inferredConceptIds.add(Long.parseLong(inferredSourceConcept.getId()));
-				inferredConceptIds.addAll(inferredSourceConcept.getParents());
-				inferredConceptIds.addAll(inferredSourceConcept.getAncestors());
+				if (inferredSourceConcept.getParents() != null) {
+					inferredConceptIds.addAll(inferredSourceConcept.getParents());
+				}
+				if (inferredSourceConcept.getAncestors() != null) {
+					inferredConceptIds.addAll(inferredSourceConcept.getAncestors());
+				}
 			}
 		}
 		
@@ -158,16 +204,16 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		log.trace("Retrieving taxonomic information from store...");
 		
 		final FeatureToggles featureToggles = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, index.branch()));
-		final boolean reindexRunning = featureToggles.isEnabled(Features.getReindexFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID));
+		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(repositoryId, index.branch()));
+		final boolean reindexRunning = featureToggles.isEnabled(Features.getReindexFeatureToggle(repositoryId));
 		final boolean checkCycles = !importRunning && !reindexRunning;
 		
-		
-		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, staging, inferredConceptIds, checkCycles);
-		final Taxonomy statedTaxonomy = Taxonomies.stated(index, staging, statedConceptIds, checkCycles);
+		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, expressionConverter, staging, inferredConceptIds, checkCycles);
+		final Taxonomy statedTaxonomy = Taxonomies.stated(index, expressionConverter, staging, statedConceptIds, checkCycles);
 
 		// XXX change processor order is important!!!
 		final ImmutableList.Builder<ChangeSetProcessor> changeProcessors = ImmutableList.<ChangeSetProcessor>builder();
+
 		if (!importRunning) {
 			changeProcessors
 				.add(new ComponentInactivationChangeProcessor())
@@ -180,6 +226,8 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 				.add(new DescriptionChangeProcessor())
 				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new RelationshipChangeProcessor())
+				// effective time restore should be the last processing unit before we send the changes to commit
+				.add(new ComponentEffectiveTimeRestoreChangeProcessor(log))
 				.build();
 		
 	}
@@ -202,11 +250,30 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	
 	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, CharacteristicType characteristicType) {
 		newRelationships
+			.filter(newRelationship -> Concepts.IS_A.equals(newRelationship.getTypeId()))
 			.filter(newRelationship -> newRelationship.getCharacteristicTypeId().equals(characteristicType.getConceptId()))
 			.forEach(newRelationship -> {
 				sourceIds.add(newRelationship.getSourceId());
 				destinationIds.add(newRelationship.getDestinationId());
 			});
+	}
+	
+	private void collectIds(Set<String> sourceIds, Set<String> destinationIds, Stream<SnomedRefSetMemberIndexEntry> owlMembers, SnomedOWLExpressionConverter expressionConverter) {
+		owlMembers.forEach(owlMember -> {
+			collectIds(sourceIds, destinationIds, owlMember.getReferencedComponentId(), owlMember.getOwlExpression(), expressionConverter);
+		});
+	}
+
+	private void collectIds(Set<String> sourceIds, Set<String> destinationIds, String referencedComponentId, String owlExpression, SnomedOWLExpressionConverter expressionConverter) {
+		SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(referencedComponentId, owlExpression);
+		if (!CompareUtils.isEmpty(result.getClassAxiomRelationships())) {
+			for (SnomedOWLRelationshipDocument classAxiom : result.getClassAxiomRelationships()) {
+				if (Concepts.IS_A.equals(classAxiom.getTypeId())) {
+					sourceIds.add(referencedComponentId);
+					destinationIds.add(classAxiom.getDestinationId());
+				}
+			}
+		}
 	}
 
 }

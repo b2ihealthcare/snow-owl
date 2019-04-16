@@ -12,9 +12,9 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<spring.version>4.3.10.RELEASE</spring.version>
-		<spring.security.version>4.2.4.RELEASE</spring.security.version>
-		<spring.hateoas.version>0.24.0.RELEASE</spring.hateoas.version>
+		<spring.version>4.3.22.RELEASE</spring.version>
+		<spring.security.version>4.2.11.RELEASE</spring.security.version>
+		<spring.hateoas.version>0.25.1.RELEASE</spring.hateoas.version>
 		<springfox.version>2.8.0</springfox.version>
 	</properties>
 
@@ -60,6 +60,30 @@
 	
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+            			<id>clean-lib</id>
+            			<phase>generate-sources</phase>
+            			<goals>
+              				<goal>clean</goal>
+            			</goals>
+            			<configuration>
+            				<filesets>
+								<fileset>
+									<directory>WEB-INF/lib</directory>
+									<excludes>
+										<exclude>.gitignore</exclude>
+									</excludes>
+								</fileset>
+							</filesets>
+            			</configuration>
+          			</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -126,6 +150,21 @@
 										</execute>
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-clean-plugin</artifactId>
+										<versionRange>[3.1.0,)</versionRange>
+										<goals>
+											<goal>clean</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute>
+											<runOnIncremental>false</runOnIncremental>
+										</execute>
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -133,5 +172,4 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
 </project>

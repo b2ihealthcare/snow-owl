@@ -59,7 +59,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	private ExecutorService executorService;
 	private final String description;
 	private final int numberOfWorkers;
-	private final WorkerExecutorServiceFactory executorServiceFactory;
+	private final ExecutorServiceFactory executorServiceFactory;
 
 	public EventBus() {
 		this(EventBusConstants.GLOBAL_BUS, Runtime.getRuntime().availableProcessors());
@@ -67,10 +67,10 @@ public class EventBus extends Lifecycle implements IEventBus {
 	
 	public EventBus(String description, int numberOfWorkers) {
 		CheckUtil.checkArg(description, "Description should be specified");
-		CheckUtil.checkArg(numberOfWorkers > 0, "Number of workers must be greater than zero");
+		CheckUtil.checkArg(numberOfWorkers >= 0, "Number of workers must be greater than zero");
 		this.description = description;
 		this.numberOfWorkers = numberOfWorkers;
-		this.executorServiceFactory = new WorkerExecutorServiceFactory();
+		this.executorServiceFactory = numberOfWorkers == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory();
 	}
 
 	@Override

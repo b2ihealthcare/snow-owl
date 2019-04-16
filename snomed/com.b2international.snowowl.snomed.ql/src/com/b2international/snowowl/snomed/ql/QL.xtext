@@ -1,0 +1,108 @@
+/*
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+grammar com.b2international.snowowl.snomed.ql.QL with com.b2international.snowowl.snomed.ecl.Ecl
+
+generate ql "http://www.b2international.com/snowowl/snomed/QL"
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+
+Query:
+	{Query} (query=QueryConstraint)?;
+
+// Domain Query Parts
+
+QueryConstraint:
+	QueryDisjunction;
+
+QueryDisjunction returns QueryConstraint:
+	QueryConjunction ({QueryDisjunction.left=current} 'OR' right=QueryConjunction)*;
+
+QueryConjunction returns QueryConstraint:
+	QueryExclusion ({QueryConjunction.left=current} ('AND' | ',') right=QueryExclusion)*;
+
+QueryExclusion returns QueryConstraint:
+	SubQuery ({QueryExclusion.left=current} 'MINUS' right=SubQuery)?;
+
+SubQuery:
+	DomainQuery | NestedQuery;
+
+DomainQuery:
+	{DomainQuery} (ecl=ExpressionConstraint)? (OPEN_DOUBLE_BRACES filter=Filter CLOSE_DOUBLE_BRACES)?;
+
+NestedQuery:
+	ROUND_OPEN nested=QueryConstraint ROUND_CLOSE;
+
+// Domain Property Filters
+
+Filter:
+	Disjunction;
+
+Disjunction returns Filter:
+	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
+
+Conjunction returns Filter:
+	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
+
+Exclusion returns Filter:
+	PropertyFilter ({Exclusion.left=current} 'MINUS' right=PropertyFilter)?;
+
+NestedFilter:
+	ROUND_OPEN nested=Filter ROUND_CLOSE;
+
+PropertyFilter:
+	ActiveFilter | TermFilter | PreferredInFilter | AcceptableInFilter | LanguageRefSetFilter | TypeFilter | ModuleFilter | CaseSignificanceFilter | LanguageCodeFilter
+	| NestedFilter;
+
+ActiveFilter:
+	(domain=Domain DOT)? 'active' EQUAL (active=Boolean);
+
+ModuleFilter:
+	(domain=Domain DOT)? 'moduleId' EQUAL moduleId=ExpressionConstraint;
+
+TermFilter:
+	'term' EQUAL (lexicalSearchType=LexicalSearchType COLON)? term=STRING;
+
+PreferredInFilter:
+	'preferredIn' EQUAL languageRefSetId=ExpressionConstraint;
+
+AcceptableInFilter:
+	'acceptableIn' EQUAL languageRefSetId=ExpressionConstraint;
+
+LanguageRefSetFilter:
+	'languageRefSetId' EQUAL languageRefSetId=ExpressionConstraint;
+
+TypeFilter:
+	'typeId' EQUAL type=ExpressionConstraint;
+	
+CaseSignificanceFilter:
+	'caseSignificanceId' EQUAL caseSignificanceId=ExpressionConstraint;
+	
+LanguageCodeFilter:
+	'languageCode' EQUAL languageCode=STRING;
+
+enum LexicalSearchType:
+	MATCH="match" | REGEX="regex" | EXACT="exact";
+
+enum Domain:
+	CONCEPT="Concept" | DESCRIPTION="Description";
+
+Boolean returns ecore::EBoolean:
+	'true' | 'false'; 
+
+terminal OPEN_DOUBLE_BRACES:
+	'{{';
+
+terminal CLOSE_DOUBLE_BRACES:
+	'}}';

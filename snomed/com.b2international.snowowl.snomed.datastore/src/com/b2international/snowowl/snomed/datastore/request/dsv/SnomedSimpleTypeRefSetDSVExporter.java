@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,23 +24,20 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -49,7 +46,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
@@ -66,7 +62,7 @@ import com.google.common.collect.Ordering;
 /**
  * Implements the export process of the DSV export for simple type reference sets. 
  */
-final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
+public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private static final String HEADER_EXPAND = "descriptions(active:true),"
 			+ "relationships(active:true),"
@@ -74,80 +70,65 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	
 	private static final String DATA_EXPAND = "pt(),"
 			+ "descriptions(active:true),"
-			+ "relationships(active:true,destination(expand(pt()))),"
+			+ "relationships(active:true,expand(destination(expand(pt())))),"
 			+ "members()";
 
 	private static final Map<String, Integer> NO_OCCURRENCES = ImmutableMap.of();
+	
+	private final BranchContext context;
 	
 	private String refSetId;
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipId;
 	private boolean includeInactiveMembers;
-	private Collection<AbstractSnomedDsvExportItem> exportItems;
+	private List<AbstractSnomedDsvExportItem> exportItems;
 	private List<ExtendedLocale> locales;
-	private IBranchPath branchPath;
-	private String exportPath;
 	private Joiner joiner;
 	private String lineSeparator;
 	
 	private Map<String, Integer> descriptionCount; // maximum number of descriptions by type
-	private Map<Integer, Map<String, Integer>> propertyCount; // maximum number of properties by group and type
+	private Map<Integer, Map<String, Integer>> propertyCountByGroup; // maximum number of properties by group and type
+
 
 	/**
 	 * Creates a new instance with the export parameters.
 	 * 
 	 * @param exportSetting
 	 */
-	public SnomedSimpleTypeRefSetDSVExporter(final SnomedRefSetDSVExportModel exportSetting) {
-		refSetId = exportSetting.getRefSetId();
-		includeDescriptionId = exportSetting.includeDescriptionId();
-		includeRelationshipId = exportSetting.includeRelationshipTargetId();
-		includeInactiveMembers = exportSetting.includeInactiveMembers();
-		exportItems = exportSetting.getExportItems();
-		locales = exportSetting.getLocales();
-		branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
-		exportPath = exportSetting.getExportPath();
-		
-		joiner = Joiner.on(exportSetting.getDelimiter());
-		lineSeparator = System.getProperty("line.separator");
+	public SnomedSimpleTypeRefSetDSVExporter(final BranchContext context, final SnomedRefSetDSVExportModel exportSetting) {
+		this.refSetId = exportSetting.getRefSetId();
+		this.includeDescriptionId = exportSetting.includeDescriptionId();
+		this.includeRelationshipId = exportSetting.includeRelationshipTargetId();
+		this.includeInactiveMembers = exportSetting.includeInactiveMembers();
+		this.exportItems = exportSetting.getExportItems();
+		this.locales = exportSetting.getLocales();
+		this.context = context;
+		this.joiner = Joiner.on(exportSetting.getDelimiter());
+		this.lineSeparator = System.lineSeparator();
 	}
 
 	/**
 	 * Executes the export to delimiter separated values.
 	 * 
+	 * @param monitor
 	 * @return The file with the exported values.
-	 * @throws SnowowlServiceException
 	 */
 	@Override
-	public File executeDSVExport() throws SnowowlServiceException, IOException {
-
-		Path exportPath = getExportPath();
-		
+	public File executeDSVExport(IProgressMonitor monitor) throws IOException {
+		monitor.beginTask("Export RefSet to DSV...", 100);
+		Path exportPath = Files.createTempFile("dsv-export-" + refSetId + Dates.now(), ".csv");
 		try {
-			
 			try (BufferedWriter writer = Files.newBufferedWriter(exportPath, Charsets.UTF_8)) {
 				computeHeader();
 				writeHeader(writer);
-				writeValues(writer);
+				writeValues(monitor, writer);
 			}
-			
 			return exportPath.toFile();
-		} catch (Exception e) {
-			throw new SnowowlServiceException(e);
+		} finally {
+			if (null != monitor) { 
+				monitor.done(); 
+			}
 		}
-	}
-
-	private Path getExportPath() {
-		SnomedDescription refSetPreferredTerm = SnomedRequests.prepareGetConcept(refSetId)
-			.setLocales(locales)
-			.setExpand("pt()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(getEventBus())
-			.getSync()
-			.getPt();
-			
-		String fileName = (refSetPreferredTerm == null) ? refSetId : refSetPreferredTerm.getTerm();
-		return Paths.get(exportPath, fileName + ".csv");
 	}
 
 	/*
@@ -156,6 +137,7 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> getMemberConceptIterator(String expand) {
 		
 		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
+			.setLocales(locales)
 			.setExpand(expand)
 			.filterByActive(true)
 			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
@@ -168,10 +150,7 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			builder.isActiveMemberOf(refSetId);
 		}
 		
-		return new SearchResourceRequestIterator<>(builder, 
-				b -> b.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-					.execute(getEventBus())
-					.getSync());
+		return new SearchResourceRequestIterator<>(builder, b -> b.build().execute(context));
 	}
 
 	/*
@@ -179,7 +158,7 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 */
 	private void computeHeader() {
 		descriptionCount = newHashMap();
-		propertyCount = newHashMap();
+		propertyCountByGroup = newHashMap();
 		
 		SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> conceptIterator = getMemberConceptIterator(HEADER_EXPAND);
 		while (conceptIterator.hasNext()) {
@@ -217,7 +196,7 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						matchingRelationships.entrySet()
 								.stream()
 								.forEach(entry -> {
-									propertyCount.compute(entry.getKey(), (key, oldValue) -> {
+									propertyCountByGroup.compute(entry.getKey(), (key, oldValue) -> {
 										Map<String, Integer> propertyCountForGroup = ofNullable(oldValue).orElseGet(HashMap::new);
 										propertyCountForGroup.merge(relationshipTypeId, entry.getValue(), Math::max);
 										return propertyCountForGroup;
@@ -242,7 +221,7 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						matchingMembers.entrySet()
 								.stream()
 								.forEach(entry -> {
-									propertyCount.compute(entry.getKey(), (key, oldValue) -> {
+									propertyCountByGroup.compute(entry.getKey(), (key, oldValue) -> {
 										Map<String, Integer> propertyCountForGroup = ofNullable(oldValue).orElseGet(HashMap::new);
 										propertyCountForGroup.merge(dataTypeId, entry.getValue(), Math::max);
 										return propertyCountForGroup;
@@ -258,7 +237,6 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	}
 	
 	private void writeHeader(BufferedWriter writer) throws IOException {
-		
 		Map<String, String> descriptionTypeIdMap = createTypeIdMap(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT);
 		Map<String, String> propertyTypeIdMap = createTypeIdMap(Concepts.CONCEPT_MODEL_ATTRIBUTE); // includes object and data attributes
 		List<String> propertyHeader = newArrayList();
@@ -303,66 +281,73 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					String typeId = relationshipItem.getComponentId();
 					String displayName = propertyTypeIdMap.getOrDefault(typeId, relationshipItem.getDisplayName());
-
-					// Relationship groups will be added to the end, so only consider occurrences in group 0
-					Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(0, NO_OCCURRENCES);
-					int occurrences = occurrencesByType.getOrDefault(typeId, 0);
-					if (occurrences < 1) {
-						continue;
-					}
-						
-					if (occurrences < 2) {
-						if (includeRelationshipId) {
-							propertyHeader.add(displayName);
-							propertyHeader.add(displayName);
-							detailHeader.add("ID");
-							detailHeader.add("Destination");
-						} else {
-							propertyHeader.add(displayName);
-							detailHeader.add("");
+					
+					for (Integer group : propertyCountByGroup.keySet() ) {
+						Map<String, Integer> occurrencesByType = propertyCountByGroup.getOrDefault(group, NO_OCCURRENCES);
+						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
+						if (occurrences < 1) {
+							continue;
 						}
-					} else {
-						for (int j = 1; j <= occurrences; j++) {
-							String numberedDisplayName = String.format("%s (%s)", displayName, j);
+							
+						String groupTag = group == 0 ? "" : String.format(" (AG%s)", group);
+						if (occurrences < 2) {
 							if (includeRelationshipId) {
-								propertyHeader.add(numberedDisplayName);
-								propertyHeader.add(numberedDisplayName);
+								String groupedDisplayName = displayName + groupTag;
+								propertyHeader.add(groupedDisplayName);
+								propertyHeader.add(groupedDisplayName);
 								detailHeader.add("ID");
 								detailHeader.add("Destination");
 							} else {
-								propertyHeader.add(numberedDisplayName);
+								propertyHeader.add(displayName);
 								detailHeader.add("");
+							}
+						} else {
+							for (int j = 1; j <= occurrences; j++) {
+								String numberedDisplayName = String.format("%s (%s)%s", displayName, j, groupTag);
+								if (includeRelationshipId) {
+									propertyHeader.add(numberedDisplayName);
+									propertyHeader.add(numberedDisplayName);
+									detailHeader.add("ID");
+									detailHeader.add("Destination");
+								} else {
+									propertyHeader.add(numberedDisplayName);
+									detailHeader.add("");
+								}
 							}
 						}
 					}
+					
 					break;
 				}
-					
+				
 				case DATAYPE: {
 					ComponentIdSnomedDsvExportItem dataTypeItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					String typeId = dataTypeItem.getComponentId();
 					String displayName = propertyTypeIdMap.getOrDefault(typeId, dataTypeItem.getDisplayName());
 
-					// Relationship groups will be added to the end, so only consider occurrences in group 0
-					Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(0, NO_OCCURRENCES);
-					int occurrences = occurrencesByType.getOrDefault(typeId, 0);
-					if (occurrences < 1) {
-						continue;
-					}
-						
-					if (occurrences < 2) {
-						propertyHeader.add(displayName);
-						detailHeader.add("");
-					} else {
-						for (int j = 1; j <= occurrences; j++) {
-							String numberedDisplayName = String.format("%s (%s)", displayName, j);
-							propertyHeader.add(numberedDisplayName);
-							detailHeader.add("");
+					for (Integer groupId : propertyCountByGroup.keySet() ) {
+						Map<String, Integer> occurrencesByType = propertyCountByGroup.getOrDefault(groupId, NO_OCCURRENCES);
+						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
+						if (occurrences < 1) {
+							continue;
 						}
+						
+						String groupTag = groupId == 0 ? "" : String.format(" (AG%s)", groupId);
+						if (occurrences < 2) {
+							String groupedDisplayName = displayName + groupTag;
+							propertyHeader.add(groupedDisplayName);
+							detailHeader.add("");
+						} else {
+							for (int j = 1; j <= occurrences; j++) {
+								String numberedDisplayName = String.format("%s (%s)%s", displayName, j, groupTag);
+								propertyHeader.add(numberedDisplayName);
+								detailHeader.add("");
+							}
+						}						
 					}
 					break;
 				}
-					
+				
 				case PREFERRED_TERM:
 					if (includeDescriptionId) {
 						propertyHeader.add(exportItem.getDisplayName());
@@ -382,84 +367,6 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			}
 		}
 		
-		// Revisit non-zero property groups
-		for (Integer groupId : propertyCount.keySet()) {
-			if (groupId == 0) {
-				continue;
-			}
-			
-			for (AbstractSnomedDsvExportItem exportItem : exportItems) {
-				switch (exportItem.getType()) {
-					case RELATIONSHIP: {
-						ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
-						String typeId = relationshipItem.getComponentId();
-						String displayName = propertyTypeIdMap.getOrDefault(typeId, relationshipItem.getDisplayName());
-	
-						Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(groupId, NO_OCCURRENCES);
-						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
-						if (occurrences < 1) {
-							continue;
-						}
-							
-						if (occurrences < 2) {
-							if (includeRelationshipId) {
-								String groupedDisplayName = String.format("%s (AG%s)", displayName, groupId);
-								propertyHeader.add(groupedDisplayName);
-								propertyHeader.add(groupedDisplayName);
-								detailHeader.add("ID");
-								detailHeader.add("Destination");
-							} else {
-								propertyHeader.add(displayName);
-								detailHeader.add("");
-							}
-						} else {
-							for (int j = 1; j <= occurrences; j++) {
-								String numberedDisplayName = String.format("%s (%s) (AG%s)", displayName, j, groupId);
-								if (includeRelationshipId) {
-									propertyHeader.add(numberedDisplayName);
-									propertyHeader.add(numberedDisplayName);
-									detailHeader.add("ID");
-									detailHeader.add("Destination");
-								} else {
-									propertyHeader.add(numberedDisplayName);
-									detailHeader.add("");
-								}
-							}
-						}
-						break;
-					}
-						
-					case DATAYPE: {
-						ComponentIdSnomedDsvExportItem dataTypeItem = (ComponentIdSnomedDsvExportItem) exportItem;
-						String typeId = dataTypeItem.getComponentId();
-						String displayName = propertyTypeIdMap.getOrDefault(typeId, dataTypeItem.getDisplayName());
-	
-						Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(groupId, NO_OCCURRENCES);
-						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
-						if (occurrences < 1) {
-							continue;
-						}
-							
-						if (occurrences < 2) {
-							String groupedDisplayName = String.format("%s (AG%s)", displayName, groupId);
-							propertyHeader.add(groupedDisplayName);
-							detailHeader.add("");
-						} else {
-							for (int j = 1; j <= occurrences; j++) {
-								String numberedDisplayName = String.format("%s (%s) (AG%s)", displayName, j, groupId);
-								propertyHeader.add(numberedDisplayName);
-								detailHeader.add("");
-							}
-						}
-						break;
-					}
-					
-					default:
-						break;
-				}
-			}
-		}
-
 		// write the header to the file
 		writer.write(joiner.join(propertyHeader));
 		writer.write(lineSeparator);
@@ -471,15 +378,13 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	}
 
 	private Map<String, String> createTypeIdMap(String ancestorId) {
-		return SnomedRequests.prepareSearchConcept()
+		return createTypeIdMap(SnomedRequests.prepareSearchConcept()
 			.all()
 			.setLocales(locales)
 			.filterByAncestor(ancestorId)
 			.setExpand("pt()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(getEventBus())
-			.then(concepts -> createTypeIdMap(concepts))
-			.getSync();
+			.build()
+			.execute(context));
 	}
 
 	private Map<String, String> createTypeIdMap(SnomedConcepts concepts) {
@@ -489,16 +394,18 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				c -> getPreferredTerm(c)));
 	}
 
-	private void writeValues(BufferedWriter writer) throws IOException {
+	private void writeValues(IProgressMonitor monitor, BufferedWriter writer) throws IOException {
 		SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> conceptIterator = getMemberConceptIterator(DATA_EXPAND);
+		
 		while (conceptIterator.hasNext()) {
-			writeValues(writer, conceptIterator.next());
+			SnomedConcepts chunk = conceptIterator.next();
+			writeValues(writer, chunk);
+			monitor.worked(chunk.getItems().size());
 		}
 	}
 		
 	private void writeValues(BufferedWriter writer, SnomedConcepts chunk) throws IOException {
 		List<String> dataRow = newArrayList();
-		Map<String, Integer> zeroGroupOccurrences = propertyCount.getOrDefault(0, NO_OCCURRENCES);
 		
 		for (SnomedConcept concept : chunk) {
 			dataRow.clear();
@@ -523,54 +430,64 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 					case RELATIONSHIP: {
 						final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
-						final String typeId = relationshipItem.getComponentId();
-						int occurrences = zeroGroupOccurrences.get(typeId);
-						
-						final Map<String, String> destinationsById = concept.getRelationships()
-								.stream()
-								.filter(r -> typeId.equals(r.getTypeId())
-										&& r.getGroup() == 0
-										&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
-										|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
-								.collect(Collectors.toMap(
-										SnomedRelationship::getId, 
-										r -> getPreferredTerm(r.getDestination())));
+						for (Integer propertyGroup : propertyCountByGroup.keySet()) {
+							final String typeId = relationshipItem.getComponentId();
+							Map<String, Integer> groupOccurrences = propertyCountByGroup.getOrDefault(propertyGroup, NO_OCCURRENCES);
+							
+							int occurrences = groupOccurrences.getOrDefault(typeId, 0);
+							final Map<String, String> destinationsById = concept.getRelationships()
+									.stream()
+									.filter(r -> typeId.equals(r.getTypeId())
+											&& r.getGroup() == propertyGroup 
+											&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
+													|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
+									.collect(Collectors.toMap(
+											SnomedRelationship::getDestinationId, 
+											r -> getPreferredTerm(r.getDestination())));
 
-						addCells(dataRow, occurrences, includeRelationshipId, destinationsById);
+							addCells(dataRow, occurrences, includeRelationshipId, destinationsById);
+						}
 						break;
 					}
 
 					case DATAYPE: {
 						final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
-						final String typeId = datatypeItem.getComponentId();
-						int occurrences = zeroGroupOccurrences.get(typeId);
-						
-						final List<String> properties = concept.getMembers()
-								.stream()
-								.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
-										&& m.isActive()
-										&& typeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID))
-										&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == 0 
-										&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
-										|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
-								.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
-								.map(p -> {
-									if (datatypeItem.isBooleanDatatype()) {
-										return "1".equals(p) ? "Yes" : "No";
-									} else {
-										return p.toString();
-									}
-								})
-								.sorted()
-								.collect(Collectors.toList());
-
-						for (String value : properties) {
-							dataRow.add(value);
-							occurrences--;
-						}
-						while (occurrences > 0) {
-							dataRow.add("");
-							occurrences--;
+						for (Integer propertyGroup : propertyCountByGroup.keySet()) {
+							Map<String, Integer> groupedOccurrences = propertyCountByGroup.getOrDefault(propertyGroup, NO_OCCURRENCES);
+							final String typeId = datatypeItem.getComponentId();
+							int occurrences = groupedOccurrences.getOrDefault(typeId, 0);
+							
+							if (occurrences < 1) {
+								break;
+							}
+							
+							final List<String> properties = concept.getMembers()
+									.stream()
+									.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
+											&& m.isActive()
+											&& typeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID))
+											&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == propertyGroup 
+											&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
+													|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
+									.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
+									.map(p -> {
+										if (datatypeItem.isBooleanDatatype()) {
+											return "1".equals(p) ? "Yes" : "No";
+										} else {
+											return p.toString();
+										}
+									})
+									.sorted()
+									.collect(Collectors.toList());
+							
+							for (String value : properties) {
+								dataRow.add(value);
+								occurrences--;
+							}
+							while (occurrences > 0) {
+								dataRow.add("");
+								occurrences--;
+							}
 						}
 						break;
 					}
@@ -593,7 +510,7 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						break;
 
 					case EFFECTIVE_TIME:
-						dataRow.add(Dates.formatByGmt(concept.getEffectiveTime()));
+						dataRow.add(EffectiveTimes.format(concept.getEffectiveTime()));
 						break;
 
 					case STATUS_LABEL:
@@ -648,7 +565,4 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return (concept.getPt() == null) ? "" : concept.getPt().getId();
 	}
 
-	private static IEventBus getEventBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
 }

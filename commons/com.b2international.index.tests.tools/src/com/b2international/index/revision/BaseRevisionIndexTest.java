@@ -33,6 +33,9 @@ import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexResource;
+import com.b2international.index.IndexClient;
+import com.b2international.index.Indexes;
+import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
 import com.b2international.index.util.Reflections;
@@ -173,7 +176,9 @@ public abstract class BaseRevisionIndexTest {
 		for (Field f : index.getIndex().admin().mappings().getMapping(expected.getClass()).getFields()) {
 			if (Revision.Fields.CREATED.equals(f.getName()) 
 					|| Revision.Fields.REVISED.equals(f.getName())
-					|| DocumentMapping._ID.equals(f.getName())) {
+					|| DocumentMapping._ID.equals(f.getName())
+					|| WithScore.SCORE.equals(f.getName())
+					) {
 				// skip revision fields from equality check
 				continue;
 			}

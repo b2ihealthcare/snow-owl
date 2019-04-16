@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,24 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_CARDINALITY_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_IN_GROUP_CARDINALITY_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_RULE_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.CONTENT_TYPE_ID_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_CONSTRAINT_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_ID_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_POSTCOORDINATION_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_PRECOORDINATION_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_AXIOM_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_ONTOLOGY_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_CONSTRAINT_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RANGE_CONSTRAINT_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_REFSET_ID_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_STRENGTH_ID_2;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
@@ -80,6 +95,9 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	private static final List<String> REFERENCED_COMPONENT_TYPES = ImmutableList.of(CONCEPT, DESCRIPTION, RELATIONSHIP);
 	
 	private static final Map<SnomedRefSetType, String> REFSET_CACHE = Maps.newHashMap();
+
+	// Single CodeSystem for all refset member tests initialized on first access
+	private static String CODESYSTEM_SHORTNAME;
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
@@ -280,6 +298,68 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 		deleteComponent(branchPath, SnomedComponentType.MEMBER, memberId, true).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(404);
+	}
+	
+	@Test
+	public void testRestorationOfEffectiveTimeOnMutablePropertyChange() {
+		// XXX skip simple type refsets
+		Assume.assumeFalse(SnomedRefSetType.SIMPLE.equals(refSetType));
+		
+		final String shortName = getOrCreateCodeSystem();
+
+		// create the previous revision of the member
+		final String memberId = createRefSetMember();
+
+		// version it
+		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, effectiveTime, effectiveTime).statusCode(201);
+
+		// update properties
+		final Map<?, ?> updateRequest = ImmutableMap.builder()
+				.putAll(ImmutableMap.<String, Object>builder().putAll(getUpdateProperties()).build())
+				.put("commitComment", "Updated reference set member")
+				.build();
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
+
+		// Updating a member's properties should unset the effective time
+		final ValidatableResponse updateResponse = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+				.statusCode(200)
+				.body("released", equalTo(true))
+				.body("effectiveTime", equalTo(null));
+
+		// check updated properties
+		for (Entry<String, Object> updateProperty : getUpdateProperties().entrySet()) {
+			updateResponse.body(updateProperty.getKey(), equalTo(updateProperty.getValue()));
+		}
+
+		// revert back to original values
+		final Map<?, ?> revertUpdateRequest = ImmutableMap.builder()
+				.putAll(ImmutableMap.<String, Object>builder().putAll(getValidProperties(refSetType)).build())
+				.put("commitComment", "Reverted previous update of reference set member")
+				.build();
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, revertUpdateRequest, false).statusCode(204);
+
+		// Getting the member back to its originally released state should restore the effective time
+		ValidatableResponse revertResponse = getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveTime));
+
+		for (Entry<String, Object> validProperty : getValidProperties(refSetType).entrySet()) {
+			revertResponse.body(validProperty.getKey(), equalTo(validProperty.getValue()));
+		}
+
+	}
+
+	private String getOrCreateCodeSystem() {
+		if (CODESYSTEM_SHORTNAME == null) {
+			// This will create a code system on the branch MAIN/className
+			final String shortName = getClass().getSimpleName();
+			createCodeSystem(branchPath, shortName).statusCode(201);
+			CODESYSTEM_SHORTNAME = shortName;
+		}
+		return CODESYSTEM_SHORTNAME;
 	}
 
 	private String createRefSetMember() {

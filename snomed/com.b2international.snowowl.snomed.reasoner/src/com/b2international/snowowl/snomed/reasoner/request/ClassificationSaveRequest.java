@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -33,25 +36,77 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
 /**
+ * Runs pre-save checks on the given classification task, signals the tracker
+ * that this task is about to be saved, and schedules a remote job to perform
+ * the actual saving.
+ * 
  * @since 5.7
  */
 final class ClassificationSaveRequest implements Request<RepositoryContext, String> {
 
+	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
+	
+	// Also used in SaveJobRequest
 	static final Set<ClassificationStatus> SAVEABLE_STATUSES = ImmutableSet.of(
 			ClassificationStatus.COMPLETED, 
 			ClassificationStatus.SAVE_FAILED);
 
 	@JsonProperty
 	@NotEmpty
-	private final String classificationId;
+	private String classificationId;
 
 	@JsonProperty
 	@NotEmpty
-	private final String userId;
+	private String userId;
+	
+	@NotNull
+	private String parentLockContext;
 
-	ClassificationSaveRequest(final String classificationId, final String userId) {
+	@NotEmpty
+	private String commitComment;
+
+	// @Nullable
+	private String moduleId;
+
+	// @Nullable
+	private String namespace;
+
+	private boolean fixEquivalences;
+
+	private boolean handleConcreteDomains;
+
+	ClassificationSaveRequest() {}
+	
+	void setClassificationId(final String classificationId) {
 		this.classificationId = classificationId;
+	}
+	
+	void setUserId(final String userId) {
 		this.userId = userId;
+	}
+	
+	void setParentLockContext(final String parentLockContext) {
+		this.parentLockContext = parentLockContext;
+	}
+	
+	void setCommitComment(final String commitComment) {
+		this.commitComment = commitComment;
+	}
+
+	void setModuleId(final String moduleId) {
+		this.moduleId = moduleId;
+	}
+
+	void setNamespace(final String namespace) {
+		this.namespace = namespace;
+	}
+
+	void setFixEquivalences(final boolean fixEquivalences) {
+		this.fixEquivalences = fixEquivalences;
+	}
+
+	void setHandleConcreteDomains(final boolean handleConcreteDomains) {
+		this.handleConcreteDomains = handleConcreteDomains;
 	}
 
 	@Override
@@ -60,40 +115,43 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.prepareGetClassification(classificationId)
 				.build();
 		
-		final ClassificationTask classification = new IndexReadRequest<>(classificationRequest)
-				.execute(context);
-
+		final ClassificationTask classification = new IndexReadRequest<>(classificationRequest).execute(context);
 		final String branchPath = classification.getBranch();
 		
 		final Request<RepositoryContext, Branch> branchRequest = RepositoryRequests.branching()
 				.prepareGet(branchPath)
 				.build();
 		
-		final Branch branch = new IndexReadRequest<>(branchRequest)
-				.execute(context);
+		final Branch branch = new IndexReadRequest<>(branchRequest).execute(context);
 
 		if (!SAVEABLE_STATUSES.contains(classification.getStatus())) {
 			throw new BadRequestException("Classification '%s' is not in the expected state to start saving changes.", classificationId);
 		}
 
 		if (classification.getTimestamp() < branch.headTimestamp()) {
-			throw new BadRequestException("Classification '%s' is stale (recorded timestamp: %s, current timestamp of branch '%s': %s).", 
-					classificationId, 
-					classification.getTimestamp(),
+			throw new BadRequestException("Classification '%s' on branch '%s' is stale (classification timestamp: %s, head timestamp: %s).", 
+					classificationId,
 					branchPath,
+					classification.getTimestamp(),
 					branch.headTimestamp());
 		}
 
 		final AsyncRequest<?> saveRequest = new SaveJobRequestBuilder()
 				.setClassificationId(classificationId)
 				.setUserId(userId)
+				.setParentLockContext(parentLockContext)
+				.setCommitComment(commitComment)
+				.setModuleId(moduleId)
+				.setNamespace(namespace)
+				.setFixEquivalences(fixEquivalences)
+				.setHandleConcreteDomains(handleConcreteDomains)
 				.build(context.id(), branchPath);
 
 		return JobRequests.prepareSchedule()
 				.setUser(userId)
 				.setRequest(saveRequest)
-				.setDescription(String.format("Saving classification changes on %s", branch))
-				.build()
-				.execute(context);
+				.setDescription(String.format("Saving classification changes on %s", branch.path()))
+				.buildAsync()
+				.get(SCHEDULE_TIMEOUT_MILLIS);
 	}
 }

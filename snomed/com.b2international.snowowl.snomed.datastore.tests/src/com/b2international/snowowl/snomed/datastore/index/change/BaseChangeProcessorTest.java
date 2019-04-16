@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,16 +35,19 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -57,6 +60,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	protected final long ROOT_CONCEPTL = Long.parseLong(Concepts.ROOT_CONCEPT);
 	
 	private StagingArea staging;
+	private BranchContext context = TestBranchContext.on(MAIN).build();
 	
 	@Override
 	protected final Collection<Class<?>> getTypes() {
@@ -81,6 +85,10 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		mapper.registerModule(new PrimitiveCollectionModule());
 	}
 	
+	protected final BranchContext context() {
+		return context;
+	}
+	
 	protected final StagingArea staging() {
 		return staging;
 	}
@@ -103,31 +111,6 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		init.commit(currentTime(), "test", "Test Fixture Initialization");
 	}
 	
-//	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object oldValue, Object newValue) {
-//		final CDOSetFeatureDeltaImpl featureDelta = new CDOSetFeatureDeltaImpl(feature, 0, newValue, oldValue);
-//		getRevisionDelta(object).addFeatureDelta(featureDelta);
-//	}
-//	
-//	protected final void registerAddRevisionDelta(CDOObject object, EStructuralFeature feature, int index, Object value) {
-//		final CDOAddFeatureDeltaImpl featureDelta = new CDOAddFeatureDeltaImpl(feature, index, value);
-//		getRevisionDelta(object).addFeatureDelta(featureDelta);
-//	}
-//	
-//	protected final void registerRemoveRevisionDelta(CDOObject object, EStructuralFeature feature, int index) {
-//		final CDORemoveFeatureDeltaImpl featureDelta = new CDORemoveFeatureDeltaImpl(feature, index);
-//		getRevisionDelta(object).addFeatureDelta(featureDelta);
-//	}
-	
-//	private final CDORevisionDeltaImpl getRevisionDelta(CDOObject object) {
-//		final CDOID storageKey = checkNotNull(object.cdoID());
-//		if (!revisionDeltas.containsKey(storageKey)) {
-//			final CDORevisionImpl revision = (CDORevisionImpl) CDORevisionFactory.DEFAULT.createRevision(object.eClass());
-////			revision.setBranchPoint(branchPoint);
-//			revisionDeltas.put(storageKey, CDORevisionUtil.createDelta(revision));
-//		}
-//		return (CDORevisionDeltaImpl) revisionDeltas.get(storageKey);
-//	}
-	
 	protected final void process(final ChangeSetProcessor processor) {
 		index().read(RevisionBranch.MAIN_PATH, new RevisionIndexRead<Void>() {
 			@Override
@@ -137,28 +120,6 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 			}
 		});
 	}
-
-//	protected final SnomedConceptDocument getRefSet(String conceptId, SnomedRefSetType refSetType, short referencedComponentType) {
-//		if (!conceptsById.containsKey(conceptId)) {
-//			final SnomedConceptDocument refSet = SnomedConceptDocument.builder()
-//					.id(conceptId)
-//					.refSetType(refSetType)
-//					.referencedComponentType(referencedComponentType)
-//					.build();
-//			conceptsById.put(conceptId, refSet);
-//		}
-//		return conceptsById.get(conceptId);		
-//	}
-//	
-//	protected final SnomedConceptDocument getConcept(String conceptId) {
-//		if (!conceptsById.containsKey(conceptId)) {
-//			final SnomedConceptDocument concept = SnomedConceptDocument.builder()
-//					.id(conceptId)
-//					.build();
-//			conceptsById.put(conceptId, concept);
-//		}
-//		return conceptsById.get(conceptId);
-//	}
 	
 	protected final String module() {
 		return Concepts.MODULE_SCT_CORE;
@@ -257,7 +218,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	}
 
 	protected final SnomedConceptDocument.Builder concept() {
-		return concept(generateConceptId());
+		return docWithDefaults(concept(generateConceptId()).build());
 	}
 	
 	protected final SnomedConceptDocument.Builder concept(final String id) {
@@ -266,7 +227,25 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.active(true)
 				.primitive(false)
 				.moduleId(module())
-				.exhaustive(false);
+				.exhaustive(false)
+				// defaults
+				.iconId(Concepts.ROOT_CONCEPT)
+				.parents(IComponent.ROOT_IDL)
+				.ancestors(PrimitiveSets.newLongOpenHashSet())
+				.statedParents(IComponent.ROOT_IDL)
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet());
+	}
+	
+	protected SnomedRefSetMemberIndexEntry.Builder createOwlAxiom(final String referencedComponentId, final String owlExpression) {
+		return SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.owlExpression(owlExpression)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(referencedComponentId)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM);
 	}
 
 }

@@ -38,6 +38,9 @@ public final class SourceConceptNamespaceAndModuleAssigner implements SnomedName
 	private final LongKeyLongMap relationshipModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 	private final LongKeyLongMap concreteDomainModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 
+	// Empty constructor required for executable extension-based initialization 
+	public SourceConceptNamespaceAndModuleAssigner() { }
+	
 	@Override
 	public String getRelationshipNamespace(final String sourceConceptId) {
 		return SnomedIdentifiers.getNamespace(sourceConceptId);

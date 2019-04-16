@@ -49,6 +49,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -84,7 +85,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -94,6 +94,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2ConceptExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2DescriptionExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2LanguageRefSetExporter;
+import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetDescriptorRefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RelationshipExporter;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -170,6 +171,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 	@JsonProperty 
 	private boolean extensionOnly;
+	
+	@JsonProperty
+	@NotEmpty
+	private List<ExtendedLocale> locales;
 
 	SnomedRf2ExportRequest() {}
 
@@ -258,6 +263,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 	void setExtensionOnly(final boolean extensionOnly) {
 		this.extensionOnly = extensionOnly;
+	}
+	
+	void setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
 	}
 
 	@Override
@@ -685,6 +694,36 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 				throw new IllegalStateException("Component type '" + componentToExport + "' can not be exported.");
 			}
 		}
+		
+		if (Boolean.valueOf(System.getProperty("so.snomed.refsetdescriptor_preview", "false"))) {
+			exportRefSetDescriptor(releaseDirectory,
+					context,
+					branch,
+					archiveEffectiveTime,
+					effectiveTimeFilterStart,
+					effectiveTimeFilterEnd,
+					languageCodes,
+					visitedComponentEffectiveTimes);
+		}
+	}
+
+	private void exportRefSetDescriptor(Path releaseDirectory, 
+			RepositoryContext context, 
+			String branch, 
+			String archiveEffectiveTime, 
+			long effectiveTimeFilterStart, 
+			long effectiveTimeFilterEnd, 
+			Collection<String> languageCodes, 
+			Set<String> visitedComponentEffectiveTimes) throws IOException {
+		final Rf2RefSetDescriptorRefSetExporter exporter = new Rf2RefSetDescriptorRefSetExporter(releaseType, 
+				countryNamespaceElement, 
+				namespaceFilter,
+				transientEffectiveTime,
+				archiveEffectiveTime,
+				includePreReleaseContent,
+				modules);
+		
+		exporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
 
 	private void exportConcepts(final Path releaseDirectory, 
@@ -937,12 +976,11 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			refSetsToLoad = refSets;
 		}
 		
-		final LanguageSetting languageSetting = getServiceForClass(LanguageSetting.class);
 		final SnomedConceptSearchRequestBuilder refSetRequestBuilder = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByIds(refSetsToLoad)
 				.setExpand("pt(),referenceSet()")
-				.setLocales(languageSetting.getLanguagePreference());
+				.setLocales(locales);
 
 		final Request<BranchContext, SnomedConcepts> request = refSetRequestBuilder.build();
 		final SnomedConcepts referenceSets = execute(context, currentVersion, request);

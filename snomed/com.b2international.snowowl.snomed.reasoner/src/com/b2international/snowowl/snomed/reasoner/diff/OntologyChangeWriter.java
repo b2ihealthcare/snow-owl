@@ -44,7 +44,7 @@ public abstract class OntologyChangeWriter<T extends Serializable> extends Ontol
 	@Override
 	protected final void handleAddedSubject(final String conceptId, final T addedSubject) {
 		hasInferredChanges = true;
-		indexChange(conceptId, addedSubject, ChangeNature.INFERRED);
+		indexChange(conceptId, addedSubject, ChangeNature.NEW);
 	}
 
 	@Override
@@ -60,7 +60,6 @@ public abstract class OntologyChangeWriter<T extends Serializable> extends Ontol
 
 	protected void indexChange(final Object doc) {
 		writer.put(UUID.randomUUID().toString(), doc);
-
 		writeOps++;
 		if (writeOps > WRITES_PER_COMMIT) {
 			try {

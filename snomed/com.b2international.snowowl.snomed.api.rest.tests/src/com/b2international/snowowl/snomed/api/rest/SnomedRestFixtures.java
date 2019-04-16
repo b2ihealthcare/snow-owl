@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,9 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RANGE_CONSTRAINT;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_REFSET_ID;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_STRENGTH_ID;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.searchComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergingRestRequests.waitForMergeJob;
@@ -44,6 +45,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.Pair;
+import com.b2international.commons.Pair.IdenticalPair;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -69,6 +72,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -79,6 +83,8 @@ public abstract class SnomedRestFixtures {
 	public static final String DEFAULT_TERM = "Description term";
 	public static final String DEFAULT_LANGUAGE_CODE = "en";
 
+	private static final Map<IdenticalPair<String, String>, String> REFERENCED_COMPONENT_CACHE = newHashMap();
+	
 	public static String createNewConcept(IBranchPath conceptPath) {
 		return createNewConcept(conceptPath, Concepts.ROOT_CONCEPT);
 	}
@@ -372,23 +378,23 @@ public abstract class SnomedRestFixtures {
 
 	@SuppressWarnings("unchecked")
 	public static void reactivateConcept(IBranchPath conceptPath, String id) {
-		Map<String, Object> concept = getComponent(conceptPath, SnomedComponentType.CONCEPT, id, "descriptions()", "relationships()")
+		final Map<String, Object> concept = getComponent(conceptPath, SnomedComponentType.CONCEPT, id, "descriptions()", "relationships()")
 				.statusCode(200)
 				.extract().as(Map.class);
 
-		Map<String, Object> reactivationRequest = Maps.newHashMap(concept);
+		final Map<String, Object> reactivationRequest = Maps.newHashMap(concept);
 		reactivationRequest.put("active", true);
 		reactivationRequest.remove("inactivationIndicator");
 		reactivationRequest.remove("associationTargets");
 		reactivationRequest.put("commitComment", "Reactivated concept");
 
-		Map<String, Object> relationships = (Map<String, Object>) reactivationRequest.get("relationships");
-		List<Map<String, Object>> relationshipItems = (List<Map<String, Object>>) relationships.get("items");
+		final Map<String, Object> relationships = (Map<String, Object>) reactivationRequest.get("relationships");
+		final List<Map<String, Object>> relationshipItems = (List<Map<String, Object>>) relationships.get("items");
 		relationshipItems.get(0).put("active", true);
 
 		updateComponent(conceptPath, SnomedComponentType.CONCEPT, id, reactivationRequest).statusCode(204);
 	}
-
+	
 	public static void changeCaseSignificance(IBranchPath descriptionPath, String descriptionId) {
 		changeCaseSignificance(descriptionPath, descriptionId, CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE);
 	}
@@ -498,9 +504,14 @@ public abstract class SnomedRestFixtures {
 	}
 	
 	public static String getFirstMatchingComponent(IBranchPath branchPath, String referencedComponentType) {
-		return Iterables.getFirst(searchComponent(branchPath, getSnomedComponentType(referencedComponentType), ImmutableMap.of("limit", 1))
-				.extract()
-				.<List<String>>path("items.id"), null);
+		IdenticalPair<String, String> key = Pair.identicalPairOf(branchPath.getPath(), referencedComponentType);
+		if (!REFERENCED_COMPONENT_CACHE.containsKey(key)) {
+			final String referencedComponentId = Iterables.getFirst(searchComponent(branchPath, getSnomedComponentType(referencedComponentType), ImmutableMap.of("limit", 1))
+					.extract()
+					.<List<String>>path("items.id"), null);
+			REFERENCED_COMPONENT_CACHE.put(key, referencedComponentId);
+		}
+		return REFERENCED_COMPONENT_CACHE.get(key);
 	}
 
 	public static void createConcreteDomainParentConcept(IBranchPath conceptPath) {

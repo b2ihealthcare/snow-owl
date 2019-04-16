@@ -25,6 +25,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 
@@ -41,8 +42,9 @@ public abstract class BaseConceptPreCommitHookTest extends BaseChangeProcessorTe
 		return index().read(MAIN, new RevisionIndexRead<ConceptChangeProcessor>() {
 			@Override
 			public ConceptChangeProcessor execute(RevisionSearcher searcher) throws IOException {
-				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, staging(), inferredChangedConceptIds, true);
-				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, staging(), statedChangedConceptIds, true);
+				final SnomedOWLExpressionConverter expressionConverter = new SnomedOWLExpressionConverter(context().inject().bind(RevisionSearcher.class, searcher).build());
+				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, expressionConverter, staging(), inferredChangedConceptIds, true);
+				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, expressionConverter, staging(), statedChangedConceptIds, true);
 				final ConceptChangeProcessor processor = new ConceptChangeProcessor(DoiData.DEFAULT_SCORE, availableImages, statedTaxonomy, inferredTaxonomy);
 				processor.process(staging(), searcher);
 				return processor;

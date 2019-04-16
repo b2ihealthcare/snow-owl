@@ -21,6 +21,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.test.collect.BitSetTest;
 import com.b2international.commons.test.collect.ByteOpenHashSetTest;
+import com.b2international.commons.test.collect.EmptyLongListTest;
 import com.b2international.commons.test.collect.IntOpenHashSetTest;
 import com.b2international.commons.test.collect.LongOpenHashSetTest;
 import com.b2international.commons.test.config.ConfigurationFactoryTest;
@@ -44,7 +45,8 @@ import com.b2international.commons.test.config.ConfigurationFactoryTest;
 	BitSetTest.class,
 	ByteOpenHashSetTest.class,
 	IntOpenHashSetTest.class,
-	LongOpenHashSetTest.class
+	LongOpenHashSetTest.class,
+	EmptyLongListTest.class
 })
 public class AllCommonsTests {
 	// Empty class body

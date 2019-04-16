@@ -346,7 +346,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals("concept", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 	}
-
+	
 	@Test
 	public void noMergeNewDescriptionToUnrelatedBranch() {
 		String conceptId = createNewConcept(branchPath);
