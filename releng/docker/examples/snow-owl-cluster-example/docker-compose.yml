@@ -22,7 +22,7 @@ services:
 
  
   snowowl:
-    image: b2ici/snow-owl:7.0.0
+    image: b2ihealthcare/snow-owl:7.0.0
     container_name: snowowl
     environment:
       SO_JAVA_OPTS: "-Xms2g -Xmx2g"
