@@ -128,7 +128,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> beginValidation(
+	public DeferredResult<ResponseEntity<URI>> beginValidation(
 			@ApiParam(value="Validation parameters")
 			@RequestBody 
 			final ValidationRestInput validationInput,
@@ -161,7 +161,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 					.buildAsync()
 					.execute(bus);
 			} else {
-				return DeferredResults.wrap(Promise.immediate(Responses.status(HttpStatus.CONFLICT).build()));
+				return DeferredResults.wrap(Promise.immediate(Responses.status(HttpStatus.CONFLICT).build(null)));
 			}
 		} else {
 			deleteValidationJobPromise = Promise.immediate(Boolean.TRUE);
@@ -192,10 +192,10 @@ public class ValidationRestService extends AbstractAdminRestService {
 				final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
 				
 				final URI responseURI = linkBuilder.slash(encodedId).toUri();
-				return Responses.created(responseURI).build();
+				return Responses.created(responseURI).build(responseURI);
 			})
 			.fail(e -> {
-				return Responses.status(HttpStatus.BAD_REQUEST).build();
+				return Responses.status(HttpStatus.BAD_REQUEST).build(null);
 			}));
 	}
 	
@@ -218,7 +218,6 @@ public class ValidationRestService extends AbstractAdminRestService {
 			} else {
 				throw new NotFoundException("Validation job", validationId);
 			}
-			
 	}
 
 	@ApiOperation(
