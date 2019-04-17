@@ -76,6 +76,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
@@ -244,7 +245,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final RelationshipChangeSearchRequestBuilder relationshipRequestBuilder = ClassificationRequests.prepareSearchRelationshipChange()
 				.setLimit(SCROLL_LIMIT)
 				.setScroll(SCROLL_KEEP_ALIVE)
-				.setExpand("relationship(inferredOnly:true)")
+				.setExpand("relationship(inferredOnly:true, expand(source()))")
 				.filterByClassificationId(classificationId);
 
 		final SearchResourceRequestIterator<RelationshipChangeSearchRequestBuilder, RelationshipChanges> relationshipIterator = 
@@ -257,6 +258,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			final Set<String> conceptIds = nextChanges.stream()
 					.map(RelationshipChange::getRelationship)
 					.map(ReasonerRelationship::getSourceId)
+					.filter(id -> id != null)
 					.collect(Collectors.toSet());
 			
 			final Set<String> originRelationshipIds = nextChanges.stream()
@@ -605,11 +607,17 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final Request<TransactionContext, Boolean> request;
 		
 		if (released) {
-			request = SnomedRequests
+			SnomedRelationshipUpdateRequestBuilder req = SnomedRequests
 					.prepareUpdateRelationship(relationshipId)
-					.setModuleId(namespaceAndModuleAssigner.getRelationshipModuleId(sourceId))
-					.setActive(false)
-					.build();
+					.setActive(false);
+			
+			if (!Strings.isNullOrEmpty(sourceId)) {
+				req.setModuleId(namespaceAndModuleAssigner.getRelationshipModuleId(sourceId));
+			} else if (!Strings.isNullOrEmpty(moduleId)) {
+				req.setModuleId(moduleId);
+			}
+			
+			request = req.build();
 		} else {
 			request = SnomedRequests
 					.prepareDeleteRelationship(relationshipId)
@@ -638,13 +646,19 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final Request<TransactionContext, Boolean> request;
 		
 		if (released) {
+			final ImmutableMap.Builder<String, Object> props = ImmutableMap.<String, Object>builder()
+				.put(SnomedRf2Headers.FIELD_ACTIVE, false);
+			
+			if (!Strings.isNullOrEmpty(referencedComponentId)) {
+				props.put(SnomedRf2Headers.FIELD_MODULE_ID, namespaceAndModuleAssigner.getConcreteDomainModuleId(referencedComponentId));
+			} else if (!Strings.isNullOrEmpty(moduleId)) {
+				props.put(SnomedRf2Headers.FIELD_MODULE_ID, moduleId);
+			}
+			
 			request = SnomedRequests
 					.prepareUpdateMember()
 					.setMemberId(memberId)
-					.setSource(ImmutableMap.<String, Object>builder()
-							.put(SnomedRf2Headers.FIELD_ACTIVE, false)
-							.put(SnomedRf2Headers.FIELD_MODULE_ID, namespaceAndModuleAssigner.getConcreteDomainModuleId(referencedComponentId))
-							.build())
+					.setSource(props.build())
 					.build();
 		} else {
 			request = SnomedRequests
