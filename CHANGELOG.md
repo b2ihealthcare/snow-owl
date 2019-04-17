@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.14.2
+
+### Changed
+- Change `moduleId` of updated relationship or concrete domain member using the currently set module assigner algorithm (#341)
+- Redirect Elasticsearch log messages to SLF4J logger instead of logging to stdout (86fdc02)  
+
+### Bugs
+- Fix incorrect parent/ancestor array values on inactive SNOMED CT Concepts (#343)
+- Fix random code system allocation bug in e2e SNOMED CT test cases (03b6001)
+
 ## 6.14.1
 
 ### Bugs
