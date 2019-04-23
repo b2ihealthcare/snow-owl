@@ -34,5 +34,14 @@
     "checkType": "EXPENSIVE",
     "type": "script-groovy",
     "implementation": "scripts/rule_mrcm_constraint.groovy"
+  },
+  {
+  	"id": "rule_mrcm_constraint_type",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Relationship type values must be consistent with MRCM.",
+    "severity": "WARNING",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule_mrcm_constraint_type.groovy"
   }
 ]
