@@ -75,12 +75,13 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Concepts;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -702,18 +703,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public Concept getDefaultModuleConcept() {
 		if (moduleConcept == null) {
-			for (String modulePreference : ModulePreference.getModulePreference()) {
-				if (moduleConcept != null) {
-					break;
-				}
-				try {
-					moduleConcept = getConcept(modulePreference);
-				} catch (ComponentNotFoundException e) {
-					// ignore and proceed to the next preference
-				}
-			}
-			if (moduleConcept == null) {
-				LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
+			String defaultModuleId = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getDefaultModule();
+			try {
+				moduleConcept = getConcept(defaultModuleId);
+			} catch (ComponentNotFoundException e) {
+				moduleConcept = getConcept(SnomedConstants.Concepts.MODULE_SCT_CORE);
 			}
 		}
 		return moduleConcept;
@@ -746,13 +740,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return nameSpace;
 	}
 
-	@Deprecated
 	public static String getDefaultNamespace() {
-		return getSnomedConfiguration().getNamespaces().getDefaultChildKey();
+		return getSnomedCoreConfiguration().getDefaultNamespace();
 	}
 	
-	public static SnomedConfiguration getSnomedConfiguration() {
-		return ApplicationContext.getInstance().getService(SnomedConfiguration.class);
+	public static SnomedCoreConfiguration getSnomedCoreConfiguration() {
+		return ApplicationContext.getInstance().getService(SnomedCoreConfiguration.class);
 	}
 	
 	@Override
