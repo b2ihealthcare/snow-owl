@@ -26,6 +26,7 @@
 		<module>com.b2international.snowowl.snomed.refset.model</module>
 		
 		<!-- SNOMED CT Core modules -->
+		<module>com.b2international.snowowl.snomed.icons</module>
 		<module>com.b2international.snowowl.snomed.common</module>
 		<module>com.b2international.snowowl.snomed.datastore</module>
 		<module>com.b2international.snowowl.snomed.datastore.tests</module>
