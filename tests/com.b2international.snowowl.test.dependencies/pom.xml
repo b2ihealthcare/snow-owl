@@ -2,65 +2,14 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
+  
+  <artifactId>com.b2international.snowowl.test.dependencies</artifactId>
+  <packaging>eclipse-plugin</packaging>
+  
   <parent>
     <groupId>com.b2international.snowowl</groupId>
     <version>6.14.3-SNAPSHOT</version>
     <artifactId>tests-parent</artifactId>
   </parent>
-  <artifactId>com.b2international.snowowl.test.dependencies</artifactId>
-  <packaging>eclipse-plugin</packaging>
-  <build>
-    <resources>
-      <resource>
-        <directory>src</directory>
-      </resource>
-      <resource>
-        <directory>xtend-gen</directory>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>2.5</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>xtend-gen</directory>
-              <excludes>
-                <exclude>.gitignore</exclude>
-              </excludes>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.eclipse.xtend</groupId>
-        <artifactId>xtend-maven-plugin</artifactId>
-        <version>${xtend.compiler.version}</version>
-        <dependencies>
-			<dependency>
-			    <groupId>org.eclipse.platform</groupId>
-			    <artifactId>org.eclipse.equinox.common</artifactId>
-			    <version>3.10.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.emf</groupId>
-				<artifactId>org.eclipse.emf.codegen</artifactId>
-				<version>2.11.0</version>
-			</dependency>
-		</dependencies>
-        <configuration>
-          <outputDirectory>${basedir}/xtend-gen</outputDirectory>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+  
 </project>
