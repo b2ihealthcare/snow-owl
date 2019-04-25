@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.prefs.PreferencesService;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
-import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
-import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager.IServiceConfigJobChangeListener;
-
-public class SnomedDatastoreActivator implements BundleActivator, IServiceConfigJobChangeListener {
+public class SnomedDatastoreActivator implements BundleActivator {
 
 	/**
 	 * Unique identifier of the bundle. ID: {@value}
@@ -54,7 +47,6 @@ public class SnomedDatastoreActivator implements BundleActivator, IServiceConfig
 	 */
 	public void start(final BundleContext bundleContext) throws Exception {
 		SnomedDatastoreActivator.context = bundleContext;
-		ServiceConfigJobManager.INSTANCE.addListener(this);
 	}
 
 	/*
@@ -63,18 +55,6 @@ public class SnomedDatastoreActivator implements BundleActivator, IServiceConfig
 	 */
 	public void stop(final BundleContext bundleContext) throws Exception {
 		SnomedDatastoreActivator.context = null;
-		ServiceConfigJobManager.INSTANCE.removeListener(this);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager.IServiceConfigJobChangeListener#done(org.eclipse.core.runtime.IProgressMonitor)
-	 */
-	@Override
-	public void done(final IProgressMonitor monitor) {
-		//register additional SNOMED CT related configurations
-		final Environment env = SnowOwlApplication.INSTANCE.getEnviroment();
-		final PreferencesService preferences = env.services().getService(PreferencesService.class);
-		env.services().registerService(SnomedConfiguration.class, new SnomedConfiguration(preferences, env.getDefaultsDirectory()));
-	}
 }

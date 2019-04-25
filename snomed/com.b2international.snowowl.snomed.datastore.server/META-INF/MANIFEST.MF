@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.datastore.server;visibility:=reexport,
  com.b2international.snowowl.snomed.datastore;visibility:=reexport,
  com.b2international.snowowl.rpc,
- com.b2international.snowowl.server.console
+ com.b2international.snowowl.server.console,
+ com.b2international.snowowl.snomed.icons
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.datastore.server.snomed,

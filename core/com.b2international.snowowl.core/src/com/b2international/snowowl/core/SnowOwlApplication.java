@@ -157,7 +157,6 @@ public enum SnowOwlApplication {
 		LOG.info(String.format("Application home directory: %s", this.environment.getHomeDirectory()));
 		LOG.info(String.format("Application config directory: %s", this.environment.getConfigDirectory()));
 		LOG.info(String.format("Application data directory: %s", this.environment.getDataDirectory()));
-		LOG.info(String.format("Application defaults directory: %s", this.environment.getDefaultsDirectory()));
 	}
 
 	/**

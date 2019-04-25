@@ -15,47 +15,17 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_CARDINALITY;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_CARDINALITY_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_IN_GROUP_CARDINALITY;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_IN_GROUP_CARDINALITY_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_RULE;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_RULE_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.CONTENT_TYPE_ID;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.CONTENT_TYPE_ID_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_CONSTRAINT;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_CONSTRAINT_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_ID;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_ID_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_POSTCOORDINATION_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_PRECOORDINATION;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_PRECOORDINATION_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.EDITORIAL_GUIDE_REFERENCE;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_AXIOM_1;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_AXIOM_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_ONTOLOGY_1;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_ONTOLOGY_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PARENT_DOMAIN;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_CONSTRAINT;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_CONSTRAINT_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_REFINEMENT;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RANGE_CONSTRAINT;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RANGE_CONSTRAINT_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_REFSET_ID;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_REFSET_ID_2;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_STRENGTH_ID;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_STRENGTH_ID_2;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.*;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewComponent;
-import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createReferencedComponent;
@@ -323,8 +293,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 		final String memberId = createRefSetMember();
 
-		int randomId = (int)(Math.random() * 1000 + 1);
-		final String shortName = String.format("SNOMEDCT-REFM-%d", randomId);
+		final String shortName = String.format("SNOMEDCT-REFM-%s", refSetType);
 		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
 
 		createCodeSystem(branchPath, shortName).statusCode(201);
