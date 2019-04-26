@@ -41,7 +41,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+
 import io.restassured.RestAssured;
+import io.restassured.config.ConnectionConfig;
+import io.restassured.config.HttpClientConfig;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
@@ -105,14 +108,18 @@ public class RestExtensions {
 			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 			
 			// add custom 
-			ObjectMapper mapper = new ObjectMapper();
+			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new GuavaModule());
-			RestAssuredConfig.config().objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
-				@Override
-				public ObjectMapper create(Type arg0, String arg1) {
-					return mapper;
-				}
-			}));
+			
+			System.setProperty("http.maxConnections","100");
+			RestAssuredConfig.config()
+				.objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
+					public ObjectMapper create(Type arg0, String arg1) {
+						return mapper;
+					}
+				}))
+				.connectionConfig(ConnectionConfig.connectionConfig().closeIdleConnectionsAfterEachResponse())
+    		.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance());
 			
 			// add the user to the current identity provider
 			try {
