@@ -26,6 +26,8 @@ import com.google.common.base.Joiner
 import com.google.common.base.Preconditions
 import com.google.common.base.Splitter
 import io.restassured.RestAssured
+import io.restassured.config.ConnectionConfig
+import io.restassured.config.HttpClientConfig
 import io.restassured.config.ObjectMapperConfig
 import io.restassured.config.RestAssuredConfig
 import io.restassured.http.ContentType
@@ -95,12 +97,15 @@ class RestExtensions {
 			// add custom 
 			val mapper = new ObjectMapper()
 			mapper.registerModule(new GuavaModule)
-			RestAssuredConfig.config().objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
-				override create(Type arg0, String arg1) {
-					return mapper
-				}
-			}))
-			
+			System.setProperty("http.maxConnections","100");
+			RestAssuredConfig.config()
+				.objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
+					override create(Type arg0, String arg1) {
+						return mapper
+					}
+				}))
+				.connectionConfig(ConnectionConfig.connectionConfig().closeIdleConnectionsAfterEachResponse())
+        		.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance())
 			// add the user to the current identity provider
 			try {
 				(ApplicationContext.instance.getServiceChecked(IdentityProvider) as IdentityWriter).addUser(USER, PASS)
