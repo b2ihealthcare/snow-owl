@@ -52,7 +52,8 @@
 								log4j,
 								guice,
 								guice-assistedinject,
-								guice-multibindings
+								guice-multibindings,
+								jsr305
 							</excludeArtifactIds>
 						</configuration>
 					</execution>

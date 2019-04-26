@@ -36,7 +36,9 @@ import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
+import org.semanticweb.owlapi.reasoner.ReasonerProgressMonitor;
 import org.semanticweb.owlapi.reasoner.impl.OWLClassNodeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,13 +63,60 @@ import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiExcepti
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Ordering;
+import com.google.common.util.concurrent.RateLimiter;
 
 /**
  * @since
  */
 public final class ReasonerTaxonomyInferrer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ReasonerTaxonomyInferrer.class);
+	// Report every ~5 minutes
+	private static final RateLimiter LOG_LIMITER = RateLimiter.create(1.0 / 300.0);
+	
+	private static class LoggingProgressMonitor implements ReasonerProgressMonitor {
+
+		private final Logger log;
+		
+		private String taskName = "<unknown task>";
+		private float completionLevel = -1.0f;
+
+		public LoggingProgressMonitor(final Logger log) {
+			this.log = log;
+		}
+
+		private void reportTask() {
+			log.info("--- Reasoner task: {} [{}]", taskName, completionLevel < 0.0f ? "--.-%" : String.format("%04.1f%%", completionLevel * 100.0f));
+		}
+
+		@Override
+		public void reasonerTaskBusy() {
+			if (LOG_LIMITER.tryAcquire()) {
+				reportTask();
+			}
+		}
+
+		@Override
+		public void reasonerTaskProgressChanged(final int value, final int max) {
+			if (value >= 0 && max > 0) {
+				this.completionLevel = (float) value / max;
+			}
+			reasonerTaskBusy(); // Apply rate limiting
+		}
+
+		@Override
+		public void reasonerTaskStarted(final String taskName) {
+			this.taskName = (taskName == null) ? "<unknown task>" : taskName;
+			this.completionLevel = -1.0f;
+			reportTask(); // No rate limiting for started reasoner tasks
+		}
+
+		@Override
+		public void reasonerTaskStopped() {
+			// We are not interested in stopped reasoner tasks
+		}
+	}
+
+	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner-taxonomy-inferrer");
 
 	public static final long DEPTH_CHANGE = -1L;
 	
@@ -80,10 +129,11 @@ public final class ReasonerTaxonomyInferrer {
 
 	private static final String PRECOMPUTE_PROPERTY = "com.b2international.snowowl.snomed.reasoner.precomputeInferences";
 
+	private final String reasonerId;
 	private final DelegateOntology ontology;
-	private final OWLReasoner reasoner;
 	private final BranchContext branchContext;
 
+	private OWLReasoner reasoner;
 	// owl:Nothing should only be considered once
 	private boolean nothingVisited = false;
 	private LongSet processedConceptIds;
@@ -122,7 +172,8 @@ public final class ReasonerTaxonomyInferrer {
 				}
 
 				final OWLReasonerFactory reasonerFactory = reasonerInfo.getReasonerFactory();
-				return reasonerFactory.createNonBufferingReasoner(owlOntology);
+				final OWLReasonerConfiguration reasonerConfiguration = reasonerInfo.getConfiguration(new LoggingProgressMonitor(LOGGER));
+				return reasonerFactory.createNonBufferingReasoner(owlOntology, reasonerConfiguration);
 			}
 		}
 
@@ -130,13 +181,13 @@ public final class ReasonerTaxonomyInferrer {
 	}
 
 	public ReasonerTaxonomyInferrer(final String reasonerId, final DelegateOntology ontology, final BranchContext branchContext) {
+		this.reasonerId = reasonerId;
 		this.ontology = ontology;
-		this.reasoner = createReasoner(reasonerId, ontology);
 		this.branchContext = branchContext;
 	}
 
 	public ReasonerTaxonomy addInferences(final ReasonerTaxonomy taxonomy) {
-		LOGGER.info(">>> Taxonomy extraction");
+		LOGGER.info(">>> Classification and inferred taxonomy extraction");
 
 		try {
 			final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -145,6 +196,7 @@ public final class ReasonerTaxonomyInferrer {
 			Deque<Node<OWLClass>> secondLayer = new LinkedList<Node<OWLClass>>();
 			final Set<Node<OWLClass>> deferredNodes = newHashSet();
 			
+			reasoner = createReasoner(reasonerId, ontology);
 			if (Boolean.getBoolean(PRECOMPUTE_PROPERTY)) {
 				reasoner.precomputeInferences(InferenceType.CLASS_HIERARCHY);
 			}
@@ -186,7 +238,7 @@ public final class ReasonerTaxonomyInferrer {
 
 			processedConceptIds = null;
 
-			LOGGER.info("<<< Taxonomy extraction [{}]", stopwatch.stop());
+			LOGGER.info("<<< Classification and inferred taxonomy extraction [{}]", stopwatch.stop());
 
 			return taxonomy.withInferences(inferredAncestors.build(), 
 					unsatisfiableConcepts.build(), 

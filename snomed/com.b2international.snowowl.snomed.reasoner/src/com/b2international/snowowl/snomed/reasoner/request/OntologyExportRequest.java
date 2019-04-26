@@ -23,15 +23,15 @@ import java.util.concurrent.ForkJoinTask;
 
 import javax.validation.constraints.NotNull;
 
-import org.coode.owlapi.manchesterowlsyntax.ManchesterOWLSyntaxOntologyFormat;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.io.OWLFunctionalSyntaxOntologyFormat;
-import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
+import org.semanticweb.owlapi.formats.FunctionalSyntaxDocumentFormat;
+import org.semanticweb.owlapi.formats.ManchesterSyntaxDocumentFormat;
+import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDocumentFormat;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyFormat;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
@@ -91,13 +91,13 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 
 		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.addOntologyFactory(new DelegateOntologyFactory(taxonomy));
+		ontologyManager.getOntologyFactories().add(new DelegateOntologyFactory(taxonomy));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + ontologyModuleId);
 
 		try {
 
 			final OWLOntology ontology = ontologyManager.createOntology(ontologyIRI);
-			final OWLOntologyFormat documentFormat = getOWLDocumentFormat();
+			final OWLDocumentFormat documentFormat = getOWLDocumentFormat();
 			final FileRegistry fileRegistry = context.service(FileRegistry.class);
 
 			final UUID id = UUID.randomUUID();
@@ -133,11 +133,11 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		return new OntologyException("Couldn't save ontology with module ID '" + ontologyModuleId + "' on branch '" + context.branchPath() + "'.", e);
 	}
 
-	private OWLOntologyFormat getOWLDocumentFormat() {
+	private OWLDocumentFormat getOWLDocumentFormat() {
 		switch (exportType) {
-			case FUNCTIONAL: return new OWLFunctionalSyntaxOntologyFormat();
-			case MANCHESTER: return new ManchesterOWLSyntaxOntologyFormat();
-			case XML: return new RDFXMLOntologyFormat();
+			case FUNCTIONAL: return new FunctionalSyntaxDocumentFormat();
+			case MANCHESTER: return new ManchesterSyntaxDocumentFormat();
+			case XML: return new RDFXMLDocumentFormat();
 			default: throw new IllegalStateException("Unexpected export type '" + exportType + "'.");
 		}
 	}

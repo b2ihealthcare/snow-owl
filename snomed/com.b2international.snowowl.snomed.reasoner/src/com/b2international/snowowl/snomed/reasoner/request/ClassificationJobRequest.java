@@ -128,7 +128,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		}
 		
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.addOntologyFactory(new DelegateOntologyFactory(taxonomy));
+		ontologyManager.getOntologyFactories().add(new DelegateOntologyFactory(taxonomy));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + Concepts.MODULE_SCT_CORE); // TODO: custom moduleId in ontology IRI?
 
 		try {
