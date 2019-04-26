@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.ecl.scoping
+package com.b2international.snowowl.snomed.ecl;
 
+import org.eclipse.xtext.conversion.IValueConverterService;
+
+import com.b2international.snowowl.snomed.ecl.converter.EclValueConverterService;
 
 /**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
+ * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
-class EclScopeProvider extends AbstractEclScopeProvider {
-
+public class EclRuntimeModule extends AbstractEclRuntimeModule {
+	
+	@Override
+	public Class<? extends IValueConverterService> bindIValueConverterService() {
+		return EclValueConverterService.class;
+	}
+	
 }
