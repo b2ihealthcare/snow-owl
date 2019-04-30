@@ -86,6 +86,21 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://b
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.14.2
+
+### Changed
+- Change `moduleId` of updated relationship or concrete domain member using the currently set module assigner algorithm (#341)
+- Redirect Elasticsearch log messages to SLF4J logger instead of logging to stdout (86fdc02)  
+
+### Bugs
+- Fix incorrect parent/ancestor array values on inactive SNOMED CT Concepts (#343)
+- Fix random code system allocation bug in e2e SNOMED CT test cases (03b6001)
+
+## 6.14.1
+
+### Bugs
+- Fix issue with SNOMED CT RF2 Snapshot file imports (c2a5bcd)
+
 ## 6.14.0
 
 ### Added

@@ -51,7 +51,7 @@ public class OntologyCommand extends Command {
 		header = "Lists all registered reasoners on the server.",
 		description = ""
 	)
-	public class ListCommand extends Command {
+	public static class ListCommand extends Command {
 
 		@Override
 		public void run(CommandLineStream out) {

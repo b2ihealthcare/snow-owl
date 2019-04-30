@@ -89,6 +89,8 @@ public final class RelationshipChangeConverter
 		
 		// Released flag is the "origin" relationship's released state for updated and redundant relationships, false for new relationships
 		relationship.setReleased(entry.isReleased());
+		// All three change nature literals require the sourceId to be set, because we might need to update the moduleId based on the source concept
+		relationship.setSourceId(entry.getSourceId());
 		
 		switch (entry.getNature()) {
 			case NEW:
@@ -101,7 +103,6 @@ public final class RelationshipChangeConverter
 				 * 
 				 * The values will be different on the "origin" relationship, so make note of these here.
 				 */
-				relationship.setSourceId(entry.getSourceId());
 				relationship.setGroup(entry.getGroup());
 				relationship.setUnionGroup(entry.getUnionGroup());
 				relationship.setCharacteristicType(CharacteristicType.getByConceptId(entry.getCharacteristicTypeId()));

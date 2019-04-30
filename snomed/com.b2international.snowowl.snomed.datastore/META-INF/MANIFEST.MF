@@ -25,7 +25,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.snomed.otf.snomed-owl-toolkit;bundle-version="2.3.1",
  org.eclipse.core.resources,
  com.b2international.snowowl.snomed.ql,
- org.eclipse.xtext.xbase.lib
+ org.eclipse.xtext.xbase.lib,
+ com.b2international.snowowl.snomed.icons;bundle-version="6.15.0"
 Export-Package: com.b2international.snowowl.snomed.core.domain,
  com.b2international.snowowl.snomed.core.domain.constraint,
  com.b2international.snowowl.snomed.core.domain.refset,

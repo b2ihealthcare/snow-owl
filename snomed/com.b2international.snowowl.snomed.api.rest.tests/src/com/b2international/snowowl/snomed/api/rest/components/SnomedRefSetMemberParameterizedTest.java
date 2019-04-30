@@ -310,7 +310,6 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		// create the previous revision of the member
 		final String memberId = createRefSetMember();
 
-		// version it
 		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
 		createVersion(shortName, effectiveTime, effectiveTime).statusCode(201);
 

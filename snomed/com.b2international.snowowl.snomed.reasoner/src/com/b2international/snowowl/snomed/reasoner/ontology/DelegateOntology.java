@@ -62,6 +62,7 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLPropertyExpression;
+import org.semanticweb.owlapi.model.OWLPropertyRange;
 import org.semanticweb.owlapi.model.OWLQuantifiedObjectRestriction;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
@@ -129,14 +130,14 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			HAS_ACTIVE_INGREDIENT);
 
 	private static final Joiner NEWLINE_JOINER = Joiner.on('\n');
-
+	
 	private static final String PARSED_ONTOLOGY_START = NEWLINE_JOINER.join(
 			"Prefix(:=<http://snomed.info/id/>)",
 			"Prefix(sct:=<http://snomed.info/id/>)",
 			"Prefix(sctm:=<http://snomed.info/sct/>)",
 			"Prefix(so:=<http://b2international.com/so/>)",
 			"Ontology(");
-
+	
 	private static final String PARSED_ONTOLOGY_END = ")";
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("ontology");
@@ -206,7 +207,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		}
 	}
 
-	private final class SubPropertyOfAxiomIterator<P extends OWLPropertyExpression, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
+	private final class SubPropertyOfAxiomIterator<R extends OWLPropertyRange, P extends OWLPropertyExpression, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
 		private final long attributeRootId;
 		private final LongIterator childIterator;
 		private final LongFunction<P> propertyFactory;
@@ -298,6 +299,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private final class FunctionalSyntaxAxiomIterator extends AbstractIterator<OWLLogicalAxiom> {
+		
 		private final Iterator<String> axiomIterator;
 		
 		public FunctionalSyntaxAxiomIterator(final Stream<String> axiomStream) {
@@ -311,11 +313,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			}
 			
 			final String axiomString = axiomIterator.next();
-			
 			OWLOntology singleAxiomOntology = null;
 			
 			try {
-				
+
 				final OWLOntologyDocumentSource singleAxiomOntologySource = new StringDocumentSource(PARSED_ONTOLOGY_START + axiomString + PARSED_ONTOLOGY_END);
 				singleAxiomOntology = getOWLOntologyManager().loadOntologyFromOntologyDocument(singleAxiomOntologySource);
 				final Set<OWLLogicalAxiom> logicalAxioms = singleAxiomOntology.getLogicalAxioms();
@@ -391,12 +392,12 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			this.neverGroupedIds = PRE_2018_NEVER_GROUPED_TYPE_IDS;
 		}
 	}
-
+	
 	@Override
 	protected int index() {
 		return OWLObjectTypeIndexProvider.ONTOLOGY;
 	}
-	
+
 	@Override
 	protected int compareObjectOfSameType(final OWLObject object) {
 		if (object == this) {
@@ -444,7 +445,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	public final <O> O accept(final OWLNamedObjectVisitorEx<O> visitor) {
 		return visitor.visit(this);
 	}
-
+	
 	@Override
 	public final void accept(final OWLObjectVisitor visitor) {
 		visitor.visit(this);

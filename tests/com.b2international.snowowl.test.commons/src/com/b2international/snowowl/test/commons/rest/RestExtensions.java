@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,12 +41,16 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+
 import io.restassured.RestAssured;
+import io.restassured.config.ConnectionConfig;
+import io.restassured.config.HttpClientConfig;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
 import io.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 
 /**
@@ -104,14 +108,18 @@ public class RestExtensions {
 			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 			
 			// add custom 
-			ObjectMapper mapper = new ObjectMapper();
+			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new GuavaModule());
-			RestAssuredConfig.config().objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
-				@Override
-				public ObjectMapper create(Type arg0, String arg1) {
-					return mapper;
-				}
-			}));
+			
+			System.setProperty("http.maxConnections","100");
+			RestAssuredConfig.config()
+				.objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
+					public ObjectMapper create(Type arg0, String arg1) {
+						return mapper;
+					}
+				}))
+				.connectionConfig(ConnectionConfig.connectionConfig().closeIdleConnectionsAfterEachResponse())
+    			.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance());
 			
 			// add the user to the current identity provider
 			try {
@@ -182,14 +190,14 @@ public class RestExtensions {
 		return jettyPortProp != null ? Integer.valueOf(jettyPortProp) : 8080;
 	}
 	
-	public static void expectStatus(Response it, int expectedStatus) {
+	public static ValidatableResponse expectStatus(Response it, int expectedStatus) {
 		if (it.statusCode() != expectedStatus) {
 			System.err.println("Web server may reject your request, check access log");
 			System.err.println("Headers: " + it.headers());
 			System.err.println("Content-Type: " + it.getContentType());
 			System.err.println("Body: " + it.body().asString());
 		}
-		it.then().statusCode(expectedStatus);
+		return it.then().statusCode(expectedStatus);
 	}
 	
 	public static String lastPathSegment(String path) {

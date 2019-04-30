@@ -22,6 +22,7 @@
 		<module>com.b2international.snowowl.snomed.api.rest.feature</module>
 		
 		<!-- SNOMED CT Core modules -->
+		<module>com.b2international.snowowl.snomed.icons</module>
 		<module>com.b2international.snowowl.snomed.common</module>
 		<module>com.b2international.snowowl.snomed.datastore</module>
 		<module>com.b2international.snowowl.snomed.datastore.tests</module>
@@ -30,15 +31,7 @@
 		<module>com.b2international.snowowl.snomed.reasoner</module>
 		<module>com.b2international.snowowl.snomed.reasoner.tests</module>
 		
-		<!-- SNOMED CT SemanticEngine -->
-<!-- 		<module>com.b2international.snowowl.snomed.semanticengine</module> -->
-<!-- 		<module>com.b2international.snowowl.snomed.semanticengine.test</module> -->
-<!-- 		<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module> -->
-<!-- 		<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module> -->
-		
 		<!-- SNOMED CT DSLs -->
-<!-- 		<module>com.b2international.snowowl.snomed.dsl</module> -->
-<!-- 		<module>com.b2international.snowowl.snomed.scg</module> -->
 		<module>com.b2international.snowowl.snomed.ecl</module>
 		<module>com.b2international.snowowl.snomed.ql</module>
 		<module>com.b2international.snowowl.snomed.ecl.tests</module>
@@ -52,5 +45,20 @@
 		<!-- SNOMED CT FHIR API Support -->
 		<module>com.b2international.snowowl.snomed.fhir</module>
 	</modules>
+	
+	<profiles>
+		<profile>
+      		<id>extras</id>
+      		<modules>
+				<!-- SNOMED CT SemanticEngine -->
+				<module>com.b2international.snowowl.snomed.semanticengine</module>
+				<module>com.b2international.snowowl.snomed.semanticengine.test</module>
+				<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module>
+				<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module>
+				<module>com.b2international.snowowl.snomed.scg</module>
+				<module>com.b2international.snowowl.snomed.dsl</module>
+      		</modules>
+    	</profile>
+	</profiles>
 	
 </project>

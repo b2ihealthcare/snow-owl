@@ -194,8 +194,6 @@ public final class Taxonomies {
 	private static void updateConcept(SnomedConceptDocument concept, TaxonomyGraph graphToUpdate) {
 		if (concept.isActive()) {
 			graphToUpdate.addNode(concept.getId());
-		} else {
-			graphToUpdate.removeNode(concept.getId());
 		}
 	}
 

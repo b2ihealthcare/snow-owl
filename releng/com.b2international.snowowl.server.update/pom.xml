@@ -21,6 +21,11 @@
   			<artifactId>sshd-core</artifactId>
   			<version>0.14.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.semanticweb.elk</groupId>
+			<artifactId>elk-protege</artifactId>
+			<version>${elk.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -73,7 +73,9 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 				.map(this::toResource)
 				.collect(Collectors.toList());
 		
-		expand(results);
+		if (!results.isEmpty()) {
+			expand(results);
+		}
 		
 		return createCollectionResource(results, scrollId, searchAfter, limit, total);
 	}
