@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.dependencies;singleton:=true
 Bundle-Version: 6.15.0.qualifier
 Bundle-ClassPath: lib/poi-3.7-20101029.jar,
  lib/poi-ooxml-3.7-20101029.jar,
- lib/poi-ooxml-schemas-3.7-20101029.jar,
+ lib/ooxml-schemas-1.1.jar,
  lib/xpp3-1.1.4c.jar,
  .
 Export-Package: org.apache.poi,
