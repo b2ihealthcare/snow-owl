@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.admin.AbstractAdminRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
@@ -106,11 +105,13 @@ public class ValidationRestService extends AbstractAdminRestService {
 			.buildAsync()
 			.execute(bus)
 			.then(jobs -> {
-				final List<RemoteJobEntry> validationJobs = jobs.stream().filter(ValidationRequests::isValidationJob).collect(Collectors.toList());
+				final List<RemoteJobEntry> validationJobs = jobs.stream()
+						.filter(ValidationRequests::isValidationJob)
+						.map(entry -> RemoteJobEntry.from(entry).id(getHash(entry.getId())).build())
+						.collect(Collectors.toList());
 				return new RemoteJobs(validationJobs, null, null, jobs.getLimit(), validationJobs.size());
 			}));
 	}
-	
 	
 	@ApiOperation(
 			value="Start a validation on a branch",
@@ -127,11 +128,10 @@ public class ValidationRestService extends AbstractAdminRestService {
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> beginValidation(
+	public DeferredResult<ResponseEntity<URI>> beginValidation(
 			@ApiParam(value="Validation parameters")
 			@RequestBody 
 			final ValidationRestInput validationInput,
-
 			final Principal principal) {
 
 		final String codeSystemShortName = validationInput.codeSystemShortName();
@@ -161,12 +161,11 @@ public class ValidationRestService extends AbstractAdminRestService {
 					.buildAsync()
 					.execute(bus);
 			} else {
-				return DeferredResults.wrap(Promise.immediate(Responses.status(HttpStatus.CONFLICT).build()));
+				return DeferredResults.wrap(Promise.immediate(Responses.status(HttpStatus.CONFLICT).build(null)));
 			}
 		} else {
 			deleteValidationJobPromise = Promise.immediate(Boolean.TRUE);
 		}
-		
 		
 		final ControllerLinkBuilder linkBuilder = linkTo(ValidationRestService.class)
 				.slash("validations");
@@ -193,11 +192,10 @@ public class ValidationRestService extends AbstractAdminRestService {
 				final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
 				
 				final URI responseURI = linkBuilder.slash(encodedId).toUri();
-				return Responses.created(responseURI).build();
-				
+				return Responses.created(responseURI).build(responseURI);
 			})
 			.fail(e -> {
-				return Responses.status(HttpStatus.BAD_REQUEST).build();
+				return Responses.status(HttpStatus.BAD_REQUEST).build(null);
 			}));
 	}
 	
@@ -220,7 +218,6 @@ public class ValidationRestService extends AbstractAdminRestService {
 			} else {
 				throw new NotFoundException("Validation job", validationId);
 			}
-			
 	}
 
 	@ApiOperation(
@@ -257,6 +254,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 			final String branchPath = getBranchFromJob(validationJob);
 			
 			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+					.isWhitelisted(false)
 					.setLimit(limit)
 					.setScrollId(scrollId)
 					.setScroll(scrollKeepAlive)
@@ -267,8 +265,6 @@ public class ValidationRestService extends AbstractAdminRestService {
 		} else {
 			throw new NotFoundException("Validation job", validationId);
 		}
-		
-		
 	}
 
 	@ApiOperation(
@@ -289,6 +285,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 			final String branchPath = getBranchFromJob(validationJob);
 			
 			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+					.isWhitelisted(false)
 					.all()
 					.filterByBranchPath(branchPath)
 					.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
@@ -356,10 +353,9 @@ public class ValidationRestService extends AbstractAdminRestService {
 			.stream()
 			.filter(ValidationRequests::isValidationJob)
 			.filter(validationJob -> {
-				final String encodedId = Hashing.sha1().hashString(validationJob.getId(), Charsets.UTF_8).toString().substring(0, 7);
-				
-				return validationId.equals(encodedId);
-			}).findFirst().orElse(null);
+				return validationId.equals(getHash(validationJob.getId()));
+			}).map(validationJob -> RemoteJobEntry.from(validationJob).id(validationId).build())
+			.findFirst().orElse(null);
 		
 	}
 	
@@ -370,4 +366,7 @@ public class ValidationRestService extends AbstractAdminRestService {
 		return branchPath;
 	}
 	
+	private String getHash(String validationId) {
+		return Hashing.sha1().hashString(validationId, Charsets.UTF_8).toString().substring(0, 7);
+	}
 }

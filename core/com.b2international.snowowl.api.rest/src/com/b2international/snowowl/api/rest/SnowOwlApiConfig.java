@@ -163,7 +163,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.setVisibility(PropertyAccessor.CREATOR, Visibility.ANY);
 		objectMapper.registerModule(new GuavaModule());
-		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
+		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		final ISO8601DateFormat df = new ISO8601DateFormat();
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		objectMapper.setDateFormat(df);
