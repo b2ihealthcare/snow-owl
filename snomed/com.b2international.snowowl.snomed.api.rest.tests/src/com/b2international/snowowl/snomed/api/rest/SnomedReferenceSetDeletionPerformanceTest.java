@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.databene.contiperf.PerfTest;
+import org.databene.contiperf.Required;
 import org.databene.contiperf.junit.ContiPerfRule;
 import org.databene.contiperf.junit.ContiPerfRuleExt;
 import org.junit.Rule;
@@ -53,7 +54,8 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 	public ContiPerfRule rule = new ContiPerfRuleExt();
 	
 	@Test
-	@PerfTest(duration = 30000) // miliseconds
+	@PerfTest(invocations = 1)
+	@Required(totalTime = 10000) // max 10 seconds to execute large refset deletion tests, but this should not take longer than 5-6 sec
 	public void testLargeReferenceSetDeletion() {
 		final String refSetId = createNewRefSet(branchPath);
  		final Set<String> conceptIds = generateConceptIds(CONCEPT_CREATION_LIMIT);
