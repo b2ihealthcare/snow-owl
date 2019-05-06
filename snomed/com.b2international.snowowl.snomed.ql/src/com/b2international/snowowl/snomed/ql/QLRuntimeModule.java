@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.ql;
 
+import org.eclipse.xtext.conversion.IValueConverterService;
+
+import com.b2international.snowowl.snomed.ecl.converter.EclValueConverterService;
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
@@ -36,6 +39,11 @@ import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
  */
 public class QLRuntimeModule extends AbstractQLRuntimeModule {
 
+	@Override
+	public Class<? extends IValueConverterService> bindIValueConverterService() {
+		return EclValueConverterService.class;
+	}
+	
 	public static Domain getDomain(Filter constraint) {
 		final Domain domain = getDomainInternal(constraint);
 		return domain == null ? Domain.CONCEPT : domain;
