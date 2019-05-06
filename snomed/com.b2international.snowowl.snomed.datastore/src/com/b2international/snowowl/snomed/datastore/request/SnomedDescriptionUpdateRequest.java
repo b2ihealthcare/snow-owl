@@ -157,7 +157,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			updateAssociationTargets(context, newAssociationTargets);
 			return true;
 			
-		} else if (!currentStatus && !newStatus) {
+		} else if (currentStatus == newStatus) {
 			
 			// Inactive --> Inactive: update indicator and/or association targets if required
 			// (using original values that can be null)

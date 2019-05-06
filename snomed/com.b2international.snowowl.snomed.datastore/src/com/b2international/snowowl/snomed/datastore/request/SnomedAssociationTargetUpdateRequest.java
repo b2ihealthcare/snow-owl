@@ -167,6 +167,7 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 
 				existingMember.setTargetComponentId(newTargetId);
 				ensureMemberActive(context, existingMember);
+				updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
 
 			} else {
 				
