@@ -88,7 +88,7 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 	private final String componentId;
 	private final Class<C> componentType;
 	private final String inactivationRefSetId;
-
+	
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
 		public String load(final TransactionContext context) throws Exception {
@@ -155,6 +155,7 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 				existingMember.setValueId(inactivationValueId);
 				ensureMemberActive(context, existingMember);
+				updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
 				
 			} else /* if (CLEAR.equals(inactivationValueId) */ {
 				
