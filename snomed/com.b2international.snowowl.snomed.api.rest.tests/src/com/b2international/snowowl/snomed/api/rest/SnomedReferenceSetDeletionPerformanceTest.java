@@ -55,7 +55,7 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 	
 	@Test
 	@PerfTest(invocations = 1)
-	@Required(totalTime = 10000) // max 10 seconds to execute large refset deletion tests, but this should not take longer than 5-6 sec
+	@Required(totalTime = 30000) // max 10 seconds to execute large refset deletion tests, but this should not take longer than 5-6 sec
 	public void testLargeReferenceSetDeletion() {
 		final String refSetId = createNewRefSet(branchPath);
  		final Set<String> conceptIds = generateConceptIds(CONCEPT_CREATION_LIMIT);
