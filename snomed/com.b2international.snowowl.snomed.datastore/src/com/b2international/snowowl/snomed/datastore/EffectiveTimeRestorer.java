@@ -134,7 +134,7 @@ public final class EffectiveTimeRestorer {
 		}
 	}
 	
-	private boolean canRestoreEffectiveTime(EObject componentToRestore, Object previousVersion) {
+	private boolean canRestoreEffectiveTime(EObject componentToRestore, IComponent previousVersion) {
 		if (componentToRestore instanceof Component && previousVersion instanceof SnomedCoreComponent) {
 			if (componentToRestore instanceof Concept && previousVersion instanceof SnomedConcept) {
 				final Concept conceptToRestore = (Concept) componentToRestore;
@@ -173,7 +173,7 @@ public final class EffectiveTimeRestorer {
 						&& memberToRestore.getTargetComponentId().equals(((SnomedConcept) previousMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId());
 			} else if(componentToRestore instanceof SnomedAttributeValueRefSetMember) {
 				final SnomedAttributeValueRefSetMember memberToRestore = (SnomedAttributeValueRefSetMember) componentToRestore;
-						return memberToRestore.isActive() == previousMember.isActive()
+				return memberToRestore.isActive() == previousMember.isActive()
 						&& memberToRestore.getModuleId().equals(previousMember.getModuleId())
 						&& memberToRestore.getValueId().equals((String) previousMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID));
 			} else if (componentToRestore instanceof SnomedConcreteDataTypeRefSetMember) {
