@@ -156,6 +156,11 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	public CharacteristicType getCharacteristicType() {
 		return characteristicType;
 	}
+	
+	@JsonIgnore
+	public String getModifierId() {
+		return getModifier() == null ? null : getModifier().getConceptId();
+	}
 
 	/**
 	 * Returns the relationship's modifier value.
