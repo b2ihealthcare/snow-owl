@@ -36,7 +36,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 	
 	@Override
 	protected Request<TransactionContext, ?> getBody() {
-		return new SnomedBulkRequest<>(super.getBody());
+		return new IdRequest<>(new SnomedBulkRequest<>(super.getBody()));
 	}
 	
 	@Override
@@ -46,9 +46,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 				new HealthCheckingRequest<>(
 					new BranchRequest<>(branch,
 						new RevisionIndexReadRequest<>(
-							new IdRequest<>(
-								build()
-							)
+							build()
 						)
 					),
 					allowedHealthstates()
