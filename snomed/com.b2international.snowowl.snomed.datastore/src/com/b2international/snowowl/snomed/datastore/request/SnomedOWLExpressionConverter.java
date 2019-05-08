@@ -89,7 +89,7 @@ public final class SnomedOWLExpressionConverter {
 			
 			return new SnomedOWLExpressionConverterResult(gci ? null : axiomRelationships, gci ? axiomRelationships : null);
 		} catch (Exception e) {
-			LOG.error("Failed to convert OWL axiom to relationship representations for concept " + referencedComponentId, e);
+			LOG.error("Failed to convert OWL axiom '{}' to relationship representations for concept '{}'", owlExpression, referencedComponentId, e);
 			return SnomedOWLExpressionConverterResult.EMPTY;
 		}
 	}
