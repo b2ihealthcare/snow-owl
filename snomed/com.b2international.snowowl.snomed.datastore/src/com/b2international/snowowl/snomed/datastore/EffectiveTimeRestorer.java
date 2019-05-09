@@ -159,8 +159,8 @@ public final class EffectiveTimeRestorer {
 						&& relationshipToRestore.getModule().getId().equals(previousRelationship.getModuleId())
 						&& relationshipToRestore.getGroup() == previousRelationship.getGroup().intValue() 
 						&& relationshipToRestore.getUnionGroup() == previousRelationship.getUnionGroup().intValue() 
-						&& relationshipToRestore.getCharacteristicType().getId().equals(previousRelationship.getCharacteristicTypeId())
-						&& relationshipToRestore.getModifier().getId().equals(previousRelationship.getModifierId());	
+						&& relationshipToRestore.getCharacteristicType().getId().equals(previousRelationship.getCharacteristicType().getConceptId())
+						&& relationshipToRestore.getModifier().getId().equals(previousRelationship.getModifier().getConceptId());	
 				
 			} else {
 				throw new UnexpectedTypeException("Unexpected component type '" + componentToRestore.getClass() + "'.");
