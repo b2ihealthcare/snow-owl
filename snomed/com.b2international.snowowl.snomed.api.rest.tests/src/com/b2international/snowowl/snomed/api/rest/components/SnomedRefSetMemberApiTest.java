@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -360,7 +361,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "owl expression")
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
 				.put("commitComment", "Created new OWL Axiom reference set member")
 				.build();
 
@@ -386,7 +387,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "owl expression")
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
 				.put("commitComment", "Created new OWL Ontology reference set member")
 				.build();
 
