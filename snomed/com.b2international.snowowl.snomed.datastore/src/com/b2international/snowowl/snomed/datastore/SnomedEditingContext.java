@@ -787,7 +787,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			}
 		}
 		
-		effectiveTimeRestorer.restoreEffectiveTimes(transaction.getChangeSetData().getChangedObjects().stream().map(cdoKey -> transaction.getObject(cdoKey.getID()))::iterator, getBranch());
+		final long branchBaseTimestamp = getTransaction().getBranch().getBase().getTimeStamp();
+		effectiveTimeRestorer.restoreEffectiveTimes(transaction.getChangeSetData().getChangedObjects().stream().map(cdoKey -> transaction.getObject(cdoKey.getID()))::iterator, getBranch(), branchBaseTimestamp);
 	}
 
 	private Set<SnomedRefSetMember> getReferringRefSetMembers(Iterable<String> deletedIds) {
