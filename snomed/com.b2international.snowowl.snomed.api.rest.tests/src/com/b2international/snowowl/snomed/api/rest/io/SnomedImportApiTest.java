@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
