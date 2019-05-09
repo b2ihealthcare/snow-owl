@@ -232,7 +232,11 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		inactivateConcept(branchPath, conceptId);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("active", equalTo(false));
+			.body("active", equalTo(false))
+			.body("parentIds", equalTo(ImmutableList.of(-1)))
+			.body("ancestorIds", equalTo(ImmutableList.of()))
+			.body("statedParentIds", equalTo(ImmutableList.of(-1)))
+			.body("statedAncestorIds", equalTo(ImmutableList.of()));
 	}
 
 	@Test

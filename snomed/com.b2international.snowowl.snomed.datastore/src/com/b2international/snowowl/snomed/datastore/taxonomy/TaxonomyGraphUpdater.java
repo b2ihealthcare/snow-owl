@@ -215,15 +215,9 @@ public class TaxonomyGraphUpdater {
 					throw new RuntimeException("Unknown old value type: " + delta.getOldValue());
 				}
 				final Boolean newValue = (Boolean) delta.getValue();
-				if (Boolean.TRUE == oldValue && Boolean.FALSE == newValue) {
-					//nothing can be dirty and new at the same time
-					//we do not need this concept. either it was deactivated now or sometime earlier.
-					graphToUpdate.removeNode(dirtyConcept.getId());
-				} else if (Boolean.FALSE == oldValue && Boolean.TRUE == newValue) {
-					//consider reverting inactivation
-					if (!graphToUpdate.containsNode(Long.parseLong(dirtyConcept.getId()))) {
-						updateConcept(dirtyConcept, graphToUpdate);
-					}
+				if (Boolean.FALSE == oldValue && Boolean.TRUE == newValue) {
+					// make sure the node is part of the new tree
+					graphToUpdate.addNode(dirtyConcept.getId());
 				}
 			}
 		}
