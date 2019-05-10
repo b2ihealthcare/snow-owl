@@ -337,7 +337,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the stated parents as String values
 	 */
-	@JsonProperty("statedAncestorIds")
+	@JsonProperty("statedParentIds")
 	public List<String> getStatedParentIdsAsString() {
 		return Arrays.stream(statedParentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
