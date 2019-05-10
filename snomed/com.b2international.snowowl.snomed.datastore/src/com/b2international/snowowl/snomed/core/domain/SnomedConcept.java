@@ -291,7 +291,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 */
 	@JsonProperty("ancestorIds")
 	public List<String> getAncestorIdsAsString() {
-		return Arrays.stream(ancestorIds).mapToObj(Long::toString).collect(Collectors.toList());
+		return ancestorIds == null ? null : Arrays.stream(ancestorIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 
 	/**
@@ -307,7 +307,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 */
 	@JsonProperty("parentIds")
 	public List<String> getParentIdsAsString() {
-		return Arrays.stream(parentIds).mapToObj(Long::toString).collect(Collectors.toList());
+		return parentIds == null ? null : Arrays.stream(parentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 
 	/**
@@ -323,7 +323,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 */
 	@JsonProperty("statedAncestorIds")
 	public List<String> getStatedAncestorIdsAsString() {
-		return Arrays.stream(statedAncestorIds).mapToObj(Long::toString).collect(Collectors.toList());
+		return statedAncestorIds == null ? null : Arrays.stream(statedAncestorIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 	
 	/**
@@ -339,7 +339,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 */
 	@JsonProperty("statedParentIds")
 	public List<String> getStatedParentIdsAsString() {
-		return Arrays.stream(statedParentIds).mapToObj(Long::toString).collect(Collectors.toList());
+		return statedParentIds == null ? null : Arrays.stream(statedParentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 	
 	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
@@ -398,20 +398,44 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		this.statedDescendants = statedDescendants;
 	}
 	
+	@JsonIgnore
 	public void setAncestorIds(final long[] ancestorIds) {
 		this.ancestorIds = ancestorIds;
 	}
 	
+	@JsonProperty
+	public void setAncestorIds(final List<String> ancestorIds) {
+		this.ancestorIds = ancestorIds == null ? null : ancestorIds.stream().mapToLong(Long::parseLong).toArray();
+	}
+	
+	@JsonIgnore
 	public void setParentIds(final long[] parentIds) {
 		this.parentIds = parentIds;
 	}
 	
+	@JsonProperty
+	public void setParentIds(final List<String> parentIds) {
+		this.parentIds = parentIds == null ? null : parentIds.stream().mapToLong(Long::parseLong).toArray();
+	}
+	
+	@JsonIgnore
 	public void setStatedAncestorIds(final long[] statedAncestorIds) {
 		this.statedAncestorIds = statedAncestorIds;
 	}
 	
+	@JsonProperty
+	public void setStatedAncestorIds(final List<String> statedAncestorIds) {
+		this.statedAncestorIds = statedAncestorIds == null ? null : statedAncestorIds.stream().mapToLong(Long::parseLong).toArray();
+	}
+	
+	@JsonIgnore
 	public void setStatedParentIds(final long[] statedParentIds) {
 		this.statedParentIds = statedParentIds;
+	}
+	
+	@JsonProperty
+	public void setStatedParentIds(final List<String> statedParentIds) {
+		this.statedParentIds = statedParentIds == null ? null : statedParentIds.stream().mapToLong(Long::parseLong).toArray();
 	}
 	
 	public void setReferenceSet(SnomedReferenceSet referenceSet) {
