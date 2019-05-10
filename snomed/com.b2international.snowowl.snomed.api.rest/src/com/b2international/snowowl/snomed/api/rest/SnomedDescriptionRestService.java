@@ -57,6 +57,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableSet;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -111,6 +112,14 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The type ECL expression to match")
 			@RequestParam(value="type", required=false) 
 			final String typeFilter,
+			
+			@ApiParam(value="The case significance ECL expression to match")
+			@RequestParam(value="caseSignificance", required=false) 
+			final String caseSignificanceFilter,
+
+			@ApiParam(value="Semantic tag(s) to match")
+			@RequestParam(value="semanticTag", required=false)
+			final String[] semanticTag,
 			
 			@ApiParam(value="The acceptability to match. DEPRECATED! Use acceptableIn or preferredIn!")
 			@RequestParam(value="acceptability", required=false) 
@@ -169,9 +178,11 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final SnomedDescriptionSearchRequestBuilder req = SnomedRequests
 			.prepareSearchDescription()
 			.filterByActive(activeFilter)
+			.filterBySemanticTags(semanticTag == null ? null : ImmutableSet.copyOf(semanticTag))
 			.filterByModule(moduleFilter)
 			.filterByNamespace(namespaceFilter)
 			.filterByConcept(conceptFilter)
+			.filterByCaseSignificance(caseSignificanceFilter)
 			.filterByTerm(termFilter)
 			.filterByType(typeFilter);
 

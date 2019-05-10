@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT concepts.
@@ -83,8 +84,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	}
 
 	/**
-	 * Filters the concepts based on the type of its descriptions where the description type is specified by concept ID 
-	 * representing the type. E.g.: "900000000000003001" for <i>Fully Specified Name</i>.
+	 * Filters the concepts based on the type of its descriptions where the description type is specified by an ECL expression. 
+	 * For example: "900000000000003001" for <i>Fully Specified Name</i>.
 	 * @param description type represented by its concept ID
 	 * @return SnomedConceptSearchRequestBuilder
 	 * 
@@ -92,6 +93,17 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByDescriptionType(String type) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_TYPE, type);
+	}
+	
+	/**
+	 * Filters the concepts based on the semantic tag of its descriptions.
+	 * 
+	 * @param semanticTags
+	 * @return {@link SnomedConceptSearchRequestBuilder}
+	 * @see SnomedDescription
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByDescriptionSemanticTags(Iterable<String> semanticTags) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_SEMANTIC_TAG, semanticTags);
 	}
 
 	/**

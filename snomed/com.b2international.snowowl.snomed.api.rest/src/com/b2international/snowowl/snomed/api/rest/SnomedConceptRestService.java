@@ -50,6 +50,7 @@ import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableSet;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -120,6 +121,14 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="query", required=false) 
 			final String queryFilter,
 			
+			@ApiParam(value="Description semantic tag(s) to match")
+			@RequestParam(value="semanticTag", required=false)
+			final String[] semanticTags,
+			
+			@ApiParam(value="Description type ECL expression to match")
+			@RequestParam(value="descriptionType", required=false) 
+			final String descriptionTypeFilter,
+			
 			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
 			@RequestParam(value="scrollKeepAlive", required=false) 
 			final String scrollKeepAlive,
@@ -167,6 +176,8 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByQuery(queryFilter)
 					.filterByTerm(termFilter)
 					.filterByDescriptionLanguageRefSet(extendedLocales)
+					.filterByDescriptionType(descriptionTypeFilter)
+					.filterByDescriptionSemanticTags(semanticTags == null ? null : ImmutableSet.copyOf(semanticTags))
 					.setExpand(expand)
 					.setLocales(extendedLocales)
 					.sortBy(sortField)

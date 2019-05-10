@@ -71,6 +71,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		 * Description type to match
 		 */
 		DESCRIPTION_TYPE,
+		
+		/**
+		 * Description semantic tag(s) to match
+		 */
+		DESCRIPTION_SEMANTIC_TAG,
 
 		/**
 		 * ECL expression to match on the inferred form
@@ -287,6 +292,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);
 			requestBuilder.filterByType(type);
+		}
+		
+		if (containsKey(OptionKey.DESCRIPTION_SEMANTIC_TAG)) {
+			final Collection<String> semanticTags = getCollection(OptionKey.DESCRIPTION_SEMANTIC_TAG, String.class);
+			requestBuilder.filterBySemanticTags(semanticTags);
 		}
 		
 		if (containsKey(OptionKey.USE_FUZZY)) {
