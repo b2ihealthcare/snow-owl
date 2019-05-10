@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT Expression Constraint Language
 Bundle-Vendor: B2i Healthcare
-Bundle-Version: 6.15.0.qualifier
+Bundle-Version: 6.15.0
 Bundle-SymbolicName: com.b2international.snowowl.snomed.ecl; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext;visibility:=reexport;bundle-version="[2.11.0,2.13.0)",

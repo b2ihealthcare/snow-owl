@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SNOMED CT Query Language Module
 Bundle-Vendor: B2i Healthcare
-Bundle-Version: 6.15.0.qualifier
+Bundle-Version: 6.15.0
 Bundle-SymbolicName: com.b2international.snowowl.snomed.ql; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0",
