@@ -17,7 +17,10 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -26,6 +29,8 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 
@@ -276,29 +281,65 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the ancestors
 	 */
+	@JsonIgnore
 	public long[] getAncestorIds() {
 		return ancestorIds;
+	}
+	
+	/**
+	 * @return the concept IDs of the ancestors as String values
+	 */
+	@JsonProperty("ancestorIds")
+	public List<String> getAncestorIdsAsString() {
+		return Arrays.stream(ancestorIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 
 	/**
 	 * @return the concept IDs of the parents
 	 */
+	@JsonIgnore
 	public long[] getParentIds() {
 		return parentIds;
+	}
+	
+	/**
+	 * @return the concept IDs of the parents as String values
+	 */
+	@JsonProperty("parentIds")
+	public List<String> getParentIdsAsString() {
+		return Arrays.stream(parentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 
 	/**
 	 * @return the concept IDs of the stated ancestors
 	 */
+	@JsonIgnore
 	public long[] getStatedAncestorIds() {
 		return statedAncestorIds;
 	}
 
 	/**
+	 * @return the concept IDs of the stated ancestors as String values
+	 */
+	@JsonProperty("statedAncestorIds")
+	public List<String> getStatedAncestorIdsAsString() {
+		return Arrays.stream(statedAncestorIds).mapToObj(Long::toString).collect(Collectors.toList());
+	}
+	
+	/**
 	 * @return the concept IDs of the stated parents
 	 */
+	@JsonIgnore
 	public long[] getStatedParentIds() {
 		return statedParentIds;
+	}
+	
+	/**
+	 * @return the concept IDs of the stated parents as String values
+	 */
+	@JsonProperty("statedAncestorIds")
+	public List<String> getStatedParentIdsAsString() {
+		return Arrays.stream(statedParentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 	
 	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
