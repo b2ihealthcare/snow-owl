@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: com.b2international.snowowl.snomed.mrcm.model;singleton:=true
 Automatic-Module-Name: com.b2international.snowowl.snomed.mrcm.model
-Bundle-Version: 6.15.0
+Bundle-Version: 6.16.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
