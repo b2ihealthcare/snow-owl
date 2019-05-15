@@ -30,6 +30,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.DBMaker.Maker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -246,8 +247,9 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 	}
 
 	private DB createDb() {
+		Stopwatch w = Stopwatch.createStarted();
 		try {
-			DB db = DBMaker 
+			Maker dbMaker = DBMaker 
 					.fileDB(Files.createTempDirectory(rf2ArchiveId.toString()).resolve("rf2-import.db").toFile())
 					.fileDeleteAfterClose()
 					.fileMmapEnable()
@@ -255,16 +257,24 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 					// Unmap (release resources) file when its closed.
 					// That can cause JVM crash if file is accessed after it was unmapped
 					// (there is possible race condition).
-					.cleanerHackEnable()
+					.cleanerHackEnable();
+			
+			// for non-delta releases increase the allocation size
+			if (type != Rf2ReleaseType.DELTA) {
+				dbMaker = dbMaker
 					.allocateStartSize(256 * 1024*1024)  // 256MB
-				    .allocateIncrement(128 * 1024*1024)  // 128MB
-					.make();
+				    .allocateIncrement(128 * 1024*1024);  // 128MB
+			}
+			
+			DB db = dbMaker.make();
 			
 			// preload file content into disk cache
 			db.getStore().fileLoad();
 			return db;
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Couldn't create temporary db", e);
+		} finally {
+			System.err.println("Create MapDB db: " + w);
 		}
 	}
 
