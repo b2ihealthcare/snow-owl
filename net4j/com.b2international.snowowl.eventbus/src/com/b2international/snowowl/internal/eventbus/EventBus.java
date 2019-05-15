@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -40,6 +39,7 @@ import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
+import com.google.common.collect.MapMaker;
 
 /**
  * @since 3.1
@@ -48,18 +48,19 @@ public class EventBus extends Lifecycle implements IEventBus {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EventBus.class);
 	
-	private Set<String> addressBook = new CopyOnWriteArraySet<>();
-	private ConcurrentMap<String, ChoosableList<Handler>> protocolMap = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, ChoosableList<Handler>> handlerMap = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, AtomicLong> inQueueMessages = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, AtomicLong> currentlyProcessingMessages = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, AtomicLong> succeededMessages = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, AtomicLong> completedMessages = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, AtomicLong> failedMessages = new ConcurrentHashMap<>();
-	private ExecutorService executorService;
+	private final Set<String> addressBook = new CopyOnWriteArraySet<>();
+	private final ConcurrentMap<String, ChoosableList<Handler>> protocolMap;
+	private final ConcurrentMap<String, ChoosableList<Handler>> handlerMap ;
+	private final ConcurrentMap<String, AtomicLong> inQueueMessages;
+	private final ConcurrentMap<String, AtomicLong> currentlyProcessingMessages;
+	private final ConcurrentMap<String, AtomicLong> succeededMessages;
+	private final ConcurrentMap<String, AtomicLong> completedMessages;
+	private final ConcurrentMap<String, AtomicLong> failedMessages;
 	private final String description;
 	private final int numberOfWorkers;
 	private final ExecutorServiceFactory executorServiceFactory;
+	
+	private ExecutorService executorService;
 
 	public EventBus() {
 		this(EventBusConstants.GLOBAL_BUS, Runtime.getRuntime().availableProcessors());
@@ -71,6 +72,13 @@ public class EventBus extends Lifecycle implements IEventBus {
 		this.description = description;
 		this.numberOfWorkers = numberOfWorkers;
 		this.executorServiceFactory = numberOfWorkers == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory();
+		this.protocolMap = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
+		this.handlerMap = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
+		this.inQueueMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
+		this.currentlyProcessingMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
+		this.succeededMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
+		this.completedMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
+		this.failedMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
 	}
 
 	@Override
