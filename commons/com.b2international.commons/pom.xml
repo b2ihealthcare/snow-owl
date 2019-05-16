@@ -19,6 +19,7 @@
 		<jsr305.version>1.3.9</jsr305.version>
 		<hibernate.validator.version>5.1.1.Final</hibernate.validator.version>
 		<validation.api.version>1.1.0.Final</validation.api.version>
+		<jgrapht.version>1.3.0</jgrapht.version>
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
@@ -34,6 +35,12 @@
 		  	<artifactId>picocli</artifactId>
 		  	<version>${picocli.version}</version>
 		  	<scope>provided</scope>
+		</dependency>
+		<dependency>
+  			<groupId>org.jgrapht</groupId>
+  			<artifactId>jgrapht-core</artifactId>
+  			<version>${jgrapht.version}</version>
+  			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.flipkart.zjsonpatch</groupId>
@@ -87,7 +94,9 @@
 								LatencyUtils,
 								simpleclient_common,
 								simpleclient,
-								validation-api
+								validation-api,
+								jgrapht-core,
+								jheaps
 							</includeArtifactIds>
 							<outputDirectory>${basedir}/lib</outputDirectory>
 						</configuration>

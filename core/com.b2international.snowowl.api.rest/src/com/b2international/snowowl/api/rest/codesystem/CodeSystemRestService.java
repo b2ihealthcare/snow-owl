@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.validation.ApiValidation;
-import com.b2international.snowowl.api.codesystem.ICodeSystemService;
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.api.rest.AbstractRestService;
+import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -59,7 +57,7 @@ import io.swagger.annotations.ApiResponses;
 public class CodeSystemRestService extends AbstractRestService {
 
 	@Autowired
-	private ICodeSystemService codeSystemService;
+	private CodeSystemService codeSystemService;
 	
 	@ApiOperation(
 			value="Retrieve all code systems",
@@ -68,7 +66,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public CollectionResource<ICodeSystem> getCodeSystems() {
+	public CollectionResource<CodeSystem> getCodeSystems() {
 		return CollectionResource.of(codeSystemService.getCodeSystems());
 	}
 
@@ -80,7 +78,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{shortNameOrOid}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public ICodeSystem getCodeSystemByShortNameOrOid(
+	public CodeSystem getCodeSystemByShortNameOrOid(
 			@ApiParam(value="The code system identifier (short name or OID)")
 			@PathVariable(value="shortNameOrOid") final String shortNameOrOId) {
 		return codeSystemService.getCodeSystemById(shortNameOrOId);

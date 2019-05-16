@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.rest.classification;
 
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.beginClassification;
 import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.beginClassificationSave;
 import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.getClassificationJobId;
@@ -22,10 +25,13 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRe
 import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.getRelationshipChanges;
 import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.waitForClassificationJob;
 import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.waitForClassificationSaveJob;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeToDefining;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRelationshipRequestBody;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -104,7 +110,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		assertEquals(2, childRelationshipChanges.size());
 
 		for (RelationshipChange change : parentRelationshipChanges) {
-			assertEquals(ChangeNature.INFERRED, change.getChangeNature());
+			assertEquals(ChangeNature.NEW, change.getChangeNature());
 			switch (change.getRelationship().getTypeId()) {
 			case Concepts.IS_A:
 				assertEquals(Concepts.ROOT_CONCEPT, change.getRelationship().getDestinationId());
@@ -116,7 +122,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		}
 
 		for (RelationshipChange change : childRelationshipChanges) {
-			assertEquals(ChangeNature.INFERRED, change.getChangeNature());
+			assertEquals(ChangeNature.NEW, change.getChangeNature());
 			switch (change.getRelationship().getTypeId()) {
 			case Concepts.IS_A:
 				assertEquals(parentConceptId, change.getRelationship().getDestinationId());
@@ -173,6 +179,71 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		assertEquals(1, getPersistedInferredRelationshipCount(branchPath, childConceptId));
 	}
 
+	@Test
+	public void testRedundantRelationshipModuleChange() throws Exception {
+		
+		final String codeSystemShortName = "SNOMEDCT-CLASSIFY-RSHIPS-MOD";
+		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
+		
+		String parentConceptId = createNewConcept(branchPath);
+		String childConceptId = createNewConcept(branchPath, parentConceptId);
+		
+		// Add "regular" inferences before running the classification
+		createNewRelationship(branchPath, parentConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, parentConceptId, CharacteristicType.INFERRED_RELATIONSHIP);
+
+		// Add redundant information that should be removed
+		Map<?, ?> relationshipRequestBody = createRelationshipRequestBody(
+				childConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT,
+				Concepts.MODULE_SCT_MODEL_COMPONENT, CharacteristicType.INFERRED_RELATIONSHIP, 0)
+				.put("commitComment", "Created new relationship")
+				.build();
+
+		String redundantRelationshipId = lastPathSegment(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody)
+				.statusCode(201)
+				.body(equalTo(""))
+				.extract().header("Location"));
+		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, redundantRelationshipId)
+			.statusCode(200)
+			.body("active", equalTo(true))
+			.body("moduleId", equalTo(Concepts.MODULE_SCT_MODEL_COMPONENT));
+		
+		// Create version
+		String effectiveDate = getNextAvailableEffectiveDateAsString(codeSystemShortName);
+		createVersion(codeSystemShortName, "v1", effectiveDate).statusCode(201);
+		
+		String classificationId = getClassificationJobId(beginClassification(branchPath));
+		waitForClassificationJob(branchPath, classificationId)
+			.statusCode(200)
+			.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
+
+		RelationshipChanges changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
+				.extract()
+				.asInputStream(), RelationshipChanges.class);
+
+		assertEquals(1, changes.getTotal());
+		RelationshipChange relationshipChange = Iterables.getOnlyElement(changes);
+		assertEquals(ChangeNature.REDUNDANT, relationshipChange.getChangeNature());
+		assertEquals(childConceptId, relationshipChange.getRelationship().getSourceId());
+		assertEquals(Concepts.IS_A, relationshipChange.getRelationship().getTypeId());
+		assertEquals(Concepts.ROOT_CONCEPT, relationshipChange.getRelationship().getDestinationId());
+		assertEquals(redundantRelationshipId, relationshipChange.getRelationship().getOriginId());
+		
+		beginClassificationSave(branchPath, classificationId);
+		waitForClassificationSaveJob(branchPath, classificationId)
+			.statusCode(200)
+			.body("status", equalTo(ClassificationStatus.SAVED.name()));
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, redundantRelationshipId)
+			.statusCode(200)
+			.body("active", equalTo(false))
+			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE));
+		
+		assertEquals(1, getPersistedInferredRelationshipCount(branchPath, parentConceptId));
+		assertEquals(1, getPersistedInferredRelationshipCount(branchPath, childConceptId));
+	}
+	
 	@Test
 	public void issue_SO_2152_testGroupRenumbering() throws Exception {
 		String conceptId = createNewConcept(branchPath);
@@ -241,7 +312,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		FluentIterable<RelationshipChange> changesIterable = FluentIterable.from(changes.getItems());
 		
 		assertEquals(4, changes.getTotal());
-		assertTrue("All changes should be inferred.", changesIterable.allMatch(relationshipChange -> ChangeNature.INFERRED.equals(relationshipChange.getChangeNature())));
+		assertTrue("All changes should be inferred.", changesIterable.allMatch(relationshipChange -> ChangeNature.NEW.equals(relationshipChange.getChangeNature())));
 		
 		assertInferredIsAExists(changesIterable, childConceptId, parentConceptId);
 		assertInferredIsAExists(changesIterable, childConceptId, equivalentConceptId);

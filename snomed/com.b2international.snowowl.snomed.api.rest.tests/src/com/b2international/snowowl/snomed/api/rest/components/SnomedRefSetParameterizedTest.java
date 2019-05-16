@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,16 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConceptRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstMatchingComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getValidProperties;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET;
@@ -42,16 +44,14 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.RefSetSupport;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
+
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -59,8 +59,6 @@ import io.restassured.response.ValidatableResponse;
  */
 @RunWith(Parameterized.class)
 public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
-
-	private static final Splitter SPLITTER = Splitter.on('.');
 
 	private static final List<String> REFERENCED_COMPONENT_TYPES = ImmutableList.of(CONCEPT, DESCRIPTION, RELATIONSHIP, REFSET);
 
@@ -75,7 +73,7 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.EXTENDED_MAP					},
 			{ 	SnomedRefSetType.LANGUAGE						},
 			{ 	SnomedRefSetType.MODULE_DEPENDENCY				},
-			{ 	SnomedRefSetType.QUERY							}, 
+			//  Query type reference sets are tested separately 
 			{ 	SnomedRefSetType.SIMPLE							}, 
 			{ 	SnomedRefSetType.SIMPLE_MAP						}, 
 			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	}, 
@@ -98,17 +96,14 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 	public void acceptValidRequest() {
 		final String parentConceptId = SnomedRefSetUtil.getParentConceptId(refSetType);
 		for (String referencedComponentType : RefSetSupport.getSupportedReferencedComponentTypes(refSetType)) {
-
-			IBranchPath subPath = BranchPathUtils.createPath(branchPath, Iterables.getLast(SPLITTER.split(referencedComponentType)));
-			createBranch(subPath).statusCode(201);
-
-			String refSetId = lastPathSegment(createRefSet(subPath, parentConceptId, referencedComponentType)
+			String refSetId = lastPathSegment(createRefSet(branchPath, parentConceptId, referencedComponentType)
 					.statusCode(201)
 					.extract().header("Location"));
 
-			getComponent(subPath, SnomedComponentType.REFSET, refSetId).statusCode(200)
-			.body("type", equalTo(refSetType.name()))
-			.body("referencedComponentType", equalTo(referencedComponentType));
+			getComponent(branchPath, SnomedComponentType.REFSET, refSetId)
+				.statusCode(200)
+				.body("type", equalTo(refSetType.name()))
+				.body("referencedComponentType", equalTo(referencedComponentType));
 		}
 	}
 
@@ -137,6 +132,24 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 	public void deleteRefSet() {
 		String refSetId = createNewRefSet(branchPath, refSetType);
 		deleteComponent(branchPath, SnomedComponentType.REFSET, refSetId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.REFSET, refSetId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, refSetId).statusCode(200);
+	}
+	
+	@Test
+	public void deleteRefSetWithMember() throws Exception {
+		String componentId = getFirstMatchingComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
+
+		String refSetId = createNewRefSet(branchPath, refSetType);
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
+				.putAll(getValidProperties(refSetType))
+				.put("commitComment", "Created new reference set member")
+				.build();
+
+		final String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(201).extract().header("Location"));
+		
+		deleteComponent(branchPath, SnomedComponentType.REFSET, refSetId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.REFSET, refSetId).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, refSetId).statusCode(200);
 	}

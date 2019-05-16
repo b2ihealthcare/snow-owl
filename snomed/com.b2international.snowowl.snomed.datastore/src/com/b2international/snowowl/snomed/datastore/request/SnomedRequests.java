@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
+import com.b2international.snowowl.snomed.core.ql.SnomedQueryEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -49,7 +50,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
-import com.b2international.snowowl.snomed.datastore.request.xls.SnomedExcelRequests;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -310,10 +310,20 @@ public abstract class SnomedRequests {
 	/**
 	 * Returns a SNOMED CT request builder to prepare the evaluation of an 
 	 * Expression Constraint Language (ECL) expression.
+	 * @param expression - the ECL expression to evaluate
 	 * @return SNOMED CT ECL evaluation request builder
 	 */
 	public static SnomedEclEvaluationRequestBuilder prepareEclEvaluation(String expression) {
 		return new SnomedEclEvaluationRequestBuilder(expression);
+	}
+	
+	/**
+	 * Returns a SNOMED CT request builder to prepare the evaluation of a SNOMED CT Query Language (QL) expression.
+	 * @param expression - the QL expression to evaluate
+	 * @return SNOMED CT Query evaluation request builder
+	 */
+	public static SnomedQueryEvaluationRequestBuilder prepareQueryEvaluation(String expression) {
+		return new SnomedQueryEvaluationRequestBuilder(expression);
 	}
 	
 	/**
@@ -340,14 +350,6 @@ public abstract class SnomedRequests {
 		return new SnomedDSVRequests();
 	}
 	
-	/**
-	 * Returns the central class that provides access to IO services, turning the SNOMED CT content to Excel sheets.
-	 * @return central SNOMED CT Excel client
-	 */
-	public static SnomedExcelRequests xls() {
-		return new SnomedExcelRequests();
-	}
-
 	/**
 	 * Returns a SNOMED CT request builder to prepare the evaluation of an Query type reference set.
 	 * @return SNOMED CT Query type reference set evaluation request builder

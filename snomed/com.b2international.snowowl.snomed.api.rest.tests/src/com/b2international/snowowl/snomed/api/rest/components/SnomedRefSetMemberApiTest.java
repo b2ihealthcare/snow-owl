@@ -49,9 +49,10 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -360,7 +361,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "owl expression")
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
 				.put("commitComment", "Created new OWL Axiom reference set member")
 				.build();
 
@@ -386,7 +387,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "owl expression")
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
 				.put("commitComment", "Created new OWL Ontology reference set member")
 				.build();
 

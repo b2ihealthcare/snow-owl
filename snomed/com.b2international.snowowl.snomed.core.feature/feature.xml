@@ -54,4 +54,33 @@ Visit us at http://b2i.sg
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="com.b2international.snowowl.snomed.ql"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+         
+
+   <plugin
+         id="org.protege.common"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.protege.editor.core.application"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.protege.editor.owl"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>

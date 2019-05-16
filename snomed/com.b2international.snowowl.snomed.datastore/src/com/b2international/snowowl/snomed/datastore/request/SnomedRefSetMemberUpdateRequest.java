@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,16 +28,16 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean> {
+final class SnomedRefSetMemberUpdateRequest implements SnomedComponentRequest<Boolean> {
 
 	@NotEmpty
 	private final String memberId;
@@ -83,6 +84,11 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 		} else {
 			return ClassUtils.checkAndCast(value, valueType);
 		}
+	}
+	
+	@Override
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		return ImmutableSet.of(memberId);
 	}
 
 	@Override

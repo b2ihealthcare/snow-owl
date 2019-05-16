@@ -115,5 +115,11 @@
 			</includes>
 			<outputDirectory>plugins</outputDirectory>
 		</dependencySet>
+		<dependencySet>
+			<includes>
+				<include>org.semanticweb.elk:elk-protege</include>
+			</includes>
+			<outputDirectory>repository/usr</outputDirectory>
+		</dependencySet>
 	</dependencySets>
 </assembly>

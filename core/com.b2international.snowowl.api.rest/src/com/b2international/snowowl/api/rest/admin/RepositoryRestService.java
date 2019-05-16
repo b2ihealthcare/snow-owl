@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.api.rest.admin;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,15 +30,26 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.commons.exceptions.ApiError;
-import com.b2international.snowowl.api.admin.IRepositoryService;
-import com.b2international.snowowl.api.admin.exception.LockException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.DeferredResults;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repositories;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.OperationLockException;
+import com.b2international.snowowl.datastore.oplock.impl.AllRepositoriesLockTarget;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
+import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
+import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTarget;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.identity.domain.User;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -54,15 +66,6 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/repositories") 
 public class RepositoryRestService extends AbstractRestService {
 	
-	@Autowired
-	protected IRepositoryService repositoryService;
-
-	@ExceptionHandler(LockException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody RestApiError handleLockException(final LockException e) {
-		return RestApiError.of(ApiError.Builder.of(e.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
-	}
-
 	@ApiOperation(
 			value="Retrieve all repositories",
 			notes="Retrieves all repositories that store terminology content.")
@@ -111,7 +114,13 @@ public class RepositoryRestService extends AbstractRestService {
 			@ApiParam(value="lock timeout in milliseconds")
 			final int timeoutMillis) {
 
-		repositoryService.lockGlobal(timeoutMillis);
+		checkValidTimeout(timeoutMillis);
+
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+				DatastoreLockContextDescriptions.CREATE_BACKUP);
+
+		final IOperationLockTarget target = AllRepositoriesLockTarget.INSTANCE;
+		doLock(timeoutMillis, context, target);
 	}
 
 	@ApiOperation(
@@ -124,7 +133,9 @@ public class RepositoryRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PostMapping("/unlock")
 	public void unlockGlobal() {
-		repositoryService.unlockGlobal();
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.CREATE_BACKUP);
+		final IOperationLockTarget target = AllRepositoriesLockTarget.INSTANCE;
+		doUnlock(context, target);
 	}
 
 	@ApiOperation(
@@ -148,8 +159,15 @@ public class RepositoryRestService extends AbstractRestService {
 			@RequestParam(value="timeoutMillis", defaultValue="5000", required=false)
 			@ApiParam(value="lock timeout in milliseconds")
 			final int timeoutMillis) {
+		checkValidRepositoryUuid(id);
+		checkValidTimeout(timeoutMillis);
 
-		repositoryService.lockRepository(id, timeoutMillis);
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
+				DatastoreLockContextDescriptions.CREATE_BACKUP);
+
+		final IOperationLockTarget target = new SingleRepositoryLockTarget(id);
+		doLock(timeoutMillis, context, target);
 	}
 
 	@ApiOperation(
@@ -167,6 +185,52 @@ public class RepositoryRestService extends AbstractRestService {
 			@PathVariable(value="id") 
 			final String repositoryUuid) {
 
-		repositoryService.unlockRepository(repositoryUuid);
+		checkValidRepositoryUuid(repositoryUuid);
+
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
+				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
+				DatastoreLockContextDescriptions.CREATE_BACKUP);
+
+		final IOperationLockTarget target = new SingleRepositoryLockTarget(repositoryUuid);
+		doUnlock(context, target);
 	}
+	
+	private void checkValidRepositoryUuid(final String repositoryUuid) {
+		checkNotNull(repositoryUuid, "Repository identifier may not be null.");
+
+		final Repository repository = ApplicationContext.getServiceForClass(RepositoryManager.class).get(repositoryUuid);
+		if (repository == null) {
+			throw new NotFoundException("Repository", repositoryUuid);
+		}
+	}
+	
+	private void checkValidTimeout(final int timeoutMillis) {
+		checkArgument(timeoutMillis >= 0, "Timeout in milliseconds may not be negative.");
+	}
+
+	private void doUnlock(final DatastoreLockContext context, final IOperationLockTarget target) {
+		try {
+			getLockManager().unlock(context, target);
+		} catch (final OperationLockException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+	}
+	
+	private void doLock(final int timeoutMillis, final DatastoreLockContext context, final IOperationLockTarget target) {
+		try {
+			getLockManager().lock(context, timeoutMillis, target);
+		} catch (final DatastoreOperationLockException e) {
+			final DatastoreLockContext conflictingContext = e.getContext(target);
+			throw new BadRequestException("Failed to acquire lock for all repositories because %s is %s.", 
+					conflictingContext.getUserId(), 
+					conflictingContext.getDescription());
+		} catch (final OperationLockException | InterruptedException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+	}
+	
+	private static IDatastoreOperationLockManager getLockManager() {
+		return ApplicationContext.getServiceForClass(IDatastoreOperationLockManager.class);
+	}
+	
 }

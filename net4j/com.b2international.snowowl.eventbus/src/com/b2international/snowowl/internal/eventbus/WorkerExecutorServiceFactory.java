@@ -24,8 +24,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * @since 4.5.1
  */
-public class WorkerExecutorServiceFactory {
+public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
 
+	@Override
 	public ExecutorService createExecutorService(String description, int numberOfWorkers) {
 		final ThreadGroup group = new ThreadGroup(description);
 

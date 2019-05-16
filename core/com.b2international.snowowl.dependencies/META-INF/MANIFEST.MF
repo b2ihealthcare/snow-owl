@@ -4,10 +4,10 @@ Bundle-Name: Snow Owl Dependencies
 Bundle-SymbolicName: com.b2international.snowowl.dependencies;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Bundle-ClassPath: .,
- poi-3.7-20101029.jar,
- poi-ooxml-3.7-20101029.jar,
- poi-ooxml-schemas-3.7-20101029.jar,
- xpp3-1.1.4c.jar
+ lib/poi-3.7-20101029.jar,
+ lib/poi-ooxml-3.7-20101029.jar,
+ lib/poi-ooxml-schemas-3.7-20101029.jar,
+ lib/xpp3-1.1.4c.jar
 Export-Package: org.apache.poi,
  org.apache.poi.common.usermodel,
  org.apache.poi.ddf,
@@ -66,6 +66,17 @@ Export-Package: org.apache.poi,
  org.apache.poi.xssf.usermodel.extensions,
  org.apache.poi.xssf.usermodel.helpers,
  org.apache.poi.xssf.util,
+ org.openxmlformats.schemas.drawingml.x2006.main,
+ org.openxmlformats.schemas.drawingml.x2006.picture,
+ org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing,
+ org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing,
+ org.openxmlformats.schemas.officeDocument.x2006.customProperties,
+ org.openxmlformats.schemas.officeDocument.x2006.docPropsVTypes,
+ org.openxmlformats.schemas.officeDocument.x2006.extendedProperties,
+ org.openxmlformats.schemas.officeDocument.x2006.relationships,
+ org.openxmlformats.schemas.presentationml.x2006.main,
+ org.openxmlformats.schemas.spreadsheetml.x2006.main,
+ org.openxmlformats.schemas.wordprocessingml.x2006.main,
  org.xmlpull.mxp1,
  org.xmlpull.mxp1_serializer,
  org.xmlpull.v1,
@@ -80,5 +91,5 @@ Export-Package: org.apache.poi,
  org.xmlpull.v1.wrapper.classic
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: B2i Healthcare
-Require-Bundle: org.apache.xmlbeans;bundle-version="2.3.0",
+Require-Bundle: org.apache.xmlbeans;bundle-version="2.3.0";visibility:=reexport,
  org.dom4j;bundle-version="1.6.1"

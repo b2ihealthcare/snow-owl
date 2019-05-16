@@ -53,7 +53,24 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	}
 	
 	public static Builder builder(final SnomedConstraintDocument input) {
-		return builder();
+		return builder()
+				.active(input.isActive())
+				.author(input.getAuthor())
+				.childIds(input.getChildIds())
+				.descendantIds(input.getDescendantIds())
+				.description(input.getDescription())
+				.domain(input.getDomain())
+				.effectiveTime(input.getEffectiveTime())
+				.form(input.getForm())
+				.iconId(input.getIconId())
+				.id(input.getId())
+				.predicate(input.getPredicate())
+				.predicateType(input.getPredicateType())
+				.refSetIds(input.getRefSetIds())
+				.relationshipKeys(input.getRelationshipKeys())
+				.selfIds(input.getSelfIds())
+				.strength(input.getStrength())
+				.validationMessage(input.getValidationMessage());
 	}
 	
 	public static Builder descriptionBuilder() {

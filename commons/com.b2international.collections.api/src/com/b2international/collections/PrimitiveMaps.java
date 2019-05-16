@@ -64,6 +64,10 @@ public abstract class PrimitiveMaps {
 	public static <V> IntKeyMap<V> newIntKeyOpenHashMap() {
 		return FACTORY.newIntKeyOpenHashMap();
 	}
+	
+	public static <V> IntKeyMap<V> newIntKeyOpenHashMap(IntKeyMap<V> source) {
+		return FACTORY.newIntKeyOpenHashMap(source);
+	}
 
 	public static <V> IntKeyMap<V> newIntKeyOpenHashMapWithExpectedSize(int expectedSize) {
 		return FACTORY.newIntKeyOpenHashMapWithExpectedSize(expectedSize);

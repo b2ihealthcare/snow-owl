@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -42,8 +35,6 @@ import com.google.common.collect.ImmutableSet.Builder;
  * @since 4.5
  */
 public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdateRequest {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRelationshipUpdateRequest.class);
 
 	@Min(0)
 	@Max(Integer.MAX_VALUE)
@@ -104,22 +95,6 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		if (changed) {
 			if (relationship.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
 				updatedRelationship.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
-			} else {
-				if (relationship.isReleased()) {
-					long start = new Date().getTime();
-					final String branchPath = getLatestReleaseBranch(context);
-					if (!Strings.isNullOrEmpty(branchPath)) {
-						final SnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship(getComponentId())
-								.build(context.id(), branchPath)
-								.execute(context.service(IEventBus.class))
-								.getSync();
-						
-						if (!isDifferentToPreviousRelease(updatedRelationship.build(), releasedRelationship)) {
-							updatedRelationship.effectiveTime(releasedRelationship.getEffectiveTime().getTime());
-						}
-						LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
-					}
-				}
 			}
 			context.update(relationship, updatedRelationship.build());
 		}
@@ -151,19 +126,6 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 			relationship.destinationId(context.lookup(destinationId, SnomedConceptDocument.class).getId());
 			return true;
 		}
-		
-		return false;
-	}
-
-	private boolean isDifferentToPreviousRelease(SnomedRelationshipIndexEntry relationship, SnomedRelationship releasedRelationship) {
-		if (releasedRelationship.isActive() != relationship.isActive()) return true;
-		if (!releasedRelationship.getModuleId().equals(relationship.getModuleId())) return true;
-		if (!releasedRelationship.getDestinationId().equals(relationship.getDestinationId())) return true;
-		if (!Objects.equals(releasedRelationship.getGroup(), relationship.getGroup())) return true;
-		if (!Objects.equals(releasedRelationship.getUnionGroup(), relationship.getUnionGroup())) return true;
-		if (!releasedRelationship.getTypeId().equals(relationship.getTypeId())) return true;
-		if (!releasedRelationship.getCharacteristicType().getConceptId().equals(relationship.getCharacteristicTypeId())) return true;
-		if (!releasedRelationship.getModifier().getConceptId().equals(relationship.getModifierId())) return true;
 		
 		return false;
 	}

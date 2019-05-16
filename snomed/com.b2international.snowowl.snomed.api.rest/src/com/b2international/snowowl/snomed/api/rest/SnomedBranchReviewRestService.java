@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -37,6 +37,7 @@ import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateReviewRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
@@ -48,14 +49,17 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 /**
- * Provides REST endpoints for creating terminology change reviews.
+ * Provides REST endpoints for computing Reviewerences between branches.
  * 
  * @since 4.2
  */
 @Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
-@RequestMapping(value="/reviews") 
+@RequestMapping(value="/reviews", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchReviewRestService extends AbstractRestService {
+
+	@Autowired
+	private IEventBus bus;
 
 	@ApiOperation(
 			value = "Create new review", 
@@ -64,7 +68,7 @@ public class SnomedBranchReviewRestService extends AbstractRestService {
 		@ApiResponse(code = 201, message = "Created"),
 		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
 	})
-	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
 	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
 		ApiValidation.checkInput(request);
@@ -93,7 +97,7 @@ public class SnomedBranchReviewRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
 	})
-	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public DeferredResult<Review> getReview(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(RepositoryRequests
 			.reviews()
@@ -109,7 +113,7 @@ public class SnomedBranchReviewRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Review not found or changes are not yet available", response=RestApiError.class),
 	})
-	@GetMapping(value = "/{id}/concept-changes", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@RequestMapping(value="/{id}/concept-changes", method=RequestMethod.GET)
 	public DeferredResult<ConceptChanges> getConceptChanges(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(
 				RepositoryRequests
@@ -126,7 +130,7 @@ public class SnomedBranchReviewRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
 	})
-	@DeleteMapping(value = "/{id}")
+	@RequestMapping(value="/{id}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteReview(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,14 @@ public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceA
 
 	private String defaultNamespace;
 	private String defaultModule;
+
+	// Empty constructor required for executable extension-based initialization 
+	public DefaultNamespaceAndModuleAssigner() { }
+	
+	public DefaultNamespaceAndModuleAssigner(final String defaultNamespace, final String defaultModule) {
+		this.defaultNamespace = defaultNamespace;
+		this.defaultModule = defaultModule;
+	}
 
 	@Override
 	public String getRelationshipNamespace(final String sourceConceptId) {

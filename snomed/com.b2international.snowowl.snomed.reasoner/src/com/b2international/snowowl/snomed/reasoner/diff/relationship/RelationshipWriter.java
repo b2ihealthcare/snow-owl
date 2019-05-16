@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.diff.relationship;
 
 import com.b2international.index.Writer;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeWriter;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
@@ -33,20 +34,44 @@ public final class RelationshipWriter extends OntologyChangeWriter<StatementFrag
 	}
 
 	@Override
-	protected void indexChange(final String conceptId, final StatementFragment fragment, final ChangeNature nature) {
-
+	public void indexChange(final String conceptId, final StatementFragment fragment, final ChangeNature nature) {
+		
 		final RelationshipChangeDocument.Builder builder = RelationshipChangeDocument.builder()
-				.nature(nature)
-				.classificationId(classificationId)
-				.sourceId(conceptId)
-				.group(fragment.getGroup())
-				.unionGroup(fragment.getUnionGroup());
+			.nature(nature)
+			.classificationId(classificationId)
+			.sourceId(conceptId)
+			.destinationId(Long.toString(fragment.getDestinationId()));
+		
+		switch (nature) {
+			case NEW:
+				builder.group(fragment.getGroup());
+				builder.unionGroup(fragment.getUnionGroup());
+				builder.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP);
+				builder.released(Boolean.FALSE);
+				
+				if (fragment.getStatementId() != -1L) {
+					builder.relationshipId(Long.toString(fragment.getStatementId()));
+				} else {
+					builder.typeId(Long.toString(fragment.getTypeId()));
+				}
 
-		if (fragment.getStatementId() == -1L) {
-			builder.typeId(Long.toString(fragment.getTypeId()));
-			builder.destinationId(Long.toString(fragment.getDestinationId()));
-		} else {
-			builder.relationshipId(Long.toString(fragment.getStatementId()));
+				break;
+				
+			case UPDATED:
+				builder.group(fragment.getGroup());
+				builder.released(fragment.isReleased());
+				builder.relationshipId(Long.toString(fragment.getStatementId()));
+				break;
+				
+			case REDUNDANT:
+				builder.released(fragment.isReleased());
+				builder.relationshipId(Long.toString(fragment.getStatementId()));
+				break;
+				
+			default:
+				throw new IllegalStateException(String.format("Unexpected relationship change '%s' found with SCTID '%s'.", 
+						nature, 
+						fragment.getStatementId()));
 		}
 		
 		if (ChangeNature.REDUNDANT.equals(nature) && fragment.hasStatedPair()) {

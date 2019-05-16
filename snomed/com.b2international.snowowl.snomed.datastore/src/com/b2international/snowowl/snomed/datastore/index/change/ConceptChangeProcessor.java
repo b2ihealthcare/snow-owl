@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongIterator;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
@@ -49,8 +47,8 @@ import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberCha
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
-import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
+import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -275,6 +273,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		checkArgument(newOrDirtyRevision != null || cleanRevision != null, "Either the newOrDirtyRevision is null or the cleanRevision but not both");
 
 		final String id = newOrDirtyRevision != null ? newOrDirtyRevision.getId() : cleanRevision.getId();
+		final long idLong = Long.parseLong(id);
 		final boolean active = newOrDirtyRevision != null ? newOrDirtyRevision.isActive() : cleanRevision.isActive();
 		
 		doc.active(active)
@@ -288,8 +287,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.mapTargetComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getMapTargetComponentType() : cleanRevision.getMapTargetComponentType())
 			.doi(doiData.getDoiScore(id));
 		
-		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(id);
-		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(id);
+		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
+		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);
 		
 		if (inStated || inInferred) {
 			iconId.update(id, active, doc);
@@ -344,13 +343,11 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		return dirtyConceptIds;
 	}
 	
-	private Set<String> registerConceptAndDescendants(LongCollection relationshipIds, ISnomedTaxonomyBuilder taxonomy) {
+	private Set<String> registerConceptAndDescendants(Set<String> edgeIds, TaxonomyGraph taxonomy) {
 		final Set<String> ids = newHashSet();
-		final LongIterator relationshipIdIterator = relationshipIds.iterator();
-		while (relationshipIdIterator.hasNext()) {
-			String relationshipId = Long.toString(relationshipIdIterator.next());
-			String conceptId = taxonomy.getSourceNodeId(relationshipId);
-			ids.add(conceptId);
+		for (String edgeId : edgeIds) {
+			long conceptId = taxonomy.getSourceNodeId(edgeId);
+			ids.add(Long.toString(conceptId));
 			ids.addAll(LongSets.toStringSet(taxonomy.getAllDescendantNodeIds(conceptId)));
 		}
 		return ids;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.LogUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -42,9 +41,9 @@ public abstract class AbstractTerminologyExporter implements ITerminologyExporte
 	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractTerminologyExporter.class);
 	
 	private final String userId;
-	private final IBranchPath branchPath;
+	private final String branchPath;
 	
-	public AbstractTerminologyExporter(final String userId, final IBranchPath branchPath) {
+	public AbstractTerminologyExporter(final String userId, final String branchPath) {
 		this.userId = userId;
 		this.branchPath = branchPath;
 	}
@@ -110,7 +109,7 @@ public abstract class AbstractTerminologyExporter implements ITerminologyExporte
 		LogUtils.logExportActivity(LOGGER, userId, getBranchPath(), message);
 	}
 
-	protected IBranchPath getBranchPath() {
+	protected final String getBranchPath() {
 		return branchPath;
 	}
 

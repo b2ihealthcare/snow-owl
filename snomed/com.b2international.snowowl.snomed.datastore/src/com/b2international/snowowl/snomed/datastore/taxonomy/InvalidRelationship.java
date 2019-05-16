@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,20 +38,14 @@ public final class InvalidRelationship {
 		
 	}
 
-	private final long relationshipId;
 	private final long sourceId;
 	private final long destinationId;
 	private final MissingConcept missingConcept; 
 
-	public InvalidRelationship(final long relationshipId, final long sourceId, final long destinationId, final MissingConcept missingConcept) {
-		this.relationshipId = relationshipId;
+	public InvalidRelationship(final long sourceId, final long destinationId, final MissingConcept missingConcept) {
 		this.sourceId = sourceId;
 		this.destinationId = destinationId;
 		this.missingConcept = missingConcept;
-	}
-
-	public long getRelationshipId() {
-		return relationshipId;
 	}
 
 	public long getSourceId() {
@@ -80,7 +74,6 @@ public final class InvalidRelationship {
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
-				.add("relationshipId", relationshipId)
 				.add("sourceId", sourceId)
 				.add("destinationId", destinationId)
 				.add("missingConcept", missingConcept)

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.Collection;
+import java.util.concurrent.CyclicBarrier;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -93,12 +94,15 @@ public class JobRequestsTest {
 	
 	@Test
 	public void scheduleAndCancel() throws Exception {
+		CyclicBarrier barrier = new CyclicBarrier(2);
 		final String jobId = schedule("scheduleAndCancel", context -> {
 			// wait 1000 ms, then throw cancelled if monitor is cancelled or return the result, so the main thread have time to actually initiate the cancel request
 			final IProgressMonitor monitor = context.service(IProgressMonitor.class);
+			
 			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
+				Thread.sleep(50);
+				barrier.await();
+			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 			if (monitor.isCanceled()) {
@@ -107,6 +111,8 @@ public class JobRequestsTest {
 			return RESULT;
 		});
 		cancel(jobId);
+		barrier.await();
+		
 		final RemoteJobEntry entry = waitDone(jobId);
 		assertEquals(RemoteJobState.CANCELED, entry.getState());
 		assertNull(entry.getResult());

@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -33,10 +32,13 @@ import org.eclipse.core.runtime.Platform;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
+import org.semanticweb.owlapi.reasoner.ReasonerProgressMonitor;
 import org.semanticweb.owlapi.reasoner.impl.OWLClassNodeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,23 +52,71 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.taxonomy.InternalIdEdges;
-import com.b2international.snowowl.snomed.core.taxonomy.InternalIdMap;
-import com.b2international.snowowl.snomed.core.taxonomy.InternalSctIdMultimap;
-import com.b2international.snowowl.snomed.core.taxonomy.InternalSctIdSet;
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdEdges;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdMap;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalSctIdMultimap;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalSctIdSet;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Ordering;
+import com.google.common.util.concurrent.RateLimiter;
 
 /**
  * @since
  */
 public final class ReasonerTaxonomyInferrer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ReasonerTaxonomyInferrer.class);
+	// Report every ~5 minutes
+	private static final RateLimiter LOG_LIMITER = RateLimiter.create(1.0 / 300.0);
+	
+	private static class LoggingProgressMonitor implements ReasonerProgressMonitor {
+
+		private final Logger log;
+		
+		private String taskName = "<unknown task>";
+		private float completionLevel = -1.0f;
+
+		public LoggingProgressMonitor(final Logger log) {
+			this.log = log;
+		}
+
+		private void reportTask() {
+			log.info("--- Reasoner task: {} [{}]", taskName, completionLevel < 0.0f ? "--.-%" : String.format("%04.1f%%", completionLevel * 100.0f));
+		}
+
+		@Override
+		public void reasonerTaskBusy() {
+			if (LOG_LIMITER.tryAcquire()) {
+				reportTask();
+			}
+		}
+
+		@Override
+		public void reasonerTaskProgressChanged(final int value, final int max) {
+			if (value >= 0 && max > 0) {
+				this.completionLevel = (float) value / max;
+			}
+			reasonerTaskBusy(); // Apply rate limiting
+		}
+
+		@Override
+		public void reasonerTaskStarted(final String taskName) {
+			this.taskName = (taskName == null) ? "<unknown task>" : taskName;
+			this.completionLevel = -1.0f;
+			reportTask(); // No rate limiting for started reasoner tasks
+		}
+
+		@Override
+		public void reasonerTaskStopped() {
+			// We are not interested in stopped reasoner tasks
+		}
+	}
+
+	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner-taxonomy-inferrer");
 
 	public static final long DEPTH_CHANGE = -1L;
 	
@@ -77,10 +127,13 @@ public final class ReasonerTaxonomyInferrer {
 	private static final String CLASS_ELEMENT = "class";
 	private static final String VALUE_ATTRIBUTE = "value";
 
+	private static final String PRECOMPUTE_PROPERTY = "com.b2international.snowowl.snomed.reasoner.precomputeInferences";
+
+	private final String reasonerId;
 	private final DelegateOntology ontology;
-	private final OWLReasoner reasoner;
 	private final BranchContext branchContext;
 
+	private OWLReasoner reasoner;
 	// owl:Nothing should only be considered once
 	private boolean nothingVisited = false;
 	private LongSet processedConceptIds;
@@ -113,12 +166,14 @@ public final class ReasonerTaxonomyInferrer {
 
 				try {
 					reasonerInfo = (ProtegeOWLReasonerInfo) classElement.get().createExecutableExtension(VALUE_ATTRIBUTE);
-				} catch (final CoreException e) {
+					reasonerInfo.initialise();
+				} catch (final Exception e) {
 					throw new ReasonerApiException("Couldn't create reasoner info instance for extension '%s'.", reasonerId, e);
 				}
 
 				final OWLReasonerFactory reasonerFactory = reasonerInfo.getReasonerFactory();
-				return reasonerFactory.createNonBufferingReasoner(owlOntology);
+				final OWLReasonerConfiguration reasonerConfiguration = reasonerInfo.getConfiguration(new LoggingProgressMonitor(LOGGER));
+				return reasonerFactory.createNonBufferingReasoner(owlOntology, reasonerConfiguration);
 			}
 		}
 
@@ -126,54 +181,73 @@ public final class ReasonerTaxonomyInferrer {
 	}
 
 	public ReasonerTaxonomyInferrer(final String reasonerId, final DelegateOntology ontology, final BranchContext branchContext) {
+		this.reasonerId = reasonerId;
 		this.ontology = ontology;
-		this.reasoner = createReasoner(reasonerId, ontology);
 		this.branchContext = branchContext;
 	}
 
 	public ReasonerTaxonomy addInferences(final ReasonerTaxonomy taxonomy) {
-		LOGGER.info(">>> Taxonomy extraction");
+		LOGGER.info(">>> Classification and inferred taxonomy extraction");
 
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		
-		final Deque<Node<OWLClass>> nodesToProcess = new LinkedList<Node<OWLClass>>();
-		final Set<Node<OWLClass>> deferredNodes = newHashSet();
-		
-		final NodeSet<OWLClass> initialSubClasses = reasoner.getSubClasses(ontology.getOWLThing(), true);
-		final Set<Node<OWLClass>> initialNodes = initialSubClasses.getNodes();
-		nodesToProcess.addAll(initialNodes);
-		
-		processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(EXPECTED_SIZE);
-		iterationOrder = PrimitiveLists.newLongArrayListWithExpectedSize(EXPECTED_SIZE);
+		try {
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			
+			Deque<Node<OWLClass>> firstLayer = new LinkedList<Node<OWLClass>>();
+			Deque<Node<OWLClass>> secondLayer = new LinkedList<Node<OWLClass>>();
+			final Set<Node<OWLClass>> deferredNodes = newHashSet();
+			
+			reasoner = createReasoner(reasonerId, ontology);
+			if (Boolean.getBoolean(PRECOMPUTE_PROPERTY)) {
+				reasoner.precomputeInferences(InferenceType.CLASS_HIERARCHY);
+			}
+			
+			final NodeSet<OWLClass> initialSubClasses = reasoner.getSubClasses(ontology.getOWLThing(), true);
+			final Set<Node<OWLClass>> initialNodes = initialSubClasses.getNodes();
+			firstLayer.addAll(initialNodes);
+			
+			processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(EXPECTED_SIZE);
+			iterationOrder = PrimitiveLists.newLongArrayListWithExpectedSize(EXPECTED_SIZE);
 
-		final InternalIdMap conceptMap = taxonomy.getConceptMap();
-		inferredAncestors = InternalIdEdges.builder(conceptMap);
-		unsatisfiableConcepts = InternalSctIdSet.builder(conceptMap);
-		equivalentConcepts = InternalSctIdMultimap.builder(conceptMap);
+			final InternalIdMap conceptMap = taxonomy.getConceptMap();
+			inferredAncestors = InternalIdEdges.builder(conceptMap);
+			unsatisfiableConcepts = InternalSctIdSet.builder(conceptMap);
+			equivalentConcepts = InternalSctIdMultimap.builder(conceptMap);
 
-		// Breadth-first walk through the class hierarchy
-		while (!nodesToProcess.isEmpty()) {
-			final Node<OWLClass> current = nodesToProcess.removeFirst();
-			deferredNodes.remove(current);
-			final NodeSet<OWLClass> nextNodeSet = processNode(current, deferredNodes);
-
-			// Indicate that the previous set of caches can be emptied
-			if (nodesToProcess.isEmpty() && deferredNodes.isEmpty()) {
-				iterationOrder.add(DEPTH_CHANGE);
+			// Breadth-first walk through the class hierarchy
+			while (!firstLayer.isEmpty()) {
+				final Node<OWLClass> current = firstLayer.removeFirst();
+				deferredNodes.remove(current);
+				final NodeSet<OWLClass> nextNodeSet = processNode(current, deferredNodes);
+				final Set<Node<OWLClass>> nextNodes = nextNodeSet.getNodes();
+				secondLayer.addAll(nextNodes);
+			
+				if (firstLayer.isEmpty()) {
+					// Indicate that the previous set of caches can be emptied
+					if (deferredNodes.isEmpty()) {
+						iterationOrder.add(DEPTH_CHANGE);
+					}
+			
+					// Swap the role of the two layers
+					if (!secondLayer.isEmpty()) {
+						Deque<Node<OWLClass>> temp = firstLayer;
+						firstLayer = secondLayer;
+						secondLayer = temp;
+					}
+				}
 			}
 
-			final Set<Node<OWLClass>> nextNodes = nextNodeSet.getNodes();
-			nodesToProcess.addAll(nextNodes);
+			processedConceptIds = null;
+
+			LOGGER.info("<<< Classification and inferred taxonomy extraction [{}]", stopwatch.stop());
+
+			return taxonomy.withInferences(inferredAncestors.build(), 
+					unsatisfiableConcepts.build(), 
+					equivalentConcepts.build(),
+					iterationOrder);
+			
+		} finally {
+			reasoner.dispose();
 		}
-
-		processedConceptIds = null;
-
-		LOGGER.info("<<< Taxonomy extraction [{}]", stopwatch.stop());
-
-		return taxonomy.withInferences(inferredAncestors.build(), 
-				unsatisfiableConcepts.build(), 
-				equivalentConcepts.build(),
-				iterationOrder);
 	}
 
 	private NodeSet<OWLClass> processNode(final Node<OWLClass> node, Set<Node<OWLClass>> deferredNodes) {
@@ -229,7 +303,11 @@ public final class ReasonerTaxonomyInferrer {
 	private void addEquivalentConcepts(final LongSet conceptIds) {
 		final Set<String> conceptIdsAsString = LongSets.toStringSet(conceptIds);
 
-		// Try to get a representative element that is already persisted; if no such item exists, we will use the first element 
+		/*
+		 * Try to get the smallest SCTID (using natural ordering for Strings) that is
+		 * already persisted; if no such item exists, we will use the smallest SCTID
+		 * using the same ordering.
+		 */
 		final String representativeId = SnomedRequests.prepareSearchConcept()
 				.one()
 				.filterByIds(conceptIdsAsString)
@@ -239,7 +317,7 @@ public final class ReasonerTaxonomyInferrer {
 				.execute(branchContext)
 				.first()
 				.map(SnomedConcept::getId)
-				.orElseGet(() -> conceptIdsAsString.iterator().next());
+				.orElseGet(() -> Ordering.natural().min(conceptIdsAsString));
 
 		conceptIdsAsString.remove(representativeId);
 		equivalentConcepts.putAll(representativeId, conceptIdsAsString);
@@ -261,8 +339,12 @@ public final class ReasonerTaxonomyInferrer {
 
 	private boolean isNodeProcessed(final Node<OWLClass> node) {
 		for (final OWLClass entity : node) {
+			if (entity.isOWLThing()) {
+				return true;
+			}
+			
 			final long conceptId = ontology.getConceptId(entity);
-			if (conceptId == DEPTH_CHANGE) { continue; }
+			if (conceptId == -1L) { continue; }  // This OWL class does not correspond to a SNOMED CT concept
 			if (!processedConceptIds.contains(conceptId)) { return false; }
 		}
 
@@ -272,7 +354,7 @@ public final class ReasonerTaxonomyInferrer {
 	private LongSet collectConceptIds(final Node<OWLClass> node, final LongSet conceptIds) {
 		for (final OWLClass entity : node) {
 			final long conceptId = ontology.getConceptId(entity);
-			if (conceptId == DEPTH_CHANGE) { continue; }
+			if (conceptId == -1L) { continue; } // This OWL class does not correspond to a SNOMED CT concept
 			conceptIds.add(conceptId);
 		}
 

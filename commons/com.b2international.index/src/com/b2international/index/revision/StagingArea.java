@@ -91,6 +91,14 @@ public final class StagingArea {
 		reset();
 	}
 	
+	public RevisionIndex getIndex() {
+		return index;
+	}
+	
+	public String getBranchPath() {
+		return branchPath;
+	}
+	
 	/**
 	 * Reads from the underlying index using the branch where this {@link StagingArea} has been opened.
 	 * @param read

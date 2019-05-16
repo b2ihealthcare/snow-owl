@@ -39,9 +39,9 @@ public class ValidationThreadPoolTest {
 	@Rule
 	public final ValidationTestMethodNameRule methodName = new ValidationTestMethodNameRule();
 
-	private static final long FAST_JOB_RUNTIME = 100L;
-	private static final long NORMAL_JOB_RUNTIME = 300L;
-	private static final long EXPENSIVE_JOB_RUNTIME = 500L;
+	private static final long FAST_JOB_RUNTIME = 10L;
+	private static final long NORMAL_JOB_RUNTIME = 100L;
+	private static final long EXPENSIVE_JOB_RUNTIME = 300L;
 
 	private static final int MAXIMUM_AMOUNT_OF_RUNNING_EXPENSIVE_JOBS = 2;
 	private static final int MAXIMUM_AMOUNT_OF_RUNNING_NORMAL_JOBS = 4;

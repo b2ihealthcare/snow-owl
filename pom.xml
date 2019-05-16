@@ -34,8 +34,8 @@
 		<mwe.utils.version>1.3.21.201705291010</mwe.utils.version>
 		<asm.commons.version>6.2.1</asm.commons.version>
 		<kotlin.version>1.2.51</kotlin.version>
-		<protege.version>5.0.0-beta-21</protege.version>
-		<owlapi.version>4.1.3-SNAPSHOT</owlapi.version>
+		<protege.version>5.0.3-b2i</protege.version>
+		<owlapi.version>4.5.10</owlapi.version>
 		<elk.version>0.4.3</elk.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
 		<classgraph.version>4.6.10</classgraph.version>
@@ -45,6 +45,9 @@
 		<commons.logging.version>1.2</commons.logging.version>
 		<commons.codec.version>1.10</commons.codec.version>
 		<fastutil.version>8.2.2</fastutil.version>
+		<jaxb.api.version>2.3.0</jaxb.api.version>
+		<javax.activation.version>1.2.0</javax.activation.version>
+		<snomed.owl.toolkit.version>2.3.2</snomed.owl.toolkit.version>
 		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.3.0</tycho.version>
@@ -67,7 +70,35 @@
 		<module>dist</module>
 	</modules>
 
+	<repositories>
+		<repository>
+			<id>protege-mvn-repo</id>
+			<url>https://b2ihealthcare.github.io/protege/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+        		<enabled>false</enabled>
+        		<updatePolicy>never</updatePolicy>
+    		</snapshots>
+		</repository>
+		<repository>
+        	<id>snomed-international-releases</id>
+        	<url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
+        	<releases>
+           		<enabled>true</enabled>
+           		<updatePolicy>never</updatePolicy>
+        	</releases>
+        	<snapshots>
+          		<enabled>false</enabled>
+          		<updatePolicy>never</updatePolicy>
+        	</snapshots>
+     	</repository>
+	</repositories>
+
 	<dependencies>
+		<!-- Add new dependencies here at the end of the dependency list -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
@@ -171,10 +202,10 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.reactivestreams</groupId>
-			<artifactId>reactive-streams</artifactId>
-			<version>1.0.0</version>
-			<scope>provided</scope>
+		    <groupId>org.reactivestreams</groupId>
+		    <artifactId>reactive-streams</artifactId>
+		    <version>1.0.0</version>
+		    <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
@@ -362,6 +393,15 @@
 					<groupId>log4j</groupId>
   					<artifactId>log4j</artifactId>
 				</exclusion>
+				<!-- Using customized Protege bundles -->
+				<exclusion>
+          			<groupId>org.protege</groupId>
+          			<artifactId>protege-editor-core-application</artifactId>
+        		</exclusion>
+				<exclusion>
+          			<groupId>org.protege</groupId>
+          			<artifactId>protege-editor-owl</artifactId>
+        		</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -741,6 +781,46 @@
 		    <version>2.3.0</version>
 			<scope>provided</scope>	
 		</dependency>
+    	<dependency>
+	    	<groupId>org.apache.servicemix.specs</groupId>
+		    <artifactId>org.apache.servicemix.specs.jaxp-api-1.4</artifactId>
+		    <version>2.9.0</version>
+		    <scope>provided</scope>
+    	</dependency>
+		<dependency>
+		  <groupId>javax.xml.bind</groupId>
+		  <artifactId>jaxb-api</artifactId>
+		  <version>${jaxb.api.version}</version>
+		  <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.activation</groupId>
+		    <artifactId>javax.activation</artifactId>
+		    <version>${javax.activation.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+    		<groupId>org.snomed.otf</groupId>
+			<artifactId>snomed-owl-toolkit</artifactId>
+			<version>${snomed.owl.toolkit.version}</version>
+			<classifier>bundle</classifier>
+			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude Guice 4.0 transitive dependencies -->
+				<exclusion>
+          			<groupId>com.google.inject</groupId>
+          			<artifactId>guice</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>com.google.inject.extensions</groupId>
+          			<artifactId>guice-assistedinject</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>com.google.inject.extensions</groupId>
+          			<artifactId>guice-multibindings</artifactId>
+        		</exclusion>
+			</exclusions>
+    	</dependency>
 	</dependencies>
 
 	<build>
@@ -828,21 +908,14 @@
 							<type>p2-installable-unit</type>
 							<id>ch.qos.logback.classic</id>
 							<restrictTo>
-								<versionRange>${logback.version}</versionRange>
+								<versionRange>${logback.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>ch.qos.logback.core</id>
 							<restrictTo>
-								<versionRange>${logback.version}</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>ch.qos.logback.slf4j</id>
-							<restrictTo>
-								<versionRange>${logback.version}</versionRange>
+								<versionRange>${logback.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<!-- Restrict Jackson bundles to the selected version -->
@@ -914,11 +987,6 @@
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>org.slf4j.api</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>javax.annotation</id>
 							<removeAll />
 						</filter>
 					</filters>
@@ -1081,20 +1149,5 @@
 		<connection>scm:git:ssh://github.com/b2ihealthcare/snow-owl.git</connection>
 		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
 	</scm>
-
-	<repositories>
-		<repository>
-			<id>protege-mvn-repo</id>
-			<url>https://b2ihealthcare.github.io/protege/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-        		<enabled>false</enabled>
-        		<updatePolicy>never</updatePolicy>
-    		</snapshots>
-		</repository>
-	</repositories>
 	
 </project>

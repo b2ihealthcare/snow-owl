@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class RestApiError implements ApiError {
 
 	@ApiModelProperty(required = true)
 	private String developerMessage;
-	
+
 	@ApiModelProperty(required = false, hidden = true)
 	private Map<String, Object> additionalInformation;
 
@@ -92,7 +92,7 @@ public class RestApiError implements ApiError {
 	public String getDeveloperMessage() {
 		return developerMessage;
 	}
-	
+
 	@JsonAnyGetter
 	@Override
 	public Map<String, Object> getAdditionalInfo() {
@@ -114,7 +114,7 @@ public class RestApiError implements ApiError {
 	private void setDeveloperMessage(String developerMessage) {
 		this.developerMessage = developerMessage;
 	}
-	
+
 	private void setAdditionalInformation(Map<String, Object> additionalInfo) {
 		this.additionalInformation = additionalInfo;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -51,9 +50,12 @@ import com.google.common.collect.SetMultimap;
  */
 abstract class TreeBuilderImpl implements TreeBuilder {
 
+	private final List<ExtendedLocale> locales;
 	private Collection<SnomedConceptDocument> topLevelConcepts;
 	
-	TreeBuilderImpl() {}
+	TreeBuilderImpl(List<ExtendedLocale> locales) {
+		this.locales = locales;
+	}
 	
 	abstract String getForm();
 	
@@ -159,7 +161,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByIds(ImmutableSet.copyOf(componentIds))
-				.setLocales(getLocales())
+				.setLocales(locales)
 				.setExpand("pt(),parentIds(),ancestorIds()")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
@@ -170,7 +172,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 	private List<SnomedConceptDocument> getDefaultTopLevelConcepts(final String branch) {
 		final SnomedConcept root = SnomedRequests.prepareGetConcept(Concepts.ROOT_CONCEPT)
 				.setExpand(String.format("pt(),%s(direct:true,expand(pt()))", Trees.STATED_FORM.equals(getForm()) ? "statedDescendants" : "descendants"))
-				.setLocales(getLocales())
+				.setLocales(locales)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.getSync();
@@ -180,10 +182,6 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		requiredTreeItemConcepts.addAll(root.getDescendants().getItems());
 	
 		return SnomedConceptDocument.fromConcepts(requiredTreeItemConcepts);
-	}
-	
-	private List<ExtendedLocale> getLocales() {
-		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 	
 	private IEventBus getBus() {

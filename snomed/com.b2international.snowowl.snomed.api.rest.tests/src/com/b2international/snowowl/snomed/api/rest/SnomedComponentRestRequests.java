@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Map;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 
@@ -36,19 +37,19 @@ public abstract class SnomedComponentRestRequests {
 	private static final Joiner COMMA_JOINER = Joiner.on(",");
 	private static final String JSON_UTF8 = ContentType.JSON.withCharset(Charsets.UTF_8);
 
-	public static ValidatableResponse searchComponent(IBranchPath branchPath, SnomedComponentType type, Map<String, Object> filters) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.accept(JSON_UTF8)
-				.queryParams(filters)
-				.get("/{path}/{componentType}", branchPath.getPath(), type.toLowerCasePlural())
-				.then();
-	}
-	
 	public static ValidatableResponse createComponent(IBranchPath branchPath, SnomedComponentType type, Map<?, ?> requestBody) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(JSON_UTF8)
 				.body(requestBody)
 				.post("/{path}/{componentType}", branchPath.getPath(), type.toLowerCasePlural())
+				.then();
+	}
+	
+	public static ValidatableResponse searchComponent(IBranchPath branchPath, SnomedComponentType type, Map<String, Object> params) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.contentType(JSON_UTF8)
+				.queryParams(params)
+				.get("/{path}/{componentType}", branchPath.getPath(), type.toLowerCasePlural())
 				.then();
 	}
 

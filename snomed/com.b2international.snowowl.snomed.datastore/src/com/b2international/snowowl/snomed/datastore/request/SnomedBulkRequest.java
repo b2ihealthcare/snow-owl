@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 		final Set<String> requiredComponentIds = requests.build()
 			.stream()
 			.flatMap(request -> request.getRequiredComponentIds(context).stream())
-			.filter(componentId -> SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId) != -1L) // just in case filter out invalid component IDs
+			.filter(componentId -> SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId) != -1L || isMember(componentId)) // just in case filter out invalid component IDs
 			.collect(Collectors.toSet());
 		
 		final Multimap<Class<? extends SnomedDocument>, String> componentIdsByType = HashMultimap.create(FluentIterable.from(requiredComponentIds).index(this::getDocType));
@@ -82,23 +82,31 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 		// bind additional caches to the context
 		TransactionContext newContext = context.inject()
 			.bind(Synonyms.class, new Synonyms(context))
+			.bind(SnomedOWLExpressionConverter.class, new SnomedOWLExpressionConverter(context))
 			.build();
 		
 		return next(newContext);
 	}
 
+	private boolean isMember(String componentId) {
+		try {
+			UUID.fromString(componentId);
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+	
 	private Class<? extends SnomedDocument> getDocType(String componentId) {
 		switch (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId)) {
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return SnomedConceptDocument.class;
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return SnomedDescriptionIndexEntry.class;
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return SnomedRelationshipIndexEntry.class;
 			default: {
-				try {
-					UUID.fromString(componentId);
-					return SnomedRefSetMemberIndexEntry.class;
-				} catch (IllegalArgumentException e) {
+				if (!isMember(componentId)) {
 					throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
 				}
+				return SnomedRefSetMemberIndexEntry.class;
 			}
 		}
 	}

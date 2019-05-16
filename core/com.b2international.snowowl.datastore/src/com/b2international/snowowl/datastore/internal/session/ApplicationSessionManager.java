@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,26 @@
  */
 package com.b2international.snowowl.datastore.internal.session;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.security.auth.login.LoginException;
 
@@ -41,10 +47,10 @@ import org.eclipse.net4j.util.event.EventUtil;
 import org.eclipse.net4j.util.event.Notifier;
 import org.eclipse.net4j.util.lifecycle.ILifecycle;
 import org.eclipse.net4j.util.lifecycle.LifecycleEventAdapter;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.encoding.RSAUtils;
 import com.b2international.snowowl.core.LogUtils;
@@ -58,79 +64,79 @@ import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterators;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.MapMaker;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Ordering;
 
 /**
  *
  */
 public class ApplicationSessionManager extends Notifier implements IApplicationSessionManager, InternalApplicationSessionManager {
 
-	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("auth");
-	private static final org.slf4j.Logger AUDIT_LOGGER = org.slf4j.LoggerFactory.getLogger(ApplicationSessionManager.class);
-	private static final AtomicLong ID_PROVIDER = new AtomicLong(1L);
-
-	private volatile boolean loginEnabled = true;
-
 	public final class LogoutListener extends LifecycleEventAdapter {
 
 		@Override
 		protected void onDeactivated(final ILifecycle lifecycle) {
-			if (lifecycle instanceof IChannelMultiplexer) {
-				LOGGER.info("Received deactivation event: " + lifecycle);
-				EventUtil.removeListener(lifecycle, this);
-				
-				final RpcSession sessionToLogout = knownSessions.remove((IChannelMultiplexer) lifecycle);
-				
-				if (null == sessionToLogout) {
-					LOGGER.info("No RPC session found to log out.");
-					return;
-				}
-				
-				if (sessionToLogout.containsKey(KEY_USER_ID) && sessionToLogout.containsKey(KEY_SESSION_ID)) {
-					
-					final String userId = String.valueOf(sessionToLogout.get(KEY_USER_ID));
-					if (!User.isSystem(userId)) {
-						
-						final String sessionId = String.valueOf(sessionToLogout.get(KEY_SESSION_ID));
-						//Log as a user activity
-						LogUtils.logUserEvent(AUDIT_LOGGER, userId, "Session closed: " + sessionId);
-						
-						//Log is as user access event
-						LogUtils.logUserAccess(AUDIT_LOGGER, userId, "Logged out.");
-						
-					}
-					
-				}
-				
-				sessionToLogout.put(KEY_IS_AUTHENTICATED, false);
-				fireLogoutEvent(sessionToLogout);
+			AUDIT_LOGGER.info("Received deactivation event: " + lifecycle);
+			EventUtil.removeListener(lifecycle, this);
+
+			if (!(lifecycle instanceof IChannelMultiplexer)) {
+				return;
+			}
+			
+			final RpcSession sessionToLogout = knownSessions.remove((IChannelMultiplexer) lifecycle);
+			if (null == sessionToLogout) {
+				AUDIT_LOGGER.info("No RPC session found to log out.");
+				return;
 			}
 
+			sessionToLogout.put(KEY_IS_AUTHENTICATED, false);
+			fireLogoutEvent(sessionToLogout);
+
+			logUserLogout(sessionToLogout);
+		}
+
+		private void logUserLogout(final RpcSession sessionToLogout) {
+			final String userId = getUserId(sessionToLogout);
+			if (StringUtils.isEmpty(userId) || User.isSystem(userId)) {
+				return;
+			}
+				
+			logSessionClosed(sessionToLogout, userId);
+				
+			// Log as user access event (with "SNOWOWL_USER_ACCESS" marker)
+			LogUtils.logUserAccess(AUDIT_LOGGER, userId, "Logged out.");
+		}
+
+		private void logSessionClosed(final RpcSession sessionToLogout, final String userId) {
+			final Long sessionId = getSessionId(sessionToLogout);
+			if (sessionId == null) {
+				return;
+			}
+			
+			// Log as a user event (with "SNOWOWL" marker)
+			LogUtils.logUserEvent(AUDIT_LOGGER, userId, "Session closed: " + sessionId);
 		}
 	}
 
+	/** Logger for the application log */
+	private static final Logger LOG = LoggerFactory.getLogger("auth");
+	/** Logger for the user audit event log */
+	private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger(ApplicationSessionManager.class);
 	private static final int RANDOM_BYTES_LENGTH = 64;
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationSessionManager.class);
+	private static final AtomicLong ID_PROVIDER = new AtomicLong(1L);
 
 	private final ConcurrentMap<IChannelMultiplexer, RpcSession> knownSessions = new MapMaker().makeMap();
-
 	private final SecureRandom secureRandom = new SecureRandom();
 	private final IdentityProvider identityProvider;
+	private volatile boolean loginEnabled = true;
 
 	public ApplicationSessionManager(final IdentityProvider identityProvider) {
 		this.identityProvider = identityProvider;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.session.ISessionManager#requestToken(java.lang.String, java.security.PublicKey)
-	 */
 	@Override
 	public AccessToken requestToken(final String userId, final PublicKey clientPublicKey) {
 
@@ -164,48 +170,39 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		return randomBytes;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.session.IApplicationSessionManager#getConnectedSessionInfo()
-	 */
 	@Override
-	public Iterable<Pair<String, String>> getConnectedSessionInfo() {
+	public Map<Long,String> getConnectedSessionInfo() {
 
-		final Collection<Pair<String, String>> $ = Sets.newHashSet();
+		final Map<Long, String> connectedSessionInfo = ImmutableList.copyOf(knownSessions.values())
+			.stream()
+			.filter(s -> {
+				final String userId = getUserId(s);
+				final Long sessionId = getSessionId(s);
 
-		for (final Iterator<RpcSession> itr = Iterators.unmodifiableIterator(knownSessions.values().iterator()); itr.hasNext(); /**/) {
+				return !StringUtils.isEmpty(userId)
+						&& !User.isSystem(userId)
+						&& sessionId != null;
+			})
+			.sorted(Ordering.natural().onResultOf(this::getSessionId))
+			.collect(Collectors.toMap(
+					this::getSessionId, 
+					this::getUserId, 
+					(s1, s2) -> { throw new IllegalStateException("Session ID collision"); },
+					LinkedHashMap::new));
 
-			final RpcSession session = itr.next();
-			final String userId = String.valueOf(session.get(KEY_USER_ID));
-			final String sessionId = String.valueOf(session.get(KEY_SESSION_ID));
-
-			if (!StringUtils.isEmpty(sessionId) && !StringUtils.isEmpty(userId)) {
-
-				if (!User.isSystem(userId)) {
-					$.add(Pair.of(userId, sessionId));
-				}
-
-			}
-
-		}
-
-		return $;
+		return connectedSessionInfo;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.session.ISessionManager#authenticate(byte[])
-	 */
 	@Override
 	public User loginWithResponse(final byte[] response) throws SecurityException {
-
 
 		final RpcSession currentSession = RpcThreadLocal.getSession();
 		final byte[] randomBytes = (byte[]) currentSession.get(KEY_RANDOM_BYTES);
 		final PrivateKey serverPrivateKey = (PrivateKey) currentSession.get(KEY_SERVER_PRIVATE_KEY);
-		final String userId = (String) currentSession.get(KEY_USER_ID);
-		final String sessionId = String.valueOf(currentSession.get(KEY_SESSION_ID));
+		final String userId = getUserId(currentSession);
+		final Long sessionId = getSessionId(currentSession);
 
-		if (null != getByUserId(userId)) {
+		if (null != getSession(userId)) {
 			throw new AlreadyLoggedInException();
 		}
 
@@ -221,7 +218,10 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			final String password = new String(decryptedResponse, RANDOM_BYTES_LENGTH, decryptedResponse.length - RANDOM_BYTES_LENGTH, Charsets.UTF_8);
 			authenticate(userId, password);
 			
-			User user = identityProvider.searchUsers(ImmutableList.of(userId), 1).getSync(1, TimeUnit.MINUTES).first().get();
+			final User user = identityProvider.searchUsers(ImmutableList.of(userId), 1)
+					.getSync(1, TimeUnit.MINUTES)
+					.first()
+					.get();
 			
 			if (!loginEnabled && !user.isAdministrator()) {
 				throw new SecurityException("Logging in for non-administrator users is temporarily disabled.");
@@ -243,18 +243,14 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 	@Override
 	public void authenticate(final String username, final String password) throws LoginException {
-		if (IdentityProvider.NOOP != identityProvider) {
-			LogUtils.logUserAccess(LOG, username, "Authenticating: " + username);
-		}
+		LogUtils.logUserAccess(LOG, username, "Authenticating: " + username);
 		
-		boolean success = this.identityProvider.auth(username, password);
+		final boolean success = identityProvider.auth(username, password);
 		if (!success) {
 			throw new LoginException("Incorrect user name or password.");
 		}
 		
-		if (IdentityProvider.NOOP != identityProvider) {
-			LogUtils.logUserAccess(LOG, username, "Authenticated: " + username);
-		}
+		LogUtils.logUserAccess(LOG, username, "Authentication succeeded");
 	}
 
 	@Override
@@ -288,6 +284,37 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		fireLoginEvent(currentSession);
 	}
 
+	@Override
+	public void disconnectSessions(final List<String> userIds, final Consumer<RpcSession> callback) {
+		checkNotNull(userIds, "User ID list cannot be null.");
+		checkState(!userIds.isEmpty(), "User ID list cannot be empty.");
+		checkNotNull(callback, "Callback cannot be null.");
+		
+		final Predicate<String> userIdPredicate;
+		
+		if (userIds.size() == 1 && Iterables.getOnlyElement(userIds).equals("ALL")) {
+			userIdPredicate = userId -> true;
+		} else {
+			final Set<String> userIdsAsSet = ImmutableSet.copyOf(userIds);
+			userIdPredicate = userIdsAsSet::contains;
+		}
+		
+		ImmutableList.copyOf(knownSessions.entrySet())
+			.stream()
+			.filter(entry -> {
+					final String userId = getUserId(entry.getValue());
+					return !StringUtils.isEmpty(userId) 
+							&& !User.isSystem(userId)
+							&& userIdPredicate.test(userId);
+			})
+			.forEachOrdered(entry -> {
+				final Exception e = LifecycleUtil.deactivate(entry.getKey());
+				if (e == null) {
+					callback.accept(entry.getValue());
+				}
+			});
+	}
+	
 	/**
 	 * (non-API, for server-side use only)
 	 *
@@ -298,26 +325,22 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		return knownSessions.get(multiplexer);
 	}
 
-		/*returns with the RPC session which user ID key equals with the argument. may return with null if the session cannot be found.*/
-	private RpcSession getByUserId(final String userId) {
-		Preconditions.checkNotNull(userId, "User ID argument cannot be null.");
+	/*returns with the RPC session which user ID key equals with the argument. may return with null if the session cannot be found.*/
+	private RpcSession getSession(final String userId) {
 
-		for (final Iterator<RpcSession> itr = Iterators.unmodifiableIterator(new CopyOnWriteArrayList<RpcSession>(knownSessions.values()).iterator()); itr.hasNext(); /* */) {
-
-			final RpcSession rpcSession = itr.next();
-			if (userId.equals(rpcSession.get(KEY_USER_ID))) {
-				return rpcSession;
-			}
-
-		}
-
-		return null;
+		return ImmutableList.copyOf(knownSessions.values())
+			.stream()
+			.filter(s -> Objects.equals(getUserId(s), userId))
+			.findFirst()
+			.orElse(null);
 	}
 
-	/*returns with the roles associated with the RPC session argument.*/
-	@SuppressWarnings("unchecked")
-	private List<Role> getRoles(final RpcSession session) {
-		return (List<Role>) Preconditions.checkNotNull(session, "RPC session argument cannot be null.").get(KEY_USER_ROLES);
+	private String getUserId(final RpcSession session) {
+		return (String) session.get(KEY_USER_ID);
+	}
+
+	private Long getSessionId(final RpcSession session) {
+		return (Long) session.get(KEY_SESSION_ID);
 	}
 
 	private void fireLoginEvent(final RpcSession session) {

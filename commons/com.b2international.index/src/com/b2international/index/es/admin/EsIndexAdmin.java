@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +27,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,11 +41,15 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.Strings;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -52,6 +58,7 @@ import org.elasticsearch.script.ScriptType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.Analyzers;
@@ -71,8 +78,15 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.NumericClassUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.flipkart.zjsonpatch.DiffFlags;
+import com.flipkart.zjsonpatch.JsonDiff;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -80,11 +94,13 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
+	private static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE);
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
 	private static final int BATCHS_SIZE = 10_000;
 	
 	private final Random random = new Random();
 	private final EsClient client;
+	private final ObjectMapper mapper;
 	private final String name;
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
@@ -92,8 +108,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 	private final Logger log;
 	private final String prefix;
 
-	public EsIndexAdmin(EsClient client, String name, Mappings mappings, Map<String, Object> settings) {
+	public EsIndexAdmin(EsClient client, ObjectMapper mapper, String name, Mappings mappings, Map<String, Object> settings) {
 		this.client = client;
+		this.mapper = mapper;
 		this.name = name.toLowerCase();
 		this.mappings = mappings;
 		this.settings = newHashMap(settings);
@@ -133,23 +150,62 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public void create() {
-		if (!exists()) {
-			log.info("Preparing '{}' indexes...", name);
-			// create number of indexes based on number of types
-	 		for (DocumentMapping mapping : mappings.getMappings()) {
-	 			if (exists(mapping)) {
-	 				continue;
-	 			}
-	 			
-	 			final String index = getTypeIndex(mapping);
-				final String type = mapping.typeAsString();
-				final Map<String, Object> typeMapping = ImmutableMap.of(type,
+		log.info("Preparing '{}' indexes...", name);
+		// create number of indexes based on number of types
+		for (DocumentMapping mapping : mappings.getMappings()) {
+			final String index = getTypeIndex(mapping);
+			final String type = mapping.typeAsString();
+			final Map<String, Object> typeMapping = ImmutableMap.of(type,
 					ImmutableMap.builder()
-						.put("date_detection", "false")
-						.put("numeric_detection", "false")
-						.putAll(toProperties(mapping))
-						.build());
+					.put("date_detection", false)
+					.put("numeric_detection", false)
+					.putAll(toProperties(mapping))
+					.build());
+			
+			if (exists(mapping)) {
+				// update mapping if required
+				ImmutableOpenMap<String, MappingMetaData> currentIndexMapping;
+				try {
+					currentIndexMapping = client.indices().getMapping(new GetMappingsRequest().indices(index).types(type)).mappings().get(index);
+				} catch (Exception e) {
+					throw new IndexException(String.format("Failed to get mapping of '%s' for type '%s'", name, mapping.typeAsString()), e);
+				}
 				
+				try {
+					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping.get(type));
+					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.get(type).getSourceAsMap());
+					final JsonNode diff = JsonDiff.asJson(currentTypeMapping, newTypeMapping, DIFF_FLAGS);
+					final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
+					Set<String> compatibleChanges = newHashSet();
+					Set<String> uncompatibleChanges = newHashSet();
+					for (ObjectNode change : Iterables.filter(diffNode, ObjectNode.class)) {
+						String prop = change.get("path").asText().substring(1);
+						switch (change.get("op").asText()) {
+						case "add":
+							compatibleChanges.add(prop);
+							break;
+						case "move":
+						case "replace":
+							uncompatibleChanges.add(prop);
+							break;
+						default:
+							break;
+						}
+					}
+					if (!uncompatibleChanges.isEmpty()) {
+						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, uncompatibleChanges);
+					} else if (!compatibleChanges.isEmpty()) {
+						compatibleChanges.forEach(prop -> {
+							log.info("Applying mapping changes on property {} in index {}", prop, index);
+						});
+						AcknowledgedResponse response = client.indices().updateMapping(new PutMappingRequest(index).type(type).source(typeMapping));
+						checkState(response.isAcknowledged(), "Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString());
+					}
+				} catch (IOException e) {
+					throw new IndexException(String.format("Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString()), e);
+				}
+			} else {
+				// create index
 				final Map<String, Object> indexSettings;
 				try {
 					indexSettings = createIndexSettings();
@@ -168,8 +224,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				} catch (Exception e) {
 					throw new IndexException(String.format("Failed to create index '%s' for type '%s'", name, mapping.typeAsString()), e);
 				}
-				
-	 		}
+			}
 		}
 		// wait until the cluster processes each index create request
 		waitForYellowHealth(getAllIndexes());
@@ -303,7 +358,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 						if (!Strings.isNullOrEmpty(normalizer)) {
 							prop.put("normalizer", normalizer);
 						}
-						prop.put("index", keywordMapping.index());
+						// XXX index: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+						if (!keywordMapping.index()) {
+							prop.put("index", false);
+						}
 						prop.put("doc_values", keywordMapping.index());
 					}
 					
@@ -336,7 +394,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 							if (!Strings.isNullOrEmpty(normalizer)) {
 								fieldProps.put("normalizer", normalizer);
 							}
-							fieldProps.put("index", analyzed.index());
+							if (!analyzed.index()) {
+								fieldProps.put("index", false);
+							}
 							fields.put(extraFieldParts[1], fieldProps);
 						}
 					}

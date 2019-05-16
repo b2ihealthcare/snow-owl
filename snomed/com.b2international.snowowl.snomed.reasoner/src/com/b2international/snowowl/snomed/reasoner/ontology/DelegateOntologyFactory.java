@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.ontology;
 
+import org.semanticweb.owlapi.annotations.HasPriority;
 import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.io.OWLOntologyDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
@@ -25,11 +26,12 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 
 /**
- * @since 
+ * @since
  */
+@HasPriority(0.5)
 public final class DelegateOntologyFactory implements OWLOntologyFactory {
 
 	private final ReasonerTaxonomy taxonomy;

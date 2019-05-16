@@ -19,8 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MarkerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-
 /**
  * Utility for logging Snow Owl's messages. This implementation is Logback specific.
  * It is the logger's configuration's responsibility to capture and collect the user events
@@ -75,9 +73,9 @@ public class LogUtils {
 	 * @param branchPath
 	 * @param message
 	 */
-	public static void logUserEvent(Logger logger, String user, IBranchPath branchPath, String message) {
+	public static void logUserEvent(Logger logger, String user, String branchPath, String message) {
 		MDC.put(MDC_USER_KEY, user);
-		MDC.put(MDC_BRANCH_KEY, branchPath.getPath());
+		MDC.put(MDC_BRANCH_KEY, branchPath);
 		logger.info(MarkerFactory.getMarker(SNOWOWL_MARKER), message);
 		MDC.remove(MDC_USER_KEY);
 		MDC.remove(MDC_BRANCH_KEY);
@@ -115,9 +113,9 @@ public class LogUtils {
 	 * @param branchPath
 	 * @param message
 	 */
-	public static void logImportActivity(Logger logger, String user, IBranchPath branchPath, String message, Object...arguments) {
+	public static void logImportActivity(Logger logger, String user, String branchPath, String message, Object...arguments) {
 		MDC.put(MDC_USER_KEY, user);
-		MDC.put(MDC_BRANCH_KEY, branchPath.getPath());
+		MDC.put(MDC_BRANCH_KEY, branchPath);
 		logger.info(MarkerFactory.getMarker(SNOWOWL_IMPORT_MARKER), message, arguments);
 		MDC.remove(MDC_USER_KEY);
 		MDC.remove(MDC_BRANCH_KEY);
@@ -131,9 +129,9 @@ public class LogUtils {
 	 * @param branchPath
 	 * @param message
 	 */
-	public static void logImportWarning(Logger logger, String user,  IBranchPath branchPath, String message) {
+	public static void logImportWarning(Logger logger, String user,  String branchPath, String message) {
 		MDC.put(MDC_USER_KEY, user);
-		MDC.put(MDC_BRANCH_KEY, branchPath.getPath());
+		MDC.put(MDC_BRANCH_KEY, branchPath);
 		logger.warn(MarkerFactory.getMarker(SNOWOWL_IMPORT_MARKER), message);
 		MDC.remove(MDC_USER_KEY);
 		MDC.remove(MDC_BRANCH_KEY);
@@ -146,10 +144,6 @@ public class LogUtils {
 	 * @param branchPath
 	 * @param message
 	 */
-	public static void logExportActivity(Logger logger, String user, IBranchPath branchPath, String message) {
-		logExportActivity(logger, user, branchPath.getPath(), message);
-	}
-	
 	public static void logExportActivity(Logger logger, String user, String branchPath, String message) {
 		MDC.put(MDC_USER_KEY, user);
 		MDC.put(MDC_BRANCH_KEY, branchPath);

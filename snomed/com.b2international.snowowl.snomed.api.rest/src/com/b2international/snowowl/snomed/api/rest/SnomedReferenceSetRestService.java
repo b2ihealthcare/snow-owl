@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
@@ -57,6 +59,7 @@ import com.b2international.snowowl.snomed.api.rest.request.RequestResolver;
 import com.b2international.snowowl.snomed.api.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -88,6 +91,10 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@PathVariable(value="path")
 			final String branchPath,
 			
+			@ApiParam(value="The reference set type to match")
+			@PathVariable(value="refSetTypes")
+			final String[] refSetTypes,
+			
 			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
 			@RequestParam(value="scrollKeepAlive", required=false) 
 			final String scrollKeepAlive,
@@ -105,6 +112,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			final int limit) {
 		
 		return DeferredResults.wrap(SnomedRequests.prepareSearchRefSet()
+				.filterByTypes(Collections3.toImmutableSet(refSetTypes).stream().map(SnomedRefSetType::valueOf).collect(Collectors.toSet()))
 				.setScroll(scrollKeepAlive)
 				.setScrollId(scrollId)
 				.setSearchAfter(searchAfter)

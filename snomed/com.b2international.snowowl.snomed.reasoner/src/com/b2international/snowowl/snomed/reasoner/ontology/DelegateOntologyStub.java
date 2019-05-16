@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -275,7 +275,7 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType) {
+	public <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType) {
 		return unsupportedOntology.getAxiomCount(axiomType);
 	}
 
@@ -300,7 +300,7 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType) {
+	public <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType) {
 		return unsupportedOntology.getAxioms(axiomType);
 	}
 
@@ -635,7 +635,7 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final int getLogicalAxiomCount() {
+	public int getLogicalAxiomCount() {
 		return unsupportedOntology.getLogicalAxiomCount();
 	}
 
@@ -650,7 +650,7 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final Set<OWLLogicalAxiom> getLogicalAxioms() {
+	public Set<OWLLogicalAxiom> getLogicalAxioms() {
 		return unsupportedOntology.getLogicalAxioms();
 	}
 

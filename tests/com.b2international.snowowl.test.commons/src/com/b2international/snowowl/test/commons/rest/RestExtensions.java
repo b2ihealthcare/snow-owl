@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.test.commons.rest;
 import static io.restassured.RestAssured.given;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +34,23 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.IdentityWriter;
 import com.b2international.snowowl.test.commons.json.JsonExtensions;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+
 import io.restassured.RestAssured;
+import io.restassured.config.ConnectionConfig;
+import io.restassured.config.HttpClientConfig;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
+import io.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 
 /**
@@ -97,6 +107,19 @@ public class RestExtensions {
 			// Enable logging on failed requests
 			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 			
+			// add custom 
+			final ObjectMapper mapper = new ObjectMapper();
+			mapper.registerModule(new GuavaModule());
+			
+			RestAssuredConfig.config()
+				.objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
+					public ObjectMapper create(Type arg0, String arg1) {
+						return mapper;
+					}
+				}))
+				.connectionConfig(ConnectionConfig.connectionConfig().closeIdleConnectionsAfterEachResponse())
+    			.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance().setParam("http.protocol.expect-continue", true));
+			
 			// add the user to the current identity provider
 			try {
 				((IdentityWriter) ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class)).addUser(USER, PASS);
@@ -117,7 +140,7 @@ public class RestExtensions {
 	}
 
 	private static RequestSpecification givenRequestWithPassword(String api, String password) {
-		return givenUnauthenticatedRequest(api).auth().basic(USER, password);
+		return givenUnauthenticatedRequest(api).auth().preemptive().basic(USER, password);
 	}
 
 	public static RequestSpecification withJson(RequestSpecification it, Map<String, ? extends Object> properties) {
@@ -166,14 +189,14 @@ public class RestExtensions {
 		return jettyPortProp != null ? Integer.valueOf(jettyPortProp) : 8080;
 	}
 	
-	public static void expectStatus(Response it, int expectedStatus) {
+	public static ValidatableResponse expectStatus(Response it, int expectedStatus) {
 		if (it.statusCode() != expectedStatus) {
 			System.err.println("Web server may reject your request, check access log");
 			System.err.println("Headers: " + it.headers());
 			System.err.println("Content-Type: " + it.getContentType());
 			System.err.println("Body: " + it.body().asString());
 		}
-		it.then().statusCode(expectedStatus);
+		return it.then().statusCode(expectedStatus);
 	}
 	
 	public static String lastPathSegment(String path) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,17 +24,14 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -108,28 +104,10 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		if (changed) {
 			if (description.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
 				updatedDescription.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
-			} else {
-				if (description.isReleased()) {
-					long start = new Date().getTime();
-					final String branchPath = getLatestReleaseBranch(context);
-					if (!Strings.isNullOrEmpty(branchPath)) {
-						final IEventBus bus = context.service(IEventBus.class);
-						final SnomedDescription releasedDescription = SnomedRequests
-								.prepareGetDescription(getComponentId())
-								.build(context.id(), branchPath)
-								.execute(bus)
-								.getSync();
-						
-						if (!isDifferentToPreviousRelease(updatedDescription.build(), releasedDescription)) {
-							updatedDescription.effectiveTime(releasedDescription.getEffectiveTime().getTime());
-						}
-						LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
-					}
-				}
 			}
 			context.update(description, updatedDescription.build());
 		}
-		
+
 		return changed;
 	}
 
@@ -207,18 +185,6 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		
 		inactivationUpdateRequest.setInactivationValueId(inactivationIndicator.getConceptId());
 		inactivationUpdateRequest.execute(context);
-	}
-
-	private boolean isDifferentToPreviousRelease(SnomedDescriptionIndexEntry description, SnomedDescription releasedDescription) {
-		if (releasedDescription.isActive() != description.isActive()) return true;
-		if (!releasedDescription.getModuleId().equals(description.getModuleId())) return true;
-		if (!releasedDescription.getConceptId().equals(description.getConceptId())) return true;
-		if (!releasedDescription.getLanguageCode().equals(description.getLanguageCode())) return true;
-		if (!releasedDescription.getTypeId().equals(description.getTypeId())) return true;
-		if (!releasedDescription.getTerm().equals(description.getTerm())) return true;
-		if (!releasedDescription.getCaseSignificance().getConceptId().equals(description.getCaseSignificanceId())) return true;
-
-		return false;
 	}
 
 	private boolean updateCaseSignificance(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description, final CaseSignificance newCaseSignificance) {

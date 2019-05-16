@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
@@ -37,26 +39,26 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -162,34 +164,17 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 				context, 
 				concept.getId(), 
 				getPreviousMemberIds(concept.getId(), context), 
-				members, 
+				getUpdateableMembers(members).toSet(), 
 				id -> SnomedRequests.prepareDeleteMember(id).build()
 			);
 		}
 		
 		changed |= processInactivation(context, concept, updatedConcept);
 
-		if (changed) {
-			if (concept.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
-				updatedConcept.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
-			} else {
-				if (concept.isReleased()) {
-					long start = new Date().getTime();
-					final String branchPath = getLatestReleaseBranch(context);
-					if (!Strings.isNullOrEmpty(branchPath)) {
-						final SnomedConcept releasedConcept = SnomedRequests.prepareGetConcept(getComponentId())
-								.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-								.execute(context.service(IEventBus.class))
-								.getSync();
-						if (!isDifferentToPreviousRelease(updatedConcept.build(), releasedConcept)) {
-							updatedConcept.effectiveTime(releasedConcept.getEffectiveTime().getTime());
-						}
-						LOGGER.trace("Previous version comparison took {}", new Date().getTime() - start);
-					}
-				}
-			}
+		if (changed && concept.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+			updatedConcept.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 		}
-		
+	
 		// XXX the following updates won't and shouldn't trigger effective time unset or restoration logic
 		changed |= updateRefSet(context, concept, updatedConcept);
 		
@@ -247,37 +232,49 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 
 	private Set<String> getPreviousMemberIds(final String conceptId, TransactionContext context) {
 		SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
+			.all()
 			.filterByReferencedComponent(conceptId)
 			.build()
 			.execute(context);
 		
-		return FluentIterable.from(members)
-				.filter(m -> !FILTERED_REFSET_IDS.contains(m.getReferenceSetId()))
+		return getUpdateableMembers(members)
 				.transform(m -> m.getId())
 				.toSet();
 	}
-
-	private boolean isDifferentToPreviousRelease(SnomedConceptDocument concept, SnomedConcept releasedConcept) {
-		if (releasedConcept.isActive() != concept.isActive()) return true;
-		if (!releasedConcept.getModuleId().equals(concept.getModuleId())) return true;
-		if (releasedConcept.getDefinitionStatus().isPrimitive() != concept.isPrimitive()) return true;
-		return false;
+	
+	private FluentIterable<SnomedReferenceSetMember> getUpdateableMembers(Iterable<SnomedReferenceSetMember> members) {
+		return FluentIterable.from(members)
+				.filter(m -> !FILTERED_REFSET_IDS.contains(m.getReferenceSetId()));
 	}
 
 	private boolean updateDefinitionStatus(final TransactionContext context, final SnomedConceptDocument original, final SnomedConceptDocument.Builder concept) {
-		if (null == definitionStatus) {
-			return false;
+		final Set<String> newOwlAxiomExpressions = Optional.ofNullable(members)
+				.map(Collection::stream)
+				.orElseGet(Stream::empty)
+					.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getReferenceSetId()))
+					.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
+					.collect(Collectors.toSet());
+		
+		final String newDefinitionStatusId;
+		if (!newOwlAxiomExpressions.isEmpty()) {
+			// Calculate the definition status
+			newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newOwlAxiomExpressions).getConceptId();
+		} else {
+			if (definitionStatus == null) return false;
+			
+			final String incomingDefinitionStatusId = definitionStatus.getConceptId();
+			newDefinitionStatusId = incomingDefinitionStatusId;
 		}
-
-		final boolean existingDefinitionStatus = original.isPrimitive();
-		final boolean newDefinitionStatus = definitionStatus.isPrimitive();
-		if (existingDefinitionStatus != newDefinitionStatus) {
-			context.lookup(definitionStatus.getConceptId(), SnomedConceptDocument.class);
-			concept.primitive(newDefinitionStatus);
+		
+		final String existingDefinitionStatusId = original.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED;
+		if (!newDefinitionStatusId.equals(existingDefinitionStatusId)) {
+			context.lookup(newDefinitionStatusId, SnomedConceptDocument.class);
+			concept.primitive(Concepts.PRIMITIVE.equals(newDefinitionStatusId));
 			return true;
 		} else {
 			return false;
 		}
+		
 	}
 
 	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final SnomedConceptDocument original, final SnomedConceptDocument.Builder concept) {
@@ -320,11 +317,11 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			// Inactive --> Active: concept reactivation, clear indicator and association targets
 			// (using default values at all times)
 			
-			if (inactivationIndicator != null) {
+			if (inactivationIndicator != null && InactivationIndicator.RETIRED != inactivationIndicator) {
 				throw new BadRequestException("Cannot reactivate concept and retain or change its inactivation indicator at the same time.");
 			}
 			
-			if (associationTargets != null) {
+			if (!CompareUtils.isEmpty(associationTargets)) {
 				throw new BadRequestException("Cannot reactivate concept and retain or change its historical association targets at the same time.");
 			}
 			
@@ -451,9 +448,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (getModuleId() != null) {
 			ids.add(getModuleId());
 		}
-		if (definitionStatus != null) {
-			ids.add(definitionStatus.getConceptId());
-		}
+
+		ids.addAll(ImmutableList.of(Concepts.PRIMITIVE, Concepts.FULLY_DEFINED));
+		
 		if (inactivationIndicator != null) {
 			ids.add(inactivationIndicator.getConceptId());
 		}

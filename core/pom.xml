@@ -14,12 +14,9 @@
 	
 	<modules>
 		
-		<!-- API modules -->
-		<module>com.b2international.snowowl.api</module>
-		<module>com.b2international.snowowl.api.impl</module>
+		<!-- Admininstration REST API modules -->
 		<module>com.b2international.snowowl.api.rest</module>
 		<module>com.b2international.snowowl.api.rest.tests</module>
-		<module>com.b2international.snowowl.api.feature</module>
 		<module>com.b2international.snowowl.api.rest.feature</module>
 		
 		<!-- Identity modules -->

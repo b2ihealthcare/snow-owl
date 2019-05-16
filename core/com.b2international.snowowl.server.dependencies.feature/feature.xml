@@ -200,7 +200,7 @@ Visit us at http://b2i.sg
          id="com.google.inject"
          download-size="0"
          install-size="0"
-         version="4.0.0"
+         version="3.0.0"
          unpack="false"/>
 
    <plugin
@@ -645,22 +645,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.google.inject.assistedinject"
-         download-size="0"
-         install-size="0"
-         version="4.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="com.google.inject.multibindings"
-         download-size="0"
-         install-size="0"
-         version="4.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
          id="org.objectweb.asm.commons"
          download-size="0"
          install-size="0"
@@ -738,20 +722,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="jul.to.slf4j"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="net.bytebuddy.byte-buddy"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="net.bytebuddy.byte-buddy-agent"
          download-size="0"
          install-size="0"
@@ -774,6 +744,20 @@ Visit us at http://b2i.sg
 
    <plugin
          id="io.github.classgraph.classgraph"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="jul.to.slf4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="net.bytebuddy.byte-buddy"
          download-size="0"
          install-size="0"
          version="0.0.0"

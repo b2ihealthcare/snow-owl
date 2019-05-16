@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.snomed.reasoner.index.entry.ClassificationTaskSerializationTest;
+import com.b2international.snowowl.snomed.reasoner.index.entry.ConcreteDomainChangeSerializationTest;
 import com.b2international.snowowl.snomed.reasoner.index.entry.EquivalentConceptSetSerializationTest;
 import com.b2international.snowowl.snomed.reasoner.index.entry.RelationshipChangeSerializationTest;
 
@@ -31,6 +32,7 @@ import com.b2international.snowowl.snomed.reasoner.index.entry.RelationshipChang
 	ClassificationTaskSerializationTest.class,
 	EquivalentConceptSetSerializationTest.class,
 	RelationshipChangeSerializationTest.class,
+	ConcreteDomainChangeSerializationTest.class,
 })
 public class AllSnomedReasonerTests {
 

@@ -86,6 +86,136 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://b
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.14.2
+
+### Changed
+- Change `moduleId` of updated relationship or concrete domain member using the currently set module assigner algorithm (#341)
+- Redirect Elasticsearch log messages to SLF4J logger instead of logging to stdout (86fdc02)  
+
+### Bugs
+- Fix incorrect parent/ancestor array values on inactive SNOMED CT Concepts (#343)
+- Fix random code system allocation bug in e2e SNOMED CT test cases (03b6001)
+
+## 6.14.1
+
+### Bugs
+- Fix issue with SNOMED CT RF2 Snapshot file imports (c2a5bcd)
+
+## 6.14.0
+
+### Added
+- OWL Axiom support 
+  * Compute stated tree form based on OWL Axiom `SubClassOf` definitions
+  * Query OWL Axioms when evaluating ECL expressions on stated form
+  * Hybrid mode on definition status updates (either updates an existing OWL Expression member or the Concept's `definitionStatusId` property)
+- Effective time restore functionality for SNOMED CT Reference Set Members
+- Support for relationship group updates in classification
+- Evaluation of ECL expressions on stated form
+- New generic validation rule to report relationships with incorrect characteristic types
+
+### Changed
+- Report only active relationships with inactive reference as conflicts upon merge/rebase
+- Severity change in MRCM range validation rule
+
+### Bugs
+- Fix repeated header in Validation DSV Export API
+- Fix various issues with Simple/Map type DSV Exports
+- Fix incorrect update of concrete domain MRCM predicates
+- Fix `session disconnect` command bug
+- Properly disconnect user after failed login attempt to prevent `Already logged in` exceptions
+
+### Performance
+- Improve performance of SNOMED CT Bulk updates with lots of Reference Set Member updates
+- Improve performance of restore effective time functionality
+
+### Dependencies
+- Add SNOMED CT OWL Toolkit 2.3.2
+- Upgrade Spring to 4.3.22
+- Replace Swaggermvc 0.9.3 with Springfox 2.8.0
+- Upgrade rest-assured library to 3.2.0
+- Upgrade mapdb library to 3.0.7
+- Upgrade SLF4J to 1.7.25 
+- Upgrade Logback to 1.2.3
+- Upgrade Fastutil to 8.2.2 
+- Upgrade Tycho to 1.2.0
+
+## 6.13.1
+
+### Added
+- New MRCM attribute range validation rule (#319)
+
+### Changes
+- Numerous improvements to classification time equivalent concept merging functionality (#318)
+
+### Removed
+- Acceptability merge conflict rule (#321)
+
+### Bugs
+- Fix incorrect update of members when more than 50 members were present for a concept (b224370)
+- Fix occasional startup failure due to incorrect initialization phase used in the reasoner module (#325)
+- Fix DSV export group occurence bug (c494229)
+
+### Performance
+- Normal form generation performance improvements (#318)
+
+## 6.13.0
+
+### Added
+- SNOMED CT Validation API (#307)
+  * Validate the content of SNOMED CT with custom queries and scripts
+- Support sorting of validation issues by label (8b59181)
+- SNOMED CT Query Language improvements (#306)
+  * Support `active`, `moduleId` filters on `Concept` and `Description` components
+  * Support `languageCode`, `typeId`, `caseSignificanceId`, `preferredIn`, `acceptableIn` and `languageRefSetId` filters on SNOMED CT Descriptions
+  * Support regular expressions and exact term matching in `term` filter
+  * Add `{{...}}` syntax to match the official SNOMED CT Query Language draft syntax
+
+### Performance
+- Ignore property chain hierarchies collection if no type IDs make use of this functionality, to speed up normal form computation (a31ce0c)
+  
+### Bugs
+- Replace line break and tab characters with empty spaces when exporting `query` and `term` fields in RF2 (#304, 920a0e2)
+- Fix issues with Simple type Reference Set DSV export (#309)
+- Fix invalid validation errors when trying to import SNAPSHOT RF2 with Unpublished effective times (#308)
+- Fix errors when trying to classify relationships with inactive source/destination concepts (fa540a8)
+- Fix errors when trying to expand inactive `ancestors` or `descendants` in SNOMED CT Concept API (86f0aa0)
+- Fix UUID validation in SNOMED CT RF2 import validator (#315)
+
+## 6.12.1
+
+### Changed
+- Make classification requests more customizable/configurable (#305)
+
+### Bugs
+- Fix RF2 import lock timeout issue (#303)
+
+## 6.12.0
+
+### Added
+- SNOMED CT Query Language feature (#298)
+  * The initial version of the language supports the full `ECL v1.3` and description `term` filters
+  * `filterByQuery` method has been added to `SNOMED CT Concept Java API` 
+  * `query` parameter has been added to `GET /:path/concepts` API
+- Customizable SNOMED CT RF2 export bash script has been added to automate RF2 export tasks (#299)  
+- Support RF2 packages where the OWLExpression files names are using the new file naming convention (c3de2d0)  
+- Environment variable substitution is now supported in `snowowl_config.yml` configuration file via ${...} expressions
+- Support ECL expression in filterBy `languageRefSet`, `preferredIn` and `acceptableIn` description filters. (7709d5a)
+- `locales` parameter to history API (04cb537)
+
+### Changed
+- Apply classification changes from 7.x (#300)
+
+### Removed
+- `snomed.language` configuration key has been removed. APIs, commands now accept a list of locales in preference order to compute display names/labels/etc. (2ef2a4a)
+- Deprecated `Export RefSet to Excel` functionality has been removed (ac9927d)
+- Deprecated `RF1` and `RF2` exporter implementations (46d22e1)
+
+### Bugs
+- Fixed hot backup file path bug (23f896a, 2fff0f6)
+- Fix relationship affected component label bug in SNOMED CT validation (d69b56f)
+- Fix a few bugs in SNOMED CT Reference Set DSV export (94ccf64)
+- Improve performance of RF2 import by reducing the amount of loaded available components during init (2772cb2) 
+
 ## 6.11.0
 
 ### Breaking changes
@@ -103,10 +233,10 @@ Property groups now can contain concrete domain properties as well, not just rel
   * _NOTE: TCP connection to a cluster does not yet support authentication_
 - Java API methods to simplify synchronous execution of requests (8d0e15d)
 - Support for `childOf` HierarchyInclusionType in MRCM rules (#287)
-- Support for `dependencies` between two code system. A Code System now declare another as a dependency,  (#286)
+- Support for `dependencies` between two code system. A Code System now declare another as a dependency (#286)
 - New Concept and Description inactivation indicators (102b127) 
 
-### Changes
+### Changed
 - Make SNOMED CT Description `term` field mutable (#284)
 - Allow non-SNOMED CT identifier in `mapCategoryId` column (8b325be) 
 - Export FSN in description term columns when exporting Mapping Reference Sets to DSV (#283)

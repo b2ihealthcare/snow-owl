@@ -99,7 +99,8 @@ public final class EsTcpClient implements EsClient {
 	}
 
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, QueryBuilder query) throws IOException {
+	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, 
+			QueryBuilder query) throws IOException {
 		UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
 		
 		ubqrb.source()

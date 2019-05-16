@@ -1,0 +1,28 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SNOMED CT Query Language Module
+Bundle-Vendor: B2i Healthcare
+Bundle-Version: 6.15.0.qualifier
+Bundle-SymbolicName: com.b2international.snowowl.snomed.ql; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.emf.ecore,
+ org.antlr.runtime,
+ org.eclipse.emf.common,
+ com.b2international.snowowl.snomed.ecl;visibility:=reexport
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: org.slf4j;version="1.7.2",
+ org.apache.log4j
+Export-Package: com.b2international.snowowl.snomed.ql,
+ com.b2international.snowowl.snomed.ql.generator,
+ com.b2international.snowowl.snomed.ql.parser.antlr,
+ com.b2international.snowowl.snomed.ql.parser.antlr.internal,
+ com.b2international.snowowl.snomed.ql.parser.antlr.lexer,
+ com.b2international.snowowl.snomed.ql.ql,
+ com.b2international.snowowl.snomed.ql.ql.impl,
+ com.b2international.snowowl.snomed.ql.ql.util,
+ com.b2international.snowowl.snomed.ql.serializer,
+ com.b2international.snowowl.snomed.ql.services,
+ com.b2international.snowowl.snomed.ql.validation,
+ com.b2international.snowowl.snomed.ql.scoping
+

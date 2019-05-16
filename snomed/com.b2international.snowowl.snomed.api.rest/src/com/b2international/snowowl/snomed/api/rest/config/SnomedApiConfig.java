@@ -51,10 +51,6 @@ import com.b2international.commons.options.MetadataHolder;
 import com.b2international.commons.options.MetadataHolderMixin;
 import com.b2international.commons.options.MetadataMixin;
 import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.api.codesystem.ICodeSystemService;
-import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
-import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
-import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -158,7 +154,7 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
             .ignoredParameterTypes(Principal.class)
             .genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
             .alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
-            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare1", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
+            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
 
 	private String readApiDescription() {
@@ -196,16 +192,6 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 				.getServiceChecked(SnowOwlConfiguration.class)
 				.getModuleConfig(SnomedCoreConfiguration.class)
 				.getMaxReasonerRuns();
-	}
-	
-	@Bean
-	public ICodeSystemService codeSystemService() {
-		return new CodeSystemServiceImpl();
-	}
-	
-	@Bean
-	public ICodeSystemVersionService codeSystemVersionService() {
-		return new CodeSystemVersionServiceImpl();
 	}
 	
 	@Bean

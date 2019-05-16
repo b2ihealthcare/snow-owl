@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestReques
 import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.waitForImportJob;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -40,6 +41,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -50,6 +52,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.ImmutableMap;
+
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -57,13 +60,8 @@ import io.restassured.response.ValidatableResponse;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
-	
-	private static final String OWL_EXPRESSION = "SubClassOf("
-			+ "ObjectIntersectionOf("
-				+ "sct:73211009 Diabetes mellitus (disorder)"
-				+ "ObjectSomeValuesFrom("
-				+ "sct:42752001 Due to (attribute)sct:64572001 Disease (disorder))) "
-				+ "sct:8801005 Secondary diabetes mellitus (disorder))";
+
+	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :8801005)";
 
 	private void importArchive(final String fileName) {
 		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA);
@@ -134,9 +132,23 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void import04NewConcept() {
+		
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		
 		importArchive("SnomedCT_Release_INT_20150131_new_concept.zip");
-		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()").statusCode(200).body("pt.id", equalTo("13809498114"));
+		
+		SnomedConcept concept = getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()")
+				.statusCode(200)
+				.body("pt.id", equalTo("13809498114"))
+				.extract().as(SnomedConcept.class);
+		
+		// assert proper parent/ancestor array updates
+		
+		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getParentIds());
+		assertArrayEquals(new long[0], concept.getAncestorIds());
+		assertArrayEquals(new long[] { Long.valueOf(Concepts.ROOT_CONCEPT) }, concept.getStatedParentIds());
+		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getStatedAncestorIds());
+		
 	}
 
 	@Test
@@ -460,6 +472,22 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.REFSET_MRCM_MODULE_SCOPE, mrmcModuleScopeMember.getReferenceSetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrmcModuleScopeMember.getReferencedComponent().getId());
 		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrmcModuleScopeMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
+	}
+
+	@Test
+	public void import28ImportConceptAsInactive() {
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(404);
+		
+		importArchive("SnomedCT_Release_INT_20150131_concept_as_inactive.zip");
+
+		SnomedConcept concept = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getParentIds());
+		assertArrayEquals(new long[0], concept.getAncestorIds());
+		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getStatedParentIds());
+		assertArrayEquals(new long[0], concept.getStatedAncestorIds());
+		
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,

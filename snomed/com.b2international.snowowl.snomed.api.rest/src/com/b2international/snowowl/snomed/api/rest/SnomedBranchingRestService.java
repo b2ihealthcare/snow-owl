@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,14 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +37,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.BranchUpdateRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateBranchRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -56,9 +56,12 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
-@RequestMapping(value = "/branches") 
+@RequestMapping(value="/branches", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchingRestService extends AbstractRestService {
 
+	@Autowired 
+	private IEventBus bus;
+	
 	@ApiOperation(
 		value = "Create a new branch", 
 		notes = "Create a new branch in the SNOMED-CT repository.")
@@ -66,7 +69,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 		@ApiResponse(code = 201, message = "Created"),
 		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
 	})
-	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
 	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRestRequest request) {
 		ApiValidation.checkInput(request);
@@ -88,7 +91,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
-	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@RequestMapping(method=RequestMethod.GET)
 	public DeferredResult<Branches> getBranches(
 			@ApiParam("parent")
 			@RequestParam(value="parent", required=false)
@@ -119,7 +122,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class),
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
 	})
-	@GetMapping(value="/{path:**}/children", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)
 	public DeferredResult<Branches> getChildren(@PathVariable("path") String branchPath) {
 		return DeferredResults.wrap(
 				RepositoryRequests
@@ -138,7 +141,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
 	})
-	@GetMapping(value="/{path:**}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@RequestMapping(value="/{path:**}", method=RequestMethod.GET)
 	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
 		return DeferredResults.wrap(
 				RepositoryRequests
@@ -159,7 +162,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
 	})
-	@DeleteMapping(value="/{path:**}")
+	@RequestMapping(value="/{path:**}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
 		return DeferredResults.wrap(
@@ -181,7 +184,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 		@ApiResponse(code = 204, message = "No Content"),
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
 	})
-	@PutMapping(value="/{path:**}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@RequestMapping(value="/{path:**}", method=RequestMethod.PUT)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> updateBranch(
 			@PathVariable("path") String branchPath,
@@ -199,4 +202,5 @@ public class SnomedBranchingRestService extends AbstractRestService {
 	private URI getBranchLocationHeader(String branchPath) {
 		return linkTo(SnomedBranchingRestService.class).slash(branchPath).toUri();
 	}
+	
 }

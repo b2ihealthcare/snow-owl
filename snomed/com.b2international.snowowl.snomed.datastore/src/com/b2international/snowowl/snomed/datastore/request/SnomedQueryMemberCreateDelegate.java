@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 	@Override
 	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.QUERY);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_QUERY);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_QUERY);
 
 		if (Strings.isNullOrEmpty(getReferencedComponentId())) {
 			return createWithNewRefSet(refSet, context);
@@ -50,7 +50,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 	}
 
 	private String createWithNewRefSet(SnomedReferenceSet refSet, TransactionContext context) {
-		checkNonEmptyProperty(refSet, REFERENCED_COMPONENT);
+		checkNonEmptyProperty(REFERENCED_COMPONENT);
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 
 		// create new simple type reference set
@@ -63,7 +63,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		// add all matching members 
 		final SnomedConcepts queryResults = SnomedRequests.prepareSearchConcept()
 				.all()
-				.filterByEcl(getProperty(SnomedRf2Headers.FIELD_QUERY))
+				.filterByQuery(getProperty(SnomedRf2Headers.FIELD_QUERY))
 				.build()
 				.execute(context);
 

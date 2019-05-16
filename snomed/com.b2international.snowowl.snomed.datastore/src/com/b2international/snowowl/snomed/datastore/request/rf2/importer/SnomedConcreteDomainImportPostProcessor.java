@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
@@ -29,14 +28,14 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import org.slf4j.Logger;
+
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -44,8 +43,6 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
-import com.b2international.snowowl.snomed.datastore.ISnomedPostProcessorContext;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
@@ -84,12 +81,9 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 	private static final String INTEGER_DATATYPE_REFSET_PT = "Integer datatype reference set";
 	
 	@Override
-	public void postProcess(final ISnomedPostProcessorContext context) {
+	public void postProcess(final BranchContext context, String userId, Logger logger) {
 		
-		final SnomedCoreConfiguration config = ApplicationContext.getServiceForClass(SnowOwlConfiguration.class)
-				.getModuleConfig(SnomedCoreConfiguration.class);
-		
-		final String branch = context.branch();
+		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 		
 		if (!config.isConcreteDomainSupported()) {
 			return;
@@ -97,44 +91,44 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 		
 		List<RequestBuilder<TransactionContext, ?>> requests = newArrayList();
 		
-		if (!conceptExists(config.getConcreteDomainTypeRefsetIdentifier(), branch)) {
+		if (!conceptExists(config.getConcreteDomainTypeRefsetIdentifier(), context)) {
 
 			// create module
-			createConcept(MODULE_B2I_EXTENSION, B2I_MODULE_FSN, B2I_MODULE_PT, MODULE_ROOT, context, requests);
+			createConcept(context, logger, MODULE_B2I_EXTENSION, B2I_MODULE_FSN, B2I_MODULE_PT, MODULE_ROOT, requests);
 			
 			// create defining type refset concept
-			createConcept(REFSET_DEFINING_TYPE, DEFINING_TYPE_REFSET_FSN, DEFINING_TYPE_REFSET_PT, REFSET_ROOT_CONCEPT,
-					context, requests);
+			createConcept(context, logger, REFSET_DEFINING_TYPE, DEFINING_TYPE_REFSET_FSN, DEFINING_TYPE_REFSET_PT, REFSET_ROOT_CONCEPT,
+					requests);
 			
 			// create concrete domain type refset concept
-			createConcept(config.getConcreteDomainTypeRefsetIdentifier(), CONCRETE_DOMAIN_TYPE_REFSET_FSN,
-					CONCRETE_DOMAIN_TYPE_REFSET_PT, REFSET_DEFINING_TYPE, context, requests);
+			createConcept(context, logger, config.getConcreteDomainTypeRefsetIdentifier(), CONCRETE_DOMAIN_TYPE_REFSET_FSN,
+					CONCRETE_DOMAIN_TYPE_REFSET_PT, REFSET_DEFINING_TYPE, requests);
 			
 			// create measurement type concrete domain refset concept
-			createConcept(REFSET_MEASUREMENT_TYPE, MEASUREMENT_TYPE_REFSET_FSN, MEASUREMENT_TYPE_REFSET_PT,
-					config.getConcreteDomainTypeRefsetIdentifier(), context, requests);
+			createConcept(context, logger, REFSET_MEASUREMENT_TYPE, MEASUREMENT_TYPE_REFSET_FSN, MEASUREMENT_TYPE_REFSET_PT,
+					config.getConcreteDomainTypeRefsetIdentifier(), requests);
 
 		}
 
 		// create boolean concrete domain refset identifier concept and refset
-		createRefsetAndConcept(config.getBooleanDatatypeRefsetIdentifier(), BOOLEAN_DATATYPE_REFSET_FSN,
-				BOOLEAN_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), context, requests);
+		createRefsetAndConcept(context, logger, config.getBooleanDatatypeRefsetIdentifier(), BOOLEAN_DATATYPE_REFSET_FSN,
+				BOOLEAN_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), requests);
 		
 		// create string concrete domain refset identifier concept and refset
-		createRefsetAndConcept(config.getStringDatatypeRefsetIdentifier(), STRING_DATATYPE_REFSET_FSN,
-				STRING_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), context, requests);
+		createRefsetAndConcept(context, logger, config.getStringDatatypeRefsetIdentifier(), STRING_DATATYPE_REFSET_FSN,
+				STRING_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), requests);
 		
 		// create date-time concrete domain refset identifier concept and refset
-		createRefsetAndConcept(config.getDatetimeDatatypeRefsetIdentifier(), DATETIME_DATATYPE_REFSET_FSN,
-				DATETIME_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), context, requests);
+		createRefsetAndConcept(context, logger, config.getDatetimeDatatypeRefsetIdentifier(), DATETIME_DATATYPE_REFSET_FSN,
+				DATETIME_DATATYPE_REFSET_PT, config.getConcreteDomainTypeRefsetIdentifier(), requests);
 
 		// create integer concrete domain refset identifier concept and refset
-		createRefsetAndConcept(config.getIntegerDatatypeRefsetIdentifier(), INTEGER_DATATYPE_REFSET_FSN,
-				INTEGER_DATATYPE_REFSET_PT, REFSET_MEASUREMENT_TYPE, context, requests);
+		createRefsetAndConcept(context, logger, config.getIntegerDatatypeRefsetIdentifier(), INTEGER_DATATYPE_REFSET_FSN,
+				INTEGER_DATATYPE_REFSET_PT, REFSET_MEASUREMENT_TYPE, requests);
 		
 		// create float concrete domain refset identifier concept and refset
-		createRefsetAndConcept(config.getFloatDatatypeRefsetIdentifier(), FLOAT_DATATYPE_REFSET_FSN,
-				FLOAT_DATATYPE_REFSET_PT, REFSET_MEASUREMENT_TYPE, context, requests);
+		createRefsetAndConcept(context, logger, config.getFloatDatatypeRefsetIdentifier(), FLOAT_DATATYPE_REFSET_FSN,
+				FLOAT_DATATYPE_REFSET_PT, REFSET_MEASUREMENT_TYPE, requests);
 		
 		if (!requests.isEmpty()) {
 			
@@ -146,84 +140,86 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				
 				SnomedRequests.prepareCommit()
 					.setBody(bulkRequest)
-					.setUserId(context.getUserId())
+					.setUserId(userId)
 					.setCommitComment("Import post processor created concrete domain reference sets")
 					.setParentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
-					.execute(getServiceForClass(IEventBus.class))
-					.getSync();
+					.build()
+					.execute(context);
 				
 			} catch (final Exception e) {
-				context.getLogger().error("Caught exception while creating concrete domain reference sets in {}", getClass().getSimpleName(), e);
+				logger.error("Caught exception while creating concrete domain reference sets in {}", getClass().getSimpleName(), e);
 			}
 			
 		}
 		
 	}
 
-	private void createConcept(String conceptId, String fsn, String pt, String parentId,
-			ISnomedPostProcessorContext context, List<RequestBuilder<TransactionContext, ?>> requests) {
+	private void createConcept(BranchContext context, Logger logger, String conceptId, String fsn, String pt, String parentId, List<RequestBuilder<TransactionContext, ?>> requests) {
 
-		if (!conceptExists(conceptId, context.branch())) {
-			requests.add(createConcept(conceptId, fsn, pt, parentId, context.branch()));
-			context.getLogger().info("Created required concept for data type reference sets: '{}'", conceptId);
+		if (!conceptExists(conceptId, context)) {
+			requests.add(createConcept(conceptId, fsn, pt, parentId));
+			logger.info("Created required concept for data type reference sets: '{}'", conceptId);
 		}
 
 	}
 
-	private void createRefsetAndConcept(String conceptId, String fsn, String pt, String parentId,
-			ISnomedPostProcessorContext context, List<RequestBuilder<TransactionContext, ?>> requests) {
+	private void createRefsetAndConcept(
+			BranchContext context,
+			Logger logger,
+			String conceptId, 
+			String fsn, 
+			String pt, 
+			String parentId,
+			List<RequestBuilder<TransactionContext, ?>> requests) {
 
-		if (!conceptExists(conceptId, context.branch())) {
-			requests.add(createConcept(conceptId, fsn, pt, parentId, context.branch()));
-			context.getLogger().info("Created {} identifier concept with id: '{}'", pt.toLowerCase(), conceptId);
+		if (!conceptExists(conceptId, context)) {
+			requests.add(createConcept(conceptId, fsn, pt, parentId));
+			logger.info("Created {} identifier concept with id: '{}'", pt.toLowerCase(), conceptId);
 		}
 
-		if (!refsetExists(conceptId, context.branch())) {
-			requests.add(createRefSet(conceptId, context.branch()));
-			context.getLogger().info("Created {}", pt.toLowerCase());
+		if (!refsetExists(conceptId, context)) {
+			requests.add(createRefSet(conceptId));
+			logger.info("Created {}", pt.toLowerCase());
 		}
 
 	}
 
-	private boolean conceptExists(final String conceptId, final String branch) {
+	private boolean conceptExists(final String conceptId, final BranchContext context) {
 		return SnomedRequests.prepareSearchConcept()
 				.filterByIds(ImmutableSet.of(conceptId))
 				.setLimit(0)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
-				.execute(getServiceForClass(IEventBus.class))
-				.getSync()
+				.build()
+				.execute(context)
 				.getTotal() > 0;
 	}
 
-	private boolean refsetExists(final String refsetId, final String branch) {
+	private boolean refsetExists(final String refsetId, final BranchContext context) {
 		return SnomedRequests.prepareSearchRefSet()
 				.filterByIds(ImmutableSet.of(refsetId))
 				.setLimit(0)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
-				.execute(getServiceForClass(IEventBus.class))
-				.getSync()
+				.build()
+				.execute(context)
 				.getTotal() > 0;
 	}
 
-	private SnomedRefSetCreateRequestBuilder createRefSet(final String identifierId, final String branch) {
+	private SnomedRefSetCreateRequestBuilder createRefSet(final String identifierId) {
 		return SnomedRequests.prepareNewRefSet()
 			.setIdentifierId(identifierId)
 			.setType(SnomedRefSetType.CONCRETE_DATA_TYPE);
 	}
 
-	private SnomedConceptCreateRequestBuilder createConcept(final String identifierConceptId, final String fsnTerm, final String ptTerm, final String parent, final String branch) {
+	private SnomedConceptCreateRequestBuilder createConcept(final String identifierConceptId, final String fsnTerm, final String ptTerm, final String parent) {
 		return SnomedRequests.prepareNewConcept()
 				.setId(identifierConceptId)
 				.setActive(true)
 				.setModuleId(MODULE_B2I_EXTENSION.equals(identifierConceptId) ? MODULE_SCT_CORE : MODULE_B2I_EXTENSION) // workaround to be able to set the module for the B2i module concept
-				.addDescription(createDescription(identifierConceptId, fsnTerm, FULLY_SPECIFIED_NAME, Acceptability.PREFERRED, branch))
-				.addDescription(createDescription(identifierConceptId, ptTerm, SYNONYM, Acceptability.PREFERRED, branch))
-				.addRelationship(createIsaRelationship(identifierConceptId, parent, CharacteristicType.STATED_RELATIONSHIP, branch))
-				.addRelationship(createIsaRelationship(identifierConceptId, parent, CharacteristicType.INFERRED_RELATIONSHIP, branch));
+				.addDescription(createDescription(identifierConceptId, fsnTerm, FULLY_SPECIFIED_NAME, Acceptability.PREFERRED))
+				.addDescription(createDescription(identifierConceptId, ptTerm, SYNONYM, Acceptability.PREFERRED))
+				.addRelationship(createIsaRelationship(identifierConceptId, parent, CharacteristicType.STATED_RELATIONSHIP))
+				.addRelationship(createIsaRelationship(identifierConceptId, parent, CharacteristicType.INFERRED_RELATIONSHIP));
 	}
 	
-	private SnomedDescriptionCreateRequestBuilder createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability, final String branch) {
+	private SnomedDescriptionCreateRequestBuilder createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability) {
 		return SnomedRequests.prepareNewDescription()
 				.setIdFromNamespace(B2I_NAMESPACE)
 				.setActive(true)
@@ -236,7 +232,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				.setAcceptability(ImmutableMap.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, acceptability));
 	}
 	
-	private SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType, final String branch) {
+	private SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType) {
 		return SnomedRequests.prepareNewRelationship() 
 			.setIdFromNamespace(B2I_NAMESPACE)
 			.setActive(true)

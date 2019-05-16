@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ public class SnomedCoreConfiguration {
 	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
-	public static final String DEFAULT_LANGUAGE = "en-gb"; //$NON-NLS-1$
 	public static final int DEFAULT_MAXIMUM_REASONER_COUNT = 2;
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
@@ -55,9 +54,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String defaultReasoner = DEFAULT_REASONER;
-	
-	@NotEmpty
-	private String language = DEFAULT_LANGUAGE;
 	
 	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
@@ -144,22 +140,6 @@ public class SnomedCoreConfiguration {
 	@JsonProperty
 	public void setMaxReasonerRuns(int maxReasonerRuns) {
 		this.maxReasonerRuns = maxReasonerRuns;
-	}
-	
-	/**
-	 * @return the language code currently used for SNOMED CT
-	 */
-	@JsonProperty
-	public String getLanguage() {
-		return language;
-	}
-	
-	/**
-	 * @param language the SNOMED CT language code to set
-	 */
-	@JsonProperty
-	public void setLanguage(String language) {
-		this.language = language;
 	}
 	
 	/**
