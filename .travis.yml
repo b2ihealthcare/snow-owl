@@ -11,3 +11,10 @@ cache:
   - $HOME/.m2
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+notifications:
+  slack:
+    secure: "WMHOmUlJLbaKiF9vo1nogT4G7yUi27xNzQboRx8jgtt3KjRSFZJOAC6uxc+ffNsdrtSsXI8sH8keEUtYdzQY0tQoifXi2cakIWhZxy5cooBeLXGuhpucLUlwhk9YpWiXmuOVaariMV9nxELoe5ib6+0hoIc8b13
+AJ8uUof/Tfj0kM057NFPVEYio8S18szsQaZ1F/1wwhDG3RKBDjMdj7lWPH+1EXgi2uaR1nW/hTUnSxa/vNcjARJ+GyphVsMg5rtnwAwUD8MCKTC9JEQjWX2gs5VUQ6w5oG1f3UdFwR8Vhlj+hI8lXuSvnByhIcL9dQocDSzGX+
+5PQHioJ6dsHNoeMnPNzrWeot84bS6uKCWYrhe2qmVUH8F1445wZ5zhZL8ubFtSY7QPQXSxmSbKADa8EAxzg4oTXRIyt2ZwpkAZTy2V4viMf3KqwzSzjH3tROQW0GPgCePTM0qr8GGcYn4sP1gzXhcxV62QUMtop+GBxln+/jtA
+rjpTQP6s8Z5NGewniZf8CLxl0ngK8PGL4SBZn7fZSMiGpawtNkgowjBv4edhd2AhRb2B9nqDQZ1KRZobSN1DKg4ZgIPwBAO9HuvX1Ic2AXww42Exnp4sCM0SU1yjydFoNnqUoqnyfZ2Ucn8HTNGyuItQLqytBPztETc53Na0Sj
+auCzQqbF1u59O8="
