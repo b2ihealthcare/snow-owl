@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -247,7 +247,6 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 	}
 
 	private DB createDb() {
-		Stopwatch w = Stopwatch.createStarted();
 		try {
 			Maker dbMaker = DBMaker 
 					.fileDB(Files.createTempDirectory(rf2ArchiveId.toString()).resolve("rf2-import.db").toFile())
@@ -273,8 +272,6 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 			return db;
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Couldn't create temporary db", e);
-		} finally {
-			System.err.println("Create MapDB db: " + w);
 		}
 	}
 
