@@ -72,13 +72,16 @@ public class EventBus extends Lifecycle implements IEventBus {
 		this.description = description;
 		this.numberOfWorkers = numberOfWorkers;
 		this.executorServiceFactory = numberOfWorkers == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory();
-		this.protocolMap = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
-		this.handlerMap = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
-		this.inQueueMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
-		this.currentlyProcessingMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
-		this.succeededMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
-		this.completedMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
-		this.failedMessages = new MapMaker().concurrencyLevel(numberOfWorkers).makeMap();
+		
+		// init stat maps with at least 1 concurrencyLevel
+		final int concurrencyLevel = Math.max(1, numberOfWorkers);
+		this.protocolMap = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.handlerMap = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.inQueueMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.currentlyProcessingMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.succeededMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.completedMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.failedMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
 	}
 
 	@Override
