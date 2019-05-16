@@ -111,7 +111,6 @@ public class RestExtensions {
 			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new GuavaModule());
 			
-			System.setProperty("http.maxConnections","100");
 			RestAssuredConfig.config()
 				.objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
 					public ObjectMapper create(Type arg0, String arg1) {
@@ -119,7 +118,7 @@ public class RestExtensions {
 					}
 				}))
 				.connectionConfig(ConnectionConfig.connectionConfig().closeIdleConnectionsAfterEachResponse())
-    			.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance());
+    			.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance().setParam("http.protocol.expect-continue", true));
 			
 			// add the user to the current identity provider
 			try {
@@ -141,7 +140,7 @@ public class RestExtensions {
 	}
 
 	private static RequestSpecification givenRequestWithPassword(String api, String password) {
-		return givenUnauthenticatedRequest(api).auth().basic(USER, password);
+		return givenUnauthenticatedRequest(api).auth().preemptive().basic(USER, password);
 	}
 
 	public static RequestSpecification withJson(RequestSpecification it, Map<String, ? extends Object> properties) {
