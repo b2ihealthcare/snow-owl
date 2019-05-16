@@ -11,5 +11,4 @@ Require-Bundle: org.junit;bundle-version="4.12.0",
  org.assertj.core;bundle-version="1.7.1",
  com.b2international.index.tests.tools,
  org.apache.commons.lang,
- com.fasterxml.jackson.core.jackson-annotations,
- com.google.guava
+ com.fasterxml.jackson.core.jackson-annotations

@@ -14,7 +14,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.collections.jackson,
  com.b2international.snowowl.test.commons,
  com.b2international.index.tests.tools,
- com.fasterxml.jackson.core.jackson-databind;bundle-version="2.9.0",
- com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.9.0"
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.8.11,2.9.0]",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.8.11,2.9.0]"
 Bundle-ActivationPolicy: lazy
 Import-Package: groovy.lang;version="[2.4.13,2.5.0)"
