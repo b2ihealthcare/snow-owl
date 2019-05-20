@@ -59,6 +59,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -206,6 +207,9 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 	}
 
 	public static class Fields extends SnomedComponentDocument.Fields {
+		
+		public static final List<String> FIELDS = ImmutableList.of();
+		
 		public static final String REFSET_STORAGEKEY = "refSetStorageKey";
 		public static final String REFERRING_PREDICATES = "referringPredicates";
 		public static final String PRIMITIVE = "primitive";
