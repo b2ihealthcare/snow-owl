@@ -68,7 +68,7 @@ public abstract class AbstractRestService {
 			.add(SearchIndexResourceRequest.DOC_ID.getField())
 			.add(SearchIndexResourceRequest.SCORE.getField())
 			.build();
-		this.sortKeyPattern = Pattern.compile("^(" + String.join("|", allowedSortFields) + ")([:](asc|desc))?$");	
+		this.sortKeyPattern = Pattern.compile("^(" + String.join("|", allowedSortFields) + ")(?:[:](asc|desc))?$");
 	}
 	
 	/**
