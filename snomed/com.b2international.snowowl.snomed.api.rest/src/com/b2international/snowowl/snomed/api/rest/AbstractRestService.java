@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
@@ -91,6 +92,9 @@ public abstract class AbstractRestService {
 	 * @return
 	 */
 	protected final List<Sort> extractSortFields(List<String> sortKeys, String branch, List<ExtendedLocale> extendedLocales) {
+		if (CompareUtils.isEmpty(sortKeys)) {
+			return Collections.emptyList();
+		}
 		final List<Sort> result = Lists.newArrayList();
 		for (String sortKey : sortKeys) {
 			Matcher matcher = sortKeyPattern.matcher(sortKey);
