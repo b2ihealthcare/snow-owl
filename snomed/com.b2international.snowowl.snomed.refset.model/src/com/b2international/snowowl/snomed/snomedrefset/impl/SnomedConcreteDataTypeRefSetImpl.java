@@ -27,10 +27,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetImpl#getDataType <em>Data Type</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -59,6 +59,7 @@ public class SnomedConcreteDataTypeRefSetImpl extends SnomedStructuralRefSetImpl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public DataType getDataType() {
 		return (DataType)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET__DATA_TYPE, true);
 	}
@@ -68,6 +69,7 @@ public class SnomedConcreteDataTypeRefSetImpl extends SnomedStructuralRefSetImpl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDataType(DataType newDataType) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET__DATA_TYPE, newDataType);
 	}

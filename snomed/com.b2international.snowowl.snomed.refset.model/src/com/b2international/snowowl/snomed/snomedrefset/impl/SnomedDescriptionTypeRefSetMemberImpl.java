@@ -26,11 +26,11 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedDescriptionTypeRefSetMemberImpl#getDescriptionFormat <em>Description Format</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedDescriptionTypeRefSetMemberImpl#getDescriptionLength <em>Description Length</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -59,6 +59,7 @@ public class SnomedDescriptionTypeRefSetMemberImpl extends SnomedRefSetMemberImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getDescriptionFormat() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_DESCRIPTION_TYPE_REF_SET_MEMBER__DESCRIPTION_FORMAT, true);
 	}
@@ -68,6 +69,7 @@ public class SnomedDescriptionTypeRefSetMemberImpl extends SnomedRefSetMemberImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDescriptionFormat(String newDescriptionFormat) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_DESCRIPTION_TYPE_REF_SET_MEMBER__DESCRIPTION_FORMAT, newDescriptionFormat);
 	}
@@ -77,6 +79,7 @@ public class SnomedDescriptionTypeRefSetMemberImpl extends SnomedRefSetMemberImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public int getDescriptionLength() {
 		return (Integer)eGet(SnomedRefSetPackage.Literals.SNOMED_DESCRIPTION_TYPE_REF_SET_MEMBER__DESCRIPTION_LENGTH, true);
 	}
@@ -86,6 +89,7 @@ public class SnomedDescriptionTypeRefSetMemberImpl extends SnomedRefSetMemberImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDescriptionLength(int newDescriptionLength) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_DESCRIPTION_TYPE_REF_SET_MEMBER__DESCRIPTION_LENGTH, newDescriptionLength);
 	}

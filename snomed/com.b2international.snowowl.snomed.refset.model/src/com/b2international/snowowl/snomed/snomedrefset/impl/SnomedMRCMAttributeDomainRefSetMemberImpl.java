@@ -62,6 +62,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getDomainId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__DOMAIN_ID, true);
 	}
@@ -71,6 +72,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDomainId(String newDomainId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__DOMAIN_ID, newDomainId);
 	}
@@ -80,6 +82,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean isGrouped() {
 		return (Boolean)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__GROUPED, true);
 	}
@@ -89,6 +92,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setGrouped(boolean newGrouped) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__GROUPED, newGrouped);
 	}
@@ -98,6 +102,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getAttributeCardinality() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_CARDINALITY, true);
 	}
@@ -107,6 +112,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setAttributeCardinality(String newAttributeCardinality) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_CARDINALITY, newAttributeCardinality);
 	}
@@ -116,6 +122,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getAttributeInGroupCardinality() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_IN_GROUP_CARDINALITY, true);
 	}
@@ -125,6 +132,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setAttributeInGroupCardinality(String newAttributeInGroupCardinality) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_IN_GROUP_CARDINALITY, newAttributeInGroupCardinality);
 	}
@@ -134,6 +142,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getRuleStrengthId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__RULE_STRENGTH_ID, true);
 	}
@@ -143,6 +152,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setRuleStrengthId(String newRuleStrengthId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__RULE_STRENGTH_ID, newRuleStrengthId);
 	}
@@ -152,6 +162,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getContentTypeId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__CONTENT_TYPE_ID, true);
 	}
@@ -161,6 +172,7 @@ public class SnomedMRCMAttributeDomainRefSetMemberImpl extends SnomedRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setContentTypeId(String newContentTypeId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__CONTENT_TYPE_ID, newContentTypeId);
 	}

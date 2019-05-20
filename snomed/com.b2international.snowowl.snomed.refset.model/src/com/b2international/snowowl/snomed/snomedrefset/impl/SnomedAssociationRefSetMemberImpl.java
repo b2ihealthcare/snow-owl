@@ -27,11 +27,11 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAssociationRefSetMemberImpl#getTargetComponentId <em>Target Component Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAssociationRefSetMemberImpl#getTargetComponentType <em>Target Component Type</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -60,6 +60,7 @@ public class SnomedAssociationRefSetMemberImpl extends SnomedRefSetMemberImpl im
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getTargetComponentId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_ASSOCIATION_REF_SET_MEMBER__TARGET_COMPONENT_ID, true);
 	}
@@ -69,6 +70,7 @@ public class SnomedAssociationRefSetMemberImpl extends SnomedRefSetMemberImpl im
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setTargetComponentId(String newTargetComponentId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_ASSOCIATION_REF_SET_MEMBER__TARGET_COMPONENT_ID, newTargetComponentId);
 	}

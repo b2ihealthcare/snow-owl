@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetMemberImpl#getReferencedComponentType <em>Referenced Component Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetMemberImpl#getEffectiveTime <em>Effective Time</em>}</li>
@@ -42,7 +43,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetMemberImpl#getRefSetIdentifierId <em>Ref Set Identifier Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetMemberImpl#getUuid <em>Uuid</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -97,6 +97,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public Date getEffectiveTime() {
 		return (Date)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME, true);
 	}
@@ -106,6 +107,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setEffectiveTime(Date newEffectiveTime) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME, newEffectiveTime);
 	}
@@ -115,6 +117,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void unsetEffectiveTime() {
 		eUnset(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME);
 	}
@@ -124,6 +127,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean isSetEffectiveTime() {
 		return eIsSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME);
 	}
@@ -133,6 +137,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean isActive() {
 		return (Boolean)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE, true);
 	}
@@ -142,6 +147,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setActive(boolean newActive) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE, newActive);
 	}
@@ -151,6 +157,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedRefSet getRefSet() {
 		return (SnomedRefSet)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__REF_SET, true);
 	}
@@ -160,6 +167,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setRefSet(SnomedRefSet newRefSet) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__REF_SET, newRefSet);
 	}
@@ -169,6 +177,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean isReleased() {
 		return (Boolean)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__RELEASED, true);
 	}
@@ -178,6 +187,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setReleased(boolean newReleased) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__RELEASED, newReleased);
 	}
@@ -187,6 +197,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getReferencedComponentId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID, true);
 	}
@@ -196,6 +207,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setReferencedComponentId(String newReferencedComponentId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID, newReferencedComponentId);
 	}
@@ -205,6 +217,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getModuleId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__MODULE_ID, true);
 	}
@@ -214,6 +227,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setModuleId(String newModuleId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__MODULE_ID, newModuleId);
 	}
@@ -232,6 +246,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getUuid() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__UUID, true);
 	}
@@ -241,6 +256,7 @@ public class SnomedRefSetMemberImpl extends CDOObjectImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setUuid(String newUuid) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__UUID, newUuid);
 	}
