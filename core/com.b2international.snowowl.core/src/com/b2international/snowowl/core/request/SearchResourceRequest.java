@@ -78,6 +78,10 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			return ascending;
 		}
 		
+		public static SortField of(String field, boolean isAscending) {
+			return new SortField(field, isAscending);
+		}
+		
 		public static SortField ascending(String field) {
 			return new SortField(field, true);
 		}
@@ -112,6 +116,10 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		
 		public boolean isAscending() {
 			return ascending;
+		}
+		
+		public static SortScript of(String script, final Map<String, Object> arguments, boolean isAscending) {
+			return new SortScript(script, arguments, true);
 		}
 		
 		public static SortScript ascending(String script, final Map<String, Object> arguments) {
@@ -303,4 +311,5 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	public static String operator(String property) {
 		return String.format("%sOperator", property);
 	}
+	
 }
