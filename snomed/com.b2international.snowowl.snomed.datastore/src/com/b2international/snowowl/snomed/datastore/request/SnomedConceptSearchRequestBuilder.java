@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -158,7 +156,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
  	 * @return SnomedConceptSearchRequestBuilder
  	 * @see CharacteristicType
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByParents(Set<String> parentIds) {
+	public final SnomedConceptSearchRequestBuilder filterByParents(Iterable<String> parentIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentIds);
 	}
 
@@ -182,7 +180,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return SnomedConceptSearchRequestBuilder
 	 * @see CharacteristicType
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByStatedParents(Set<String> parentIds) {
+	public final SnomedConceptSearchRequestBuilder filterByStatedParents(Iterable<String> parentIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_PARENT, parentIds);
 	}
 
@@ -206,7 +204,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return SnomedConceptSearchRequestBuilder
 	 * @see CharacteristicType
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByAncestors(Collection<String> ancestorIds) {
+	public final SnomedConceptSearchRequestBuilder filterByAncestors(Iterable<String> ancestorIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorIds);
 	}
 
@@ -230,7 +228,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return SnomedConceptSearchRequestBuilder
 	 * @see CharacteristicType
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByStatedAncestors(Set<String> ancestorIds) {
+	public final SnomedConceptSearchRequestBuilder filterByStatedAncestors(Iterable<String> ancestorIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorIds);
 	}
 

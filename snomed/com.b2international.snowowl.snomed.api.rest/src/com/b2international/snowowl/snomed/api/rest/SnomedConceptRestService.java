@@ -122,6 +122,22 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@RequestParam(value="definitionStatus", required=false) 
 			final String definitionStatusFilter,
 			
+			@ApiParam(value="The inferred parent(s) to match")
+			@RequestParam(value="parent", required=false)
+			final String[] parents,
+			
+			@ApiParam(value="The inferred ancestor(s) to match")
+			@RequestParam(value="ancestor", required=false)
+			final String[] ancestors,
+			
+			@ApiParam(value="The stated parent(s) to match")
+			@RequestParam(value="statedParent", required=false)
+			final String[] statedParents,
+			
+			@ApiParam(value="The stated ancestor(s) to match")
+			@RequestParam(value="statedAncestor", required=false)
+			final String[] statedAncestors,
+			
 			@ApiParam(value="The description term to match")
 			@RequestParam(value="term", required=false) 
 			final String termFilter,
@@ -197,6 +213,10 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByEffectiveTime(effectiveTimeFilter)
 					.filterByDefinitionStatus(definitionStatusFilter)
 					.filterByNamespace(namespaceFilter)
+					.filterByParents(parents == null ? null : ImmutableSet.copyOf(parents))
+					.filterByAncestors(ancestors == null ? null : ImmutableSet.copyOf(ancestors))
+					.filterByStatedParents(statedParents == null ? null : ImmutableSet.copyOf(statedParents))
+					.filterByStatedAncestors(statedAncestors == null ? null : ImmutableSet.copyOf(statedAncestors))
 					.filterByEcl(eclFilter)
 					.filterByStatedEcl(statedEclFilter)
 					.filterByQuery(queryFilter)
