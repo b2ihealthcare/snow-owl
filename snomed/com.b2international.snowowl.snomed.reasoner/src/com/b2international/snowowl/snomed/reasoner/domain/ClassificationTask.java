@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.0
@@ -30,6 +33,32 @@ public final class ClassificationTask implements Serializable {
 		public static final String EQUIVALENT_CONCEPT_SETS = "equivalentConceptSets";
 		public static final String RELATIONSHIP_CHANGES = "relationshipChanges";
 		public static final String CONCRETE_DOMAIN_CHANGES = "concreteDomainChanges";
+	}
+	
+	/**
+	 * @since 6.16
+	 */
+	public static final class Fields {
+		public static final String ID = "id";
+		public static final String USER_ID = "userId";
+		public static final String REASONER_ID = "reasonerId";
+		public static final String BRANCH = "branch";
+		public static final String TIMESTAMP = "timestamp";
+		public static final String STATUS = "status";
+		public static final String CREATION_DATE = "creationDate";
+		public static final String COMPLETION_DATE = "completionDate";
+		public static final String SAVE_DATE = "saveDate";
+		
+		public static final Set<String> ALL = ImmutableSet.of(
+				ID,
+				USER_ID,
+				REASONER_ID,
+				BRANCH,
+				TIMESTAMP,
+				STATUS,
+				CREATION_DATE,
+				COMPLETION_DATE,
+				SAVE_DATE);
 	}
 
 	private String id;

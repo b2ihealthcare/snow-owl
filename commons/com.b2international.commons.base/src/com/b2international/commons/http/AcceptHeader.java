@@ -80,38 +80,18 @@ public class AcceptHeader<T> implements Comparable<AcceptHeader<T>> {
         // Stable sort ensures that values with the same quality are not reordered
         final List<AcceptHeader<T>> sortedResults = Ordering.natural().reverse().sortedCopy(resultBuilder.build());
         
-        return FluentIterable.from(sortedResults).transform(new Function<AcceptHeader<T>, T>() {
-        	@Override
-        	public T apply(AcceptHeader<T> input) {
-        		return input.getValue();
-        	}
-		}).toList();
+        return FluentIterable.from(sortedResults).transform(AcceptHeader<T>::getValue).toList();
     }
     
     public static List<Locale> parseLocales(StringReader input) throws IOException {
-    	return parse(input, new Function<String, Locale>() {
-    		@Override
-    		public Locale apply(String input) {
-    			return Locale.forLanguageTag(input);
-    		}
-		});
+    	return parse(input, Locale::forLanguageTag);
     }
     
     public static List<Long> parseLongs(StringReader input) throws IOException {
-    	return parse(input, new Function<String, Long>() {
-    		@Override
-    		public Long apply(String input) {
-    			return Long.valueOf(input);
-    		}
-		});
+    	return parse(input, Long::valueOf);
     }
     
     public static List<ExtendedLocale> parseExtendedLocales(StringReader input) throws IOException {
-    	return parse(input, new Function<String, ExtendedLocale>() {
-    		@Override
-    		public ExtendedLocale apply(String input) {
-    			return ExtendedLocale.valueOf(input);
-    		}
-		});
+    	return parse(input, ExtendedLocale::valueOf);
     }
 }

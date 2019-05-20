@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
@@ -37,10 +35,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
@@ -64,8 +60,12 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedRelationshipRestService extends AbstractSnomedRestService {
+public class SnomedRelationshipRestService extends AbstractRestService {
 
+	public SnomedRelationshipRestService() {
+		super(SnomedRelationship.Fields.ALL);
+	}
+	
 	@ApiOperation(
 			value="Retrieve Relationships from a branch", 
 			notes="Returns a list with all/filtered Relationships from a branch."
@@ -144,21 +144,15 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
+			
+			@ApiParam(value="Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sortKeys,
 
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
-		
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareSearchRelationship()
@@ -178,6 +172,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.filterByUnionGroup(unionGroupFilter)
 					.setExpand(expand)
 					.setLocales(extendedLocales)
+					.sortBy(extractSortFields(sortKeys))
 					.build(repositoryId, branch)
 					.execute(bus));
 		

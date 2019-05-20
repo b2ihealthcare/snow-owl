@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,10 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -40,10 +39,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
@@ -69,8 +67,12 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedDescriptionRestService extends AbstractSnomedRestService {
+public class SnomedDescriptionRestService extends AbstractRestService {
 
+	public SnomedDescriptionRestService() {
+		super(SnomedDescription.Fields.ALL);
+	}
+	
 	@ApiOperation(
 			value="Retrieve Descriptions from a branch", 
 			notes="Returns all Descriptions from a branch that match the specified query parameters.")
@@ -156,24 +158,24 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
+			
+			@ApiParam(value="Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sortKeys,
 
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		final List<ExtendedLocale> extendedLocales;
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
+		List<Sort> sorts = extractSortFields(sortKeys, branch, extendedLocales);
 		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
+		if (sorts.isEmpty()) {
+			final SortField sortField = StringUtils.isEmpty(termFilter) 
+					? SearchIndexResourceRequest.DOC_ID 
+					: SearchIndexResourceRequest.SCORE;
+			sorts = Collections.singletonList(sortField);
 		}
-		
-		final SortField sortField = StringUtils.isEmpty(termFilter) 
-				? SearchIndexResourceRequest.DOC_ID 
-				: SearchIndexResourceRequest.SCORE;
 		
 		final SnomedDescriptionSearchRequestBuilder req = SnomedRequests
 			.prepareSearchDescription()
@@ -216,7 +218,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 					.setScrollId(scrollId)
 					.setSearchAfter(searchAfter)
 					.setExpand(expand)
-					.sortBy(sortField)
+					.sortBy(sorts)
 					.build(repositoryId, branch)
 					.execute(bus));
 	}

@@ -17,14 +17,11 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,13 +37,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedMemberRestUpdate;
@@ -74,10 +68,11 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Reference Set Members", description="Reference Set Members", tags = { "reference set members" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestService {
+public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 
-	@Autowired
-	private IEventBus bus;
+	public SnomedReferenceSetMemberRestService() {
+		super(SnomedReferenceSetMember.Fields.ALL);
+	}
 	
 	@ApiOperation(
 			value="Retrieve reference set members from a branch", 
@@ -140,19 +135,15 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestParam(value="expand", required=false)
 			final String expand,
 			
+			@ApiParam(value="Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sortKeys,
+			
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		
 		final SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareSearchMember()
 				.setLimit(limit)
@@ -165,7 +156,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.filterByModule(moduleFilter)
 				.filterByEffectiveTime(effectiveTimeFilter)
 				.setExpand(expand)
-				.setLocales(extendedLocales);
+				.setLocales(extendedLocales)
+				.sortBy(extractSortFields(sortKeys));
 		
 		if (!CompareUtils.isEmpty(targetComponent)) {
 			req.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, targetComponent).build());
@@ -201,21 +193,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
-		
 		return DeferredResults.wrap(SnomedRequests
 				.prepareGetMember(memberId)
 				.setExpand(expand)
-				.setLocales(extendedLocales)
+				.setLocales(getExtendedLocales(acceptLanguage))
 				.build(repositoryId, branchPath)
 				.execute(bus));
 	}

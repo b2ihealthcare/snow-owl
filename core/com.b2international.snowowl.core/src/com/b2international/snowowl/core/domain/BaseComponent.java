@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,16 @@ package com.b2international.snowowl.core.domain;
  */
 public abstract class BaseComponent implements IComponent {
 
+	/**
+	 * @since 6.16
+	 */
+	public static abstract class Fields {
+		
+		public static final String ID = "id";
+		public static final String RELEASED = "released";
+		
+	}
+	
 	private long storageKey;
 	private String id;
 	private Boolean released;

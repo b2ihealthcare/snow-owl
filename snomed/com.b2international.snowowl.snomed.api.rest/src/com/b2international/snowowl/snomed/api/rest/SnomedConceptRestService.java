@@ -15,14 +15,13 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -41,10 +40,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -60,11 +57,10 @@ import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -78,8 +74,15 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Concepts", description="Concepts", tags = { "concepts" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedConceptRestService extends AbstractSnomedRestService {
+public class SnomedConceptRestService extends AbstractRestService {
 
+	public SnomedConceptRestService() {
+		super(ImmutableSet.<String>builder()
+				.addAll(SnomedConcept.Fields.ALL)
+				.add("term") // special term based sort for concepts
+				.build());
+	}
+	
 	@ApiOperation(
 			value="Retrieve Concepts from a branch", 
 			notes="Returns a list with all/filtered Concepts from a branch."
@@ -165,7 +168,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="Sort keys")
 			@RequestParam(value="sort", required=false)
-			final List<String> sortKey,
+			final List<String> sortKeys,
 			
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
@@ -173,19 +176,14 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 
-		final List<Sort> sorts = newArrayList();
-		if (!CompareUtils.isEmpty(sortKey)) {
-			final Map<Order, String> sortValuesByOrders = extractSortKeys(sortKey);
-			final List<String> languageRefSetIds = extendedLocales.stream().map(ExtendedLocale::getLanguageRefSetId).collect(Collectors.toList());
-			final List<Sort> mappedSorts = mapToSorts(branch, languageRefSetIds, sortValuesByOrders);
-			sorts.addAll(mappedSorts);
+		List<Sort> sorts = extractSortFields(sortKeys, branch, extendedLocales);
+		
+		if (sorts.isEmpty()) {
+			final SortField sortField = StringUtils.isEmpty(termFilter) 
+					? SearchIndexResourceRequest.DOC_ID 
+					: SearchIndexResourceRequest.SCORE;
+			sorts = Collections.singletonList(sortField);
 		}
-
-		final SortField sortField = StringUtils.isEmpty(termFilter) 
-				? SearchIndexResourceRequest.DOC_ID 
-				: SearchIndexResourceRequest.SCORE;
-
-		sorts.add(sortField);
 		
 		return DeferredResults.wrap(
 				SnomedRequests
@@ -378,42 +376,22 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 	
-	private Map<Order, String> extractSortKeys(List<String> sortKey) {
-		final Map<Order, String> result = Maps.newHashMap();
-		final String sortKeyPattern = "[a-zA-Z]+[:]((\\basc\\b)|(\\bdesc\\b))";
-		for (String key : sortKey) {
-			if (key.matches(sortKeyPattern)) {
-				final String[] splittedKey = key.split(":");
-				final String field = splittedKey[0];
-				final String sortDirection = splittedKey[1];
-				final Order order = Order.valueOf(sortDirection.toUpperCase());
-				result.put(order, field);
-			}
-		}
-		return result;
-	}
-
-	private List<Sort> mapToSorts(String branchPath, List<String> languageRefsetIds, Map<Order, String> fieldsByOrders) {
-		final List<Sort> sorts = newArrayList();
-		for (Entry<Order, String> sortEntries : fieldsByOrders.entrySet()) {
-			final Order order = sortEntries.getKey();
-			final String sortValue = sortEntries.getValue();
-			if (sortValue.equals(SnomedRf2Headers.FIELD_TERM)) {
-				sorts.add(toTermSort(branchPath, languageRefsetIds, order));
-			} else {
-				for (String conceptField : SnomedConceptDocument.Fields.FIELDS) {
-					if (sortValue.equals(conceptField)) {
-						sorts.add(SearchResourceRequest.SortField.of(conceptField, Order.ASC == order));
-					}
-				}
-			}
-		}
-		return sorts;
+	private URI getConceptLocationURI(String branchPath, String conceptId) {
+		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(conceptId).toUri();
 	}
 	
-	private Sort toTermSort(String branchPath, List<String> languageRefsetIds, Order order) {
+	@Override
+	protected Sort toSort(String field, boolean ascending, String branch, List<ExtendedLocale> extendedLocales) {
+		switch (field) {
+		case SnomedRf2Headers.FIELD_TERM:
+			return toTermSort(field, ascending, branch, extendedLocales);
+		}
+		return super.toSort(field, ascending, branch, extendedLocales);
+	}
+
+	private Sort toTermSort(String field, boolean ascending, String branchPath, List<ExtendedLocale> extendedLocales) {
 		final Set<String> synonymIds = SnomedRequests.prepareGetSynonyms()
-			.setFields("id")
+			.setFields(SnomedConcept.Fields.ID)
 			.build(repositoryId, branchPath)
 			.execute(bus)
 			.getSync()
@@ -421,13 +399,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.stream()
 			.map(IComponent::getId)
 			.collect(Collectors.toSet());
-		
-		final String script = "termSort";
-		final Map<String, Object> args = ImmutableMap.of("locales", languageRefsetIds, "synonymIds", synonymIds);
-		return SearchResourceRequest.SortScript.of(script, args, Order.ASC == order);
+	
+		final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(extendedLocales), "synonymIds", synonymIds);
+		return SearchResourceRequest.SortScript.of("termSort", args, ascending);
 	}
-
-	private URI getConceptLocationURI(String branchPath, String conceptId) {
-		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(conceptId).toUri();
-	}
+	
 }
