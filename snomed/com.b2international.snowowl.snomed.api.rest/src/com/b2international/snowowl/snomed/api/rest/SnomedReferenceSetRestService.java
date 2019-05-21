@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -64,7 +65,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 4.5
  */
-@Api(value = "Reference Sets", description="Reference Sets", tags = { "reference sets" })
+@Api(value = "RefSets", description="RefSets", tags = { "refsets" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedReferenceSetRestService extends AbstractRestService {
@@ -80,9 +81,9 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK", response = CollectionResource.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.GET)	
+	@GetMapping(value="/{path:**}/refsets")	
 	public @ResponseBody DeferredResult<SnomedReferenceSets> search(
-			@ApiParam(value="The branch path")
+			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branchPath,
 			

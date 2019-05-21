@@ -61,8 +61,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Relationships", description="Relationships", tags = { "relationships" })
 @RestController
-@RequestMapping(
-		produces={ AbstractRestService.SO_MEDIA_TYPE })
+@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedRelationshipRestService extends AbstractRestService {
 
 	public SnomedRelationshipRestService() {
@@ -83,7 +82,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(value="/{path:**}/relationships")
-	public DeferredResult<SnomedRelationships> search(
+	public DeferredResult<SnomedRelationships> searchByGet(
 			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -97,10 +96,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareSearchRelationship()
-					.setLimit(params.getLimit())
-					.setScroll(params.getScrollKeepAlive())
-					.setScrollId(params.getScrollId())
-					.setSearchAfter(params.getSearchAfter())
+					.filterByIds(params.getId())
 					.filterByActive(params.getActive())
 					.filterByModule(params.getModule())
 					.filterByNamespace(params.getNamespace())
@@ -111,6 +107,10 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 					.filterByDestination(params.getDestination())
 					.filterByGroup(params.getGroup())
 					.filterByUnionGroup(params.getUnionGroup())
+					.setLimit(params.getLimit())
+					.setScroll(params.getScrollKeepAlive())
+					.setScrollId(params.getScrollId())
+					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())
 					.setLocales(extendedLocales)
 					.sortBy(extractSortFields(params.getSort()))
@@ -143,7 +143,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		return search(branch, params, acceptLanguage);
+		return searchByGet(branch, params, acceptLanguage);
 	}
 	
 	@ApiOperation(

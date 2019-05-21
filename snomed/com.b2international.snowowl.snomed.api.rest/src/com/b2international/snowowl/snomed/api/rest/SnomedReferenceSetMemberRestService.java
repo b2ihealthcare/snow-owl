@@ -106,6 +106,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				.setScroll(params.getScrollKeepAlive())
 				.setScrollId(params.getScrollId())
 				.setSearchAfter(params.getSearchAfter())
+				.filterByIds(params.getId())
 				.filterByActive(params.getActive())
 				.filterByModule(params.getModule())
 				.filterByEffectiveTime(params.getEffectiveTime())

@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -86,7 +85,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(value="/{path:**}/descriptions")
-	public @ResponseBody DeferredResult<SnomedDescriptions> searchByGet(
+	public DeferredResult<SnomedDescriptions> searchByGet(
 			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -109,14 +108,17 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		
 		final SnomedDescriptionSearchRequestBuilder req = SnomedRequests
 			.prepareSearchDescription()
+			.filterByIds(params.getId())
+			.filterByEffectiveTime(params.getEffectiveTime())
 			.filterByActive(params.getActive())
-			.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
 			.filterByModule(params.getModule())
-			.filterByNamespace(params.getNamespace())
 			.filterByConcept(params.getConcept())
-			.filterByCaseSignificance(params.getCaseSignificance())
+			.filterByLanguageCodes(params.getLanguageCode() == null ? null : ImmutableSet.copyOf(params.getLanguageCode()))
+			.filterByType(params.getType())
 			.filterByTerm(params.getTerm())
-			.filterByType(params.getType());
+			.filterByCaseSignificance(params.getCaseSignificance())
+			.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
+			.filterByNamespace(params.getNamespace());
 
 		if (params.getAcceptableIn() == null && params.getPreferredIn() == null && params.getLanguageRefSet() == null) {
 			if (params.getAcceptability() != null) {
@@ -162,7 +164,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping(value="/{path:**}/descriptions/search")
-	public @ResponseBody DeferredResult<SnomedDescriptions> searchByPost(
+	public DeferredResult<SnomedDescriptions> searchByPost(
 			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,

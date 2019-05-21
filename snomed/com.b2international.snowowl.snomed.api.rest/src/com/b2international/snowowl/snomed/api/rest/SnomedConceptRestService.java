@@ -130,9 +130,10 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.setScroll(params.getScrollKeepAlive())
 					.setScrollId(params.getScrollId())
 					.setSearchAfter(params.getSearchAfter())
+					.filterByIds(params.getId())
+					.filterByEffectiveTime(params.getEffectiveTime())
 					.filterByActive(params.getActive())
 					.filterByModule(params.getModule())
-					.filterByEffectiveTime(params.getEffectiveTime())
 					.filterByDefinitionStatus(params.getDefinitionStatus())
 					.filterByNamespace(params.getNamespace())
 					.filterByParents(params.getParents() == null ? null : ImmutableSet.copyOf(params.getParents()))
@@ -168,11 +169,11 @@ public class SnomedConceptRestService extends AbstractRestService {
 	})
 	@PostMapping(value="/{path:**}/concepts/search")
 	public @ResponseBody DeferredResult<SnomedConcepts> searchByPost(
-			@ApiParam(value="The branch path")
+			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
-			@RequestBody
+			@RequestBody(required = false)
 			final SnomedConceptRestSearch body,
 			
 			@ApiParam(value="Accepted language tags, in order of preference")

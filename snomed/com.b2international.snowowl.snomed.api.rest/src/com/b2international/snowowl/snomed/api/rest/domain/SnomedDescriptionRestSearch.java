@@ -29,72 +29,75 @@ public final class SnomedDescriptionRestSearch {
 
 	@ApiParam(value = "The Description identifier(s) to match")
 	private Set<String> id;
-	
-	@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
+
+	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
-	
-	@ApiParam(value="The status to match")
+
+	@ApiParam(value = "The status to match")
 	private Boolean active;
 
-	@ApiParam(value="The module identifier to match")
+	@ApiParam(value = "The module identifier to match")
 	private String module;
-	
-	@ApiParam(value="The namespace to match")
+
+	@ApiParam(value = "The namespace to match")
 	private String namespace;
-	
-	@ApiParam(value="The term to match")
+
+	@ApiParam(value = "The term to match")
 	private String term;
 
-	@ApiParam(value="The concept ECL expression to match")
+	@ApiParam(value = "The concept ECL expression to match")
 	private String concept;
-	
-	@ApiParam(value="The type ECL expression to match")
+
+	@ApiParam(value = "The language code to match")
+	private String[] languageCode;
+
+	@ApiParam(value = "The type ECL expression to match")
 	private String type;
-	
-	@ApiParam(value="The case significance ECL expression to match")
+
+	@ApiParam(value = "The case significance ECL expression to match")
 	private String caseSignificance;
 
-	@ApiParam(value="Semantic tag(s) to match")
+	@ApiParam(value = "Semantic tag(s) to match")
 	private String[] semanticTag;
-	
-	@ApiParam(value="The acceptability to match. DEPRECATED! Use acceptableIn or preferredIn!")
+
+	@ApiParam(value = "The acceptability to match. DEPRECATED! Use acceptableIn or preferredIn!")
 	private Acceptability acceptability;
-	
-	@ApiParam(value="Acceptable membership to match in these language refsets")
+
+	@ApiParam(value = "Acceptable membership to match in these language refsets")
 	private String[] acceptableIn;
-	
-	@ApiParam(value="Preferred membership to match in these language refsets")
+
+	@ApiParam(value = "Preferred membership to match in these language refsets")
 	private String[] preferredIn;
-	
-	@ApiParam(value="Any membership to match in these language refsets")
+
+	@ApiParam(value = "Any membership to match in these language refsets")
 	private String[] languageRefSet;
-	
-	@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
+
+	@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
 	private String scrollKeepAlive;
-	
-	@ApiParam(value="A scrollId to continue scrolling a previous query")
+
+	@ApiParam(value = "A scrollId to continue scrolling a previous query")
 	private String scrollId;
-	
-	@ApiParam(value="The search key to use for retrieving the next page of results")
+
+	@ApiParam(value = "The search key to use for retrieving the next page of results")
 	private String searchAfter;
 
-	@ApiParam(value="The maximum number of items to return")
+	@ApiParam(value = "The maximum number of items to return")
 	private int limit = 50;
-	
-	@ApiParam(value="Expansion parameters")
+
+	@ApiParam(value = "Expansion parameters")
 	private String expand;
-	
-	@ApiParam(value="Sort keys")
+
+	@ApiParam(value = "Sort keys")
 	private List<String> sort;
 
 	public Set<String> getId() {
 		return id;
 	}
-	
+
 	public void setId(Set<String> id) {
 		this.id = id;
 	}
-	
+
 	public String getEffectiveTime() {
 		return effectiveTime;
 	}
@@ -141,6 +144,14 @@ public final class SnomedDescriptionRestSearch {
 
 	public void setConcept(String concept) {
 		this.concept = concept;
+	}
+	
+	public String[] getLanguageCode() {
+		return languageCode;
+	}
+	
+	public void setLanguageCode(String[] languageCode) {
+		this.languageCode = languageCode;
 	}
 
 	public String getType() {
@@ -246,7 +257,5 @@ public final class SnomedDescriptionRestSearch {
 	public void setSort(List<String> sort) {
 		this.sort = sort;
 	}
-	
-	
-	
+
 }
