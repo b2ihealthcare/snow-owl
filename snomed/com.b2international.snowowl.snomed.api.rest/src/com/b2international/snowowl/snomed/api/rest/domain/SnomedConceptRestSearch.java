@@ -58,13 +58,13 @@ public final class SnomedConceptRestSearch {
 
 	// hiearchy filters
 	@ApiParam(value = "The inferred parent(s) to match")
-	private String[] parents;
+	private String[] parent;
 	@ApiParam(value = "The inferred ancestor(s) to match")
-	private String[] ancestors;
+	private String[] ancestor;
 	@ApiParam(value = "The stated parent(s) to match")
-	private String[] statedParents;
+	private String[] statedParent;
 	@ApiParam(value = "The stated ancestor(s) to match")
-	private String[] statedAncestors;
+	private String[] statedAncestor;
 
 	// scrolling/paging/expansion/sorting
 	@ApiParam(value = "Expansion parameters")
@@ -128,36 +128,36 @@ public final class SnomedConceptRestSearch {
 		this.definitionStatus = definitionStatus;
 	}
 
-	public String[] getParents() {
-		return parents;
+	public String[] getParent() {
+		return parent;
 	}
 
-	public void setParents(String[] parents) {
-		this.parents = parents;
+	public void setParent(String[] parent) {
+		this.parent = parent;
 	}
 
-	public String[] getAncestors() {
-		return ancestors;
+	public String[] getAncestor() {
+		return ancestor;
 	}
 
-	public void setAncestors(String[] ancestors) {
-		this.ancestors = ancestors;
+	public void setAncestor(String[] ancestor) {
+		this.ancestor = ancestor;
 	}
 
-	public String[] getStatedParents() {
-		return statedParents;
+	public String[] getStatedParent() {
+		return statedParent;
 	}
 
-	public void setStatedParents(String[] statedParents) {
-		this.statedParents = statedParents;
+	public void setStatedParents(String[] statedParent) {
+		this.statedParent = statedParent;
 	}
 
-	public String[] getStatedAncestors() {
-		return statedAncestors;
+	public String[] getStatedAncestor() {
+		return statedAncestor;
 	}
 
-	public void setStatedAncestors(String[] statedAncestors) {
-		this.statedAncestors = statedAncestors;
+	public void setStatedAncestor(String[] statedAncestor) {
+		this.statedAncestor = statedAncestor;
 	}
 
 	public String getEcl() {
