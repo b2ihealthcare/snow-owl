@@ -102,93 +102,11 @@ public class SnomedConceptRestService extends AbstractRestService {
 	})
 	@GetMapping(value="/{path:**}/concepts")
 	public @ResponseBody DeferredResult<SnomedConcepts> searchByGet(
-			@ApiParam(value="The branch path")
+			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
-			@ApiParam(value="The concept status to match")
-			@RequestParam(value="active", required=false) 
-			final Boolean activeFilter,
-			
-			@ApiParam(value="The concept module identifier to match")
-			@RequestParam(value="module", required=false) 
-			final String moduleFilter,
-			
-			@ApiParam(value="The namespace to match")
-			@RequestParam(value="namespace", required=false) 
-			final String namespaceFilter,
-			
-			@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
-			@RequestParam(value="effectiveTime", required=false) 
-			final String effectiveTimeFilter,
-			
-			@ApiParam(value="The definition status to match")
-			@RequestParam(value="definitionStatus", required=false) 
-			final String definitionStatusFilter,
-			
-			@ApiParam(value="The inferred parent(s) to match")
-			@RequestParam(value="parent", required=false)
-			final String[] parents,
-			
-			@ApiParam(value="The inferred ancestor(s) to match")
-			@RequestParam(value="ancestor", required=false)
-			final String[] ancestors,
-			
-			@ApiParam(value="The stated parent(s) to match")
-			@RequestParam(value="statedParent", required=false)
-			final String[] statedParents,
-			
-			@ApiParam(value="The stated ancestor(s) to match")
-			@RequestParam(value="statedAncestor", required=false)
-			final String[] statedAncestors,
-			
-			@ApiParam(value="The description term to match")
-			@RequestParam(value="term", required=false) 
-			final String termFilter,
-
-			@ApiParam(value="The ECL expression to match on the inferred form")
-			@RequestParam(value="ecl", required=false) 
-			final String eclFilter,
-			
-			@ApiParam(value="The ECL expression to match on the stated form")
-			@RequestParam(value="statedEcl", required=false) 
-			final String statedEclFilter,
-			
-			@ApiParam(value="The SNOMED CT Query expression to match (inferred form only)")
-			@RequestParam(value="query", required=false) 
-			final String queryFilter,
-			
-			@ApiParam(value="Description semantic tag(s) to match")
-			@RequestParam(value="semanticTag", required=false)
-			final String[] semanticTags,
-			
-			@ApiParam(value="Description type ECL expression to match")
-			@RequestParam(value="descriptionType", required=false) 
-			final String descriptionTypeFilter,
-			
-			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false) 
-			final String scrollKeepAlive,
-			
-			@ApiParam(value="A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false) 
-			final String scrollId,
-			
-			@ApiParam(value="The search key to use for retrieving the next page of results")
-			@RequestParam(value="searchAfter", required=false) 
-			final String searchAfter,
-
-			@ApiParam(value="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit,
-			
-			@ApiParam(value="Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
-			
-			@ApiParam(value="Sort keys")
-			@RequestParam(value="sort", required=false)
-			final List<String> sortKeys,
+			final SnomedConceptRestSearch params,
 			
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
@@ -196,10 +114,10 @@ public class SnomedConceptRestService extends AbstractRestService {
 		
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 
-		List<Sort> sorts = extractSortFields(sortKeys, branch, extendedLocales);
+		List<Sort> sorts = extractSortFields(params.getSort(), branch, extendedLocales);
 		
 		if (sorts.isEmpty()) {
-			final SortField sortField = StringUtils.isEmpty(termFilter) 
+			final SortField sortField = StringUtils.isEmpty(params.getTerm()) 
 					? SearchIndexResourceRequest.DOC_ID 
 					: SearchIndexResourceRequest.SCORE;
 			sorts = Collections.singletonList(sortField);
@@ -208,27 +126,27 @@ public class SnomedConceptRestService extends AbstractRestService {
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareSearchConcept()
-					.setLimit(limit)
-					.setScroll(scrollKeepAlive)
-					.setScrollId(scrollId)
-					.setSearchAfter(searchAfter)
-					.filterByActive(activeFilter)
-					.filterByModule(moduleFilter)
-					.filterByEffectiveTime(effectiveTimeFilter)
-					.filterByDefinitionStatus(definitionStatusFilter)
-					.filterByNamespace(namespaceFilter)
-					.filterByParents(parents == null ? null : ImmutableSet.copyOf(parents))
-					.filterByAncestors(ancestors == null ? null : ImmutableSet.copyOf(ancestors))
-					.filterByStatedParents(statedParents == null ? null : ImmutableSet.copyOf(statedParents))
-					.filterByStatedAncestors(statedAncestors == null ? null : ImmutableSet.copyOf(statedAncestors))
-					.filterByEcl(eclFilter)
-					.filterByStatedEcl(statedEclFilter)
-					.filterByQuery(queryFilter)
-					.filterByTerm(termFilter)
+					.setLimit(params.getLimit())
+					.setScroll(params.getScrollKeepAlive())
+					.setScrollId(params.getScrollId())
+					.setSearchAfter(params.getSearchAfter())
+					.filterByActive(params.getActive())
+					.filterByModule(params.getModule())
+					.filterByEffectiveTime(params.getEffectiveTime())
+					.filterByDefinitionStatus(params.getDefinitionStatus())
+					.filterByNamespace(params.getNamespace())
+					.filterByParents(params.getParents() == null ? null : ImmutableSet.copyOf(params.getParents()))
+					.filterByAncestors(params.getAncestors() == null ? null : ImmutableSet.copyOf(params.getAncestors()))
+					.filterByStatedParents(params.getStatedParents() == null ? null : ImmutableSet.copyOf(params.getStatedParents()))
+					.filterByStatedAncestors(params.getStatedAncestors() == null ? null : ImmutableSet.copyOf(params.getStatedAncestors()))
+					.filterByEcl(params.getEcl())
+					.filterByStatedEcl(params.getStatedEcl())
+					.filterByQuery(params.getQuery())
+					.filterByTerm(params.getTerm())
 					.filterByDescriptionLanguageRefSet(extendedLocales)
-					.filterByDescriptionType(descriptionTypeFilter)
-					.filterByDescriptionSemanticTags(semanticTags == null ? null : ImmutableSet.copyOf(semanticTags))
-					.setExpand(expand)
+					.filterByDescriptionType(params.getDescriptionType())
+					.filterByDescriptionSemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
+					.setExpand(params.getExpand())
 					.setLocales(extendedLocales)
 					.sortBy(sorts)
 					.build(repositoryId, branch)
@@ -261,30 +179,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		return searchByGet(
-				branch, 
-				body.getActive(), 
-				body.getModule(), 
-				body.getNamespace(), 
-				body.getEffectiveTime(), 
-				body.getDefinitionStatus(),
-				body.getParents(), 
-				body.getAncestors(), 
-				body.getStatedParents(), 
-				body.getStatedAncestors(), 
-				body.getTerm(), 
-				body.getEcl(),
-				body.getStatedEcl(), 
-				body.getQuery(), 
-				body.getSemanticTag(), 
-				body.getDescriptionType(), 
-				body.getScrollKeepAlive(), 
-				body.getScrollId(),
-				body.getSearchAfter(), 
-				body.getLimit(), 
-				body.getExpand(), 
-				body.getSort(), 
-				acceptLanguage);
+		return searchByGet(branch, body, acceptLanguage);
 	}
 
 	@ApiOperation(
