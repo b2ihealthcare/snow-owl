@@ -123,16 +123,16 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			return ascending;
 		}
 		
-		public static SortScript of(String script, final Map<String, Object> arguments, boolean isAscending) {
-			return new SortScript(script, arguments, isAscending);
+		public static SortScript of(String script, final Map<String, Object> arguments, boolean ascending) {
+			return new SortScript(script, arguments, ascending);
 		}
 		
 		public static SortScript ascending(String script, final Map<String, Object> arguments) {
-			return new SortScript(script, arguments, true);
+			return of(script, arguments, true);
 		}
 		
 		public static SortScript descending(String script, final Map<String, Object> arguments) {
-			return new SortScript(script, arguments, false);
+			return of(script, arguments, false);
 		}
 		
 	}
