@@ -26,11 +26,14 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +54,7 @@ import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestInput;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestSearch;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
@@ -93,11 +97,11 @@ public class SnomedConceptRestService extends AbstractRestService {
 					+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
-		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/concepts", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<SnomedConcepts> search(
+	@GetMapping(value="/{path:**}/concepts")
+	public @ResponseBody DeferredResult<SnomedConcepts> searchByGet(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branch,
@@ -187,7 +191,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			final List<String> sortKeys,
 			
 			@ApiParam(value="Accepted language tags, in order of preference")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
@@ -229,6 +233,58 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.sortBy(sorts)
 					.build(repositoryId, branch)
 					.execute(bus));
+	}
+	
+	@ApiOperation(
+			value="Retrieve Concepts from a branch", 
+			notes="Returns a list with all/filtered Concepts from a branch."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
+					+ "&bull; fsn() &ndash; the description representing the concept's fully specified name in the given locale<br>"
+					+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+	})
+	@PostMapping(value="/{path:**}/concepts/search")
+	public @ResponseBody DeferredResult<SnomedConcepts> searchByPost(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branch,
+
+			@RequestBody
+			final SnomedConceptRestSearch body,
+			
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+		
+		return searchByGet(
+				branch, 
+				body.getActive(), 
+				body.getModule(), 
+				body.getNamespace(), 
+				body.getEffectiveTime(), 
+				body.getDefinitionStatus(),
+				body.getParents(), 
+				body.getAncestors(), 
+				body.getStatedParents(), 
+				body.getStatedAncestors(), 
+				body.getTerm(), 
+				body.getEcl(),
+				body.getStatedEcl(), 
+				body.getQuery(), 
+				body.getSemanticTag(), 
+				body.getDescriptionType(), 
+				body.getScrollKeepAlive(), 
+				body.getScrollId(),
+				body.getSearchAfter(), 
+				body.getLimit(), 
+				body.getExpand(), 
+				body.getSort(), 
+				acceptLanguage);
 	}
 
 	@ApiOperation(
