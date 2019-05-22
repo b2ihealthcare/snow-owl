@@ -375,6 +375,10 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}
+	
+	public void setDefinitionStatusId(final String definitionStatusId) {
+		this.definitionStatus = DefinitionStatus.getByConceptId(definitionStatusId);
+	}
 
 	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
