@@ -26,10 +26,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMappingRefSetImpl#getMapTargetComponentType <em>Map Target Component Type</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -58,6 +58,7 @@ public class SnomedMappingRefSetImpl extends SnomedRegularRefSetImpl implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public short getMapTargetComponentType() {
 		return (Short)eGet(SnomedRefSetPackage.Literals.SNOMED_MAPPING_REF_SET__MAP_TARGET_COMPONENT_TYPE, true);
 	}
@@ -67,6 +68,7 @@ public class SnomedMappingRefSetImpl extends SnomedRegularRefSetImpl implements 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMapTargetComponentType(short newMapTargetComponentType) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MAPPING_REF_SET__MAP_TARGET_COMPONENT_TYPE, newMapTargetComponentType);
 	}

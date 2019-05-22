@@ -63,6 +63,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public int getMapGroup() {
 		return (Integer)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_GROUP, true);
 	}
@@ -72,6 +73,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMapGroup(int newMapGroup) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_GROUP, newMapGroup);
 	}
@@ -81,6 +83,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public int getMapPriority() {
 		return (Integer)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_PRIORITY, true);
 	}
@@ -90,6 +93,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMapPriority(int newMapPriority) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_PRIORITY, newMapPriority);
 	}
@@ -99,6 +103,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getMapRule() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_RULE, true);
 	}
@@ -108,6 +113,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMapRule(String newMapRule) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_RULE, newMapRule);
 	}
@@ -117,6 +123,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getMapAdvice() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_ADVICE, true);
 	}
@@ -126,6 +133,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMapAdvice(String newMapAdvice) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_ADVICE, newMapAdvice);
 	}
@@ -135,6 +143,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getCorrelationId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__CORRELATION_ID, true);
 	}
@@ -144,6 +153,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setCorrelationId(String newCorrelationId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__CORRELATION_ID, newCorrelationId);
 	}
@@ -153,6 +163,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getMapCategoryId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_CATEGORY_ID, true);
 	}
@@ -162,6 +173,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMapCategoryId(String newMapCategoryId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_CATEGORY_ID, newMapCategoryId);
 	}

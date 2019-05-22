@@ -26,10 +26,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedLanguageRefSetMemberImpl#getAcceptabilityId <em>Acceptability Id</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -58,6 +58,7 @@ public class SnomedLanguageRefSetMemberImpl extends SnomedRefSetMemberImpl imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getAcceptabilityId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID, true);
 	}
@@ -67,6 +68,7 @@ public class SnomedLanguageRefSetMemberImpl extends SnomedRefSetMemberImpl imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setAcceptabilityId(String newAcceptabilityId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID, newAcceptabilityId);
 	}

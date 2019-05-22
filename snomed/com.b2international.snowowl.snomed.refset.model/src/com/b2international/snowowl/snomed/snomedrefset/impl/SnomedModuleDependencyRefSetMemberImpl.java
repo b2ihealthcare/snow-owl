@@ -28,11 +28,11 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedModuleDependencyRefSetMemberImpl#getSourceEffectiveTime <em>Source Effective Time</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedModuleDependencyRefSetMemberImpl#getTargetEffectiveTime <em>Target Effective Time</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -61,6 +61,7 @@ public class SnomedModuleDependencyRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public Date getSourceEffectiveTime() {
 		return (Date)eGet(SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME, true);
 	}
@@ -70,6 +71,7 @@ public class SnomedModuleDependencyRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setSourceEffectiveTime(Date newSourceEffectiveTime) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME, newSourceEffectiveTime);
 	}
@@ -79,6 +81,7 @@ public class SnomedModuleDependencyRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public Date getTargetEffectiveTime() {
 		return (Date)eGet(SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME, true);
 	}
@@ -88,6 +91,7 @@ public class SnomedModuleDependencyRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setTargetEffectiveTime(Date newTargetEffectiveTime) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME, newTargetEffectiveTime);
 	}

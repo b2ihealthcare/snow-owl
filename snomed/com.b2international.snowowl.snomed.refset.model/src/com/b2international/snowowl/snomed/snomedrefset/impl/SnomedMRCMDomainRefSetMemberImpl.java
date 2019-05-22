@@ -63,6 +63,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getDomainConstraint() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_CONSTRAINT, true);
 	}
@@ -72,6 +73,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDomainConstraint(String newDomainConstraint) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_CONSTRAINT, newDomainConstraint);
 	}
@@ -81,6 +83,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getParentDomain() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PARENT_DOMAIN, true);
 	}
@@ -90,6 +93,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setParentDomain(String newParentDomain) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PARENT_DOMAIN, newParentDomain);
 	}
@@ -99,6 +103,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getProximalPrimitiveConstraint() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_CONSTRAINT, true);
 	}
@@ -108,6 +113,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setProximalPrimitiveConstraint(String newProximalPrimitiveConstraint) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_CONSTRAINT, newProximalPrimitiveConstraint);
 	}
@@ -117,6 +123,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getProximalPrimitiveRefinement() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_REFINEMENT, true);
 	}
@@ -126,6 +133,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setProximalPrimitiveRefinement(String newProximalPrimitiveRefinement) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_REFINEMENT, newProximalPrimitiveRefinement);
 	}
@@ -135,6 +143,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getDomainTemplateForPrecoordination() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_PRECOORDINATION, true);
 	}
@@ -144,6 +153,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDomainTemplateForPrecoordination(String newDomainTemplateForPrecoordination) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_PRECOORDINATION, newDomainTemplateForPrecoordination);
 	}
@@ -153,6 +163,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getDomainTemplateForPostcoordination() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, true);
 	}
@@ -162,6 +173,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDomainTemplateForPostcoordination(String newDomainTemplateForPostcoordination) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, newDomainTemplateForPostcoordination);
 	}
@@ -171,6 +183,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getEditorialGuideReference() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__EDITORIAL_GUIDE_REFERENCE, true);
 	}
@@ -180,6 +193,7 @@ public class SnomedMRCMDomainRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setEditorialGuideReference(String newEditorialGuideReference) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__EDITORIAL_GUIDE_REFERENCE, newEditorialGuideReference);
 	}

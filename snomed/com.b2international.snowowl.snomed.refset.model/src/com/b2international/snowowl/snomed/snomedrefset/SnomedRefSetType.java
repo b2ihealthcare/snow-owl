@@ -546,6 +546,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * Returns with the value of the type.
 	 * @generated
 	 */
+	@Override
 	public int getValue() {
 	  return value;
 	}
@@ -554,6 +555,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * Returns with the human readable name of the type.
 	 * @generated
 	 */
+	@Override
 	public String getName() {
 	  return name;
 	}
@@ -562,6 +564,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * Returns with the literal of the type.
 	 * @generated
 	 */
+	@Override
 	public String getLiteral() {
 	  return literal;
 	}
