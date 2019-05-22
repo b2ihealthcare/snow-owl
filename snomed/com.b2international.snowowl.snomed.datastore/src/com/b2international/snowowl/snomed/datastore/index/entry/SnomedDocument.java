@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.ContainerIdProvider;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -132,10 +132,10 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 	}
 	
 	public static class Fields extends RevisionDocument.Fields {
-		public static final String MODULE_ID = SnomedComponent.Fields.MODULE_ID;
-		public static final String RELEASED = SnomedComponent.Fields.RELEASED;
-		public static final String ACTIVE = SnomedComponent.Fields.ACTIVE;
-		public static final String EFFECTIVE_TIME = SnomedComponent.Fields.EFFECTIVE_TIME;
+		public static final String MODULE_ID = SnomedRf2Headers.FIELD_MODULE_ID;
+		public static final String ACTIVE = SnomedRf2Headers.FIELD_ACTIVE;
+		public static final String EFFECTIVE_TIME = SnomedRf2Headers.FIELD_EFFECTIVE_TIME;
+		public static final String RELEASED = "released";
 	}
 
 	private final boolean released;
