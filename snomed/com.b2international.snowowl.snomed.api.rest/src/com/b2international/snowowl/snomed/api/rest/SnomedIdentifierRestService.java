@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Collections;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierResponse;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
@@ -45,8 +45,9 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value="/ids", produces = { AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedIdentifierRestService extends AbstractRestService {
 
-	@Autowired
-	private IEventBus bus;
+	public SnomedIdentifierRestService() {
+		super(Collections.emptySet());
+	}
 	
 	@ApiOperation(
 			value="Create a new SNOMED CT Identifier", 

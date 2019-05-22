@@ -27,10 +27,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedQueryRefSetMemberImpl#getQuery <em>Query</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -59,6 +59,7 @@ public class SnomedQueryRefSetMemberImpl extends SnomedRefSetMemberImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getQuery() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER__QUERY, true);
 	}
@@ -68,6 +69,7 @@ public class SnomedQueryRefSetMemberImpl extends SnomedRefSetMemberImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setQuery(String newQuery) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER__QUERY, newQuery);
 	}

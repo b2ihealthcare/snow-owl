@@ -64,6 +64,7 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public int getGroup() {
 		return (Integer)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__GROUP, true);
 	}
@@ -73,6 +74,7 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setGroup(int newGroup) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__GROUP, newGroup);
 	}
@@ -82,6 +84,7 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getSerializedValue() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__SERIALIZED_VALUE, true);
 	}
@@ -91,6 +94,7 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setSerializedValue(String newSerializedValue) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__SERIALIZED_VALUE, newSerializedValue);
 	}
@@ -100,6 +104,7 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getTypeId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__TYPE_ID, true);
 	}
@@ -109,6 +114,7 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setTypeId(String newTypeId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__TYPE_ID, newTypeId);
 	}
@@ -132,6 +138,7 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getCharacteristicTypeId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__CHARACTERISTIC_TYPE_ID, true);
 	}
@@ -141,6 +148,7 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setCharacteristicTypeId(String newCharacteristicTypeId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__CHARACTERISTIC_TYPE_ID, newCharacteristicTypeId);
 	}

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -40,11 +42,15 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedConceptHistoryRestService extends AbstractSnomedRestService {
+public class SnomedConceptHistoryRestService extends AbstractRestService {
 
 	@Autowired
 	protected ISnomedConceptHistoryService delegate;
 
+	public SnomedConceptHistoryRestService() {
+		super(Collections.emptySet());
+	}
+	
 	@ApiOperation(
 			value="Retrieve history for a Concept", 
 			notes="Returns the change history for the specified Concept.")

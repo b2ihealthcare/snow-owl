@@ -28,10 +28,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRegularRefSetImpl#getMembers <em>Members</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -61,6 +61,7 @@ public class SnomedRegularRefSetImpl extends SnomedRefSetImpl implements SnomedR
 	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public EList<SnomedRefSetMember> getMembers() {
 		return (EList<SnomedRefSetMember>)eGet(SnomedRefSetPackage.Literals.SNOMED_REGULAR_REF_SET__MEMBERS, true);
 	}

@@ -27,12 +27,12 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMemb
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedSimpleMapRefSetMemberImpl#getMapTargetComponentId <em>Map Target Component Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedSimpleMapRefSetMemberImpl#getMapTargetComponentType <em>Map Target Component Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedSimpleMapRefSetMemberImpl#getMapTargetComponentDescription <em>Map Target Component Description</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -61,6 +61,7 @@ public class SnomedSimpleMapRefSetMemberImpl extends SnomedRefSetMemberImpl impl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getMapTargetComponentId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER__MAP_TARGET_COMPONENT_ID, true);
 	}
@@ -70,6 +71,7 @@ public class SnomedSimpleMapRefSetMemberImpl extends SnomedRefSetMemberImpl impl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMapTargetComponentId(String newMapTargetComponentId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER__MAP_TARGET_COMPONENT_ID, newMapTargetComponentId);
 	}
@@ -102,6 +104,7 @@ public class SnomedSimpleMapRefSetMemberImpl extends SnomedRefSetMemberImpl impl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getMapTargetComponentDescription() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER__MAP_TARGET_COMPONENT_DESCRIPTION, true);
 	}
@@ -111,6 +114,7 @@ public class SnomedSimpleMapRefSetMemberImpl extends SnomedRefSetMemberImpl impl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMapTargetComponentDescription(String newMapTargetComponentDescription) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER__MAP_TARGET_COMPONENT_DESCRIPTION, newMapTargetComponentDescription);
 	}

@@ -134,6 +134,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedRegularRefSet createSnomedRegularRefSet() {
 		SnomedRegularRefSetImpl snomedRegularRefSet = new SnomedRegularRefSetImpl();
 		return snomedRegularRefSet;
@@ -144,6 +145,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedStructuralRefSet createSnomedStructuralRefSet() {
 		SnomedStructuralRefSetImpl snomedStructuralRefSet = new SnomedStructuralRefSetImpl();
 		return snomedStructuralRefSet;
@@ -154,6 +156,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedMappingRefSet createSnomedMappingRefSet() {
 		SnomedMappingRefSetImpl snomedMappingRefSet = new SnomedMappingRefSetImpl();
 		return snomedMappingRefSet;
@@ -164,6 +167,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedConcreteDataTypeRefSet createSnomedConcreteDataTypeRefSet() {
 		SnomedConcreteDataTypeRefSetImpl snomedConcreteDataTypeRefSet = new SnomedConcreteDataTypeRefSetImpl();
 		return snomedConcreteDataTypeRefSet;
@@ -174,6 +178,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedRefSetMember createSnomedRefSetMember() {
 		SnomedRefSetMemberImpl snomedRefSetMember = new SnomedRefSetMemberImpl();
 		return snomedRefSetMember;
@@ -184,6 +189,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedDescriptionTypeRefSetMember createSnomedDescriptionTypeRefSetMember() {
 		SnomedDescriptionTypeRefSetMemberImpl snomedDescriptionTypeRefSetMember = new SnomedDescriptionTypeRefSetMemberImpl();
 		return snomedDescriptionTypeRefSetMember;
@@ -194,6 +200,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedSimpleMapRefSetMember createSnomedSimpleMapRefSetMember() {
 		SnomedSimpleMapRefSetMemberImpl snomedSimpleMapRefSetMember = new SnomedSimpleMapRefSetMemberImpl();
 		return snomedSimpleMapRefSetMember;
@@ -204,6 +211,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedComplexMapRefSetMember createSnomedComplexMapRefSetMember() {
 		SnomedComplexMapRefSetMemberImpl snomedComplexMapRefSetMember = new SnomedComplexMapRefSetMemberImpl();
 		return snomedComplexMapRefSetMember;
@@ -214,6 +222,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedQueryRefSetMember createSnomedQueryRefSetMember() {
 		SnomedQueryRefSetMemberImpl snomedQueryRefSetMember = new SnomedQueryRefSetMemberImpl();
 		return snomedQueryRefSetMember;
@@ -224,6 +233,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedAttributeValueRefSetMember createSnomedAttributeValueRefSetMember() {
 		SnomedAttributeValueRefSetMemberImpl snomedAttributeValueRefSetMember = new SnomedAttributeValueRefSetMemberImpl();
 		return snomedAttributeValueRefSetMember;
@@ -234,6 +244,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedLanguageRefSetMember createSnomedLanguageRefSetMember() {
 		SnomedLanguageRefSetMemberImpl snomedLanguageRefSetMember = new SnomedLanguageRefSetMemberImpl();
 		return snomedLanguageRefSetMember;
@@ -244,6 +255,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedConcreteDataTypeRefSetMember createSnomedConcreteDataTypeRefSetMember() {
 		SnomedConcreteDataTypeRefSetMemberImpl snomedConcreteDataTypeRefSetMember = new SnomedConcreteDataTypeRefSetMemberImpl();
 		return snomedConcreteDataTypeRefSetMember;
@@ -254,6 +266,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedAssociationRefSetMember createSnomedAssociationRefSetMember() {
 		SnomedAssociationRefSetMemberImpl snomedAssociationRefSetMember = new SnomedAssociationRefSetMemberImpl();
 		return snomedAssociationRefSetMember;
@@ -264,6 +277,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedModuleDependencyRefSetMember createSnomedModuleDependencyRefSetMember() {
 		SnomedModuleDependencyRefSetMemberImpl snomedModuleDependencyRefSetMember = new SnomedModuleDependencyRefSetMemberImpl();
 		return snomedModuleDependencyRefSetMember;
@@ -274,6 +288,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedAnnotationRefSetMember createSnomedAnnotationRefSetMember() {
 		SnomedAnnotationRefSetMemberImpl snomedAnnotationRefSetMember = new SnomedAnnotationRefSetMemberImpl();
 		return snomedAnnotationRefSetMember;
@@ -284,6 +299,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedOWLExpressionRefSetMember createSnomedOWLExpressionRefSetMember() {
 		SnomedOWLExpressionRefSetMemberImpl snomedOWLExpressionRefSetMember = new SnomedOWLExpressionRefSetMemberImpl();
 		return snomedOWLExpressionRefSetMember;
@@ -294,6 +310,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedMRCMDomainRefSetMember createSnomedMRCMDomainRefSetMember() {
 		SnomedMRCMDomainRefSetMemberImpl snomedMRCMDomainRefSetMember = new SnomedMRCMDomainRefSetMemberImpl();
 		return snomedMRCMDomainRefSetMember;
@@ -304,6 +321,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedMRCMAttributeDomainRefSetMember createSnomedMRCMAttributeDomainRefSetMember() {
 		SnomedMRCMAttributeDomainRefSetMemberImpl snomedMRCMAttributeDomainRefSetMember = new SnomedMRCMAttributeDomainRefSetMemberImpl();
 		return snomedMRCMAttributeDomainRefSetMember;
@@ -314,6 +332,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedMRCMAttributeRangeRefSetMember createSnomedMRCMAttributeRangeRefSetMember() {
 		SnomedMRCMAttributeRangeRefSetMemberImpl snomedMRCMAttributeRangeRefSetMember = new SnomedMRCMAttributeRangeRefSetMemberImpl();
 		return snomedMRCMAttributeRangeRefSetMember;
@@ -324,6 +343,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedMRCMModuleScopeRefSetMember createSnomedMRCMModuleScopeRefSetMember() {
 		SnomedMRCMModuleScopeRefSetMemberImpl snomedMRCMModuleScopeRefSetMember = new SnomedMRCMModuleScopeRefSetMemberImpl();
 		return snomedMRCMModuleScopeRefSetMember;
@@ -374,6 +394,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedRefSetPackage getSnomedRefSetPackage() {
 		return (SnomedRefSetPackage)getEPackage();
 	}

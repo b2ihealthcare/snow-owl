@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -32,6 +33,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -81,11 +83,10 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 * 
 	 * @since 5.10
 	 */
-	public static final class Expand {
+	public static final class Expand extends SnomedCoreComponent.Expand {
 
 		public static final String REFERENCE_SET = "referenceSet";
 		public static final String INACTIVATION_PROPERTIES = "inactivationProperties";
-		public static final String REFERRING_MEMBERS = "members";
 		public static final String STATED_ANCESTORS = "statedAncestors";
 		public static final String ANCESTORS = "ancestors";
 		public static final String STATED_DESCENDANTS = "statedDescendants";
@@ -97,6 +98,25 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		public static final String PREFERRED_TERM = "pt";
 		public static final Object PREFERRED_DESCRIPTIONS = "preferredDescriptions";
 
+	}
+	
+	/**
+	 * @since 6.16
+	 */
+	public static final class Fields extends SnomedCoreComponent.Fields {
+
+		public static final String DEFINITION_STATUS_ID = SnomedRf2Headers.FIELD_DEFINITION_STATUS_ID;
+		
+		public static final Set<String> ALL = ImmutableSet.of(
+				// RF2 properties
+				ID,
+				EFFECTIVE_TIME,
+				ACTIVE,
+				MODULE_ID,
+				DEFINITION_STATUS_ID,
+				// additional fields
+				RELEASED);
+		
 	}
 	
 	/**
@@ -165,9 +185,18 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 	}
 	
+	/**
+	 * @deprecated - get the definitionStatusId from {@link #getDefinitionStatusId()} method
+	 */
+	@JsonProperty
 	@Override
 	public DefinitionStatus getDefinitionStatus() {
 		return definitionStatus;
+	}
+	
+	@JsonProperty
+	public String getDefinitionStatusId() {
+		return definitionStatus == null ? null : definitionStatus.getConceptId();
 	}
 
 	/**
@@ -342,8 +371,13 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		return statedParentIds == null ? null : Arrays.stream(statedParentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 	
+	@JsonIgnore
 	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
+	}
+	
+	public void setDefinitionStatusId(final String definitionStatusId) {
+		this.definitionStatus = DefinitionStatus.getByConceptId(definitionStatusId);
 	}
 
 	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {

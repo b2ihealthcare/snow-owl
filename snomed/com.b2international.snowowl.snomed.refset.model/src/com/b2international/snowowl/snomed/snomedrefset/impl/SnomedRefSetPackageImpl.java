@@ -283,6 +283,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedRefSet() {
 		return snomedRefSetEClass;
 	}
@@ -292,6 +293,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSet_Type() {
 		return (EAttribute)snomedRefSetEClass.getEStructuralFeatures().get(0);
 	}
@@ -301,6 +303,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSet_ReferencedComponentType() {
 		return (EAttribute)snomedRefSetEClass.getEStructuralFeatures().get(1);
 	}
@@ -310,6 +313,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSet_IdentifierId() {
 		return (EAttribute)snomedRefSetEClass.getEStructuralFeatures().get(2);
 	}
@@ -319,6 +323,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedRegularRefSet() {
 		return snomedRegularRefSetEClass;
 	}
@@ -328,6 +333,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getSnomedRegularRefSet_Members() {
 		return (EReference)snomedRegularRefSetEClass.getEStructuralFeatures().get(0);
 	}
@@ -337,6 +343,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedStructuralRefSet() {
 		return snomedStructuralRefSetEClass;
 	}
@@ -346,6 +353,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedMappingRefSet() {
 		return snomedMappingRefSetEClass;
 	}
@@ -355,6 +363,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMappingRefSet_MapTargetComponentType() {
 		return (EAttribute)snomedMappingRefSetEClass.getEStructuralFeatures().get(0);
 	}
@@ -364,6 +373,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedConcreteDataTypeRefSet() {
 		return snomedConcreteDataTypeRefSetEClass;
 	}
@@ -373,6 +383,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedConcreteDataTypeRefSet_DataType() {
 		return (EAttribute)snomedConcreteDataTypeRefSetEClass.getEStructuralFeatures().get(0);
 	}
@@ -382,6 +393,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedRefSetMember() {
 		return snomedRefSetMemberEClass;
 	}
@@ -391,6 +403,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSetMember_ReferencedComponentType() {
 		return (EAttribute)snomedRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -400,6 +413,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSetMember_EffectiveTime() {
 		return (EAttribute)snomedRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -409,6 +423,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSetMember_Active() {
 		return (EAttribute)snomedRefSetMemberEClass.getEStructuralFeatures().get(2);
 	}
@@ -418,6 +433,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getSnomedRefSetMember_RefSet() {
 		return (EReference)snomedRefSetMemberEClass.getEStructuralFeatures().get(3);
 	}
@@ -427,6 +443,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSetMember_Released() {
 		return (EAttribute)snomedRefSetMemberEClass.getEStructuralFeatures().get(4);
 	}
@@ -436,6 +453,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSetMember_ReferencedComponentId() {
 		return (EAttribute)snomedRefSetMemberEClass.getEStructuralFeatures().get(5);
 	}
@@ -445,6 +463,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSetMember_ModuleId() {
 		return (EAttribute)snomedRefSetMemberEClass.getEStructuralFeatures().get(6);
 	}
@@ -454,6 +473,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSetMember_RefSetIdentifierId() {
 		return (EAttribute)snomedRefSetMemberEClass.getEStructuralFeatures().get(7);
 	}
@@ -463,6 +483,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedRefSetMember_Uuid() {
 		return (EAttribute)snomedRefSetMemberEClass.getEStructuralFeatures().get(8);
 	}
@@ -472,6 +493,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedDescriptionTypeRefSetMember() {
 		return snomedDescriptionTypeRefSetMemberEClass;
 	}
@@ -481,6 +503,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedDescriptionTypeRefSetMember_DescriptionFormat() {
 		return (EAttribute)snomedDescriptionTypeRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -490,6 +513,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedDescriptionTypeRefSetMember_DescriptionLength() {
 		return (EAttribute)snomedDescriptionTypeRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -499,6 +523,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedSimpleMapRefSetMember() {
 		return snomedSimpleMapRefSetMemberEClass;
 	}
@@ -508,6 +533,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedSimpleMapRefSetMember_MapTargetComponentId() {
 		return (EAttribute)snomedSimpleMapRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -517,6 +543,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedSimpleMapRefSetMember_MapTargetComponentType() {
 		return (EAttribute)snomedSimpleMapRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -526,6 +553,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedSimpleMapRefSetMember_MapTargetComponentDescription() {
 		return (EAttribute)snomedSimpleMapRefSetMemberEClass.getEStructuralFeatures().get(2);
 	}
@@ -535,6 +563,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedComplexMapRefSetMember() {
 		return snomedComplexMapRefSetMemberEClass;
 	}
@@ -544,6 +573,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedComplexMapRefSetMember_MapGroup() {
 		return (EAttribute)snomedComplexMapRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -553,6 +583,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedComplexMapRefSetMember_MapPriority() {
 		return (EAttribute)snomedComplexMapRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -562,6 +593,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedComplexMapRefSetMember_MapRule() {
 		return (EAttribute)snomedComplexMapRefSetMemberEClass.getEStructuralFeatures().get(2);
 	}
@@ -571,6 +603,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedComplexMapRefSetMember_MapAdvice() {
 		return (EAttribute)snomedComplexMapRefSetMemberEClass.getEStructuralFeatures().get(3);
 	}
@@ -580,6 +613,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedComplexMapRefSetMember_CorrelationId() {
 		return (EAttribute)snomedComplexMapRefSetMemberEClass.getEStructuralFeatures().get(4);
 	}
@@ -589,6 +623,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedComplexMapRefSetMember_MapCategoryId() {
 		return (EAttribute)snomedComplexMapRefSetMemberEClass.getEStructuralFeatures().get(5);
 	}
@@ -598,6 +633,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedQueryRefSetMember() {
 		return snomedQueryRefSetMemberEClass;
 	}
@@ -607,6 +643,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedQueryRefSetMember_Query() {
 		return (EAttribute)snomedQueryRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -616,6 +653,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedAttributeValueRefSetMember() {
 		return snomedAttributeValueRefSetMemberEClass;
 	}
@@ -625,6 +663,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedAttributeValueRefSetMember_ValueId() {
 		return (EAttribute)snomedAttributeValueRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -634,6 +673,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedLanguageRefSetMember() {
 		return snomedLanguageRefSetMemberEClass;
 	}
@@ -643,6 +683,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedLanguageRefSetMember_AcceptabilityId() {
 		return (EAttribute)snomedLanguageRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -652,6 +693,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedConcreteDataTypeRefSetMember() {
 		return snomedConcreteDataTypeRefSetMemberEClass;
 	}
@@ -661,6 +703,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedConcreteDataTypeRefSetMember_Group() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -670,6 +713,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedConcreteDataTypeRefSetMember_SerializedValue() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -679,6 +723,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedConcreteDataTypeRefSetMember_TypeId() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(2);
 	}
@@ -688,6 +733,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedConcreteDataTypeRefSetMember_DataType() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(3);
 	}
@@ -697,6 +743,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedConcreteDataTypeRefSetMember_CharacteristicTypeId() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(4);
 	}
@@ -706,6 +753,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedAssociationRefSetMember() {
 		return snomedAssociationRefSetMemberEClass;
 	}
@@ -715,6 +763,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedAssociationRefSetMember_TargetComponentId() {
 		return (EAttribute)snomedAssociationRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -724,6 +773,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedAssociationRefSetMember_TargetComponentType() {
 		return (EAttribute)snomedAssociationRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -733,6 +783,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedModuleDependencyRefSetMember() {
 		return snomedModuleDependencyRefSetMemberEClass;
 	}
@@ -742,6 +793,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedModuleDependencyRefSetMember_SourceEffectiveTime() {
 		return (EAttribute)snomedModuleDependencyRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -751,6 +803,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedModuleDependencyRefSetMember_TargetEffectiveTime() {
 		return (EAttribute)snomedModuleDependencyRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -760,6 +813,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedAnnotationRefSetMember() {
 		return snomedAnnotationRefSetMemberEClass;
 	}
@@ -769,6 +823,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedAnnotationRefSetMember_Annotation() {
 		return (EAttribute)snomedAnnotationRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -778,6 +833,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedOWLExpressionRefSetMember() {
 		return snomedOWLExpressionRefSetMemberEClass;
 	}
@@ -787,6 +843,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedOWLExpressionRefSetMember_OwlExpression() {
 		return (EAttribute)snomedOWLExpressionRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -796,6 +853,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedMRCMDomainRefSetMember() {
 		return snomedMRCMDomainRefSetMemberEClass;
 	}
@@ -805,6 +863,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMDomainRefSetMember_DomainConstraint() {
 		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -814,6 +873,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMDomainRefSetMember_ParentDomain() {
 		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -823,6 +883,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMDomainRefSetMember_ProximalPrimitiveConstraint() {
 		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(2);
 	}
@@ -832,6 +893,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMDomainRefSetMember_ProximalPrimitiveRefinement() {
 		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(3);
 	}
@@ -841,6 +903,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMDomainRefSetMember_DomainTemplateForPrecoordination() {
 		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(4);
 	}
@@ -850,6 +913,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMDomainRefSetMember_DomainTemplateForPostcoordination() {
 		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(5);
 	}
@@ -859,6 +923,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMDomainRefSetMember_EditorialGuideReference() {
 		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(6);
 	}
@@ -868,6 +933,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedMRCMAttributeDomainRefSetMember() {
 		return snomedMRCMAttributeDomainRefSetMemberEClass;
 	}
@@ -877,6 +943,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_DomainId() {
 		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -886,6 +953,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_Grouped() {
 		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -895,6 +963,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_AttributeCardinality() {
 		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(2);
 	}
@@ -904,6 +973,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_AttributeInGroupCardinality() {
 		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(3);
 	}
@@ -913,6 +983,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_RuleStrengthId() {
 		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(4);
 	}
@@ -922,6 +993,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_ContentTypeId() {
 		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(5);
 	}
@@ -931,6 +1003,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedMRCMAttributeRangeRefSetMember() {
 		return snomedMRCMAttributeRangeRefSetMemberEClass;
 	}
@@ -940,6 +1013,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeRangeRefSetMember_RangeConstraint() {
 		return (EAttribute)snomedMRCMAttributeRangeRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -949,6 +1023,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeRangeRefSetMember_AttributeRule() {
 		return (EAttribute)snomedMRCMAttributeRangeRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
@@ -958,6 +1033,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeRangeRefSetMember_RuleStrengthId() {
 		return (EAttribute)snomedMRCMAttributeRangeRefSetMemberEClass.getEStructuralFeatures().get(2);
 	}
@@ -967,6 +1043,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMAttributeRangeRefSetMember_ContentTypeId() {
 		return (EAttribute)snomedMRCMAttributeRangeRefSetMemberEClass.getEStructuralFeatures().get(3);
 	}
@@ -976,6 +1053,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getSnomedMRCMModuleScopeRefSetMember() {
 		return snomedMRCMModuleScopeRefSetMemberEClass;
 	}
@@ -985,6 +1063,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getSnomedMRCMModuleScopeRefSetMember_MrcmRuleRefsetId() {
 		return (EAttribute)snomedMRCMModuleScopeRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
@@ -994,6 +1073,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EEnum getSnomedRefSetType() {
 		return snomedRefSetTypeEEnum;
 	}
@@ -1003,6 +1083,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EEnum getDataType() {
 		return dataTypeEEnum;
 	}
@@ -1012,6 +1093,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedRefSetFactory getSnomedRefSetFactory() {
 		return (SnomedRefSetFactory)getEFactoryInstance();
 	}
@@ -1347,6 +1429,13 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		   new String[] {
 			   "columnType", "LONG VARCHAR",
 			   "columnLength", "32768"
+		   });
+		addAnnotation
+		  (getSnomedQueryRefSetMember_Query(),
+		   source,
+		   new String[] {
+			   "columnType", "VARCHAR",
+			   "columnLength", "8192"
 		   });
 		addAnnotation
 		  (getSnomedAnnotationRefSetMember_Annotation(),
