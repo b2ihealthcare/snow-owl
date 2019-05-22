@@ -250,7 +250,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.setLocales(export.getLocales())
 			.setIncludePreReleaseContent(includeUnpublished)
 			.setModules(export.getModuleIds())
-			.setRefSets(export.getRefsets())
+			.setRefSets(export.getRefsetIds())
 			.setCountryNamespaceElement(export.getNamespaceId())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(export.getTransientEffectiveTime())

@@ -49,7 +49,7 @@ public class SnomedExportRestConfiguration {
 	private String namespaceId = "INT";
 	
 	private Collection<String> moduleIds;
-	private Collection<String> refsets;
+	private Collection<String> refsetIds;
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
 	private String transientEffectiveTime;
@@ -162,12 +162,12 @@ public class SnomedExportRestConfiguration {
 	 * 
 	 * @return a collection of refset IDs.
 	 */
-	public Collection<String> getRefsets() {
-		return refsets;
+	public Collection<String> getRefsetIds() {
+		return refsetIds;
 	}
 	
-	public void setRefsets(Collection<String> refsets) {
-		this.refsets = refsets;
+	public void setRefsetIds(Collection<String> refsets) {
+		this.refsetIds = refsets;
 	}
 	
 	/**
