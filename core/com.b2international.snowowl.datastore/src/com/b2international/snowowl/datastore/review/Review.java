@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 package com.b2international.snowowl.datastore.review;
 
 import java.util.Date;
+import java.util.Set;
 
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a terminology review comparing changes on branches.
@@ -27,11 +29,13 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
  * @since 4.2
  */
 @Doc(type="review")
-public class Review {
+public final class Review {
 
-	public static class Fields {
+	public static final class Fields {
+		public static final String ID = "id";
 		public static final String LAST_UPDATED = "lastUpdated";
 		public static final String STATUS = "status";
+		public static final Set<String> ALL = ImmutableSet.of(ID, LAST_UPDATED, STATUS);
 	}
 	
 	private final String id;

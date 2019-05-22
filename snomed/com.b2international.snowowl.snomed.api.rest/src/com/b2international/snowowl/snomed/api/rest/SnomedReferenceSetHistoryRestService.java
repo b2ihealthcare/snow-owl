@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +42,14 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "History", description="History", tags = { "history" })
 @RestController
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedReferenceSetHistoryRestService extends AbstractSnomedRestService {
+public class SnomedReferenceSetHistoryRestService extends AbstractRestService {
 
 	@Autowired
 	protected ISnomedReferenceSetHistoryService delegate;
+	
+	public SnomedReferenceSetHistoryRestService() {
+		super(Collections.emptySet());
+	}
 
 	@ApiOperation(
 			value="Get history for a reference set", 

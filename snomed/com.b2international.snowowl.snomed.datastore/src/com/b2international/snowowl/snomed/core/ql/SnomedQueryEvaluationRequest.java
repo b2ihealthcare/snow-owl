@@ -50,6 +50,7 @@ import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
 import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.NestedQuery;
 import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
 import com.b2international.snowowl.snomed.ql.ql.Query;
 import com.b2international.snowowl.snomed.ql.ql.QueryConjunction;
@@ -118,6 +119,10 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	protected Promise<Expression> eval(BranchContext context, final Query query) {
 		return evaluate(context, query.getQuery());
 	}
+	
+	protected Promise<Expression> eval(BranchContext context, final NestedQuery query) {
+		return eval(context, query.getNested());
+	} 
 	
 	protected Promise<Expression> eval(BranchContext context, final QueryConjunction conjunction) {
 		return Promise.all(evaluate(context, conjunction.getLeft()), evaluate(context, conjunction.getRight()))

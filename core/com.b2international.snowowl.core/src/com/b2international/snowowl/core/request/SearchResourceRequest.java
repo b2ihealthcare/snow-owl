@@ -62,6 +62,9 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	}
 	
 	public static class SortField implements Sort {
+		
+		private static final long serialVersionUID = 1L;
+		
 		private final String field;
 		private final boolean ascending;
 		
@@ -78,17 +81,23 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			return ascending;
 		}
 		
+		public static SortField of(String field, boolean ascending) {
+			return new SortField(field, ascending);
+		}
+		
 		public static SortField ascending(String field) {
-			return new SortField(field, true);
+			return of(field, true);
 		}
 		
 		public static SortField descending(String field) {
-			return new SortField(field, false);
+			return of(field, false);
 		}
 		
 	}
 	
 	public static class SortScript implements Sort {
+		
+		private static final long serialVersionUID = 1L;
 		
 		private final String script;
 		private final Map<String, Object> arguments;
@@ -114,12 +123,16 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			return ascending;
 		}
 		
+		public static SortScript of(String script, final Map<String, Object> arguments, boolean ascending) {
+			return new SortScript(script, arguments, ascending);
+		}
+		
 		public static SortScript ascending(String script, final Map<String, Object> arguments) {
-			return new SortScript(script, arguments, true);
+			return of(script, arguments, true);
 		}
 		
 		public static SortScript descending(String script, final Map<String, Object> arguments) {
-			return new SortScript(script, arguments, false);
+			return of(script, arguments, false);
 		}
 		
 	}
@@ -303,4 +316,5 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	public static String operator(String property) {
 		return String.format("%sOperator", property);
 	}
+	
 }

@@ -206,6 +206,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 	}
 
 	public static class Fields extends SnomedComponentDocument.Fields {
+		
 		public static final String REFSET_STORAGEKEY = "refSetStorageKey";
 		public static final String REFERRING_PREDICATES = "referringPredicates";
 		public static final String PRIMITIVE = "primitive";

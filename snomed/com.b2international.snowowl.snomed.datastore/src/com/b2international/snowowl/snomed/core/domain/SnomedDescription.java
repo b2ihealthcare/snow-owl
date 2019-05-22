@@ -16,16 +16,19 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -52,6 +55,36 @@ public final class SnomedDescription extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * @since 6.16
+	 */
+	public static final class Fields extends SnomedCoreComponent.Fields {
+		
+		public static final String CONCEPT_ID = SnomedRf2Headers.FIELD_CONCEPT_ID;
+		public static final String LANGUAGE_CODE = SnomedRf2Headers.FIELD_LANGUAGE_CODE;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String TERM = SnomedRf2Headers.FIELD_TERM;
+		public static final String CASE_SIGNIFICANCE_ID = SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID;
+		public static final String SEMANTIC_TAG = "semanticTag";
+		
+		public static final Set<String> ALL = ImmutableSet.<String>builder()
+				// RF2 properties
+				.add(ID)
+				.add(EFFECTIVE_TIME)
+				.add(ACTIVE)
+				.add(MODULE_ID)
+				.add(CONCEPT_ID)
+				.add(LANGUAGE_CODE)
+				.add(TYPE_ID)
+				.add(TERM)
+				.add(CASE_SIGNIFICANCE_ID)
+				// additional fields
+				.add(RELEASED)
+				.add(SEMANTIC_TAG)
+				.build();
+		
+	}
+	
 	private String term;
 	private String semanticTag;
 	private String languageCode;
