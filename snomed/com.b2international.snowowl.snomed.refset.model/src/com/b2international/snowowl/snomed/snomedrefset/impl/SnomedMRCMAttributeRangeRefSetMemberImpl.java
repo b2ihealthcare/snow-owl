@@ -60,6 +60,7 @@ public class SnomedMRCMAttributeRangeRefSetMemberImpl extends SnomedRefSetMember
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getRangeConstraint() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RANGE_CONSTRAINT, true);
 	}
@@ -69,6 +70,7 @@ public class SnomedMRCMAttributeRangeRefSetMemberImpl extends SnomedRefSetMember
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setRangeConstraint(String newRangeConstraint) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RANGE_CONSTRAINT, newRangeConstraint);
 	}
@@ -78,6 +80,7 @@ public class SnomedMRCMAttributeRangeRefSetMemberImpl extends SnomedRefSetMember
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getAttributeRule() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__ATTRIBUTE_RULE, true);
 	}
@@ -87,6 +90,7 @@ public class SnomedMRCMAttributeRangeRefSetMemberImpl extends SnomedRefSetMember
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setAttributeRule(String newAttributeRule) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__ATTRIBUTE_RULE, newAttributeRule);
 	}
@@ -96,6 +100,7 @@ public class SnomedMRCMAttributeRangeRefSetMemberImpl extends SnomedRefSetMember
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getRuleStrengthId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RULE_STRENGTH_ID, true);
 	}
@@ -105,6 +110,7 @@ public class SnomedMRCMAttributeRangeRefSetMemberImpl extends SnomedRefSetMember
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setRuleStrengthId(String newRuleStrengthId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RULE_STRENGTH_ID, newRuleStrengthId);
 	}
@@ -114,6 +120,7 @@ public class SnomedMRCMAttributeRangeRefSetMemberImpl extends SnomedRefSetMember
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getContentTypeId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__CONTENT_TYPE_ID, true);
 	}
@@ -123,6 +130,7 @@ public class SnomedMRCMAttributeRangeRefSetMemberImpl extends SnomedRefSetMember
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setContentTypeId(String newContentTypeId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__CONTENT_TYPE_ID, newContentTypeId);
 	}

@@ -58,6 +58,7 @@ public class SnomedAnnotationRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getAnnotation() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION, true);
 	}
@@ -67,6 +68,7 @@ public class SnomedAnnotationRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setAnnotation(String newAnnotation) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION, newAnnotation);
 	}

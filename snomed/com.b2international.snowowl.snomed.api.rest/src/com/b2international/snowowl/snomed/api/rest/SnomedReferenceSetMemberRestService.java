@@ -17,19 +17,18 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,17 +39,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedMemberRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetMemberRestInput;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedReferenceSetMemberRestSearch;
 import com.b2international.snowowl.snomed.api.rest.request.RefSetMemberRequestResolver;
 import com.b2international.snowowl.snomed.api.rest.request.RequestResolver;
 import com.b2international.snowowl.snomed.api.rest.request.RestRequest;
@@ -71,13 +68,14 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 4.5
  */
-@Api(value = "Reference Set Members", description="Reference Set Members", tags = { "reference set members" })
+@Api(value = "Members", description="Members", tags = { "members" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestService {
+public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 
-	@Autowired
-	private IEventBus bus;
+	public SnomedReferenceSetMemberRestService() {
+		super(SnomedReferenceSetMember.Fields.ALL);
+	}
 	
 	@ApiOperation(
 			value="Retrieve reference set members from a branch", 
@@ -89,89 +87,65 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members", method=RequestMethod.GET)	
-	public @ResponseBody DeferredResult<SnomedReferenceSetMembers> search(
-			@ApiParam(value="The branch path")
+	@GetMapping("/{path:**}/members")
+	public @ResponseBody DeferredResult<SnomedReferenceSetMembers> searchByGet(
+			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branchPath,
 
-			@ApiParam(value="The reference set identifier(s) to match, or a single ECL expression")
-			@RequestParam(value="referenceSet", required=false) 
-			final List<String> referenceSetFilter,
-			
-			@ApiParam(value="The referenced component identifier(s) to match")
-			@RequestParam(value="referencedComponentId", required=false) 
-			final List<String> referencedComponentIdFilter,
-			
-			@ApiParam(value="The status to match")
-			@RequestParam(value="active", required=false) 
-			final Boolean activeFilter,
-			
-			@ApiParam(value="The module identifier to match")
-			@RequestParam(value="module", required=false) 
-			final String moduleFilter,
-			
-			@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
-			@RequestParam(value="effectiveTimeFilter", required=false) 
-			final String effectiveTimeFilter,
-			
-			@ApiParam(value="The target component identifier(s) to match in case of association refset members")
-			@RequestParam(value="targetComponent", required=false)
-			// TODO figure out how to dynamically include query params with swagger, or just replace swagger with a better alternative???
-			final List<String> targetComponent,
-			
-			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false) 
-			final String scrollKeepAlive,
-			
-			@ApiParam(value="A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false) 
-			final String scrollId,
-
-			@ApiParam(value="The search key to use for retrieving the next page of results")
-			@RequestParam(value="searchAfter", required=false) 
-			final String searchAfter,
-
-			@ApiParam(value="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit,
-			
-			@ApiParam(value="Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
+			final SnomedReferenceSetMemberRestSearch params,
 			
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		
 		final SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareSearchMember()
-				.setLimit(limit)
-				.setScroll(scrollKeepAlive)
-				.setScrollId(scrollId)
-				.setSearchAfter(searchAfter)
-				.filterByRefSet(referenceSetFilter)
-				.filterByReferencedComponent(referencedComponentIdFilter)
-				.filterByActive(activeFilter)
-				.filterByModule(moduleFilter)
-				.filterByEffectiveTime(effectiveTimeFilter)
-				.setExpand(expand)
-				.setLocales(extendedLocales);
+				.setLimit(params.getLimit())
+				.setScroll(params.getScrollKeepAlive())
+				.setScrollId(params.getScrollId())
+				.setSearchAfter(params.getSearchAfter())
+				.filterByIds(params.getId())
+				.filterByActive(params.getActive())
+				.filterByModule(params.getModule())
+				.filterByEffectiveTime(params.getEffectiveTime())
+				.filterByRefSet(params.getReferenceSet())
+				.filterByReferencedComponent(params.getReferencedComponentId())
+				.setExpand(params.getExpand())
+				.setLocales(extendedLocales)
+				.sortBy(extractSortFields(params.getSort()));
 		
-		if (!CompareUtils.isEmpty(targetComponent)) {
-			req.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, targetComponent).build());
+		if (!CompareUtils.isEmpty(params.getTargetComponent())) {
+			req.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, params.getTargetComponent()).build());
 		}
 		
 		return DeferredResults.wrap(req.build(repositoryId, branchPath).execute(bus));
+	}
+	
+	@ApiOperation(
+			value="Retrieve reference set members from a branch", 
+			notes="Returns a list with all reference set members from a branch."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+	})
+	@PostMapping("/{path:**}/members/search")
+	public @ResponseBody DeferredResult<SnomedReferenceSetMembers> searchByPost(
+			@ApiParam(value="The branch path", required = true)
+			@PathVariable(value="path")
+			final String branch,
+
+			@RequestBody(required = false)
+			final SnomedReferenceSetMemberRestSearch params,
+			
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+		return searchByGet(branch, params, acceptLanguage);
 	}
 	
 	@ApiOperation(
@@ -201,21 +175,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
-		
 		return DeferredResults.wrap(SnomedRequests
 				.prepareGetMember(memberId)
 				.setExpand(expand)
-				.setLocales(extendedLocales)
+				.setLocales(getExtendedLocales(acceptLanguage))
 				.build(repositoryId, branchPath)
 				.execute(bus));
 	}

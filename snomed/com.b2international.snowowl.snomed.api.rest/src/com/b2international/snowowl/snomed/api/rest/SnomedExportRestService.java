@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -81,7 +82,7 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(
 		value="/exports", produces = { AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedExportRestService extends AbstractSnomedRestService {
+public class SnomedExportRestService extends AbstractRestService {
 
 	@Autowired
 	private ISnomedExportService exportService;
@@ -90,6 +91,10 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	private FileRegistry fileRegistry;
 	
 	private ConcurrentMap<UUID, SnomedExportRestRun> exports = new MapMaker().makeMap();
+	
+	public SnomedExportRestService() {
+		super(Collections.emptySet());
+	}
 	
 	@ApiOperation(
 			value="Initiate a SNOMED CT export", 

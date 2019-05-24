@@ -28,12 +28,12 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetImpl#getType <em>Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetImpl#getReferencedComponentType <em>Referenced Component Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetImpl#getIdentifierId <em>Identifier Id</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -72,6 +72,7 @@ public abstract class SnomedRefSetImpl extends CDOObjectImpl implements SnomedRe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public SnomedRefSetType getType() {
 		return (SnomedRefSetType)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET__TYPE, true);
 	}
@@ -81,6 +82,7 @@ public abstract class SnomedRefSetImpl extends CDOObjectImpl implements SnomedRe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setType(SnomedRefSetType newType) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET__TYPE, newType);
 	}
@@ -90,6 +92,7 @@ public abstract class SnomedRefSetImpl extends CDOObjectImpl implements SnomedRe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public short getReferencedComponentType() {
 		return (Short)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET__REFERENCED_COMPONENT_TYPE, true);
 	}
@@ -99,6 +102,7 @@ public abstract class SnomedRefSetImpl extends CDOObjectImpl implements SnomedRe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setReferencedComponentType(short newReferencedComponentType) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET__REFERENCED_COMPONENT_TYPE, newReferencedComponentType);
 	}
@@ -108,6 +112,7 @@ public abstract class SnomedRefSetImpl extends CDOObjectImpl implements SnomedRe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getIdentifierId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_REF_SET__IDENTIFIER_ID, true);
 	}
@@ -117,6 +122,7 @@ public abstract class SnomedRefSetImpl extends CDOObjectImpl implements SnomedRe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setIdentifierId(String newIdentifierId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_REF_SET__IDENTIFIER_ID, newIdentifierId);
 	}

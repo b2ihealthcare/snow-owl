@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>6.15.0-SNAPSHOT</version>
+		<version>6.16.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.index</artifactId>
 	<packaging>eclipse-plugin</packaging>
@@ -83,8 +83,6 @@
 								analysis-common,
 								antlr4-runtime,
 								asm-debug-all,
-								commons-codec,
-								commons-logging,
 								compiler,
 								elasticsearch,
 								elasticsearch-cli,
@@ -93,12 +91,7 @@
 								elasticsearch-rest-high-level-client,
 								elasticsearch-secure-sm,
 								elasticsearch-x-content,
-								HdrHistogram,
 								hppc,
-								httpasyncclient,
-								httpclient,
-								httpcore,
-								httpcore-nio,
 								jna,
 								joda-time,
 								jopt-simple,

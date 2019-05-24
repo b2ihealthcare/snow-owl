@@ -57,6 +57,7 @@ public class SnomedMRCMModuleScopeRefSetMemberImpl extends SnomedRefSetMemberImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getMrcmRuleRefsetId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__MRCM_RULE_REFSET_ID, true);
 	}
@@ -66,6 +67,7 @@ public class SnomedMRCMModuleScopeRefSetMemberImpl extends SnomedRefSetMemberImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMrcmRuleRefsetId(String newMrcmRuleRefsetId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__MRCM_RULE_REFSET_ID, newMrcmRuleRefsetId);
 	}

@@ -1,6 +1,38 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.15.0
+
+### Added
+- New `com.b2international.snowowl.snomed.icons` module with default SNOMED CT Concept images (0d444fa, ac0123e)
+- New MRCM based type validation rule and stated version for all MRCM rule (#344)
+- SNOMED CT API improvements:
+  * New `semanticTag` filter on `GET /:path/concepts` endpoint (0f304ec)
+  * New `semanticTag` filter on `GET /:path/descriptions` endpoint (0f304ec)
+  * New `caseSignificance` filter on `GET /:path/descriptions` endpoint (0f304ec)
+  * `characteristicTypeId` and `modifierId` have been added to `SnomedRelationship` JSON representation (66bf620, 763e1ee)
+  * Changed type of array values of `parentIds`, `ancestorIds`, `statedParentIds`, `statedAncestorIds` to `String` from `long` (81f7628)
+
+### Changed
+- Updated OWLAPI to support more recent reasoner versions (#342)
+
+### Removed
+- `defaults` directory support (6468aa1)
+- `.xtend` files from all modules except `com.b2international.snowowl.snomed.ecl.tests` (#345)
+
+### Bugs
+- Fixed definition status calculation issue (1dbb3c5)
+- Excluded whitelisted response items in `GET /validations/:id/issues` endpoint (#347)
+- Fixed incorrect Location URL returned in `POST /validations` endpoint (#347)
+- Fixed incorrect (non-null) effective time value after changing `targetComponentId`/`valueId` on active reference set members (5959e88)
+- Fixed missing ECL cardinality conversion service in SNOMED CT Query Language infrastructure (706ba1c)
+- Fixed incorrect wrapping of `IdRequest` in SNOMED CT transactions (#349) 
+
+### Dependencies
+- Bump OWLAPI to 4.5.10 (#342)
+- Bump Protege libraries to 5.0.3-b2i (see repository https://github.com/b2ihealthcare/protege) (#342)
+- Bump ELK reasoner to 0.4.3 (7bdb231)
+
 ## 6.14.2
 
 ### Changed

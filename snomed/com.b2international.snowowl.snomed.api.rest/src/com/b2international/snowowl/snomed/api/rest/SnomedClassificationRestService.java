@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -40,10 +38,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
@@ -80,11 +76,15 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Classifications", description="Classifications", tags = { "classifications" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedClassificationRestService extends AbstractSnomedRestService {
+public class SnomedClassificationRestService extends AbstractRestService {
 
 	@Autowired
 	protected ISnomedBrowserService browserService;
 
+	public SnomedClassificationRestService() {
+		super(ClassificationTask.Fields.ALL);
+	}
+	
 	@ApiOperation(
 			value="Retrieve classification runs from branch", 
 			notes="Returns a list of classification runs for a branch.")
@@ -104,13 +104,18 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The user identifier")
 			@RequestParam(value="userId", required=false) 
-			final String userId) {
+			final String userId,
+			
+			@ApiParam(value="Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sortKeys) {
 
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchClassification()
 			.all()
 			.filterByBranch(branch)
 			.filterByUserId(userId)
 			.filterByStatus(status)
+			.sortBy(extractSortFields(sortKeys))
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(bus));
 	}
@@ -187,16 +192,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
-		
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.all()
 				.filterByClassificationId(classificationId)
@@ -262,15 +258,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
 			final String languageSetting) {
 
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(languageSetting));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(languageSetting);
 		
 		final ClassificationTask classificationTask = ClassificationRequests.prepareGetClassification(classificationId)
 			.setExpand(String.format("relationshipChanges(sourceId:\"%s\",expand(relationship()))", conceptId))
