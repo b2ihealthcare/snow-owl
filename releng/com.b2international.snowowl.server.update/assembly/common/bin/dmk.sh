@@ -201,7 +201,8 @@ then
                     -Djava.awt.headless=true \
                     -XX:+AlwaysLockClassLoader \
                     -Dosgi.classloader.type=nonparallel \
-                    -Djdk.security.defaultKeySize=DSA:1024"
+                    -Djdk.security.defaultKeySize=DSA:1024 \
+                    -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true"
 
 		cd "$KERNEL_HOME"; exec $JAVA_EXECUTABLE \
 			$JAVA_OPTS \
