@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.validation;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 
@@ -27,16 +26,16 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 public class ValidationIssueDetails {
 	
 	public static final String HIGHLIGHT_DETAILS = "highlightDetails";
-	public final List<Entry<Integer, Integer>> detailEntries;
+	public final List<StylingDetail> stylingDetails;
 	public final ComponentIdentifier affectedComponentId;
 
 	public ValidationIssueDetails(ComponentIdentifier affectedComponentId) {
-		this.detailEntries = Collections.emptyList();
+		this.stylingDetails = Collections.emptyList();
 		this.affectedComponentId = affectedComponentId;
 	}
 	
-	public ValidationIssueDetails(List<Entry<Integer, Integer>> detailEntries, ComponentIdentifier affectedComponentId) {
-		this.detailEntries = detailEntries;
+	public ValidationIssueDetails(List<StylingDetail> stylingDetails, ComponentIdentifier affectedComponentId) {
+		this.stylingDetails = stylingDetails;
 		this.affectedComponentId = affectedComponentId;
 	}
 	

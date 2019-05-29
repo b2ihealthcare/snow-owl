@@ -78,7 +78,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		return context.service(ValidationRepository.class).write(writer -> doValidate(context, writer));
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
 		final String branchPath = context.branchPath();
 
@@ -170,7 +170,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 										componentIdentifier,
 										ruleWhiteListEntries.contains(componentIdentifier));
 								
-								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.detailEntries);
+								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
 								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 								persistedIssues++; 
 							} else {
@@ -183,7 +183,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 									issueToCopy.getAffectedComponent(),
 									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));
 								
-								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.detailEntries);
+								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
 								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 								persistedIssues++; 
 								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
