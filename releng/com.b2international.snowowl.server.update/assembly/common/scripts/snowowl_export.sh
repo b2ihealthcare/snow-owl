@@ -38,8 +38,14 @@ TARGET_FOLDER=""
 # Global variables / constants, advanced parameters
 #
 
-# Default branch to export
+# Branch to export defaults to MAIN
 BRANCH_TO_EXPORT="MAIN"
+
+# Specified moduleIds to export
+MODULES_TO_EXPORT
+
+# Specified refsets to export
+REFSETS_TO_EXPORT
 
 # The export type to use for the export config
 EXPORT_TYPE="DELTA"
@@ -86,7 +92,13 @@ NAME:
     -t
         Target folder where the exported content should be saved
     -e
-        Export type (possible values are SNAPSHOT, DELTA, FULL), defaults to DELTA
+        Release format (possible values are SNAPSHOT, DELTA, FULL), defaults to DELTA
+    -m
+        Snomed CT module IDs to filter components of the resulting RF2 by a set of module IDs.
+    -s
+        Branch from Snow Owl to initiate the export on
+    -r
+        Snomed CT reference set IDs to include in the export RF2
     -a
         REST API URL of the Snow Owl server, defaults to '/snowowl/snomed-ct/v3'
 
@@ -119,6 +131,7 @@ validate_variables() {
     check_if_empty "${SNOW_OWL_USER}" "Snow Owl username must be specified"
     check_if_empty "${SNOW_OWL_USER_PASSWORD}" "User password must be specified"
     check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
+    check_if_empty "${TARGET_FOLDER}" "Branch must be specified"
 
     if [[ "${EXPORT_TYPE}" != "DELTA" && "${EXPORT_TYPE}" != "SNAPSHOT" && "${EXPORT_TYPE}" != "FULL" ]]; then
         echo_date "ERROR: Unrecognized export type was given as parameter: ${EXPORT_TYPE}"
@@ -135,8 +148,32 @@ validate_variables() {
 }
 
 initiate_export() {
+    EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"'
 
-    EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"}'
+    if (( ${#REFSETS_TO_EXPORT[@]} )); then
+		# Append refsets to config
+        REFSETS_JSON_ARRAY="["
+        for refset in "${REFSETS_TO_EXPORT[@]::${#REFSETS_TO_EXPORT[@]}-1}" ; do
+            REFSETS_JSON_ARRAY+='"'"${refset}"'", '
+        done
+        REFSETS_JSON_ARRAY+='"'"${REFSETS_TO_EXPORT[@]: -1:1}"'"]'
+        echo "REFSETS AFTER MANIPULATION ${REFSETS_JSON_ARRAY}"
+        EXPORT_CONFIG_POST_INPUT+=', "'"refsets"'": '${REFSETS_JSON_ARRAY}''
+    fi
+
+    if (( ${#MODULES_TO_EXPORT[@]} )); then
+    	# Append modules to config
+        MODULES_JSON_ARRAY="["
+        for module in "${MODULES_TO_EXPORT[@]::${#MODULES_TO_EXPORT[@]}-1}" ; do
+            MODULES_JSON_ARRAY+='"'"${module}"'", '
+        done
+        MODULES_JSON_ARRAY+='"'"${MODULES_TO_EXPORT[@]: -1:1}"'"]'
+        echo "REFSETS AFTER MANIPULATION ${MODULES_JSON_ARRAY}"
+        EXPORT_CONFIG_POST_INPUT+=', "moduleIds": '${MODULES_JSON_ARRAY}''
+    fi
+    
+    EXPORT_CONFIG_POST_INPUT+="}"
+    
     EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
 
     echo_date "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORTS_ENDPOINT}""
@@ -192,7 +229,7 @@ execute() {
     exit 0
 }
 
-while getopts ":hu:p:t:e:b:a:" option; do
+while getopts ":hu:p:t:e:b:a:s:m:r:" option; do
     case "${option}" in
     h)
         usage
@@ -210,6 +247,12 @@ while getopts ":hu:p:t:e:b:a:" option; do
         SNOW_OWL_BASE_URL=${OPTARG};;
     a)
         SNOW_OWL_API_URL=${OPTARG};;    
+    s)
+        BRANCH_TO_EXPORT=${OPTARG};;
+    m)
+        MODULES_TO_EXPORT+=("${OPTARG}");;
+    r)
+        REFSETS_TO_EXPORT+=("${OPTARG}");;
     \?)
         echo_date "Invalid option: $OPTARG." >&2
         usage
