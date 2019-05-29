@@ -206,11 +206,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 						final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.removeAll(toolingId);
 						extensions.extendIssues(context, issues);
 						
-						/*ValidationIssueDetailExtensionProvider
-							.INSTANCE
-							.getExtensions("com.b2international.snowowl.snomed.validation.detail.highlighting")
-							.extendIssues(context, issues);*/
-						
 						for (ValidationIssue issue : issues) {
 							index.put(issue.getId(), issue);
 						}
@@ -267,12 +262,12 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		public Collection<ValidationIssueDetails> issueDetails;
 		
 		@SuppressWarnings("unchecked")
-		public <T> IssuesToPersist(String ruleId, Collection<T> evaluationResult) {
+		public IssuesToPersist(String ruleId, Collection<?> evaluationResult) {
 			this.ruleId = ruleId;
 			if (evaluationResult.iterator().hasNext() && evaluationResult.iterator().next() instanceof ValidationIssueDetails) {
 				this.issueDetails = (Collection<ValidationIssueDetails>) evaluationResult;
 			} else {
-				this.issueDetails = evaluationResult.parallelStream()
+				this.issueDetails = evaluationResult.stream()
 					.map(result -> (ComponentIdentifier) result)
 					.map(identifier -> new ValidationIssueDetails(identifier))
 					.collect(Collectors.toList());

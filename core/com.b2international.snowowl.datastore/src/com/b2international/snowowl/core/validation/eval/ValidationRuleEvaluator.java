@@ -81,7 +81,7 @@ public interface ValidationRuleEvaluator {
 	 * @return
 	 * @throws Exception
 	 */
-	<T> List<T> eval(BranchContext context, ValidationRule rule, Map<String, Object> params) throws Exception;
+	 List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> params) throws Exception;
 
 	/**
 	 * Unique type identifier of this validation rule evaluator. The type should represent the kind of rules that this evaluator can evaluate using
