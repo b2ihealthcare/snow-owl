@@ -52,7 +52,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -75,6 +77,7 @@ import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -1039,6 +1042,46 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		// Verify that definition status was updated to FULLY DEFINED
 		assertEquals(DefinitionStatus.PRIMITIVE, updatedConcept.getDefinitionStatus());
+	}
+	
+	@Test
+	public void testPendingMoveUpdateOnConceptWithSetDescriptions() {
+		final String conceptId = createNewConcept(branchPath);
+		final SnomedConcept conceptBeforeDescriptionPendingMoveChanges = SnomedRequests.prepareGetConcept(conceptId)
+			.setExpand("descriptions()")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync();
+		
+		final List<SnomedDescription> descriptions = conceptBeforeDescriptionPendingMoveChanges.getDescriptions()
+			.stream()
+			.map(desc -> {
+				desc.setInactivationIndicator(DescriptionInactivationIndicator.PENDING_MOVE);
+				desc.setActive(false);
+				return desc;
+			}).collect(Collectors.toList());
+			
+		SnomedRequests.prepareUpdateConcept(conceptId)
+			.setActive(false)
+			.setDescriptions(descriptions)
+			.setInactivationIndicator(InactivationIndicator.PENDING_MOVE)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "info@b2international.com", "Update concept inactivation indicator and its descriptions indicator")
+			.execute(getBus())
+			.getSync();
+		
+		final SnomedConcept conceptAfterDescriptionPendingMoveChanges = SnomedRequests.prepareGetConcept(conceptId)
+				.setExpand("inactivationProperties(), descriptions(expand(inactivationProperties()))")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+		
+		// Check if concepts indicator was updated or not
+		assertEquals(InactivationIndicator.PENDING_MOVE, conceptAfterDescriptionPendingMoveChanges.getInactivationIndicator());
+
+		conceptAfterDescriptionPendingMoveChanges.getDescriptions().forEach(desc -> {
+			// Check descriptions inactivation indicator
+			assertEquals(DescriptionInactivationIndicator.PENDING_MOVE, desc.getInactivationIndicator());
+		});
 	}
 	
 }
