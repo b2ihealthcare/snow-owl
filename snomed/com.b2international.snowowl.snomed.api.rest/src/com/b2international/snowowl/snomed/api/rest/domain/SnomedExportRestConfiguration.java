@@ -49,6 +49,7 @@ public class SnomedExportRestConfiguration {
 	private String namespaceId = "INT";
 	
 	private Collection<String> moduleIds;
+	private Collection<String> refsetIds;
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
 	private String transientEffectiveTime;
@@ -152,6 +153,21 @@ public class SnomedExportRestConfiguration {
 	
 	public void setModuleIds(Collection<String> moduleIds) {
 		this.moduleIds = moduleIds;
+	}
+	
+	/**
+	 * Returns with a collection of SNOMED&nbsp;CT refset concept IDs.
+	 * <p>This collection of refset IDs will define which refsets and their members will be included in the export.
+	 * Refsets that are not included in the returning set will be excluded from the export result.
+	 * 
+	 * @return a collection of refset IDs.
+	 */
+	public Collection<String> getRefsetIds() {
+		return refsetIds;
+	}
+	
+	public void setRefsetIds(Collection<String> refsets) {
+		this.refsetIds = refsets;
 	}
 	
 	/**

@@ -193,6 +193,7 @@ rem ------------------------------
 	set JAVA_OPTS=%JAVA_OPTS% -Dosgi.classloader.type=nonparallel
 	set JAVA_OPTS=%JAVA_OPTS% -Djava.awt.headless=true
 	set JAVA_OPTS=%JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
+	set JAVA_OPTS=%JAVA_OPTS% -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true
     rem Run the server
   
       rem Marshall parameters

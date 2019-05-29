@@ -245,7 +245,7 @@ public class SnomedExportRestService extends AbstractRestService {
 		final SnomedExportRestRun export = getExport(exportId);
 		final boolean includeUnpublished = export.isIncludeUnpublished() || isDeltaWithoutRange(export);
 		
-		Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
+		final Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
 		final Rf2ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
 			.setUserId(principal.getName())
@@ -255,6 +255,7 @@ public class SnomedExportRestService extends AbstractRestService {
 			.setLocales(export.getLocales())
 			.setIncludePreReleaseContent(includeUnpublished)
 			.setModules(export.getModuleIds())
+			.setRefSets(export.getRefsetIds())
 			.setCountryNamespaceElement(export.getNamespaceId())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(export.getTransientEffectiveTime())
