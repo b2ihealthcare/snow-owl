@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * @since 7.0
@@ -28,18 +29,25 @@ public final class OntologyExportRequestBuilder
 		implements RevisionIndexRequestBuilder<String> {
 
 	private OntologyExportType exportType;
+	private String ontologyModuleId = Concepts.MODULE_SCT_CORE;
 
 	OntologyExportRequestBuilder() {}
 
 	public OntologyExportRequestBuilder setExportType(final OntologyExportType exportType) {
 		this.exportType = exportType;
-		return this;
+		return getSelf();
+	}
+	
+	public OntologyExportRequestBuilder setOntologyModuleId(String ontologyModuleId) {
+		this.ontologyModuleId = ontologyModuleId;
+		return getSelf();
 	}
 
 	@Override
 	protected Request<BranchContext, String> doBuild() {
 		final OntologyExportRequest exportRequest = new OntologyExportRequest();
 		exportRequest.setExportType(exportType);
+		exportRequest.setOntologyModuleId(ontologyModuleId);
 		return exportRequest;
 	}
 }

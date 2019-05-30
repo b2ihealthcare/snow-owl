@@ -224,9 +224,8 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
-				.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0 (required)
-						SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 1
-						SnomedRelationshipIndexEntry.Fields.DESTINATION_ID) // 2
+				.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 0
+						SnomedRelationshipIndexEntry.Fields.DESTINATION_ID) // 1
 				.where(whereExpressionBuilder.build())
 				.limit(SCROLL_LIMIT)
 				.build();
@@ -237,14 +236,13 @@ public final class ReasonerTaxonomyBuilder {
 
 		for (final Hits<String[]> hits : scrolledHits) {
 			for (final String[] relationship : hits) {
-				if (builtConceptMap.containsKey(relationship[1]) && builtConceptMap.containsKey(relationship[2])) {
-					sourceIds.add(relationship[1]);
-					destinationIds.add(relationship[2]);
+				if (builtConceptMap.containsKey(relationship[0]) && builtConceptMap.containsKey(relationship[1])) {
+					sourceIds.add(relationship[0]);
+					destinationIds.add(relationship[1]);
 				} else {
-					LOGGER.debug("Not registering IS A relationship {} as its source {} and/or destination {} is inactive.",
+					LOGGER.debug("Not registering IS A relationship as its source {} and/or destination {} is inactive.",
 							relationship[0],
-							relationship[1],
-							relationship[2]);
+							relationship[1]);
 				}
 			}
 
@@ -711,9 +709,8 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRefSetMemberIndexEntry.class)
-				.fields(SnomedRefSetMemberIndexEntry.Fields.ID, // 0
-						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, // 1
-						SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION) // 2
+				.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, // 0
+						SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION) // 1
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
@@ -728,8 +725,8 @@ public final class ReasonerTaxonomyBuilder {
 		
 		for (final Hits<String[]> hits : scrolledHits) {
 			for (final String[] member : hits) {
-				final String referencedComponentId = member[1];
-				final String expression = member[2];
+				final String referencedComponentId = member[0];
+				final String expression = member[1];
 				
 				if (lastReferencedComponentId.isEmpty()) {
 					lastReferencedComponentId = referencedComponentId;
@@ -798,10 +795,9 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		final Query<String[]> query = Query.select(String[].class)
+		final Query<String> query = Query.select(String.class)
 				.from(SnomedRefSetMemberIndexEntry.class)
-				.fields(SnomedRefSetMemberIndexEntry.Fields.ID, // 0
-						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID) // 1
+				.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
@@ -810,12 +806,11 @@ public final class ReasonerTaxonomyBuilder {
 				.limit(SCROLL_LIMIT)
 				.build();
 		
-		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		final Iterable<Hits<String>> scrolledHits = searcher.scroll(query);
 		final LongList fragments = PrimitiveLists.newLongArrayListWithExpectedSize(SCROLL_LIMIT);
 		
-		for (final Hits<String[]> hits : scrolledHits) {
-			for (final String[] member : hits) {
-				final String referencedComponentId = member[1];
+		for (final Hits<String> hits : scrolledHits) {
+			for (final String referencedComponentId : hits) {
 				fragments.add(Long.parseLong(referencedComponentId));
 			}
 			
