@@ -557,38 +557,22 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 
 	@Override
 	public <T extends OWLAxiom> Set<T> getAxioms(AxiomType<T> axiomType) {
-//		// Minimal implementation for FaCT++ which is only interested in declaration axioms
-//		if (AxiomType.DECLARATION.equals(axiomType)) {
-//			return new AbstractSet<T>() {
-//				@Override
-//				@SuppressWarnings("unchecked")
-//				public Iterator<T> iterator() {
-//					return (Iterator<T>) Iterators.concat(
-//							conceptDeclarationAxioms(),
-//							objectAttributeDeclarationAxioms(),
-//							dataAttributeDeclarationAxioms());
-//				}
-//
-//				@Override
-//				public int size() {
-//					return getAxiomCount(axiomType);
-//				}
-//			};
-//		} else {
+		if (AxiomType.DECLARATION.equals(axiomType)) {
+			// Minimal implementation for FaCT++ which is only interested in declaration axioms
+			return Collections.emptySet();
+		} else {
 			return super.getAxioms(axiomType);
-//		}
+		}
 	}
 	
 	@Override
 	public <T extends OWLAxiom> int getAxiomCount(AxiomType<T> axiomType) {
-//		// Minimal implementation for FaCT++ which is only interested in declaration axioms
-//		if (AxiomType.DECLARATION.equals(axiomType)) {
-//			return conceptCount()				// conceptDeclarationAxioms()
-//					+ objectAttributeCount()	// objectAttributeDeclarationAxioms()
-//					+ dataAttributeCount();		// dataAttributeDeclarationAxioms()
-//		} else {
+		if (AxiomType.DECLARATION.equals(axiomType)) {
+			// Minimal implementation for FaCT++ which is only interested in declaration axioms
+			return 0;
+		} else {
 			return super.getAxiomCount(axiomType);
-//		}
+		}
 	}
 
 	////////////////////////
