@@ -78,7 +78,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		return context.service(ValidationRepository.class).write(writer -> doValidate(context, writer));
 	}
 	
-	@SuppressWarnings("rawtypes")
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
 		final String branchPath = context.branchPath();
 
@@ -106,7 +105,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						final List evaluationResponse = evaluator.eval(context, rule, ruleParameters);
+						final List<?> evaluationResponse = evaluator.eval(context, rule, ruleParameters);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), evaluationResponse));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
@@ -259,7 +258,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	private static final class IssuesToPersist {
 		
 		public final String ruleId;
-		public Collection<ValidationIssueDetails> issueDetails;
+		public final Collection<ValidationIssueDetails> issueDetails;
 		
 		@SuppressWarnings("unchecked")
 		public IssuesToPersist(String ruleId, Collection<?> evaluationResult) {

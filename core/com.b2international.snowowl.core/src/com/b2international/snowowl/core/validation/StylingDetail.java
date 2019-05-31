@@ -15,16 +15,18 @@
  */
 package com.b2international.snowowl.core.validation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 6.16
  */
-public class StylingDetail {
+public final class StylingDetail {
 	
 	private final int index;
 	private final int length;
 	
+	@JsonCreator
 	public StylingDetail(
 			@JsonProperty("index") int index,
 			@JsonProperty("length") int length) {
