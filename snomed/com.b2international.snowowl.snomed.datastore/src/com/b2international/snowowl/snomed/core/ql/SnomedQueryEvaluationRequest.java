@@ -121,7 +121,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final NestedQuery query) {
-		return eval(context, query.getNested());
+		return evaluate(context, query.getNested());
 	} 
 	
 	protected Promise<Expression> eval(BranchContext context, final QueryConjunction conjunction) {
