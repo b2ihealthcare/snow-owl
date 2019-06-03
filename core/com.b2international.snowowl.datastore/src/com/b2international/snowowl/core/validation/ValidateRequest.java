@@ -78,7 +78,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		return context.service(ValidationRepository.class).write(writer -> doValidate(context, writer));
 	}
 	
-	@SuppressWarnings("unchecked")
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
 		final String branchPath = context.branchPath();
 
@@ -106,7 +105,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						final List evaluationResponse = evaluator.eval(context, rule, ruleParameters);
+						final List<?> evaluationResponse = evaluator.eval(context, rule, ruleParameters);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), evaluationResponse));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
@@ -170,7 +169,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 										componentIdentifier,
 										ruleWhiteListEntries.contains(componentIdentifier));
 								
-								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.detailEntries);
+								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
 								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 								persistedIssues++; 
 							} else {
@@ -183,7 +182,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 									issueToCopy.getAffectedComponent(),
 									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));
 								
-								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.detailEntries);
+								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
 								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 								persistedIssues++; 
 								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
@@ -205,11 +204,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 						final ValidationIssueDetailExtension extensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
 						final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.removeAll(toolingId);
 						extensions.extendIssues(context, issues);
-						
-						/*ValidationIssueDetailExtensionProvider
-							.INSTANCE
-							.getExtensions("com.b2international.snowowl.snomed.validation.detail.highlighting")
-							.extendIssues(context, issues);*/
 						
 						for (ValidationIssue issue : issues) {
 							index.put(issue.getId(), issue);
@@ -264,15 +258,15 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	private static final class IssuesToPersist {
 		
 		public final String ruleId;
-		public Collection<ValidationIssueDetails> issueDetails;
+		public final Collection<ValidationIssueDetails> issueDetails;
 		
 		@SuppressWarnings("unchecked")
-		public <T> IssuesToPersist(String ruleId, Collection<T> evaluationResult) {
+		public IssuesToPersist(String ruleId, Collection<?> evaluationResult) {
 			this.ruleId = ruleId;
 			if (evaluationResult.iterator().hasNext() && evaluationResult.iterator().next() instanceof ValidationIssueDetails) {
 				this.issueDetails = (Collection<ValidationIssueDetails>) evaluationResult;
 			} else {
-				this.issueDetails = evaluationResult.parallelStream()
+				this.issueDetails = evaluationResult.stream()
 					.map(result -> (ComponentIdentifier) result)
 					.map(identifier -> new ValidationIssueDetails(identifier))
 					.collect(Collectors.toList());

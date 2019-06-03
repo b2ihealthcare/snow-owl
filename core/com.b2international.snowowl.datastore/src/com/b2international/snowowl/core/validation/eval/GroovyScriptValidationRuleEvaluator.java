@@ -39,7 +39,7 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 	}
 	
 	@Override
-	public <T> List<T> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws Exception {
+	public List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws Exception {
 		final String script = Files
 			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
 			.collect(Collectors.joining(System.getProperty("line.separator")));

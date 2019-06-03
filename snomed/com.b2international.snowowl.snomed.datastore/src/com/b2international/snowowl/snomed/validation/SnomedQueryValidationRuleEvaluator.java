@@ -78,8 +78,9 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static final int RULE_LIMIT = 25_000;
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public <T> List<T> eval(BranchContext context, ValidationRule rule, Map<String, Object> params) throws Exception {
+	public List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> params) throws Exception {
 		checkArgument(type().equals(rule.getType()), "'%s' is not recognizable by this evaluator (accepts: %s)", rule, type());
 		SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent> validationQuery = context.service(ObjectMapper.class)
 				.<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>readValue(rule.getImplementation(), TYPE_REF);
@@ -103,7 +104,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				.withScores(false)
 				.build());
 		
-		List<T> issues = null; 
+		List issues = null; 
 		for (Hits<String> page : pages) {
 			if (issues == null) {
 				issues = newArrayListWithExpectedSize(page.getTotal());
@@ -113,7 +114,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				if (terminologyComponentId == -1) {
 					terminologyComponentId = SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
 				}
-				issues.add((T) ComponentIdentifier.of(terminologyComponentId, affectedComponentId));
+				issues.add(ComponentIdentifier.of(terminologyComponentId, affectedComponentId));
 			}
 		}
 		

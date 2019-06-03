@@ -15,28 +15,31 @@
  */
 package com.b2international.snowowl.core.validation;
 
-import java.util.Collections;
-import java.util.List;
-
-import com.b2international.snowowl.core.ComponentIdentifier;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 6.16
  */
-public class ValidationIssueDetails {
+public final class StylingDetail {
 	
-	public static final String HIGHLIGHT_DETAILS = "highlightDetails";
-	public final List<StylingDetail> stylingDetails;
-	public final ComponentIdentifier affectedComponentId;
-
-	public ValidationIssueDetails(ComponentIdentifier affectedComponentId) {
-		this.stylingDetails = Collections.emptyList();
-		this.affectedComponentId = affectedComponentId;
+	private final int index;
+	private final int length;
+	
+	@JsonCreator
+	public StylingDetail(
+			@JsonProperty("index") int index,
+			@JsonProperty("length") int length) {
+		this.index = index;
+		this.length = length;
 	}
 	
-	public ValidationIssueDetails(List<StylingDetail> stylingDetails, ComponentIdentifier affectedComponentId) {
-		this.stylingDetails = stylingDetails;
-		this.affectedComponentId = affectedComponentId;
+	public int getIndex() {
+		return index;
+	}
+	
+	public int getLength() {
+		return length;
 	}
 	
 }
