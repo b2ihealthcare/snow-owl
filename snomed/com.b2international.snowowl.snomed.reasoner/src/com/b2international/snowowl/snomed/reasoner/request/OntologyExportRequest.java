@@ -32,8 +32,10 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLDocumentFormat;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.semanticweb.owlapi.model.SetOntologyID;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -78,6 +80,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		final boolean concreteDomainSupportEnabled = config.isConcreteDomainSupported();
 		
 		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(Concepts.UK_MODULES_NOCLASSIFY);
+		
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.finishConcepts();
 		
@@ -85,6 +88,9 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
 		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
 		
+		taxonomyBuilder.addNeverGroupedTypeIds(revisionSearcher);
+		taxonomyBuilder.addActiveAxioms(revisionSearcher);
+
 		if (concreteDomainSupportEnabled) {
 			taxonomyBuilder.addActiveConcreteDomainMembers(revisionSearcher);
 		}
@@ -97,6 +103,12 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		try {
 
 			final OWLOntology ontology = ontologyManager.createOntology(ontologyIRI);
+			OWLOntology ontologyToExport = ontologyManager.createOntology();
+			
+			ontology.getLogicalAxioms().forEach(axiom -> {
+				ontologyManager.addAxiom(ontologyToExport, axiom);
+			});
+			
 			final OWLDocumentFormat documentFormat = getOWLDocumentFormat();
 			final FileRegistry fileRegistry = context.service(FileRegistry.class);
 
@@ -107,7 +119,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 			final ForkJoinTask<?> uploadTask = ForkJoinTask.adapt(() -> fileRegistry.upload(id, is));
 			final ForkJoinTask<?> saveTask = ForkJoinTask.adapt(() -> {
 				try {
-					ontologyManager.saveOntology(ontology, documentFormat, os);
+					ontologyManager.saveOntology(ontologyToExport, documentFormat, os);
 				} catch (final OWLOntologyStorageException e) {
 					throw createExportFailedException(context, e);
 				} finally {
@@ -126,6 +138,11 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 			throw createExportFailedException(context, e);
 		} catch (final IOException e) {
 			throw createExportFailedException(context, e);
+		} finally {
+			// invalidate static cache entries :'(
+			ontologyManager.getOntologies().forEach(o -> {
+				ontologyManager.applyChange(new SetOntologyID(o, new OWLOntologyID()));
+			});
 		}
 	}
 

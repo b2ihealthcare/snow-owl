@@ -18,11 +18,13 @@ package com.b2international.snowowl.snomed.reasoner.ontology;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -35,10 +37,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.net4j.util.StringUtil;
+import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParser;
 import org.semanticweb.owlapi.io.OWLOntologyDocumentSource;
 import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.parameters.ChangeApplied;
+import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
+import org.semanticweb.owlapi.util.OWLEntityCollector;
 import org.semanticweb.owlapi.util.OWLObjectTypeIndexProvider;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.slf4j.Logger;
@@ -64,7 +70,7 @@ import com.google.common.collect.Sets;
 /**
  * @since
  */
-public final class DelegateOntology extends DelegateOntologyStub implements OWLOntology {
+public final class DelegateOntology extends DelegateOntologyStub implements OWLMutableOntology {
 
 	// The prefix used for SNOMED CT identifiers (also the default namespace for ":" prefixes)
 	private static final String PREFIX_SCT = ":";
@@ -273,9 +279,13 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private final class FunctionalSyntaxAxiomIterator extends AbstractIterator<OWLLogicalAxiom> {
 		
 		private final Iterator<String> axiomIterator;
+		private final OWLOntologyLoaderConfiguration configuration;
+		private final SingleAxiomOwlOntology singleAxiomOntology;
 		
 		public FunctionalSyntaxAxiomIterator(final Stream<String> axiomStream) {
 			this.axiomIterator = axiomStream.iterator();
+			this.configuration = new OWLOntologyLoaderConfiguration();
+			this.singleAxiomOntology = new SingleAxiomOwlOntology(getOWLOntologyManager());
 		}
 
 		@Override
@@ -285,25 +295,20 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			}
 			
 			final String axiomString = axiomIterator.next();
-			OWLOntology singleAxiomOntology = null;
 			
 			try {
-
+				
 				final OWLOntologyDocumentSource singleAxiomOntologySource = new StringDocumentSource(PARSED_ONTOLOGY_START + axiomString + PARSED_ONTOLOGY_END);
-				singleAxiomOntology = getOWLOntologyManager().loadOntologyFromOntologyDocument(singleAxiomOntologySource);
-				final Set<OWLLogicalAxiom> logicalAxioms = singleAxiomOntology.getLogicalAxioms();
-				return logicalAxioms.iterator().next();
+				new OWLFunctionalSyntaxOWLParser().parse(singleAxiomOntologySource, singleAxiomOntology, configuration);
+				final Set<OWLAxiom> logicalAxioms = singleAxiomOntology.getAxioms();
+				return (OWLLogicalAxiom) logicalAxioms.iterator().next();
 				
 			} catch (final NoSuchElementException e) {
 				LOGGER.warn("Encountered non-logical OWL axiom '{}'", axiomString, e);
 				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
-			} catch (final OWLOntologyCreationException e) {
+			} catch (final IOException e) {
 				LOGGER.warn("Couldn't parse OWL axiom '{}'", axiomString, e);
 				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
-			} finally {
-				if (singleAxiomOntology != null) {
-					getOWLOntologyManager().removeOntology(singleAxiomOntology);
-				}
 			}
 		}
 	}
@@ -363,6 +368,61 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		} else {
 			this.neverGroupedIds = PRE_2018_NEVER_GROUPED_TYPE_IDS;
 		}
+	}
+	
+	@Override
+	public ChangeApplied addAxiom(OWLAxiom axiom) {
+		return ChangeApplied.UNSUCCESSFULLY;
+	}
+	
+	@Override
+	public ChangeApplied addAxioms(Set<? extends OWLAxiom> axioms) {
+		return ChangeApplied.UNSUCCESSFULLY;
+	}
+	
+	@Override
+	public ChangeApplied applyChange(OWLOntologyChange change) {
+		return change instanceof SetOntologyID ? ChangeApplied.SUCCESSFULLY : ChangeApplied.UNSUCCESSFULLY;
+	}
+	
+	@Override
+	public ChangeApplied applyChanges(List<? extends OWLOntologyChange> changes) {
+		return changes.stream().map(this::applyChange).reduce(ChangeApplied.SUCCESSFULLY, (result, next) -> {
+			return next == ChangeApplied.UNSUCCESSFULLY ? next : result;
+		});
+	}
+	
+	@Override
+	public ChangeDetails applyChangesAndGetDetails(List<? extends OWLOntologyChange> changes) {
+		return new ChangeDetails(applyChanges(changes), changes);
+	}
+	
+	@Override
+	public final Set<OWLImportsDeclaration> getImportsDeclarations() {
+		return Collections.emptySet();
+	}
+	
+	@Override
+	public final Set<OWLAnnotation> getAnnotations() {
+		return Collections.emptySet();
+	}
+	
+	@Override
+	public Set<OWLEntity> getSignature() {
+		Set<OWLEntity> toReturn = newHashSet();
+		OWLEntityCollector collector = new OWLEntityCollector(toReturn);
+		getLogicalAxioms().forEach(ax -> ax.accept(collector));
+		return toReturn;
+	}
+	
+	@Override
+	public final Set<IRI> getPunnedIRIs(Imports includeImportsClosure) {
+		return Collections.emptySet();
+	}
+	
+	@Override
+	public final Set<OWLAnnotationAssertionAxiom> getAnnotationAssertionAxioms(OWLAnnotationSubject entity) {
+		return Collections.emptySet();
 	}
 	
 	@Override
@@ -466,9 +526,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			@SuppressWarnings("unchecked")
 			public Iterator<OWLAxiom> iterator() {
 				return Iterators.concat(
-						conceptDeclarationAxioms(),
-						objectAttributeDeclarationAxioms(),
-						dataAttributeDeclarationAxioms(),
+//						conceptDeclarationAxioms(),
+//						objectAttributeDeclarationAxioms(),
+//						dataAttributeDeclarationAxioms(),
 						owlReferenceSetAxioms(),
 						conceptSubClassOfAxioms(),
 						conceptEquivalentClassesAxioms(),
@@ -486,10 +546,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	
 	@Override
 	public int getAxiomCount() {
-		return 2 * conceptCount()				// conceptDeclarationAxioms() + conceptSubClassOfAxioms() + conceptEquivalentClassesAxioms()
-				+ objectAttributeCount()		// objectAttributeDeclarationAxioms()
+		return 1 * conceptCount()				// conceptDeclarationAxioms() + conceptSubClassOfAxioms() + conceptEquivalentClassesAxioms()
+//				+ objectAttributeCount()		// objectAttributeDeclarationAxioms()
 				+ objectHierarchyCount()		// objectAttributeSubPropertyOfAxioms()
-				+ dataAttributeCount()			// dataAttributeDeclarationAxioms()
+//				+ dataAttributeCount()			// dataAttributeDeclarationAxioms()
 				+ dataHierarchyCount()			// dataAttributeSubPropertyOfAxioms()
 				+ disjointUnionCount()			// disjointUnionAxioms()
 				+ owlReferenceSetAxiomCount();	// owlReferenceSetAxioms()
@@ -497,23 +557,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	@Override
 	public <T extends OWLAxiom> Set<T> getAxioms(AxiomType<T> axiomType) {
-		// Minimal implementation for FaCT++ which is only interested in declaration axioms
 		if (AxiomType.DECLARATION.equals(axiomType)) {
-			return new AbstractSet<T>() {
-				@Override
-				@SuppressWarnings("unchecked")
-				public Iterator<T> iterator() {
-					return (Iterator<T>) Iterators.concat(
-							conceptDeclarationAxioms(),
-							objectAttributeDeclarationAxioms(),
-							dataAttributeDeclarationAxioms());
-				}
-
-				@Override
-				public int size() {
-					return getAxiomCount(axiomType);
-				}
-			};
+			// Minimal implementation for FaCT++ which is only interested in declaration axioms
+			return Collections.emptySet();
 		} else {
 			return super.getAxioms(axiomType);
 		}
@@ -521,11 +567,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	
 	@Override
 	public <T extends OWLAxiom> int getAxiomCount(AxiomType<T> axiomType) {
-		// Minimal implementation for FaCT++ which is only interested in declaration axioms
 		if (AxiomType.DECLARATION.equals(axiomType)) {
-			return conceptCount()				// conceptDeclarationAxioms()
-					+ objectAttributeCount()	// objectAttributeDeclarationAxioms()
-					+ dataAttributeCount();		// dataAttributeDeclarationAxioms()
+			// Minimal implementation for FaCT++ which is only interested in declaration axioms
+			return 0;
 		} else {
 			return super.getAxiomCount(axiomType);
 		}
@@ -556,12 +600,22 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	///////////////////////////////
 	
 	private Iterator<OWLSubClassOfAxiom> conceptSubClassOfAxioms() {
-		final LongPredicate primitiveConcept = conceptId -> !taxonomy.getFullyDefinedConcepts().contains(conceptId);
+		final LongPredicate primitiveConcept = conceptId -> {
+			final boolean isPrimitive = !taxonomy.getFullyDefinedConcepts().contains(conceptId);
+			final boolean hasStatedIsa = !taxonomy.getStatedAncestors().getDestinations(conceptId, true).isEmpty();
+			final boolean hasStatedNonIsa = !taxonomy.getStatedNonIsARelationships().get(conceptId).isEmpty();
+			return isPrimitive && (hasStatedIsa || hasStatedNonIsa);
+		}; 
 		return new ConceptAxiomIterator<>(conceptIdIterator(), primitiveConcept, this::getOWLSubClassOfAxiom);
 	}
 
 	private Iterator<OWLEquivalentClassesAxiom> conceptEquivalentClassesAxioms() {
-		final LongPredicate fullyDefinedConcept = conceptId -> taxonomy.getFullyDefinedConcepts().contains(conceptId);
+		final LongPredicate fullyDefinedConcept = conceptId -> {
+			final boolean isDefined = taxonomy.getFullyDefinedConcepts().contains(conceptId);
+			final boolean hasStatedIsa = !taxonomy.getStatedAncestors().getDestinations(conceptId, true).isEmpty();
+			final boolean hasStatedNonIsa = !taxonomy.getStatedNonIsARelationships().get(conceptId).isEmpty();
+			return isDefined && (hasStatedIsa || hasStatedNonIsa);
+		};
 		return new ConceptAxiomIterator<>(conceptIdIterator(), fullyDefinedConcept, this::getOWLEquivalentClassesAxiom);
 	}
 
