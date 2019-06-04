@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
+import com.google.common.base.Strings;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -231,8 +232,12 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		
-		String expandWithRelationship = expand;
-		if (!expand.contains("relationship")) {
+		final String expandWithRelationship;
+		if (Strings.isNullOrEmpty(expand)) {
+			expandWithRelationship = "relationship()";
+		} else if (expand.contains("relationsip")) {
+			expandWithRelationship = expand;
+		} else {
 			expandWithRelationship = String.format("%s, relationship()", expand);
 		}
 		
@@ -244,7 +249,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus));
 	}
-
+	
 	@ApiOperation(
 			value="Retrieve a preview of a concept with classification changes applied",
 			notes="Retrieves a preview of single concept and related information on a branch with classification changes applied.")
