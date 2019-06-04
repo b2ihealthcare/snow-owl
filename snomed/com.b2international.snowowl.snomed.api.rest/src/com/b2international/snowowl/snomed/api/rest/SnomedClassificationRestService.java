@@ -218,6 +218,10 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final String expand,
 
 			@ApiParam(value="The search key")
 			@RequestParam(value="searchAfter", required=false) 
@@ -227,9 +231,14 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		
+		String expandWithRelationship = expand;
+		if (!expand.contains("relationship")) {
+			expandWithRelationship = String.format("%s, relationship()", expand);
+		}
+		
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchRelationshipChange()
 				.filterByClassificationId(classificationId)
-				.setExpand("relationship()")
+				.setExpand(expandWithRelationship)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
