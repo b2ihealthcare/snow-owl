@@ -131,7 +131,6 @@ validate_variables() {
     check_if_empty "${SNOW_OWL_USER}" "Snow Owl username must be specified"
     check_if_empty "${SNOW_OWL_USER_PASSWORD}" "User password must be specified"
     check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
-    check_if_empty "${TARGET_FOLDER}" "Branch must be specified"
 
     if [[ "${EXPORT_TYPE}" != "DELTA" && "${EXPORT_TYPE}" != "SNAPSHOT" && "${EXPORT_TYPE}" != "FULL" ]]; then
         echo_date "ERROR: Unrecognized export type was given as parameter: ${EXPORT_TYPE}"
@@ -157,7 +156,6 @@ initiate_export() {
             REFSETS_JSON_ARRAY+='"'"${refset}"'", '
         done
         REFSETS_JSON_ARRAY+='"'"${REFSETS_TO_EXPORT[@]: -1:1}"'"]'
-        echo "REFSETS AFTER MANIPULATION ${REFSETS_JSON_ARRAY}"
         EXPORT_CONFIG_POST_INPUT+=', "'"refsets"'": '${REFSETS_JSON_ARRAY}''
     fi
 
@@ -168,7 +166,6 @@ initiate_export() {
             MODULES_JSON_ARRAY+='"'"${module}"'", '
         done
         MODULES_JSON_ARRAY+='"'"${MODULES_TO_EXPORT[@]: -1:1}"'"]'
-        echo "REFSETS AFTER MANIPULATION ${MODULES_JSON_ARRAY}"
         EXPORT_CONFIG_POST_INPUT+=', "moduleIds": '${MODULES_JSON_ARRAY}''
     fi
     
