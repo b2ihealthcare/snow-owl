@@ -235,7 +235,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		final String expandWithRelationship;
 		if (Strings.isNullOrEmpty(expand)) {
 			expandWithRelationship = "relationship()";
-		} else if (expand.contains("relationsip")) {
+		} else if (expand.contains("relationship(")) {
 			expandWithRelationship = expand;
 		} else {
 			expandWithRelationship = String.format("%s, relationship()", expand);
