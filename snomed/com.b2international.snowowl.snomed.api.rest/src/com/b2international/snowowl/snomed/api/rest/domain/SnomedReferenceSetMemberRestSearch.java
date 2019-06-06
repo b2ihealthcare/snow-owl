@@ -48,6 +48,9 @@ public final class SnomedReferenceSetMemberRestSearch {
 	@ApiParam(value="The target component identifier(s) to match in case of association refset members")
 	private List<String> targetComponent;
 	
+	@ApiParam(value="Special filters for owlExpression axiom values")
+	private SnomedOwlExpressionFilters owlExpression; 
+	
 	@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
 	private String scrollKeepAlive;
 	
@@ -65,7 +68,7 @@ public final class SnomedReferenceSetMemberRestSearch {
 	
 	@ApiParam(value="Sort keys")
 	private List<String> sort;
-
+	
 	public Set<String> getId() {
 		return id;
 	}
@@ -117,11 +120,19 @@ public final class SnomedReferenceSetMemberRestSearch {
 	public List<String> getTargetComponent() {
 		return targetComponent;
 	}
-
+	
 	public void setTargetComponent(List<String> targetComponent) {
 		this.targetComponent = targetComponent;
 	}
-
+	
+	public SnomedOwlExpressionFilters getOwlExpression() {
+		return owlExpression;
+	}
+	
+	public void setOwlExpression(SnomedOwlExpressionFilters owlExpression) {
+		this.owlExpression = owlExpression;
+	}
+	
 	public String getScrollKeepAlive() {
 		return scrollKeepAlive;
 	}

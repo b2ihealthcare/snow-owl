@@ -46,7 +46,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 
 import springfox.documentation.builders.ParameterBuilder;
