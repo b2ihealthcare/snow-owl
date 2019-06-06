@@ -38,6 +38,9 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 		extends SnomedSearchRequestBuilder<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers>
 		implements RevisionIndexRequestBuilder<SnomedReferenceSetMembers> {
 
+	public static final String OWL_EXPRESSION_CONCEPTID = "owlExpression.conceptId";
+	public static final String OWL_EXPRESSION_GCI = "owlExpression.gci";
+
 	SnomedRefSetMemberSearchRequestBuilder() {
 		super();
 	}
