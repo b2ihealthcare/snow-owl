@@ -41,7 +41,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.file.FileRegistry;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomyBuilder;
@@ -79,7 +78,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final boolean concreteDomainSupportEnabled = config.isConcreteDomainSupported();
 		
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(Concepts.UK_MODULES_NOCLASSIFY);
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(config.getReasonerExcludedModuleIds());
 		
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.finishConcepts();

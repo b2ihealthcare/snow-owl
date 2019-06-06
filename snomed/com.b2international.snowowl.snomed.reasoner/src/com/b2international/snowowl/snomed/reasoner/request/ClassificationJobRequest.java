@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -120,7 +121,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.CLASSIFY, parentLockContext, branch)) {
-			taxonomy = buildTaxonomy(revisionSearcher, concreteDomainSupported);
+			taxonomy = buildTaxonomy(revisionSearcher, context.service(SnomedCoreConfiguration.class).getReasonerExcludedModuleIds(), concreteDomainSupported);
 		} catch (final OperationLockException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		} catch (final InterruptedException e) {
@@ -147,8 +148,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		}
 	}
 
-	private ReasonerTaxonomy buildTaxonomy(final RevisionSearcher revisionSearcher, final boolean concreteDomainSupported) {
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(Concepts.UK_MODULES_NOCLASSIFY);
+	private ReasonerTaxonomy buildTaxonomy(final RevisionSearcher revisionSearcher, final Set<String> excludedModuleIds, final boolean concreteDomainSupported) {
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(excludedModuleIds);
 		
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.addActiveConceptIds(additionalConcepts.stream());
