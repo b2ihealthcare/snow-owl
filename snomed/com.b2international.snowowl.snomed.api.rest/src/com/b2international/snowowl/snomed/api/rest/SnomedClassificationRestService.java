@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
+import com.google.common.base.Strings;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -218,6 +219,10 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final String expand,
 
 			@ApiParam(value="The search key")
 			@RequestParam(value="searchAfter", required=false) 
@@ -227,15 +232,22 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		
+		final String expandWithRelationship;
+		if (Strings.isNullOrEmpty(expand)) {
+			expandWithRelationship = "relationship()";
+		} else {
+			expandWithRelationship = String.format("relationship(expand(%s))", expand);
+		}
+		
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchRelationshipChange()
 				.filterByClassificationId(classificationId)
-				.setExpand("relationship()")
+				.setExpand(expandWithRelationship)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus));
 	}
-
+	
 	@ApiOperation(
 			value="Retrieve a preview of a concept with classification changes applied",
 			notes="Retrieves a preview of single concept and related information on a branch with classification changes applied.")

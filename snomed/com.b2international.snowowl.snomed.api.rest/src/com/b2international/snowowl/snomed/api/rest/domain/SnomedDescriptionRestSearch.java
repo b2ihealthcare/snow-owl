@@ -81,7 +81,7 @@ public final class SnomedDescriptionRestSearch {
 	@ApiParam(value = "The search key to use for retrieving the next page of results")
 	private String searchAfter;
 
-	@ApiParam(value = "The maximum number of items to return")
+	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
 	private int limit = 50;
 
 	@ApiParam(value = "Expansion parameters")

@@ -26,20 +26,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -116,8 +108,20 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				.setLocales(extendedLocales)
 				.sortBy(extractSortFields(params.getSort()));
 		
+		OptionsBuilder propFilter = Options.builder();
 		if (!CompareUtils.isEmpty(params.getTargetComponent())) {
-			req.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, params.getTargetComponent()).build());
+			propFilter.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, params.getTargetComponent());
+		}
+		if (params.getOwlExpression() != null && !CompareUtils.isEmpty(params.getOwlExpression().getConceptId())) {
+			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID, params.getOwlExpression().getConceptId());
+		}
+		if (params.getOwlExpression() != null && params.getOwlExpression().getGci() != null) {
+			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI, params.getOwlExpression().getGci());
+		}
+		
+		Options propFilters = propFilter.build();
+		if (!propFilters.isEmpty()) {
+			req.filterByProps(propFilters);
 		}
 		
 		return DeferredResults.wrap(req.build(repositoryId, branchPath).execute(bus));
