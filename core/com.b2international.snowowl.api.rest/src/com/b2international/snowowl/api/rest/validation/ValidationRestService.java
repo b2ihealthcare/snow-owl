@@ -34,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -57,7 +58,6 @@ import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.ValidationResult;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
-import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
@@ -71,12 +71,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
+import com.google.common.net.HttpHeaders;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Spring controller for exposing validation functionality.
@@ -221,17 +223,17 @@ public class ValidationRestService extends AbstractAdminRestService {
 	}
 
 	@ApiOperation(
-			value="Retrieve the validation issues from a completed validation on a branch.")
+			value="Retrieve the validation issues from a completed validation on a branch. Output may differ by the chosen content type.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<ValidationIssues> getValidationResults(
+	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={ AbstractRestService.SO_MEDIA_TYPE, AbstractRestService.CSV_MEDIA_TYPE })
+	public @ResponseBody DeferredResult<Collection<Object>> getValidationResults(
 			@ApiParam(value="The unique validation identifier.")
 			@PathVariable(value="validationId")
 			final String validationId,
-
+		
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit,
@@ -246,74 +248,68 @@ public class ValidationRestService extends AbstractAdminRestService {
 			
 			@ApiParam(value="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
-			final String searchAfter) {
+			final String searchAfter,
+			
+			@ApiIgnore
+			@RequestHeader(value=HttpHeaders.ACCEPT, defaultValue=AbstractRestService.SO_MEDIA_TYPE,  required=false)
+			final String contentType) {
 		
 		final RemoteJobEntry validationJob = getValidationJobById(validationId);
 		
 		if (validationJob != null) {
-			final String branchPath = getBranchFromJob(validationJob);
-			
-			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
-					.isWhitelisted(false)
-					.setLimit(limit)
-					.setScrollId(scrollId)
-					.setScroll(scrollKeepAlive)
-					.setSearchAfter(searchAfter)
-					.filterByBranchPath(branchPath)
-					.buildAsync()
-					.execute(bus));
-		} else {
-			throw new NotFoundException("Validation job", validationId);
-		}
-	}
+			if (AbstractRestService.CSV_MEDIA_TYPE.equals(contentType)) {
+				final String branchPath = getBranchFromJob(validationJob);
 
-	@ApiOperation(
-			value="Retrieve the validation issues from a completed validation on a branch.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
-	})
-	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={AbstractRestService.CSV_MEDIA_TYPE})
-	public @ResponseBody DeferredResult<Collection<Object>> getValidationResultsAsCsv(
-			@ApiParam(value="The unique validation identifier.")
-			@PathVariable(value="validationId")
-			final String validationId) {
-		
-	final RemoteJobEntry validationJob = getValidationJobById(validationId);
-		
-		if (validationJob != null) {
-			final String branchPath = getBranchFromJob(validationJob);
-			
-			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
-					.isWhitelisted(false)
-					.all()
-					.filterByBranchPath(branchPath)
-					.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
-					.buildAsync()
-					.execute(bus)
-					.then(issues -> {
-						final Set<String> rulesToFetch = issues.stream().map(ValidationIssue::getRuleId).collect(Collectors.toSet());
-						final Map<String, String> ruleDescriptionById = ValidationRequests.rules().prepareSearch()
-							.all()
-							.filterByIds(rulesToFetch)
-							.buildAsync()
-							.execute(bus)
-							.getSync()
-							.stream().collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
-						final Collection<Object> reports = issues.stream().map(issue -> {
-							final String ruleId = issue.getRuleId();
-							final String ruleDescription = ruleDescriptionById.get(ruleId);
-							final String affectedComponentLabel = Iterables.getFirst(issue.getAffectedComponentLabels(), "No label found");
-							final String affectedComponentId = issue.getAffectedComponent().getComponentId();
-							return new ValidationIssueReport(ruleId, ruleDescription, affectedComponentId, affectedComponentLabel);
-						}).collect(Collectors.toList());
-						
-						return reports;
-					}));
+				return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+						.isWhitelisted(false)
+						.all()
+						.filterByBranchPath(branchPath)
+						.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
+						.buildAsync()
+						.execute(bus)
+						.then(issues -> {
+							final Set<String> rulesToFetch = issues.stream()
+									.map(ValidationIssue::getRuleId)
+									.collect(Collectors.toSet());
+							final Map<String, String> ruleDescriptionById = ValidationRequests.rules().prepareSearch()
+									.all()
+									.filterByIds(rulesToFetch)
+									.buildAsync()
+									.execute(bus)
+									.getSync()
+									.stream()
+									.collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
+							final Collection<Object> reports = issues.stream().map(issue -> {
+								final String ruleId = issue.getRuleId();
+								final String ruleDescription = ruleDescriptionById.get(ruleId);
+								final String affectedComponentLabel = Iterables.getFirst(issue.getAffectedComponentLabels(), "No label found");
+								final String affectedComponentId = issue.getAffectedComponent().getComponentId();
+								return new ValidationIssueReport(ruleId, ruleDescription, affectedComponentId, affectedComponentLabel);
+							}).collect(Collectors.toList());
+
+							return reports;
+						}));
+			} else {
+				final String branchPath = getBranchFromJob(validationJob);
+
+				return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+						.isWhitelisted(false)
+						.setLimit(limit)
+						.setScrollId(scrollId)
+						.setScroll(scrollKeepAlive)
+						.setSearchAfter(searchAfter)
+						.filterByBranchPath(branchPath)
+						.buildAsync()
+						.execute(bus)
+						.then(issues -> {
+							return issues.getItems().stream().collect(Collectors.toList());
+						}));
+
+			}
 		} else {
 			throw new NotFoundException("Validation job", validationId);
 		}
-		
+			
 	}
 	
 	private CodeSystemEntry getCodeSystem(final String codeSystemShortName) {
