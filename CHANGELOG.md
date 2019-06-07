@@ -1,6 +1,37 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.16.0
+
+### REST API changes
+- New `HTTP POST` `/search` endpoints have been added for `/:path/concepts`, `/:path/descriptions`, `/:path/relationships`, `/:path/members`  
+- Add sort query parameter to all search endpoints that have internal support for field-based sorting (`/concepts`, `/descriptions`, `/relationships`, `/refsets`, `/members`, `/classifications`, `/branches`)
+- Add term based sorting to concepts endpoint (`sort=term[:asc|desc]`)
+- Add `parent`, `ancestor`, `statedParent`, `statedAncestor` based filtering directly to `/:path/concepts` endpoints
+- Add `id` filter to all component search endpoints
+- Expose `refsetIds` filter to the `RF2` Export REST API and make `branch`, `modules` and `refsets` configurable in the auto RF2 export script
+- Expose `/reasoners` endpoint to get available reasoner from the REST API
+- Add `owlExpression.conceptId` and `owlExpression.gci` filters to `/:path/members` endpoints
+
+### Configuration
+- Make classification `excludedModuleIds` property configurable via `snowowl_config.yml`
+
+### Validation
+- Support term highlighting in Validation Framework
+
+### Changes
+- [search] increase `query` column length to 8192 characters in MySQL Database schema
+
+### Bugs
+- [api] fix missing JSON/CSV Validation issues endpoints in Swagger UI
+- [api] allow encoded slash in GET request URLs
+- [docs] fix styling of client and server errors section
+- [search] fix nested SNOMED CT Query evaluations
+- [search] fix ascending flag bug for script-based sorts
+- [reasoner] fix missing `ontology list` OSGi command
+- [reasoner] fix classification issues after applying OWL changes from `20190731` alpha release
+- [export] replace tab/newline chars in `owlExpression` to spaces
+
 ## 6.15.0
 
 ### Added
