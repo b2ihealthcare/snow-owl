@@ -481,9 +481,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		// Prepare to provide namespace-module for inbound relationship source concepts as well
 		final Set<String> relationshipChangeConceptIds = newHashSet(conceptIdsToKeep);
 		
+		// Add source concepts on new/about to be inactivated inbound relationships, pointing to "kept" concepts
 		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
 			for (final SnomedRelationship relationship : conceptToKeep.getInboundRelationships()) {
 				if (relationship.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
+					relationshipChangeConceptIds.add(relationship.getSourceId());
+				} else if (!relationship.isActive()) {
 					relationshipChangeConceptIds.add(relationship.getSourceId());
 				}
 			}
@@ -540,6 +543,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				}
 			}
 		}
+		
+		// Inactivation of "removed" concepts also requires modules to be collected according to the assigner rules
+		assigner.clear();
+		assigner.collectRelationshipNamespacesAndModules(conceptIdsToSkip, context);
 		
 		for (final SnomedConcept conceptToRemove : equivalentConcepts.values()) {
 			// Check if the concept needs to be removed or deactivated
