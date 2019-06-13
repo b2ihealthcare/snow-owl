@@ -810,11 +810,17 @@ public final class ReasonerTaxonomyBuilder {
 				
 				if (!CompareUtils.isEmpty(member.getClassAxiomRelationships())) {
 					for (SnomedOWLRelationshipDocument relationship : member.getClassAxiomRelationships()) {
-						if (relationship.isIsa()) {
-							sourceIds.add(referencedComponentId);
-							destinationIds.add(relationship.getDestinationId());
+						if (builtConceptMap.containsKey(referencedComponentId) && builtConceptMap.containsKey(relationship.getDestinationId())) {
+							if (relationship.isIsa()) {
+								sourceIds.add(referencedComponentId);
+								destinationIds.add(relationship.getDestinationId());
+							} else {
+								fragments.add(relationship.toStatementFragment());
+							}
 						} else {
-							fragments.add(relationship.toStatementFragment());
+							LOGGER.debug(
+									"Not registering OWL axiom relationship for concept {} as either the source or the destination ({}) is inactive.",
+									referencedComponentId, relationship.getDestinationId());
 						}
 					}
 				} else if (!CompareUtils.isEmpty(member.getGciAxiomRelationships())) {
