@@ -13,6 +13,7 @@ import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate
@@ -22,7 +23,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.google.common.base.Joiner
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Lists

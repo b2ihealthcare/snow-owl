@@ -31,10 +31,10 @@ import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersion;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystemVersion;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.BranchBase;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
@@ -56,7 +56,8 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 	public void downgradeB2iExtensionWithoutChanges() {
 		CodeSystemVersion version = getVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, "2016-01-31")
 				.statusCode(200)
-				.extract().as(CodeSystemVersion.class);
+				.extract()
+				.as(CodeSystemVersion.class);
 
 		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(version.getParentBranchPath(), 
 				version.getVersion(),

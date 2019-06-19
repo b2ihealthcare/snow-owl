@@ -100,7 +100,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  *
  * @since 1.0
  */
-@SuppressWarnings("deprecation")
 @EnableWebMvc
 @EnableSwagger2
 @Configuration
@@ -207,6 +206,7 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
+	@SuppressWarnings("deprecation")
 	public ISnomedExportService exportService() {
 		return new SnomedExportService();
 	}

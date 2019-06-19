@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import java.util.Collections;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,6 +44,10 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(value = "/compare")
 public class SnomedCompareRestService extends AbstractRestService {
+	
+	public SnomedCompareRestService() {
+		super(Collections.emptySet());
+	}
 	
 	@ApiOperation(
 		value = "Compare two branches", 

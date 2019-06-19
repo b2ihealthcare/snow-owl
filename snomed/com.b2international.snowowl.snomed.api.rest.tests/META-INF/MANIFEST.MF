@@ -5,16 +5,14 @@ Bundle-SymbolicName: com.b2international.snowowl.snomed.api.rest.tests
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.junit;bundle-version="4.11.0",
- org.eclipse.core.runtime;bundle-version="3.9.0",
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.test.commons,
  com.b2international.snowowl.api.rest,
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.api,
- com.b2international.snowowl.snomed.api.rest,
- org.assertj.core;bundle-version="1.7.1",
  com.b2international.snowowl.snomed.api.impl,
- org.semanticweb.elk
-Import-Package: com.b2international.snowowl.snomed.api.impl,
- com.b2international.snowowl.snomed.reasoner.domain,
- org.eclipse.xtext.util
+ com.b2international.snowowl.snomed.api.rest,
+ com.b2international.snowowl.snomed.reasoner,
+ org.semanticweb.elk,
+ org.junit;bundle-version="4.12.0",
+ org.assertj.core;bundle-version="1.7.1"

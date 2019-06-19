@@ -349,7 +349,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		final SnomedRefSetMemberIndexEntry member = createGciAxiomMember();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertThat(actual.getClassAxiomRelationships()).isEmpty();
 		assertEquals(
 			// expected

@@ -89,7 +89,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<SnomedDescriptions> searchByGet(
+	public DeferredResult<SnomedDescriptions> searchByGet(
 			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,

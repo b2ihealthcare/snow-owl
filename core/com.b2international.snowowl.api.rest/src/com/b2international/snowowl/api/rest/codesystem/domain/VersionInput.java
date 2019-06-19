@@ -21,6 +21,8 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.datastore.CodeSystemVersionProperties;
+
 /**
  * @since 1.0
  */
