@@ -43,8 +43,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 import io.restassured.RestAssured;
-import io.restassured.config.ConnectionConfig;
-import io.restassured.config.HttpClientConfig;
+import io.restassured.config.LogConfig;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
@@ -98,27 +97,23 @@ public class RestExtensions {
 
 	public static RequestSpecification givenUnauthenticatedRequest(String api) {
 		if (INITIALIZE_ONCE.compareAndSet(false, true)) {
+			
 			// change Base URI if defined as sysarg
 			final String serverLocation = System.getProperty("test.server.location");
 			if (!Strings.isNullOrEmpty(serverLocation)) {
 				RestAssured.baseURI = serverLocation;
 			}
 			
-			// Enable logging on failed requests
-			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-			
-			// add custom 
 			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new GuavaModule());
 			
-			RestAssuredConfig.config()
+			RestAssured.config = RestAssuredConfig.config()
+				.logConfig(LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails())
 				.objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
 					public ObjectMapper create(Type arg0, String arg1) {
 						return mapper;
 					}
-				}))
-				.connectionConfig(ConnectionConfig.connectionConfig().closeIdleConnectionsAfterEachResponse())
-    			.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance().setParam("http.protocol.expect-continue", true));
+				}));
 			
 			// add the user to the current identity provider
 			try {

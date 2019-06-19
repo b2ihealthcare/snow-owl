@@ -17,19 +17,26 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -97,11 +104,10 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 * 
 	 * @since 5.10
 	 */
-	public static final class Expand {
+	public static final class Expand extends SnomedCoreComponent.Expand {
 
 		public static final String REFERENCE_SET = "referenceSet";
 		public static final String INACTIVATION_PROPERTIES = "inactivationProperties";
-		public static final String REFERRING_MEMBERS = "members";
 		public static final String STATED_ANCESTORS = "statedAncestors";
 		public static final String ANCESTORS = "ancestors";
 		public static final String STATED_DESCENDANTS = "statedDescendants";
@@ -113,6 +119,25 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		public static final String PREFERRED_TERM = "pt";
 		public static final Object PREFERRED_DESCRIPTIONS = "preferredDescriptions";
 
+	}
+	
+	/**
+	 * @since 6.16
+	 */
+	public static final class Fields extends SnomedCoreComponent.Fields {
+
+		public static final String DEFINITION_STATUS_ID = SnomedRf2Headers.FIELD_DEFINITION_STATUS_ID;
+		
+		public static final Set<String> ALL = ImmutableSet.of(
+				// RF2 properties
+				ID,
+				EFFECTIVE_TIME,
+				ACTIVE,
+				MODULE_ID,
+				DEFINITION_STATUS_ID,
+				// additional fields
+				RELEASED);
+		
 	}
 	
 	/**
@@ -181,9 +206,18 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 	}
 	
+	/**
+	 * @deprecated - get the definitionStatusId from {@link #getDefinitionStatusId()} method
+	 */
+	@JsonProperty
 	@Override
 	public DefinitionStatus getDefinitionStatus() {
 		return definitionStatus;
+	}
+	
+	@JsonProperty
+	public String getDefinitionStatusId() {
+		return definitionStatus == null ? null : definitionStatus.getConceptId();
 	}
 
 	/**
@@ -297,33 +331,74 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the ancestors
 	 */
+	@JsonIgnore
 	public long[] getAncestorIds() {
 		return ancestorIds;
+	}
+	
+	/**
+	 * @return the concept IDs of the ancestors as String values
+	 */
+	@JsonProperty("ancestorIds")
+	public List<String> getAncestorIdsAsString() {
+		return ancestorIds == null ? null : Arrays.stream(ancestorIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 
 	/**
 	 * @return the concept IDs of the parents
 	 */
+	@JsonIgnore
 	public long[] getParentIds() {
 		return parentIds;
+	}
+	
+	/**
+	 * @return the concept IDs of the parents as String values
+	 */
+	@JsonProperty("parentIds")
+	public List<String> getParentIdsAsString() {
+		return parentIds == null ? null : Arrays.stream(parentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 
 	/**
 	 * @return the concept IDs of the stated ancestors
 	 */
+	@JsonIgnore
 	public long[] getStatedAncestorIds() {
 		return statedAncestorIds;
 	}
 
 	/**
+	 * @return the concept IDs of the stated ancestors as String values
+	 */
+	@JsonProperty("statedAncestorIds")
+	public List<String> getStatedAncestorIdsAsString() {
+		return statedAncestorIds == null ? null : Arrays.stream(statedAncestorIds).mapToObj(Long::toString).collect(Collectors.toList());
+	}
+	
+	/**
 	 * @return the concept IDs of the stated parents
 	 */
+	@JsonIgnore
 	public long[] getStatedParentIds() {
 		return statedParentIds;
 	}
 	
+	/**
+	 * @return the concept IDs of the stated parents as String values
+	 */
+	@JsonProperty("statedParentIds")
+	public List<String> getStatedParentIdsAsString() {
+		return statedParentIds == null ? null : Arrays.stream(statedParentIds).mapToObj(Long::toString).collect(Collectors.toList());
+	}
+	
+	@JsonIgnore
 	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
+	}
+	
+	public void setDefinitionStatusId(final String definitionStatusId) {
+		this.definitionStatus = DefinitionStatus.getByConceptId(definitionStatusId);
 	}
 
 	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {
@@ -378,20 +453,44 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		this.statedDescendants = statedDescendants;
 	}
 	
+	@JsonIgnore
 	public void setAncestorIds(final long[] ancestorIds) {
 		this.ancestorIds = ancestorIds;
 	}
 	
+	@JsonProperty
+	public void setAncestorIds(final List<String> ancestorIds) {
+		this.ancestorIds = ancestorIds == null ? null : ancestorIds.stream().mapToLong(Long::parseLong).toArray();
+	}
+	
+	@JsonIgnore
 	public void setParentIds(final long[] parentIds) {
 		this.parentIds = parentIds;
 	}
 	
+	@JsonProperty
+	public void setParentIds(final List<String> parentIds) {
+		this.parentIds = parentIds == null ? null : parentIds.stream().mapToLong(Long::parseLong).toArray();
+	}
+	
+	@JsonIgnore
 	public void setStatedAncestorIds(final long[] statedAncestorIds) {
 		this.statedAncestorIds = statedAncestorIds;
 	}
 	
+	@JsonProperty
+	public void setStatedAncestorIds(final List<String> statedAncestorIds) {
+		this.statedAncestorIds = statedAncestorIds == null ? null : statedAncestorIds.stream().mapToLong(Long::parseLong).toArray();
+	}
+	
+	@JsonIgnore
 	public void setStatedParentIds(final long[] statedParentIds) {
 		this.statedParentIds = statedParentIds;
+	}
+	
+	@JsonProperty
+	public void setStatedParentIds(final List<String> statedParentIds) {
+		this.statedParentIds = statedParentIds == null ? null : statedParentIds.stream().mapToLong(Long::parseLong).toArray();
 	}
 	
 	public void setReferenceSet(SnomedReferenceSet referenceSet) {

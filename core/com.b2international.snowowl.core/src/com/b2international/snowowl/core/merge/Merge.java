@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder=Merge.Builder.class)
 public interface Merge extends Serializable {
 
-	public enum Status {
+	enum Status {
 		SCHEDULED,
 		IN_PROGRESS,
 		COMPLETED,

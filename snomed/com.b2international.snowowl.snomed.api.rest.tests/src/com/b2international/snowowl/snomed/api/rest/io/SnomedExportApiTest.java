@@ -1090,7 +1090,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		createNewRefSet(branchPath, SnomedRefSetType.OWL_AXIOM, Concepts.REFSET_OWL_AXIOM);
 		
-		String owlExpression = "dummy expression";
+		String owlExpression = "";
 		
 		Map<?, ?> memberRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
 				.put("owlExpression", owlExpression)

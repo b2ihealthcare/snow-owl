@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import java.text.MessageFormat;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 
 /**
  * Enumerates allowed concept definition status values and their corresponding concept identifiers.
@@ -56,6 +59,20 @@ public enum DefinitionStatus implements ConceptEnum {
 	@JsonIgnore
 	public boolean isPrimitive() {
 		return PRIMITIVE.equals(this);
+	}
+
+	public static DefinitionStatus getByConceptId(String conceptId) {
+		if (Strings.isNullOrEmpty(conceptId)) {
+			return null;
+		}
+		
+		for (DefinitionStatus status : values()) {
+			if (status.getConceptId().equals(conceptId)) {
+				return status;
+			}
+		}
+		
+		throw new IllegalArgumentException(MessageFormat.format("No definition status value found for identifier ''{0}''.", conceptId));
 	}
 	
 }

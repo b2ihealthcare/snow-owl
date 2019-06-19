@@ -21,3 +21,4 @@ Export-Package: com.b2international.snowowl.snomed.reasoner.classification,
  com.b2international.snowowl.snomed.reasoner.ontology,
  com.b2international.snowowl.snomed.reasoner.request
 Import-Package: org.slf4j
+Service-Component: OSGI-INF/component.xml

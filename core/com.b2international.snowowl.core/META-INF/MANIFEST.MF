@@ -42,6 +42,6 @@ Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.propertytester,
  com.b2international.snowowl.core.request,
  com.b2international.snowowl.core.setup,
- com.b2international.snowowl.core.terminology
-Import-Package: org.eclipse.emf.common.util,
- org.slf4j;version="1.7.13"
+ com.b2international.snowowl.core.terminology,
+ com.b2international.snowowl.core.validation
+Import-Package: org.slf4j;version="1.7.13"

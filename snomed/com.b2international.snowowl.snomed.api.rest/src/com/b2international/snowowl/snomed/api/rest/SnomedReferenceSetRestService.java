@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
@@ -73,11 +71,15 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 4.5
  */
-@Api(value = "Reference Sets", description="Reference Sets", tags = { "reference sets" })
+@Api(value = "RefSets", description="RefSets", tags = { "refsets" })
 @Controller
 @RequestMapping(value = "/{path:**}/refsets")		
 public class SnomedReferenceSetRestService extends AbstractRestService {
 
+	public SnomedReferenceSetRestService() {
+		super(SnomedReferenceSet.Fields.ALL);
+	}
+	
 	@ApiOperation(
 			value="Retrieve Reference Sets from a branch", 
 			notes="Returns a list with all reference sets from a branch.")
@@ -87,7 +89,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
 	public @ResponseBody DeferredResult<SnomedReferenceSets> search(
-			@ApiParam(value="The branch path")
+			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branchPath,
 			
@@ -109,7 +111,11 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			final int limit,
+			
+			@ApiParam(value="Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sortKeys) {
 		
 		return DeferredResults.wrap(SnomedRequests.prepareSearchRefSet()
 				.filterByTypes(Collections3.toImmutableSet(refSetTypes).stream().map(SnomedRefSetType::valueOf).collect(Collectors.toSet()))
@@ -117,6 +123,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 				.setScrollId(scrollId)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
+				.sortBy(extractSortFields(sortKeys))
 				.build(repositoryId, branchPath)
 				.execute(bus));
 	}
@@ -149,15 +156,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		
 		return DeferredResults.wrap(SnomedRequests
 				.prepareGetReferenceSet(referenceSetId)

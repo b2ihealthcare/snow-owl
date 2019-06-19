@@ -59,7 +59,7 @@ public class ValidationRestInput {
 		this.ruleIds = ruleIds;
 	}
 	
-	public boolean isUnpublishedValidation() {
+	public Boolean isUnpublishedValidation() {
 		return isUnpublishedValidation;
 	}
 	

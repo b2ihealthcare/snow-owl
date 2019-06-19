@@ -175,15 +175,9 @@ public final class Taxonomies {
 				final boolean oldValue = Boolean.parseBoolean(propDiff.getOldValue());
 				final boolean newValue = Boolean.parseBoolean(propDiff.getNewValue());
 				final String conceptId = diff.newRevision.getId();
-				if (oldValue && !newValue) {
-					// inactivation
-					//we do not need this concept. either it was deactivated now or sometime earlier.
-					graphToUpdate.removeNode(conceptId);
-				} else if (!oldValue && newValue) {
-					// consider reverting reactivation
-					if (!graphToUpdate.containsNode(Long.parseLong(conceptId))) {
-						graphToUpdate.addNode(conceptId);
-					}
+				if (!oldValue && newValue) {
+					// make sure the node is part of the new tree
+					graphToUpdate.addNode(conceptId);
 				}
 			});
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -40,6 +41,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a SNOMED&nbsp;CT Reference Set Member.
@@ -86,6 +88,29 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	}
 	
 	public static final Function<SnomedReferenceSetMember, String> GET_REFERENCED_COMPONENT_ID = (member) -> member.getReferencedComponent().getId();
+	
+	/**
+	 * @since 6.16 
+	 */
+	public static final class Fields extends SnomedComponent.Fields {
+		
+		public static final String TYPE = "type";
+		public static final String REFERENCED_COMPONENT_ID = SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID;
+		public static final String REFSET_ID = "referencedSetId";
+		
+		public static final Set<String> ALL = ImmutableSet.of(
+				// RF2 fields
+				ID,
+				ACTIVE,
+				EFFECTIVE_TIME,
+				MODULE_ID,
+				REFSET_ID,
+				REFERENCED_COMPONENT_ID,
+				// special fieldss
+				TYPE,
+				RELEASED);
+		
+	}
 	
 	private SnomedRefSetType type;
 	private SnomedCoreComponent referencedComponent;

@@ -16,11 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
  * @since 6.14
@@ -30,25 +29,21 @@ public final class SnomedOWLAxiomHelper {
 	private static final String EQUIVALENTCLASSES = "equivalentclasses";
 
 	public static DefinitionStatus getDefinitionStatusFromExpressions(Set<String> owlExpressions) {
-		if (owlExpressions.isEmpty()) return null;
 		
-		// XXX: Always look for and prefer equivalentClasses, it means the concept is
-		// FULLY_DEFINED otherwise PRIMITIVE
-		// Tokenize expressions on "(:"
-			// Check if equivalentclasses follows up with valid SCT ID
-		for (String owlExpression : owlExpressions) {
-			final StringTokenizer tokenizer = new StringTokenizer(owlExpression.toLowerCase(Locale.ENGLISH), "(:");
-			final String firstToken = tokenizer.nextToken();
-			if (firstToken.equals(EQUIVALENTCLASSES)) {
-				final String conceptId = tokenizer.nextToken().trim();
-
-				if (SnomedIdentifiers.isConceptIdentifier(conceptId)) {
-					return DefinitionStatus.FULLY_DEFINED;
-				}
-			}
+		if (owlExpressions.isEmpty()) {
+			return null;
 		}
-
+		
+		Optional<String> equivalenClassesExpression = owlExpressions.stream()
+			.filter(expression -> expression.toLowerCase(Locale.ENGLISH).contains(EQUIVALENTCLASSES))
+			.findFirst();
+		
+		if (equivalenClassesExpression.isPresent()) {
+			return DefinitionStatus.FULLY_DEFINED;
+		}
+		
 		return DefinitionStatus.PRIMITIVE;
+
 	}
 
 }

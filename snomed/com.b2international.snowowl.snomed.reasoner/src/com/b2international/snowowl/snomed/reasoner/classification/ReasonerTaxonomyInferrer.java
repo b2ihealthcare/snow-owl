@@ -246,7 +246,9 @@ public final class ReasonerTaxonomyInferrer {
 					iterationOrder);
 			
 		} finally {
-			reasoner.dispose();
+			if (reasoner != null) {
+				reasoner.dispose();
+			}
 		}
 	}
 

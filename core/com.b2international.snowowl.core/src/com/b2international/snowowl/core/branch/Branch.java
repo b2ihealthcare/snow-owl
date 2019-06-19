@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.branch;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.b2international.commons.options.MetadataHolder;
 import com.b2international.index.revision.RevisionBranch;
@@ -23,6 +24,7 @@ import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a {@link Branch} in a terminology repository. A {@link Branch} can be uniquely identified by using its {@link #path()} and
@@ -31,20 +33,41 @@ import com.google.common.base.Joiner;
  * @since 4.1
  */
 public interface Branch extends MetadataHolder, Serializable {
-
-	/**
-	 * The path of the main branch.
-	 */
-	static final String MAIN_PATH = RevisionBranch.MAIN_PATH;
-
-	interface Expand {
-		static final String CHILDREN = "children";
-	}
 	
 	/**
-	 * Segment separator in {@link Branch#path()} values.
+	 * @since 6.16
 	 */
-	String SEPARATOR = RevisionBranch.SEPARATOR;
+	final class Fields {
+		
+		public static final String PATH = "path";
+		public static final String PARENT_PATH = "parentPath";
+		public static final String NAME = "name";
+		public static final String BASE_TIMESTAMP = "baseTimestamp";
+		public static final String HEAD_TIMESTAMP = "headTimestamp";
+		public static final String STATE = "state";
+		public static final Set<String> ALL = ImmutableSet.of(
+			PATH,
+			PARENT_PATH,
+			NAME,
+			BASE_TIMESTAMP,
+			HEAD_TIMESTAMP,
+			STATE);
+			
+		}
+		
+		/**
+		 * The path of the main branch.
+		 */
+		static final String MAIN_PATH = RevisionBranch.MAIN_PATH;
+		
+		interface Expand {
+			static final String CHILDREN = "children";
+		}
+		
+		/**
+		 * Segment separator in {@link Branch#path()} values.
+		 */
+		String SEPARATOR = RevisionBranch.SEPARATOR;
 	
 	/**
 	 * Returns the numeric identifier associated with this branch.

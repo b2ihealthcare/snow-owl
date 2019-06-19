@@ -19,10 +19,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,7 @@ import com.google.common.io.Files;
  */
 public final class SnomedIconProvider {
 
-	private static final String ICONS_PATH = "/icons";
+	private static final String ICONS_PATH = "icons";
 	private static SnomedIconProvider INSTANCE;
 
 	public static SnomedIconProvider getInstance() {
@@ -53,16 +55,34 @@ public final class SnomedIconProvider {
 	private final Map<String, URL> availableIcons;
 
 	private SnomedIconProvider() {
-		try (
-	            final InputStream is = PlatformUtil.toFileURL(getClass(), ICONS_PATH).openStream();
-	            final InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-	            final BufferedReader br = new BufferedReader(isr)) {
-	        availableIcons = br.lines()
-	                .map(file -> PlatformUtil.toFileURL(getClass(), ICONS_PATH + "/" + file))
-	                .collect(Collectors.toMap(url -> Files.getNameWithoutExtension(url.getFile()), url -> url));
-	    } catch (IOException e) {
-	    	throw new RuntimeException(e);
-	    }
+		final String iconsPrefix = "/" + ICONS_PATH;
+		URL iconsUrl = PlatformUtil.toFileURL(getClass(), iconsPrefix);
+		if (iconsUrl.getProtocol().equals("file")) {
+			try (
+					final InputStream is = iconsUrl.openStream();
+					final InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+					final BufferedReader br = new BufferedReader(isr)) {
+				availableIcons = br.lines()
+						.map(file -> PlatformUtil.toFileURL(getClass(), iconsPrefix + "/" + file))
+						.collect(Collectors.toMap(url -> Files.getNameWithoutExtension(url.getFile()), url -> url));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		} else if (iconsUrl.getProtocol().equals("jar")) {
+			try {
+				JarURLConnection connection = (JarURLConnection) iconsUrl.openConnection();
+				availableIcons = ((JarURLConnection) connection).getJarFile().stream()
+						.filter(file -> file.getName().startsWith(ICONS_PATH) && !file.isDirectory())
+						.map(file -> PlatformUtil.toFileURL(getClass(), "/" + file.getName()))
+						.collect(Collectors.toMap(url -> Files.getNameWithoutExtension(url.getFile()), url -> url));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			// error
+			availableIcons = new HashMap<>();
+		}
+		// throw error if icons are empty
 	}
 	
 	/**
@@ -86,11 +106,6 @@ public final class SnomedIconProvider {
 			icon = getExactFile(defaultComponentId);
 		}
 		return icon;
-	}
-
-	public static void main(String[] args) {
-		getInstance().getAvailableIconIds().forEach(System.out::println);
-		System.out.println(getInstance().getExactFile("64572001"));
 	}
 
 }

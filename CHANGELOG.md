@@ -86,6 +86,69 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://b
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.16.0
+
+### REST API changes
+- New `HTTP POST` `/search` endpoints have been added for `/:path/concepts`, `/:path/descriptions`, `/:path/relationships`, `/:path/members`  
+- Add sort query parameter to all search endpoints that have internal support for field-based sorting (`/concepts`, `/descriptions`, `/relationships`, `/refsets`, `/members`, `/classifications`, `/branches`)
+- Add term based sorting to concepts endpoint (`sort=term[:asc|desc]`)
+- Add `parent`, `ancestor`, `statedParent`, `statedAncestor` based filtering directly to `/:path/concepts` endpoints
+- Add `id` filter to all component search endpoints
+- Expose `refsetIds` filter to the `RF2` Export REST API and make `branch`, `modules` and `refsets` configurable in the auto RF2 export script
+- Expose `/reasoners` endpoint to get available reasoner from the REST API
+- Add `owlExpression.conceptId` and `owlExpression.gci` filters to `/:path/members` endpoints
+
+### Configuration
+- Make classification `excludedModuleIds` property configurable via `snowowl_config.yml`
+
+### Validation
+- Support term highlighting in Validation Framework
+
+### Changes
+- [search] increase `query` column length to 8192 characters in MySQL Database schema
+
+### Bugs
+- [api] fix missing JSON/CSV Validation issues endpoints in Swagger UI
+- [api] allow encoded slash in GET request URLs
+- [docs] fix styling of client and server errors section
+- [search] fix nested SNOMED CT Query evaluations
+- [search] fix ascending flag bug for script-based sorts
+- [reasoner] fix missing `ontology list` OSGi command
+- [reasoner] fix classification issues after applying OWL changes from `20190731` alpha release
+- [export] replace tab/newline chars in `owlExpression` to spaces
+
+## 6.15.0
+
+### Added
+- New `com.b2international.snowowl.snomed.icons` module with default SNOMED CT Concept images (0d444fa, ac0123e)
+- New MRCM based type validation rule and stated version for all MRCM rule (#344)
+- SNOMED CT API improvements:
+  * New `semanticTag` filter on `GET /:path/concepts` endpoint (0f304ec)
+  * New `semanticTag` filter on `GET /:path/descriptions` endpoint (0f304ec)
+  * New `caseSignificance` filter on `GET /:path/descriptions` endpoint (0f304ec)
+  * `characteristicTypeId` and `modifierId` have been added to `SnomedRelationship` JSON representation (66bf620, 763e1ee)
+  * Changed type of array values of `parentIds`, `ancestorIds`, `statedParentIds`, `statedAncestorIds` to `String` from `long` (81f7628)
+
+### Changed
+- Updated OWLAPI to support more recent reasoner versions (#342)
+
+### Removed
+- `defaults` directory support (6468aa1)
+- `.xtend` files from all modules except `com.b2international.snowowl.snomed.ecl.tests` (#345)
+
+### Bugs
+- Fixed definition status calculation issue (1dbb3c5)
+- Excluded whitelisted response items in `GET /validations/:id/issues` endpoint (#347)
+- Fixed incorrect Location URL returned in `POST /validations` endpoint (#347)
+- Fixed incorrect (non-null) effective time value after changing `targetComponentId`/`valueId` on active reference set members (5959e88)
+- Fixed missing ECL cardinality conversion service in SNOMED CT Query Language infrastructure (706ba1c)
+- Fixed incorrect wrapping of `IdRequest` in SNOMED CT transactions (#349) 
+
+### Dependencies
+- Bump OWLAPI to 4.5.10 (#342)
+- Bump Protege libraries to 5.0.3-b2i (see repository https://github.com/b2ihealthcare/protege) (#342)
+- Bump ELK reasoner to 0.4.3 (7bdb231)
+
 ## 6.14.2
 
 ### Changed

@@ -240,11 +240,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final Set<OWLAnnotationAssertionAxiom> getAnnotationAssertionAxioms(final OWLAnnotationSubject entity) {
-		return unsupportedOntology.getAnnotationAssertionAxioms(entity);
-	}
-
-	@Override
 	public final Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getAnnotationPropertiesInSignature(includeImportsClosure);
 	}
@@ -262,11 +257,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	@Override
 	public final Set<OWLAnnotationPropertyRangeAxiom> getAnnotationPropertyRangeAxioms(final OWLAnnotationProperty property) {
 		return unsupportedOntology.getAnnotationPropertyRangeAxioms(property);
-	}
-
-	@Override
-	public final Set<OWLAnnotation> getAnnotations() {
-		return unsupportedOntology.getAnnotations();
 	}
 
 	@Override
@@ -605,11 +595,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final Set<OWLImportsDeclaration> getImportsDeclarations() {
-		return unsupportedOntology.getImportsDeclarations();
-	}
-
-	@Override
 	public final Set<OWLNamedIndividual> getIndividualsInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getIndividualsInSignature(includeImportsClosure);
 	}
@@ -707,11 +692,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	@Override
 	public final Set<OWLSubObjectPropertyOfAxiom> getObjectSubPropertyAxiomsForSuperProperty(final OWLObjectPropertyExpression superProperty) {
 		return unsupportedOntology.getObjectSubPropertyAxiomsForSuperProperty(superProperty);
-	}
-
-	@Override
-	public final Set<IRI> getPunnedIRIs(final Imports includeImportsClosure) {
-		return unsupportedOntology.getPunnedIRIs(includeImportsClosure);
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -26,6 +28,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a SNOMED&nbsp;CT Reference Set.
@@ -68,6 +72,27 @@ public final class SnomedReferenceSet extends SnomedComponent {
 
 	public static final SnomedReferenceSet DELETE = new SnomedReferenceSet();
 	public static final SnomedReferenceSet FORCE_DELETE = new SnomedReferenceSet();
+
+	/**
+	 * @since 6.16 
+	 */
+	public static final class Fields extends SnomedComponent.Fields {
+		
+		public static final String TYPE = "type";
+		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
+		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
+		
+		public static final Set<String> ALL = ImmutableSet.of(
+				ID,
+				ACTIVE,
+				EFFECTIVE_TIME,
+				MODULE_ID,
+				TYPE,
+				REFERENCED_COMPONENT_TYPE,
+				MAP_TARGET_COMPONENT_TYPE,
+				RELEASED);
+		
+	}
 
 	private SnomedRefSetType type;
 	private String referencedComponentType;
