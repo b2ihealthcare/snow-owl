@@ -93,20 +93,12 @@ public class SnomedBranchRequestTest {
 		final Promise<String> first = branches.prepareCreate().setParent(branchPath).setName(branchName).build(REPOSITORY_ID).execute(bus);
 		final Promise<String> second = branches.prepareCreate().setParent(branchPath).setName(branchName).build(REPOSITORY_ID).execute(bus);
 		final String error = Promise.all(first, second)
-			.then(new Function<List<Object>, String>() {
-				@Override
-				public String apply(List<Object> input) {
-					final Branch first = branches.prepareGet((String) input.get(0)).build(REPOSITORY_ID).execute(bus).getSync();
-					final Branch second = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
-					return first.baseTimestamp() == second.baseTimestamp() ? null : "Two branches created with the same name but different baseTimestamp";
-				}
+			.then(input -> {
+				final Branch first1 = branches.prepareGet((String) input.get(0)).build(REPOSITORY_ID).execute(bus).getSync();
+				final Branch second1 = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
+				return first1.baseTimestamp() == second1.baseTimestamp() ? null : "Two branches created with the same name but different baseTimestamp";
 			})
-			.fail(new Function<Throwable, String>() {
-				@Override
-				public String apply(Throwable input) {
-					return input.getMessage() != null ? input.getMessage() : Throwables.getRootCause(input).getClass().getSimpleName();
-				}
-			})
+			.fail(input -> input.getMessage() != null ? input.getMessage() : Throwables.getRootCause(input).getClass().getSimpleName())
 			.getSync();
 		assertNull(error, error);
 	}

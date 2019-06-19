@@ -146,6 +146,7 @@ final class SnomedInactivationReasonUpdateRequest implements Request<Transaction
 
 				updatedMember.field(SnomedRf2Headers.FIELD_VALUE_ID, inactivationValueId);
 				ensureMemberActive(context, existingMember, updatedMember);
+				unsetEffectiveTime(existingMember, updatedMember);
 				context.update(oldRevision, updatedMember.build());
 				
 			} else /* if (CLEAR.equals(inactivationValueId) */ {

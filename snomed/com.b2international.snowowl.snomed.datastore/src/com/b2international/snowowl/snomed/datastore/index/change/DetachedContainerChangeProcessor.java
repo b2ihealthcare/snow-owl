@@ -71,7 +71,7 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 		for (Hits<SnomedDescriptionIndexEntry> hits : searcher.scroll(Query
 				.select(SnomedDescriptionIndexEntry.class)
 				.where(SnomedDescriptionIndexEntry.Expressions.concepts(deletedConceptIds))
-				.limit(10_000)
+				.limit(PAGE_SIZE)
 				.build()))  {
 			for (SnomedDescriptionIndexEntry description : hits) {
 				deletedCoreComponentIds.add(description.getId());
@@ -85,7 +85,7 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 						.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(deletedConceptIds))
 						.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(deletedConceptIds))
 						.build())
-				.limit(10_000)
+				.limit(PAGE_SIZE)
 				.build()))  {
 			for (SnomedRelationshipIndexEntry relationship : hits) {
 				deletedCoreComponentIds.add(relationship.getId());

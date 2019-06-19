@@ -93,8 +93,8 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 				newLanguageMembersToCreate.remove(languageReferenceSetId);
 			} else if (newLanguageMembersToCreate.containsKey(languageReferenceSetId)) {
 				final Acceptability newAcceptability = newLanguageMembersToCreate.get(languageReferenceSetId);
-				ensureMemberActive(existingMember, updatedMember);
 				updatedMember.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, newAcceptability.getConceptId());
+				ensureMemberActive(existingMember, updatedMember);
 				unsetEffectiveTime(existingMember, updatedMember);
 				context.update(oldRevision, updatedMember.build());
 				newLanguageMembersToCreate.remove(languageReferenceSetId);
