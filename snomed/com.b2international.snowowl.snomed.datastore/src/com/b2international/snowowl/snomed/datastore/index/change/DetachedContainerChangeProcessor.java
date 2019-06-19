@@ -41,8 +41,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  */
 public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBase {
 
-	private static final int PAGE_SIZE = 10_000;
-
 	public DetachedContainerChangeProcessor() {
 		super("referring members");
 	}

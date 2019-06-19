@@ -131,8 +131,6 @@ final class SnomedInactivationReasonUpdateRequest implements Request<Transaction
 
 				// Exact match, just make sure that the member is active
 				ensureMemberActive(context, existingMember, updatedMember);
-				context.update(oldRevision, updatedMember.build());
-				firstMemberFound = true;
 
 			} else if (!CLEAR.equals(inactivationValueId)) {
 
@@ -147,16 +145,15 @@ final class SnomedInactivationReasonUpdateRequest implements Request<Transaction
 				updatedMember.field(SnomedRf2Headers.FIELD_VALUE_ID, inactivationValueId);
 				ensureMemberActive(context, existingMember, updatedMember);
 				unsetEffectiveTime(existingMember, updatedMember);
-				context.update(oldRevision, updatedMember.build());
 				
 			} else /* if (CLEAR.equals(inactivationValueId) */ {
 				
 				// Inactivation value is "no reason given", remove this member
 				removeOrDeactivate(context, existingMember, updatedMember);
-				context.update(oldRevision, updatedMember.build());
 			}
 
 			// If we get to the end of this loop, the first member has been processed
+			context.update(oldRevision, updatedMember.build());
 			firstMemberFound = true;
 		}
 
