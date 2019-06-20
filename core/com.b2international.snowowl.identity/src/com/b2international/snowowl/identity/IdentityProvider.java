@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.identity.domain.Role;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.identity.domain.Users;
 import com.google.common.collect.ImmutableList;
 
@@ -52,7 +55,12 @@ public interface IdentityProvider {
 		
 		@Override
 		public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
-			return Promise.immediate(new Users(0, 0));
+			// generate fake Users for given usernames with admin permission
+			final List<User> users = usernames.stream()
+					.limit(limit)
+					.map(username -> new User(username, ImmutableList.of(Role.ADMINISTRATOR)))
+					.collect(Collectors.toList());
+			return Promise.immediate(new Users(users, limit, usernames.size()));
 		}
 		
 		@Override
