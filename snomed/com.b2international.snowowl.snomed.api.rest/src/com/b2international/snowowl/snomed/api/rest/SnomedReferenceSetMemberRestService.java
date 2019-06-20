@@ -115,6 +115,12 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 		if (params.getOwlExpression() != null && !CompareUtils.isEmpty(params.getOwlExpression().getConceptId())) {
 			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID, params.getOwlExpression().getConceptId());
 		}
+		if (params.getOwlExpression() != null && !CompareUtils.isEmpty(params.getOwlExpression().getDestinationId())) {
+			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID, params.getOwlExpression().getDestinationId());
+		}
+		if (params.getOwlExpression() != null && !CompareUtils.isEmpty(params.getOwlExpression().getTypeId())) {
+			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID, params.getOwlExpression().getTypeId());
+		}
 		if (params.getOwlExpression() != null && params.getOwlExpression().getGci() != null) {
 			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI, params.getOwlExpression().getGci());
 		}

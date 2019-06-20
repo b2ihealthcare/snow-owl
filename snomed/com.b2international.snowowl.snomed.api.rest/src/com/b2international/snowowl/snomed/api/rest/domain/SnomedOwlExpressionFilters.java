@@ -26,6 +26,10 @@ public final class SnomedOwlExpressionFilters {
 
 	@ApiParam(value = "Special filter to match concept IDs in an owlExpression")
 	private List<String> conceptId;
+	@ApiParam(value = "Special filter to match destination IDs in an owlExpression")
+	private List<String> destinationId;
+	@ApiParam(value = "Special filter to match type IDs in an owlExpression")
+	private List<String> typeId;
 	@ApiParam(value = "Special filter to match GCI/non-GCI axioms")
 	private Boolean gci;
 	
@@ -35,6 +39,22 @@ public final class SnomedOwlExpressionFilters {
 	
 	public void setConceptId(List<String> conceptId) {
 		this.conceptId = conceptId;
+	}
+	
+	public List<String> getTypeId() {
+		return typeId;
+	}
+	
+	public void setTypeId(List<String> typeId) {
+		this.typeId = typeId;
+	}
+	
+	public List<String> getDestinationId() {
+		return destinationId;
+	}
+	
+	public void setDestinationId(List<String> destinationId) {
+		this.destinationId = destinationId;
 	}
 	
 	public Boolean getGci() {
