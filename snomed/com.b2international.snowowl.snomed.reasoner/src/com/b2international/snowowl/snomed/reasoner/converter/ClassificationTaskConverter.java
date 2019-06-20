@@ -49,7 +49,11 @@ import com.google.common.collect.Multimaps;
  */
 public final class ClassificationTaskConverter extends BaseResourceConverter<ClassificationTaskDocument, ClassificationTask, ClassificationTasks> {
 
-	private static final Set<ClassificationStatus> SAVE_STATUSES = ImmutableSet.of(ClassificationStatus.SAVING_IN_PROGRESS, ClassificationStatus.SAVED);
+	private static final Set<ClassificationStatus> SAVE_AND_SCHEDULED_STATUSES = ImmutableSet.of(
+			ClassificationStatus.SAVING_IN_PROGRESS,
+			ClassificationStatus.SAVED,
+			ClassificationStatus.FAILED,
+			ClassificationStatus.SCHEDULED);
 
 	public ClassificationTaskConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -99,7 +103,8 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 
 		// Overwrite stored status if the branch has moved forward in the meantime, except if the task is saved
 		for (final ClassificationTask task : results) {
-			if (SAVE_STATUSES.contains(task.getStatus())) {
+			
+			if (SAVE_AND_SCHEDULED_STATUSES.contains(task.getStatus())) {
 				continue;
 			}
 
