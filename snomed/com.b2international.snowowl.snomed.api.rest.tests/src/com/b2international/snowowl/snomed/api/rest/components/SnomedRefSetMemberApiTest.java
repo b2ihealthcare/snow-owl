@@ -26,6 +26,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.cre
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -55,6 +56,7 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -350,6 +352,36 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.build();
 		
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2).statusCode(400);
+	}
+	
+	@Test
+	public void searchOWLAxiomRefsetMemberBySourceTypeDestination() {
+		
+		String conceptId = createNewConcept(branchPath);
+		
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, conceptId)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "SubClassOf(:" + conceptId + " :" + Concepts.NAMESPACE_ROOT + ")")
+				.put("commitComment", "Created new OWL Axiom reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		SnomedReferenceSetMembers results = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.queryParam("referencedComponentId", conceptId)
+			.queryParam("owlExpression.typeId", Concepts.IS_A)
+			.queryParam("owlExpression.destinationId", Concepts.NAMESPACE_ROOT)
+			.get("/{path}/members", branchPath.getPath())
+			.then()
+			.extract().as(SnomedReferenceSetMembers.class);
+		
+		assertEquals(1, results.getItems().size());
+		
+		SnomedReferenceSetMember member = results.getItems().stream().findFirst().get();
+		
+		assertEquals(memberId, member.getId());
+		
 	}
 	
 	@Test
