@@ -43,9 +43,9 @@
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<snomed.owl.toolkit.version>2.4.0</snomed.owl.toolkit.version>
 		<!-- Build tool/compiler versions -->
-		<tycho.version>1.3.0</tycho.version>
-		<tycho-extras.version>1.3.0</tycho-extras.version>
-		<xtend.compiler.version>2.15.0</xtend.compiler.version>
+		<tycho.version>1.4.0</tycho.version>
+		<tycho-extras.version>1.4.0</tycho-extras.version>
+		<xtend.compiler.version>2.18.0</xtend.compiler.version>
 		<jacoco.version>0.8.2</jacoco.version>
 		
 		<!-- Versioning -->
