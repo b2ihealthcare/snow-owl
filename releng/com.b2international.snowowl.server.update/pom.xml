@@ -31,27 +31,27 @@
 	<build>
 		<finalName>snow-owl-oss-${build.version}</finalName>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<id>prepare</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<echo message="Unzipping Virgo archive..." />
-								<unzip src="assembly/virgo-tomcat-server-3.7.2.RELEASE.zip"
-									dest="target/" />
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-antrun-plugin</artifactId> -->
+<!-- 				<version>1.7</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>prepare</id> -->
+<!-- 						<phase>generate-resources</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>run</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<target> -->
+<!-- 								<echo message="Unzipping Virgo archive..." /> -->
+<!-- 								<unzip src="assembly/virgo-tomcat-server-3.7.2.RELEASE.zip" -->
+<!-- 									dest="target/" /> -->
+<!-- 							</target> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-director-plugin</artifactId>
@@ -71,214 +71,214 @@
 					<finalName>${project.build.finalName}-site</finalName>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.3</version>
-				<executions>
-					<execution>
-						<id>package-oss</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<appendAssemblyId>false</appendAssemblyId>
-							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
-							<descriptor>${basedir}/assembly/oss.xml</descriptor>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>de.dentrassi.maven</groupId>
-				<artifactId>rpm</artifactId>
-				<version>1.1.0</version>
-				<executions>
-					<execution>
-						<id>generate-rpm</id>
-						<goals>
-							<goal>rpm</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<targetDir>${project.build.directory}</targetDir>
-					<attach>true</attach>
-					<packageName>snow-owl-oss</packageName>
-					<group>Application/Internet</group>
-					<packager>B2i Healthcare</packager>
-					<license>ASL 2.0</license>
-					<architecture>x86_64</architecture>
-					<skipSigning>true</skipSigning>
-					<prefixes>
-						<prefix>/usr</prefix>
-					</prefixes>
-					<rulesets>
-						<ruleset>
-							<id>install</id>
-							<rules>
-								<rule>
-									<user>snowowl</user>
-									<group>snowowl</group>
-								</rule>
-								<rule>
-									<when>
-										<type>directory</type>
-									</when>
-									<mode>0755</mode>
-								</rule>
-								<rule>
-									<when>
-										<type>file</type>
-									</when>
-									<mode>0644</mode>
-								</rule>
-								<rule>
-									<when>
-										<prefix>/usr/share/snowowl/bin/</prefix>
-										<type>file</type>
-									</when>
-									<mode>0755</mode>
-								</rule>
-							</rules>
-						</ruleset>
-						<ruleset>
-							<id>config</id>
-							<rules>
-								<rule>
-									<user>snowowl</user>
-									<group>snowowl</group>
-								</rule>
-								<rule>
-									<when>
-										<type>file</type>
-									</when>
-									<noreplace>true</noreplace>
-									<configuration>true</configuration>
-									<mode>0660</mode>
-								</rule>
-							</rules>
-						</ruleset>
-						<ruleset>
-							<id>data</id>
-							<rules>
-								<rule>
-									<user>snowowl</user>
-									<group>snowowl</group>
-								</rule>
-								<rule>
-									<when>
-										<type>file</type>
-									</when>
-									<noreplace>true</noreplace>
-									<mode>0644</mode>
-								</rule>
-								<rule>
-									<when>
-										<type>directory</type>
-									</when>
-									<mode>0750</mode>
-								</rule>
-							</rules>
-						</ruleset>
-					</rulesets>
-					<entries>
-						<!-- Installation directory -->
-						<entry>
-							<name>/usr/share/snowowl</name>
-							<user>snowowl</user>
-							<group>snowowl</group>
-							<mode>0755</mode>
-							<directory>true</directory>
-						</entry>
-						<entry>
-							<name>/usr/share/snowowl</name>
-							<ruleset>install</ruleset>
-							<collect>
-								<from>${packageFiles}</from>
-								<excludes>
-									<exclude>serviceability/**</exclude>
-									<exclude>resources/**</exclude>
-									<exclude>.gitignore</exclude>
-								</excludes>
-							</collect>
-						</entry>
-						<!-- Configuration directory -->
-						<entry>
-							<name>/etc/snowowl</name>
-							<ruleset>config</ruleset>
-							<user>snowowl</user>
-							<group>snowowl</group>
-							<collect>
-								<from>${packageFiles}/configuration</from>
-							</collect>
-						</entry>
-						<!-- Data directory -->
-						<entry>
-							<name>/var/lib/snowowl</name>
-							<user>snowowl</user>
-							<group>snowowl</group>
-							<mode>0755</mode>
-							<directory>true</directory>
-						</entry>	
-						<entry>
-							<name>/var/lib/snowowl</name>
-							<ruleset>data</ruleset>
-							<collect>
-								<from>${packageFiles}/resources</from>
-							</collect>
-						</entry>
-						<entry>
-							<name>/usr/share/snowowl/resources</name>
-							<user>snowowl</user>
-							<group>snowowl</group>
-							<linkTo>/var/lib/snowowl</linkTo>
-						</entry>
-						<!-- Log directory -->
-						<entry>
-							<name>/var/log/snowowl</name>
-							<user>snowowl</user>
-							<group>snowowl</group>
-							<mode>0755</mode>
-							<directory>true</directory>
-						</entry>
-						<entry>
-							<name>/usr/share/snowowl/serviceability</name>
-							<user>snowowl</user>
-							<group>snowowl</group>
-							<linkTo>/var/log/snowowl</linkTo>
-						</entry>
-						<!-- SysV configuration -->
-						<entry>
-							<name>/etc/init.d/snowowl</name>
-							<configuration>true</configuration>
-							<noreplace>true</noreplace>
-							<mode>0750</mode>
-							<file>${basedir}/packages/rpm/init.d/snowowl</file>
-						</entry>
-						<!-- systemd configuration -->
-						<entry>
-							<name>/usr/lib/sysctl.d/snowowl.conf</name>
-							<configuration>true</configuration>
-							<noreplace>true</noreplace>
-							<mode>0644</mode>
-							<file>${basedir}/packages/common/systemd/sysctl/snowowl.conf</file>
-						</entry>
-						<entry>
-							<name>/usr/lib/systemd/system/snowowl.service</name>
-							<noreplace>true</noreplace>
-							<mode>0644</mode>
-							<file>${basedir}/packages/common/systemd/snowowl.service</file>							
-						</entry>
-					</entries>
-					<prerequisites>
-						<prererequisite>shadow-utils</prererequisite>
-					</prerequisites>
-					<beforeInstallation>
-						<file>${basedir}/packages/common/scripts/preinst</file>
-					</beforeInstallation>
-				</configuration>
-			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<artifactId>maven-assembly-plugin</artifactId> -->
+<!-- 				<version>2.3</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>package-oss</id> -->
+<!-- 						<phase>package</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>single</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<appendAssemblyId>false</appendAssemblyId> -->
+<!-- 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory> -->
+<!-- 							<descriptor>${basedir}/assembly/oss.xml</descriptor> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>de.dentrassi.maven</groupId> -->
+<!-- 				<artifactId>rpm</artifactId> -->
+<!-- 				<version>1.1.0</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>generate-rpm</id> -->
+<!-- 						<goals> -->
+<!-- 							<goal>rpm</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 				<configuration> -->
+<!-- 					<targetDir>${project.build.directory}</targetDir> -->
+<!-- 					<attach>true</attach> -->
+<!-- 					<packageName>snow-owl-oss</packageName> -->
+<!-- 					<group>Application/Internet</group> -->
+<!-- 					<packager>B2i Healthcare</packager> -->
+<!-- 					<license>ASL 2.0</license> -->
+<!-- 					<architecture>x86_64</architecture> -->
+<!-- 					<skipSigning>true</skipSigning> -->
+<!-- 					<prefixes> -->
+<!-- 						<prefix>/usr</prefix> -->
+<!-- 					</prefixes> -->
+<!-- 					<rulesets> -->
+<!-- 						<ruleset> -->
+<!-- 							<id>install</id> -->
+<!-- 							<rules> -->
+<!-- 								<rule> -->
+<!-- 									<user>snowowl</user> -->
+<!-- 									<group>snowowl</group> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<type>directory</type> -->
+<!-- 									</when> -->
+<!-- 									<mode>0755</mode> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<type>file</type> -->
+<!-- 									</when> -->
+<!-- 									<mode>0644</mode> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<prefix>/usr/share/snowowl/bin/</prefix> -->
+<!-- 										<type>file</type> -->
+<!-- 									</when> -->
+<!-- 									<mode>0755</mode> -->
+<!-- 								</rule> -->
+<!-- 							</rules> -->
+<!-- 						</ruleset> -->
+<!-- 						<ruleset> -->
+<!-- 							<id>config</id> -->
+<!-- 							<rules> -->
+<!-- 								<rule> -->
+<!-- 									<user>snowowl</user> -->
+<!-- 									<group>snowowl</group> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<type>file</type> -->
+<!-- 									</when> -->
+<!-- 									<noreplace>true</noreplace> -->
+<!-- 									<configuration>true</configuration> -->
+<!-- 									<mode>0660</mode> -->
+<!-- 								</rule> -->
+<!-- 							</rules> -->
+<!-- 						</ruleset> -->
+<!-- 						<ruleset> -->
+<!-- 							<id>data</id> -->
+<!-- 							<rules> -->
+<!-- 								<rule> -->
+<!-- 									<user>snowowl</user> -->
+<!-- 									<group>snowowl</group> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<type>file</type> -->
+<!-- 									</when> -->
+<!-- 									<noreplace>true</noreplace> -->
+<!-- 									<mode>0644</mode> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<type>directory</type> -->
+<!-- 									</when> -->
+<!-- 									<mode>0750</mode> -->
+<!-- 								</rule> -->
+<!-- 							</rules> -->
+<!-- 						</ruleset> -->
+<!-- 					</rulesets> -->
+<!-- 					<entries> -->
+<!-- 						Installation directory -->
+<!-- 						<entry> -->
+<!-- 							<name>/usr/share/snowowl</name> -->
+<!-- 							<user>snowowl</user> -->
+<!-- 							<group>snowowl</group> -->
+<!-- 							<mode>0755</mode> -->
+<!-- 							<directory>true</directory> -->
+<!-- 						</entry> -->
+<!-- 						<entry> -->
+<!-- 							<name>/usr/share/snowowl</name> -->
+<!-- 							<ruleset>install</ruleset> -->
+<!-- 							<collect> -->
+<!-- 								<from>${packageFiles}</from> -->
+<!-- 								<excludes> -->
+<!-- 									<exclude>serviceability/**</exclude> -->
+<!-- 									<exclude>resources/**</exclude> -->
+<!-- 									<exclude>.gitignore</exclude> -->
+<!-- 								</excludes> -->
+<!-- 							</collect> -->
+<!-- 						</entry> -->
+<!-- 						Configuration directory -->
+<!-- 						<entry> -->
+<!-- 							<name>/etc/snowowl</name> -->
+<!-- 							<ruleset>config</ruleset> -->
+<!-- 							<user>snowowl</user> -->
+<!-- 							<group>snowowl</group> -->
+<!-- 							<collect> -->
+<!-- 								<from>${packageFiles}/configuration</from> -->
+<!-- 							</collect> -->
+<!-- 						</entry> -->
+<!-- 						Data directory -->
+<!-- 						<entry> -->
+<!-- 							<name>/var/lib/snowowl</name> -->
+<!-- 							<user>snowowl</user> -->
+<!-- 							<group>snowowl</group> -->
+<!-- 							<mode>0755</mode> -->
+<!-- 							<directory>true</directory> -->
+<!-- 						</entry>	 -->
+<!-- 						<entry> -->
+<!-- 							<name>/var/lib/snowowl</name> -->
+<!-- 							<ruleset>data</ruleset> -->
+<!-- 							<collect> -->
+<!-- 								<from>${packageFiles}/resources</from> -->
+<!-- 							</collect> -->
+<!-- 						</entry> -->
+<!-- 						<entry> -->
+<!-- 							<name>/usr/share/snowowl/resources</name> -->
+<!-- 							<user>snowowl</user> -->
+<!-- 							<group>snowowl</group> -->
+<!-- 							<linkTo>/var/lib/snowowl</linkTo> -->
+<!-- 						</entry> -->
+<!-- 						Log directory -->
+<!-- 						<entry> -->
+<!-- 							<name>/var/log/snowowl</name> -->
+<!-- 							<user>snowowl</user> -->
+<!-- 							<group>snowowl</group> -->
+<!-- 							<mode>0755</mode> -->
+<!-- 							<directory>true</directory> -->
+<!-- 						</entry> -->
+<!-- 						<entry> -->
+<!-- 							<name>/usr/share/snowowl/serviceability</name> -->
+<!-- 							<user>snowowl</user> -->
+<!-- 							<group>snowowl</group> -->
+<!-- 							<linkTo>/var/log/snowowl</linkTo> -->
+<!-- 						</entry> -->
+<!-- 						SysV configuration -->
+<!-- 						<entry> -->
+<!-- 							<name>/etc/init.d/snowowl</name> -->
+<!-- 							<configuration>true</configuration> -->
+<!-- 							<noreplace>true</noreplace> -->
+<!-- 							<mode>0750</mode> -->
+<!-- 							<file>${basedir}/packages/rpm/init.d/snowowl</file> -->
+<!-- 						</entry> -->
+<!-- 						systemd configuration -->
+<!-- 						<entry> -->
+<!-- 							<name>/usr/lib/sysctl.d/snowowl.conf</name> -->
+<!-- 							<configuration>true</configuration> -->
+<!-- 							<noreplace>true</noreplace> -->
+<!-- 							<mode>0644</mode> -->
+<!-- 							<file>${basedir}/packages/common/systemd/sysctl/snowowl.conf</file> -->
+<!-- 						</entry> -->
+<!-- 						<entry> -->
+<!-- 							<name>/usr/lib/systemd/system/snowowl.service</name> -->
+<!-- 							<noreplace>true</noreplace> -->
+<!-- 							<mode>0644</mode> -->
+<!-- 							<file>${basedir}/packages/common/systemd/snowowl.service</file>							 -->
+<!-- 						</entry> -->
+<!-- 					</entries> -->
+<!-- 					<prerequisites> -->
+<!-- 						<prererequisite>shadow-utils</prererequisite> -->
+<!-- 					</prerequisites> -->
+<!-- 					<beforeInstallation> -->
+<!-- 						<file>${basedir}/packages/common/scripts/preinst</file> -->
+<!-- 					</beforeInstallation> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
 		</plugins>
 	</build>
 

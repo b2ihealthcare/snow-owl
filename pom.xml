@@ -31,7 +31,7 @@
 		<protege.version>5.0.4-b2i</protege.version>
 		<owlapi.version>4.5.10</owlapi.version>
 		<elk.version>0.4.3</elk.version>
-		<jetty.version>9.4.5.v20170502</jetty.version>
+		<jetty.version>9.4.15.v20190215</jetty.version>
 		<classgraph.version>4.6.10</classgraph.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.4.8</typetools.version>
@@ -494,190 +494,6 @@
     		<version>1.5.14</version>
     		<scope>provided</scope>
     	</dependency>
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.emf</groupId> -->
-<!--   			<artifactId>org.eclipse.emf.common</artifactId> -->
-<!--   			<version>${emf.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.emf</groupId> -->
-<!-- 			<artifactId>org.eclipse.emf.ecore</artifactId> -->
-<!-- 			<version>${emf.version}</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.emf</groupId> -->
-<!-- 			<artifactId>org.eclipse.emf.ecore.xmi</artifactId> -->
-<!-- 			<version>${emf.version}</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.emf</groupId> -->
-<!--   			<artifactId>org.eclipse.emf.codegen.ecore</artifactId> -->
-<!--   			<version>${emf.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!--   			<exclusions> -->
-<!--   				Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
-<!--   				<exclusion> -->
-<!--           			<groupId>org.eclipse.platform</groupId> -->
-<!--           			<artifactId>org.eclipse.core.runtime</artifactId> -->
-<!--         		</exclusion> -->
-<!--         		<exclusion> -->
-<!--           			<groupId>org.eclipse.platform</groupId> -->
-<!--           			<artifactId>org.eclipse.core.resources</artifactId> -->
-<!--         		</exclusion> -->
-<!--         		<exclusion> -->
-<!--           			<groupId>org.eclipse.jdt</groupId> -->
-<!--   					<artifactId>org.eclipse.jdt.core</artifactId> -->
-<!--         		</exclusion> -->
-<!--         		<exclusion> -->
-<!--           			<groupId>org.eclipse.jdt</groupId> -->
-<!--   					<artifactId>org.eclipse.jdt.launching</artifactId> -->
-<!--         		</exclusion> -->
-<!--         		<exclusion> -->
-<!--           			<groupId>org.eclipse.platform</groupId> -->
-<!--           			<artifactId>org.eclipse.debug.core</artifactId> -->
-<!--         		</exclusion> -->
-<!--         		<exclusion> -->
-<!--           			<groupId>org.eclipse.platform</groupId> -->
-<!--           			<artifactId>org.eclipse.text</artifactId> -->
-<!--         		</exclusion> -->
-<!--   			</exclusions> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.xtext</groupId> -->
-<!-- 			<artifactId>org.eclipse.xtext</artifactId> -->
-<!-- 			<version>${xtext.version}</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 			<exclusions> -->
-<!-- 				Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
-<!-- 				<exclusion> -->
-<!--           			<groupId>org.eclipse.platform</groupId> -->
-<!--   					<artifactId>org.eclipse.equinox.common</artifactId> -->
-<!--         		</exclusion> -->
-<!--         		<exclusion> -->
-<!--           			<groupId>org.eclipse.platform</groupId> -->
-<!--   					<artifactId>org.eclipse.osgi</artifactId> -->
-<!--         		</exclusion> -->
-<!--         		We use log4j-over-slf4j to delegate all log events to slf4j -->
-<!--         		<exclusion> -->
-<!-- 		          	<groupId>log4j</groupId> -->
-<!--   					<artifactId>log4j</artifactId> -->
-<!-- 		        </exclusion> -->
-<!-- 			</exclusions> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.xtext</groupId>	 -->
-<!--   			<artifactId>org.eclipse.xtext.generator</artifactId> -->
-<!--   			<version>${xtext.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!-- 			<exclusions> -->
-<!-- 				Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
-<!-- 				<exclusion> -->
-<!--           			<groupId>com.ibm.icu</groupId> -->
-<!--   					<artifactId>icu4j</artifactId> -->
-<!--         		</exclusion> -->
-<!-- 			</exclusions> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.xtext</groupId> -->
-<!-- 			<artifactId>org.eclipse.xtext.util</artifactId> -->
-<!-- 			<version>${xtext.version}</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 			<exclusions> -->
-<!-- 				We use log4j-over-slf4j to delegate all log events to slf4j -->
-<!--         		<exclusion> -->
-<!-- 		          	<groupId>log4j</groupId> -->
-<!--   					<artifactId>log4j</artifactId> -->
-<!-- 		        </exclusion> -->
-<!-- 			</exclusions> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.xtext</groupId> -->
-<!-- 			<artifactId>org.eclipse.xtext.common.types</artifactId> -->
-<!-- 			<version>${xtext.version}</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.xtext</groupId> -->
-<!--   			<artifactId>org.eclipse.xtext.xbase</artifactId> -->
-<!--   			<version>${xtext.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.xtext</groupId> -->
-<!-- 			<artifactId>org.eclipse.xtext.xbase.lib</artifactId> -->
-<!-- 			<version>${xtext.version}</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 			<exclusions> -->
-<!-- 				Prefer our Guava version -->
-<!-- 				<exclusion> -->
-<!--           			<groupId>com.google.guava</groupId> -->
-<!-- 					<artifactId>guava</artifactId> -->
-<!--         		</exclusion> -->
-<!-- 			</exclusions> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.xtend</groupId> -->
-<!-- 			<artifactId>org.eclipse.xtend.lib</artifactId> -->
-<!-- 			<version>${xtext.version}</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.xtend</groupId> -->
-<!--   			<artifactId>org.eclipse.xtend.lib.macro</artifactId> -->
-<!--   			<version>${xtext.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.xtext</groupId> -->
-<!--   			<artifactId>org.eclipse.xtext.testing</artifactId> -->
-<!--   			<version>${xtext.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.emf</groupId> -->
-<!--   			<artifactId>org.eclipse.emf.mwe2.language</artifactId> -->
-<!--   			<version>${mwe2.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.emf</groupId> -->
-<!--   			<artifactId>org.eclipse.emf.mwe2.runtime</artifactId> -->
-<!--   			<version>${mwe2.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--   			<groupId>org.eclipse.emf</groupId> -->
-<!--   			<artifactId>org.eclipse.emf.mwe2.launch</artifactId> -->
-<!--   			<version>${mwe2.version}</version> -->
-<!--   			<scope>provided</scope> -->
-<!--   			<exclusions> -->
-<!--   				Prefer our Guava version -->
-<!-- 				<exclusion> -->
-<!--           			<groupId>com.google.guava</groupId> -->
-<!-- 					<artifactId>guava</artifactId> -->
-<!--         		</exclusion> -->
-<!--         		We use log4j-over-slf4j to delegate all log events to slf4j -->
-<!--         		<exclusion> -->
-<!-- 		          	<groupId>log4j</groupId> -->
-<!--   					<artifactId>log4j</artifactId> -->
-<!-- 		        </exclusion> -->
-<!-- 			</exclusions> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 		  	<groupId>org.eclipse.emf</groupId> -->
-<!-- 		  	<artifactId>org.eclipse.emf.mwe.utils</artifactId> -->
-<!-- 		  	<version>${mwe.utils.version}</version> -->
-<!-- 		  	<scope>provided</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!--       		<groupId>org.ow2.asm</groupId> -->
-<!--       		<artifactId>asm-commons</artifactId> -->
-<!--       		<version>${asm.commons.version}</version> -->
-<!--       		<scope>provided</scope> -->
-<!--       	</dependency> -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient-osgi</artifactId>
@@ -963,6 +779,11 @@
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
 							<arch>x86_64</arch>
 						</environment>
 					</environments>
