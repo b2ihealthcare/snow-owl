@@ -252,11 +252,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 					.fileDB(Files.createTempDirectory(rf2ArchiveId.toString()).resolve("rf2-import.db").toFile())
 					.fileDeleteAfterClose()
 					.fileMmapEnable()
-					.fileMmapPreclearDisable()
-					// Unmap (release resources) file when its closed.
-					// That can cause JVM crash if file is accessed after it was unmapped
-					// (there is possible race condition).
-					.cleanerHackEnable();
+					.fileMmapPreclearDisable();
 			
 			// for non-delta releases increase the allocation size
 			if (type != Rf2ReleaseType.DELTA) {
