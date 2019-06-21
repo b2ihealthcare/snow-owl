@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import java.util.Collections;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,6 +44,10 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/ids")
 public class SnomedIdentifierRestService extends AbstractRestService {
 
+	public SnomedIdentifierRestService() {
+		super(Collections.emptySet());
+	}
+	
 	@ApiOperation(
 			value="Create a new SNOMED CT Identifier", 
 			notes="Creates a new, unique SNOMED CT Identifier.")

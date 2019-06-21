@@ -27,6 +27,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -70,6 +71,15 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	public SnomedRepositoryPreCommitHook(Logger log, String repositoryId) {
 		super(log);
 		this.repositoryId = repositoryId;
+	}
+	
+	@Override
+	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
+		final FeatureToggles featureToggles = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(repositoryId, index.branch()));
+		if (!importRunning) {
+			doProcess(ImmutableList.of(new ComponentInactivationChangeProcessor(), new DetachedContainerChangeProcessor()), staging, index);
+		}
 	}
 	
 	@Override
@@ -202,7 +212,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		});
 
 		log.trace("Retrieving taxonomic information from store...");
-		
+
 		final FeatureToggles featureToggles = ApplicationContext.getServiceForClass(FeatureToggles.class);
 		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(repositoryId, index.branch()));
 		final boolean reindexRunning = featureToggles.isEnabled(Features.getReindexFeatureToggle(repositoryId));
@@ -211,23 +221,17 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, expressionConverter, staging, inferredConceptIds, checkCycles);
 		final Taxonomy statedTaxonomy = Taxonomies.stated(index, expressionConverter, staging, statedConceptIds, checkCycles);
 
-		// XXX change processor order is important!!!
-		final ImmutableList.Builder<ChangeSetProcessor> changeProcessors = ImmutableList.<ChangeSetProcessor>builder();
-
-		if (!importRunning) {
-			changeProcessors
-				.add(new ComponentInactivationChangeProcessor())
-				.add(new DetachedContainerChangeProcessor());
-		}
+		final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
 		
-		return changeProcessors
+		// XXX change processor execution order is important!!!
+		return ImmutableList.<ChangeSetProcessor>builder()
 				// execute description change processor to get proper acceptabilityMap values before executing other change processors
 				// those values will be used in the ConceptChangeProcessor for example to properly compute the preferredDescriptions derived field
 				.add(new DescriptionChangeProcessor())
 				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new RelationshipChangeProcessor())
 				// effective time restore should be the last processing unit before we send the changes to commit
-				.add(new ComponentEffectiveTimeRestoreChangeProcessor(log))
+				.add(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp))
 				.build();
 		
 	}

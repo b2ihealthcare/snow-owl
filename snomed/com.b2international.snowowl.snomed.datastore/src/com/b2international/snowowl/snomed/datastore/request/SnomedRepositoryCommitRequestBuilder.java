@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 	
 	@Override
 	protected Request<TransactionContext, ?> getBody() {
-		return new SnomedBulkRequest<>(super.getBody());
+		return new IdRequest<>(new SnomedBulkRequest<>(super.getBody()));
 	}
 	
 	@Override
@@ -48,7 +48,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 					new IndexReadRequest<>(
 						new BranchRequest<>(branch,
 							new RevisionIndexReadRequest<>(
-								new IdRequest<>(build())
+								build()
 							)
 						)
 					),

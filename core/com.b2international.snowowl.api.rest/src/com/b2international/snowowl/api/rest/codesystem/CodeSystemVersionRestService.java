@@ -33,11 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.api.rest.AbstractRestService;
-import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersion;
 import com.b2international.snowowl.api.rest.codesystem.domain.VersionInput;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.datastore.CodeSystemVersion;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

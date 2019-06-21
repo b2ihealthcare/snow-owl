@@ -35,11 +35,11 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.api.rest.AbstractRestService;
-import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 import io.swagger.annotations.Api;

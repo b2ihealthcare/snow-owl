@@ -86,43 +86,43 @@ Response:
 
 There are three possible types of client errors on API calls that receive request bodies:
 
-1.  Sending invalid JSON will result in a `400 Bad Request` response:
+### Invalid JSON
 
-        Status: 400 Bad Request 
-        {
-          "status" : "400",
-          "message" : "Invalid JSON representation",
-          "developerMessage" : "detailed information about the error for developers"
-        }
+    Status: 400 Bad Request
+    {
+      "status" : "400",
+      "message" : "Invalid JSON representation",
+      "developerMessage" : "detailed information about the error for developers"
+    }
 
-2.  Sending valid JSON content but invalid representation will result in a `400 Bad Request` response:
+### Valid JSON but invalid representation
 
-        Status: 400 Bad Request 
-        {
-          "status" : "400",
-          "message" : "2 Validation errors",
-          "developerMessage" : "Input representation syntax or validation errors. Check input values.",
-          "violations" : ["violation_message_1", "violation_message_2"]
-        }
+    Status: 400 Bad Request 
+    {
+      "status" : "400",
+      "message" : "2 Validation errors",
+      "developerMessage" : "Input representation syntax or validation errors. Check input values.",
+      "violations" : ["violation_message_1", "violation_message_2"]
+    }
 
-3.  Conflicts will result in a `409 Conflict` response:
+### Conflicts
 
-        Status: 409 Conflict 
-        {
-          "status" : "409",
-          "message" : "Cannot merge source 'branch1' into target 'MAIN'."
-        }
+    Status: 409 Conflict 
+    {
+      "status" : "409",
+      "message" : "Cannot merge source 'branch1' into target 'MAIN'."
+    }
 
 ## Server Errors
 
-1.  In certain circumstances, Snow Owl might fail to process and respond to a request and responds with a `500 Internal Server Error`.
+In certain circumstances, Snow Owl might fail to process and respond to a request and responds with a `500 Internal Server Error`.
 
-        Status: 500 Internal Server Error 
-        {
-          "status" : "500",
-          "message" : "Something went wrong during the processing of your request.",
-          "developerMessage" : "detailed information about the error for developers"
-        }
+    Status: 500 Internal Server Error 
+    {
+      "status" : "500",
+      "message" : "Something went wrong during the processing of your request.",
+      "developerMessage" : "detailed information about the error for developers"
+    }
 
 To troubleshoot these please examine the log files at {SERVER_HOME}/serviceability/logs/log.log, and/or contact [support](mailto:support@b2i.sg).
 

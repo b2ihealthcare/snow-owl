@@ -275,7 +275,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return getEffectiveTime((Date) object);
 		} else {
 			String serializedValue = String.valueOf(object);
-			if (SnomedRf2Headers.FIELD_QUERY.equals(additionalField)) {
+			if (SnomedRf2Headers.FIELD_QUERY.equals(additionalField) || SnomedRf2Headers.FIELD_OWL_EXPRESSION.equals(additionalField)) {
 				serializedValue = serializedValue.replaceAll("[\n\r\t]+", " ");
 			}
 			return serializedValue;

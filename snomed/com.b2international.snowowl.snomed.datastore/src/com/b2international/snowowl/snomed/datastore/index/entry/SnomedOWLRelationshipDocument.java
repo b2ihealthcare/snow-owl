@@ -18,7 +18,10 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import java.util.Objects;
 
 import com.b2international.index.Doc;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -53,7 +56,17 @@ public final class SnomedOWLRelationshipDocument {
 	public int getGroup() {
 		return group;
 	}
+	
+	@JsonIgnore
+	public boolean isIsa() {
+		return Concepts.IS_A.equals(typeId);
+	}
 
+	@JsonIgnore
+	public StatementFragment toStatementFragment() {
+		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, group, 0, false, -1L, false, false);
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(typeId, destinationId, group);

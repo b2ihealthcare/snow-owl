@@ -17,7 +17,7 @@ package com.b2international.snowowl.api.rest.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersionProperties;
+import com.b2international.snowowl.datastore.CodeSystemVersionProperties;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +45,10 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value="/commits")
 public class SnomedCommitInfoRestService extends AbstractRestService {
 
+	public SnomedCommitInfoRestService() {
+		super(Collections.emptySet());
+	}
+	
 	@ApiOperation(
 		value = "Retrieve commit entries",
 		notes = "Returns all SNOMED CT commits"

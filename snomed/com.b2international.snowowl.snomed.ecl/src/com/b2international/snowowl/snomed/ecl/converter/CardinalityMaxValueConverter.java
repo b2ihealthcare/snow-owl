@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public final class CardinalityMaxValueConverter extends AbstractValueConverter<I
 	@Override
 	public Integer toValue(String string, INode node) throws ValueConverterException {
 		if (Ecl.ANY.equals(string)) {
-			return -1;
+			return Ecl.MAX_CARDINALITY;
 		} else {
 			return Integer.valueOf(string);
 		}
@@ -37,7 +37,7 @@ public final class CardinalityMaxValueConverter extends AbstractValueConverter<I
 
 	@Override
 	public String toString(Integer value) throws ValueConverterException {
-		if (value == -1) {
+		if (value == Ecl.MAX_CARDINALITY) {
 			return Ecl.ANY;
 		} else {
 			return value.toString();

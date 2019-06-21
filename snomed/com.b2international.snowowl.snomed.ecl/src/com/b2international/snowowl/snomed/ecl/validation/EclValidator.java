@@ -17,8 +17,10 @@ package com.b2international.snowowl.snomed.ecl.validation;
 
 import org.eclipse.xtext.validation.Check;
 
+import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
+import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
@@ -35,12 +37,22 @@ public class EclValidator extends AbstractEclValidator {
 	
 	private static final String AMBIGUOUS_MESSAGE = "Ambiguous binary operator, use parenthesis to disambiguate the meaning of the expression";
 	private static final String AMBIGUOUS_CODE = "binaryoperator.ambiguous";
+	
+	private static final String CARDINALITY_RANGE_ERROR_MESSAGE = "Cardinality minimum value should not be greater than maximum value";
+	private static final String CARDINALITY_RANGE_ERROR_CODE = "cardinality.range.error";
 
 	@Override
 	public boolean isLanguageSpecific() {
 		return false;
 	}
 
+	@Check
+	public void checkCardinality(Cardinality it) {
+		if (it.getMax() != Ecl.MAX_CARDINALITY && it.getMin() > it.getMax()) {
+			error(CARDINALITY_RANGE_ERROR_MESSAGE, it, EclPackage.Literals.CARDINALITY__MIN, CARDINALITY_RANGE_ERROR_CODE);
+		}
+	}
+	
 	@Check
 	public void checkAmbiguity(AndExpressionConstraint it) {
 		if (isAmbiguous(it, it.getLeft())) {

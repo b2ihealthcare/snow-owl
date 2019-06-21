@@ -88,7 +88,14 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 //				indexCommitChangeSet.putRemovedComponent(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, removed.getVersionId()), removed);
 //			});
 		
-		for (ChangeSetProcessor processor : getChangeSetProcessors(staging, index)) {
+		preUpdateDocuments(staging, index);
+		doProcess(getChangeSetProcessors(staging, index), staging, index);
+		postUpdateDocuments(staging);
+		log.info("Processing changes successfully finished.");
+	}
+
+	protected final void doProcess(Collection<ChangeSetProcessor> changeSetProcessors, StagingArea staging, RevisionSearcher index) throws IOException {
+		for (ChangeSetProcessor processor : changeSetProcessors) {
 			log.trace("Collecting {}...", processor.description());
 			processor.process(staging, index);
 			// register additions, deletions from the sub processor
@@ -103,13 +110,19 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 			
 			processor.getDeletions().forEach(staging::stageRemove);
 		}
-
-		postUpdateDocuments(staging);
-		log.info("Processing changes successfully finished.");
 	}
 
 	protected abstract short getTerminologyComponentId(RevisionDocument revision);
 
+	/**
+	 * Subclasses may override this method to execute additional logic before the processing of the changeset.
+	 * 
+	 * @param staging - the staging area before committing it to the repository
+	 * @throws IOException 
+	 */
+	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
+	}
+	
 	/**
 	 * Return a list of {@link ChangeSetProcessor}s to process the commit changeset.
 	 * 

@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.api.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.BranchUpdateRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateBranchRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -59,8 +58,9 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value="/branches", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchingRestService extends AbstractRestService {
 
-	@Autowired 
-	private IEventBus bus;
+	public SnomedBranchingRestService() {
+		super(Branch.Fields.ALL);
+	}
 	
 	@ApiOperation(
 		value = "Create a new branch", 
@@ -92,7 +92,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
 	@RequestMapping(method=RequestMethod.GET)
-	public DeferredResult<Branches> getBranches(
+	public DeferredResult<Branches> searchBranches(
 			@ApiParam("parent")
 			@RequestParam(value="parent", required=false)
 			final String[] parents,
@@ -103,7 +103,11 @@ public class SnomedBranchingRestService extends AbstractRestService {
 			
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			final int limit,
+			
+			@ApiParam(value="Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sortKeys) {
 		return DeferredResults.wrap(
 				RepositoryRequests
 					.branching()
@@ -111,6 +115,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 					.setLimit(limit)
 					.filterByParent(parents == null ? null : ImmutableList.copyOf(parents))
 					.filterByName(names == null ? null : ImmutableList.copyOf(names))
+					.sortBy(extractSortFields(sortKeys))
 					.build(repositoryId)
 					.execute(bus));
 	}

@@ -209,13 +209,10 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			candidateNonIsARelationships.put(parentId, statementCache.get(parentId));
 		}
 
-		// Add stated relationships from the concept in question as potential sources
-		final Collection<StatementFragment> ownStatedNonIsaRelationships = reasonerTaxonomy.getStatedNonIsARelationships().get(conceptId);
-		final Collection<StatementFragment> ownAdditionalGroupedRelationships = reasonerTaxonomy.getAdditionalGroupedRelationships().get(conceptId);
-
 		candidateNonIsARelationships.put(conceptId, ImmutableList.<StatementFragment>builder()
-				.addAll(ownStatedNonIsaRelationships)
-				.addAll(ownAdditionalGroupedRelationships)
+				.addAll(reasonerTaxonomy.getSubclassOfStatements().get(conceptId))
+				.addAll(reasonerTaxonomy.getEquivalentStatements().get(conceptId))
+				.addAll(reasonerTaxonomy.getAdditionalGroupedRelationships().get(conceptId))
 				.build());
 
 		// Collect existing inferred relationships for cross-referencing group numbers

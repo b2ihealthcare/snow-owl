@@ -16,11 +16,13 @@
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.exists;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyDecimal;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchRange;
+import static com.b2international.index.query.Expressions.nestedMatch;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
@@ -40,6 +42,7 @@ import com.b2international.index.Keyword;
 import com.b2international.index.RevisionHash;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -67,6 +70,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Lightweight representation of a SNOMED CT reference set member.
@@ -414,6 +418,34 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression mrcmGrouped(boolean mrcmGrouped) {
 			return match(Fields.MRCM_GROUPED, mrcmGrouped);
+		}
+
+		public static Expression gciAxiom(boolean isGci) {
+			Expression nestedQuery = nestedMatch("gciAxiomRelationships", exists("typeId"));
+			if (isGci) {
+				return nestedQuery;
+			} else {
+				final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+				query.mustNot(nestedQuery);
+				return query.build();
+			}
+		}
+
+		public static Expression owlExpressionConcept(String...conceptIds) {
+			return owlExpressionConcept(ImmutableSet.copyOf(conceptIds));
+		}
+		
+		public static Expression owlExpressionConcept(Iterable<String> conceptIds) {
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			query.should(nestedMatch("classAxiomRelationships", com.b2international.index.query.Expressions.builder()
+					.should(matchAny("typeId", conceptIds))
+					.should(matchAny("destinationId", conceptIds))
+					.build()));
+			query.should(nestedMatch("gciAxiomRelationships", com.b2international.index.query.Expressions.builder()
+					.should(matchAny("typeId", conceptIds))
+					.should(matchAny("destinationId", conceptIds))
+					.build()));
+			return query.build();
 		}
 	}
 

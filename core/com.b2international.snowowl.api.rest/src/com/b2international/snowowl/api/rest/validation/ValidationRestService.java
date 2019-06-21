@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,7 +56,6 @@ import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.ValidationResult;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
-import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
@@ -69,12 +69,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
+import com.google.common.net.HttpHeaders;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Spring controller for exposing validation functionality.
@@ -103,11 +105,13 @@ public class ValidationRestService extends AbstractRestService {
 			.buildAsync()
 			.execute(bus)
 			.then(jobs -> {
-				final List<RemoteJobEntry> validationJobs = jobs.stream().filter(ValidationRequests::isValidationJob).collect(Collectors.toList());
+				final List<RemoteJobEntry> validationJobs = jobs.stream()
+						.filter(ValidationRequests::isValidationJob)
+						.map(entry -> RemoteJobEntry.from(entry).id(getHash(entry.getId())).build())
+						.collect(Collectors.toList());
 				return new RemoteJobs(validationJobs, null, null, jobs.getLimit(), validationJobs.size());
 			}));
 	}
-	
 	
 	@ApiOperation(
 			value="Start a validation on a branch",
@@ -124,11 +128,10 @@ public class ValidationRestService extends AbstractRestService {
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> beginValidation(
+	public DeferredResult<ResponseEntity<URI>> beginValidation(
 			@ApiParam(value="Validation parameters")
 			@RequestBody 
 			final ValidationRestInput validationInput,
-
 			final Principal principal) {
 
 		final String codeSystemShortName = validationInput.codeSystemShortName();
@@ -158,12 +161,11 @@ public class ValidationRestService extends AbstractRestService {
 					.buildAsync()
 					.execute(bus);
 			} else {
-				return DeferredResults.wrap(Promise.immediate(Responses.status(HttpStatus.CONFLICT).build()));
+				return DeferredResults.wrap(Promise.immediate(Responses.status(HttpStatus.CONFLICT).build(null)));
 			}
 		} else {
 			deleteValidationJobPromise = Promise.immediate(Boolean.TRUE);
 		}
-		
 		
 		final ControllerLinkBuilder linkBuilder = linkTo(ValidationRestService.class)
 				.slash("validations");
@@ -190,11 +192,10 @@ public class ValidationRestService extends AbstractRestService {
 				final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
 				
 				final URI responseURI = linkBuilder.slash(encodedId).toUri();
-				return Responses.created(responseURI).build();
-				
+				return Responses.created(responseURI).build(responseURI);
 			})
 			.fail(e -> {
-				return Responses.status(HttpStatus.BAD_REQUEST).build();
+				return Responses.status(HttpStatus.BAD_REQUEST).build(null);
 			}));
 	}
 	
@@ -217,21 +218,20 @@ public class ValidationRestService extends AbstractRestService {
 			} else {
 				throw new NotFoundException("Validation job", validationId);
 			}
-			
 	}
 
 	@ApiOperation(
-			value="Retrieve the validation issues from a completed validation on a branch.")
+			value="Retrieve the validation issues from a completed validation on a branch. Output may differ by the chosen content type.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<ValidationIssues> getValidationResults(
+	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={ AbstractRestService.JSON_MEDIA_TYPE, AbstractRestService.CSV_MEDIA_TYPE })
+	public @ResponseBody DeferredResult<Collection<Object>> getValidationResults(
 			@ApiParam(value="The unique validation identifier.")
 			@PathVariable(value="validationId")
 			final String validationId,
-
+		
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit,
@@ -246,74 +246,68 @@ public class ValidationRestService extends AbstractRestService {
 			
 			@ApiParam(value="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
-			final String searchAfter) {
+			final String searchAfter,
+			
+			@ApiIgnore
+			@RequestHeader(value=HttpHeaders.ACCEPT, defaultValue=AbstractRestService.JSON_MEDIA_TYPE,  required=false)
+			final String contentType) {
 		
 		final RemoteJobEntry validationJob = getValidationJobById(validationId);
 		
 		if (validationJob != null) {
-			final String branchPath = getBranchFromJob(validationJob);
-			
-			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
-					.setLimit(limit)
-					.setScrollId(scrollId)
-					.setScroll(scrollKeepAlive)
-					.setSearchAfter(searchAfter)
-					.filterByBranchPath(branchPath)
-					.buildAsync()
-					.execute(bus));
-		} else {
-			throw new NotFoundException("Validation job", validationId);
-		}
-		
-		
-	}
+			if (AbstractRestService.CSV_MEDIA_TYPE.equals(contentType)) {
+				final String branchPath = getBranchFromJob(validationJob);
 
-	@ApiOperation(
-			value="Retrieve the validation issues from a completed validation on a branch.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or validation not found", response=RestApiError.class)
-	})
-	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={AbstractRestService.CSV_MEDIA_TYPE})
-	public @ResponseBody DeferredResult<Collection<Object>> getValidationResultsAsCsv(
-			@ApiParam(value="The unique validation identifier.")
-			@PathVariable(value="validationId")
-			final String validationId) {
-		
-	final RemoteJobEntry validationJob = getValidationJobById(validationId);
-		
-		if (validationJob != null) {
-			final String branchPath = getBranchFromJob(validationJob);
-			
-			return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
-					.all()
-					.filterByBranchPath(branchPath)
-					.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
-					.buildAsync()
-					.execute(bus)
-					.then(issues -> {
-						final Set<String> rulesToFetch = issues.stream().map(ValidationIssue::getRuleId).collect(Collectors.toSet());
-						final Map<String, String> ruleDescriptionById = ValidationRequests.rules().prepareSearch()
-							.all()
-							.filterByIds(rulesToFetch)
-							.buildAsync()
-							.execute(bus)
-							.getSync()
-							.stream().collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
-						final Collection<Object> reports = issues.stream().map(issue -> {
-							final String ruleId = issue.getRuleId();
-							final String ruleDescription = ruleDescriptionById.get(ruleId);
-							final String affectedComponentLabel = Iterables.getFirst(issue.getAffectedComponentLabels(), "No label found");
-							final String affectedComponentId = issue.getAffectedComponent().getComponentId();
-							return new ValidationIssueReport(ruleId, ruleDescription, affectedComponentId, affectedComponentLabel);
-						}).collect(Collectors.toList());
-						
-						return reports;
-					}));
+				return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+						.isWhitelisted(false)
+						.all()
+						.filterByBranchPath(branchPath)
+						.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
+						.buildAsync()
+						.execute(bus)
+						.then(issues -> {
+							final Set<String> rulesToFetch = issues.stream()
+									.map(ValidationIssue::getRuleId)
+									.collect(Collectors.toSet());
+							final Map<String, String> ruleDescriptionById = ValidationRequests.rules().prepareSearch()
+									.all()
+									.filterByIds(rulesToFetch)
+									.buildAsync()
+									.execute(bus)
+									.getSync()
+									.stream()
+									.collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
+							final Collection<Object> reports = issues.stream().map(issue -> {
+								final String ruleId = issue.getRuleId();
+								final String ruleDescription = ruleDescriptionById.get(ruleId);
+								final String affectedComponentLabel = Iterables.getFirst(issue.getAffectedComponentLabels(), "No label found");
+								final String affectedComponentId = issue.getAffectedComponent().getComponentId();
+								return new ValidationIssueReport(ruleId, ruleDescription, affectedComponentId, affectedComponentLabel);
+							}).collect(Collectors.toList());
+
+							return reports;
+						}));
+			} else {
+				final String branchPath = getBranchFromJob(validationJob);
+
+				return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+						.isWhitelisted(false)
+						.setLimit(limit)
+						.setScrollId(scrollId)
+						.setScroll(scrollKeepAlive)
+						.setSearchAfter(searchAfter)
+						.filterByBranchPath(branchPath)
+						.buildAsync()
+						.execute(bus)
+						.then(issues -> {
+							return issues.getItems().stream().collect(Collectors.toList());
+						}));
+
+			}
 		} else {
 			throw new NotFoundException("Validation job", validationId);
 		}
-		
+			
 	}
 	
 	private CodeSystemEntry getCodeSystem(final String codeSystemShortName) {
@@ -353,10 +347,9 @@ public class ValidationRestService extends AbstractRestService {
 			.stream()
 			.filter(ValidationRequests::isValidationJob)
 			.filter(validationJob -> {
-				final String encodedId = Hashing.sha1().hashString(validationJob.getId(), Charsets.UTF_8).toString().substring(0, 7);
-				
-				return validationId.equals(encodedId);
-			}).findFirst().orElse(null);
+				return validationId.equals(getHash(validationJob.getId()));
+			}).map(validationJob -> RemoteJobEntry.from(validationJob).id(validationId).build())
+			.findFirst().orElse(null);
 		
 	}
 	
@@ -367,4 +360,7 @@ public class ValidationRestService extends AbstractRestService {
 		return branchPath;
 	}
 	
+	private String getHash(String validationId) {
+		return Hashing.sha1().hashString(validationId, Charsets.UTF_8).toString().substring(0, 7);
+	}
 }

@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
+import java.util.Collections;
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -93,6 +96,9 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String defaultModule = DEFAULT_MODULE;
+	
+	@NotNull
+	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
 	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
@@ -364,6 +370,16 @@ public class SnomedCoreConfiguration {
 	@JsonProperty
 	public void setDefaultNamespace(String defaultNamespace) {
 		this.defaultNamespace = defaultNamespace;
+	}
+	
+	@JsonProperty
+	public Set<String> getReasonerExcludedModuleIds() {
+		return this.reasonerExcludedModuleIds;
+	}
+	
+	@JsonProperty
+	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
+		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
 	}
 	
 }

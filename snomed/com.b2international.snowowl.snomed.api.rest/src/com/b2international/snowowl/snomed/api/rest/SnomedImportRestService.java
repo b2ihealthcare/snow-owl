@@ -22,6 +22,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,10 @@ public class SnomedImportRestService extends AbstractRestService {
 
 	@Autowired
 	private ISnomedRf2ImportService delegate; 
+	
+	public SnomedImportRestService() {
+		super(Collections.emptySet());
+	}
 	
 	@ApiOperation(
 			value="Import SNOMED CT content", 

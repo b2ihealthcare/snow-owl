@@ -46,9 +46,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.b2international.snowowl.api.rest.codesystem.CodeSystemService;
 import com.b2international.snowowl.api.rest.codesystem.CodeSystemVersionService;
-import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersionProperties;
 import com.b2international.snowowl.api.rest.domain.CodeSystemVersionPropertiesMixin;
 import com.b2international.snowowl.api.rest.util.CsvMessageConverter;
+import com.b2international.snowowl.datastore.CodeSystemVersionProperties;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.fasterxml.classmate.TypeResolver;
@@ -153,7 +153,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.setVisibility(PropertyAccessor.CREATOR, Visibility.ANY);
 		objectMapper.registerModule(new GuavaModule());
-		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
+		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		final ISO8601DateFormat df = new ISO8601DateFormat();
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		objectMapper.setDateFormat(df);

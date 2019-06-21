@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.index.revision.StagingArea.RevisionDiff;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -35,6 +36,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 7.0
@@ -69,45 +72,74 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				}
 			});
 		
-		if (inactivatedComponentIds.isEmpty() && inactivatedConceptIds.isEmpty()) {
+		// inactivate descriptions of inactivated concepts, take current description changes into account
+		if (!inactivatedConceptIds.isEmpty()) {
+			
+			Multimap<String, RevisionDiff> changedMembersByReferencedComponentId = HashMultimap.create();
+			staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).forEach(diff -> {
+				changedMembersByReferencedComponentId.put(((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId(), diff);
+			});
+			
+			for (Hits<String[]> hits : searcher.scroll(Query.select(String[].class)
+					.from(SnomedDescriptionIndexEntry.class)
+					.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.MODULE_ID)
+					.where(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
+					.limit(PAGE_SIZE)
+					.build())) {
+				// TODO exclude descriptions that are already present in the tx or apply 
+				hits.forEach(description -> {
+					final String descriptionId = description[0];
+					
+					SnomedRefSetMemberIndexEntry existingInactivationMember = changedMembersByReferencedComponentId.get(descriptionId).stream()
+							.map(diff -> diff.newRevision)
+							.map(SnomedRefSetMemberIndexEntry.class::cast)
+							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+							.findFirst()
+							.orElse(null);
+					
+					SnomedRefSetMemberIndexEntry.Builder inactivationMember;
+					if (existingInactivationMember == null) {
+						inactivationMember = SnomedRefSetMemberIndexEntry.builder()
+							.id(UUID.randomUUID().toString())
+							.active(true)
+							.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
+							.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
+							.referencedComponentId(descriptionId)
+							.moduleId(description[1]);
+					} else {
+						inactivationMember = SnomedRefSetMemberIndexEntry.builder(existingInactivationMember);
+					}
+					
+					// set to concept non current
+					inactivationMember.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT);
+					
+					stageNew(inactivationMember.build());
+				});
+			}
+			
+			// inactivate relationships of inactivated concepts
+			for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
+					.where(Expressions.builder()
+							.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactivatedConceptIds))
+							.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactivatedConceptIds))
+							.build())
+					.limit(PAGE_SIZE)
+					.build())) {
+				hits.forEach(relationship -> {
+					inactivatedComponentIds.add(relationship.getId());
+					if (staging.getChangedRevisions().containsKey(relationship.getId())) {
+						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) staging.getChangedRevisions().get(relationship.getId()).newRevision)
+								.active(false)
+								.build());
+					} else {
+						stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship).active(false).build());
+					}
+				});
+			}
+		}
+		
+		if (inactivatedComponentIds.isEmpty()) {
 			return;
-		}
-		
-		// inactivate descriptions of inactivated concepts
-		for (Hits<String[]> hits : searcher.scroll(Query.select(String[].class)
-				.from(SnomedDescriptionIndexEntry.class)
-				.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.MODULE_ID)
-				.where(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
-				.limit(10_000)
-				.build())) {
-			// TODO exclude descriptions that are already present in the tx or apply 
-			hits.forEach(description -> {
-				SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
-					.id(UUID.randomUUID().toString())
-					.active(true)
-					.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
-					.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
-					.referencedComponentId(description[0])
-					.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
-					.moduleId(description[1])
-					.build();
-				
-				stageNew(member);
-			});
-		}
-		
-		// inactivate relationships of inactivated concepts
-		for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
-				.where(Expressions.builder()
-						.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactivatedConceptIds))
-						.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactivatedConceptIds))
-						.build())
-				.limit(10_000)
-				.build())) {
-			hits.forEach(relationship -> {
-				inactivatedComponentIds.add(relationship.getId());
-				stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship).active(false).build());
-			});
 		}
 		
 		// inactivate referring members of all inactivated core component, and all members of inactivated refsets
@@ -116,10 +148,16 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(inactivatedComponentIds))
 						.build())
-				.limit(10_000)
+				.limit(PAGE_SIZE)
 				.build())) {
-			hits.forEach(relationship -> {
-				stageChange(relationship, SnomedRefSetMemberIndexEntry.builder(relationship).active(false).build());
+			hits.forEach(member -> {
+				if (staging.getChangedRevisions().containsKey(member.getId())) {
+					stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) staging.getChangedRevisions().get(member.getId()).newRevision)
+							.active(false)
+							.build());
+				} else {
+					stageChange(member, SnomedRefSetMemberIndexEntry.builder(member).active(false).build());
+				}
 			});
 		}
 	}

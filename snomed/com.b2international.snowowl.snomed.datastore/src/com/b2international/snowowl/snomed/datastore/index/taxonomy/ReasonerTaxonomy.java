@@ -34,18 +34,19 @@ import com.google.common.collect.Multimap;
 public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 
 	private final InternalIdMap conceptMap;
+	private final InternalIdMap definedConceptMap;
 
 	private final InternalIdEdges statedAncestors;
 	private final InternalIdEdges statedDescendants;
 
-	private final InternalSctIdSet fullyDefinedConcepts;
 	private final InternalSctIdSet exhaustiveConcepts;
 
-	private final InternalIdMultimap<StatementFragment> statedNonIsARelationships;
+	private final InternalIdMultimap<StatementFragment> subclassOfStatements;
+	private final InternalIdMultimap<StatementFragment> equivalentStatements;
 	private final InternalIdMultimap<StatementFragment> existingInferredRelationships;
 	private final InternalIdMultimap<StatementFragment> additionalGroupedRelationships;
 	
-	private final InternalIdMultimap<String> statedAxioms;
+	private final InternalIdMultimap<String> statedAdditionalAxioms;
 	private final LongSet neverGroupedTypeIds;
 	private Set<PropertyChain> propertyChains;
 	
@@ -58,18 +59,20 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 	private final InternalSctIdMultimap equivalentConcepts;
 	private final LongList iterationOrder;
 
-	/*package*/ ReasonerTaxonomy(final InternalIdMap conceptMap, 
+	/*package*/ ReasonerTaxonomy(
+			final InternalIdMap conceptMap, 
+			final InternalIdMap definedConceptMap,
 			final InternalIdEdges statedAncestors,
 			final InternalIdEdges statedDescendants, 
 			
-			final InternalSctIdSet fullyDefinedConcepts,
 			final InternalSctIdSet exhaustiveConcepts, 
 			
-			final InternalIdMultimap<StatementFragment> statedNonIsARelationships,
+			final InternalIdMultimap<StatementFragment> subclassOfStatements,
+			final InternalIdMultimap<StatementFragment> equivalentStatements,
 			final InternalIdMultimap<StatementFragment> existingInferredRelationships,
 			final InternalIdMultimap<StatementFragment> additionalGroupedRelationships, 
 			
-			final InternalIdMultimap<String> statedAxioms,
+			final InternalIdMultimap<String> statedAdditionalAxioms,
 			final LongSet neverGroupedTypeIds,
 			final Set<PropertyChain> propertyChains, 
 			
@@ -83,17 +86,18 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 			final LongList iterationOrder) {
 
 		this.conceptMap = conceptMap;
+		this.definedConceptMap = definedConceptMap;
 		this.statedAncestors = statedAncestors;
 		this.statedDescendants = statedDescendants;
 		
-		this.fullyDefinedConcepts = fullyDefinedConcepts;
 		this.exhaustiveConcepts = exhaustiveConcepts;
 		
-		this.statedNonIsARelationships = statedNonIsARelationships;
+		this.subclassOfStatements = subclassOfStatements;
+		this.equivalentStatements = equivalentStatements;
 		this.existingInferredRelationships = existingInferredRelationships;
 		this.additionalGroupedRelationships = additionalGroupedRelationships;
 		
-		this.statedAxioms = statedAxioms;
+		this.statedAdditionalAxioms = statedAdditionalAxioms;
 		this.neverGroupedTypeIds = neverGroupedTypeIds;
 		this.propertyChains = propertyChains;
 		
@@ -109,6 +113,10 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 
 	public InternalIdMap getConceptMap() {
 		return conceptMap;
+	}
+	
+	public InternalIdMap getDefinedConceptMap() {
+		return definedConceptMap;
 	}
 
 	public InternalIdEdges getStatedAncestors() {
@@ -133,18 +141,18 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		return checkNotNull(equivalentConcepts, "Inferred equivalences are unset on this taxonomy.");
 	}
 
-	public InternalSctIdSet getFullyDefinedConcepts() {
-		return fullyDefinedConcepts;
-	}
-
 	public InternalSctIdSet getExhaustiveConcepts() {
 		return exhaustiveConcepts;
 	}
 
-	public InternalIdMultimap<StatementFragment> getStatedNonIsARelationships() {
-		return statedNonIsARelationships;
+	public InternalIdMultimap<StatementFragment> getSubclassOfStatements() {
+		return subclassOfStatements;
 	}
-
+	
+	public InternalIdMultimap<StatementFragment> getEquivalentStatements() {
+		return equivalentStatements;
+	}
+	
 	public InternalIdMultimap<StatementFragment> getExistingInferredRelationships() {
 		return existingInferredRelationships;
 	}
@@ -153,8 +161,8 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		return additionalGroupedRelationships;
 	}
 
-	public InternalIdMultimap<String> getStatedAxioms() {
-		return statedAxioms;
+	public InternalIdMultimap<String> getStatedAdditionalAxioms() {
+		return statedAdditionalAxioms;
 	}
 	
 	public LongSet getNeverGroupedTypeIds() {
@@ -197,17 +205,18 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		checkState(this.iterationOrder == null, "Inferred concept iteration order is already set in this taxonomy.");
 
 		return new ReasonerTaxonomy(conceptMap, 
+				definedConceptMap, 
 				statedAncestors, 
 				statedDescendants, 
 				
-				fullyDefinedConcepts, 
 				exhaustiveConcepts,
 				
-				statedNonIsARelationships, 
+				subclassOfStatements,
+				equivalentStatements,
 				existingInferredRelationships,
 				additionalGroupedRelationships,
 				
-				statedAxioms,
+				statedAdditionalAxioms,
 				neverGroupedTypeIds,
 				propertyChains,
 				

@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVersionSearchRequestBuilder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -63,10 +64,12 @@ import com.google.common.primitives.Longs;
 public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSetProcessorBase {
 
 	private final Logger log;
+	private final long branchBaseTimestamp;
 
-	protected ComponentEffectiveTimeRestoreChangeProcessor(Logger log) {
+	protected ComponentEffectiveTimeRestoreChangeProcessor(Logger log, long branchBaseTimestamp) {
 		super("effective time restore");
 		this.log = log;
+		this.branchBaseTimestamp = branchBaseTimestamp;
 	}
 
 	@Override
@@ -190,10 +193,17 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		// the first code system in the list is the working codesystem
 		final CodeSystemEntry workingCodeSystem = relativeCodeSystems.stream().findFirst().get();
 
-		final Optional<CodeSystemVersionEntry> workingCodeSystemVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+		CodeSystemVersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(workingCodeSystem.getShortName())
-				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE));
+		
+		// if specified and not restoring effective time on the Code System Working Branch then filter by created at up until the specified branch base timestamp
+		if (branchBaseTimestamp > 0L && !branchPath.equals(workingCodeSystem.getBranchPath())) {
+			versionSearch.filterByCreatedAt(0L, branchBaseTimestamp);
+		}
+		
+		final Optional<CodeSystemVersionEntry> workingCodeSystemVersion = versionSearch
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(eventBus)
 				.getSync()

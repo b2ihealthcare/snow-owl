@@ -25,6 +25,8 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
@@ -43,6 +45,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.7
@@ -273,22 +276,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexOWLAxiomMember_UngroupedProperties() throws Exception {
-		final String referencedComponentId = "245567007";
-		final String owlExpression = "SubClassOf(:245567007 ObjectIntersectionOf(:245565004 :420479003 :7121006 ObjectSomeValuesFrom(:272741003 :24028007)))";
-		final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
-		
-		final SnomedRefSetMemberIndexEntry member = createBaseMember()
-				.referencedComponentId(referencedComponentId)
-				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.field(Fields.OWL_EXPRESSION, owlExpression)
-				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
-				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
-				.build();
+		final SnomedRefSetMemberIndexEntry member = createClassAxiomMember();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
-		assertEquals(owlExpression, actual.getOwlExpression());
 		assertEquals(
 			// expected
 			ImmutableList.of(
@@ -303,7 +294,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertThat(actual.getGciAxiomRelationships()).isEmpty();
 		assertDocEquals(member, actual);
 	}
-	
+
 	@Test
 	public void indexOWLAxiomMember_GroupedProperties() throws Exception {
 		final String referencedComponentId = "359728003";
@@ -355,6 +346,74 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexOWLAxiomMember_GCIAxiom() throws Exception {
+		final SnomedRefSetMemberIndexEntry member = createGciAxiomMember();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
+		assertThat(actual.getClassAxiomRelationships()).isEmpty();
+		assertEquals(
+			// expected
+			ImmutableList.of(
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "193783008", 0),
+				new SnomedOWLRelationshipDocument("116676008", "23583003", 1),
+				new SnomedOWLRelationshipDocument("246075003", "19551004", 1),
+				new SnomedOWLRelationshipDocument("363698007", "65431007", 1),
+				new SnomedOWLRelationshipDocument("370135005", "441862004", 1)
+			), 
+			// actual
+			actual.getGciAxiomRelationships()
+		);
+		assertDocEquals(member, actual);
+	}
+
+	@Test
+	public void searchByOwlExpressionConcept_TypeId() throws Exception {
+		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
+		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
+
+		Hits<SnomedRefSetMemberIndexEntry> hits = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept("272741003"))
+				.build());
+		assertThat(hits).hasSize(1);
+		SnomedRefSetMemberIndexEntry hit = Iterables.getOnlyElement(hits);
+		assertDocEquals(classAxiomMember, hit);
+	}
+	
+	@Test
+	public void searchByOwlExpressionConcept_DestinationId() throws Exception {
+		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
+		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
+
+		Hits<SnomedRefSetMemberIndexEntry> hits = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept("441862004"))
+				.build());
+		assertThat(hits).hasSize(1);
+		SnomedRefSetMemberIndexEntry hit = Iterables.getOnlyElement(hits);
+		assertDocEquals(gciAxiomMember, hit);
+	}
+	
+	@Test
+	public void searchByOwlExpressionGCI() throws Exception {
+		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
+		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
+		
+		Hits<SnomedRefSetMemberIndexEntry> gciAxioms = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class).where(SnomedRefSetMemberIndexEntry.Expressions.gciAxiom(true))
+				.build());
+		assertThat(gciAxioms).hasSize(1);
+		SnomedRefSetMemberIndexEntry hit = Iterables.getOnlyElement(gciAxioms);
+		assertDocEquals(gciAxiomMember, hit);
+		
+		Hits<SnomedRefSetMemberIndexEntry> classAxioms = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class).where(SnomedRefSetMemberIndexEntry.Expressions.gciAxiom(false))
+				.build());
+		assertThat(classAxioms).hasSize(1);
+		hit = Iterables.getOnlyElement(classAxioms);
+		assertDocEquals(classAxiomMember, hit);
+	}
+	
+	private SnomedRefSetMemberIndexEntry createGciAxiomMember() {
 		final String referencedComponentId = "231907006";
 		final String owlExpression = ""
 				+ "SubClassOf("
@@ -373,7 +432,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				+ ")";
 		final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
 		
-		final SnomedRefSetMemberIndexEntry member = createBaseMember()
+		return createBaseMember()
 				.referencedComponentId(referencedComponentId)
 				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
@@ -381,24 +440,21 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
 				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
 				.build();
+	}
+	
+	private SnomedRefSetMemberIndexEntry createClassAxiomMember() {
+		final String referencedComponentId = "245567007";
+		final String owlExpression = "SubClassOf(:245567007 ObjectIntersectionOf(:245565004 :420479003 :7121006 ObjectSomeValuesFrom(:272741003 :24028007)))";
+		final SnomedOWLExpressionConverterResult owlRelationships = toSnomedOWLRelationships(referencedComponentId, owlExpression);
 		
-		indexRevision(RevisionBranch.MAIN_PATH, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
-		assertEquals(owlExpression, actual.getOwlExpression());
-		assertThat(actual.getClassAxiomRelationships()).isEmpty();
-		assertEquals(
-			// expected
-			ImmutableList.of(
-				new SnomedOWLRelationshipDocument(Concepts.IS_A, "193783008", 0),
-				new SnomedOWLRelationshipDocument("116676008", "23583003", 1),
-				new SnomedOWLRelationshipDocument("246075003", "19551004", 1),
-				new SnomedOWLRelationshipDocument("363698007", "65431007", 1),
-				new SnomedOWLRelationshipDocument("370135005", "441862004", 1)
-			), 
-			// actual
-			actual.getGciAxiomRelationships()
-		);
-		assertDocEquals(member, actual);
+		return createBaseMember()
+				.referencedComponentId(referencedComponentId)
+				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.field(Fields.OWL_EXPRESSION, owlExpression)
+				.classAxiomRelationships(owlRelationships.getClassAxiomRelationships())
+				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
+				.build();
 	}
 	
 	private SnomedOWLExpressionConverterResult toSnomedOWLRelationships(String referencedComponentId, String owlExpression) {

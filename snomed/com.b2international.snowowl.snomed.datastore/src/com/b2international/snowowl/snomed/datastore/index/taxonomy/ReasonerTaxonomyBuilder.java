@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.taxonomy;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.defining;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.exhaustive;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.modules;
@@ -26,6 +25,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
@@ -37,6 +37,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -48,6 +49,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -70,11 +72,11 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdMultimap.Builder;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -101,19 +103,21 @@ public final class ReasonerTaxonomyBuilder {
 
 	private final Stopwatch stopwatch;
 	private final Set<String> excludedModuleIds;
-	private final InternalIdMap.Builder conceptMap;
+	
+	private InternalIdMap.Builder conceptMap;
+	private InternalIdMap.Builder definedConceptMap;
 
 	private InternalIdEdges.Builder statedAncestors;
 	private InternalIdEdges.Builder statedDescendants;
 
-	private InternalSctIdSet.Builder fullyDefinedConcepts;
 	private InternalSctIdSet.Builder exhaustiveConcepts;
 
-	private InternalIdMultimap.Builder<StatementFragment> statedNonIsARelationships;
+	private InternalIdMultimap.Builder<String> statedAdditionalAxioms;
+	private InternalIdMultimap.Builder<StatementFragment> subclassOfStatements;
+	private InternalIdMultimap.Builder<StatementFragment> equivalentStatements;
 	private InternalIdMultimap.Builder<StatementFragment> additionalGroupedRelationships;
 	private InternalIdMultimap.Builder<StatementFragment> existingInferredRelationships;
 	
-	private InternalIdMultimap.Builder<String> statedAxioms;
 	private final LongSet neverGroupedIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(4);
 	
 	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> statedConcreteDomainMembers;
@@ -121,6 +125,7 @@ public final class ReasonerTaxonomyBuilder {
 	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> inferredConcreteDomainMembers;
 
 	private InternalIdMap builtConceptMap;
+	private InternalIdMap builtDefinedConceptMap;
 
 	private ImmutableSet.Builder<PropertyChain> propertyChains;
 
@@ -134,6 +139,7 @@ public final class ReasonerTaxonomyBuilder {
 		
 		// This is the only builder that can be initialized in the constructor
 		this.conceptMap = InternalIdMap.builder();
+		this.definedConceptMap = InternalIdMap.builder();
 	}			
 
 	private void entering(final String taskName) {
@@ -153,16 +159,28 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		final Query<String> query = Query.select(String.class)
+		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedConceptDocument.class)
-				.fields(SnomedConceptDocument.Fields.ID)
+				.fields(
+					SnomedConceptDocument.Fields.ID, // 0
+					SnomedConceptDocument.Fields.PRIMITIVE // 1
+				)
 				.where(whereExpressionBuilder.build())
 				.limit(SCROLL_LIMIT)
 				.build();
 
-		final Iterable<Hits<String>> scrolledHits = searcher.scroll(query);
-		for (final Hits<String> hits : scrolledHits) {
-			conceptMap.addAll(hits.getHits());
+		
+		for (final Hits<String[]> hits : searcher.scroll(query)) {
+			final Collection<String> conceptIds = newArrayListWithCapacity(hits.getHits().size());
+			final Collection<String> definedConceptIds = newArrayListWithCapacity(hits.getHits().size());
+			for (String[] hit : hits) {
+				conceptIds.add(hit[0]);
+				if (!Boolean.parseBoolean(hit[1])) {
+					definedConceptIds.add(hit[0]);
+				}
+			}
+			conceptMap.addAll(conceptIds);
+			definedConceptMap.addAll(definedConceptIds);
 		}
 
 		leaving("Registering active concept IDs using revision searcher");
@@ -176,8 +194,16 @@ public final class ReasonerTaxonomyBuilder {
 				&& !excludedModuleIds.contains(c.getModuleId()));
 
 		for (final Collection<SnomedConcept> chunk : Iterables.partition(filteredConcepts::iterator, SCROLL_LIMIT)) {
-			final Collection<String> sctIds = Collections2.transform(chunk, SnomedConcept::getId);
-			conceptMap.addAll(sctIds);
+			final Collection<String> conceptIds = newArrayListWithCapacity(chunk.size());
+			final Collection<String> definedConceptIds = newArrayListWithCapacity(chunk.size());
+			for (SnomedConcept concept : chunk) {
+				conceptIds.add(concept.getId());
+				if (!concept.getDefinitionStatus().isPrimitive()) {
+					definedConceptIds.add(concept.getId());
+				}
+			}
+			conceptMap.addAll(conceptIds);
+			definedConceptMap.addAll(definedConceptIds);
 		}
 
 		leaving("Registering concept IDs from stream");
@@ -187,18 +213,22 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder finishConcepts() {
 		// First stage completed, now all other builders can use the map
 		builtConceptMap = conceptMap.build();
+		builtDefinedConceptMap = definedConceptMap.build();
+		
+		conceptMap = null;
+		definedConceptMap = null;
 
 		this.statedAncestors = InternalIdEdges.builder(builtConceptMap);
 		this.statedDescendants = InternalIdEdges.builder(builtConceptMap);
 		
-		this.fullyDefinedConcepts = InternalSctIdSet.builder(builtConceptMap);
 		this.exhaustiveConcepts = InternalSctIdSet.builder(builtConceptMap);
 		
-		this.statedNonIsARelationships = InternalIdMultimap.builder(builtConceptMap);
+		this.statedAdditionalAxioms = InternalIdMultimap.builder(builtConceptMap);
+		
+		this.subclassOfStatements = InternalIdMultimap.builder(builtConceptMap);
+		this.equivalentStatements = InternalIdMultimap.builder(builtConceptMap);
 		this.additionalGroupedRelationships = InternalIdMultimap.builder(builtConceptMap);
 		this.existingInferredRelationships = InternalIdMultimap.builder(builtConceptMap);
-		
-		this.statedAxioms = InternalIdMultimap.builder(builtConceptMap);
 		
 		// Concrete domain member builders are not backed by the internal map
 		this.statedConcreteDomainMembers = ImmutableMultimap.builder();
@@ -224,9 +254,8 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
-				.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0 (required)
-						SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 1
-						SnomedRelationshipIndexEntry.Fields.DESTINATION_ID) // 2
+				.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 0
+						SnomedRelationshipIndexEntry.Fields.DESTINATION_ID) // 1
 				.where(whereExpressionBuilder.build())
 				.limit(SCROLL_LIMIT)
 				.build();
@@ -237,14 +266,13 @@ public final class ReasonerTaxonomyBuilder {
 
 		for (final Hits<String[]> hits : scrolledHits) {
 			for (final String[] relationship : hits) {
-				if (builtConceptMap.containsKey(relationship[1]) && builtConceptMap.containsKey(relationship[2])) {
-					sourceIds.add(relationship[1]);
-					destinationIds.add(relationship[2]);
+				if (builtConceptMap.containsKey(relationship[0]) && builtConceptMap.containsKey(relationship[1])) {
+					sourceIds.add(relationship[0]);
+					destinationIds.add(relationship[1]);
 				} else {
-					LOGGER.debug("Not registering IS A relationship {} as its source {} and/or destination {} is inactive.",
+					LOGGER.debug("Not registering IS A relationship as its source {} and/or destination {} is inactive.",
 							relationship[0],
-							relationship[1],
-							relationship[2]);
+							relationship[1]);
 				}
 			}
 
@@ -293,13 +321,11 @@ public final class ReasonerTaxonomyBuilder {
 	}
 
 	public ReasonerTaxonomyBuilder addConceptFlags(final RevisionSearcher searcher) {
-		entering("Registering active concept flags (fully defined, exhaustive) using revision searcher");
+		entering("Registering active concept flags (exhaustive) using revision searcher");
 
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(active())
-				.should(defining())
-				.should(exhaustive())
-				.setMinimumNumberShouldMatch(1); // required because we also have a filter
+				.filter(exhaustive()); 
 		
 		if (!excludedModuleIds.isEmpty()) {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
@@ -308,25 +334,20 @@ public final class ReasonerTaxonomyBuilder {
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedConceptDocument.class)
 				.fields(SnomedConceptDocument.Fields.ID, // 0
-						SnomedConceptDocument.Fields.PRIMITIVE, // 1
-						SnomedConceptDocument.Fields.EXHAUSTIVE) // 2
+						SnomedConceptDocument.Fields.EXHAUSTIVE) // 1
 				.where(whereExpressionBuilder.build())
 				.limit(SCROLL_LIMIT)
 				.build();
 
 		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
-		final Set<String> fullyDefinedIds = newHashSetWithExpectedSize(SCROLL_LIMIT);
 		final Set<String> exhaustiveIds = newHashSetWithExpectedSize(SCROLL_LIMIT);
 
 		for (final Hits<String[]> hits : scrolledHits) {
 			for (final String[] concept : hits) {
-				if (!Boolean.parseBoolean(concept[1])) { fullyDefinedIds.add(concept[0]); }
-				if (Boolean.parseBoolean(concept[2])) { exhaustiveIds.add(concept[0]); }
+				if (Boolean.parseBoolean(concept[1])) { exhaustiveIds.add(concept[0]); }
 			}
 
-			fullyDefinedConcepts.addAll(fullyDefinedIds);
 			exhaustiveConcepts.addAll(exhaustiveIds);
-			fullyDefinedIds.clear();
 			exhaustiveIds.clear();
 		}
 
@@ -345,18 +366,14 @@ public final class ReasonerTaxonomyBuilder {
 					&& !excludedModuleIds.contains(c.getModuleId());
 		});
 
-		final Set<String> fullyDefinedIds = newHashSetWithExpectedSize(SCROLL_LIMIT);
 		final Set<String> exhaustiveIds = newHashSetWithExpectedSize(SCROLL_LIMIT);
 
 		for (final List<SnomedConcept> chunk : Iterables.partition(filteredConcepts::iterator, SCROLL_LIMIT)) {
 			for (final SnomedConcept concept : chunk) {
-				if (DefinitionStatus.FULLY_DEFINED.equals(concept.getDefinitionStatus())) { fullyDefinedIds.add(concept.getId()); }
 				if (SubclassDefinitionStatus.DISJOINT_SUBCLASSES.equals(concept.getSubclassDefinitionStatus())) { exhaustiveIds.add(concept.getId()); }
 			}
 
-			fullyDefinedConcepts.addAll(fullyDefinedIds);
 			exhaustiveConcepts.addAll(exhaustiveIds);
-			fullyDefinedIds.clear();
 			exhaustiveIds.clear();
 		}
 
@@ -376,7 +393,7 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		addRelationships(searcher, whereExpressionBuilder, statedNonIsARelationships);
+		addRelationships(searcher, whereExpressionBuilder, conceptId -> builtDefinedConceptMap.containsKey(conceptId) ? equivalentStatements : subclassOfStatements);
 
 		leaving("Registering active stated non-IS A relationships using revision searcher");
 		return this;
@@ -390,7 +407,13 @@ public final class ReasonerTaxonomyBuilder {
 				&& !Concepts.IS_A.equals(relationship.getTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships.filter(predicate), statedNonIsARelationships::putAll);
+		addRelationships(sortedRelationships.filter(predicate), (sourceId, fragments) -> {
+			if (builtDefinedConceptMap.containsKey(sourceId)) {
+				equivalentStatements.putAll(sourceId, fragments);
+			} else {
+				subclassOfStatements.putAll(sourceId, fragments);
+			}
+		});
 	
 		leaving("Registering active stated non-IS A relationships using relationship stream");
 		return this;
@@ -408,7 +431,7 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		addRelationships(searcher, whereExpressionBuilder, additionalGroupedRelationships);
+		addRelationships(searcher, whereExpressionBuilder, conceptId -> additionalGroupedRelationships);
 	
 		leaving("Registering active additional grouped relationships using revision searcher");
 		return this;
@@ -553,7 +576,7 @@ public final class ReasonerTaxonomyBuilder {
 		return this;
 	}
 
-	private void addRelationships(final RevisionSearcher searcher, final ExpressionBuilder whereExpressionBuilder, final Builder<StatementFragment> fragmentBuilder) {
+	private void addRelationships(final RevisionSearcher searcher, final ExpressionBuilder whereExpressionBuilder, final Function<String, Builder<StatementFragment>> fragmentBuilder) {
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
@@ -591,7 +614,7 @@ public final class ReasonerTaxonomyBuilder {
 					lastSourceId = sourceId;
 				} else if (!lastSourceId.equals(sourceId)) {
 					if (builtConceptMap.containsKey(lastSourceId)) {
-						fragmentBuilder.putAll(lastSourceId, fragments);
+						fragmentBuilder.apply(lastSourceId).putAll(lastSourceId, fragments);
 					} else {
 						LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
 								fragments.size(),
@@ -626,7 +649,7 @@ public final class ReasonerTaxonomyBuilder {
 		
 		if (!lastSourceId.isEmpty()) {
 			if (builtConceptMap.containsKey(lastSourceId)) {
-				fragmentBuilder.putAll(lastSourceId, fragments);
+				fragmentBuilder.apply(lastSourceId).putAll(lastSourceId, fragments);
 			} else {
 				LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
 						fragments.size(),
@@ -680,7 +703,7 @@ public final class ReasonerTaxonomyBuilder {
 						universal,
 						statementId,
 						false,  // XXX: "injected" concepts will not set these flags correctly, but they should
-						false); // only be used for equivalence checks 
+						false);  // only be used for equivalence checks
 
 				fragments.add(statement);
 			}
@@ -703,17 +726,14 @@ public final class ReasonerTaxonomyBuilder {
 
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM));
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(SnomedRefSetType.OWL_AXIOM)));
 		
 		if (!excludedModuleIds.isEmpty()) {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		final Query<String[]> query = Query.select(String[].class)
+		final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
 				.from(SnomedRefSetMemberIndexEntry.class)
-				.fields(SnomedRefSetMemberIndexEntry.Fields.ID, // 0
-						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, // 1
-						SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION) // 2
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
@@ -722,38 +742,53 @@ public final class ReasonerTaxonomyBuilder {
 				.limit(SCROLL_LIMIT)
 				.build();
 		
-		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
-		final List<String> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final Iterable<Hits<SnomedRefSetMemberIndexEntry>> scrolledHits = searcher.scroll(query);
+		
+		final List<String> sourceIds = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final List<String> destinationIds = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final List<StatementFragment> subclassOfFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final List<StatementFragment> equivalentFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final List<String> additionalAxioms = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		String lastReferencedComponentId = "";
 		
-		for (final Hits<String[]> hits : scrolledHits) {
-			for (final String[] member : hits) {
-				final String referencedComponentId = member[1];
-				final String expression = member[2];
+		for (final Hits<SnomedRefSetMemberIndexEntry> hits : scrolledHits) {
+			for (final SnomedRefSetMemberIndexEntry member : hits) {
+				final String referencedComponentId = member.getReferencedComponentId();
 				
 				if (lastReferencedComponentId.isEmpty()) {
 					lastReferencedComponentId = referencedComponentId;
 				} else if (!lastReferencedComponentId.equals(referencedComponentId)) {
 					if (builtConceptMap.containsKey(lastReferencedComponentId)) {
-						statedAxioms.putAll(lastReferencedComponentId, fragments);
+						subclassOfStatements.putAll(lastReferencedComponentId, subclassOfFragments);
+						equivalentStatements.putAll(lastReferencedComponentId, equivalentFragments);
+						statedAncestors.addEdges(sourceIds, destinationIds);
+						statedDescendants.addEdges(destinationIds, sourceIds);
+						statedAdditionalAxioms.putAll(referencedComponentId, additionalAxioms);
 					} else {
-						LOGGER.debug("Not registering {} OWL axioms for concept {} as it is inactive.",
-								fragments.size(),
-								lastReferencedComponentId);
+						LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 					}
-					fragments.clear();
+					subclassOfFragments.clear();
+					equivalentFragments.clear();
+					sourceIds.clear();
+					destinationIds.clear();
+					additionalAxioms.clear();
 					lastReferencedComponentId = referencedComponentId;
 				}
-				
+
+				// if not a class axiom then process it as owl axiom member
+				final String expression = member.getOwlExpression();
 				// SubObjectPropertyOf(ObjectPropertyChain(:246093002 :738774007) :246093002)
 				// TransitiveObjectProperty(:774081006)
 				StringTokenizer tok = new StringTokenizer(expression.toLowerCase(Locale.ENGLISH), "(): ");
+				
+				List<StatementFragment> fragments = null;
 				
 				try {
 					String firstToken = tok.nextToken();
 					if ("transitiveobjectproperty".equals(firstToken)) {
 						long propertyId = Long.parseLong(tok.nextToken());
 						propertyChains.add(new PropertyChain(propertyId, propertyId, propertyId));
+						additionalAxioms.add(expression);
 					} else if ("subobjectpropertyof".equals(firstToken)) {
 						String nextToken = tok.nextToken();
 						if ("objectpropertychain".equals(nextToken)) {
@@ -762,24 +797,50 @@ public final class ReasonerTaxonomyBuilder {
 							long inferredType = Long.parseLong(tok.nextToken());
 							propertyChains.add(new PropertyChain(sourceType, destinationType, inferredType));
 						}
+						additionalAxioms.add(expression);
+					} else if ("reflexiveobjectproperty".equals(firstToken)) {
+						additionalAxioms.add(expression);
+					} else {
+						fragments = "equivalentclasses".equals(firstToken) ? equivalentFragments : subclassOfFragments;
 					}
+					
 				} catch (NoSuchElementException | NumberFormatException e) {
 					// skip
 				}
 				
-				fragments.add(expression);
+				if (!CompareUtils.isEmpty(member.getClassAxiomRelationships())) {
+					for (SnomedOWLRelationshipDocument relationship : member.getClassAxiomRelationships()) {
+						if (builtConceptMap.containsKey(referencedComponentId) && builtConceptMap.containsKey(relationship.getDestinationId())) {
+							if (relationship.isIsa()) {
+								sourceIds.add(referencedComponentId);
+								destinationIds.add(relationship.getDestinationId());
+							} else {
+								fragments.add(relationship.toStatementFragment());
+							}
+						} else {
+							LOGGER.debug(
+									"Not registering OWL axiom relationship for concept {} as either the source or the destination ({}) is inactive.",
+									referencedComponentId, relationship.getDestinationId());
+						}
+					}
+				} else if (!CompareUtils.isEmpty(member.getGciAxiomRelationships())) {
+					// make sure we register GCI expressions as well
+					additionalAxioms.add(expression);
+				}
+				
 			}
 		}
 		
 		if (!lastReferencedComponentId.isEmpty()) {
 			if (builtConceptMap.containsKey(lastReferencedComponentId)) {
-				statedAxioms.putAll(lastReferencedComponentId, fragments);
+				subclassOfStatements.putAll(lastReferencedComponentId, subclassOfFragments);
+				equivalentStatements.putAll(lastReferencedComponentId, equivalentFragments);
+				statedAncestors.addEdges(sourceIds, destinationIds);
+				statedDescendants.addEdges(destinationIds, sourceIds);
+				statedAdditionalAxioms.putAll(lastReferencedComponentId, additionalAxioms);
 			} else {
-				LOGGER.debug("Not registering {} OWL axioms for concept {} as it is inactive.",
-						fragments.size(),
-						lastReferencedComponentId);
+				LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 			}
-			fragments.clear();
 		}
 		
 		leaving("Registering active stated OWL axioms using revision searcher");
@@ -798,10 +859,9 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		final Query<String[]> query = Query.select(String[].class)
+		final Query<String> query = Query.select(String.class)
 				.from(SnomedRefSetMemberIndexEntry.class)
-				.fields(SnomedRefSetMemberIndexEntry.Fields.ID, // 0
-						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID) // 1
+				.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
@@ -810,12 +870,11 @@ public final class ReasonerTaxonomyBuilder {
 				.limit(SCROLL_LIMIT)
 				.build();
 		
-		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		final Iterable<Hits<String>> scrolledHits = searcher.scroll(query);
 		final LongList fragments = PrimitiveLists.newLongArrayListWithExpectedSize(SCROLL_LIMIT);
 		
-		for (final Hits<String[]> hits : scrolledHits) {
-			for (final String[] member : hits) {
-				final String referencedComponentId = member[1];
+		for (final Hits<String> hits : scrolledHits) {
+			for (final String referencedComponentId : hits) {
 				fragments.add(Long.parseLong(referencedComponentId));
 			}
 			
@@ -984,18 +1043,20 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomy build() {
 		checkState(builtConceptMap != null, "finishConcepts() method was not called on taxonomy builder.");
 
-		return new ReasonerTaxonomy(builtConceptMap,
+		return new ReasonerTaxonomy(
+				builtConceptMap, 
+				builtDefinedConceptMap,
 				statedAncestors.build(),
 				statedDescendants.build(),
 				
-				fullyDefinedConcepts.build(),
 				exhaustiveConcepts.build(),
 				
-				statedNonIsARelationships.build(),
+				subclassOfStatements.build(),
+				equivalentStatements.build(),
 				existingInferredRelationships.build(),
 				additionalGroupedRelationships.build(),
 				
-				statedAxioms.build(),
+				statedAdditionalAxioms.build(),
 				LongCollections.unmodifiableSet(neverGroupedIds),
 				propertyChains.build(),
 				

@@ -412,4 +412,19 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
+	@Test
+	public void queryConjunction() throws Exception {
+		eval("* {{ active = false }} AND * {{ Description.active = true }}");
+	}
+	
+	@Test
+	public void queryDisjunction() throws Exception {
+		eval("* {{ active = false }} OR * {{ Description.active = true }}");
+	}
+	
+	@Test
+	public void queryDisjunctionWithParenthesis() throws Exception {
+		eval("* {{ active = false }} OR (* {{ Description.active = true }})");
+	}
+	
 }
