@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target name="Snow Owl Target Platform Definition" sequenceNumber="32">
 <locations>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<unit id="org.eclipse.equinox.sdk.feature.group" version="3.16.0.v20181130-2106"/>
-		<unit id="org.eclipse.pde.feature.group" version="3.13.300.v20181206-0815"/>
-		<unit id="org.eclipse.platform.feature.group" version="4.10.0.v20181206-0815"/>
-		<repository location="http://download.eclipse.org/eclipse/updates/4.10/R-4.10-201812060815/"/>
+		<unit id="org.eclipse.equinox.sdk.feature.group" version="3.17.0.v20190305-2225"/>
+		<unit id="org.eclipse.pde.feature.group" version="3.13.400.v20190307-0943"/>
+		<unit id="org.eclipse.platform.feature.group" version="4.11.0.v20190307-0500"/>
+		<repository location="https://download.eclipse.org/eclipse/updates/4.11/R-4.11-201903070500/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.net4j.feature.group" version="4.7.0.v20180530-1201"/>
