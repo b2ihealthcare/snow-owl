@@ -11,4 +11,4 @@ Export-Package: com.b2international.collections,
  com.b2international.collections.floats,
  com.b2international.collections.ints,
  com.b2international.collections.longs
-Require-Bundle: com.google.guava;bundle-version="[18.0.0,21.0.0]";visibility:=reexport
+Require-Bundle: com.google.guava;bundle-version="[18.0.0,22.0.0)";visibility:=reexport

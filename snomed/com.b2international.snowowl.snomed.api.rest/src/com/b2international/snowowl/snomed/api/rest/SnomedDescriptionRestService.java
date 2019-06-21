@@ -27,22 +27,10 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
@@ -270,19 +258,8 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
-		final SnomedDescriptionRestUpdate update = body.getChange();
-
-		SnomedRequests
-			.prepareUpdateDescription(descriptionId)
-			.setActive(update.isActive())
-			.setModuleId(update.getModuleId())
-			.setAssociationTargets(update.getAssociationTargets())
-			.setInactivationIndicator(update.getInactivationIndicator())
-			.setCaseSignificance(update.getCaseSignificance())
-			.setAcceptability(update.getAcceptability())
-			.setTypeId(update.getTypeId())
-			.setTerm(update.getTerm())
-			.setLanguageCode(update.getLanguageCode())
+		body.getChange()
+			.toRequestBuilder(descriptionId)
 			.build(repositoryId, branchPath, userId, commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);

@@ -15,11 +15,19 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.core.domain.*;
+import java.util.List;
+import java.util.Map;
+
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableListMultimap;
 
 /**
  * @since 4.0
@@ -28,7 +36,7 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 
 	private DefinitionStatus definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
-	private Multimap<AssociationType, String> associationTargets;
+	private Map<AssociationType, List<String>> associationTargets;
 	private InactivationIndicator inactivationIndicator;
 	private SnomedDescriptions descriptions;
 	private SnomedRelationships relationships;
@@ -56,7 +64,7 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	 * and the values are the referred associations. 
 	 * @return a multimap of associations.
 	 */
-	public Multimap<AssociationType, String> getAssociationTargets() {
+	public Map<AssociationType, List<String>> getAssociationTargets() {
 		return associationTargets;
 	}
 
@@ -65,7 +73,7 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	 * <br>Counterpart of {@link #getAssociationTargets()}.
 	 * @param associationTargets the multimap of associations.
 	 */
-	public void setAssociationTargets(final Multimap<AssociationType, String> associationTargets) {
+	public void setAssociationTargets(final Map<AssociationType, List<String>> associationTargets) {
 		this.associationTargets = associationTargets;
 	}
 
@@ -113,11 +121,18 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	}
 
 	public SnomedConceptUpdateRequestBuilder toRequestBuilder(String conceptId) {
+		final ImmutableListMultimap.Builder<AssociationType, String> targets;
+		if (associationTargets != null) {
+			targets = ImmutableListMultimap.<AssociationType, String>builder();
+			associationTargets.forEach(targets::putAll);
+		} else {
+			targets = null;
+		}
 		return SnomedRequests
 				.prepareUpdateConcept(conceptId)
 				.setActive(isActive())
 				.setModuleId(getModuleId())
-				.setAssociationTargets(getAssociationTargets())
+				.setAssociationTargets(targets == null ? null : targets.build())
 				.setDefinitionStatus(getDefinitionStatus())
 				.setInactivationIndicator(getInactivationIndicator())
 				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
