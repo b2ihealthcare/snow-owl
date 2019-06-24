@@ -209,9 +209,14 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 
 			final Principal principal) {
 		
+		final String userId = principal.getName();
+		
 		final SnomedRefSetMemberRestInput change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId();
+		
 		final String createdRefSetMemberId = change.toRequestBuilder()
-				.build(repositoryId, branchPath, principal.getName(), body.getCommitComment())
+				.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 				.execute(bus)
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
@@ -285,13 +290,16 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			final Principal principal) {
 		
 		final String userId = principal.getName();
+		
 		final SnomedMemberRestUpdate update = body.getChange();
-		SnomedRequests
-			.prepareUpdateMember()
+		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId();
+		
+		SnomedRequests.prepareUpdateMember()
 			.setMemberId(memberId)
 			.setSource(update.getSource())
 			.force(force)
-			.build(repositoryId, branchPath, userId, body.getCommitComment())
+			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
@@ -323,14 +331,21 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			final ChangeRequest<RestRequest> body,
 			
 			final Principal principal) {
+		
+		final String userId = principal.getName();
 		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
+		
 		final RestRequest change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId();
+		
 		change.setSource("memberId", memberId);
-		return SnomedRequests
-				.prepareCommit()
-				.setUserId(principal.getName())
-				.setBody(body.getChange().resolve(resolver))
-				.setCommitComment(body.getCommitComment())
+		
+		return SnomedRequests.prepareCommit()
+				.setDefaultModuleId(defaultModuleId)
+				.setUserId(userId)
+				.setBody(change.resolve(resolver))
+				.setCommitComment(commitComment)
 				.build(repositoryId, branchPath)
 				.execute(bus)
 				.getSync();

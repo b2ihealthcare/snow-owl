@@ -169,11 +169,14 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			
 			final Principal principal) {
 
+		final String userId = principal.getName();
+		
+		final SnomedRelationshipRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
-		final String createdRelationshipId = body
-				.getChange()
-				.toRequestBuilder()
-				.build(repositoryId, branchPath, principal.getName(), commitComment)
+		final String defaultModuleId = body.getDefaultModuleId();
+		
+		final String createdRelationshipId = change.toRequestBuilder()
+				.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 				.execute(bus)
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
@@ -233,8 +236,10 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			final Principal principal) {
 
 		final String userId = principal.getName();
+		
 		final String commitComment = body.getCommitComment();
 		final SnomedRelationshipRestUpdate update = body.getChange();
+		final String defaultModuleId = body.getDefaultModuleId();
 
 		SnomedRequests
 			.prepareUpdateRelationship(relationshipId)
@@ -246,7 +251,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			.setModifier(update.getModifier())
 			.setTypeId(update.getTypeId())
 			.setDestinationId(update.getDestinationId())
-			.build(repositoryId, branchPath, userId, commitComment)
+			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}

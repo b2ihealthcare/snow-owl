@@ -202,12 +202,14 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			
 			final Principal principal) {
 		
-		final String commitComment = body.getCommitComment();
+		final String userId = principal.getName();
 		
-		final String createdDescriptionId = body
-			.getChange()
-			.toRequestBuilder()
-			.build(repositoryId, branchPath, principal.getName(), commitComment)
+		final SnomedDescriptionRestInput change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId();
+			
+		final String createdDescriptionId = change.toRequestBuilder()
+			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -272,11 +274,12 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			final Principal principal) {
 
 		final String userId = principal.getName();
+		
 		final String commitComment = body.getCommitComment();
 		final SnomedDescriptionRestUpdate update = body.getChange();
-
-		SnomedRequests
-			.prepareUpdateDescription(descriptionId)
+		final String defaultModuleId = body.getDefaultModuleId();
+		
+		SnomedRequests.prepareUpdateDescription(descriptionId)
 			.setActive(update.isActive())
 			.setModuleId(update.getModuleId())
 			.setAssociationTargets(update.getAssociationTargets())
@@ -286,7 +289,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			.setTypeId(update.getTypeId())
 			.setTerm(update.getTerm())
 			.setLanguageCode(update.getLanguageCode())
-			.build(repositoryId, branchPath, userId, commitComment)
+			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 		
