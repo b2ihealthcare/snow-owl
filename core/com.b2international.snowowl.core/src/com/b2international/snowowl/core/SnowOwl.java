@@ -72,8 +72,8 @@ public final class SnowOwl {
 	private static final String DEFAULT_CONF_PATH = "configuration"; //$NON-NLS-1$
 	private static final String CONFIGURATION_FILE = "snowowl.yml"; //$NON-NLS-1$
 	private static final String DEFAULT_DATA_PATH = "resources"; //$NON-NLS-1$
+	private static final String LOG_CONFIG_FILE = "serviceability.xml"; //$NON-NLS-1$
 	
-	private static final Logger LOG = LoggerFactory.getLogger("snowowl");
 	
 	private AtomicBoolean running = new AtomicBoolean(false);
 	private AtomicBoolean preRunCompleted = new AtomicBoolean(false);
@@ -81,6 +81,7 @@ public final class SnowOwl {
 	private Plugins plugins;
 	private Environment environment;
 	private SnowOwlConfiguration configuration;
+	private Logger log;
 
 	private SnowOwl(Plugin...additionalPlugins) throws Exception {
 		final Path homePath = getHomePath();
@@ -88,6 +89,13 @@ public final class SnowOwl {
 		System.setProperty(SO_PATH_HOME, homePath.toString());
 		final Path confPath = getConfPath(homePath);
 		System.setProperty(SO_PATH_CONF, confPath.toString());
+
+		Path logConfigFile = confPath.resolve(LOG_CONFIG_FILE);
+		if (Files.exists(logConfigFile)) {
+			System.setProperty("logback.configurationFile", logConfigFile.toAbsolutePath().toString());
+		}
+		// initialize Logback and the first logger instance 
+		log = LoggerFactory.getLogger("snowowl");
 		
 		List<Plugin> plugins = ImmutableList.<Plugin>builder()
 			.addAll(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class))
@@ -103,7 +111,7 @@ public final class SnowOwl {
 		this.environment.services().registerService(Plugins.class, this.plugins);
 		// log environment and setting info
 		logEnvironment();
-		this.plugins.getPlugins().forEach(plugin -> LOG.info("loaded plugin [{}]", plugin));
+		this.plugins.getPlugins().forEach(plugin -> log.info("loaded plugin [{}]", plugin));
 	}
 	
 	private Path getHomePath() {
@@ -201,7 +209,7 @@ public final class SnowOwl {
 	 */
 	public SnowOwl bootstrap() throws Exception {
 		if (!isRunning()) {
-			LOG.info("Initializing...");
+			log.info("Initializing...");
 			this.plugins.init(this.configuration, this.environment);
 		}
 		return this;
@@ -217,9 +225,9 @@ public final class SnowOwl {
 	}
 	
 	private void logEnvironment() {
-		LOG.info(String.format("Home path: %s", this.environment.getHomePath()));
-		LOG.info(String.format("Config path: %s", this.environment.getConfigPath()));
-		LOG.info(String.format("Data path: %s", this.environment.getDataPath()));
+		log.info(String.format("Home path: %s", this.environment.getHomePath()));
+		log.info(String.format("Config path: %s", this.environment.getConfigPath()));
+		log.info(String.format("Data path: %s", this.environment.getDataPath()));
 	}
 
 	/**
@@ -269,14 +277,14 @@ public final class SnowOwl {
 			if (preRunRunnable != null) {
 				preRunRunnable.run();
 			}
-			LOG.info("Preparing to run Snow Owl...");
+			log.info("Preparing to run Snow Owl...");
 			this.plugins.run(configuration, environment);
 			checkApplicationState();
 			running.set(true);
 			this.plugins.postRun(configuration, environment);
-			LOG.info("Snow Owl successfully started.");
+			log.info("Snow Owl successfully started.");
 		} else {
-			LOG.info("Snow Owl is already running.");
+			log.info("Snow Owl is already running.");
 		}
 		return this;
 	}
@@ -314,7 +322,7 @@ public final class SnowOwl {
 	 */
 	public void shutdown() {
 		if (isRunning()) {
-			LOG.info("Snow Owl is shutting down.");
+			log.info("Snow Owl is shutting down.");
 			this.environment.services().dispose();
 			LifecycleUtil.deactivate(environment.container());
 			running.set(false);
