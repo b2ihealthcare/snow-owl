@@ -16,10 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.stream.Collectors.toSet;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -29,15 +31,22 @@ import org.snomed.otf.owltoolkit.domain.AxiomRepresentation;
 import org.snomed.otf.owltoolkit.domain.Relationship;
 
 import com.b2international.commons.options.Options;
+import com.b2international.commons.time.TimeUtil;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 /**
  * @since 6.14 
@@ -45,9 +54,34 @@ import com.google.common.base.Suppliers;
 public final class SnomedOWLExpressionConverter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedOWLExpressionConverter.class);
+	
 	private final BranchContext context;
-	private final Supplier<AxiomRelationshipConversionService> conversionService = Suppliers.memoize(() -> new AxiomRelationshipConversionService(getUngroupedRelationshipTypes()));
+	
+	private final LoadingCache<Branch, AxiomRelationshipConversionService> conversionServiceCache = CacheBuilder.newBuilder()
+			.expireAfterAccess(15L, TimeUnit.MINUTES)
+			.build(new CacheLoader<Branch, AxiomRelationshipConversionService>() {
+				@Override
+				public AxiomRelationshipConversionService load(Branch branch) throws Exception {
 
+					Stopwatch watch = Stopwatch.createStarted();
+
+					Set<Long> ungroupedAttributes = getUngroupedAttributes();
+					Set<Long> objectAttributes = getObjectAttributes();
+					Set<Long> dataAttributes = getDataAttributes();
+
+					AxiomRelationshipConversionService conversionService = new AxiomRelationshipConversionService(
+							ungroupedAttributes,
+							objectAttributes,
+							dataAttributes);
+
+					LOG.debug(
+							"SNOMED OWL Toolkit axiom conversion service initialization took {} (ungrouped attributes {}, model objects {}, model attributes {})",
+							TimeUtil.toString(watch), ungroupedAttributes.size(), objectAttributes.size(), dataAttributes.size());
+
+					return conversionService;
+				}
+			});
+	
 	public SnomedOWLExpressionConverter(BranchContext context) {
 		this.context = checkNotNull(context);
 	}
@@ -60,7 +94,7 @@ public final class SnomedOWLExpressionConverter {
 		
 		try {
 			final Long referencedComponentIdLong = Long.valueOf(referencedComponentId);
-			final AxiomRepresentation axiomRepresentation = conversionService.get().convertAxiomToRelationships(referencedComponentIdLong, owlExpression);
+			final AxiomRepresentation axiomRepresentation = conversionServiceCache.get(context.branch()).convertAxiomToRelationships(referencedComponentIdLong, owlExpression);
 			
 			boolean gci = false;
 			Map<Integer, List<Relationship>> relationships = null;
@@ -94,7 +128,7 @@ public final class SnomedOWLExpressionConverter {
 		}
 	}
 
-	private Set<Long> getUngroupedRelationshipTypes() {
+	private Set<Long> getUngroupedAttributes() {
 		return SnomedRequests.prepareSearchMember()
 			.all()
 			.filterByActive(true)
@@ -111,6 +145,32 @@ public final class SnomedOWLExpressionConverter {
 			.collect(Collectors.toSet());
 	}
 	
+	private Set<Long> getObjectAttributes() {
+		return SnomedRequests.prepareSearchConcept()
+			.all()
+			.filterByActive(true)
+			.filterByStatedAncestor(Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE)
+			.setFields(SnomedConceptDocument.Fields.ID)
+			.build()
+			.execute(context)
+			.stream()
+			.map(SnomedConcept::getId)
+			.map(Long::valueOf)
+			.collect(toSet());
+	}
 	
+	private Set<Long> getDataAttributes() {
+		return SnomedRequests.prepareSearchConcept()
+			.all()
+			.filterByActive(true)
+			.filterByStatedAncestor(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE)
+			.setFields(SnomedConceptDocument.Fields.ID)
+			.build()
+			.execute(context)
+			.stream()
+			.map(SnomedConcept::getId)
+			.map(Long::valueOf)
+			.collect(toSet());
+	}
 	
 }
