@@ -274,6 +274,47 @@
 					</beforeInstallation>
 				</configuration>
 			</plugin>
+			<!-- Create deb -->
+			<plugin>
+				<groupId>org.vafer</groupId>
+				<artifactId>jdeb</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>build-deb-file</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jdeb</goal>
+						</goals>
+						<configuration>
+							<deb>${project.build.directory}/${product.rootFolder}-all.deb</deb>
+							<controlDir>${project.basedir}/packages/deb/control</controlDir>
+							<snapshotExpand>true</snapshotExpand>
+							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
+							<verbose>true</verbose>
+							<classifier>all</classifier>
+							<signPackage>false</signPackage>
+							<skipPOMs>false</skipPOMs>
+							<dataSet>
+								<data>
+									<src>${project.basedir}/target/server</src>
+									<type>directory</type>
+									<mapper>
+										<type>perm</type>
+										<prefix>/opt/termserver</prefix>
+									</mapper>
+								</data>
+								<data>
+									<src>${project.basedir}/deb/supervisor.conf</src>
+									<dst>/etc/supervisor/conf.d/snowowl.conf</dst>
+									<type>file</type>
+									<conffile>true</conffile>
+								</data>
+							</dataSet>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

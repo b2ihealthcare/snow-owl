@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+#For debugging uncomment these two lines
+set -x
+echo $*
+
+APP_NAME=[[artifactId]]
+
+if ! getent passwd $APP_NAME >/dev/null; then
+  adduser --quiet --system --no-create-home --group \
+    --home /var/opt/$APP_NAME --shell /bin/false $APP_NAME
+fi
+
+supervisorctl stop $APP_NAME 2>&1 >/dev/null || true

@@ -1,0 +1,23 @@
+#!/bin/sh -e
+
+#For debugging uncomment these two lines
+set -x
+echo $*
+
+VERSION_DIR=/opt/sca
+VERSION_FILE=$VERSION_DIR/version.txt
+
+#make sure VERSION_DIR exists
+test -d $VERSION_DIR || mkdir $VERSION_DIR
+
+# Record package version number
+echo [[version]] > $VERSION_FILE
+
+if [ "$1" = "configure" ]; then
+    chmod +x /opt/termserver/bin/*.sh
+fi
+
+APP_NAME=[[artifactId]]
+
+supervisorctl update $APP_NAME 2>&1 >/dev/null
+supervisorctl start $APP_NAME 2>&1 >/dev/null
