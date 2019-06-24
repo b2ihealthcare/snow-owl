@@ -8,93 +8,37 @@
 		<format>tar.gz</format>
 		<format>dir</format> <!-- Required for packaging to RPM -->
 	</formats>
-	<!-- Virgo archive base content -->
 	<fileSets>
+		<!-- Equinox server base content -->
 		<fileSet>
-			<directory>${project.basedir}/target/virgo-tomcat-server-3.7.2.RELEASE
-			</directory>
-			<outputDirectory></outputDirectory>
-			<useDefaultExcludes>true</useDefaultExcludes>
-			<!-- The following files will be overwritten or unnecessary in the resulting archive -->
+			<directory>${linux.product.path}/configuration</directory>
+			<outputDirectory>configuration</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${linux.product.path}/plugins</directory>
+			<outputDirectory>plugins</outputDirectory>
 			<excludes>
-				<!-- Exclude Virgo specific HTML and XML files -->
-				<exclude>**/About.html</exclude>
-				<exclude>**/AboutKernel.html</exclude>
-				<exclude>**/AboutNano.html</exclude>
-				<exclude>**/epl-v10.html</exclude>
-				<exclude>**/notice.html</exclude>
-				<exclude>**/artifacts.xml</exclude>
-				<!-- Exclude updated win32 batch files -->
-				<exclude>**/dmk.bat</exclude>
-				<exclude>**/startup.bat</exclude>
-				<!-- Exclude all *.sh file, as we will add 755 permission later during copy -->
-				<exclude>**/*.sh</exclude>
-				<exclude>**/java-server.profile</exclude>
-				<exclude>**/org.eclipse.virgo.kernel.userregion.properties</exclude>
-				<exclude>**/org.eclipse.virgo.kernel.users.properties</exclude>
-				<exclude>**/serviceability.xml</exclude>
-				<exclude>**/org.eclipse.virgo.web.properties</exclude>
-				<exclude>**/tomcat-server.xml</exclude>
-				<!-- Remove splash app -->
-				<exclude>**/org.eclipse.virgo.apps.splash_3.7.2.RELEASE.jar
-				</exclude>
-				<exclude>repository/ext/osgi.console.properties</exclude>
-				<exclude>plugins/org.apache.sshd.core_0.5.0.v201108120515.jar</exclude>
+				<exclude>org.eclipse.equinox.launcher.*</exclude>
 			</excludes>
 		</fileSet>
-		<!-- Common configuration -->
+		<!-- Common files -->		
 		<fileSet>
 			<directory>${project.basedir}/assembly/common</directory>
 			<outputDirectory></outputDirectory>
-			<useDefaultExcludes>true</useDefaultExcludes>
 			<excludes>
 				<!-- Exclude all *.sh file, as we will add 755 permission later during 
 					copy -->
 				<exclude>**/*.sh</exclude>
 			</excludes>
 		</fileSet>
-		<!-- Copy *.sh files from Virgo default folder, except dmk.sh and startup.sh -->
+		<!-- Copy *.sh from common folder -->
 		<fileSet>
-			<directory>${project.basedir}/target/virgo-tomcat-server-3.7.2.RELEASE
-			</directory>
+			<directory>${project.basedir}/assembly/common</directory>
 			<outputDirectory></outputDirectory>
-			<useDefaultExcludes>true</useDefaultExcludes>
 			<fileMode>0755</fileMode>
 			<includes>
 				<include>**/*.sh</include>
 			</includes>
-			<excludes>
-				<exclude>**/dmk.sh</exclude>
-				<exclude>**/startup.sh</exclude>
-			</excludes>
-		</fileSet>
-		<!-- Copy dmk.sh and startup.sh from common folder -->
-		<fileSet>
-			<directory>${project.basedir}/assembly/common</directory>
-			<outputDirectory></outputDirectory>
-			<useDefaultExcludes>true</useDefaultExcludes>
-			<fileMode>0755</fileMode>
-			<includes>
-				<include>**/dmk.sh</include>
-				<include>**/startup.sh</include>
-				<include>**/snowowl*.sh</include>
-			</includes>
-		</fileSet>
-		<!-- Application bundles to repository/usr -->
-		<fileSet>
-			<directory>${project.basedir}/target/repository/plugins</directory>
-			<outputDirectory>repository/usr</outputDirectory>
-			<useDefaultExcludes>true</useDefaultExcludes>
-			<!-- Make sure we exclude already existing or unnecessary bundles -->
-			<excludes>
-				<exclude>**/*osgi.enterprise*.jar</exclude>
-				<exclude>**/*system.bundle.package.exporter*.jar</exclude>
-				<exclude>org.slf4j.api*.jar</exclude>
-				<exclude>org.slf4j.logback*.jar</exclude>
-				<exclude>*logback*.jar</exclude>
-				<exclude>javax.el*.jar</exclude>
-				<exclude>org.apache.el*.jar</exclude>
-			</excludes>
 		</fileSet>
 		<!-- Copy release files from the ROOT of the repository -->
 		<fileSet>
@@ -107,19 +51,13 @@
 			</includes>
 		</fileSet>
 	</fileSets>
-	<!-- Copy updated SSHD bundle that fixes SSH connection from newer, smarter clients --> 
+	<!-- Copy extra dependencies --> 
 	<dependencySets>
-		<dependencySet>
-			<includes>
-				<include>org.apache.sshd:sshd-core</include>
-			</includes>
-			<outputDirectory>plugins</outputDirectory>
-		</dependencySet>
 		<dependencySet>
 			<includes>
 				<include>org.semanticweb.elk:elk-protege</include>
 			</includes>
-			<outputDirectory>repository/usr</outputDirectory>
+			<outputDirectory>plugins</outputDirectory>
 		</dependencySet>
 	</dependencySets>
 </assembly>
