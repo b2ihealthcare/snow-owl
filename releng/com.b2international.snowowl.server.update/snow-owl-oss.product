@@ -9,7 +9,7 @@
    <launcherArgs>
       <programArgs>-console -consoleLog
       </programArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms6g -Xmx6g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=8080 -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch
+      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms6g -Xmx6g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=8080 -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
       </vmArgsMac>
