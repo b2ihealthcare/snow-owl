@@ -86,7 +86,7 @@ public final class SnomedOWLExpressionConverter {
 		
 		try {
 			final Long referencedComponentIdLong = Long.valueOf(referencedComponentId);
-			final AxiomRepresentation axiomRepresentation = conversionService.get().convertAxiomToRelationships(referencedComponentIdLong, owlExpression);
+			final AxiomRepresentation axiomRepresentation = conversionService.get().convertAxiomToRelationships(owlExpression);
 			
 			boolean gci = false;
 			Map<Integer, List<Relationship>> relationships = null;
