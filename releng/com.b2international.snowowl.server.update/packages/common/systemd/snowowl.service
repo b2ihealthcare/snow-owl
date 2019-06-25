@@ -1,6 +1,6 @@
 [Unit]
 Description=Snow Owl
-Documentation=https://b2i.gitbook.io/snow-owl/
+Documentation=https://docs.b2i.sg/snow-owl/
 Wants=network-online.target
 After=network-online.target
 
