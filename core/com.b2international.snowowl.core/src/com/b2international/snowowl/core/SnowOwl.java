@@ -99,6 +99,7 @@ public final class SnowOwl {
 		
 		// configure Jetty sysprops
 		System.setProperty("jetty.home", confPath.toAbsolutePath().toString());
+		System.setProperty("jetty.etc.config.urls", "jetty.xml,jetty-http.xml,jetty-deployer.xml");
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.Slf4jLog");
 		
 		List<Plugin> plugins = ImmutableList.<Plugin>builder()

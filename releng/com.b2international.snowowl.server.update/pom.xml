@@ -348,7 +348,7 @@
 												<include>users</include>
 												<include>snowowl.yml</include>
 												<include>serviceability.xml</include>
-												<include>etc/jetty*.xml</include>
+												<include>jetty*.xml</include>
 											</includes>
 										</resource>
 									</resources>
