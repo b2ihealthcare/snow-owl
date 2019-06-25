@@ -281,14 +281,14 @@
 				<version>1.7</version>
 				<executions>
 					<execution>
-						<id>build-deb-file</id>
+						<id>generate-deb</id>
 						<phase>package</phase>
 						<goals>
 							<goal>jdeb</goal>
 						</goals>
 						<configuration>
 							<deb>${project.build.directory}/${product.rootFolder}-all.deb</deb>
-							<controlDir>${project.basedir}/packages/deb/control</controlDir>
+							<controlDir>${project.basedir}/packages/common/scripts</controlDir>
 							<snapshotExpand>true</snapshotExpand>
 							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
 							<verbose>true</verbose>
@@ -296,20 +296,105 @@
 							<signPackage>false</signPackage>
 							<skipPOMs>false</skipPOMs>
 							<dataSet>
+								<!-- Installation directory -->
 								<data>
-									<src>${project.basedir}/target/server</src>
+									<src>${packageFiles}</src>
+									<type>directory</type>
+									<excludes>serviceability/**,resources/**,.gitignore</excludes>
+									<mapper>
+										<type>perm</type>
+										<prefix>/usr/share/snowowl</prefix>
+										<user>snowowl</user>
+										<group>snowowl</group>
+									</mapper>
+								</data>
+								<!-- Configuration directory -->
+								<data>
+									<src>${packageFiles}/configuration</src>
+									<dst>/etc/snowowl</dst>
+									<type>directory</type>
+									<conffile>true</conffile>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0660</filemode>
+									</mapper>
+								</data>
+								<!-- Data directory -->
+								<data>
+									<src>${packageFiles}/resources</src>
+									<dst>/var/lib/snowowl</dst>
+									<type>directory</type>
+									<excludes>.gitignore</excludes>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0755</filemode>
+										<dirmode>0755</dirmode>
+									</mapper>
+								</data>	
+								<data>
+									<linkName>/usr/share/snowowl/resources</linkName>
+									<linkTarget>/var/lib/snowowl</linkTarget>
+									<type>link</type>
+									<symlink>true</symlink>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+									</mapper>
+								</data>
+								<!-- Log directory -->
+								<data>
+									<linkName>/usr/share/snowowl/serviceability</linkName>
+									<linkTarget>/var/log/snowowl</linkTarget>
+									<type>link</type>
+									<symlink>true</symlink>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0644</filemode>
+										<dirmode>0755</dirmode>
+									</mapper>
+								</data>
+								<!-- SysV configuration -->
+								<entry>
+									<src>${basedir}/packages/deb/init.d/</src>
 									<type>directory</type>
 									<mapper>
 										<type>perm</type>
-										<prefix>/opt/termserver</prefix>
+										<prefix>/etc/init.d</prefix>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0750</filemode>
 									</mapper>
-								</data>
-								<data>
-									<src>${project.basedir}/deb/supervisor.conf</src>
-									<dst>/etc/supervisor/conf.d/snowowl.conf</dst>
+								</entry>
+								<!-- systemd configuration -->
+								<entry>
+									<src>${basedir}/packages/common/systemd/sysctl/snowowl.conf</src>
+									<type>file</type>
+									<dst>/usr/lib/sysctl.d/snowowl.conf</dst>
+									<conffile>true</conffile>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0644</filemode>
+									</mapper>
+								</entry>
+								<entry>
+									<src>${basedir}/packages/common/systemd/snowowl.service</src>
+									<dst>/usr/lib/systemd/system/snowowl.service</dst>
 									<type>file</type>
 									<conffile>true</conffile>
-								</data>
+									<mapper>
+										<type>perm</type>
+										<filemode>0644</filemode>
+									</mapper>
+								</entry>
 							</dataSet>
 						</configuration>
 					</execution>
