@@ -11,9 +11,9 @@
 	</appender>
 	
 	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${so.home}/serviceability/logs/snow-owl/log.log</file>
+		<file>${so.home}/serviceability/logs/log.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>serviceability/logs/snow-owl/log_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<fileNamePattern>serviceability/logs/log_%d{yyyy-MM-dd}.log</fileNamePattern>
 			<!-- keep 90 days' worth of history -->
       		<maxHistory>90</maxHistory>
 		</rollingPolicy>
