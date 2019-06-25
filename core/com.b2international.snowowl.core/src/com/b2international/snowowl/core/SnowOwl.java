@@ -97,6 +97,10 @@ public final class SnowOwl {
 		// initialize Logback and the first logger instance 
 		log = LoggerFactory.getLogger("snowowl");
 		
+		// configure Jetty sysprops
+		System.setProperty("jetty.home", confPath.toAbsolutePath().toString());
+		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.Slf4jLog");
+		
 		List<Plugin> plugins = ImmutableList.<Plugin>builder()
 			.addAll(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class))
 			.add(additionalPlugins != null ? additionalPlugins : new Plugin[]{})

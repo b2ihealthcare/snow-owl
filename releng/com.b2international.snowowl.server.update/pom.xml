@@ -175,7 +175,7 @@
 						</ruleset>
 					</rulesets>
 					<entries>
-					<!-- Installation directory -->
+						<!-- Installation directory -->
 						<entry>
 							<name>/usr/share/snowowl</name>
 							<user>snowowl</user>
@@ -348,6 +348,7 @@
 												<include>users</include>
 												<include>snowowl.yml</include>
 												<include>serviceability.xml</include>
+												<include>etc/jetty*.xml</include>
 											</includes>
 										</resource>
 									</resources>
