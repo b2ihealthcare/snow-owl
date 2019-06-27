@@ -26,6 +26,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.bulkUpdateMembers;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeToAcceptable;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createDescriptionRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
@@ -482,7 +483,88 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		.statusCode(200)
 		.body("pt.id", equalTo(descriptionId));
 	}
+	
+	@Test
+	public void updateAcceptabilityWithDefaultModule() throws Exception {
+		// All preferred descriptions in the UK language reference set should be changed to acceptable on SNOMED CT Root
+		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_UK);
+		
+		// Add new UK preferred term to SNOMED CT Root
+		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		
+		// All preferred descriptions in the US language reference set should be changed to acceptable on SNOMED CT Root
+		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_US);
+		
+		// Change UK preferred synonym to US preferred, UK acceptable, with default module ID parameter
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("acceptability", ImmutableMap.of(
+						Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
+						Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED))
+				.put("commitComment", "Changed UK, added US acceptability to description")
+				.put("defaultModuleId", "449081005") // SNOMED CT Spanish edition module
+				.build();
+		
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+				.statusCode(204);
+		
+		// Check language member count and module
+		SnomedReferenceSetMembers members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
+				.statusCode(200)
+				.body("members.items.referenceSetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				.extract()
+				.as(SnomedDescription.class)
+				.getMembers();
+		
+		assertEquals(2, members.getTotal());
+		
+		members.forEach(m -> assertEquals(
+				"Reference set member should be placed in the default module", "449081005", m.getModuleId()));
 
+		getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "pt()")
+				.statusCode(200)
+				.body("pt.id", equalTo(descriptionId));
+	}
+
+	@Test
+	public void updateAcceptabilityWithMemberReactivation() throws Exception {
+		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_UK);
+		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+
+		SnomedReferenceSetMembers members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
+				.extract()
+				.as(SnomedDescription.class)
+				.getMembers();
+
+		// Inactivate the reference set member
+		members.forEach(m -> {
+			Map<?, ?> requestBody = ImmutableMap.builder()
+					.put("active", false)
+					.put("commitComment", "Inactivate language reference set member")
+					.build();
+			
+			updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, m.getId(), requestBody, false).statusCode(204);
+		});
+		
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("acceptability", ImmutableMap.of(
+						Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED, 
+						Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED))
+				.put("commitComment", "Reactivated UK, added US acceptability to description")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		
+		members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
+				.body("members.items.referenceSetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				.extract().as(SnomedDescription.class)
+				.getMembers();
+
+		assertEquals(2, members.getTotal());
+
+		members.forEach(m -> assertEquals(
+				"Reference set member should be active", Boolean.TRUE, m.isActive()));
+	}
+	
 	@Test
 	public void updateAcceptabilityWithRemove() throws Exception {
 		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_US);
