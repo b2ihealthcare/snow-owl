@@ -97,6 +97,8 @@ public abstract class SnomedConstants {
 		public static final String ROOT_CONCEPT = "138875005";
 		public static final String IS_A = "116680003";
 		public static final String FINDING_SITE = "363698007";
+		public static final String PROCEDURE_SITE = "363704007";
+		public static final String PROCEDURE_SITE_INDIRECT = "405814001";
 		public static final String METHOD = "260686004";
 		public static final String MORPHOLOGY = "116676008";
 		public static final String PROCEDURE_SITE_DIRECT = "405813007";
@@ -138,6 +140,9 @@ public abstract class SnomedConstants {
 		public static final String LINKAGE = "106237007";
 		public static final String PHARMACEUTICAL = "373873005";
 		public static final String PHYSICAL_OBJECT = "260787004";
+		public static final String PROCEDURE = "71388002";
+		public static final String COMBINED_SITE = "116007004";
+		
 		public static final String QUALIFIER_VALUE_TOPLEVEL_CONCEPT = "362981000";
 		
 		public static final String NOT_REFINABLE = "900000000000007000";
