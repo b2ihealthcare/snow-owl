@@ -159,6 +159,11 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		for (final Importer importer : importers) {
 			units.addAll(importer.getImportUnits(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE)));
 		}
+
+		// Exit early if there is no sub-import unit to import
+		if (units.isEmpty()) {
+			return new SnomedCompositeImportUnit(this, units);	
+		}
 		
 		if (ContentSubType.SNAPSHOT.equals(importContext.getContentSubType())) {
 			AbstractImportUnit latestUnit = EffectiveTimeUnitOrdering.INSTANCE.max(units);
