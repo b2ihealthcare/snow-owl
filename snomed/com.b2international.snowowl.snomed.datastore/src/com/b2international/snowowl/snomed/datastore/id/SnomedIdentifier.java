@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,14 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
  * @since 4.0
- * @see <a href="https://confluence.ihtsdotools.org/display/DOCRELFMT/5.+Representing+SNOMED+CT+identifiers">Representing SNOMED CT identifiers</a>
+ * @see <a href="https://confluence.ihtsdotools.org/display/DOCRELFMT/6+SNOMED+CT+Identifiers">Representing SNOMED CT identifiers</a>
  */
 public interface SnomedIdentifier extends Serializable {
 
+	/**
+	 * @return the item identifier part of this SCTID.
+	 * @see <a href="https://confluence.ihtsdotools.org/display/DOCRELFMT/6.7+Item-Identifier+Digits">Item-Identifier Digits</a>
+	 */
 	public long getItemId();
 
 	/**
@@ -99,4 +103,11 @@ public interface SnomedIdentifier extends Serializable {
 	 * @return the category of the component identified by this SCTID
 	 */
 	public ComponentCategory getComponentCategory();
+	
+	/**
+	 * @return the SCT ID in String format.
+	 */
+	@Override
+	String toString();
+	
 }
