@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.io.Serializable;
 import java.util.function.Function;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -27,11 +28,11 @@ import com.b2international.snowowl.snomed.Component;
  */
 public final class ModuleRequest<R> extends DelegatingRequest<TransactionContext, TransactionContext, R> {
 
-	public interface ModuleIdFunction extends Function<Component, String> { }
+	public interface ModuleIdProvider extends Function<Component, String>, Serializable { }
 
 	private static final long serialVersionUID = 1L;
 	
-	private final ModuleIdFunction moduleIdFunction;
+	private final ModuleIdProvider moduleIdFunction;
 
 	public ModuleRequest(final Request<TransactionContext, R> next) {
 		this(next, null);
@@ -51,7 +52,7 @@ public final class ModuleRequest<R> extends DelegatingRequest<TransactionContext
 	@Override
 	public R execute(final TransactionContext context) {
 		return next(context.inject()
-				.bind(ModuleIdFunction.class, moduleIdFunction)
+				.bind(ModuleIdProvider.class, moduleIdFunction)
 				.build());
 	}
 }

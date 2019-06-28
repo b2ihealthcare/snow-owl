@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdFunction;
+import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.google.common.collect.ImmutableList;
 
@@ -105,7 +105,7 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 	private void updateInactivationReason(final TransactionContext context, final C component) {
 		final List<SnomedAttributeValueRefSetMember> existingMembers = ImmutableList.copyOf(component.getInactivationIndicatorRefSetMembers());
-		final ModuleIdFunction moduleIdSupplier = context.service(ModuleIdFunction.class);
+		final ModuleIdProvider moduleIdSupplier = context.service(ModuleIdProvider.class);
 		boolean firstMemberProcessed = false;
 		
 		// Check if there is at least one existing member

@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdFunction;
+import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -106,7 +106,7 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 	private void updateAssociationTargets(final TransactionContext context, final C component) {
 		final List<SnomedAssociationRefSetMember> existingMembers = Lists.newArrayList(component.getAssociationRefSetMembers());
 		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
-		final ModuleIdFunction moduleIdFunction = context.service(ModuleIdFunction.class);
+		final ModuleIdProvider moduleIdFunction = context.service(ModuleIdProvider.class);
 		
 		final Iterator<SnomedAssociationRefSetMember> memberIterator = existingMembers.iterator();
 		while (memberIterator.hasNext()) {

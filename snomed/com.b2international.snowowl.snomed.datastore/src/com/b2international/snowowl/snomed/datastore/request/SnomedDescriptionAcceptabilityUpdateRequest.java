@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdFunction;
+import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
@@ -69,7 +69,7 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 	private void updateAcceptabilityMap(final TransactionContext context, final Description description, Map<String, Acceptability> acceptabilityMap) {
 		final List<SnomedLanguageRefSetMember> existingMembers = newArrayList(description.getLanguageRefSetMembers());
 		final Map<String, Acceptability> newLanguageMembersToCreate = newHashMap(acceptabilityMap);
-		final ModuleIdFunction moduleIdSupplier = context.service(ModuleIdFunction.class);
+		final ModuleIdProvider moduleIdSupplier = context.service(ModuleIdProvider.class);
 		
 		for (SnomedLanguageRefSetMember existingMember : existingMembers) {
 			final String languageReferenceSetId = existingMember.getRefSetIdentifierId();
