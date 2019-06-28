@@ -112,6 +112,8 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 			final SnomedRefSetMember member = (SnomedRefSetMember) t;
 			member.setUuid(id);
 			member.setActive(active);
+			// check existence of moduleId before using it
+			context.lookup(moduleId, Concept.class);
 			member.setModuleId(moduleId);
 			
 			if (effectiveTime == null) {
