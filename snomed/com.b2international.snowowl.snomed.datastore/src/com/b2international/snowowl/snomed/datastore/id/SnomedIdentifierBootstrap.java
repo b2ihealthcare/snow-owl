@@ -83,12 +83,17 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		final File reservationsDirectory = env.getConfigDirectory().toPath().resolve("reservations").toFile();
 		if (reservationsDirectory.exists() && reservationsDirectory.isDirectory()) {
 			for (File reservationFile : reservationsDirectory.listFiles()) {
-				try {
-					final Set<String> idsToExclude = Files.lines(reservationFile.toPath(), Charsets.UTF_8).collect(Collectors.toSet());
-					final String reservationFileName = reservationFile.getName();
-					reservationService.create(reservationFileName.substring(0, reservationFileName.indexOf(".")), new IdSetReservation(idsToExclude));
-				} catch (IOException e) {
-					e.printStackTrace();
+				final String reservationFileName = reservationFile.getName();
+				if (reservationFileName.endsWith(".txt")) {
+					try {
+						final Set<String> idsToExclude = Files.lines(reservationFile.toPath(), Charsets.UTF_8)
+								.filter(SnomedIdentifiers::isValid)
+								.collect(Collectors.toSet());
+						
+						reservationService.create(com.google.common.io.Files.getNameWithoutExtension(reservationFileName), new IdSetReservation(idsToExclude));
+					} catch (IOException e) {
+						LOGGER.error(String.format("Could not read file '%s'", reservationFileName));
+					}
 				}
 			}
 		}
