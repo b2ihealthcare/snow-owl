@@ -275,6 +275,9 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		waitForReviewJob(reviewId).body("status", equalTo(ReviewStatus.CURRENT.name()));
 
 		createNewConcept(branchPath);
+		
+		// wait .5s before checking review state
+		Thread.sleep(500);
 
 		getReview(reviewId).statusCode(200).body("status", equalTo(ReviewStatus.STALE.toString()));		
 	}
