@@ -17,11 +17,13 @@ package com.b2international.snowowl.snomed.datastore.id.reservations;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.IdSetReservation;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInStoreReservation;
 import com.google.inject.Provider;
@@ -61,6 +63,16 @@ public abstract class Reservations {
 	 */
 	public static Reservation uniqueInStore(final Provider<IEventBus> bus) {
 		return new UniqueInStoreReservation(bus);
+	}
+	
+	/**
+	 * Creates a {@link Reservation} for the given component identifiers.
+	 * 
+	 * @param componentIds to reserve
+	 * @return a {@link Reservation} instance for the given identifiers
+	 */
+	public static Reservation idSetReservation(final Set<String> componentIds) {
+		return new IdSetReservation(componentIds);
 	}
 
 }
