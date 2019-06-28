@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.commons.collections.Collections3;
@@ -63,7 +62,7 @@ public final class ValidationWhiteList implements Serializable {
 	@Text(analyzer = Analyzers.TOKENIZED)
 	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
 	@Keyword(alias="original")
-	private List<String> affectedComponentLabels = Collections.emptyList();
+	private final List<String> affectedComponentLabels;
 	
 	private transient ComponentIdentifier componentIdentifier;
 	
@@ -72,8 +71,9 @@ public final class ValidationWhiteList implements Serializable {
 			final String ruleId,
 			final String reporter,
 			final long createdAt,
-			final ComponentIdentifier componentIdentifier) {
-		this(id, ruleId, reporter, createdAt, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+			final ComponentIdentifier componentIdentifier,
+			final List<String> affectedComponentLabels) {
+		this(id, ruleId, reporter, createdAt, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId(), affectedComponentLabels);
 	}
 
 	@JsonCreator
@@ -83,13 +83,15 @@ public final class ValidationWhiteList implements Serializable {
 			@JsonProperty("reporter") final String reporter,
 			@JsonProperty("createdAt") final long createdAt,
 			@JsonProperty("terminologyComponentId") final short terminologyComponentId,
-			@JsonProperty("componentId") final String componentId) {
+			@JsonProperty("componentId") final String componentId,
+			@JsonProperty("affectedComponentLabels") final List<String> affectedComponentLabels) {
 		this.id = id;
 		this.ruleId = ruleId;
 		this.reporter = reporter;
 		this.createdAt = createdAt;
 		this.terminologyComponentId = terminologyComponentId;
 		this.componentId = componentId;
+		this.affectedComponentLabels = Collections3.toImmutableList(affectedComponentLabels);
 	}
 	
 	public String getId() {
@@ -122,10 +124,6 @@ public final class ValidationWhiteList implements Serializable {
 		return affectedComponentLabels;
 	}
 	
-	public void setAffectedComponentLabels(List<String> affectedComponentLabels) {
-		this.affectedComponentLabels = Collections3.toImmutableList(affectedComponentLabels);
-	}
-
 	public String getReporter() {
 		return reporter;
 	}

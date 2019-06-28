@@ -40,9 +40,7 @@ final class ValidationWhiteListCreateRequest implements Request<ValidationReposi
 	@Override
 	public String execute(ValidationRepositoryContext context) {
 		final String id = UUID.randomUUID().toString();
-		ValidationWhiteList whiteList = new ValidationWhiteList(id, ruleId, reporter, createdAt, componentIdentifier);
-		whiteList.setAffectedComponentLabels(affectedComponentLabels);
-		context.save(id, whiteList);
+		context.save(id, new ValidationWhiteList(id, ruleId, reporter, createdAt, componentIdentifier, affectedComponentLabels));
 		return id;
 	}
 
