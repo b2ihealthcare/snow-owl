@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.datastore.id;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
@@ -36,9 +42,11 @@ import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrat
 import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.IdSetReservation;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInStoreReservation;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 
 /**
  * @since 4.5
@@ -56,7 +64,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		env.services().registerService(ISnomedIdentifierReservationService.class, reservationService);
 
-		registerTerminologyBrowser(env, reservationService);
+		registerDefaultReservations(env, reservationService);
 	}
 
 	@Override
@@ -68,9 +76,28 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		}
 	}
 
-	private void registerTerminologyBrowser(final Environment env, final ISnomedIdentifierReservationService reservationService) {
+	private void registerDefaultReservations(final Environment env, final ISnomedIdentifierReservationService reservationService) {
 		final UniqueInStoreReservation storeReservation = new UniqueInStoreReservation(env.provider(IEventBus.class));
 		reservationService.create(STORE_RESERVATIONS, storeReservation);
+		
+		final File reservationsDirectory = env.getConfigDirectory().toPath().resolve("reservations").toFile();
+		if (reservationsDirectory.exists() && reservationsDirectory.isDirectory()) {
+			for (File reservationFile : reservationsDirectory.listFiles()) {
+				final String reservationFileName = reservationFile.getName();
+				if (reservationFileName.endsWith(".txt")) {
+					try {
+						final Set<String> idsToExclude = Files.lines(reservationFile.toPath(), Charsets.UTF_8)
+								.filter(SnomedIdentifiers::isValid)
+								.collect(Collectors.toSet());
+						
+						reservationService.create(com.google.common.io.Files.getNameWithoutExtension(reservationFileName), new IdSetReservation(idsToExclude));
+					} catch (IOException e) {
+						LOGGER.error(String.format("Could not read file '%s'", reservationFileName));
+					}
+				}
+			}
+		}
+		
 	}
 
 	private void checkIdGenerationSource(final SnowOwlConfiguration configuration) {
@@ -105,3 +132,4 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	}
 
 }
+
