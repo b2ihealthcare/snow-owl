@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.importer.rf2.command;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.Set;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
@@ -27,50 +28,51 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.importer.ImportException;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.google.common.collect.ImmutableSet;
 
 public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 
+	private static final String BRANCH = "-b";
+	private static final String TYPE = "-t";
+	private static final String CODESYSTEM = "-c";
+	private static final String EXCLUSION = "-e";
+	
+	private static final Set<String> OPTION_KEYS = ImmutableSet.of(BRANCH, TYPE, CODESYSTEM, EXCLUSION);
+	
 	public ImportRefSetCommand() {
 		super(
 				"rf2_refset",
-				"<path> ... -t <type> [-x <excludedId> ...]",
+				"<path> ... [-t <type>] [-b <branch>] [-c <code_system_short_name>] [-x <excludedId> ...]",
 				"Imports reference sets in RF2 format",
 				new String[] {
 					"<path> ...\t\tSpecifies the file or files to be used for importing.",
-					"-t <type>\t\tSets the import type (FULL, SNAPSHOT, or DELTA).",
-					"-x <excludedId> ...\tExcludes the specified reference set IDs from the import. All other reference sets will be imported."
+					BRANCH + " <branch>\t\tSets the branch path to use for the import. Defaults to the 'MAIN' branch.",
+					TYPE + " <type>\t\tSets the import type (FULL, SNAPSHOT, or DELTA). Defaults to 'DELTA'.",
+					CODESYSTEM + " <code_system_short_name>\t\tThe selected code system short name where you would like to import the refset(s). Defaults to 'SNOMEDCT'.",
+					EXCLUSION + " <excludedId> ...\tExcludes the specified reference set IDs from the import. All other reference sets will be imported. Defaults to no exclusion IDs."
 				});
 	}
 	
 	@Override
 	public void execute(final CommandInterpreter interpreter) {
 		
-		// TODO should make this command branch path aware as well
-		boolean isTerminologyAvailable = SnomedRequests.prepareSearchConcept()
-				.setLimit(0)
-				.filterById(Concepts.ROOT_CONCEPT)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync().getTotal() > 0;
-		
-		if (!isTerminologyAvailable) {
-			interpreter.println("SNOMED CT terminology is not present, a core release has to be imported first.");
-			return;
-		}
-		
-		final ImportConfiguration configuration = new ImportConfiguration(Branch.MAIN_PATH);
+		final ImportConfiguration configuration = new ImportConfiguration();
+		configuration.setBranchPath(Branch.MAIN_PATH);
+		configuration.setCodeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		configuration.setContentSubType(ContentSubType.DELTA);
+		configuration.setSourceKind(ImportSourceKind.FILES);
 		
 		String arg = null;
 		
 		while ((arg = interpreter.nextArgument()) != null) {
 			
-			if ("-x".equals(arg) || "-t".equals(arg)) {
+			if (OPTION_KEYS.contains(arg)) {
 				break;
 			}
 			
@@ -100,40 +102,56 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 		
 		ContentSubType contentSubType = null;
 		
-		if ("-t".equals(arg)) {
-			
-			final String subType = interpreter.nextArgument();
-			boolean subTypeSet = false;
-			
-			for (final ContentSubType candidate : ContentSubType.values()) {
-				if (candidate.name().equalsIgnoreCase(subType)) {
-					contentSubType = candidate;
-					subTypeSet = true;
-					break;
+		while (arg != null) {
+			if (TYPE.equals(arg)) {
+				final String subType = interpreter.nextArgument();
+				boolean subTypeSet = false;
+				
+				for (final ContentSubType candidate : ContentSubType.values()) {
+					if (candidate.name().equalsIgnoreCase(subType)) {
+						contentSubType = candidate;
+						subTypeSet = true;
+						break;
+					}
+				}
+				
+				if (!subTypeSet) {
+					interpreter.println("Invalid import type (must be FULL, SNAPSHOT or DELTA).");
+					printDetailedHelp(interpreter);
+					return;
+				} else {
+					configuration.setContentSubType(contentSubType);
 				}
 			}
+
+			if (CODESYSTEM.equals(arg)) {
+				configuration.setCodeSystemShortName(interpreter.nextArgument());
+			}
 			
-			if (!subTypeSet) {
-				interpreter.println("Invalid import type (must be FULL, SNAPSHOT or DELTA).");
-				printDetailedHelp(interpreter);
-				return;
+			if (EXCLUSION.equals(arg)) {
+				configuration.excludeRefSet(interpreter.nextArgument());
 			}
-		} else {
-			interpreter.println("Import type needs to be specified (one of FULL, SNAPSHOT or DELTA).");
-			printDetailedHelp(interpreter);
-			return;
-		}
-		
-		configuration.setContentSubType(contentSubType);
-		configuration.setSourceKind(ImportSourceKind.FILES);
-		
-		if ("-x".equals(arg)) {
-			while ((arg = interpreter.nextArgument()) != null) {
-				configuration.excludeRefSet(arg);
+			
+			if (BRANCH.equals(arg)) {
+				configuration.setBranchPath(interpreter.nextArgument());
 			}
+			
+			arg = interpreter.nextArgument();
 		}
 		
 		try {
+			
+			boolean isTerminologyAvailable = SnomedRequests.prepareSearchConcept()
+					.setLimit(0)
+					.filterById(Concepts.ROOT_CONCEPT)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync().getTotal() > 0;
+			
+			if (!isTerminologyAvailable) {
+				interpreter.println("SNOMED CT terminology is not present, a core release has to be imported first.");
+				return;
+			}
 			
 			final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
 			
@@ -144,10 +162,9 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 			final String userId = authenticator.getUsername();
 			new ImportUtil().doImport(userId, configuration, new ConsoleProgressMonitor());
 			
-		} catch (final ImportException e) {
+		} catch (final Exception e) {
 			interpreter.println("Caught exception during import.");
-			interpreter.println(e);
-			return;
+			interpreter.printStackTrace(e);
 		}
 	}
 }
