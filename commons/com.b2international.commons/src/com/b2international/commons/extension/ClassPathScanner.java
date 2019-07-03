@@ -63,11 +63,7 @@ public enum ClassPathScanner {
 		w.reset().start();
 		
 		registry = new ClassGraph()
-				.ignoreParentClassLoaders()
-				.ignoreParentModuleLayers()
 				.disableRuntimeInvisibleAnnotations()
-				.disableDirScanning()
-				.disableNestedJarScanning()
 				.overrideClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]))
 				.enableAllInfo()
 				.scan();
