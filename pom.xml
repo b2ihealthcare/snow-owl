@@ -34,7 +34,7 @@
 		<jetty.version>9.4.15.v20190215</jetty.version>
 		<classgraph.version>4.6.10</classgraph.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
-		<typetools.version>0.4.8</typetools.version>
+		<typetools.version>0.6.1</typetools.version>
 		<hdrhistogram.version>2.1.10</hdrhistogram.version>
 		<commons.logging.version>1.2</commons.logging.version>
 		<commons.codec.version>1.10</commons.codec.version>
