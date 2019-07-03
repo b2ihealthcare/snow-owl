@@ -20,6 +20,8 @@ KERNEL_HOME=`dirname "$SCRIPT"`/..
 # make KERNEL_HOME absolute
 KERNEL_HOME=`cd "$KERNEL_HOME"; pwd`
 
+echo $KERNEL_HOME
+
 shopt -s extglob
 
 # start the kernel
@@ -30,16 +32,16 @@ fi
 
 CONFIG_AREA=$KERNEL_HOME/work
 
-if $cygwin; then
+if [ ! -z $cygwin ]; then
     KERNEL_HOME=$(cygpath -wp $KERNEL_HOME)
     CONFIG_AREA=$(cygpath -wp $CONFIG_AREA)
 fi
 
 if [ -z "$JAVA_HOME" ]
 then
-  	JAVA_EXECUTABLE=java
+        JAVA_EXECUTABLE=java
 else
- 	JAVA_EXECUTABLE=$JAVA_HOME/bin/java
+        JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 fi
 
 TMP_DIR=$KERNEL_HOME/work/tmp
@@ -47,29 +49,29 @@ TMP_DIR=$KERNEL_HOME/work/tmp
 mkdir -p "$TMP_DIR"
 
 SO_JAVA_OPTS="-Xms6g \
-	        -Xmx6g \
-	        -XX:+AlwaysPreTouch \
-	        -Xss1m \
-	        -server \
-	        -Djava.awt.headless=true \
-	        -Declipse.ignoreApp=true \
-	        -Dosgi.noShutdown=true \
-	        -Declipse.application.launchDefault=false \
-	        -Dosgi.classloader.type=nonparallel \
-	        -XX:+AlwaysLockClassLoader \
-	        -Djetty.port=8080 \
-	        -Djetty.home.bundle=org.eclipse.jetty.osgi.boot \
-	        -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog \
-	        -XX:+UseConcMarkSweepGC \
-	        -XX:CMSInitiatingOccupancyFraction=75 \
-	        -XX:+UseCMSInitiatingOccupancyOnly \
-	        -XX:+HeapDumpOnOutOfMemoryError \
-	        -Djdk.security.defaultKeySize=DSA:1024 \
-	        $SO_JAVA_OPTS"
+                -Xmx6g \
+                -XX:+AlwaysPreTouch \
+                -Xss1m \
+                -server \
+                -Djava.awt.headless=true \
+                -Declipse.ignoreApp=true \
+                -Dosgi.noShutdown=true \
+                -Declipse.application.launchDefault=false \
+                -Dosgi.classloader.type=nonparallel \
+                -XX:+AlwaysLockClassLoader \
+                -Djetty.port=8080 \
+                -Djetty.home.bundle=org.eclipse.jetty.osgi.boot \
+                -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog \
+                -XX:+UseConcMarkSweepGC \
+                -XX:CMSInitiatingOccupancyFraction=75 \
+                -XX:+UseCMSInitiatingOccupancyOnly \
+                -XX:+HeapDumpOnOutOfMemoryError \
+                -Djdk.security.defaultKeySize=DSA:1024 \
+                $SO_JAVA_OPTS"
 
 cd "$KERNEL_HOME";
-exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
+exec "$JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
-  -Dosgi.configuration.area="$CONFIG_AREA" \ 
-  -jar plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar
+  -Dosgi.configuration.area="$CONFIG_AREA" \
+  -jar plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar"
