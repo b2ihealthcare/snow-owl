@@ -279,6 +279,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 			.setCaseSignificance(getCaseSignificance())
 			// ensure that the description's conceptId property is the right one
 			.setConceptId(conceptId)
+			.setInactivationIndicator(inactivationIndicator)
 			// XXX assuming that the ID is always set in this case
 			.setId(getId())
 			.setLanguageCode(getLanguageCode())

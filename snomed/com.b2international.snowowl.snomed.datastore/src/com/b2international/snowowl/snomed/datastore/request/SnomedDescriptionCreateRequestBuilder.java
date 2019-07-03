@@ -22,6 +22,7 @@ import java.util.Map;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 
 /**
  * <i>Builder</i> class to build requests responsible for creating SNOMED CT descriptions.
@@ -37,6 +38,7 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 	private String typeId = Concepts.SYNONYM;
 	private String languageCode = "en";
 	private Map<String, Acceptability> acceptabilityMap = newHashMap();
+	private DescriptionInactivationIndicator inactivationIndicator = DescriptionInactivationIndicator.RETIRED;
 	
 	SnomedDescriptionCreateRequestBuilder() { 
 		super();
@@ -82,6 +84,11 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 		return getSelf();
 	}
 	
+	public SnomedDescriptionCreateRequestBuilder setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
+		this.inactivationIndicator = inactivationIndicator;
+		return getSelf();
+	}
+	
 	@Override
 	protected BaseSnomedComponentCreateRequest createRequest() {
 		return new SnomedDescriptionCreateRequest();
@@ -96,6 +103,8 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 		req.setTypeId(typeId);
 		req.setLanguageCode(languageCode);
 		req.setAcceptability(acceptabilityMap);
+		req.setInactivationIndicator(inactivationIndicator);
 	}
+
 
 }
