@@ -91,12 +91,12 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 								.collect(Collectors.toSet());
 						
 						if (idsToExclude.isEmpty()) {
-							LOGGER.warn(String.format("Could not find any valid Snomed Identifier in the source file: '%s'", reservationFileName));
+							LOGGER.warn("Could not find any valid Snomed Identifier in the source file: '{}'", reservationFileName);
 						} else {
 							reservationService.create(com.google.common.io.Files.getNameWithoutExtension(reservationFileName), new IdSetReservation(idsToExclude));
 						}
 					} catch (IOException e) {
-						LOGGER.error(String.format("Could not read file: '%s'", reservationFileName));
+						LOGGER.error("Could not read file: '{}'", reservationFileName);
 					}
 				}
 			}
