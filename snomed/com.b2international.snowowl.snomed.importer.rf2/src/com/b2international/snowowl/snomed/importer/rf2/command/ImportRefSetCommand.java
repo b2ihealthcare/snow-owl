@@ -103,7 +103,8 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 		ContentSubType contentSubType = null;
 		
 		while (arg != null) {
-			if (TYPE.equals(arg)) {
+			switch (arg) {
+			case TYPE:
 				final String subType = interpreter.nextArgument();
 				boolean subTypeSet = false;
 				
@@ -122,20 +123,20 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 				} else {
 					configuration.setContentSubType(contentSubType);
 				}
+				break;
+			case CODESYSTEM:
+				configuration.setCodeSystemShortName(interpreter.nextArgument());
+				break;
+			case EXCLUSION:
+				configuration.excludeRefSet(interpreter.nextArgument());
+				break;
+			case BRANCH:
+				configuration.setBranchPath(interpreter.nextArgument());
+				break;
+			default:
+				break;
 			}
 
-			if (CODESYSTEM.equals(arg)) {
-				configuration.setCodeSystemShortName(interpreter.nextArgument());
-			}
-			
-			if (EXCLUSION.equals(arg)) {
-				configuration.excludeRefSet(interpreter.nextArgument());
-			}
-			
-			if (BRANCH.equals(arg)) {
-				configuration.setBranchPath(interpreter.nextArgument());
-			}
-			
 			arg = interpreter.nextArgument();
 		}
 		
