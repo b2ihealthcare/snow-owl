@@ -15,7 +15,7 @@ WorkingDirectory=/usr/share/snowowl
 User=snowowl
 Group=snowowl
 
-ExecStart=/usr/share/snowowl/bin/startup.sh
+ExecStart=/usr/share/snowowl/bin/snowowl.sh
 
 # StandardOutput is configured to redirect to journalctl. Snow Owl
 # stores its logs in /var/log/snowowl and does not use journalctl.
