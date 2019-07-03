@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.osgi.service.resolver.BundleDescription;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
+
+import com.b2international.commons.CommonsActivator;
+import com.google.common.base.Stopwatch;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -41,13 +42,12 @@ public enum ClassPathScanner {
 	INSTANCE;
 
 	private static final long SYSTEM_BUNDLE_ID = 0L;
-	
 	private final ScanResult registry;
 
 	private ClassPathScanner() {
 		List<ClassLoader> classLoaders = newArrayList();
-		for (BundleDescription bundleDescription : Platform.getPlatformAdmin().getState(false).getBundles()) {
-			Bundle bundle = bundleDescription.getBundle();
+		Stopwatch w = Stopwatch.createStarted();
+		for (Bundle bundle : CommonsActivator.getContext().getBundles()) {
 			if (SYSTEM_BUNDLE_ID  == bundle.getBundleId()) {
 				continue;
 			}
@@ -59,12 +59,17 @@ public enum ClassPathScanner {
 				}
 			}
 		}
+		System.err.println("Bundle read: " + w + " nob: " + classLoaders.size());
+		w.reset().start();
 		
 		registry = new ClassGraph()
 				.disableRuntimeInvisibleAnnotations()
 				.overrideClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]))
 				.enableAllInfo()
 				.scan();
+		
+		System.err.println("Classpath scanning: " + w);
+		w.reset().start();
 		
 	}
 	
