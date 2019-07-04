@@ -153,12 +153,14 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 			acceptabilityUpdate.setDescriptionId(description.getId());
 			acceptabilityUpdate.execute(context);
 			
-			final SnomedInactivationReasonUpdateRequest inactivationUpdate =  new SnomedInactivationReasonUpdateRequest<>(
-					description.getId(), 
-					Description.class, 
-					Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
-			inactivationUpdate.setInactivationValueId(inactivationIndicator.getConceptId());
-			inactivationUpdate.execute(context);
+			if (inactivationIndicator != null) {
+				final SnomedInactivationReasonUpdateRequest<Description> inactivationUpdate =  new SnomedInactivationReasonUpdateRequest<>(
+						description.getId(), 
+						Description.class, 
+						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
+				inactivationUpdate.setInactivationValueId(inactivationIndicator.getConceptId());
+				inactivationUpdate.execute(context);
+			}
 			
 			return description.getId();
 		} catch (ComponentNotFoundException e) {
