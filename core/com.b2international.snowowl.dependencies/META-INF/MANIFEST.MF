@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Dependencies
 Bundle-SymbolicName: com.b2international.snowowl.dependencies;singleton:=true
-Bundle-Version: 6.17.0
+Bundle-Version: 6.18.0.qualifier
 Bundle-ClassPath: lib/poi-3.7-20101029.jar,
  lib/poi-ooxml-3.7-20101029.jar,
  lib/ooxml-schemas-1.1.jar,
