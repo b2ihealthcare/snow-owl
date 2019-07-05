@@ -1,6 +1,43 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.17.0
+
+### API
+- Allow querying owl expressions by either `type` or `destination` ids (9ab1048, 958ee81)
+- Allow setting pending move inactivation indicator on SNOMED CT Descriptions of new SNOMED CT Concepts (63f4b1f)
+- Remove logic that disallowed reactivating a concept while adding an inactivation indicator and/or association target(s) (86ed3c7)
+- Support `defaultModuleId` for all enum based member updates (#368)
+- Remove minimum number of required SNOMED CT Relationships validation from SNOMED CT Concept create request (9ac5c99)
+
+### Console
+- New `user adduser` command has been added to the available OSGi commands (#374)
+
+### Configuration
+- Support id exclusion list (#372)
+  * Read and use all ID exclusion files under <SNOWOWL_HOME>/configuration/reservations folder
+  * Format: SNOMED CT Identifiers separated by new line character(s)  
+
+### Validation
+- Support whitelist entry labels (#369)
+
+### Changes
+- Let the axiom conversion service create 'SubObjectPropertyOf' and 'SubDataPropertyOf' axioms (e9b9c34)
+
+### Bugs
+- [api] Fix refset member search request parameter (a76c0d7)
+- [api] lookup moduleId when creating refset member (41adfc5)
+- [api] fix potential race condition when building bulk request from multiple threads (9d1b64e)
+- [console] fix `rf2_refset` import OSGi command (054da61)
+- [import] Fix error when importing SNAPSHOT without any valid data (69b9bda)
+- [reasoner] Add missing concept IDs to the relationship module and namespace collector in the equivalent concept merging phase (a042274)
+- [reasoner] Skip axiom relationships where either the source or the destination is inactive (96c4494)
+- [reasoner] Fix initial state of SCHEDULED classification task (733e4b8)
+- [validation] Remove stated MRCM rule (2657abd)
+
+### Dependencies
+- Bump SNOMED OWL Toolkit to 2.6.0 
+
 ## 6.16.0
 
 ### REST API changes
