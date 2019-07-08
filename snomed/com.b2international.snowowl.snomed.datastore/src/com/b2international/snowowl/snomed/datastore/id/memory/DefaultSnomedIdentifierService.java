@@ -102,7 +102,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		if (CompareUtils.isEmpty(componentIds)) {
 			return;
 		}
-		LOGGER.debug(String.format("Registering {} component IDs.", componentIds.size()));
+		LOGGER.debug("Registering {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
 		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
