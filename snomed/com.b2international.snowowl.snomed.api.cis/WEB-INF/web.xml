@@ -22,7 +22,7 @@
 
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
-			<param-value>com.b2international.snowowl.snomed.api.cis.SnomedCisApiConfig</param-value>
+			<param-value>com.b2international.snowowl.snomed.api.cis.config.SnomedCisApiConfig</param-value>
 		</init-param>
 		
     	<load-on-startup>1</load-on-startup>

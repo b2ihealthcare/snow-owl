@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.cis;
+package com.b2international.snowowl.snomed.api.cis.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +29,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+
+import com.b2international.snowowl.snomed.api.cis.CisTokenAuthenticationFilter;
 
 /**
  * @since 6.18
@@ -53,12 +55,13 @@ public class SnomedCisApiSecurityConfig extends WebSecurityConfigurerAdapter {
 			.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
-			.csrf().disable();
+			.csrf().disable()
+			.logout().disable();
 		
 		// auth
 		http
 			.authorizeRequests()
-				.antMatchers("/", "/static/**", "/api-docs", "/login")
+				.antMatchers("/", "/static/**", "/api-docs", "/login", "/logout", "/authenticate")
 				.permitAll()
 			.and()
 			.addFilterAfter(new CisTokenAuthenticationFilter(), BasicAuthenticationFilter.class)

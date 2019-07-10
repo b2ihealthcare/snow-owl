@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.cis;
+package com.b2international.snowowl.snomed.api.cis.config;
 
 import static springfox.documentation.builders.PathSelectors.regex;
 
@@ -37,7 +37,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
@@ -49,6 +48,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
+import com.b2international.snowowl.snomed.api.cis.CisAuthenticationProvider;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,9 +71,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableWebMvc
 @EnableSwagger2
 @Configuration
-@ComponentScan("com.b2international.snowowl.snomed.api.cis")
+@ComponentScan({"com.b2international.snowowl.snomed.api.cis"})
 @Import({ SnomedCisApiSecurityConfig.class })
-@PropertySource("classpath:com/b2international/snowowl/snomed/api/cis/service_configuration.properties")
+@PropertySource("classpath:com/b2international/snowowl/snomed/api/cis/config/service_configuration.properties")
 public class SnomedCisApiConfig extends WebMvcConfigurerAdapter {
 
 	@Value("${api.version}")
@@ -132,7 +132,7 @@ public class SnomedCisApiConfig extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public AuthenticationProvider authenticationProvider() {
+	public CisAuthenticationProvider authenticationProvider() {
 		return new CisAuthenticationProvider(identityProvider(), UUID.randomUUID().toString());
 	}
 	
@@ -149,11 +149,6 @@ public class SnomedCisApiConfig extends WebMvcConfigurerAdapter {
 	@Override
 	public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
 		configurer.enable();
-	}
-	
-	@Bean
-	public SnomedCisAuthenticationService cisService() {
-		return new SnomedCisAuthenticationService();
 	}
 	
 	@Override

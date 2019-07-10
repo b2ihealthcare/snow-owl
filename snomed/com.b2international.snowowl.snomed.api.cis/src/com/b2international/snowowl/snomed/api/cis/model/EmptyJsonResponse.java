@@ -15,28 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.cis.model;
 
-import io.swagger.annotations.ApiModel;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * @since 6.18 
+ * @since 6.18
  */
-@ApiModel(value = "Error")
-public class CisError {
-
-	private final int statusCode;
-	private final String message;
-
-	public CisError(int statusCode, String message) {
-		this.statusCode = statusCode;
-		this.message = message;
-	}
-	
-	public int getStatusCode() {
-		return statusCode;
-	}
-	
-	public String getMessage() {
-		return message;
-	}
-	
-}
+@JsonSerialize
+public class EmptyJsonResponse { }

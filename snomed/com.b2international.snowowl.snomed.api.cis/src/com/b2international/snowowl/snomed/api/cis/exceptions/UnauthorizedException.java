@@ -13,30 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.cis.model;
+package com.b2international.snowowl.snomed.api.cis.exceptions;
 
-import io.swagger.annotations.ApiModel;
+import com.b2international.snowowl.core.exceptions.ApiException;
 
 /**
- * @since 6.18 
+ * @since 
  */
-@ApiModel(value = "Error")
-public class CisError {
+public final class UnauthorizedException extends ApiException {
 
-	private final int statusCode;
-	private final String message;
+	private static final long serialVersionUID = 6433172801706150706L;
 
-	public CisError(int statusCode, String message) {
-		this.statusCode = statusCode;
-		this.message = message;
+	public UnauthorizedException(String message, Object...args) {
+		super(message, args);
 	}
-	
-	public int getStatusCode() {
-		return statusCode;
+
+	@Override
+	protected Integer getStatus() {
+		return 401;
 	}
-	
-	public String getMessage() {
-		return message;
-	}
-	
+
 }

@@ -15,28 +15,19 @@
  */
 package com.b2international.snowowl.snomed.api.cis.model;
 
-import io.swagger.annotations.ApiModel;
-
 /**
- * @since 6.18 
+ * @since 6.18
  */
-@ApiModel(value = "Error")
-public class CisError {
+public class UserData {
 
-	private final int statusCode;
-	private final String message;
-
-	public CisError(int statusCode, String message) {
-		this.statusCode = statusCode;
-		this.message = message;
+	private String username;
+	
+	public String getUsername() {
+		return username;
 	}
 	
-	public int getStatusCode() {
-		return statusCode;
-	}
-	
-	public String getMessage() {
-		return message;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 	
 }

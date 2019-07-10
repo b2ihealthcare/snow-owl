@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.cis;
 
+import java.util.Date;
+
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -28,8 +30,8 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.snowowl.identity.IdentityProvider;
+import com.b2international.snowowl.snomed.api.cis.exceptions.UnauthorizedException;
 import com.b2international.snowowl.snomed.datastore.id.cis.Credentials;
-import com.b2international.snowowl.snomed.datastore.id.cis.Token;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
@@ -38,8 +40,11 @@ import com.google.common.collect.ImmutableList;
  */
 public class CisAuthenticationProvider implements AuthenticationProvider {
 
+	private static final String ISSUER = "snow-owl";
+	
 	private final Algorithm algorithm;
 	private final IdentityProvider identityProvider;
+	private final long tokenTtl = 1 * 60 * 60 * 1000L;
 	
 	public CisAuthenticationProvider(IdentityProvider identityProvider, String secret) {
 		this.identityProvider = identityProvider;
@@ -67,11 +72,10 @@ public class CisAuthenticationProvider implements AuthenticationProvider {
 		return CisTokenAuthentication.class.isAssignableFrom(authClass);
 	}
 	
-	private String verify(String token) {
+	public String verify(String token) {
 		try {
-		    Algorithm algorithm = Algorithm.HMAC256("secret");
 		    JWTVerifier verifier = JWT.require(algorithm)
-		        .withIssuer("auth0")
+		        .withIssuer(ISSUER)
 		        .build(); //Reusable verifier instance
 		    return verifier.verify(token).getSubject();
 		} catch (JWTVerificationException exception){
@@ -80,19 +84,22 @@ public class CisAuthenticationProvider implements AuthenticationProvider {
 		}
 	}
 
-	public Token login(Credentials credentials) {
+	public String login(Credentials credentials) {
 		if (identityProvider.auth(credentials.getUsername(), credentials.getPassword())) {
-			return new Token(generateToken(credentials.getUsername()));
+			return generateToken(credentials.getUsername());
 		} else {
-			throw new BadCredentialsException("Incorrect username or password");
+			throw new UnauthorizedException("Incorrect username or password");
 		}
 	}
 
 	private String generateToken(String username) {
 		try {
-		    return JWT.create()
-		        .withIssuer("Snow Owl")
+			final long now = System.currentTimeMillis();
+			return JWT.create()
+		        .withIssuer(ISSUER)
 		        .withSubject(username)
+		        .withIssuedAt(new Date())
+		        .withExpiresAt(new Date(now + tokenTtl))
 		        .sign(algorithm);
 		} catch (JWTCreationException e){
 			throw new RuntimeException(e);
