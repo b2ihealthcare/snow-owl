@@ -39,6 +39,7 @@ public final class ClassificationCreateRequestBuilder
 	private String userId;
 	private final List<SnomedConcept> additionalConcepts = newArrayList();
 	private String parentLockContext = DatastoreLockContextDescriptions.ROOT;
+	private boolean equivalenceCheckOnly = false;
 
 	ClassificationCreateRequestBuilder() {}
 
@@ -71,6 +72,11 @@ public final class ClassificationCreateRequestBuilder
 		this.parentLockContext = parentLockContext;
 		return getSelf();
 	}
+	
+	public ClassificationCreateRequestBuilder setEquivalenceCheckOnly(final boolean equivalenceCheckOnly) {
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<BranchContext, String> doBuild() {
@@ -80,6 +86,7 @@ public final class ClassificationCreateRequestBuilder
 		request.setUserId(userId);
 		request.setAdditionalConcepts(additionalConcepts);
 		request.setParentLockContext(parentLockContext);
+		request.setEquivalenceCheckOnly(equivalenceCheckOnly);
 		return request;
 	}
 }

@@ -59,6 +59,7 @@ public abstract class ClassifyOperation<T> {
 	protected final String repositoryId;
 	protected final String branch;
 	protected final String parentLockContext;
+	protected final boolean equivalenceCheckOnly;
 
 	public ClassifyOperation(final String reasonerId, 
 			final String userId, 
@@ -79,7 +80,24 @@ public abstract class ClassifyOperation<T> {
 			final List<SnomedConcept> additionalConcepts,
 			final String repositoryId, 
 			final String branch,
-			final String parentLockContext) {	
+			final String parentLockContext) {
+		
+		this(reasonerId, 
+				userId, 
+				additionalConcepts, 
+				repositoryId, 
+				branch, 
+				parentLockContext, 
+				false);
+	}
+
+	public ClassifyOperation(final String reasonerId, 
+			final String userId, 
+			final List<SnomedConcept> additionalConcepts,
+			final String repositoryId, 
+			final String branch,
+			final String parentLockContext,
+			final boolean equivalenceCheckOnly) {	
 
 		this.reasonerId = reasonerId;
 		this.userId = userId;
@@ -87,6 +105,7 @@ public abstract class ClassifyOperation<T> {
 		this.repositoryId = repositoryId;
 		this.branch = branch;
 		this.parentLockContext = parentLockContext;
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
 	}
 
 	/**
@@ -142,6 +161,7 @@ public abstract class ClassifyOperation<T> {
 				.setUserId(userId)
 				.addAllConcepts(additionalConcepts)
 				.setParentLockContext(parentLockContext)
+				.setEquivalenceCheckOnly(equivalenceCheckOnly)
 				.build(repositoryId, branch)
 				.get();
 

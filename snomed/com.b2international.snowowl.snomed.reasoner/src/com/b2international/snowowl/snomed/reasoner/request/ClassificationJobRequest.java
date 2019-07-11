@@ -70,6 +70,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 	@NotNull
 	private String parentLockContext;
 
+	private boolean equivalenceCheckOnly;
+
 	ClassificationJobRequest() {}
 
 	void setReasonerId(final String reasonerId) {
@@ -84,6 +86,10 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		this.parentLockContext = parentLockContext;
 	}
 
+	void setEquivalenceCheckOnly(boolean equivalenceCheckOnly) {
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
+	}
+	
 	@Override
 	public Boolean execute(final BranchContext context) {
 		final RemoteJob job = context.service(RemoteJob.class);
@@ -137,9 +143,13 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 			final DelegateOntology ontology = (DelegateOntology) ontologyManager.createOntology(ontologyIRI);
 			final ReasonerTaxonomyInferrer inferrer = new ReasonerTaxonomyInferrer(reasonerId, ontology, context);
 			final ReasonerTaxonomy inferredTaxonomy = inferrer.addInferences(taxonomy);
-			final NormalFormGenerator normalFormGenerator = new NormalFormGenerator(inferredTaxonomy);
-			
-			tracker.classificationCompleted(classificationId, inferredTaxonomy, normalFormGenerator);
+
+			if (equivalenceCheckOnly) {
+				tracker.classificationCompleted(classificationId, inferredTaxonomy);
+			} else {
+				final NormalFormGenerator normalFormGenerator = new NormalFormGenerator(inferredTaxonomy);
+				tracker.classificationCompleted(classificationId, inferredTaxonomy, normalFormGenerator);
+			}
 
 		} catch (final OWLOntologyCreationException e) {
 			throw new ReasonerApiException("Exception caught while creating ontology instance.", e);

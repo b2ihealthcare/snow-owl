@@ -246,6 +246,35 @@ public final class ClassificationTracker implements IDisposableService {
 		});
 	}
 
+	// For equivalence checks only; no inferences will be made
+	public void classificationCompleted(final String classificationId, 
+			final IReasonerTaxonomy inferredTaxonomy) {
+
+		index.write(writer -> {
+
+			indexUnsatisfiableConcepts(writer, classificationId, inferredTaxonomy.getUnsatisfiableConcepts());
+			indexEquivalentConcepts(writer, classificationId, inferredTaxonomy.getEquivalentConcepts());
+
+			final boolean hasEquivalentConcepts = !inferredTaxonomy.getUnsatisfiableConcepts().isEmpty()
+					|| !inferredTaxonomy.getEquivalentConcepts().isEmpty();
+			
+			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
+					ClassificationTaskDocument.Expressions.id(classificationId), 
+					ClassificationTaskDocument.Fields.ID, 
+					ClassificationTaskDocument.Scripts.COMPLETED, 
+					ImmutableMap.of("completionDate", System.currentTimeMillis(),
+							"hasEquivalentConcepts", hasEquivalentConcepts,
+							"hasInferredChanges", false,
+							"hasRedundantStatedChanges", false)));
+
+			writer.commit();
+			return null;
+		});
+		
+		
+	}
+
+	// For equivalence checks and normal form generation
 	public void classificationCompleted(final String classificationId, 
 			final IReasonerTaxonomy inferredTaxonomy, 
 			final INormalFormGenerator normalFormGenerator) {

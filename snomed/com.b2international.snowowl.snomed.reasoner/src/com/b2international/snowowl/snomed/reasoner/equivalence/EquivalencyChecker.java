@@ -46,7 +46,7 @@ public final class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> 
 			final String branch,
 			final String parentLockContext) {
 
-		super(reasonerId, userId, additionalConcepts, repositoryId, branch, parentLockContext);
+		super(reasonerId, userId, additionalConcepts, repositoryId, branch, parentLockContext, true);
 	}
 
 	@Override
