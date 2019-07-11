@@ -127,7 +127,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.CLASSIFY, parentLockContext, branch)) {
-			taxonomy = buildTaxonomy(revisionSearcher, context.service(SnomedCoreConfiguration.class).getReasonerExcludedModuleIds(), concreteDomainSupported);
+			final Set<String> excludedModuleIds = context.service(SnomedCoreConfiguration.class).getReasonerExcludedModuleIds();
+			taxonomy = buildTaxonomy(revisionSearcher, excludedModuleIds, concreteDomainSupported);
 		} catch (final OperationLockException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		} catch (final InterruptedException e) {
@@ -168,8 +169,11 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		taxonomyBuilder.addConceptFlags(revisionSearcher);
 		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
 		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
-		taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
-		taxonomyBuilder.addActiveAdditionalGroupedRelationships(revisionSearcher);
+		
+		if (!equivalenceCheckOnly) {
+			taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
+			taxonomyBuilder.addActiveAdditionalGroupedRelationships(revisionSearcher);
+		}
 		
 		taxonomyBuilder.addNeverGroupedTypeIds(revisionSearcher);
 		taxonomyBuilder.addActiveAxioms(revisionSearcher);
@@ -186,8 +190,11 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		
 		taxonomyBuilder.addActiveStatedEdges(relationshipSupplier.get());
 		taxonomyBuilder.addActiveStatedNonIsARelationships(relationshipSupplier.get());
-		taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
-		taxonomyBuilder.addActiveAdditionalGroupedRelationships(relationshipSupplier.get());
+		
+		if (!equivalenceCheckOnly) {
+			taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
+			taxonomyBuilder.addActiveAdditionalGroupedRelationships(relationshipSupplier.get());
+		}
 
 		if (concreteDomainSupported) {
 			final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
