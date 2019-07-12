@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,11 @@ abstract class PartitionIdData extends RequestData {
 		super(namespace, software);
 		setPartitionId(buildPartitionId(category));
 	}
+	
+	public PartitionIdData(final int namespace, final String software, final String partitionId) {
+		super(namespace, software);
+		setPartitionId(partitionId);
+	}
 
 	private String buildPartitionId(final ComponentCategory category) {
 		final StringBuilder builder = new StringBuilder();
@@ -49,6 +54,11 @@ abstract class PartitionIdData extends RequestData {
 
 	public void setPartitionId(String partitionId) {
 		this.partitionId = partitionId;
+	}
+	
+	public ComponentCategory getComponentCategory() {
+		int componentIdentifier = Integer.parseInt(getPartitionId().substring(1, 2));
+		return ComponentCategory.getByOrdinal(componentIdentifier);
 	}
 
 }

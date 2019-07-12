@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,6 +86,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public Set<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
+		return ImmutableSet.copyOf(generateSctIds(namespace, category, quantity).keySet());
+	}
+	
+	@Override
+	public Map<String, SctId> generateSctIds(String namespace, ComponentCategory category, int quantity) {
 		checkNotNull(category, "Component category must not be null.");
 		checkArgument(quantity > 0, "Number of requested IDs should be non-negative.");
 		checkCategory(category);
@@ -94,13 +100,13 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		final Set<String> componentIds = generateIds(namespace, category, quantity);
 		final Map<String, SctId> sctIds = FluentIterable.from(componentIds).toMap(componentId -> buildSctId(componentId, IdentifierStatus.ASSIGNED));
 		putSctIds(sctIds);
-		return componentIds;
+		return sctIds;
 	}
 
 	@Override
-	public void register(final Set<String> componentIds) {
+	public Map<String, SctId> register(final Set<String> componentIds) {
 		if (CompareUtils.isEmpty(componentIds)) {
-			return;
+			return Collections.emptyMap();
 		}
 		LOGGER.debug(String.format("Registering {} component IDs.", componentIds.size()));
 
@@ -123,10 +129,17 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		}
 		
 		putSctIds(availableOrReservedSctIds);
+		
+		return ImmutableMap.copyOf(sctIds);
 	}
 
 	@Override
 	public Set<String> reserve(final String namespace, final ComponentCategory category, final int quantity) {
+		return reserveSctIds(namespace, category, quantity).values().stream().map(SctId::getSctid).collect(Collectors.toSet());
+	}
+	
+	@Override
+	public Map<String, SctId> reserveSctIds(String namespace, ComponentCategory category, int quantity) {
 		checkNotNull(category, "Component category must not be null.");
 		checkArgument(quantity > 0, "Number of requested IDs should be greater than zero.");
 		checkCategory(category);
@@ -136,11 +149,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		final Set<String> componentIds = generateIds(namespace, category, quantity);
 		final Map<String, SctId> sctIds = FluentIterable.from(componentIds).toMap(componentId -> buildSctId(componentId, IdentifierStatus.RESERVED));
 		putSctIds(sctIds);
-		return componentIds;
+		return ImmutableMap.copyOf(sctIds);
 	}
 
 	@Override
-	public void release(final Set<String> componentIds) {
+	public Map<String, SctId> release(final Set<String> componentIds) {
 		LOGGER.debug("Releasing {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
@@ -159,10 +172,13 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	
 		// XXX: It might be better to keep the last state change recorded in the index on these SctIds, but for now we remove them entirely
 		removeSctIds(assignedOrReservedSctIds.keySet());
+		assignedOrReservedSctIds.keySet().forEach(sctIds::remove);
+		
+		return ImmutableMap.copyOf(sctIds);
 	}
 
 	@Override
-	public void deprecate(final Set<String> componentIds) {
+	public Map<String, SctId> deprecate(final Set<String> componentIds) {
 		LOGGER.debug("Deprecating {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
@@ -184,10 +200,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		}
 		
 		putSctIds(assignedOrPublishedSctIds);
+		
+		return ImmutableMap.copyOf(sctIds);
 	}
 
 	@Override
-	public void publish(final Set<String> componentIds) {
+	public Map<String, SctId> publish(final Set<String> componentIds) {
 		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
 		
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
@@ -206,10 +224,15 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		if (!problemSctIds.isEmpty()) {
 			LOGGER.warn("Cannot publish the following component IDs because they are not assigned or already published: {}", problemSctIds);
 		}
+		
+		return ImmutableMap.copyOf(sctIds);
 	}
 
 	@Override
 	public Map<String, SctId> getSctIds(final Set<String> componentIds) {
+		if (CompareUtils.isEmpty(componentIds)) {
+			return Collections.emptyMap();
+		}
 		final Query<SctId> getSctIdsQuery = Query.select(SctId.class)
 				.where(Expressions.matchAny(DocumentMapping._ID, componentIds))
 				.limit(componentIds.size())

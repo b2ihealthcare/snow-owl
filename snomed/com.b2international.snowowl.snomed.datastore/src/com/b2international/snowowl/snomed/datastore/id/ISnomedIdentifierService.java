@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,13 +46,24 @@ public interface ISnomedIdentifierService {
 	 * @return a collection of generated IDs (in Assigned state)
 	 */
 	Set<String> generate(String namespace, ComponentCategory category, int quantity);
+	
+	/**
+	 * Generates multiple SNOMED CT IDs for the defined {@link ComponentCategory} with the defined extension namespace.
+	 * 
+	 * @param namespace the extension namespace to use when generating the ID
+	 * @param category the component type to generate ID for
+	 * @param quantity the number of IDs to generate
+	 * 
+	 * @return a collection of generated {@link SctId} instances (in Assigned state)
+	 */
+	Map<String, SctId> generateSctIds(String namespace, ComponentCategory category, int quantity);
 
 	/**
 	 * Registers multiple SNOMED CT IDs.
 	 * 
 	 * @param componentIds the IDs to register
 	 */
-	void register(Set<String> componentIds);
+	Map<String, SctId> register(Set<String> componentIds);
 
 	/**
 	 * Reserves multiple SNOMED CT ID for the defined {@link ComponentCategory}
@@ -66,25 +77,36 @@ public interface ISnomedIdentifierService {
 	Set<String> reserve(String namespace, ComponentCategory category, int quantity);
 
 	/**
+	 * Reserves multiple SNOMED CT ID for the defined {@link ComponentCategory} with the defined extension namespace.
+	 * 
+	 * @param namespace the extension namespace to use when generating the ID
+	 * @param category the component type to generate ID for
+	 * 
+	 * @return a collection of reserved {@link SctId} instances (in Reserved state)
+	 */
+	Map<String, SctId> reserveSctIds(String namespace, ComponentCategory category, int quantity);
+	
+	/**
 	 * Releases the given SNOMED CT IDs.
 	 * 
 	 * @param componentIds the IDs to release
 	 */
-	void release(Set<String> componentIds);
+	Map<String, SctId> release(Set<String> componentIds);
 
 	/**
 	 * Deprecates the given SNOMED CT IDs.
 	 * 
 	 * @param componentIds the IDs to deprecate
+	 * @re
 	 */
-	void deprecate(Set<String> componentIds);
+	Map<String, SctId> deprecate(Set<String> componentIds);
 
 	/**
 	 * Publishes the given SNOMED CT IDs.
 	 * 
 	 * @param componentIds the IDs to publish
 	 */
-	void publish(Set<String> componentIds);
+	Map<String, SctId> publish(Set<String> componentIds);
 
 	/**
 	 * Retrieves the {@link SctId}s for the given component IDs.

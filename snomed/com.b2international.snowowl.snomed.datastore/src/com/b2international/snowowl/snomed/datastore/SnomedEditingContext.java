@@ -1049,7 +1049,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.execute(bus)
 				.getSync()
 				.first()
-				.get();
+				.get()
+				.getSctid();
 		newComponentIds.add(generatedId);
 		return generatedId;
 	}

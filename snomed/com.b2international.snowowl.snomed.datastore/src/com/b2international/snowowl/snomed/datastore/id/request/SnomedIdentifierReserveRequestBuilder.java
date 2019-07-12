@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
 
 /**
  * @since 5.5
@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds
 public final class SnomedIdentifierReserveRequestBuilder extends AbstractSnomedIdentifierCountedRequestBuilder<SnomedIdentifierReserveRequestBuilder> {
 	
 	@Override
-	protected Request<RepositoryContext, SnomedComponentIds> doBuild() {
+	protected Request<RepositoryContext, SctIds> doBuild() {
 		return new SnomedIdentifierReserveRequest(category, namespace, quantity);
 	}
 

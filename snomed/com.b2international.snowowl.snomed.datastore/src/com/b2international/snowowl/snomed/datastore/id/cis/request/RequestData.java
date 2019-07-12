@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.id.cis.request;
 
 import com.b2international.commons.StringUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Superclass to hold common bean properties for Json requests sent to the CIS.
@@ -33,13 +34,22 @@ public class RequestData {
 	}
 
 	public RequestData(final String namespace, final String software) {
-		this.namespace = convertNamesapce(namespace);
+		this(toNamespaceIntValue(namespace), software);
+	}
+	
+	public RequestData(final int namespace, final String software) {
+		this.namespace = namespace;
 		this.software = software;
 		this.comment = String.format("Requested by %s", software);
 	}
 
 	public int getNamespace() {
 		return namespace;
+	}
+	
+	@JsonIgnore
+	public String getNamespaceAsString() {
+		return fromNamespaceIntValue(namespace);
 	}
 
 	public void setNamespace(int namespace) {
@@ -62,7 +72,12 @@ public class RequestData {
 		this.comment = comment;
 	}
 	
-	private int convertNamesapce(final String namespace) {
+	private static int toNamespaceIntValue(final String namespace) {
 		return StringUtils.isEmpty(namespace) ? 0 : Integer.valueOf(namespace);
 	}
+	
+	private static String fromNamespaceIntValue(final int namespace) {
+		return namespace == 0 ? "" : Integer.toString(namespace);
+	}
+	
 }

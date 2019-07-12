@@ -72,8 +72,8 @@ public class SnomedIdentifiers {
 	 */
 	public static void validate(final String componentId) throws IllegalArgumentException {
 		checkArgument(!Strings.isNullOrEmpty(componentId), "SCTID may not be null or empty");
-		checkArgument(!componentId.startsWith("0"), "SCTID can't start with leading zero");
-		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "SCTID length must be between 6-18 characters");
+		checkArgument(!componentId.startsWith("0"), "SCTID can't start with leading zero. Got: %s", componentId);
+		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "SCTID length must be between 6-18 characters. Got: %s", componentId);
 		
 		try {
 			Long.parseLong(componentId);

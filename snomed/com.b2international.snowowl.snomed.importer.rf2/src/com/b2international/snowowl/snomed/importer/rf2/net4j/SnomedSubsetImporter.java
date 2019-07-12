@@ -54,6 +54,7 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
@@ -339,14 +340,15 @@ public class SnomedSubsetImporter {
 
 		private String generateComponentId(TransactionContext context, ComponentCategory category, String namespace) {
 			return SnomedRequests.identifiers()
-											.prepareGenerate()
-											.setQuantity(1)
-											.setNamespace(namespace)
-											.setCategory(category)
-											.build()
-											.execute(context)
-											.first()
-											.orElseThrow(() -> new BadRequestException("Couldn't generate ID for args (%s, %s).", category, namespace));
+								.prepareGenerate()
+								.setQuantity(1)
+								.setNamespace(namespace)
+								.setCategory(category)
+								.build()
+								.execute(context)
+								.first()
+								.map(SctId::getSctid)
+								.orElseThrow(() -> new BadRequestException("Couldn't generate ID for args (%s, %s).", category, namespace));
 		}
 		
 		private String getIdIfCMTConcept(String label) {

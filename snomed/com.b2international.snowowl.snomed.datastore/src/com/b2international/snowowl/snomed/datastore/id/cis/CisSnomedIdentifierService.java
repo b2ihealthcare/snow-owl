@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,6 +36,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.poi.ss.formula.eval.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,20 +49,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkDeprecationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkGenerationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkPublicationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkRegistrationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkReleaseData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkReservationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.DeprecationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.GenerationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.PublicationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.Record;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.RegistrationData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.ReleaseData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.RequestData;
-import com.b2international.snowowl.snomed.datastore.id.cis.request.ReservationData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.*;
 import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
@@ -158,7 +147,12 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	}
 
 	@Override
-	public void register(final Set<String> componentIds) {
+	public Map<String, SctId> generateSctIds(String namespace, ComponentCategory category, int quantity) {
+		throw new NotImplementedException("Not implemented for CIS based SNOMED CT identifier service");
+	}
+	
+	@Override
+	public Map<String, SctId> register(final Set<String> componentIds) {
 		LOGGER.debug(String.format("Registering {} component IDs.", componentIds.size()));
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
@@ -176,7 +170,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				SctId::isReserved)));
 		
 		if (availableOrReservedSctIds.isEmpty()) {
-			return;
+			return Collections.emptyMap();
 		}
 		
 		HttpPost registerRequest = null;
@@ -190,7 +184,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					currentNamespace = entry.getKey();
 					
 					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
-						LOGGER.debug(String.format("Sending bulk registration request for namespace %s with size %d.", currentNamespace, bulkIds.size()));
+						LOGGER.debug("Sending bulk registration request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 						registerRequest = httpPost(String.format("sct/bulk/register?token=%s", getToken()), createBulkRegistrationData(bulkIds));
 						execute(registerRequest);
 					}
@@ -204,6 +198,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				execute(registerRequest);
 			}
 		
+			return ImmutableMap.copyOf(availableOrReservedSctIds);
+			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(String.format("Exception while reserving IDs for namespace %s.", currentNamespace), e);
 		} finally {
@@ -253,9 +249,14 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			release(recordsRequest);
 		}
 	}
+	
+	@Override
+	public Map<String, SctId> reserveSctIds(String namespace, ComponentCategory category, int quantity) {
+		throw new NotImplementedException("Not implemented for CIS based SNOMED CT identifier service");
+	}
 
 	@Override
-	public void release(final Set<String> componentIds) {
+	public Map<String, SctId> release(final Set<String> componentIds) {
 		LOGGER.debug("Releasing {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
@@ -273,7 +274,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				SctId::isReserved)));
 		
 		if (assignedOrReservedSctIds.isEmpty()) {
-			return;
+			return Collections.emptyMap();
 		}
 
 		HttpPut releaseRequest = null;
@@ -300,6 +301,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				releaseRequest = httpPut(String.format("sct/release?token=%s", getToken()), createReleaseData(componentId));
 				execute(releaseRequest);
 			}
+			
+			return ImmutableMap.copyOf(assignedOrReservedSctIds);
 		
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(String.format("Exception while releasing IDs for namespace %s.", currentNamespace), e);
@@ -309,7 +312,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	}
 
 	@Override
-	public void deprecate(final Set<String> componentIds) {
+	public Map<String, SctId> deprecate(final Set<String> componentIds) {
 		LOGGER.debug("Deprecating {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
@@ -327,7 +330,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				SctId::isPublished)));
 		
 		if (assignedOrPublishedSctIds.isEmpty()) {
-			return;
+			return Collections.emptyMap();
 		}
 
 		HttpPut deprecateRequest = null;
@@ -354,6 +357,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				deprecateRequest = httpPut(String.format("sct/deprecate?token=%s", getToken()), createDeprecationData(componentId));
 				execute(deprecateRequest);
 			}
+			
+			return ImmutableMap.copyOf(assignedOrPublishedSctIds);
 		
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(String.format("Exception while deprecating IDs for namespace %s.", currentNamespace), e);
@@ -363,7 +368,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	}
 
 	@Override
-	public void publish(final Set<String> componentIds) {
+	public Map<String, SctId> publish(final Set<String> componentIds) {
 		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
 		
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
@@ -384,7 +389,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 						currentNamespace = entry.getKey();
 						
 						for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
-							LOGGER.debug(String.format("Sending bulk publication request for namespace %s with size %d.", currentNamespace, bulkIds.size()));
+							LOGGER.debug("Sending bulk publication request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 							deprecateRequest = httpPut(String.format("sct/bulk/publish?token=%s", getToken()), createBulkPublishData(currentNamespace, bulkIds));
 							execute(deprecateRequest);
 						}
@@ -402,6 +407,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			if (!problemSctIds.isEmpty()) {
 				throw new SctIdStatusException("Cannot publish %s component IDs because they are not assigned or already published.", problemSctIds);
 			}
+			
+			return ImmutableMap.copyOf(assignedSctIds);
 			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(String.format("Exception while publishing IDs for namespace %s.", currentNamespace), e);
@@ -472,7 +479,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			} else {
 				
 				final String componentId = Iterables.getOnlyElement(componentIds);
-				LOGGER.debug(String.format("Sending component ID %s get request.", componentId));
+				LOGGER.debug("Sending component ID {} get request.", componentId);
 				singleRequest = httpGet(String.format("sct/ids/%s?token=%s", componentId, getToken()));
 				final String response = execute(singleRequest);
 

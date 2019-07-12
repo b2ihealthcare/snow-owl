@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 package com.b2international.snowowl.snomed.datastore.id.action;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierCountedRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 4.5
@@ -42,14 +43,19 @@ abstract class AbstractCountedIdAction extends AbstractIdAction<Set<String>> {
 	
 	@Override
 	protected final Set<String> doExecute(RepositoryContext context) {
-		final SnomedComponentIds result = createRequestBuilder()
+		final Object result = createRequestBuilder()
 				.setNamespace(namespace)
 				.setCategory(category)
 				.setQuantity(quantity)
 				.build()
 				.execute(context);
+		
+		if (result instanceof SctIds) {
+			return ((SctIds) result).stream().map(SctId::getSctid).collect(Collectors.toSet());
+		} else {
+			throw new UnsupportedOperationException("Unsupported return type: " + result);
+		}
 				
-		return ImmutableSet.copyOf(result);
 	}
 	
 	protected abstract AbstractSnomedIdentifierCountedRequestBuilder<?> createRequestBuilder();
@@ -65,7 +71,7 @@ abstract class AbstractCountedIdAction extends AbstractIdAction<Set<String>> {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("namespace", namespace)
 				.add("category", category)
 				.add("quantity", quantity)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.request;
 
-import java.util.Set;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
 
 /**
  * @since 5.5
@@ -30,8 +34,9 @@ final class SnomedIdentifierGenerateRequest extends AbstractSnomedIdentifierCoun
 	}
 	
 	@Override
-	protected Set<String> doExecute(ISnomedIdentifierService identifierService, String namespace, ComponentCategory category, int quantity) {
-		return identifierService.generate(namespace, category, quantity);
+	public SctIds execute(RepositoryContext context) {
+		final Map<String, SctId> generatedIds = context.service(ISnomedIdentifierService.class).generateSctIds(namespace(), category(), quantity());
+		return new SctIds(generatedIds.values().stream().sorted((id1, id2) -> id1.getSctid().compareTo(id2.getSctid())).collect(Collectors.toList()));
 	}
 
 }

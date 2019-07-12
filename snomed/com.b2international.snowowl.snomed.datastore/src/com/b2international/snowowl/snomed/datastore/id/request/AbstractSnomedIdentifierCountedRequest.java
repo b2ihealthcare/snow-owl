@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.request;
 
-import java.util.Set;
-
 import javax.annotation.Nonnegative;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.5
  */
-abstract class AbstractSnomedIdentifierCountedRequest implements Request<RepositoryContext, SnomedComponentIds> {
+abstract class AbstractSnomedIdentifierCountedRequest implements Request<RepositoryContext, SctIds> {
 
 	@JsonProperty
 	@NotNull
@@ -48,12 +45,17 @@ abstract class AbstractSnomedIdentifierCountedRequest implements Request<Reposit
 		this.namespace = namespace;
 		this.quantity = quantity;
 	}
-	
-	@Override
-	public final SnomedComponentIds execute(RepositoryContext context) {
-		return new SnomedComponentIds(doExecute(context.service(ISnomedIdentifierService.class), namespace, category, quantity));
-	}
 
-	protected abstract Set<String> doExecute(ISnomedIdentifierService identifierService, String namespace, ComponentCategory category, int quantity);
+	protected final ComponentCategory category() {
+		return category;
+	}
+	
+	protected final String namespace() {
+		return namespace;
+	}
+	
+	protected final int quantity() {
+		return quantity;
+	}
 
 }

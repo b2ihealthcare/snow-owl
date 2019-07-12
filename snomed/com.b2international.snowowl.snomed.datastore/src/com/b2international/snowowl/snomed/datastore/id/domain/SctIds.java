@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,11 @@
 package com.b2international.snowowl.snomed.datastore.id.domain;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -27,6 +30,11 @@ public final class SctIds extends CollectionResource<SctId> {
 
 	public SctIds(Collection<SctId> componentIds) {
 		super(ImmutableList.copyOf(componentIds));
+	}
+	
+	@JsonIgnore
+	public Set<String> getComponentIds() {
+		return stream().map(SctId::getSctid).collect(Collectors.toSet());
 	}
 
 }

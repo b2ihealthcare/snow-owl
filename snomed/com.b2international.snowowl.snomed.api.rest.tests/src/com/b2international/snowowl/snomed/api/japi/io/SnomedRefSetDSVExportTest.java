@@ -53,6 +53,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.DatatypeSnomedDsvExportItem;
@@ -275,7 +276,10 @@ public class SnomedRefSetDSVExportTest {
 					.setQuantity(1)
 					.build(REPOSITORY_ID)
 					.execute(bus)
-				.getSync().first().orElseThrow(() -> new IllegalStateException("Couldn't generate identifier concept ID"));
+					.getSync()
+					.first()
+					.map(SctId::getSctid)
+					.orElseThrow(() -> new IllegalStateException("Couldn't generate identifier concept ID"));
 	}
 
 	private SnomedRelationshipCreateRequestBuilder toRelationshipRequest(String typeId, CharacteristicType characteristicType, String desctinationId) {

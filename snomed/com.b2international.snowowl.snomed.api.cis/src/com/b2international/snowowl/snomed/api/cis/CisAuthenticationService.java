@@ -41,7 +41,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 6.18
  */
-@Api(value = "Authentication", description="Authentication", tags = { "authentication" })
+@Api(value = "Authentication", description="Authentication", tags = { "Authentication" })
 @RestController
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class CisAuthenticationService {

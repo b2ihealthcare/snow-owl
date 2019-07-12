@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.request;
 
-import java.util.Set;
-
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
 
 final class SnomedIdentifierReserveRequest extends AbstractSnomedIdentifierCountedRequest {
 
@@ -27,8 +27,8 @@ final class SnomedIdentifierReserveRequest extends AbstractSnomedIdentifierCount
 	}
 	
 	@Override
-	protected Set<String> doExecute(ISnomedIdentifierService identifierService, String namespace, ComponentCategory category, int quantity) {
-		return identifierService.reserve(namespace, category, quantity);
+	public SctIds execute(RepositoryContext context) {
+		return new SctIds(context.service(ISnomedIdentifierService.class).reserveSctIds(namespace(), category(), quantity()).values());
 	}
 
 }
