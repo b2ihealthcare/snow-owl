@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +30,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.cis.model.CisError;
+import com.b2international.snowowl.snomed.api.cis.model.SctIdsList;
 import com.b2international.snowowl.snomed.api.cis.util.DeferredResults;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -64,13 +67,36 @@ public class CisBulkSctIdService {
 		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
 	})
 	@GetMapping(value = "/ids")
-	public DeferredResult<List<SctId>> getSctIds(
+	public DeferredResult<List<SctId>> getSctIdsViaGet(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The required sctids list, separated with commas (,).", required = true)
 			@RequestParam(value = "sctids")
 			String sctIds) {
+		return getSctIds(sctIds);
+	}
+	
+	@ApiOperation(
+		value = "Returns the SCTIDs Record.",
+		notes = "Returns the required SCTID Records. Bulk SCTID operations do not currently include AdditionalIds"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+	})
+	@PostMapping(value = "/ids")
+	public DeferredResult<List<SctId>> getSctIdsViaPost(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The required sctids list, separated with commas (,).", required = true)
+			@RequestBody
+			SctIdsList sctIds) {
+		return getSctIds(sctIds.getSctids());
+	}
+	
+	private DeferredResult<List<SctId>> getSctIds(String sctIds) {
 		String[] sctIdValues = Strings.isNullOrEmpty(sctIds) ? new String[0] : sctIds.split(",");
 		return DeferredResults.wrap(SnomedRequests.identifiers()
 				.prepareGet()
@@ -79,7 +105,5 @@ public class CisBulkSctIdService {
 				.execute(bus)
 				.then(ids -> ids.getItems()));
 	}
-	
-	
 	
 }
