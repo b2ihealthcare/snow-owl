@@ -16,22 +16,35 @@
 package com.b2international.snowowl.snomed.api.cis;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.snomed.api.cis.model.BulkJob;
 import com.b2international.snowowl.snomed.api.cis.model.CisError;
 import com.b2international.snowowl.snomed.api.cis.model.SctIdsList;
 import com.b2international.snowowl.snomed.api.cis.util.DeferredResults;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkDeprecationData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkGenerationData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkPublicationData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkRegistrationData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkReleaseData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkReservationData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.Record;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Strings;
@@ -104,6 +117,129 @@ public class CisBulkSctIdService {
 				.build(repositoryId)
 				.execute(bus)
 				.then(ids -> ids.getItems()));
+	}
+	
+	@ApiOperation(
+		value = "Generates new SCTIDs",
+		notes = "Generates new SCTIDs, based on the metadata passed in the GenerationData parameter. The first available SCTIDs will be assigned. Returns an array of SCTIDs Record with status 'Assigned'"
+	)
+	@PostMapping(value = "/generate")
+	public DeferredResult<BulkJob> generateBulk(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody 
+			BulkGenerationData generationData) {
+		return runInJob("Generate new SCTIDs", SnomedRequests.identifiers()
+						.prepareGenerate()
+						.setCategory(generationData.getComponentCategory())
+						.setNamespace(generationData.getNamespaceAsString())
+						.setQuantity(generationData.getQuantity())
+						.build(repositoryId));
+	}
+	
+	@ApiOperation(
+		value = "Registers SCTIDs",
+		notes = "Registers SCTIDs already in use in an external system, based on the metadata passed in the RegistrationData parameter. Returns an array of SCTID Records with status 'Assigned'."
+	)
+	@PostMapping(value = "/register")
+	public DeferredResult<BulkJob> registerBulk(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody 
+			BulkRegistrationData registrationData) {
+		return runInJob("Register SCTIDs", SnomedRequests.identifiers()
+						.prepareRegister()
+						.setComponentIds(registrationData.getRecords().stream().map(Record::getSctid).collect(Collectors.toSet()))
+						.build(repositoryId));
+	}
+	
+	@ApiOperation(
+		value = "Reserves SCTIDs",
+		notes = "Reserves SCTIDs for use in an external system, based on the metadata passed in the ReservationData parameter. The first available SCTIDs will be reserved. Returns an array of SCTID Records with status 'Reserved'."
+	)
+	@PostMapping(value = "/reserve")
+	public DeferredResult<BulkJob> reserveBulk(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody 
+			BulkReservationData reservationData) {
+		return runInJob("Reserve SCTIDs", SnomedRequests.identifiers()
+						.prepareReserve()
+						.setCategory(reservationData.getComponentCategory())
+						.setNamespace(reservationData.getNamespaceAsString())
+						.setQuantity(reservationData.getQuantity())
+						.build(repositoryId));
+	}
+	
+	@ApiOperation(
+		value = "Deprecates SCTIDs",
+		notes = "Deprecates SCTIDs, so they will not be assigned to any component, based on the metadata passed in the DeprecationData parameter. Returns an array of SCTID Records with status 'Deprecated'."
+	)
+	@PutMapping(value = "/deprecate")
+	public DeferredResult<BulkJob> deprecateBulk(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody 
+			BulkDeprecationData deprecationData) {
+		return runInJob("Deprecate SCTIDs", SnomedRequests.identifiers()
+						.prepareDeprecate()
+						.setComponentIds(deprecationData.getComponentIds())
+						.build(repositoryId));
+	}
+
+	@ApiOperation(
+		value = "Release SCTIDs",
+		notes = "Releases SCTIDs, so they will be available to be assigned again, based on the metadata passed in the DeprecationData parameter. Returns an array SCTID Records with status 'Available'."
+	)
+	@PutMapping(value = "/release")
+	public DeferredResult<BulkJob> releaseBulk(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody 
+			BulkReleaseData releaseData) {
+		return runInJob("Release SCTIDs", SnomedRequests.identifiers()
+						.prepareRelease()
+						.setComponentIds(releaseData.getComponentIds())
+						.build(repositoryId));
+	}
+
+	@ApiOperation(
+		value = "Publish SCTIDs",
+		notes = "Sets the SCTIDs as published, based on the metadata passed in the DeprecationData parameter. Returns an array SCTID Records with status 'Published'."
+	)
+	@PutMapping(value = "/publish")
+	public DeferredResult<BulkJob> publishBulk(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody 
+			BulkPublicationData publicationData) {
+		return runInJob("Publish SCTIDs", SnomedRequests.identifiers()
+				.preparePublish()
+				.setComponentIds(publicationData.getComponentIds())
+				.build(repositoryId));
+	}
+	
+	private DeferredResult<BulkJob> runInJob(String jobDescription, AsyncRequest<?> request) {
+		return DeferredResults.wrap(JobRequests.prepareSchedule()
+				.setDescription(jobDescription)
+				.setRequest(request)
+				.setUser(User.SYSTEM.getUsername())
+				.buildAsync()
+				.execute(bus)
+				.thenWith(id -> JobRequests.prepareGet(id).buildAsync().execute(bus))
+				.then(BulkJob::fromRemoteJob));
 	}
 	
 }

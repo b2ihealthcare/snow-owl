@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.datastore.id.cis.request;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
 /**
@@ -31,10 +33,25 @@ public class BulkReservationData extends PartitionIdData {
 
 	private Collection<String> systemIds = Lists.newArrayList();
 
-	public BulkReservationData(final String namespace, final String software, final String expirationDate, final ComponentCategory category,
+	public BulkReservationData(
+			final String namespace, 
+			final String software, 
+			final String expirationDate, 
+			final ComponentCategory category,
 			final int quantity) {
 		super(namespace, software, category);
 		this.expirationDate = expirationDate;
+		this.quantity = quantity;
+	}
+	
+	@JsonCreator
+	public BulkReservationData(
+			@JsonProperty("namespace") final int namespace, 
+			@JsonProperty("software") final String software, 
+			@JsonProperty("partitionId") final String partitionId,
+			@JsonProperty("expirationDate") final String expirationDate,
+			@JsonProperty("quantity") final int quantity) {
+		super(namespace, software, partitionId);
 		this.quantity = quantity;
 	}
 

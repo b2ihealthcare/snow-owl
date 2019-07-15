@@ -20,7 +20,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -28,7 +30,8 @@ import com.google.common.collect.ImmutableList;
  */
 public final class SctIds extends CollectionResource<SctId> {
 
-	public SctIds(Collection<SctId> componentIds) {
+	@JsonCreator
+	public SctIds(@JsonProperty("items") Collection<SctId> componentIds) {
 		super(ImmutableList.copyOf(componentIds));
 	}
 	

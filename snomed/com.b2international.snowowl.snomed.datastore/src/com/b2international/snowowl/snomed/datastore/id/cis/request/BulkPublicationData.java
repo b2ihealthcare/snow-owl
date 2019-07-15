@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id.cis.request;
 
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -28,6 +29,15 @@ public class BulkPublicationData extends RequestData {
 	private Collection<String> componentIds;
 
 	public BulkPublicationData(final String namespace, final String software, final Collection<String> componentIds) {
+		super(namespace, software);
+		this.componentIds = componentIds;
+	}
+	
+	@JsonCreator
+	public BulkPublicationData(
+			@JsonProperty("namespace") final int namespace, 
+			@JsonProperty("software") final String software, 
+			@JsonProperty("sctids") final Collection<String> componentIds) {
 		super(namespace, software);
 		this.componentIds = componentIds;
 	}

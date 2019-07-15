@@ -37,7 +37,7 @@ public abstract class AbstractSnomedIdentifierEnumeratedRequestBuilder<B extends
 		return getSelf();
 	}
 	
-	public B setComponentIds(Set<String> componentIds) {
+	public B setComponentIds(Iterable<String> componentIds) {
 		this.componentIds = ImmutableSet.copyOf(componentIds);
 		return getSelf();
 	}
