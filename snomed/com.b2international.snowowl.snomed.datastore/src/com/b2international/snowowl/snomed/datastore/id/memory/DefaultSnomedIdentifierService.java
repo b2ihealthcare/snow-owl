@@ -251,6 +251,9 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			resultBuilder.putAll(existingIdsMap);
 			
 			for (final String componentId : difference) {
+				if (!SnomedIdentifiers.isValid(componentId)) {
+					throw new BadRequestException("Not valid SCTID: %s", componentId);
+				}
 				resultBuilder.put(componentId, buildSctId(componentId, IdentifierStatus.AVAILABLE));
 			}
 			

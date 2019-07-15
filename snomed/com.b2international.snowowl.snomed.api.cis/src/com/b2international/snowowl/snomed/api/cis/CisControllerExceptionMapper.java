@@ -24,8 +24,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.snowowl.core.exceptions.ApiError;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.cis.exceptions.UnauthorizedException;
 import com.b2international.snowowl.snomed.api.cis.model.CisError;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * @since 6.18
@@ -54,6 +56,19 @@ public class CisControllerExceptionMapper {
 	public @ResponseBody CisError handle(final UnauthorizedException ex) {
 		final ApiError err = ex.toApiError();
 		return new CisError(err.getStatus(), err.getMessage());
+	}
+	
+	/**
+	 * Exception handler converting any {@link JsonMappingException} to an <em>HTTP 400</em>.
+	 * 
+	 * @param ex
+	 * @return {@link RestApiError} instance with detailed messages
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody CisError handle(BadRequestException ex) {
+		LOG.error("Exception during processing of a JSON document", ex);
+		return new CisError(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
 	}
 
 }
