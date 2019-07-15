@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,8 +31,11 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.cis.model.CisError;
 import com.b2international.snowowl.snomed.api.cis.util.DeferredResults;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.DeprecationData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.GenerationData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.PublicationData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.RegistrationData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.ReleaseData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.ReservationData;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -116,7 +120,8 @@ public class CisSctIdService {
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
-			@RequestBody ReservationData reservationData) {
+			@RequestBody 
+			ReservationData reservationData) {
 		return DeferredResults.wrap(SnomedRequests.identifiers()
 				.prepareReserve()
 				.setCategory(reservationData.getComponentCategory())
@@ -140,10 +145,71 @@ public class CisSctIdService {
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
-			@RequestBody RegistrationData registrationData) {
+			@RequestBody 
+			RegistrationData registrationData) {
 		return DeferredResults.wrap(SnomedRequests.identifiers()
 				.prepareRegister()
 				.setComponentId(registrationData.getSctId())
+				.build(repositoryId)
+				.execute(bus)
+				.then(ids -> ids.first().get()));
+	}
+	
+	@ApiOperation(
+		value = "Deprecates a SCTID", 
+		notes = "Deprecates a SCTID, so it will not be assigned to any component, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Deprecated'."
+	)
+	@PutMapping(value = "/ids/deprecate", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public DeferredResult<SctId> deprecate(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody 
+			DeprecationData deprecationData) {
+		return DeferredResults.wrap(SnomedRequests.identifiers()
+				.prepareDeprecate()
+				.setComponentId(deprecationData.getSctId())
+				.build(repositoryId)
+				.execute(bus)
+				.then(ids -> ids.first().get()));
+	}
+
+	@ApiOperation(
+		value = "Releases a SCTID", 
+		notes = "Releases a SCTID, so it will available to be assigned again, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Available'."
+	)
+	@PutMapping(value = "/ids/release", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public DeferredResult<SctId> release(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody
+			ReleaseData releaseData) {
+		return DeferredResults.wrap(SnomedRequests.identifiers()
+				.prepareRelease()
+				.setComponentId(releaseData.getSctId())
+				.build(repositoryId)
+				.execute(bus)
+				.then(ids -> ids.first().get()));
+	}
+
+	@ApiOperation(
+		value = "Publishes a SCTID", 
+		notes = "Sets the SCTID as published, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Published'."
+	)
+	@PutMapping(value = "/ids/publish", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public DeferredResult<SctId> publish(
+			@ApiParam(value = "The security access token.", required = true)
+			@RequestParam(value = "token")
+			String token,
+			@ApiParam(value = "The requested operation.", required = true)
+			@RequestBody
+			PublicationData publicationData) {
+		return DeferredResults.wrap(SnomedRequests.identifiers()
+				.preparePublish()
+				.setComponentId(publicationData.getSctId())
 				.build(repositoryId)
 				.execute(bus)
 				.then(ids -> ids.first().get()));
