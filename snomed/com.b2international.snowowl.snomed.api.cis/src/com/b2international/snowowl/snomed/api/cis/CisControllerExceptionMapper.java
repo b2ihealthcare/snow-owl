@@ -67,7 +67,6 @@ public class CisControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody CisError handle(BadRequestException ex) {
-		LOG.error("Exception during processing of a JSON document", ex);
 		return new CisError(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
 	}
 
