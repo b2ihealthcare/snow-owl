@@ -35,8 +35,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.cis.model.BulkJob;
 import com.b2international.snowowl.snomed.api.cis.model.CisError;
 import com.b2international.snowowl.snomed.api.cis.util.DeferredResults;
-import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
-import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.cis.domain.SctIds;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 

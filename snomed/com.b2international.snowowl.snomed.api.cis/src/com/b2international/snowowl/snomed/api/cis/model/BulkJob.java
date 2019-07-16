@@ -19,7 +19,7 @@ import java.util.Date;
 
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
-import com.b2international.snowowl.snomed.datastore.id.cis.JobStatus;
+import com.b2international.snowowl.snomed.cis.client.JobStatus;
 
 /**
  * @since 6.18

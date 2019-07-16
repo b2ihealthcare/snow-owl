@@ -31,7 +31,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.snomed.api.cis.exceptions.UnauthorizedException;
-import com.b2international.snowowl.snomed.datastore.id.cis.Credentials;
+import com.b2international.snowowl.snomed.cis.client.Credentials;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 

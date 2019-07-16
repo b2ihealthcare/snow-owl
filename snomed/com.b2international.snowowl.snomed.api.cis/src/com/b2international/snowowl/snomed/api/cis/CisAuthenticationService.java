@@ -28,8 +28,8 @@ import com.b2international.snowowl.snomed.api.cis.exceptions.UnauthorizedExcepti
 import com.b2international.snowowl.snomed.api.cis.model.CisError;
 import com.b2international.snowowl.snomed.api.cis.model.EmptyJsonResponse;
 import com.b2international.snowowl.snomed.api.cis.model.UserData;
-import com.b2international.snowowl.snomed.datastore.id.cis.Credentials;
-import com.b2international.snowowl.snomed.datastore.id.cis.Token;
+import com.b2international.snowowl.snomed.cis.client.Credentials;
+import com.b2international.snowowl.snomed.cis.client.Token;
 import com.google.common.base.Strings;
 
 import io.swagger.annotations.Api;
