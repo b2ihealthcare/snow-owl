@@ -29,8 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.cis.rest.model.CisError;
-import com.b2international.snowowl.snomed.cis.rest.util.DeferredResults;
+import com.b2international.snowowl.snomed.cis.Identifiers;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.model.DeprecationData;
 import com.b2international.snowowl.snomed.cis.model.GenerationData;
@@ -38,7 +37,8 @@ import com.b2international.snowowl.snomed.cis.model.PublicationData;
 import com.b2international.snowowl.snomed.cis.model.RegistrationData;
 import com.b2international.snowowl.snomed.cis.model.ReleaseData;
 import com.b2international.snowowl.snomed.cis.model.ReservationData;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.cis.rest.model.CisError;
+import com.b2international.snowowl.snomed.cis.rest.util.DeferredResults;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -61,6 +61,8 @@ public class CisSctIdService {
 	@Autowired
 	private IEventBus bus;
 	
+	private Identifiers identifiers = new Identifiers();
+	
 	@ApiOperation(value = "Returns the SCTIDs Record.")
 	@ApiResponses({
 		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
@@ -74,7 +76,7 @@ public class CisSctIdService {
 			@ApiParam(value = "The required id.", required = true)
 			@PathVariable(value = "sctid")
 			String sctid) {
-		return DeferredResults.wrap(SnomedRequests.identifiers()
+		return DeferredResults.wrap(identifiers
 				.prepareGet()
 				.setComponentId(sctid)
 				.build(repositoryId)
@@ -97,7 +99,7 @@ public class CisSctIdService {
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody GenerationData generationData) {
-		return DeferredResults.wrap(SnomedRequests.identifiers()
+		return DeferredResults.wrap(identifiers
 				.prepareGenerate()
 				.setNamespace(generationData.getNamespaceAsString())
 				.setCategory(generationData.getComponentCategory())
@@ -122,7 +124,7 @@ public class CisSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			ReservationData reservationData) {
-		return DeferredResults.wrap(SnomedRequests.identifiers()
+		return DeferredResults.wrap(identifiers
 				.prepareReserve()
 				.setCategory(reservationData.getComponentCategory())
 				.setNamespace(reservationData.getNamespaceAsString())
@@ -147,7 +149,7 @@ public class CisSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			RegistrationData registrationData) {
-		return DeferredResults.wrap(SnomedRequests.identifiers()
+		return DeferredResults.wrap(identifiers
 				.prepareRegister()
 				.setComponentId(registrationData.getSctId())
 				.build(repositoryId)
@@ -167,7 +169,7 @@ public class CisSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			DeprecationData deprecationData) {
-		return DeferredResults.wrap(SnomedRequests.identifiers()
+		return DeferredResults.wrap(identifiers
 				.prepareDeprecate()
 				.setComponentId(deprecationData.getSctId())
 				.build(repositoryId)
@@ -187,7 +189,7 @@ public class CisSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody
 			ReleaseData releaseData) {
-		return DeferredResults.wrap(SnomedRequests.identifiers()
+		return DeferredResults.wrap(identifiers
 				.prepareRelease()
 				.setComponentId(releaseData.getSctId())
 				.build(repositoryId)
@@ -207,7 +209,7 @@ public class CisSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody
 			PublicationData publicationData) {
-		return DeferredResults.wrap(SnomedRequests.identifiers()
+		return DeferredResults.wrap(identifiers
 				.preparePublish()
 				.setComponentId(publicationData.getSctId())
 				.build(repositoryId)

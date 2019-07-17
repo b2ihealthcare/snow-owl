@@ -34,10 +34,7 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.snomed.cis.rest.model.BulkJob;
-import com.b2international.snowowl.snomed.cis.rest.model.CisError;
-import com.b2international.snowowl.snomed.cis.rest.model.SctIdsList;
-import com.b2international.snowowl.snomed.cis.rest.util.DeferredResults;
+import com.b2international.snowowl.snomed.cis.Identifiers;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.model.BulkDeprecationData;
 import com.b2international.snowowl.snomed.cis.model.BulkGenerationData;
@@ -46,7 +43,10 @@ import com.b2international.snowowl.snomed.cis.model.BulkRegistrationData;
 import com.b2international.snowowl.snomed.cis.model.BulkReleaseData;
 import com.b2international.snowowl.snomed.cis.model.BulkReservationData;
 import com.b2international.snowowl.snomed.cis.model.Record;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.cis.rest.model.BulkJob;
+import com.b2international.snowowl.snomed.cis.rest.model.CisError;
+import com.b2international.snowowl.snomed.cis.rest.model.SctIdsList;
+import com.b2international.snowowl.snomed.cis.rest.util.DeferredResults;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -70,6 +70,8 @@ public class CisBulkSctIdService {
 	
 	@Autowired
 	private IEventBus bus;
+	
+	private Identifiers identifiers = new Identifiers();
 	
 	@ApiOperation(
 		value = "Returns the SCTIDs Record.",
@@ -111,7 +113,7 @@ public class CisBulkSctIdService {
 	
 	private DeferredResult<List<SctId>> getSctIds(String sctIds) {
 		String[] sctIdValues = Strings.isNullOrEmpty(sctIds) ? new String[0] : sctIds.split(",");
-		return DeferredResults.wrap(SnomedRequests.identifiers()
+		return DeferredResults.wrap(identifiers
 				.prepareGet()
 				.setComponentIds(ImmutableSet.copyOf(sctIdValues))
 				.build(repositoryId)
@@ -131,7 +133,7 @@ public class CisBulkSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkGenerationData generationData) {
-		return runInJob("Generate new SCTIDs", SnomedRequests.identifiers()
+		return runInJob("Generate new SCTIDs", identifiers
 						.prepareGenerate()
 						.setCategory(generationData.getComponentCategory())
 						.setNamespace(generationData.getNamespaceAsString())
@@ -151,7 +153,7 @@ public class CisBulkSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkRegistrationData registrationData) {
-		return runInJob("Register SCTIDs", SnomedRequests.identifiers()
+		return runInJob("Register SCTIDs", identifiers
 						.prepareRegister()
 						.setComponentIds(registrationData.getRecords().stream().map(Record::getSctid).collect(Collectors.toSet()))
 						.build(repositoryId));
@@ -169,7 +171,7 @@ public class CisBulkSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkReservationData reservationData) {
-		return runInJob("Reserve SCTIDs", SnomedRequests.identifiers()
+		return runInJob("Reserve SCTIDs", identifiers
 						.prepareReserve()
 						.setCategory(reservationData.getComponentCategory())
 						.setNamespace(reservationData.getNamespaceAsString())
@@ -189,7 +191,7 @@ public class CisBulkSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkDeprecationData deprecationData) {
-		return runInJob("Deprecate SCTIDs", SnomedRequests.identifiers()
+		return runInJob("Deprecate SCTIDs", identifiers
 						.prepareDeprecate()
 						.setComponentIds(deprecationData.getComponentIds())
 						.build(repositoryId));
@@ -207,7 +209,7 @@ public class CisBulkSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkReleaseData releaseData) {
-		return runInJob("Release SCTIDs", SnomedRequests.identifiers()
+		return runInJob("Release SCTIDs", identifiers
 						.prepareRelease()
 						.setComponentIds(releaseData.getComponentIds())
 						.build(repositoryId));
@@ -225,7 +227,7 @@ public class CisBulkSctIdService {
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkPublicationData publicationData) {
-		return runInJob("Publish SCTIDs", SnomedRequests.identifiers()
+		return runInJob("Publish SCTIDs", identifiers
 				.preparePublish()
 				.setComponentIds(publicationData.getComponentIds())
 				.build(repositoryId));

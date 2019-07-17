@@ -43,6 +43,5 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.mapstruct;bundle-version="1.2.0",
  io.swagger.annotations;bundle-version="1.5.14",
  io.swagger.models;bundle-version="1.5.14",
- com.b2international.snowowl.datastore,
- com.b2international.snowowl.snomed.datastore,
+ com.b2international.snowowl.snomed.cis,
  org.apache.commons.codec;bundle-version="1.10.0"
