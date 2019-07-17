@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
@@ -27,6 +28,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.1
@@ -75,9 +78,18 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		
 		if (containsKey(OptionKey.TERM)) {
 			String searchTerm = getString(OptionKey.TERM);
-
-			queryBuilder.should(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, Collections.singleton(searchTerm)));
-			queryBuilder.should(Expressions.prefixMatch(ValidationWhiteList.Fields.REPORTER, searchTerm));
+			
+			List<Expression> disjuncts = Lists.newArrayListWithExpectedSize(2);
+			disjuncts.add(Expressions.scriptScore(Expressions.matchTextPhrase(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS, searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+			disjuncts.add(Expressions.scriptScore(Expressions.matchTextAll(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			
+			queryBuilder.must(
+					Expressions.builder()
+						.should(Expressions.dismax(disjuncts))
+						.should(Expressions.boost(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, Collections.singleton(searchTerm)), 1000f))
+						.should(Expressions.boost(Expressions.prefixMatch(ValidationWhiteList.Fields.REPORTER, searchTerm), 1000f))
+					.build()
+			);
 		}
 		
 		if (containsKey(OptionKey.RULE_ID)) {
