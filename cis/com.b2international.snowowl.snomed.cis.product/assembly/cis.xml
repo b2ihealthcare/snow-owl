@@ -1,0 +1,52 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
+	<id>cis</id>
+	<formats>
+		<format>zip</format>
+		<format>tar.gz</format>
+	</formats>
+	<fileSets>
+		<!-- Equinox server base content -->
+		<fileSet>
+			<directory>${linux.product.path}/configuration</directory>
+			<outputDirectory>configuration</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${linux.product.path}/plugins</directory>
+			<outputDirectory>plugins</outputDirectory>
+			<excludes>
+				<exclude>org.eclipse.equinox.launcher.*</exclude>
+			</excludes>
+		</fileSet>
+		<!-- Common files -->		
+		<fileSet>
+			<directory>${project.basedir}/assembly/common</directory>
+			<outputDirectory></outputDirectory>
+			<excludes>
+				<!-- Exclude all *.sh file, as we will add 755 permission later during copy -->
+				<exclude>**/*.sh</exclude>
+			</excludes>
+		</fileSet>
+		<!-- Copy *.sh from common folder -->
+		<fileSet>
+			<directory>${project.basedir}/assembly/common</directory>
+			<outputDirectory></outputDirectory>
+			<fileMode>0755</fileMode>
+			<includes>
+				<include>**/*.sh</include>
+			</includes>
+		</fileSet>
+		<!-- Copy release files from the ROOT of the repository -->
+		<fileSet>
+			<directory>${project.basedir}/../../</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>README*</include>
+				<include>LICENSE*</include>
+				<include>NOTICE*</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</assembly>

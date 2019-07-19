@@ -9,6 +9,6 @@
 		<artifactId>cis-parent</artifactId>
 		<version>6.18.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>com.b2international.snowowl.snomed.cis</artifactId>
-	<packaging>eclipse-plugin</packaging>
+	<artifactId>com.b2international.snowowl.snomed.cis.feature</artifactId>
+	<packaging>eclipse-feature</packaging>
 </project>

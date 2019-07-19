@@ -15,6 +15,8 @@
 	<modules>
 		<module>com.b2international.snowowl.snomed.cis</module>
 		<module>com.b2international.snowowl.snomed.cis.rest</module>
+		<module>com.b2international.snowowl.snomed.cis.product</module>
+		<module>com.b2international.snowowl.snomed.cis.feature</module>
 	</modules>
 	
 </project>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Snow Owl CIS" uid="com.b2international.snowowl.snomed.cis.product" id="com.b2international.snowowl.server.product.product" application="com.b2international.snowowl.server.product.SnowOwlServer" version="6.18.0.qualifier" useFeatures="true" includeLaunchers="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-console -consoleLog
+      </programArgs>
+      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms2g -Xmx2g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=9090 -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
+      </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages/>
+
+   <launcher name="SnowOwlCis">
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="com.b2international.snowowl.server.core.feature"/>
+      <feature id="com.b2international.snowowl.server.product.feature"/>
+      <feature id="com.b2international.snowowl.server.dependencies.feature"/>
+      <feature id="com.b2international.snowowl.snomed.cis.feature"/>
+   </features>
+
+   <configurations>
+      <plugin id="com.b2international.snowowl.server.product" autoStart="true" startLevel="0" />
+      <plugin id="com.b2international.snowowl.snomed.cis.rest" autoStart="false" startLevel="0" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
+
+</product>

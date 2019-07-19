@@ -52,6 +52,7 @@
 		<module>core</module>
 		<module>net4j</module>
 		<module>snomed</module>
+		<module>cis</module>
 		<module>tests</module>
 		<module>releng</module>
 	</modules>
