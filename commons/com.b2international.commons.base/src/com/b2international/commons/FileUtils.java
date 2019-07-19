@@ -25,6 +25,7 @@ import static java.util.UUID.randomUUID;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PipedOutputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Path;
@@ -189,18 +191,66 @@ public final class FileUtils {
 			}
 		}
 	}
-
+	
 	/**
-	 * Takes the root directory which contents must be zipped
-	 *
-	 * @param rootDirectoryToZipUp points to the root directory to zip up
-	 * @param archiveFile the zip file itself
-	 * @return
+	 * Creates a zip archive with the filtered contents of the given root directory.
+	 * If no filter is specified (null), all content is compressed 
+	 * @param rootDirectory the directory with the content to be compressed
+	 * @param archiveFile the zip file to create
+	 * @param filter file filter to filter the content compressed
+	 * @return the archive file
 	 * @throws IOException
 	 */
-	public static File createZipArchive(final File rootDirectoryToZipUp, final File archiveFile) throws IOException {
-		zip(rootDirectoryToZipUp, archiveFile);
-		return archiveFile;
+	public static File createZipArchive(final File rootDirectory, final File archiveFile, final FileFilter filter) throws IOException {
+		
+		checkArgument(rootDirectory != null
+				&& rootDirectory.isDirectory() 
+				&& rootDirectory.canWrite(), "The given directory %s is not found or it's read-only", rootDirectory);
+		
+		checkNotNull(archiveFile, "zipFile");
+
+		try (FileOutputStream fos = new FileOutputStream(archiveFile)) {
+			try (ZipOutputStream zos = new ZipOutputStream(fos)) {
+
+				final Deque<File> queue = new LinkedList<File>();
+				queue.push(rootDirectory);
+
+				while (!queue.isEmpty()) {
+					final File first = queue.pop();
+					final File[] content = first.listFiles(filter);
+					if (content != null) {
+						for (final File file : content) {
+							final String relativeName = getRelativeName(rootDirectory, file);
+							if (file.isDirectory()) {
+								zos.putNextEntry(new ZipEntry(relativeName));
+								queue.push(file);
+							} else {
+								zos.putNextEntry(new ZipEntry(relativeName));
+								try (FileInputStream fis = new FileInputStream(file)) {
+									copy(fis, zos);
+								}
+							}
+							zos.closeEntry();
+						}
+					}
+					// TODO include empty dirs???
+				}
+			}
+		}
+		
+		return archiveFile; 
+	}
+
+	/**
+	 * Creates a zip archive with the contents of the given root directory.
+	 * @param rootDirectory the directory with the content to be compressed
+	 * @param archiveFile the zip file to create
+	 * @return the archive file
+	 * @throws IOException
+	 */
+	public static File createZipArchive(final File rootDirectory, final File archiveFile) throws IOException {
+		return createZipArchive(rootDirectory, archiveFile, null);
+		
 	}
 	
 	/**
@@ -288,39 +338,7 @@ public final class FileUtils {
 		fis.close();
 	}
 
-	private static void zip(final File directory, final File zipFile) throws IOException {
-		checkArgument(directory != null && directory.isDirectory() && directory.canWrite(), "The given directory %s is not found or it's read-only", directory);
-		checkNotNull(zipFile, "zipFile");
-
-		try (FileOutputStream fos = new FileOutputStream(zipFile)) {
-			try (ZipOutputStream zos = new ZipOutputStream(fos)) {
-
-				final Deque<File> queue = new LinkedList<File>();
-				queue.push(directory);
-
-				while (!queue.isEmpty()) {
-					final File first = queue.pop();
-					final File[] content = first.listFiles();
-					if (content != null) {
-						for (final File file : content) {
-							final String relativeName = getRelativeName(directory, file);
-							if (file.isDirectory()) {
-								zos.putNextEntry(new ZipEntry(relativeName));
-								queue.push(file);
-							} else {
-								zos.putNextEntry(new ZipEntry(relativeName));
-								try (FileInputStream fis = new FileInputStream(file)) {
-									copy(fis, zos);
-								}
-							}
-							zos.closeEntry();
-						}
-					}
-					// TODO include empty dirs???
-				}
-			}
-		}
-	}
+	
 
 	private static void copy(final InputStream is, final OutputStream os) throws IOException {
 		final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
@@ -372,7 +390,6 @@ public final class FileUtils {
 			}
 		}
 	}
-	
 	
 	/**
 	 * Returns a file path from the given directory that matches the path matcher expression.
