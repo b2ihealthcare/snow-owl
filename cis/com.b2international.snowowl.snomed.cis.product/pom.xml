@@ -184,25 +184,7 @@
 						<version>2.4.3</version>
 						<executions>
 							<execution>
-								<id>copy-configuration-users</id>
-								<phase>process-classes</phase>
-								<goals>
-									<goal>copy-resources</goal>
-								</goals>
-								<configuration>
-									<resources>
-										<resource>
-											<directory>assembly/common/configuration</directory>
-											<includes>
-												<include>users</include>
-											</includes>
-										</resource>
-									</resources>
-									<outputDirectory>${basedir}/runtime/configuration</outputDirectory>
-								</configuration>
-							</execution>
-							<execution>
-								<id>copy-configuration-snow-owl-config-yml</id>
+								<id>copy-runtime-config</id>
 								<phase>process-classes</phase>
 								<goals>
 									<goal>copy-resources</goal>
@@ -211,9 +193,9 @@
 									<resources>
 										<resource>
 											<directory>assembly/common</directory>
-											<includes>
-												<include>snowowl_config.yml</include>
-											</includes>
+											<excludes>
+												<exclude>bin/**</exclude>
+											</excludes>
 										</resource>
 									</resources>
 									<outputDirectory>${basedir}/runtime</outputDirectory>

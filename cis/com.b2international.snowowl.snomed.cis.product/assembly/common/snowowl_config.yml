@@ -19,6 +19,10 @@ identity:
 #        userIdProperty: uid
 #        usePool: false
 
+# Disable TCP based connections by setting the port to 0 (recommended value for external CIS deployments)
+repository:
+  port: 0
+
 # Configure the CIS service here (default config is for EMBEDDED ID service)
 cis:
   strategy: EMBEDDED
