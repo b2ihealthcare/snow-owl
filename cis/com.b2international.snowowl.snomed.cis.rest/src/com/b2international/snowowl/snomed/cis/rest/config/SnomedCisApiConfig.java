@@ -73,7 +73,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 @ComponentScan({"com.b2international.snowowl.snomed.cis.rest"})
 @Import({ SnomedCisApiSecurityConfig.class })
-@PropertySource("classpath:com/b2international/snowowl/snomed/api/cis/config/service_configuration.properties")
+@PropertySource("classpath:com/b2international/snowowl/snomed/cis/rest/config/service_configuration.properties")
 public class SnomedCisApiConfig extends WebMvcConfigurerAdapter {
 
 	@Value("${api.version}")

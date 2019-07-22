@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.cis.model;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
@@ -27,6 +29,16 @@ public class ReservationData extends PartitionIdData {
 
 	public ReservationData(final String namespace, final String software, final String expirationDate, final ComponentCategory category) {
 		super(namespace, software, category);
+		this.expirationDate = expirationDate;
+	}
+	
+	@JsonCreator
+	public ReservationData(
+			@JsonProperty("namespace") final int namespace, 
+			@JsonProperty("software") final String software, 
+			@JsonProperty("expirationDate") final String expirationDate, 
+			@JsonProperty("partitionId") final String partitionId) {
+		super(namespace, software, partitionId);
 		this.expirationDate = expirationDate;
 	}
 

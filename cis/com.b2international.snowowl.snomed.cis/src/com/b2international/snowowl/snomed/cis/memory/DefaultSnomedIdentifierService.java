@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.cis.memory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
@@ -158,7 +159,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public Map<String, SctId> release(final Set<String> componentIds) {
 		LOGGER.debug("Releasing {} component IDs.", componentIds.size());
 
-		final Map<String, SctId> sctIds = getSctIds(componentIds);
+		final Map<String, SctId> sctIds = newHashMap(getSctIds(componentIds));
 		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
 				SctId::isAssigned, 
 				SctId::isReserved, 
@@ -174,9 +175,8 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	
 		// XXX: It might be better to keep the last state change recorded in the index on these SctIds, but for now we remove them entirely
 		removeSctIds(assignedOrReservedSctIds.keySet());
-		assignedOrReservedSctIds.keySet().forEach(sctIds::remove);
 		
-		return ImmutableMap.copyOf(sctIds);
+		return getSctIds(componentIds);
 	}
 
 	@Override

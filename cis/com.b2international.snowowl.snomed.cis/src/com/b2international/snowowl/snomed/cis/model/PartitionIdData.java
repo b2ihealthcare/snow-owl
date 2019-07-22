@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.cis.model;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 4.5
@@ -56,6 +57,7 @@ abstract class PartitionIdData extends RequestData {
 		this.partitionId = partitionId;
 	}
 	
+	@JsonIgnore
 	public ComponentCategory getComponentCategory() {
 		int componentIdentifier = Integer.parseInt(getPartitionId().substring(1, 2));
 		return ComponentCategory.getByOrdinal(componentIdentifier);

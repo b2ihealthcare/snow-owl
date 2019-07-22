@@ -39,12 +39,12 @@ import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
@@ -105,6 +105,11 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	@Override
 	public Set<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
+		return ImmutableSet.copyOf(generateSctIds(namespace, category, quantity).keySet());
+	}
+
+	@Override
+	public Map<String, SctId> generateSctIds(String namespace, ComponentCategory category, int quantity) {
 		checkNotNull(category, "Component category must not be null.");
 		checkArgument(quantity > 0, "Number of requested IDs should be non-negative.");
 		checkCategory(category);
@@ -126,7 +131,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, getToken()));
 				final String recordsResponse = execute(recordsRequest);
 				final JsonNode[] records = mapper.readValue(recordsResponse, JsonNode[].class);
-				return getComponentIds(records);
+				return readSctIds(getComponentIds(records));
 				
 			} else {
 				LOGGER.debug("Sending {} ID single generation request.", category.getDisplayName());
@@ -135,7 +140,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				final String response = execute(generateRequest);
 				final SctId sctid = mapper.readValue(response, SctId.class);
 				
-				return ImmutableSet.of(sctid.getSctid());
+				return readSctIds(Collections.singleton(sctid.getSctid()));
 			}
 			
 		} catch (IOException e) {
@@ -145,14 +150,13 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			release(recordsRequest);
 		}
 	}
-
-	@Override
-	public Map<String, SctId> generateSctIds(String namespace, ComponentCategory category, int quantity) {
-		throw new NotImplementedException("Not implemented for CIS based SNOMED CT identifier service");
-	}
 	
 	@Override
 	public Map<String, SctId> register(final Set<String> componentIds) {
+		if (CompareUtils.isEmpty(componentIds)) {
+			return Collections.emptyMap();
+		}
+		
 		LOGGER.debug("Registering {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
@@ -209,6 +213,11 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	@Override
 	public Set<String> reserve(String namespace, ComponentCategory category, int quantity) {
+		return ImmutableSet.copyOf(reserveSctIds(namespace, category, quantity).keySet());
+	}
+	
+	@Override
+	public Map<String, SctId> reserveSctIds(String namespace, ComponentCategory category, int quantity) {
 		checkNotNull(category, "Component category must not be null.");
 		checkArgument(quantity > 0, "Number of requested IDs should be non-negative.");
 		checkCategory(category);
@@ -230,7 +239,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, getToken()));
 				final String recordsResponse = execute(recordsRequest);
 				final JsonNode[] records = mapper.readValue(recordsResponse, JsonNode[].class);
-				return getComponentIds(records);
+				return readSctIds(getComponentIds(records));
 			
 			} else {
 				LOGGER.debug("Sending {} ID reservation request.", category.getDisplayName());
@@ -239,7 +248,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				final String response = execute(reserveRequest);
 				final SctId sctid = mapper.readValue(response, SctId.class);
 				
-				return ImmutableSet.of(sctid.getSctid());
+				return readSctIds(Collections.singleton(sctid.getSctid()));
 			}
 			
 		} catch (IOException e) {
@@ -248,11 +257,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			release(reserveRequest);
 			release(recordsRequest);
 		}
-	}
-	
-	@Override
-	public Map<String, SctId> reserveSctIds(String namespace, ComponentCategory category, int quantity) {
-		throw new NotImplementedException("Not implemented for CIS based SNOMED CT identifier service");
 	}
 
 	@Override
@@ -273,8 +277,9 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				SctId::isAssigned, 
 				SctId::isReserved)));
 		
+		// if there is no IDs to release, then just return the current sctIds set as a response
 		if (assignedOrReservedSctIds.isEmpty()) {
-			return Collections.emptyMap();
+			return sctIds;
 		}
 
 		HttpPut releaseRequest = null;
@@ -454,6 +459,10 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	}
 
 	private Map<String, SctId> readSctIds(final Set<String> componentIds) {
+		if (CompareUtils.isEmpty(componentIds)) {
+			return Collections.emptyMap();
+		}
+		
 		HttpPost bulkRequest = null;
 		HttpGet singleRequest = null;
 		
@@ -497,7 +506,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	
 	@Override
 	public boolean importSupported() {
-		return false;
+		return true;
 	}
 
 	private void login() {
@@ -546,7 +555,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					}
 					
 				} else {
-					throw new BadRequestException(e.getReasonPhrase());
+					throw new BadRequestException(e.getReasonPhrase(), e);
 				}
 			}
 		}
@@ -591,7 +600,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		}
 		
 		if (JobStatus.FINISHED != status) {
-			throw new SnowowlRuntimeException("Job didn't finish with expected status."); 
+			throw new SnowowlRuntimeException("Job didn't finish with expected status: " + status); 
 		} 
 	}
 

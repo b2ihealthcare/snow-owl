@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.cis.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -26,6 +27,15 @@ public class ReleaseData extends RequestData {
 	private String sctId;
 
 	public ReleaseData(final String namespace, final String software, final String sctId) {
+		super(namespace, software);
+		this.sctId = sctId;
+	}
+	
+	@JsonCreator
+	public ReleaseData(
+			@JsonProperty("namespace") final int namespace, 
+			@JsonProperty("software") final String software, 
+			@JsonProperty("sctid") final String sctId) {
 		super(namespace, software);
 		this.sctId = sctId;
 	}

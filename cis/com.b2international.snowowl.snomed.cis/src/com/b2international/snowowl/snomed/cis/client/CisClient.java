@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.google.common.base.Strings;
 
 /**
  * Client to communicate with the CIS.
@@ -54,8 +55,7 @@ class CisClient {
 	private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisClient.class);
 
-	private final String baseUrl;
-	private final String contextRoot;
+	private final String cisUrl;
 	private final String username;
 	private final String password;
 	private final ObjectMapper mapper;
@@ -65,8 +65,13 @@ class CisClient {
 	private AtomicReference<String> token = new AtomicReference<>(BAD_TOKEN);
 
 	public CisClient(final SnomedIdentifierConfiguration conf, final ObjectMapper mapper) {
-		this.baseUrl = conf.getCisBaseUrl();
-		this.contextRoot = conf.getCisContextRoot();
+		final StringBuilder builder = new StringBuilder();
+		builder.append(conf.getCisBaseUrl());
+		if (!Strings.isNullOrEmpty(conf.getCisContextRoot())) {
+			builder.append("/");
+			builder.append(conf.getCisContextRoot());
+		}
+		this.cisUrl = builder.toString();
 		this.username = conf.getCisUserName();
 		this.password = conf.getCisPassword();
 		this.mapper = mapper;
@@ -76,19 +81,19 @@ class CisClient {
 		this.client = new DefaultHttpClient(conman);
 	}
 
-	public HttpGet httpGet(final String suffix) {
-		return new HttpGet(String.format("%s/%s", getServiceUrl(), suffix));
+	public HttpGet httpGet(final String api) {
+		return new HttpGet(toApiPath(api));
 	}
 
-	public HttpPost httpPost(final String suffix, final Object data) throws IOException {
-		final HttpPost httpPost = new HttpPost(String.format("%s/%s", getServiceUrl(), suffix));
+	public HttpPost httpPost(final String api, final Object data) throws IOException {
+		final HttpPost httpPost = new HttpPost(toApiPath(api));
 		httpPost.setEntity(new StringEntity(mapper.writeValueAsString(data), ContentType.create("application/json")));
 
 		return httpPost;
 	}
 
-	public HttpPut httpPut(final String suffix, final Object data) throws IOException {
-		final HttpPut httpPut = new HttpPut(String.format("%s/%s", getServiceUrl(), suffix));
+	public HttpPut httpPut(final String api, final Object data) throws IOException {
+		final HttpPut httpPut = new HttpPut(toApiPath(api));
 		httpPut.setEntity(new StringEntity(mapper.writeValueAsString(data), ContentType.create("application/json")));
 
 		return httpPut;
@@ -110,10 +115,15 @@ class CisClient {
 		request.releaseConnection();
 	}
 
-	private String getServiceUrl() {
-		return String.format("%s/%s", baseUrl, contextRoot);
+	private String toApiPath(String path) {
+		final StringBuilder builder = new StringBuilder(this.cisUrl);
+		if (!this.cisUrl.endsWith("/")) {
+			builder.append("/");
+		}
+		builder.append(path);
+		return builder.toString();
 	}
-
+	
 	private void checkResponseStatus(final HttpResponse response) {
 		final StatusLine statusLine = response.getStatusLine();
 		final int statusCode = statusLine.getStatusCode();
