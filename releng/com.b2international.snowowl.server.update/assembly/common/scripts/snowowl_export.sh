@@ -111,7 +111,7 @@ EOF
 }
 
 echo_date() {
-    echo -e "[`date +\"%Y-%m-%d %H:%M:%S\"`] $@"
+	echo -e "[$(date +"%Y-%m-%d %H:%M:%S")] $@"
 }
 
 check_if_empty() {
