@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,10 +63,6 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/sct/bulk", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CisBulkSctIdService {
 
-	@Autowired
-	@Value("${repositoryId}")
-	protected String repositoryId;
-	
 	@Autowired
 	private IEventBus bus;
 	
@@ -116,7 +111,7 @@ public class CisBulkSctIdService {
 		return DeferredResults.wrap(identifiers
 				.prepareGet()
 				.setComponentIds(ImmutableSet.copyOf(sctIdValues))
-				.build(repositoryId)
+				.buildAsync()
 				.execute(bus)
 				.then(ids -> ids.getItems()));
 	}
@@ -138,7 +133,7 @@ public class CisBulkSctIdService {
 						.setCategory(generationData.getComponentCategory())
 						.setNamespace(generationData.getNamespaceAsString())
 						.setQuantity(generationData.getQuantity())
-						.build(repositoryId));
+						.buildAsync());
 	}
 	
 	@ApiOperation(
@@ -156,7 +151,7 @@ public class CisBulkSctIdService {
 		return runInJob("Register SCTIDs", identifiers
 						.prepareRegister()
 						.setComponentIds(registrationData.getRecords().stream().map(Record::getSctid).collect(Collectors.toSet()))
-						.build(repositoryId));
+						.buildAsync());
 	}
 	
 	@ApiOperation(
@@ -176,7 +171,7 @@ public class CisBulkSctIdService {
 						.setCategory(reservationData.getComponentCategory())
 						.setNamespace(reservationData.getNamespaceAsString())
 						.setQuantity(reservationData.getQuantity())
-						.build(repositoryId));
+						.buildAsync());
 	}
 	
 	@ApiOperation(
@@ -194,7 +189,7 @@ public class CisBulkSctIdService {
 		return runInJob("Deprecate SCTIDs", identifiers
 						.prepareDeprecate()
 						.setComponentIds(deprecationData.getComponentIds())
-						.build(repositoryId));
+						.buildAsync());
 	}
 
 	@ApiOperation(
@@ -212,7 +207,7 @@ public class CisBulkSctIdService {
 		return runInJob("Release SCTIDs", identifiers
 						.prepareRelease()
 						.setComponentIds(releaseData.getComponentIds())
-						.build(repositoryId));
+						.buildAsync());
 	}
 
 	@ApiOperation(
@@ -230,7 +225,7 @@ public class CisBulkSctIdService {
 		return runInJob("Publish SCTIDs", identifiers
 				.preparePublish()
 				.setComponentIds(publicationData.getComponentIds())
-				.build(repositoryId));
+				.buildAsync());
 	}
 	
 	private DeferredResult<BulkJob> runInJob(String jobDescription, AsyncRequest<?> request) {
