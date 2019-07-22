@@ -19,7 +19,6 @@
 # Snow Owl terminology server export script
 # See usage or execute the script with the -h flag to get further information.
 
-
 #
 # Parameters that must be configured before execution
 #
@@ -33,7 +32,6 @@ SNOW_OWL_USER_PASSWORD=""
 # The target folder to save the exported RF2 content
 TARGET_FOLDER=""
 
-
 #
 # Global variables / constants, advanced parameters
 #
@@ -42,10 +40,10 @@ TARGET_FOLDER=""
 BRANCH_TO_EXPORT="MAIN"
 
 # Specified moduleIds to export
-MODULES_TO_EXPORT
+MODULES_TO_EXPORT=()
 
 # Specified refsets to export
-REFSETS_TO_EXPORT
+REFSETS_TO_EXPORT=()
 
 # The export type to use for the export config
 EXPORT_TYPE="DELTA"
@@ -55,9 +53,6 @@ SNOW_OWL_BASE_URL="http://localhost:8080"
 
 # URL for Snow Owl's REST API
 SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
-
-# The address where the export config endpoint can be found
-EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
 
 # Media type to use for REST requests
 MEDIA_TYPE="application/vnd.com.b2international.snowowl+json"
@@ -73,12 +68,12 @@ EXPORT_CONFIG_POST_INPUT=""
 
 usage() {
 
-cat <<EOF
+	cat <<EOF
 
 NAME:
 
     Export script for the Snow Owl terminology server
-    
+
     OPTIONS:
 
     -h
@@ -104,7 +99,7 @@ NAME:
 
 NOTES:
 
-    This script can be used to export content from a Snow Owl terminology server. 
+    This script can be used to export content from a Snow Owl terminology server.
 
     Mandatory variables:
         - SNOW OWL user that is able to authenticate through the REST API
@@ -120,147 +115,160 @@ echo_date() {
 }
 
 check_if_empty() {
-    if [[ -z "$1" ]]; then
-        echo_date "$2"
-        exit 1
-    fi
+	if [[ -z "$1" ]]; then
+		echo_date "$2"
+		exit 1
+	fi
 }
 
 validate_variables() {
 
-    check_if_empty "${SNOW_OWL_USER}" "Snow Owl username must be specified"
-    check_if_empty "${SNOW_OWL_USER_PASSWORD}" "User password must be specified"
-    check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
+	check_if_empty "${SNOW_OWL_USER}" "Snow Owl username must be specified"
+	check_if_empty "${SNOW_OWL_USER_PASSWORD}" "User password must be specified"
+	check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
 
-    if [[ "${EXPORT_TYPE}" != "DELTA" && "${EXPORT_TYPE}" != "SNAPSHOT" && "${EXPORT_TYPE}" != "FULL" ]]; then
-        echo_date "ERROR: Unrecognized export type was given as parameter: ${EXPORT_TYPE}"
-        exit 1;
-    fi
-    
-    if [[ ! -d "${TARGET_FOLDER}" ]]; then
-        echo_date "Creating target folder @ ${TARGET_FOLDER}"
-        mkdir "${TARGET_FOLDER}"
-    fi
+	if [[ "${EXPORT_TYPE}" != "DELTA" && "${EXPORT_TYPE}" != "SNAPSHOT" && "${EXPORT_TYPE}" != "FULL" ]]; then
+		echo_date "ERROR: Unrecognized export type was given as parameter: ${EXPORT_TYPE}"
+		exit 1
+	fi
 
-    EXPORT_FILE_NAME="snow_owl_${EXPORT_TYPE}_export"
+	if [[ ! -d "${TARGET_FOLDER}" ]]; then
+		echo_date "Creating target folder @ ${TARGET_FOLDER}"
+		mkdir "${TARGET_FOLDER}"
+	fi
+
+	EXPORT_FILE_NAME="snow_owl_${EXPORT_TYPE}_export"
 
 }
 
 initiate_export() {
-    EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"'
 
-    if (( ${#REFSETS_TO_EXPORT[@]} )); then
+	# The address where the export config endpoint can be found
+	EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
+
+	EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"'
+
+	if ((${#REFSETS_TO_EXPORT[@]})); then
 		# Append refsets to config
-        REFSETS_JSON_ARRAY="["
-        for refset in "${REFSETS_TO_EXPORT[@]::${#REFSETS_TO_EXPORT[@]}-1}" ; do
-            REFSETS_JSON_ARRAY+='"'"${refset}"'", '
-        done
-        REFSETS_JSON_ARRAY+='"'"${REFSETS_TO_EXPORT[@]: -1:1}"'"]'
-        EXPORT_CONFIG_POST_INPUT+=', "'"refsets"'": '${REFSETS_JSON_ARRAY}''
-    fi
+		REFSETS_JSON_ARRAY="["
+		for refset in "${REFSETS_TO_EXPORT[@]::${#REFSETS_TO_EXPORT[@]}-1}"; do
+			REFSETS_JSON_ARRAY+='"'"${refset}"'", '
+		done
+		REFSETS_JSON_ARRAY+='"'"${REFSETS_TO_EXPORT[@]: -1:1}"'"]'
+		EXPORT_CONFIG_POST_INPUT+=', "'"refsets"'": '${REFSETS_JSON_ARRAY}''
+	fi
 
-    if (( ${#MODULES_TO_EXPORT[@]} )); then
-    	# Append modules to config
-        MODULES_JSON_ARRAY="["
-        for module in "${MODULES_TO_EXPORT[@]::${#MODULES_TO_EXPORT[@]}-1}" ; do
-            MODULES_JSON_ARRAY+='"'"${module}"'", '
-        done
-        MODULES_JSON_ARRAY+='"'"${MODULES_TO_EXPORT[@]: -1:1}"'"]'
-        EXPORT_CONFIG_POST_INPUT+=', "moduleIds": '${MODULES_JSON_ARRAY}''
-    fi
-    
-    EXPORT_CONFIG_POST_INPUT+="}"
-    
-    EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
+	if ((${#MODULES_TO_EXPORT[@]})); then
+		# Append modules to config
+		MODULES_JSON_ARRAY="["
+		for module in "${MODULES_TO_EXPORT[@]::${#MODULES_TO_EXPORT[@]}-1}"; do
+			MODULES_JSON_ARRAY+='"'"${module}"'", '
+		done
+		MODULES_JSON_ARRAY+='"'"${MODULES_TO_EXPORT[@]: -1:1}"'"]'
+		EXPORT_CONFIG_POST_INPUT+=', "moduleIds": '${MODULES_JSON_ARRAY}''
+	fi
 
-    echo_date "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORTS_ENDPOINT}""
+	EXPORT_CONFIG_POST_INPUT+="}"
 
-    RESPONSE="$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
-        --request POST \
-        --header "Content-type: ${MEDIA_TYPE}" \
-        --data "${EXPORT_CONFIG_POST_INPUT}" \
-        --include --silent --show-error \
-        "${EXPORTS_ENDPOINT}" | grep -Fi Location)"
+	EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
 
-    ID=${RESPONSE##*/}
-    EXPORT_UUID=${ID%$'\r'}
+	echo_date "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORTS_ENDPOINT}""
 
-    download_export_archive
+	RESPONSE="$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
+		--request POST \
+		--header "Content-type: ${MEDIA_TYPE}" \
+		--data "${EXPORT_CONFIG_POST_INPUT}" \
+		--include --silent --show-error \
+		"${EXPORTS_ENDPOINT}" | grep -Fi Location)"
+
+	ID=${RESPONSE##*/}
+	EXPORT_UUID=${ID%$'\r'}
+
+	download_export_archive
 
 }
 
 download_export_archive() {
 
-    check_if_empty "${EXPORT_UUID}" "Unique export identifier is missing"
+	check_if_empty "${EXPORT_UUID}" "Unique export identifier is missing"
 
-    EXPORT_DOWNLOAD_GET_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}/${EXPORT_UUID}/archive"
+	EXPORT_DOWNLOAD_GET_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}/${EXPORT_UUID}/archive"
 
-    echo_date "Downloading ${EXPORT_TYPE} export with UUID: ${EXPORT_UUID}"
+	echo_date "Downloading ${EXPORT_TYPE} export with UUID: ${EXPORT_UUID}"
 
-    DATE=$(date +"%Y%m%d_%H%M%S")
+	DATE=$(date +"%Y%m%d_%H%M%S")
 
-    RENAMED_EXPORT_FILE="${EXPORT_FILE_NAME}_${DATE}.zip"
+	RENAMED_EXPORT_FILE="${EXPORT_FILE_NAME}_${DATE}.zip"
 
-    HTTP_STATUS=$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
-        --request GET \
-        --header "Accept: ${ACCEPT_HEADER}" \
-        --output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" \
-        --silent --show-error \
-        --write-out %{http_code} \
-        "${EXPORT_DOWNLOAD_GET_ENDPOINT}")
+	HTTP_STATUS=$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
+		--request GET \
+		--header "Accept: ${ACCEPT_HEADER}" \
+		--output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" \
+		--silent --show-error \
+		--write-out %{http_code} \
+		"${EXPORT_DOWNLOAD_GET_ENDPOINT}")
 
-    if [ "${HTTP_STATUS}" != "200" ]; then
-        echo_date "Download of export archive returned with code ${HTTP_STATUS}"
-    else
-        echo_date "Export archive is available @ ${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}"
-    fi
+	if [ "${HTTP_STATUS}" != "200" ]; then
+		echo_date "Download of export archive returned with code ${HTTP_STATUS}"
+	else
+		echo_date "Export archive is available @ ${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}"
+	fi
 
 }
 
 execute() {
 
-    validate_variables
+	validate_variables
 
-    initiate_export
+	initiate_export
 
-    exit 0
+	exit 0
 }
 
 while getopts ":hu:p:t:e:b:a:s:m:r:" option; do
-    case "${option}" in
-    h)
-        usage
-        exit 0
-        ;;
-    u)
-        SNOW_OWL_USER=${OPTARG};;
-    p)
-        SNOW_OWL_USER_PASSWORD=${OPTARG};;
-    t)
-        TARGET_FOLDER=${OPTARG};;
-    e)
-        EXPORT_TYPE=${OPTARG};;
-    b)
-        SNOW_OWL_BASE_URL=${OPTARG};;
-    a)
-        SNOW_OWL_API_URL=${OPTARG};;    
-    s)
-        BRANCH_TO_EXPORT=${OPTARG};;
-    m)
-        MODULES_TO_EXPORT+=("${OPTARG}");;
-    r)
-        REFSETS_TO_EXPORT+=("${OPTARG}");;
-    \?)
-        echo_date "Invalid option: $OPTARG." >&2
-        usage
-        exit 1
-        ;;
-    :)
-        echo_date "Option -$OPTARG requires an argument." >&2
-        usage
-        exit 1
-        ;;
-    esac
+	case "${option}" in
+	h)
+		usage
+		exit 0
+		;;
+	u)
+		SNOW_OWL_USER=${OPTARG}
+		;;
+	p)
+		SNOW_OWL_USER_PASSWORD=${OPTARG}
+		;;
+	t)
+		TARGET_FOLDER=${OPTARG}
+		;;
+	e)
+		EXPORT_TYPE=${OPTARG}
+		;;
+	b)
+		SNOW_OWL_BASE_URL=${OPTARG}
+		;;
+	a)
+		SNOW_OWL_API_URL=${OPTARG}
+		;;
+	s)
+		BRANCH_TO_EXPORT=${OPTARG}
+		;;
+	m)
+		MODULES_TO_EXPORT+=("${OPTARG}")
+		;;
+	r)
+		REFSETS_TO_EXPORT+=("${OPTARG}")
+		;;
+	\?)
+		echo_date "Invalid option: $OPTARG." >&2
+		usage
+		exit 1
+		;;
+	:)
+		echo_date "Option -$OPTARG requires an argument." >&2
+		usage
+		exit 1
+		;;
+	esac
 done
 
 execute
