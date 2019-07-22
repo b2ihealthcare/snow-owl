@@ -17,9 +17,9 @@ package com.b2international.snowowl.snomed.cis.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
 import com.google.common.collect.ImmutableSet;
 
@@ -27,8 +27,8 @@ import com.google.common.collect.ImmutableSet;
  * @since 5.5
  */
 public abstract class AbstractSnomedIdentifierEnumeratedRequestBuilder<B extends AbstractSnomedIdentifierEnumeratedRequestBuilder<B>> 
-		extends BaseRequestBuilder<B, RepositoryContext, SctIds>
-		implements RepositoryRequestBuilder<SctIds> {
+		extends BaseRequestBuilder<B, ServiceProvider, SctIds>
+		implements SystemRequestBuilder<SctIds> {
 
 	protected Set<String> componentIds;
 

@@ -28,7 +28,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRelationshipRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateDescription;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.endsWith;
@@ -140,7 +139,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		
 		SctId relationshipSctId = SnomedRequests.identifiers().prepareGet()
 				.setComponentId(relationshipId)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync()
 				.first()

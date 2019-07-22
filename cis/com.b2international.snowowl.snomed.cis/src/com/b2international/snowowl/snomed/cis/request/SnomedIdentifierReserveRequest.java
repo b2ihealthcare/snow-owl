@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.cis.request;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
@@ -27,7 +27,7 @@ final class SnomedIdentifierReserveRequest extends AbstractSnomedIdentifierCount
 	}
 	
 	@Override
-	public SctIds execute(RepositoryContext context) {
+	public SctIds execute(ServiceProvider context) {
 		return new SctIds(context.service(ISnomedIdentifierService.class).reserveSctIds(namespace(), category(), quantity()).values());
 	}
 

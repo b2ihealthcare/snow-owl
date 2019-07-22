@@ -220,7 +220,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 			SnomedRequests.identifiers().prepareRelease()
 				.setComponentIds(newComponentIds)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(bus)
 				.getSync();
 			
@@ -1045,7 +1045,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		final String generatedId = SnomedRequests.identifiers().prepareGenerate()
 				.setCategory(componentNature)
 				.setNamespace(namespace)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(bus)
 				.getSync()
 				.first()

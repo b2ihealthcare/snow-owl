@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.cis.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
 
@@ -31,7 +31,7 @@ final class SnomedIdentifierDeprecateRequest extends AbstractSnomedIdentifierEnu
 	}
 	
 	@Override
-	public SctIds execute(RepositoryContext context) {
+	public SctIds execute(ServiceProvider context) {
 		return new SctIds(context.service(ISnomedIdentifierService.class).deprecate(componentIds()).values());
 	}
 	

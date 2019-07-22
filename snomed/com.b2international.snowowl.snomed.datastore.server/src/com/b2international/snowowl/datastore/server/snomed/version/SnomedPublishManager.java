@@ -196,7 +196,7 @@ public class SnomedPublishManager extends PublishManager {
 			try {
 				SnomedRequests.identifiers().preparePublish()
 					.setComponentIds(componentIdsToPublish)
-					.build(getRepositoryUuid())
+					.buildAsync()
 					.execute(getEventBus())
 					.getSync();
 			} catch (SctIdStatusException e) {

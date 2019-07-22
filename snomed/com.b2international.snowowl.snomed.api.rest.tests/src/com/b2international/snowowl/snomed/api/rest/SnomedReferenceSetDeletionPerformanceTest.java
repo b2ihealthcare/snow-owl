@@ -134,7 +134,7 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 				.setNamespace(Concepts.B2I_NAMESPACE)
 				.setCategory(ComponentCategory.CONCEPT)
 				.setQuantity(quantity)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(getBus())
 				.getSync()
 				.stream()

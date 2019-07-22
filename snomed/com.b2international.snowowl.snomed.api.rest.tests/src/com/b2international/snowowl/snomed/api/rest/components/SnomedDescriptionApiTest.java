@@ -164,7 +164,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		
 		SctId descriptionSctId = SnomedRequests.identifiers().prepareGet()
 				.setComponentId(descriptionId)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync()
 				.first()

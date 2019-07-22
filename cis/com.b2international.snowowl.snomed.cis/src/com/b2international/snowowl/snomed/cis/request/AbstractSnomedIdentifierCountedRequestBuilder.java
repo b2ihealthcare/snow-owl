@@ -15,18 +15,18 @@
  */
 package com.b2international.snowowl.snomed.cis.request;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
 
 /**
  * @since 5.5
  */
 public abstract class AbstractSnomedIdentifierCountedRequestBuilder<B extends AbstractSnomedIdentifierCountedRequestBuilder<B>> 
-		extends BaseRequestBuilder<B, RepositoryContext, SctIds> 
-		implements RepositoryRequestBuilder<SctIds> {
+		extends BaseRequestBuilder<B, ServiceProvider, SctIds> 
+		implements SystemRequestBuilder<SctIds> {
 
 	protected ComponentCategory category;
 	protected String namespace;

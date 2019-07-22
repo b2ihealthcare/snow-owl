@@ -184,7 +184,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		SctId conceptSctId = SnomedRequests.identifiers().prepareGet()
 			.setComponentId(conceptId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.buildAsync()
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync()
 			.first()

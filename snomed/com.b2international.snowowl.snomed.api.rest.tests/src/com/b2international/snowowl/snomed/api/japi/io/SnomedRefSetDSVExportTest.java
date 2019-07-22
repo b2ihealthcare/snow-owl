@@ -274,7 +274,7 @@ public class SnomedRefSetDSVExportTest {
 					.setNamespace(Concepts.B2I_NAMESPACE)
 					.setCategory(ComponentCategory.CONCEPT)
 					.setQuantity(1)
-					.build(REPOSITORY_ID)
+					.buildAsync()
 					.execute(bus)
 					.getSync()
 					.first()

@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.cis.request;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
@@ -34,7 +34,7 @@ final class SnomedIdentifierGenerateRequest extends AbstractSnomedIdentifierCoun
 	}
 	
 	@Override
-	public SctIds execute(RepositoryContext context) {
+	public SctIds execute(ServiceProvider context) {
 		final Map<String, SctId> generatedIds = context.service(ISnomedIdentifierService.class).generateSctIds(namespace(), category(), quantity());
 		return new SctIds(generatedIds.values().stream().sorted((id1, id2) -> id1.getSctid().compareTo(id2.getSctid())).collect(Collectors.toList()));
 	}

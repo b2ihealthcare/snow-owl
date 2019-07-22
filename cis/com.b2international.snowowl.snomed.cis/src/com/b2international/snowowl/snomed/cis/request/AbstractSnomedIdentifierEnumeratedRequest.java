@@ -17,20 +17,21 @@ package com.b2international.snowowl.snomed.cis.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
 
 /**
  * @since 5.5
  */
-abstract class AbstractSnomedIdentifierEnumeratedRequest implements Request<RepositoryContext, SctIds> {
+abstract class AbstractSnomedIdentifierEnumeratedRequest implements Request<ServiceProvider, SctIds> {
 
 	// NOT @JsonProperty
 	private final Set<String> componentIds;
 
 	AbstractSnomedIdentifierEnumeratedRequest(Set<String> componentIds) {
-		this.componentIds = componentIds;
+		this.componentIds = Collections3.toImmutableSet(componentIds);
 	}
 	
 	protected final Set<String> componentIds() {

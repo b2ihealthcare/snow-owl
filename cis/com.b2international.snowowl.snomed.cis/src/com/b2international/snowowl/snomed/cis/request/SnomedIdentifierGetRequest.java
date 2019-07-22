@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.cis.request;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.cis.domain.SctIds;
 /**
  * @since 5.5
  */
-final class SnomedIdentifierGetRequest implements Request<RepositoryContext, SctIds> {
+final class SnomedIdentifierGetRequest implements Request<ServiceProvider, SctIds> {
 
 	private final Set<String> componentIds;
 
@@ -36,7 +36,7 @@ final class SnomedIdentifierGetRequest implements Request<RepositoryContext, Sct
 	}
 
 	@Override
-	public SctIds execute(RepositoryContext context) {
+	public SctIds execute(ServiceProvider context) {
 		final Map<String, SctId> sctIds = context.service(ISnomedIdentifierService.class).getSctIds(componentIds);
 		return new SctIds(sctIds.values());
 	}

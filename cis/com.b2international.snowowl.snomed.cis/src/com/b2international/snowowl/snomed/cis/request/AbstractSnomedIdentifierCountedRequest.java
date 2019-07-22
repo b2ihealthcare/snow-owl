@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.cis.request;
 import javax.annotation.Nonnegative;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.5
  */
-abstract class AbstractSnomedIdentifierCountedRequest implements Request<RepositoryContext, SctIds> {
+abstract class AbstractSnomedIdentifierCountedRequest implements Request<ServiceProvider, SctIds> {
 
 	@JsonProperty
 	@NotNull

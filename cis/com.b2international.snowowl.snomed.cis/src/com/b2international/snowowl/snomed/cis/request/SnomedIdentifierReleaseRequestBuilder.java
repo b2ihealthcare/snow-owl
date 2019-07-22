@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.cis.request;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
 
@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.cis.domain.SctIds;
 public final class SnomedIdentifierReleaseRequestBuilder extends AbstractSnomedIdentifierEnumeratedRequestBuilder<SnomedIdentifierReleaseRequestBuilder> {
 
 	@Override
-	protected Request<RepositoryContext, SctIds> doBuild() {
+	protected Request<ServiceProvider, SctIds> doBuild() {
 		return new SnomedIdentifierReleaseRequest(componentIds);
 	}
 
