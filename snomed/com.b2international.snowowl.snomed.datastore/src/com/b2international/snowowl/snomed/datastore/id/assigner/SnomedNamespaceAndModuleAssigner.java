@@ -35,7 +35,7 @@ public interface SnomedNamespaceAndModuleAssigner {
 	/**
 	 * Returns the configuration key of the assigner
 	 */
-	String getConfigurationKey();
+	String getName();
 	
 	/**
 	 * Returns an SCTID to be registered to a relationship based on its source

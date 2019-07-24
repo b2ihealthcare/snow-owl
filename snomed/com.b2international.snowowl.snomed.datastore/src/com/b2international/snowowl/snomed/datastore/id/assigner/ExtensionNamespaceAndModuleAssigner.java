@@ -23,11 +23,13 @@ import java.util.function.Consumer;
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.Sets;
 
 /**
  * Simple assigner that allocates the namespaces and modules for relationships
@@ -35,15 +37,15 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  * 
  * @since 5.11.5
  */
-public final class SourceConceptNamespaceAndModuleAssigner implements SnomedNamespaceAndModuleAssigner {
+public final class ExtensionNamespaceAndModuleAssigner implements SnomedNamespaceAndModuleAssigner {
 	private final LongKeyLongMap relationshipModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 	private final LongKeyLongMap concreteDomainModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 	private String defaultNamespace;
 	private String defaultModuleId;
-	private Set<String> internationalModuleIds;
+	private Set<String> internationalModuleIds = Sets.newHashSet();
 	
 	// Empty constructor required for executable extension-based initialization 
-	public SourceConceptNamespaceAndModuleAssigner() { }
+	public ExtensionNamespaceAndModuleAssigner() { }
 	
 	@Override
 	public String getRelationshipNamespace(final String sourceConceptId) {
@@ -87,7 +89,7 @@ public final class SourceConceptNamespaceAndModuleAssigner implements SnomedName
 		
 		defaultNamespace = context.service(SnomedCoreConfiguration.class).getDefaultNamespace();
 		defaultModuleId = context.service(SnomedCoreConfiguration.class).getDefaultModule();
-		internationalModuleIds = context.service(SnomedCoreConfiguration.class).getInternationalModuleIds();
+		initializeInternationalModules(context);
 	}
 
 	@Override
@@ -100,9 +102,21 @@ public final class SourceConceptNamespaceAndModuleAssigner implements SnomedName
 			concreteDomainModuleMap.put(conceptId, moduleId);
 		});
 		
-		defaultNamespace = context.service(SnomedCoreConfiguration.class).getDefaultNamespace();
+		defaultModuleId = context.service(SnomedCoreConfiguration.class).getDefaultModule();
+		initializeInternationalModules(context);
 	}
-
+	
+	private void initializeInternationalModules(BranchContext context) {
+		if (internationalModuleIds.isEmpty()) {
+			SnomedRequests.prepareSearchConcept()
+				.filterByActive(true)
+				.filterByEcl(String.format("<<%s", SnomedConstants.Concepts.IHTSDO_MAINTAINED_MODULE))
+				.build()
+				.execute(context)
+				.forEach(concept -> internationalModuleIds.add(concept.getId()));
+		}
+	}
+	
 	private void collectModules(final Set<String> conceptIds, final BranchContext context, final Consumer<SnomedConcept> consumer) {
 		SnomedRequests.prepareSearchConcept()
 			.setLimit(conceptIds.size())
@@ -120,7 +134,7 @@ public final class SourceConceptNamespaceAndModuleAssigner implements SnomedName
 	}
 
 	@Override
-	public String getConfigurationKey() {
-		return "sourceConcept";
+	public String getName() {
+		return "extension";
 	}
 }

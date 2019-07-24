@@ -242,7 +242,7 @@
             class="com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner">
       </assigner>
       <assigner
-            class="com.b2international.snowowl.snomed.datastore.id.assigner.SourceConceptNamespaceAndModuleAssigner">
+            class="com.b2international.snowowl.snomed.datastore.id.assigner.ExtensionNamespaceAndModuleAssigner">
       </assigner>
    </extension>
 </plugin>

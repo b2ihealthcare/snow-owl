@@ -103,11 +103,8 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
 	
 	@NotNull
-	private String namespaceModuleAssigner;
+	private String namespaceModuleAssigner = "default";
 
-	@NotNull
-	private Set<String> internationalModuleIds = Collections.emptySet();
-	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
 	 */
@@ -398,16 +395,6 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@JsonProperty
 	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
 		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
-	}
-	
-	@JsonProperty
-	public Set<String> getInternationalModuleIds() {
-		return this.internationalModuleIds;
-	}
-	
-	@JsonProperty
-	public void setInternationalModuleIds(Set<String> internationalModuleIds) {
-		this.internationalModuleIds = internationalModuleIds;
 	}
 	
 }

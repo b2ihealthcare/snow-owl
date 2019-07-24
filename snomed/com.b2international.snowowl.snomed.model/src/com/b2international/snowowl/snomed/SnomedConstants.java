@@ -339,6 +339,7 @@ public abstract class SnomedConstants {
 		
 		// Modules
 		public static final String MODULE_ROOT = "900000000000443000";
+		public static final String IHTSDO_MAINTAINED_MODULE = "900000000000445007";
 		public static final String MODULE_SCT_CORE = "900000000000207008";
 		public static final String MODULE_SCT_MODEL_COMPONENT = "900000000000012004";
 		public static final String MODULE_B2I_EXTENSION = "636635721000154103";

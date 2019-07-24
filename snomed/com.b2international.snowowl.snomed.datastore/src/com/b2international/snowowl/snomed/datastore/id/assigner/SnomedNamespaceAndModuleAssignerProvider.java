@@ -18,8 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id.assigner;
 import java.util.Map;
 
 import com.b2international.commons.platform.Extensions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Maps;
 
 /**
  * @since 6.3
@@ -33,10 +32,9 @@ public enum SnomedNamespaceAndModuleAssignerProvider {
 	private final Map<String, SnomedNamespaceAndModuleAssigner> assigners;
 	
 	private SnomedNamespaceAndModuleAssignerProvider() {
-		Builder<String, SnomedNamespaceAndModuleAssigner> mapBuilder = ImmutableMap.builder();
+		assigners = Maps.newHashMap();
 		Extensions.getExtensions(NAMESPACE_ASSIGNER_EXTENSION, SnomedNamespaceAndModuleAssigner.class)
-			.forEach(assigner -> mapBuilder.put(assigner.getConfigurationKey(), assigner));
-		assigners = mapBuilder.build();
+			.forEach(assigner -> assigners.put(assigner.getName(), assigner));
 	}
 	
 	public SnomedNamespaceAndModuleAssigner get(String assignerType) {

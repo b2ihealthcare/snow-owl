@@ -84,7 +84,7 @@ public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceA
 	}
 
 	@Override
-	public String getConfigurationKey() {
+	public String getName() {
 		return "default";
 	}
 }
