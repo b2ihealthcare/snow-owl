@@ -42,6 +42,7 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	public static final String DEFAULT_NAMESPACE = ""; //$NON-NLS-1$
+	public static final String DEFAULT_NAMESPACE_MODULE_ASSIGNER = ""; //$NON-NLS-1$
 	public static final String DEFAULT_MODULE = Concepts.MODULE_SCT_CORE;
 	
 	@Min(1)
@@ -100,6 +101,12 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	@NotNull
 	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
+	
+	@NotNull
+	private String namespaceModuleAssigner;
+
+	@NotNull
+	private Set<String> internationalModuleIds = Collections.emptySet();
 	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
@@ -364,6 +371,11 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	}
 	
 	@JsonProperty
+	public String getNamespaceModuleAssigner() {
+		return namespaceModuleAssigner;
+	}
+	
+	@JsonProperty
 	public void setDefaultModule(String defaultModule) {
 		this.defaultModule = defaultModule;
 	}
@@ -374,6 +386,11 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	}
 	
 	@JsonProperty
+	public void setNamespaceModuleAssigner(String namespaceModuleAssigner) {
+		this.namespaceModuleAssigner = namespaceModuleAssigner;
+	}
+	
+	@JsonProperty
 	public Set<String> getReasonerExcludedModuleIds() {
 		return this.reasonerExcludedModuleIds;
 	}
@@ -381,6 +398,16 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@JsonProperty
 	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
 		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
+	}
+	
+	@JsonProperty
+	public Set<String> getInternationalModuleIds() {
+		return this.internationalModuleIds;
+	}
+	
+	@JsonProperty
+	public void setInternationalModuleIds(Set<String> internationalModuleIds) {
+		this.internationalModuleIds = internationalModuleIds;
 	}
 	
 }

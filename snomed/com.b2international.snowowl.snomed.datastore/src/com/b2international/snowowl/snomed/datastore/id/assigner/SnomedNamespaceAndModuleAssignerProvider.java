@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,35 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.assigner;
 
-import javax.inject.Provider;
+import java.util.Map;
 
 import com.b2international.commons.platform.Extensions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * @since 6.3
  */
-public enum SnomedNamespaceAndModuleAssignerProvider implements Provider<SnomedNamespaceAndModuleAssigner> {
+public enum SnomedNamespaceAndModuleAssignerProvider {
 
 	INSTANCE;
 
 	private static final String NAMESPACE_ASSIGNER_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner";
 	
-	@Override
-	public SnomedNamespaceAndModuleAssigner get() {
-		return Extensions.getFirstPriorityExtension(NAMESPACE_ASSIGNER_EXTENSION, SnomedNamespaceAndModuleAssigner.class);
+	private final Map<String, SnomedNamespaceAndModuleAssigner> assigners;
+	
+	private SnomedNamespaceAndModuleAssignerProvider() {
+		Builder<String, SnomedNamespaceAndModuleAssigner> mapBuilder = ImmutableMap.builder();
+		Extensions.getExtensions(NAMESPACE_ASSIGNER_EXTENSION, SnomedNamespaceAndModuleAssigner.class)
+			.forEach(assigner -> mapBuilder.put(assigner.getConfigurationKey(), assigner));
+		assigners = mapBuilder.build();
 	}
 	
+	public SnomedNamespaceAndModuleAssigner get(String assignerType) {
+		if (assigners.containsKey(assignerType)) {
+			return assigners.get(assignerType);
+		} else {
+			return new DefaultNamespaceAndModuleAssigner();
+		}
+	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -37,29 +38,41 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 public final class SourceConceptNamespaceAndModuleAssigner implements SnomedNamespaceAndModuleAssigner {
 	private final LongKeyLongMap relationshipModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 	private final LongKeyLongMap concreteDomainModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
-
+	private String defaultNamespace;
+	private String defaultModuleId;
+	private Set<String> internationalModuleIds;
+	
 	// Empty constructor required for executable extension-based initialization 
 	public SourceConceptNamespaceAndModuleAssigner() { }
 	
 	@Override
 	public String getRelationshipNamespace(final String sourceConceptId) {
-		return SnomedIdentifiers.getNamespace(sourceConceptId);
+		String namespace = SnomedIdentifiers.getNamespace(sourceConceptId);
+		return namespace.isEmpty() ? defaultNamespace : namespace;
 	}
 
 	@Override
 	public String getRelationshipModuleId(final String sourceConceptId) {
 		final long sourceConceptIdAsLong = Long.parseLong(sourceConceptId);
 		checkArgument(relationshipModuleMap.containsKey(sourceConceptIdAsLong), "The relationship module ID for '%s' was not collected.", sourceConceptId);
-		final long moduleId = relationshipModuleMap.get(sourceConceptIdAsLong); 
-		return Long.toString(moduleId);
+		final String moduleId = Long.toString(relationshipModuleMap.get(sourceConceptIdAsLong));
+		
+		if (internationalModuleIds.contains(moduleId)) {
+			return defaultModuleId;
+		}
+		return moduleId;
 	}
 
 	@Override
 	public String getConcreteDomainModuleId(final String referencedConceptId) {
 		final long referencedConceptIdAsLong = Long.parseLong(referencedConceptId);
 		checkArgument(concreteDomainModuleMap.containsKey(referencedConceptIdAsLong), "The concrete domain member module ID for '%s' was not collected.", referencedConceptId);
-		final long moduleId = concreteDomainModuleMap.get(referencedConceptIdAsLong);
-		return Long.toString(moduleId);
+		final String moduleId = Long.toString(concreteDomainModuleMap.get(referencedConceptIdAsLong));
+		
+		if (internationalModuleIds.contains(moduleId)) {
+			return defaultModuleId;
+		}
+		return moduleId;
 	}
 
 	@Override
@@ -71,6 +84,10 @@ public final class SourceConceptNamespaceAndModuleAssigner implements SnomedName
 			final long moduleId = Long.parseLong(c.getModuleId());
 			relationshipModuleMap.put(conceptId, moduleId);
 		});
+		
+		defaultNamespace = context.service(SnomedCoreConfiguration.class).getDefaultNamespace();
+		defaultModuleId = context.service(SnomedCoreConfiguration.class).getDefaultModule();
+		internationalModuleIds = context.service(SnomedCoreConfiguration.class).getInternationalModuleIds();
 	}
 
 	@Override
@@ -81,7 +98,9 @@ public final class SourceConceptNamespaceAndModuleAssigner implements SnomedName
 			final long conceptId = Long.parseLong(c.getId());
 			final long moduleId = Long.parseLong(c.getModuleId());
 			concreteDomainModuleMap.put(conceptId, moduleId);
-		});		
+		});
+		
+		defaultNamespace = context.service(SnomedCoreConfiguration.class).getDefaultNamespace();
 	}
 
 	private void collectModules(final Set<String> conceptIds, final BranchContext context, final Consumer<SnomedConcept> consumer) {
@@ -98,5 +117,10 @@ public final class SourceConceptNamespaceAndModuleAssigner implements SnomedName
 	public void clear() {
 		relationshipModuleMap.clear();
 		concreteDomainModuleMap.clear();
+	}
+
+	@Override
+	public String getConfigurationKey() {
+		return "sourceConcept";
 	}
 }

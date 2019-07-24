@@ -82,4 +82,9 @@ public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceA
 		defaultModule = null;
 		defaultNamespace = null;
 	}
+
+	@Override
+	public String getConfigurationKey() {
+		return "default";
+	}
 }
