@@ -528,20 +528,21 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	private String execute(final HttpRequestBase request) throws IOException {
 		CisClientException last = null;
 		
-		for (long attempt = 0; attempt < numberOfReauthTries; attempt++) {
-			
+		long remainingAttempts = numberOfReauthTries;
+		do {
 			try {
 				return client.execute(request);
 			} catch (CisClientException e) {
 				
 				if (e.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
 					last = e;
-					LOGGER.warn("Unauthorized response from CIS, retrying request ({} attempt(s) left).", numberOfReauthTries - attempt);
+					remainingAttempts--;
+					LOGGER.warn("Unauthorized response from CIS, retrying request ({} attempt(s) left).", remainingAttempts);
 					login();
 					
 					// Update the corresponding query parameter in the request, then retry
 					try {
-
+						
 						URI requestUri = request.getURI();
 						URI updatedUri = new URIBuilder(requestUri)
 								.setParameter("token", getToken())
@@ -549,7 +550,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 						
 						request.setURI(updatedUri);
 						request.reset();
-
+						
 					} catch (URISyntaxException se) {
 						throw new IOException("Couldn't update authentication token.", se);
 					}
@@ -558,7 +559,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					throw new BadRequestException(e.getReasonPhrase(), e);
 				}
 			}
-		}
+		} while (remainingAttempts > 0);
 		
 		// Re-throw the last captured exception otherwise
 		throw new BadRequestException(last.getReasonPhrase());
