@@ -38,6 +38,7 @@ import com.google.common.collect.Sets;
  * @since 5.11.5
  */
 public final class ExtensionNamespaceAndModuleAssigner implements SnomedNamespaceAndModuleAssigner {
+	
 	private final LongKeyLongMap relationshipModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 	private final LongKeyLongMap concreteDomainModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 	private String defaultNamespace;
@@ -109,6 +110,7 @@ public final class ExtensionNamespaceAndModuleAssigner implements SnomedNamespac
 	private void initializeInternationalModules(BranchContext context) {
 		if (internationalModuleIds.isEmpty()) {
 			SnomedRequests.prepareSearchConcept()
+				.all()
 				.filterByActive(true)
 				.filterByEcl(String.format("<<%s", SnomedConstants.Concepts.IHTSDO_MAINTAINED_MODULE))
 				.build()

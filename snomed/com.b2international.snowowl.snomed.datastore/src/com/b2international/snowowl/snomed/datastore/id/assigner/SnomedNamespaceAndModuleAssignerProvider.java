@@ -17,6 +17,9 @@ package com.b2international.snowowl.snomed.datastore.id.assigner;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.commons.platform.Extensions;
 import com.google.common.collect.Maps;
 
@@ -29,12 +32,18 @@ public enum SnomedNamespaceAndModuleAssignerProvider {
 
 	private static final String NAMESPACE_ASSIGNER_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner";
 	
-	private final Map<String, SnomedNamespaceAndModuleAssigner> assigners;
+	private final Logger LOG = LoggerFactory.getLogger(SnomedNamespaceAndModuleAssignerProvider.class);
+	
+	private final Map<String, SnomedNamespaceAndModuleAssigner> assigners = Maps.newHashMap();
 	
 	private SnomedNamespaceAndModuleAssignerProvider() {
-		assigners = Maps.newHashMap();
 		Extensions.getExtensions(NAMESPACE_ASSIGNER_EXTENSION, SnomedNamespaceAndModuleAssigner.class)
-			.forEach(assigner -> assigners.put(assigner.getName(), assigner));
+			.forEach(assigner -> {
+				SnomedNamespaceAndModuleAssigner previousValue = assigners.put(assigner.getName(), assigner);
+				if (previousValue != null) {
+					LOG.warn(String.format("A namespace/module assigner with the name '%s' is already registered.", assigner.getName()));
+				}
+			});
 	}
 	
 	public SnomedNamespaceAndModuleAssigner get(String assignerType) {
