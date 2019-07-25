@@ -77,11 +77,10 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentifierService.class);
 	
-	private static final int BULK_LIMIT = 1000;
-
 	private final long numberOfPollTries;
 	private final long numberOfReauthTries;
 	private final long timeBetweenPollTries;
+	private final int requestBulkLimit;
 
 	private final String clientKey;
 	private final ObjectMapper mapper;
@@ -96,6 +95,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		this.numberOfPollTries = conf.getCisNumberOfPollTries();
 		this.timeBetweenPollTries = conf.getCisTimeBetweenPollTries();
 		this.numberOfReauthTries = conf.getCisNumberOfReauthTries();
+		this.requestBulkLimit = conf.getRequestBulkLimit();
 		this.mapper = mapper;
 		this.client = new CisClient(conf, mapper);
 
@@ -187,7 +187,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				for (final Entry<String, Collection<String>> entry : componentIdsByNamespace.asMap().entrySet()) {
 					currentNamespace = entry.getKey();
 					
-					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
+					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), requestBulkLimit)) {
 						LOGGER.debug("Sending bulk registration request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 						registerRequest = httpPost(String.format("sct/bulk/register?token=%s", getToken()), createBulkRegistrationData(bulkIds));
 						execute(registerRequest);
@@ -292,7 +292,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				for (final Entry<String, Collection<String>> entry : componentIdsByNamespace.asMap().entrySet()) {
 					currentNamespace = entry.getKey();
 					
-					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
+					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), requestBulkLimit)) {
 						LOGGER.debug("Sending bulk release request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 						releaseRequest = httpPut(String.format("sct/bulk/release?token=%s", getToken()), createBulkReleaseData(currentNamespace, bulkIds));
 						execute(releaseRequest);
@@ -348,7 +348,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				for (final Entry<String, Collection<String>> entry : componentIdsByNamespace.asMap().entrySet()) {
 					currentNamespace = entry.getKey();
 					
-					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
+					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), requestBulkLimit)) {
 						LOGGER.debug("Sending bulk deprecation request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 						deprecateRequest = httpPut(String.format("sct/bulk/deprecate?token=%s", getToken()), createBulkDeprecationData(currentNamespace, bulkIds));
 						execute(deprecateRequest);
@@ -393,7 +393,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					for (final Entry<String, Collection<String>> entry : componentIdsByNamespace.asMap().entrySet()) {
 						currentNamespace = entry.getKey();
 						
-						for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
+						for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), requestBulkLimit)) {
 							LOGGER.debug("Sending bulk publication request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 							deprecateRequest = httpPut(String.format("sct/bulk/publish?token=%s", getToken()), createBulkPublishData(currentNamespace, bulkIds));
 							execute(deprecateRequest);
@@ -472,7 +472,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				LOGGER.debug("Sending bulk component ID get request.");
 				final ImmutableMap.Builder<String, SctId> resultBuilder = ImmutableMap.builder();
 				
-				for (final Collection<String> ids : Iterables.partition(componentIds, BULK_LIMIT)) {
+				for (final Collection<String> ids : Iterables.partition(componentIds, requestBulkLimit)) {
 					final String idsAsString = Joiner.on(',').join(ids);
 					final ObjectNode idsAsJson = mapper.createObjectNode().put("sctids", idsAsString);
 					bulkRequest = client.httpPost(String.format("sct/bulk/ids/?token=%s", getToken()), idsAsJson);

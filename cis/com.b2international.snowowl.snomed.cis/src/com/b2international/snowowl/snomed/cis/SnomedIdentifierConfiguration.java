@@ -14,6 +14,7 @@
  * limitations under the License.
  */package com.b2international.snowowl.snomed.cis;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -61,6 +62,10 @@ public class SnomedIdentifierConfiguration {
 	@Min(1)
 	@JsonProperty(value = "cisNumberOfReauthTries", required = false)
 	private int cisNumberOfReauthTries = 2;
+
+	@Min(1000)
+	@Max(50000)
+	private int requestBulkLimit = 50_000;
 	
 	public IdGenerationStrategy getStrategy() {
 		return strategy;
@@ -148,5 +153,13 @@ public class SnomedIdentifierConfiguration {
 	
 	public int getCisNumberOfReauthTries() {
 		return cisNumberOfReauthTries;
+	}
+
+	public int getRequestBulkLimit() {
+		return requestBulkLimit;
+	}
+	
+	public void setRequestBulkLimit(int requestBulkLimit) {
+		this.requestBulkLimit = requestBulkLimit;
 	}
 }
