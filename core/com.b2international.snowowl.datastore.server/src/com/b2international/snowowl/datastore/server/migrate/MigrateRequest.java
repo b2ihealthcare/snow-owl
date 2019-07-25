@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.migrate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
@@ -38,6 +39,8 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.eclipse.net4j.util.security.PasswordCredentialsProvider;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
@@ -53,11 +56,14 @@ import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.cdo.FilteringErrorLoggingStrategy;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.config.DatabaseConfiguration;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
+import com.b2international.snowowl.datastore.replicate.BranchReplicator;
+import com.b2international.snowowl.datastore.replicate.BranchReplicator.SkipBranchException;
 import com.b2international.snowowl.datastore.server.CDORepository;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.identity.domain.User;
@@ -70,7 +76,10 @@ import com.google.common.collect.Iterables;
 @SuppressWarnings("restriction")
 public final class MigrateRequest implements Request<RepositoryContext, MigrationResult> {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger("migrate");
+	
 	private static final String CDO_BRANCH_ID = "cdoBranchId";
+	private static final String TIMESTAMP = "timeStamp";
 
 	@NotEmpty
 	@JsonProperty
@@ -144,6 +153,9 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 			
 			localRepository.getStore().setLastBranchID(delegate.getLastReplicatedBranchID());
 			
+			// reindex untouched branches that were created after the very last commit
+			reindexUntouchedBranches(context, index, localRepository);
+			
 			return new MigrationResult(delegate.getFailedCommitTimestamp(), delegate.getProcessedCommits(), delegate.getSkippedCommits(),
 					delegate.getException());
 		} finally {
@@ -211,6 +223,44 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 
 	public static MigrateRequestBuilder builder(String remoteLocation) {
 		return new MigrateRequestBuilder(remoteLocation);
+	}
+	
+	private void reindexUntouchedBranches(RepositoryContext context, Index index, final org.eclipse.emf.cdo.internal.server.Repository cdoRepository) {
+		
+		Optional<Long> lastCommitTimeStamp = getLastCommitTimestamp(index);
+		
+		if (lastCommitTimeStamp.isPresent()) {
+			
+			cdoRepository.getBranchManager().getBranches(1, Integer.MAX_VALUE, cdoBranch -> {
+				
+				// if there is a branch that was created after the very last commit then recreate the branch document via the BranchReplicator
+				
+				if (cdoBranch.getBase().getTimeStamp() > lastCommitTimeStamp.get()) {
+					
+					LOGGER.info("Replicating branch (after last commit): " + cdoBranch.getName() + " at " + cdoBranch.getBase().getTimeStamp());
+					
+					try {
+						context.service(BranchReplicator.class).replicateBranch(cdoBranch);
+					} catch (SkipBranchException e) {
+						LOGGER.warn("Skipping branch: {}", cdoBranch.getID());
+					}
+					
+				}
+			});
+			
+		}
+	}
+
+	private Optional<Long> getLastCommitTimestamp(Index index) {
+		return Optional.ofNullable(Iterables.getOnlyElement(index.read(searcher -> {
+			return searcher.search(Query.select(Long.class)
+					.from(CommitInfoDocument.class)
+					.fields(TIMESTAMP)
+					.where(Expressions.matchAll())
+					.sortBy(SortBy.field(TIMESTAMP, Order.DESC))
+					.limit(1)
+					.build());
+		}), null));
 	}
 
 }
