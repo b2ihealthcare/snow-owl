@@ -69,7 +69,7 @@ SO_JAVA_OPTS="-Xms2g \
                 -Djdk.security.defaultKeySize=DSA:1024 \
                 $SO_JAVA_OPTS"
 
-pushd "$KERNEL_HOME";
+pushd "$KERNEL_HOME"
 
 exec "$JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
@@ -77,4 +77,4 @@ exec "$JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Dosgi.configuration.area="$CONFIG_AREA" \
   -jar plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar"
   
-popd "$KERNEL_HOME";
+popd
