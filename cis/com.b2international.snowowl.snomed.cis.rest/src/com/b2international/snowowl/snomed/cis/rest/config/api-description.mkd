@@ -1,0 +1,1 @@
+This describes the resources that make up the official Snow Owl® SNOMED CT Component Identifier Service API. If you have any problems or requests please contact [support](mailto:support@b2i.sg).

@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id;
 
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.gen.RandomItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.cis.gen.RandomItemIdGenerationStrategy;
 import com.google.common.base.Strings;
 
 public abstract class RandomSnomedIdentiferGenerator {

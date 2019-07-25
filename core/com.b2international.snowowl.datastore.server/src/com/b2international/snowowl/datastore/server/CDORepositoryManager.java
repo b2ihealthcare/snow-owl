@@ -169,7 +169,7 @@ import com.google.common.net.HostAndPort;
 		
 		final HostAndPort hostAndPort = getRepositoryConfiguration().getHostAndPort();
 		// open port in server environments
-		if (SnowOwlApplication.INSTANCE.getEnviroment().isServer()) {
+		if (SnowOwlApplication.INSTANCE.getEnviroment().isServer() && hostAndPort.getPort() > 0) {
 			IAcceptor acceptor = TCPUtil.getAcceptor(IPluginContainer.INSTANCE, hostAndPort.toString()); // Start the TCP transport
 			if (getSnowOwlConfiguration().isGzip()) {
 				IPluginContainer.INSTANCE.addPostProcessor(new TcpGZIPStreamWrapperInjector(CDOProtocolConstants.PROTOCOL_NAME, acceptor));
