@@ -30,7 +30,7 @@ public class SnomedIdentifierConfiguration {
 		CIS // Component Identifier Service (IHTSDO) based service
 	}
 
-	public static final int DEFAULT_ID_GENERATION_ATTEMPTS = 1000;
+	public static final int DEFAULT_ID_GENERATION_ATTEMPTS = 100_000;
 
 	@JsonProperty(value = "strategy", required = false)
 	private IdGenerationStrategy strategy = IdGenerationStrategy.EMBEDDED;
