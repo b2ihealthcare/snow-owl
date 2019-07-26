@@ -39,9 +39,10 @@ public enum SnomedNamespaceAndModuleAssignerProvider {
 	private SnomedNamespaceAndModuleAssignerProvider() {
 		Extensions.getExtensions(NAMESPACE_ASSIGNER_EXTENSION, SnomedNamespaceAndModuleAssigner.class)
 			.forEach(assigner -> {
-				SnomedNamespaceAndModuleAssigner previousValue = assigners.put(assigner.getName(), assigner);
-				if (previousValue != null) {
+				if (assigners.containsKey(assigner.getName())) {
 					LOG.warn(String.format("A namespace/module assigner with the name '%s' is already registered.", assigner.getName()));
+				} else {
+					assigners.put(assigner.getName(), assigner);
 				}
 			});
 	}
