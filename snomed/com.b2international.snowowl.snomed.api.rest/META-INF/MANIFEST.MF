@@ -19,8 +19,6 @@ Import-Package: com.b2international.snowowl.api,
  com.b2international.snowowl.snomed.core.domain.refset,
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.datastore.config,
- com.b2international.snowowl.snomed.datastore.id.domain,
- com.b2international.snowowl.snomed.datastore.id.request,
  com.b2international.snowowl.snomed.datastore.index.entry,
  com.b2international.snowowl.snomed.datastore.request,
  com.b2international.snowowl.snomed.datastore.request.rf2,
@@ -74,3 +72,4 @@ Bundle-ClassPath: .,
  WEB-INF/lib/springfox-spring-web-2.8.0.jar,
  WEB-INF/lib/springfox-swagger-common-2.8.0.jar,
  WEB-INF/lib/springfox-swagger2-2.8.0.jar
+Bundle-Vendor: B2i Healthcare

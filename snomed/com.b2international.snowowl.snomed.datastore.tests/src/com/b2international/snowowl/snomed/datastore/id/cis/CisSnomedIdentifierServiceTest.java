@@ -17,11 +17,12 @@ package com.b2international.snowowl.snomed.datastore.id.cis;
 
 import org.junit.Before;
 
-import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
+import com.b2international.snowowl.snomed.cis.client.CisSnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.internal.reservations.SnomedIdentifierReservationServiceImpl;
+import com.b2international.snowowl.snomed.cis.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.id.AbstractIdentifierServiceTest;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
-import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

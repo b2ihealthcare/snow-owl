@@ -1,5 +1,5 @@
 #
-# Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
 # Redirects configuration directory to a random directory under OSGI installation directory
@@ -20,8 +20,12 @@ snomed:
   # Disable concrete domains, we are going to import the required concepts to an extension
   concreteDomainSupport: false
   maxReasonerCount: 1
-  ids:
-    strategy : EMBEDDED
+
+# cis:
+#  strategy : CIS
+#  cisBaseUrl: http://localhost:9090/snowowl/cis/
+#  cisUserName: snowowl
+#  cisPassword: snowowl
   
 metrics:
   enabled: true
