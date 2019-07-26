@@ -39,19 +39,19 @@ public enum SnomedNamespaceAndModuleAssignerProvider {
 	private SnomedNamespaceAndModuleAssignerProvider() {
 		Extensions.getExtensions(NAMESPACE_ASSIGNER_EXTENSION, SnomedNamespaceAndModuleAssigner.class)
 			.forEach(assigner -> {
-				if (assigners.containsKey(assigner.getName())) {
-					LOG.warn(String.format("A namespace/module assigner with the name '%s' is already registered.", assigner.getName()));
+				final String assignerType = assigner.getName();
+				if (assigners.containsKey(assignerType)) {
+					LOG.warn("A namespace/module assigner with the name '{}' is already registered.", assignerType);
 				} else {
-					assigners.put(assigner.getName(), assigner);
+					assigners.put(assignerType, assigner);
 				}
 			});
 	}
 	
 	public SnomedNamespaceAndModuleAssigner get(String assignerType) {
-		if (assigners.containsKey(assignerType)) {
-			return assigners.get(assignerType);
-		} else {
-			return new DefaultNamespaceAndModuleAssigner();
+		if (!assigners.containsKey(assignerType)) {
+			throw new IllegalArgumentException("Unrecognized assigner type: " + assignerType);
 		}
+		return assigners.get(assignerType);
 	}
 }
