@@ -70,16 +70,8 @@ public final class ValidationWhiteListSearchRequestBuilder
 		return filterByCreatedBetween(createdAt, createdAt);
 	}
 	
-	public ValidationWhiteListSearchRequestBuilder filterByCreatedAfter(long createdAfter) {
-		return addOption(OptionKey.CREATED_AFTER, createdAfter);
-	}
-	
-	public ValidationWhiteListSearchRequestBuilder filterByCreatedBefore(long createdBefore) {
-		return addOption(OptionKey.CREATED_BEFORE, createdBefore);
-	}
-	
 	public ValidationWhiteListSearchRequestBuilder filterByCreatedBetween(long createdAfter, long createdBefore) {
-		return addOption(OptionKey.CREATED_AFTER, createdAfter).addOption(OptionKey.CREATED_BEFORE, createdBefore);
+		return addOption(OptionKey.CREATED_START, createdAfter).addOption(OptionKey.CREATED_END, createdBefore);
 	}
 	
 	@Override

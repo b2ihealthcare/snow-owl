@@ -63,12 +63,12 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		/**
 		 * Filter matches created after given time stamp
 		 */
-		CREATED_AFTER,
+		CREATED_START,
 		
 		/**
 		 * Filter matches created before given time stamp
 		 */
-		CREATED_BEFORE
+		CREATED_END
 	}
 	
 	@Override
@@ -109,9 +109,9 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.REPORTER, reporters));
 		}
 		
-		if (containsKey(OptionKey.CREATED_AFTER) || containsKey(OptionKey.CREATED_BEFORE)) {
-			final long createdAfter = containsKey(OptionKey.CREATED_AFTER) ? get(OptionKey.CREATED_AFTER, Long.class) : Long.MIN_VALUE;
-			final long createdBefore = containsKey(OptionKey.CREATED_BEFORE) ? get(OptionKey.CREATED_BEFORE, Long.class) : Long.MAX_VALUE;
+		if (containsKey(OptionKey.CREATED_START) || containsKey(OptionKey.CREATED_END)) {
+			final long createdAfter = containsKey(OptionKey.CREATED_START) ? get(OptionKey.CREATED_START, Long.class) : Long.MIN_VALUE;
+			final long createdBefore = containsKey(OptionKey.CREATED_END) ? get(OptionKey.CREATED_END, Long.class) : Long.MAX_VALUE;
 			queryBuilder.filter(Expressions.matchRange(ValidationWhiteList.Fields.CREATED_AT, createdAfter, createdBefore));
 		}
 		
