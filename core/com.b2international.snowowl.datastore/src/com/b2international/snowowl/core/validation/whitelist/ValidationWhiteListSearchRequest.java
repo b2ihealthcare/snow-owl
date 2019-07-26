@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,17 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		/**
 		 * Filter matches by reporter
 		 */
-		REPORTER
+		REPORTER,
 		
+		/**
+		 * Filter matches created after given time stamp
+		 */
+		CREATED_AFTER,
+		
+		/**
+		 * Filter matches created before given time stamp
+		 */
+		CREATED_BEFORE
 	}
 	
 	@Override
@@ -98,6 +107,16 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		if (containsKey(OptionKey.REPORTER)) {
 			Collection<String> reporters = getCollection(OptionKey.REPORTER, String.class);
 			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.REPORTER, reporters));
+		}
+		
+		if (containsKey(OptionKey.CREATED_AFTER)) {
+			final long createdAfter = get(OptionKey.CREATED_AFTER, Long.class);
+			queryBuilder.filter(Expressions.matchRange(ValidationWhiteList.Fields.CREATED_AT, createdAfter, Long.MAX_VALUE));
+		}
+		
+		if (containsKey(OptionKey.CREATED_BEFORE)) {
+			final long createdBefore = get(OptionKey.CREATED_BEFORE, Long.class);
+			queryBuilder.filter(Expressions.matchRange(ValidationWhiteList.Fields.CREATED_AT, Long.MIN_VALUE, createdBefore));
 		}
 		
 		return queryBuilder.build();

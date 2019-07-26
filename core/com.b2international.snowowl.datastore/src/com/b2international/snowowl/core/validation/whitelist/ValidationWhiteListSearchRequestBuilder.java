@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,14 @@ public final class ValidationWhiteListSearchRequestBuilder
 
 	public ValidationWhiteListSearchRequestBuilder filterByReporters(Iterable<String> reporters) {
 		return addOption(OptionKey.REPORTER, reporters);
+	}
+	
+	public ValidationWhiteListSearchRequestBuilder filterByCreatedAfter(long createdAfter) {
+		return addOption(OptionKey.CREATED_AFTER, createdAfter);
+	}
+	
+	public ValidationWhiteListSearchRequestBuilder filterByCreatedBefore(long createdBefore) {
+		return addOption(OptionKey.CREATED_BEFORE, createdBefore);
 	}
 	
 	@Override
