@@ -109,14 +109,10 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.REPORTER, reporters));
 		}
 		
-		if (containsKey(OptionKey.CREATED_AFTER)) {
-			final long createdAfter = get(OptionKey.CREATED_AFTER, Long.class);
-			queryBuilder.filter(Expressions.matchRange(ValidationWhiteList.Fields.CREATED_AT, createdAfter, Long.MAX_VALUE));
-		}
-		
-		if (containsKey(OptionKey.CREATED_BEFORE)) {
-			final long createdBefore = get(OptionKey.CREATED_BEFORE, Long.class);
-			queryBuilder.filter(Expressions.matchRange(ValidationWhiteList.Fields.CREATED_AT, Long.MIN_VALUE, createdBefore));
+		if (containsKey(OptionKey.CREATED_AFTER) || containsKey(OptionKey.CREATED_BEFORE)) {
+			final long createdAfter = containsKey(OptionKey.CREATED_AFTER) ? get(OptionKey.CREATED_AFTER, Long.class) : Long.MIN_VALUE;
+			final long createdBefore = containsKey(OptionKey.CREATED_BEFORE) ? get(OptionKey.CREATED_BEFORE, Long.class) : Long.MAX_VALUE;
+			queryBuilder.filter(Expressions.matchRange(ValidationWhiteList.Fields.CREATED_AT, createdAfter, createdBefore));
 		}
 		
 		return queryBuilder.build();

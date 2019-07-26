@@ -66,12 +66,20 @@ public final class ValidationWhiteListSearchRequestBuilder
 		return addOption(OptionKey.REPORTER, reporters);
 	}
 	
+	public ValidationWhiteListSearchRequestBuilder filterByCreatedAt(long createdAt) {
+		return filterByCreatedBetween(createdAt, createdAt);
+	}
+	
 	public ValidationWhiteListSearchRequestBuilder filterByCreatedAfter(long createdAfter) {
 		return addOption(OptionKey.CREATED_AFTER, createdAfter);
 	}
 	
 	public ValidationWhiteListSearchRequestBuilder filterByCreatedBefore(long createdBefore) {
 		return addOption(OptionKey.CREATED_BEFORE, createdBefore);
+	}
+	
+	public ValidationWhiteListSearchRequestBuilder filterByCreatedBetween(long createdAfter, long createdBefore) {
+		return addOption(OptionKey.CREATED_AFTER, createdAfter).addOption(OptionKey.CREATED_BEFORE, createdBefore);
 	}
 	
 	@Override
