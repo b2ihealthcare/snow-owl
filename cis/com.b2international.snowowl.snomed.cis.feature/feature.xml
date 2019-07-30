@@ -45,4 +45,12 @@
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="com.b2international.snowowl.logging.logbackconfiguration"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
 </feature>

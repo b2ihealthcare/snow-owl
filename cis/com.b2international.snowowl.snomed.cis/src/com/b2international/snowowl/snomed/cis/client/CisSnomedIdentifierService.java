@@ -534,7 +534,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				return client.execute(request);
 			} catch (CisClientException e) {
 				
-				if (e.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+				if (e.getStatusCode() == HttpStatus.SC_UNAUTHORIZED || e.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
 					last = e;
 					remainingAttempts--;
 					LOGGER.warn("Unauthorized response from CIS, retrying request ({} attempt(s) left).", remainingAttempts);
