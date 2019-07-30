@@ -31,7 +31,7 @@
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Concepts should not carry more than one PT or FSN per language reference set.",
     "severity": "WARNING",
-    "checkType": "FAST",
+    "checkType": "NORMAL",
     "type": "script-groovy",
     "implementation": "scripts/ruleSnomedCommon4.groovy"
   },
