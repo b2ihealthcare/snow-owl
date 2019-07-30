@@ -9,7 +9,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/asm-debug-all-5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/compiler-0.9.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-6.5.0.jar" sourcepath="C:/Users/mark/.sourceattacher/elasticsearch-6.5.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-cli-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-core-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-6.5.0.jar"/>

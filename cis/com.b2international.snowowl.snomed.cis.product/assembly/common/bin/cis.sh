@@ -57,10 +57,8 @@ SO_JAVA_OPTS="-Xms2g \
                 -Declipse.application.launchDefault=false \
                 -Dosgi.classloader.type=nonparallel \
                 -XX:+AlwaysLockClassLoader \
-                -Djetty.port=9090 \
-				-Djetty.home=$KERNEL_HOME/configuration \
-				-Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml \
-                -Djetty.home.bundle=org.eclipse.jetty.osgi.boot \
+                -Djetty.home=$KERNEL_HOME/configuration \
+                -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml \
                 -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog \
                 -XX:+UseConcMarkSweepGC \
                 -XX:CMSInitiatingOccupancyFraction=75 \
@@ -71,10 +69,10 @@ SO_JAVA_OPTS="-Xms2g \
 
 pushd "$KERNEL_HOME"
 
-exec "$JAVA_EXECUTABLE $SO_JAVA_OPTS \
+exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
   -Dosgi.configuration.area="$CONFIG_AREA" \
-  -jar plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar"
+  -jar plugins/org.eclipse.equinox.launcher_1.3.0.v20130327-1440.jar
   
 popd

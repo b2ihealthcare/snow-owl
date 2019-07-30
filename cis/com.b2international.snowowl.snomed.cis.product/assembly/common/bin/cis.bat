@@ -42,5 +42,5 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
 
 REM Run Snow Owl
 PUSHD %KERNEL_HOME%
-"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar 
+"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.3.0.v20130327-1440.jar 
 POPD
