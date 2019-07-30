@@ -158,7 +158,7 @@ public class SnomedSubsetImporter {
 	 */
 	public SnomedUnimportedRefSets doImport() throws SnowowlRuntimeException {
 		return ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class).read(branchPath.getPath(), searcher -> {
-			try (TransactionContext context = new ImportOnlySnomedTransactionContext(userId, searcher, new SnomedEditingContext(this.branchPath))) {
+			try (TransactionContext context = new ImportOnlySnomedTransactionContext(userId, searcher, new SnomedEditingContext(this.branchPath), moduleId)) {
 				
 				final SubsetInformation information = createSubsetInformation();
 				final SnomedUnimportedRefSets unimportedRefSets;
