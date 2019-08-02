@@ -15,15 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.validation;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -31,6 +29,8 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchR
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -40,55 +40,41 @@ import com.google.common.collect.Sets;
  */
 public class Rf2GlobalValidator {
 
-	public void validateTerminologyComponents(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
-		final int slices = Iterables.size(orderedEffectiveTimeSlices);
-		for (int i = 0; i < slices ; i++) {
-			final Rf2EffectiveTimeSlice currentSlice = Iterables.get(orderedEffectiveTimeSlices, i);
-			final Map<String, String[]> currentRowsByComponentId = currentSlice.getContent();
-			final Set<String> conceptIdsToFetch = Sets.newHashSet();
+	public void validateTerminologyComponents(Iterable<Rf2EffectiveTimeSlice> slices, Rf2ValidationIssueReporter reporter, BranchContext context) {
+		List<Rf2EffectiveTimeSlice> slicesToCheck = Lists.newArrayListWithExpectedSize(Iterables.size(slices)); 
+		final Map<String, String> missingDependenciesInEffectiveTime = Maps.newHashMap();
+		// check the slices first for missing dependencies
+		for (Rf2EffectiveTimeSlice slice : slices) {
+			slicesToCheck.add(slice);
+			// collect missing dependencies from this slice
 			
-			final LongKeyMap<LongSet> dependenciesByComponent = currentSlice.getDependenciesByComponent();
-			for (LongSet currentDependencyIds : dependenciesByComponent.values()) {
+			// first check all currently registered dependencies in the current effective time slice and collect all missing components
+			// then if there is at least one missing component from the current slice, search them in the SNOMED CT repository
+			// report any that is missing in the current slice
+			
+			for (LongSet currentDependencyIds : slice.getDependenciesByComponent().values()) {
 				final LongIterator it = currentDependencyIds.iterator();
-				while (it.hasNext()) {
-					final long dependencyId = it.next();
-					final String stringDependencyId = Long.toString(dependencyId);
-					boolean foundDependency = false;
+				depCheck: while (it.hasNext()) {
+					final String stringDependencyId = Long.toString(it.next());
 					
-					// current effectiveTimeSlice did not contain a required dependency check previous effectiveTimeSlices
-					if (!currentRowsByComponentId.containsKey(stringDependencyId)) {
-						for (int j = 0; j < i; j++) {
-							final Rf2EffectiveTimeSlice previousEffectiveTimeSlice = Iterables.get(orderedEffectiveTimeSlices, j);
-							final Map<String, String[]> previousRowsByComponentId = previousEffectiveTimeSlice.getContent();
-							if (previousRowsByComponentId.containsKey(stringDependencyId)) {
-								foundDependency = true;
-								if (conceptIdsToFetch.contains(stringDependencyId)) {
-									conceptIdsToFetch.remove(stringDependencyId);
-								}
-								break;
-							}
-							
-						}
-					} else {
-						foundDependency = true;
-						if (conceptIdsToFetch.contains(stringDependencyId)) {
-							conceptIdsToFetch.remove(stringDependencyId);
+					// if this component is available in any of the current or previous slices then all is well
+					for (Rf2EffectiveTimeSlice sliceToCheck : slicesToCheck) {
+						if (sliceToCheck.getContent().containsKey(stringDependencyId)) {
+							continue depCheck;
 						}
 					}
 					
-					if (foundDependency == false) {
-						conceptIdsToFetch.add(stringDependencyId);
-					}
+					missingDependenciesInEffectiveTime.put(stringDependencyId, slice.getEffectiveTime());
 				}
 				
-				if (!conceptIdsToFetch.isEmpty()) {
-					final Set<String> existingConceptIds = fetchConcepts(context, conceptIdsToFetch);
-					// the difference between the sets are the ones which don't exist in any of the previous slices, or imported in the system
-					final Set<String> issuesToReport = Sets.difference(conceptIdsToFetch, existingConceptIds);
-					if (!issuesToReport.isEmpty()) {
-						issuesToReport.forEach(id -> reporter.error(String.format("%s %s in effective time %s", Rf2ValidationDefects.MISSING_DEPENDANT_ID.getLabel(), id, currentSlice.getEffectiveTime())));
-					}
-				}
+			}
+		}
+		
+		if (!missingDependenciesInEffectiveTime.isEmpty()) {
+			final Set<String> missingConceptIds = fetchConcepts(context, Sets.newHashSet(missingDependenciesInEffectiveTime.keySet()));
+			// the difference between the sets are the ones which don't exist in any of the previous slices, or imported in the system
+			if (!missingConceptIds.isEmpty()) {
+				missingConceptIds.forEach(id -> reporter.error("%s %s in effective time %s", Rf2ValidationDefects.MISSING_DEPENDANT_ID, id, missingDependenciesInEffectiveTime.get(id)));
 			}
 		}
 	}
@@ -114,13 +100,11 @@ public class Rf2GlobalValidator {
 					return scrolledBuilder.build().execute(context);
 				});
 
-		final Set<String> existingConceptIds = Sets.newHashSet();
 		while (conceptRequestIterator.hasNext()) {
-			final SnomedConcepts existingConcepts = conceptRequestIterator.next();
-			existingConceptIds.addAll(existingConcepts.stream().map(IComponent::getId).collect(Collectors.toSet()));
+			conceptRequestIterator.next().forEach(concept -> conceptIdsToFetch.remove(concept.getId()));
 		}
 
-		return existingConceptIds;
+		return conceptIdsToFetch;
 	}
 	
 }
