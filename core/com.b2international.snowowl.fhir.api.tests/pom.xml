@@ -10,4 +10,69 @@
 	<artifactId>com.b2international.snowowl.fhir.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 
+<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho.version}</version>
+				<configuration>
+					<dependency-resolution>
+						<extraRequirements>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.jetty.osgi.boot</id>
+								<versionRange>[8.1.0,8.2.0)</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>ch.qos.logback.classic</id>
+								<versionRange>${logback.versionRange}</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>ch.qos.logback.core</id>
+								<versionRange>${logback.versionRange}</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.snowowl.identity.file</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.collections.fastutil</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.sun.el</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+						</extraRequirements>
+					</dependency-resolution>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<configuration>
+					<skipTests>true</skipTests>
+					<useUIThread>false</useUIThread>
+					<argLine>-Xms2g -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch</argLine>
+					<includes>
+						<include>**/AllSnomedApiTests.java</include>
+					</includes>
+					<bundleStartLevel>
+						<bundle>
+							<id>org.eclipse.jetty.osgi.boot</id>
+							<level>3</level>
+							<autoStart>true</autoStart>
+						</bundle>
+					</bundleStartLevel>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
