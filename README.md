@@ -1,6 +1,16 @@
 # <a href='https://b2i.gitbook.io/snow-owl'><img src='logo/logo-title.png' height='80' alt='Snow Owl Logo' /></a>
 
-Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently. 
+Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
+
+[![build status](https://img.shields.io/travis/b2ihealthcare/snow-owl/7.x.svg?style=flat-square)](https://travis-ci.org/b2ihealthcare/snow-owl)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.0.1)
+[![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
+[![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE)
+[![grade: Java](https://img.shields.io/lgtm/grade/java/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/context:java)
+[![alerts](https://img.shields.io/lgtm/alerts/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/alerts/)
+[![codecov](https://codecov.io/gh/b2ihealthcare/snow-owl/branch/7.x/graph/badge.svg?style=flat-square)](https://codecov.io/gh/b2ihealthcare/snow-owl)
+
+# Introduction
 
 Features include:
 * Revision-controlled authoring
@@ -22,10 +32,24 @@ Features include:
 ## Requirements
 
 You need to have a recent version of Java installed (Java 8 update 171 or newer).
+* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.zip.sha512)
+* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.tar.gz.sha512) 
+* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.rpm.sha512)
+* DEB (Coming soon!)
 
 ## Installation
 
 * Download and unzip the official Snow Owl distribution from the [Releases](https://github.com/b2ihealthcare/snow-owl/releases) page (or use the official Docker image)
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.0.1).
+
+Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
+
+### Install and Run
+
+NOTE: You need to have a recent version of Java installed (Java 8 update 171 or newer).
+
+Once you have downloaded the appropriate package:
+
 * Run `bin/startup` on unix, or `bin/startup.bat` on windows
 * Run `curl http://localhost:8080/snowowl/admin/info`
 * See [REST API docs](http://localhost:8080/snowowl/snomed-ct/v3), [FHIR API docs](http://localhost:8080/snowowl/fhir)
