@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,14 +60,15 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 	@Override
 	public QueryRefSetMemberEvaluation execute(BranchContext context) {
 		// TODO support pre-population???
+		final boolean active;
 		final String query;
 		final String targetReferenceSet;
-		final Collection<MemberChange> changes = newArrayList();
 		
 		if (context instanceof TransactionContext) {
 			SnomedQueryRefSetMember member = ((TransactionContext) context).lookup(memberId, SnomedQueryRefSetMember.class);
 			query = member.getQuery();
 			targetReferenceSet = member.getReferencedComponentId();
+			active = member.isActive();
 		} else {
 			final SnomedReferenceSetMember member = SnomedRequests
 					.prepareGetMember(memberId)
@@ -75,10 +77,11 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 			
 			query = (String) member.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
 			targetReferenceSet = member.getReferencedComponent().getId();
-			
-			if (!member.isActive()) {
-				return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, changes);
-			}
+			active = member.isActive();
+		}
+		
+		if (!active) {
+			return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, Collections.emptyList());
 		}
 
 		// GET matching members of a query
@@ -148,6 +151,8 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 				concepts.put(referencedConceptId, new SnomedConcept(referencedConceptId));
 			}
 		}
+		
+		final Collection<MemberChange> changes = newArrayList();
 		
 		for (String id : conceptsToAdd.keySet()) {
 			changes.add(MemberChangeImpl.added(concepts.get(id)));
