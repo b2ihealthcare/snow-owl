@@ -61,6 +61,8 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 		// TODO support pre-population???
 		final String query;
 		final String targetReferenceSet;
+		final Collection<MemberChange> changes = newArrayList();
+		
 		if (context instanceof TransactionContext) {
 			SnomedQueryRefSetMember member = ((TransactionContext) context).lookup(memberId, SnomedQueryRefSetMember.class);
 			query = member.getQuery();
@@ -70,10 +72,14 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 					.prepareGetMember(memberId)
 					.build()
 					.execute(context);
+			
 			query = (String) member.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
 			targetReferenceSet = member.getReferencedComponent().getId();
+			
+			if (!member.isActive()) {
+				return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, changes);
+			}
 		}
-		
 
 		// GET matching members of a query
 		final SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept()
@@ -114,8 +120,6 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 				membersToRemove.add(currentMember);
 			}
 		}
-		
-		final Collection<MemberChange> changes = newArrayList();
 		
 		// fetch all referenced components
 		final Set<String> referencedConceptIds = newHashSet();
