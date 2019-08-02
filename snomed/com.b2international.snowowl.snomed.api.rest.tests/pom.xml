@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snomed-parent</artifactId>
-		<version>7.0.0</version>
+		<version>7.0.1</version>
 	</parent>
 
 	<dependencies>
