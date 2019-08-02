@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.b2international.snowowl.server.core.feature_6.18.0.qualifier.jar" id="com.b2international.snowowl.server.core.feature" version="6.18.0.qualifier">
+   <feature url="features/com.b2international.snowowl.server.core.feature_6.18.0.jar" id="com.b2international.snowowl.server.core.feature" version="6.18.0">
       <category name="server-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.server.product.feature_6.18.0.qualifier.jar" id="com.b2international.snowowl.server.product.feature" version="6.18.0.qualifier">
+   <feature url="features/com.b2international.snowowl.server.product.feature_6.18.0.jar" id="com.b2international.snowowl.server.product.feature" version="6.18.0">
       <category name="server-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.snomed.core.feature_6.18.0.qualifier.jar" id="com.b2international.snowowl.snomed.core.feature" version="6.18.0.qualifier">
+   <feature url="features/com.b2international.snowowl.snomed.core.feature_6.18.0.jar" id="com.b2international.snowowl.snomed.core.feature" version="6.18.0">
       <category name="snomed-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.api.feature_6.18.0.qualifier.jar" id="com.b2international.snowowl.api.feature" version="6.18.0.qualifier">
+   <feature url="features/com.b2international.snowowl.api.feature_6.18.0.jar" id="com.b2international.snowowl.api.feature" version="6.18.0">
       <category name="server-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.snomed.api.feature_6.18.0.qualifier.jar" id="com.b2international.snowowl.snomed.api.feature" version="6.18.0.qualifier">
+   <feature url="features/com.b2international.snowowl.snomed.api.feature_6.18.0.jar" id="com.b2international.snowowl.snomed.api.feature" version="6.18.0">
       <category name="snomed-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.test.feature_6.18.0.qualifier.jar" id="com.b2international.snowowl.test.feature" version="6.18.0.qualifier">
+   <feature url="features/com.b2international.snowowl.test.feature_6.18.0.jar" id="com.b2international.snowowl.test.feature" version="6.18.0">
       <category name="tests"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.snomed.api.rest.feature_6.18.0.qualifier.jar" id="com.b2international.snowowl.snomed.api.rest.feature" version="6.18.0.qualifier">
+   <feature url="features/com.b2international.snowowl.snomed.api.rest.feature_6.18.0.jar" id="com.b2international.snowowl.snomed.api.rest.feature" version="6.18.0">
       <category name="snomed-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.api.rest.feature_6.18.0.qualifier.jar" id="com.b2international.snowowl.api.rest.feature" version="6.18.0.qualifier">
+   <feature url="features/com.b2international.snowowl.api.rest.feature_6.18.0.jar" id="com.b2international.snowowl.api.rest.feature" version="6.18.0">
       <category name="server-core"/>
    </feature>
    <category-def name="server-core" label="Snow Owl Server Common"/>
