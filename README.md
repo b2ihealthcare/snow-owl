@@ -3,7 +3,7 @@
 Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 
 [![build status](https://img.shields.io/travis/b2ihealthcare/snow-owl/7.x.svg?style=flat-square)](https://travis-ci.org/b2ihealthcare/snow-owl)
-[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.0.0)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.0.1)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE)
 [![grade: Java](https://img.shields.io/lgtm/grade/java/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/context:java)
@@ -31,16 +31,16 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.zip.sha512)
-* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.tar.gz.sha512) 
-* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.rpm.sha512)
+* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.zip.sha512)
+* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.tar.gz.sha512) 
+* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.1/snow-owl-oss-7.0.1.rpm.sha512)
 * DEB (Coming soon!)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.0.0).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.0.1).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
