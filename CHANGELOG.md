@@ -1,6 +1,31 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.18.0
+
+### CIS
+- New CIS product and module is now available (#379)
+  * It partially supports the [official CIS API](https://github.com/IHTSDO/component-identifier-service)
+  * Specifically the single and bulk ID operations, retrieval and authentication endpoints
+  * See the new `/snowowl/cis` Swagger API documentation page
+  * Configure it under the new `cis` root configuration node
+
+### Validation
+- Support filtering of validation white list entries by `created_at` and `affectedComponentLabel` (#376, #381)
+- New common validation rule to check duplicate preferred FSNs and Synonyms in any language reference set (#382)
+
+### Configuration
+- Disable TCP transport when setting `repository.port` to `0` (740c904) 
+- Configuration key `snomed.ids` has been replaced with the new `cis` root configuration node (#379)
+
+### SNOMED CT
+- Create SNOMED CT Extension aware module and namespace assignment algorithm (#380)
+
+### Bugs
+- [reindex] Recreate index document of branches that were created after the very last commit (#375)
+- Fix SNOMED CT OWL Toolkit and Axiom conversion issue (c381c07)
+- Exclude inactive query members from query refset evaluation (#383)
+
 ## 6.17.0
 
 ### API
