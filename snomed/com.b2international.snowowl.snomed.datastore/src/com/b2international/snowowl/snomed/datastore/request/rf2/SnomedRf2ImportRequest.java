@@ -196,8 +196,6 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 							readFile(entry, in, oReader, slices, reporter);
 						}
 						LOG.info(entry.getName() + " - " + w);
-					} else {
-						reporter.warning(String.format("Unexpected type was found in release archive, expected type: %s", type.toString().toLowerCase()));
 					}
 				}
 			}
