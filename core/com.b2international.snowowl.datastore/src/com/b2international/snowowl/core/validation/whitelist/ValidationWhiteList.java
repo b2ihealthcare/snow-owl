@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,14 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import java.io.Serializable;
+import java.util.List;
 
+import com.b2international.commons.collections.Collections3;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Keyword;
+import com.b2international.index.Script;
+import com.b2international.index.Text;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,6 +34,7 @@ import com.google.common.base.MoreObjects;
  * @since 6.1
  */
 @Doc
+@Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class ValidationWhiteList implements Serializable {
 
 	/**
@@ -38,6 +45,9 @@ public final class ValidationWhiteList implements Serializable {
 		public static final String RULE_ID = "ruleId";
 		public static final String COMPONENT_ID = "componentId";
 		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
+		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
+		public static final String AFFECTED_COMPONENT_LABELS_PREFIX = AFFECTED_COMPONENT_LABELS + ".prefix";
+		public static final String AFFECTED_COMPONENT_LABELS_ORIGINAL= AFFECTED_COMPONENT_LABELS + ".original";
 		public static final String REPORTER = "reporter";
 		public static final String CREATED_AT = "createdAt";
 	}
@@ -49,6 +59,11 @@ public final class ValidationWhiteList implements Serializable {
 	private final String componentId;
 	private final short terminologyComponentId;
 	
+	@Text(analyzer = Analyzers.TOKENIZED)
+	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
+	@Keyword(alias="original")
+	private final List<String> affectedComponentLabels;
+	
 	private transient ComponentIdentifier componentIdentifier;
 	
 	public ValidationWhiteList(
@@ -56,8 +71,9 @@ public final class ValidationWhiteList implements Serializable {
 			final String ruleId,
 			final String reporter,
 			final long createdAt,
-			final ComponentIdentifier componentIdentifier) {
-		this(id, ruleId, reporter, createdAt, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+			final ComponentIdentifier componentIdentifier,
+			final List<String> affectedComponentLabels) {
+		this(id, ruleId, reporter, createdAt, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId(), affectedComponentLabels);
 	}
 
 	@JsonCreator
@@ -67,13 +83,15 @@ public final class ValidationWhiteList implements Serializable {
 			@JsonProperty("reporter") final String reporter,
 			@JsonProperty("createdAt") final long createdAt,
 			@JsonProperty("terminologyComponentId") final short terminologyComponentId,
-			@JsonProperty("componentId") final String componentId) {
+			@JsonProperty("componentId") final String componentId,
+			@JsonProperty("affectedComponentLabels") final List<String> affectedComponentLabels) {
 		this.id = id;
 		this.ruleId = ruleId;
 		this.reporter = reporter;
 		this.createdAt = createdAt;
 		this.terminologyComponentId = terminologyComponentId;
 		this.componentId = componentId;
+		this.affectedComponentLabels = Collections3.toImmutableList(affectedComponentLabels);
 	}
 	
 	public String getId() {
@@ -101,7 +119,11 @@ public final class ValidationWhiteList implements Serializable {
 	short getTerminologyComponentId() {
 		return terminologyComponentId;
 	}
-
+	
+	public List<String> getAffectedComponentLabels() {
+		return affectedComponentLabels;
+	}
+	
 	public String getReporter() {
 		return reporter;
 	}

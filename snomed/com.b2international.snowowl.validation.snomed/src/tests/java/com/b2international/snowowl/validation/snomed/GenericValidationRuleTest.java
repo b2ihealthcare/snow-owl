@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -31,10 +30,13 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.google.common.collect.ImmutableList;
 
 /**
  * 
@@ -154,6 +156,75 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void ruleSnomedCommon4() throws Exception {
+		final String ruleId = "snomed-common-4";
+		indexRule(ruleId);
+
+		// index concept with two FSNs in the same language refset
+		String concept1Id = generateConceptId();
+		SnomedDescriptionIndexEntry fsn1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 1 (tag)")
+				.conceptId(concept1Id)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), fsn1);
+		SnomedDescriptionIndexEntry fsn2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 2 (tag)")
+				.conceptId(concept1Id)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), fsn2);
+		SnomedConceptDocument c1 = concept(concept1Id)
+				.preferredDescriptions(ImmutableList.of(
+						new SnomedDescriptionFragment(fsn1.getId(), fsn1.getStorageKey(), fsn1.getTypeId(), fsn1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getStorageKey(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), c1);
+
+		// index concept with two PTs in the same language refset
+		String concept2Id = generateConceptId();
+		SnomedDescriptionIndexEntry pt1 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 1")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.conceptId(concept2Id)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), pt1);
+		SnomedDescriptionIndexEntry pt2 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 2")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.conceptId(concept2Id)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), pt2);
+		SnomedConceptDocument c2 = concept(concept2Id)
+				.preferredDescriptions(
+						ImmutableList.of(
+								new SnomedDescriptionFragment(pt1.getId(), pt1.getStorageKey(), pt1.getTypeId(), pt1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+								new SnomedDescriptionFragment(pt2.getId(), pt2.getStorageKey(), pt2.getTypeId(), pt2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), c2);
+
+		// index concept with only one PT and one FSN in a given language refset
+		String concept3Id = generateConceptId();
+		SnomedDescriptionIndexEntry fsn3 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 3 (tag)")
+				.conceptId(concept3Id)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), fsn3);
+		SnomedDescriptionIndexEntry pt3 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 3")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.conceptId(concept3Id)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), pt3);
+		SnomedConceptDocument c3 = concept(concept3Id)
+				.preferredDescriptions(ImmutableList.of(
+						new SnomedDescriptionFragment(fsn3.getId(), fsn3.getStorageKey(), fsn3.getTypeId(), fsn3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+						new SnomedDescriptionFragment(pt3.getId(), pt3.getStorageKey(), pt3.getTypeId(), pt3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)
+						))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), c3);
+		
+		ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c2.getId()));
+	}
+	
+	@Test
 	public void rule_mrcm_constraint() throws Exception {
 		final String ruleId = "rule_mrcm_constraint";
 		indexRule(ruleId);
@@ -175,51 +246,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.group(2).build();
 		
 		indexRevision(MAIN, relationship1, relationship2, relationship3);
-		
-		ValidationIssues issues = validate(ruleId);
-		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()));
-	}
-	
-	@Test
-	public void rule_stated_mrcm_constraint() throws Exception {
-		final String ruleId = "rule_stated_mrcm_constraint";
-		indexRule(ruleId);
-		
-		//Create MRCM rule
-		final HierarchyDefinitionFragment conceptSetDefinition = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF_OR_DESCENDANT);
-		final HierarchyDefinitionFragment predicateType = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF_OR_DESCENDANT);
-		final RelationshipPredicateFragment conceptModelPredicate = relationshipPredicate(predicateType, predicateRange);
-		
-		final SnomedConstraintDocument attributeConstraint = attributeConstraint(conceptSetDefinition, conceptModelPredicate);
-		
-		final SnomedConceptDocument conceptModelAttributeDescendant = concept(generateConceptId())
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.CONCEPT_MODEL_ATTRIBUTE)))
-				.build();
-		
-		final SnomedConceptDocument physicalObjectDescendant = concept(generateConceptId())
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.PHYSICAL_OBJECT)))
-				.build();
-		
-		final SnomedRelationshipIndexEntry relationship1 = relationship(conceptModelAttributeDescendant.getId(), Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.group(1).build();
-		
-		final SnomedRelationshipIndexEntry relationship2 = relationship(conceptModelAttributeDescendant.getId(), Concepts.FINDING_SITE, physicalObjectDescendant.getId())
-				.group(1).build();
-		
-		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, physicalObjectDescendant.getId())
-				.group(2).build();
-		
-		indexRevision(
-			MAIN, 
-			attributeConstraint,
-			conceptModelAttributeDescendant,
-			physicalObjectDescendant,
-			relationship1,
-			relationship2,
-			relationship3
-		);
 		
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, 
@@ -281,68 +307,4 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()));
 	}
 	
-	@Test
-	public void rule_stated_mrcm_constraint_type() throws Exception {
-		final String ruleId = "rule_stated_mrcm_constraint_type";
-		indexRule(ruleId);
-		
-		//First mrcm rule
-		final HierarchyDefinitionFragment conceptSetDefinition1 = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF_OR_DESCENDANT);
-		final HierarchyDefinitionFragment predicateType1 = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange1 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
-		final RelationshipPredicateFragment conceptModelPredicate1 = relationshipPredicate(predicateType1, predicateRange1);
-		
-		final SnomedConstraintDocument attributeConstraint1 = attributeConstraint(conceptSetDefinition1, conceptModelPredicate1);
-		
-		//Second mrcm rule
-		final HierarchyDefinitionFragment conceptSetDefinition2 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF_OR_DESCENDANT);
-		final HierarchyDefinitionFragment predicateType2 = hierarchyConceptSetDefinition(Concepts.HAS_ACTIVE_INGREDIENT, HierarchyInclusionType.SELF);
-		final HierarchyDefinitionFragment predicateRange2 = hierarchyConceptSetDefinition(Concepts.TEXT_DEFINITION, HierarchyInclusionType.SELF);
-		final RelationshipPredicateFragment conceptModelPredicate2 = relationshipPredicate(predicateType2, predicateRange2);
-		
-		final SnomedConstraintDocument attributeConstraint2 = attributeConstraint(conceptSetDefinition2, conceptModelPredicate2);
-		
-		
-		final SnomedConceptDocument conceptModelAttributeDescendant = concept(generateConceptId())
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.CONCEPT_MODEL_ATTRIBUTE)))
-				.build();
-		
-		final SnomedConceptDocument physicalObjectDescendant = concept(generateConceptId())
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.PHYSICAL_OBJECT)))
-				.build();
-		
-		//Relationships
-		final SnomedRelationshipIndexEntry relationship1 = relationship(conceptModelAttributeDescendant.getId(), Concepts.IS_A, Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.group(1).build();
-		
-		final SnomedRelationshipIndexEntry relationship2 = relationship(conceptModelAttributeDescendant.getId(), Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.group(1).build();
-		
-		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.group(2).build();
-		
-		final SnomedRelationshipIndexEntry relationship4 = relationship(physicalObjectDescendant.getId(), Concepts.FINDING_SITE, Concepts.TEXT_DEFINITION)
-				.group(0).build();
-		
-		final SnomedRelationshipIndexEntry relationship5 = relationship(physicalObjectDescendant.getId(), Concepts.HAS_ACTIVE_INGREDIENT, Concepts.PHYSICAL_OBJECT)
-				.group(3).build();
-		
-		indexRevision(
-			MAIN, 
-			attributeConstraint1, 
-			attributeConstraint2,
-			conceptModelAttributeDescendant,
-			physicalObjectDescendant,
-			relationship1,
-			relationship2,
-			relationship3,
-			relationship4,
-			relationship5
-		);
-		
-		ValidationIssues issues = validate(ruleId);
-		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship3.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()));
-	}
 }

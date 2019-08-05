@@ -21,7 +21,7 @@ import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.google.common.base.Strings;
 
 /**

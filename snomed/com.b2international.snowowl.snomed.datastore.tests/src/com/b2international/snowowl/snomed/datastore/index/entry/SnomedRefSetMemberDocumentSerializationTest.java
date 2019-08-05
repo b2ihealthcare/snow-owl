@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -54,7 +54,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return Collections.<Class<?>>singleton(SnomedRefSetMemberIndexEntry.class);
+		return ImmutableList.of(SnomedConceptDocument.class, SnomedRefSetMemberIndexEntry.class);
 	}
 	
 	@Override
@@ -378,6 +378,34 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertThat(hits).hasSize(1);
 		SnomedRefSetMemberIndexEntry hit = Iterables.getOnlyElement(hits);
 		assertDocEquals(classAxiomMember, hit);
+	}
+	
+	@Test
+	public void searchByOwlExpression_TypeId() throws Exception {
+		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
+		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
+
+		Hits<SnomedRefSetMemberIndexEntry> hits = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(singleton("272741003")))
+				.build());
+		assertThat(hits).hasSize(1);
+		SnomedRefSetMemberIndexEntry hit = Iterables.getOnlyElement(hits);
+		assertDocEquals(classAxiomMember, hit);
+	}
+	
+	@Test
+	public void searchByOwlExpression_DestinationId() throws Exception {
+		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
+		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
+
+		Hits<SnomedRefSetMemberIndexEntry> hits = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionDestination(singleton("441862004")))
+				.build());
+		assertThat(hits).hasSize(1);
+		SnomedRefSetMemberIndexEntry hit = Iterables.getOnlyElement(hits);
+		assertDocEquals(gciAxiomMember, hit);
 	}
 	
 	@Test

@@ -71,19 +71,21 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
-import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 2.0
@@ -171,7 +173,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		SctId conceptSctId = SnomedRequests.identifiers().prepareGet()
 			.setComponentId(conceptId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.buildAsync()
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync()
 			.first()
@@ -389,6 +391,59 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertTrue(updatedMemberIds.containsAll(memberIds));
 	}
 
+	@Test
+	public void updateAssociationTargetWithDefaultModule() throws Exception {
+		String conceptId1 = createNewConcept(branchPath);
+		String conceptId2 = createNewConcept(branchPath);
+		String conceptId3 = createNewConcept(branchPath);
+
+		// Inactivate the duplicate concept and point to the other one
+		Map<?, ?> inactivationRequestBody = ImmutableMap.<String, Object>builder()
+				.put("active", false)
+				.put("inactivationIndicator", InactivationIndicator.DUPLICATE)
+				.put("associationTargets", ImmutableMap.of(AssociationType.POSSIBLY_EQUIVALENT_TO, ImmutableList.of(conceptId1)))
+				.put("commitComment", "Inactivated concept")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, inactivationRequestBody)
+			.statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, "inactivationProperties()")
+			.statusCode(200)
+			.body("active", equalTo(false))
+			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()))
+			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(conceptId1));
+
+		// Update the inactivation reason and association target properties, specifying the module
+		Map<?, ?> updateRequestBody = ImmutableMap.<String, Object>builder()
+				.put("active", false)
+				.put("inactivationIndicator", InactivationIndicator.AMBIGUOUS)
+				.put("associationTargets", ImmutableMap.of(AssociationType.REPLACED_BY, ImmutableList.of(conceptId3)))
+				.put("commitComment", "Changed inactivation reason and association target")
+				.put("defaultModuleId", "449081005") // SNOMED CT Spanish edition module
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, updateRequestBody)
+			.statusCode(204);
+
+		// Verify association target and inactivation indicator update
+		final ValidatableResponse response = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, "inactivationProperties(),members()")
+			.statusCode(200)
+			.body("active", equalTo(false))
+			.body("inactivationIndicator", equalTo(InactivationIndicator.AMBIGUOUS.toString()))
+			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), nullValue())
+			.body("associationTargets." + AssociationType.REPLACED_BY.name(), allOf(hasItem(conceptId3), not(hasItem(conceptId1))));
+		
+		// Check that the default module is honored
+		final SnomedReferenceSetMembers refSetMembers = response.extract()
+			.body()
+			.jsonPath()
+			.getObject("members", SnomedReferenceSetMembers.class);
+		
+		refSetMembers.forEach(m -> assertEquals(
+				"Reference set member should be placed in the default module", "449081005", m.getModuleId()));
+	}
+	
 	@Test
 	public void updateInactivationIndicatorOnActiveConcept() throws Exception {
 		String conceptId = createNewConcept(branchPath);

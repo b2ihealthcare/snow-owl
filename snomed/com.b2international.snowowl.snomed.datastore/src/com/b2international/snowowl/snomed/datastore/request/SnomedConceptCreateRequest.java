@@ -63,7 +63,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	@Size(min = 2)
 	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
 	
-	@Size(min = 1)
 	private List<SnomedRelationshipCreateRequest> relationships = Collections.emptyList();
 	
 	private SnomedRefSetCreateRequest refSetRequest;

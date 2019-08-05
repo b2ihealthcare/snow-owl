@@ -168,6 +168,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
 				queryBuilder.filter(mapCategoryIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class)));
 			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)) {
+				queryBuilder.filter(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, String.class)));
+			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
 				queryBuilder.filter(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class)));
 			}
@@ -200,6 +203,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID)) {
 				queryBuilder.filter(owlExpressionConcept(propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID, String.class)));
+			}
+			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID)) {
+				queryBuilder.filter(owlExpressionDestination(propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID, String.class)));
+			}
+			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID)) {
+				queryBuilder.filter(owlExpressionType(propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID, String.class)));
 			}
 			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI)) {
 				queryBuilder.filter(gciAxiom(propsFilter.getBoolean(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI)));

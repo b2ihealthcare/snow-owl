@@ -564,7 +564,9 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		if (namespace != null || moduleId != null) {
 			assigner = new DefaultNamespaceAndModuleAssigner(namespace, moduleId);
 		} else {
-			assigner = context.service(SnomedNamespaceAndModuleAssignerProvider.class).get();
+			final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
+			final String namespaceModuleAssignerType = configuration.getNamespaceModuleAssigner();
+			assigner = context.service(SnomedNamespaceAndModuleAssignerProvider.class).get(namespaceModuleAssignerType);
 		}
 
 		final String assignerName = assigner.getClass().getSimpleName();

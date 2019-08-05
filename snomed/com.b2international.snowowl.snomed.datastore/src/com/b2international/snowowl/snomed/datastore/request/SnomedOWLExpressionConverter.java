@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -29,15 +30,18 @@ import org.snomed.otf.owltoolkit.domain.AxiomRepresentation;
 import org.snomed.otf.owltoolkit.domain.Relationship;
 
 import com.b2international.commons.options.Options;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.base.Throwables;
 
 /**
  * @since 6.14 
@@ -45,9 +49,16 @@ import com.google.common.base.Suppliers;
 public final class SnomedOWLExpressionConverter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedOWLExpressionConverter.class);
+	
 	private final BranchContext context;
-	private final Supplier<AxiomRelationshipConversionService> conversionService = Suppliers.memoize(() -> new AxiomRelationshipConversionService(getUngroupedRelationshipTypes()));
-
+	
+	private final Supplier<AxiomRelationshipConversionService> conversionService = Suppliers.memoize(() -> {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		AxiomRelationshipConversionService service = withTccl(() -> new AxiomRelationshipConversionService(getUngroupedAttributes()));
+		LOG.debug("SNOMED OWL Toolkit conversion service initialization took {}", TimeUtil.toString(stopwatch));
+		return service;
+	});
+	
 	public SnomedOWLExpressionConverter(BranchContext context) {
 		this.context = checkNotNull(context);
 	}
@@ -59,8 +70,9 @@ public final class SnomedOWLExpressionConverter {
 		}
 		
 		try {
+			
 			final Long referencedComponentIdLong = Long.valueOf(referencedComponentId);
-			final AxiomRepresentation axiomRepresentation = conversionService.get().convertAxiomToRelationships(referencedComponentIdLong, owlExpression);
+			final AxiomRepresentation axiomRepresentation = conversionService.get().convertAxiomToRelationships(owlExpression);
 			
 			boolean gci = false;
 			Map<Integer, List<Relationship>> relationships = null;
@@ -94,7 +106,7 @@ public final class SnomedOWLExpressionConverter {
 		}
 	}
 
-	private Set<Long> getUngroupedRelationshipTypes() {
+	private Set<Long> getUngroupedAttributes() {
 		return SnomedRequests.prepareSearchMember()
 			.all()
 			.filterByActive(true)
@@ -111,6 +123,25 @@ public final class SnomedOWLExpressionConverter {
 			.collect(Collectors.toSet());
 	}
 	
-	
+	private static <T> T withTccl(final Callable<T> callable) {
+
+		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+
+		try {
+
+			Thread.currentThread().setContextClassLoader(SnomedOWLExpressionConverter.class.getClassLoader());
+
+			try {
+				return callable.call();
+			} catch (final Exception e) {
+				Throwables.propagateIfPossible(e);
+				throw new RuntimeException(e);
+			}
+
+		} finally {
+			Thread.currentThread().setContextClassLoader(contextClassLoader);
+		}
+
+	}
 	
 }

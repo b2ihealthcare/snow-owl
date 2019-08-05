@@ -21,6 +21,7 @@ public class ChangeRequest<T> {
 
 	private T change;
 	private String commitComment;
+	private String defaultModuleId;
 
 	@JsonUnwrapped
 	public T getChange() {
@@ -31,12 +32,20 @@ public class ChangeRequest<T> {
 		return commitComment;
 	}
 
+	public String getDefaultModuleId() {
+		return defaultModuleId;
+	}
+
 	public void setChange(final T change) {
 		this.change = change;
 	}
 
 	public void setCommitComment(final String commitComment) {
 		this.commitComment = commitComment;
+	}
+	
+	public void setDefaultModuleId(final String defaultModuleId) {
+		this.defaultModuleId = defaultModuleId;
 	}
 
 	@Override
@@ -46,6 +55,8 @@ public class ChangeRequest<T> {
 		builder.append(change);
 		builder.append(", commitComment=");
 		builder.append(commitComment);
+		builder.append(", defaultModuleId=");
+		builder.append(defaultModuleId);
 		builder.append("]");
 		return builder.toString();
 	}

@@ -249,10 +249,10 @@ public class SnomedConceptRestService extends AbstractRestService {
 		
 		final SnomedConceptRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId();
 		
-		final String createdConceptId = change
-			.toRequestBuilder()
-			.build(repositoryId, branchPath, userId, commitComment)
+		final String createdConceptId = change.toRequestBuilder()
+			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -297,9 +297,13 @@ public class SnomedConceptRestService extends AbstractRestService {
 			final Principal principal) {
 
 		final String userId = principal.getName();
+		
+		final SnomedConceptRestUpdate change = body.getChange();
 		final String commitComment = body.getCommitComment();
-		body.getChange().toRequestBuilder(conceptId)
-			.build(repositoryId, branchPath, userId, commitComment)
+		final String defaultModuleId = body.getDefaultModuleId();
+		
+		change.toRequestBuilder(conceptId)
+			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}

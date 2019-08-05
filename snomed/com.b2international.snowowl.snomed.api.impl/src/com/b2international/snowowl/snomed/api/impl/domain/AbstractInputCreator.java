@@ -2,7 +2,7 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 
 public abstract class AbstractInputCreator {
 

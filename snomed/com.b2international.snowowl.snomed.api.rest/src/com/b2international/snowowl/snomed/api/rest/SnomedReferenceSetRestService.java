@@ -189,9 +189,14 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 
 			final Principal principal) {
 		
+		final String userId = principal.getName();
+		
 		final SnomedRefSetRestInput change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId(); 
+		
 		final String createdRefSetId = change.toRequestBuilder() 
-			.build(repositoryId, branchPath, principal.getName(), body.getCommitComment())
+			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -225,16 +230,21 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			final ChangeRequest<RestRequest> body,
 			
 			final Principal principal) {
+		
+		final String userId = principal.getName();
 		final RequestResolver<TransactionContext> resolver = new RefSetRequestResolver();
 		
 		final RestRequest change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId();
+		
 		change.setSource("referenceSetId", refSetId);
 		
-		SnomedRequests
-			.prepareCommit()
-			.setBody(body.getChange().resolve(resolver))
-			.setCommitComment(body.getCommitComment())
-			.setUserId(principal.getName())
+		SnomedRequests.prepareCommit()
+			.setDefaultModuleId(defaultModuleId)
+			.setBody(change.resolve(resolver))
+			.setCommitComment(commitComment)
+			.setUserId(userId)
 			.build(repositoryId, branchPath)
 			.execute(bus)
 			.getSync();
@@ -265,8 +275,13 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			
 			final Principal principal) {
 		
+		final String userId = principal.getName();
 		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
+		
 		final BulkRestRequest bulkRequest = request.getChange();
+		final String commitComment = request.getCommitComment();
+		final String defaultModuleId = request.getDefaultModuleId();
+		
 		// FIXME setting referenceSetId even if defined??? 
 		// enforces that new members will be created in the defined refset
 		for (RestRequest req : bulkRequest.getRequests()) {
@@ -276,11 +291,11 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		final BulkRequestBuilder<TransactionContext> updateRequestBuilder = BulkRequest.create();
 		bulkRequest.resolve(resolver).forEach(updateRequestBuilder::add);
 		
-		SnomedRequests
-			.prepareCommit()
+		SnomedRequests.prepareCommit()
+			.setDefaultModuleId(defaultModuleId)
 			.setBody(updateRequestBuilder.build())
-			.setUserId(principal.getName())
-			.setCommitComment(request.getCommitComment())
+			.setUserId(userId)
+			.setCommitComment(commitComment)
 			.build(repositoryId, branchPath)
 			.execute(bus)
 			.getSync();

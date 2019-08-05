@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.Date;
+import java.util.List;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -32,6 +33,7 @@ public final class ValidationWhiteListCreateRequestBuilder
 
 	private String ruleId;
 	private ComponentIdentifier componentIdentifier;
+	private List<String> affectedComponentLabels;
 	private String reporter;
 	private long createdAt = new Date().getTime();
 	
@@ -39,6 +41,11 @@ public final class ValidationWhiteListCreateRequestBuilder
 	
 	public ValidationWhiteListCreateRequestBuilder setRuleId(String ruleId) {
 		this.ruleId = ruleId;
+		return getSelf();
+	}
+	
+	public ValidationWhiteListCreateRequestBuilder setAffectedComponentLabels(List<String> affectedComponentLabels) {
+		this.affectedComponentLabels = affectedComponentLabels;
 		return getSelf();
 	}
 	
@@ -62,6 +69,7 @@ public final class ValidationWhiteListCreateRequestBuilder
 		ValidationWhiteListCreateRequest req = new ValidationWhiteListCreateRequest();
 		req.setRuleId(ruleId);
 		req.setComponentIdentifier(componentIdentifier);
+		req.setAffectedComponentLabels(affectedComponentLabels);
 		req.setReporter(reporter);
 		req.setCreatedAt(createdAt);
 		return req;

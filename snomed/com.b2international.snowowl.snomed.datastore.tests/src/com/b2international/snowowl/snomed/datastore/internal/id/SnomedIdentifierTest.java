@@ -21,8 +21,8 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifier;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 
 /**
  * @since 4.0

@@ -1,0 +1,211 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>com.b2international.snowowl.snomed.cis.product</artifactId>
+	<packaging>eclipse-repository</packaging>
+
+	<parent>
+		<groupId>com.b2international.snowowl</groupId>
+		<artifactId>cis-parent</artifactId>
+		<version>6.18.0</version>
+	</parent>
+	
+	<properties>
+		<build.qualifier>${forceContextQualifier}</build.qualifier>
+		<build.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${build.qualifier}</build.version>
+		<packageFiles>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</packageFiles>
+		<product.rootFolder>snow-owl-cis-${build.version}</product.rootFolder>
+		<products.directory>${project.build.directory}/products</products.directory>
+		<product.id>com.b2international.snowowl.snomed.cis.product</product.id>
+		<so.products.directory>${products.directory}/${product.id}</so.products.directory>
+		<linux.product.path>${so.products.directory}/linux/gtk/x86_64/${product.rootFolder}</linux.product.path>
+	</properties>
+	
+	<build>
+		<finalName>snow-owl-cis_${build.version}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.9.1</version>
+				<executions>
+					<execution>
+						<id>parse-version</id>
+						<goals>
+							<goal>parse-version</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-director-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>materialize-products</id>
+						<goals>
+							<goal>materialize-products</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<products>
+						<product>
+							<id>${product.id}</id>
+							<rootFolder>${product.rootFolder}</rootFolder>
+						</product>
+					</products>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-repository-plugin</artifactId>
+				<configuration>
+					<finalName>${project.build.finalName}-site</finalName>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>package-cis</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<workDirectory>${project.build.directory}/assembly</workDirectory>
+							<descriptor>${basedir}/assembly/cis.xml</descriptor>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<groupId>de.dentrassi.maven</groupId> -->
+<!-- 				<artifactId>rpm</artifactId> -->
+<!-- 				<version>0.8.0</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>generate-rpm</id> -->
+<!-- 						<goals> -->
+<!-- 							<goal>rpm</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 				<configuration> -->
+<!-- 					<attach>true</attach> -->
+<!-- 					<group>Unspecified</group> -->
+<!-- 					<packageName>snowowl-${customer}</packageName> -->
+<!-- 					<architecture>x86_64</architecture> -->
+<!-- 					<skipSigning>true</skipSigning> -->
+<!-- 					<rulesets> -->
+<!-- 						<ruleset> -->
+<!-- 							<id>rpm-default</id> -->
+<!-- 							<rules> -->
+<!-- 								<rule> -->
+<!-- 									<user>snowowl</user> -->
+<!-- 									<group>snowowl</group> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<prefix>/opt/snowowl-${customer}/snowowl_config.yml</prefix> -->
+<!-- 										<type>file</type> -->
+<!-- 									</when> -->
+<!-- 									<when> -->
+<!-- 										<prefix>/opt/snowowl-${customer}/configuration/</prefix> -->
+<!-- 										<type>file</type> -->
+<!-- 									</when> -->
+<!-- 									<configuration>true</configuration> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<type>directory</type> -->
+<!-- 									</when> -->
+<!-- 									<mode>0755</mode> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<type>file</type> -->
+<!-- 									</when> -->
+<!-- 									<mode>0644</mode> -->
+<!-- 								</rule> -->
+<!-- 								<rule> -->
+<!-- 									<when> -->
+<!-- 										<prefix>/opt/snowowl-${customer}/bin/</prefix> -->
+<!-- 										<type>file</type> -->
+<!-- 									</when> -->
+<!-- 									<mode>0755</mode> -->
+<!-- 								</rule> -->
+<!-- 							</rules> -->
+<!-- 						</ruleset> -->
+<!-- 					</rulesets> -->
+<!-- 					<entries> -->
+<!-- 						<entry> -->
+<!-- 							<name>/opt/snowowl-${customer}</name> -->
+<!-- 							<ruleset>rpm-default</ruleset> -->
+<!-- 							<collect> -->
+<!-- 								<from>${project.build.directory}/${project.build.finalName}-mysql/${project.build.finalName}</from> -->
+<!-- 							</collect> -->
+<!-- 						</entry> -->
+<!-- 					</entries> -->
+<!-- 					<prerequisites> -->
+<!-- 						<prererequisite>shadow-utils</prererequisite> -->
+<!-- 					</prerequisites> -->
+<!-- 					<beforeInstallation> -->
+<!-- 						<script> -->
+<!-- 							getent group snowowl >/dev/null || groupadd -r snowowl -->
+<!-- 							getent passwd USERNAME >/dev/null || \ -->
+<!-- 								useradd -r -g snowowl -d /opt/snowowl-${customer} -s /sbin/nologin \ -->
+<!--     							-c "Snow Owl Server" snowowl -->
+<!--     						exit 0 -->
+<!-- 						</script> -->
+<!-- 					</beforeInstallation> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>m2e</id>
+			<!-- This profile is only activated when building in Eclipse with m2e -->
+			<activation>
+				<property>
+					<name>m2e.version</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>2.4.3</version>
+						<executions>
+							<execution>
+								<id>copy-runtime-config</id>
+								<phase>process-classes</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<resources>
+										<resource>
+											<directory>assembly/common</directory>
+											<excludes>
+												<exclude>bin/**</exclude>
+											</excludes>
+										</resource>
+									</resources>
+									<outputDirectory>${basedir}/runtime</outputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>

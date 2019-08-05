@@ -86,6 +86,68 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://b
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.18.0
+
+### CIS
+- New CIS product and module is now available (#379)
+  * It partially supports the [official CIS API](https://github.com/IHTSDO/component-identifier-service)
+  * Specifically the single and bulk ID operations, retrieval and authentication endpoints
+  * See the new `/snowowl/cis` Swagger API documentation page
+  * Configure it under the new `cis` root configuration node
+
+### Validation
+- Support filtering of validation white list entries by `created_at` and `affectedComponentLabel` (#376, #381)
+- New common validation rule to check duplicate preferred FSNs and Synonyms in any language reference set (#382)
+
+### Configuration
+- Disable TCP transport when setting `repository.port` to `0` (740c904) 
+- Configuration key `snomed.ids` has been replaced with the new `cis` root configuration node (#379)
+
+### SNOMED CT
+- Create SNOMED CT Extension aware module and namespace assignment algorithm (#380)
+
+### Bugs
+- [reindex] Recreate index document of branches that were created after the very last commit (#375)
+- Fix SNOMED CT OWL Toolkit and Axiom conversion issue (c381c07)
+- Exclude inactive query members from query refset evaluation (#383)
+
+## 6.17.0
+
+### API
+- Allow querying owl expressions by either `type` or `destination` ids (9ab1048, 958ee81)
+- Allow setting pending move inactivation indicator on SNOMED CT Descriptions of new SNOMED CT Concepts (63f4b1f)
+- Remove logic that disallowed reactivating a concept while adding an inactivation indicator and/or association target(s) (86ed3c7)
+- Support `defaultModuleId` for all enum based member updates (#368)
+- Remove minimum number of required SNOMED CT Relationships validation from SNOMED CT Concept create request (9ac5c99)
+
+### Console
+- New `user adduser` command has been added to the available OSGi commands (#374)
+
+### Configuration
+- Support id exclusion list (#372)
+  * Read and use all ID exclusion files under <SNOWOWL_HOME>/configuration/reservations folder
+  * Format: SNOMED CT Identifiers separated by new line character(s)  
+
+### Validation
+- Support whitelist entry labels (#369)
+
+### Changes
+- Let the axiom conversion service create 'SubObjectPropertyOf' and 'SubDataPropertyOf' axioms (e9b9c34)
+
+### Bugs
+- [api] Fix refset member search request parameter (a76c0d7)
+- [api] lookup moduleId when creating refset member (41adfc5)
+- [api] fix potential race condition when building bulk request from multiple threads (9d1b64e)
+- [console] fix `rf2_refset` import OSGi command (054da61)
+- [import] Fix error when importing SNAPSHOT without any valid data (69b9bda)
+- [reasoner] Add missing concept IDs to the relationship module and namespace collector in the equivalent concept merging phase (a042274)
+- [reasoner] Skip axiom relationships where either the source or the destination is inactive (96c4494)
+- [reasoner] Fix initial state of SCHEDULED classification task (733e4b8)
+- [validation] Remove stated MRCM rule (2657abd)
+
+### Dependencies
+- Bump SNOMED OWL Toolkit to 2.6.0 
+
 ## 6.16.0
 
 ### REST API changes

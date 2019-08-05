@@ -24,8 +24,9 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
+import com.b2international.snowowl.snomed.cis.internal.reservations.SnomedIdentifierReservationServiceImpl;
+import com.b2international.snowowl.snomed.cis.reservations.Reservation;
+import com.b2international.snowowl.snomed.cis.reservations.Reservations;
 
 /**
  * @since 4.0

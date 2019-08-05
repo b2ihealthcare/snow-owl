@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT Icons
 Bundle-SymbolicName: com.b2international.snowowl.snomed.icons;singleton:=true
-Bundle-Version: 6.17.0.qualifier
+Bundle-Version: 6.18.0
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: com.b2international.commons,

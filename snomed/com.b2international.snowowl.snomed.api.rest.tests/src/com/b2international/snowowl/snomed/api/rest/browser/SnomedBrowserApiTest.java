@@ -24,7 +24,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.res
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -188,15 +187,6 @@ public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConceptNonExistentBranch() {
 		createBrowserConcept(BranchPathUtils.createPath("MAIN/x/y/z"), createBrowserConceptRequest()).statusCode(404);
-	}
-
-	@Test
-	public void createConceptWithoutParent() {
-		Map<?, ?> conceptRequest = newHashMap(createBrowserConceptRequest());
-		conceptRequest.remove("relationships");
-
-		createBrowserConcept(branchPath, conceptRequest).statusCode(400)
-		.body("message", equalTo("1 validation error"));
 	}
 
 	@Test

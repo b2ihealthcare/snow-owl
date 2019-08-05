@@ -43,7 +43,6 @@ import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMember
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMemberParameterizedTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetParameterizedTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationshipApiTest;
-import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportRowValidatorTest;
@@ -73,7 +72,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedCompareRestRequestTest.class,
 	SnomedBranchingApiTest.class,
 	// Component API test cases
-	SnomedIdentifierApiTest.class,
 	SnomedConceptApiTest.class,
 	SnomedDescriptionApiTest.class,
 	SnomedRelationshipApiTest.class,

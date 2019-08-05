@@ -44,7 +44,7 @@
 		<fastutil.version>8.2.2</fastutil.version>
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
-		<snomed.owl.toolkit.version>2.4.0</snomed.owl.toolkit.version>
+		<snomed.owl.toolkit.version>2.6.0</snomed.owl.toolkit.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
 		<tycho-extras.version>1.2.0</tycho-extras.version>
@@ -61,6 +61,7 @@
 		<module>core</module>
 		<module>net4j</module>
 		<module>snomed</module>
+		<module>cis</module>
 		<module>tests</module>
 		<module>releng</module>
 		<module>dist</module>

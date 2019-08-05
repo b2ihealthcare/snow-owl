@@ -447,6 +447,21 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 					.build()));
 			return query.build();
 		}
+		
+		public static Expression owlExpressionDestination(Iterable<String> destinationIds) {
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			query.should(nestedMatch("classAxiomRelationships", matchAny("destinationId", destinationIds)));
+			query.should(nestedMatch("gciAxiomRelationships", matchAny("destinationId", destinationIds)));
+			return query.build();
+		}
+		
+		public static Expression owlExpressionType(Iterable<String> typeIds) {
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			query.should(nestedMatch("classAxiomRelationships", matchAny("typeId", typeIds)));
+			query.should(nestedMatch("gciAxiomRelationships", matchAny("typeId", typeIds)));
+			return query.build();
+		}
+		
 	}
 
 	@JsonPOJOBuilder(withPrefix="")

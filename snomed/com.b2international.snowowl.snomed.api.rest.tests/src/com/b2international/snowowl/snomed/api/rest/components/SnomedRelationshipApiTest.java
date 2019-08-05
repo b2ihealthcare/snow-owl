@@ -28,7 +28,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRelationshipRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateDescription;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.endsWith;
@@ -52,14 +51,14 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
-import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -140,7 +139,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		
 		SctId relationshipSctId = SnomedRequests.identifiers().prepareGet()
 				.setComponentId(relationshipId)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync()
 				.first()
