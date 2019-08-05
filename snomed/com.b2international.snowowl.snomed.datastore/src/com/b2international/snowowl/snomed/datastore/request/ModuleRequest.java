@@ -21,14 +21,14 @@ import java.util.function.Function;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
 /**
  * @since 6.17
  */
 public final class ModuleRequest<R> extends DelegatingRequest<TransactionContext, TransactionContext, R> {
 
-	public interface ModuleIdProvider extends Function<Component, String>, Serializable { }
+	public interface ModuleIdProvider extends Function<SnomedDocument, String>, Serializable { }
 
 	private static final long serialVersionUID = 1L;
 	
@@ -43,7 +43,7 @@ public final class ModuleRequest<R> extends DelegatingRequest<TransactionContext
 		
 		// Use the component's module ID if no default value has been given
 		if (defaultModuleId == null) {
-			this.moduleIdFunction = c -> c.getModule().getId();	
+			this.moduleIdFunction = c -> c.getModuleId();	
 		} else {
 			this.moduleIdFunction = c -> defaultModuleId;	
 		}

@@ -21,17 +21,17 @@ import java.nio.file.Files;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
+import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.cis.client.CisSnomedIdentifierService;
@@ -48,12 +48,17 @@ import com.google.common.base.Charsets;
 /**
  * @since 4.5
  */
-@ModuleConfig(fieldName = "cis", type = SnomedIdentifierConfiguration.class)
-public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
+@Component
+public class SnomedIdentifierBootstrap extends Plugin {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("snomedids");
 	private static final String SNOMED_IDS_INDEX = "snomedids";
 
+	@Override
+	public void addConfigurations(ConfigurationRegistry registry) {
+		registry.add("cis", SnomedIdentifierConfiguration.class);
+	}
+	
 	@Override
 	public void init(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		checkIdGenerationSource(configuration);
@@ -65,7 +70,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	}
 
 	@Override
-	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
+	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
 			final ISnomedIdentifierReservationService reservationService = env.service(ISnomedIdentifierReservationService.class);
 			final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedIdentifierConfiguration.class);
@@ -74,7 +79,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	}
 
 	private void registerDefaultReservations(final Environment env, final ISnomedIdentifierReservationService reservationService) {
-		final File reservationsDirectory = env.getConfigDirectory().toPath().resolve("reservations").toFile();
+		final File reservationsDirectory = env.getConfigPath().resolve("reservations").toFile();
 		if (reservationsDirectory.exists() && reservationsDirectory.isDirectory()) {
 			for (File reservationFile : reservationsDirectory.listFiles()) {
 				final String reservationFileName = reservationFile.getName();

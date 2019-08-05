@@ -185,11 +185,14 @@ public final class RepositoryPlugin extends Plugin {
 			
 			final HostAndPort hostAndPort = configuration.getModuleConfig(RepositoryConfiguration.class).getHostAndPort();
 			// open port in server environments
-			TCPUtil.getAcceptor(container, hostAndPort.toString()); // Starts the TCP transport
-			LOG.info("Listening on {} for connections", hostAndPort);
+			if (hostAndPort.getPort() > 0) {
+				TCPUtil.getAcceptor(container, hostAndPort.toString()); // Starts the TCP transport
+				LOG.info("Listening on {} for connections", hostAndPort);
+			}
+
 			JVMUtil.getAcceptor(container,	Net4jUtils.NET_4_J_CONNECTOR_NAME); // Starts the JVM transport
 			
-				final RepositoryManager repositoryManager = new DefaultRepositoryManager();
+			final RepositoryManager repositoryManager = new DefaultRepositoryManager();
 			env.services().registerService(RepositoryManager.class, repositoryManager);
 			env.services().registerService(RepositoryContextProvider.class, repositoryManager);
 			

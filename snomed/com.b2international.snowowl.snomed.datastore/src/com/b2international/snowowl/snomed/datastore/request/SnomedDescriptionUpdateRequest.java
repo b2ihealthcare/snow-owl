@@ -116,7 +116,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	}
 
 	private void updateAssociationTargets(TransactionContext context, final SnomedDescriptionIndexEntry description, final Multimap<AssociationType, String> associationTargets) {
-		final SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(description.getId(), description.getModuleId());
+		final SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(description.getId(), SnomedDescriptionIndexEntry.class);
 		associationUpdateRequest.setNewAssociationTargets(associationTargets);
 		associationUpdateRequest.execute(context);
 	}
@@ -181,7 +181,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(
 				description.getId(), 
 				Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
-				description.getModuleId());
+				SnomedDescriptionIndexEntry.class);
 		
 		inactivationUpdateRequest.setInactivationValueId(inactivationIndicator.getConceptId());
 		inactivationUpdateRequest.execute(context);

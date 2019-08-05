@@ -336,7 +336,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			return;
 		}
 		
-		SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(concept.getId(), concept.getModuleId());
+		SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(concept.getId(), SnomedConceptDocument.class);
 		associationUpdateRequest.setNewAssociationTargets(associationTargets);
 		associationUpdateRequest.execute(context);
 	}
@@ -349,7 +349,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(
 			getComponentId(), 
 			Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
-			concept.getModuleId()
+			SnomedConceptDocument.class
 		);
 		
 		inactivationUpdateRequest.setInactivationValueId(indicator.getConceptId());

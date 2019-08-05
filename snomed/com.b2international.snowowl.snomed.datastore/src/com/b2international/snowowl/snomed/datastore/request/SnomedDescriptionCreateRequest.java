@@ -24,6 +24,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
@@ -155,10 +156,10 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 			context.add(description);
 			
 			if (inactivationIndicator != null) {
-				final SnomedInactivationReasonUpdateRequest<Description> inactivationUpdate =  new SnomedInactivationReasonUpdateRequest<>(
+				final SnomedInactivationReasonUpdateRequest inactivationUpdate =  new SnomedInactivationReasonUpdateRequest(
 						description.getId(), 
-						Description.class, 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
+						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+						SnomedDescriptionIndexEntry.class);
 				inactivationUpdate.setInactivationValueId(inactivationIndicator.getConceptId());
 				inactivationUpdate.execute(context);
 			}

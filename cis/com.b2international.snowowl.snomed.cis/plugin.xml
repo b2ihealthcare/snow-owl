@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
-         point="com.b2international.snowowl.core.bootstrapFragments">
-      <bootstrapFragment
-            class="com.b2international.snowowl.snomed.cis.SnomedIdentifierBootstrap">
-      </bootstrapFragment>
-   </extension>
 
 </plugin>
