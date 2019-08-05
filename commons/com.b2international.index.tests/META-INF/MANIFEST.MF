@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Generic Index API Test Suite
 Bundle-SymbolicName: com.b2international.index.tests;singleton:=true
-Bundle-Version: 6.18.0
+Bundle-Version: 6.19.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
