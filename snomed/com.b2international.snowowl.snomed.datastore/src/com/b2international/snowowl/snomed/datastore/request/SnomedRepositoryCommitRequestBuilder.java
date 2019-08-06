@@ -30,13 +30,22 @@ import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
  */
 public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommitRequestBuilder {
 
+	private String defaultModuleId = null;
+	
 	SnomedRepositoryCommitRequestBuilder() {
 		super();
 	}
 	
+	public SnomedRepositoryCommitRequestBuilder setDefaultModuleId(String defaultModuleId) {
+		this.defaultModuleId = defaultModuleId;
+		return this;
+	}
+	
 	@Override
 	protected Request<TransactionContext, ?> getBody() {
-		return new SnomedBulkRequest<>(super.getBody());
+		return new ModuleRequest<>(
+			new IdRequest<>(new SnomedBulkRequest<>(super.getBody())),
+			defaultModuleId);
 	}
 	
 	@Override
@@ -46,9 +55,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 				new HealthCheckingRequest<>(
 					new BranchRequest<>(branch,
 						new RevisionIndexReadRequest<>(
-							new IdRequest<>(
-								build()
-							)
+							build()
 						)
 					),
 					allowedHealthstates()

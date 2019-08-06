@@ -1,0 +1,5 @@
+  
+globalParameter: SOME_PARAM
+
+allParams:
+  booleanAttribute: ${SOME_ATTRIBUTE}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,24 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 1.0
@@ -42,6 +49,7 @@ public class SnomedExportRestConfiguration {
 	private String namespaceId = "INT";
 	
 	private Collection<String> moduleIds;
+	private Collection<String> refsetIds;
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
 	private String transientEffectiveTime;
@@ -49,7 +57,27 @@ public class SnomedExportRestConfiguration {
 	
 	private String codeSystemShortName = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	private boolean extensionOnly = false;
+	private String acceptLanguage = "en-US,en-GB";
 
+	public String getAcceptLanguage() {
+		return acceptLanguage;
+	}
+	
+	public void setAcceptLanguage(String acceptLanguage) {
+		this.acceptLanguage = acceptLanguage;
+	}
+	
+	@JsonIgnore
+	public List<ExtendedLocale> getLocales() {
+		try {
+			return AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+	}
+	
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
 	 * @return the desired RF2 release type.
@@ -125,6 +153,21 @@ public class SnomedExportRestConfiguration {
 	
 	public void setModuleIds(Collection<String> moduleIds) {
 		this.moduleIds = moduleIds;
+	}
+	
+	/**
+	 * Returns with a collection of SNOMED&nbsp;CT refset concept IDs.
+	 * <p>This collection of refset IDs will define which refsets and their members will be included in the export.
+	 * Refsets that are not included in the returning set will be excluded from the export result.
+	 * 
+	 * @return a collection of refset IDs.
+	 */
+	public Collection<String> getRefsetIds() {
+		return refsetIds;
+	}
+	
+	public void setRefsetIds(Collection<String> refsets) {
+		this.refsetIds = refsets;
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,24 +44,29 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedImportDetails;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedImportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Api("Imports")
+@Api(value = "Imports", description="Imports", tags = { "imports" })
 @RestController
 @RequestMapping(
 		value="/imports",
 		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedImportRestService extends AbstractSnomedRestService {
+public class SnomedImportRestService extends AbstractRestService {
 
 	@Autowired
 	private ISnomedRf2ImportService delegate; 
+	
+	public SnomedImportRestService() {
+		super(Collections.emptySet());
+	}
 	
 	@ApiOperation(
 			value="Import SNOMED CT content", 

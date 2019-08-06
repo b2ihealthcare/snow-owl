@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,23 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 	private String parentBranchPath;
 
 	
+	/**
+	 * @since 6.15
+	 */
+	public static enum OptionKey {
+		
+		/**
+		 * Filter versions by effective date starting from this value, inclusive.
+		 */
+		CREATED_AT_START,
+		
+		/**
+		 * Filter versions by effective date ending with this value, inclusive.
+		 */
+		CREATED_AT_END
+		
+	}
+	
 	CodeSystemVersionSearchRequest() {
 	}
 
@@ -78,6 +95,12 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 		
 		if (!StringUtils.isEmpty(parentBranchPath)) {
 			query.filter(CodeSystemVersionEntry.Expressions.parentBranchPath(parentBranchPath));
+		}
+		
+		if (containsKey(OptionKey.CREATED_AT_START) || containsKey(OptionKey.CREATED_AT_END)) {
+			final long from = containsKey(OptionKey.CREATED_AT_START) ? get(OptionKey.CREATED_AT_START, Long.class) : 0;
+			final long to = containsKey(OptionKey.CREATED_AT_END) ? get(OptionKey.CREATED_AT_END, Long.class) : Long.MAX_VALUE;
+			query.filter(CodeSystemVersionEntry.Expressions.createdAt(from, to));
 		}
 		
 		return query.build();

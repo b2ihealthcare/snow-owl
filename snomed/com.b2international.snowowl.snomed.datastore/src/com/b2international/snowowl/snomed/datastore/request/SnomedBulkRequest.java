@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 		final Set<String> requiredComponentIds = requests.build()
 			.stream()
 			.flatMap(request -> request.getRequiredComponentIds(context).stream())
-			.filter(componentId -> SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId) != -1L) // just in case filter out invalid component IDs
+			.filter(componentId -> SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId) != -1L || isMember(componentId)) // just in case filter out invalid component IDs
 			.collect(Collectors.toSet());
 		
 		
@@ -89,18 +89,25 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 		return next(newContext);
 	}
 
+	private boolean isMember(String componentId) {
+		try {
+			UUID.fromString(componentId);
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+
 	private Class<? extends CDOObject> getCdoType(String componentId) {
 		switch (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId)) {
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return Concept.class;
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return Description.class;
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return Relationship.class;
 			default: {
-				try {
-					UUID.fromString(componentId);
-					return SnomedRefSetMember.class;
-				} catch (IllegalArgumentException e) {
+				if (!isMember(componentId)) {
 					throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
 				}
+				return SnomedRefSetMember.class;
 			}
 		}
 	}

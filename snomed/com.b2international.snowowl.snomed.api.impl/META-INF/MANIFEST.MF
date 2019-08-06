@@ -2,11 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl REST SNOMED CT Implementation
 Bundle-SymbolicName: com.b2international.snowowl.snomed.api.impl;singleton:=true
-Bundle-Version: 6.12.0.qualifier
+Bundle-Version: 6.19.0.qualifier
 Export-Package: com.b2international.snowowl.snomed.api.impl,
  com.b2international.snowowl.snomed.api.impl.domain,
- com.b2international.snowowl.snomed.api.impl.domain.browser,
- com.b2international.snowowl.snomed.api.impl.domain.classification
+ com.b2international.snowowl.snomed.api.impl.domain.browser
 Require-Bundle: org.eclipse.core.runtime,
  com.b2international.snowowl.core,
  com.b2international.snowowl.eventbus,
@@ -18,10 +17,8 @@ Require-Bundle: org.eclipse.core.runtime,
  com.b2international.snowowl.api.impl,
  com.b2international.snowowl.snomed.api,
  com.b2international.snowowl.snomed.common,
- com.b2international.snowowl.snomed.exporter.server,
  com.b2international.snowowl.snomed.importer,
- com.b2international.snowowl.snomed.importer.rf2,
- com.b2international.snowowl.snomed.reasoner.server
+ com.b2international.snowowl.snomed.importer.rf2
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: B2i Healthcare
 Bundle-ActivationPolicy: lazy

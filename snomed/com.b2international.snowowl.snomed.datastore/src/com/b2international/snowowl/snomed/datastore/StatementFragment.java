@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ import java.io.Serializable;
 
 /**
  * Represents the bare minimum of a SNOMED CT relationship (without binding the source concept).
+ * 
+ * @since
  */
-public class StatementFragment implements Serializable {
+public final class StatementFragment implements Serializable {
 
 	private static final long serialVersionUID = 8281299401725022928L;
 
@@ -31,22 +33,14 @@ public class StatementFragment implements Serializable {
 	private final int unionGroup;
 	private final boolean universal;
 
-	// Only stored if the original relationship identifier and storage key is known
+	// Only stored if the original relationship is known
 	private final long statementId;
-	private final long storageKey;
+	private final boolean released;
+
+	private boolean hasStatedPair;
 
 	public StatementFragment(final long typeId, final long destinationId) {
-		this(typeId, destinationId, false, 0, 0, false, -1L, -1L);
-	}
-
-	public StatementFragment(final long typeId,
-			final long destinationId,
-			final boolean destinationNegated,
-			final int group,
-			final int unionGroup,
-			final boolean universal) {
-
-		this(typeId, destinationId, destinationNegated, group, unionGroup, universal, -1L, -1L);
+		this(typeId, destinationId, false, 0, 0, false, -1L, false, false);
 	}
 
 	public StatementFragment(final long typeId,
@@ -56,7 +50,8 @@ public class StatementFragment implements Serializable {
 			final int unionGroup,
 			final boolean universal,
 			final long statementId,
-			final long storageKey) {
+			final boolean released,
+			final boolean hasStatedPair) {
 
 		this.typeId = typeId;
 		this.destinationId = destinationId;
@@ -66,7 +61,8 @@ public class StatementFragment implements Serializable {
 		this.universal = universal;
 
 		this.statementId = statementId;
-		this.storageKey = storageKey;
+		this.released = released;
+		this.hasStatedPair = hasStatedPair;
 	}
 
 	public long getTypeId() {
@@ -96,11 +92,15 @@ public class StatementFragment implements Serializable {
 	public long getStatementId() {
 		return statementId;
 	}
-
-	public long getStorageKey() {
-		return storageKey;
+	
+	public boolean isReleased() {
+		return released;
 	}
 
+	public boolean hasStatedPair() {
+		return hasStatedPair;
+	}
+	
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -118,8 +118,10 @@ public class StatementFragment implements Serializable {
 		builder.append(universal);
 		builder.append(", statementId=");
 		builder.append(statementId);
-		builder.append(", storageKey=");
-		builder.append(storageKey);
+		builder.append(", released=");
+		builder.append(released);
+		builder.append(", hasStatedPair=");
+		builder.append(hasStatedPair);
 		builder.append("]");
 		return builder.toString();
 	}

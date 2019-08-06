@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
@@ -28,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -38,13 +37,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
@@ -58,20 +55,25 @@ import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 4.5
  */
-@Api("Reference Sets")
+@Api(value = "RefSets", description="RefSets", tags = { "refsets" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
+public class SnomedReferenceSetRestService extends AbstractRestService {
 
+	public SnomedReferenceSetRestService() {
+		super(SnomedReferenceSet.Fields.ALL);
+	}
+	
 	@ApiOperation(
 			value="Retrieve Reference Sets from a branch", 
 			notes="Returns a list with all reference sets from a branch.")
@@ -79,9 +81,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response = CollectionResource.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.GET)	
+	@GetMapping(value="/{path:**}/refsets")	
 	public @ResponseBody DeferredResult<SnomedReferenceSets> search(
-			@ApiParam(value="The branch path")
+			@ApiParam(value="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branchPath,
 			
@@ -99,13 +101,18 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			final int limit,
+			
+			@ApiParam(value="Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sortKeys) {
 		
 		return DeferredResults.wrap(SnomedRequests.prepareSearchRefSet()
 				.setScroll(scrollKeepAlive)
 				.setScrollId(scrollId)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
+				.sortBy(extractSortFields(sortKeys))
 				.build(repositoryId, branchPath)
 				.execute(bus));
 	}
@@ -138,15 +145,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales;
-		
-		try {
-			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		
 		return DeferredResults.wrap(SnomedRequests
 				.prepareGetReferenceSet(referenceSetId)
@@ -179,9 +178,14 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 		
+		final String userId = principal.getName();
+		
 		final SnomedRefSetRestInput change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId(); 
+		
 		final String createdRefSetId = change.toRequestBuilder() 
-			.build(repositoryId, branchPath, principal.getName(), body.getCommitComment())
+			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -215,16 +219,21 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final ChangeRequest<RestRequest> body,
 			
 			final Principal principal) {
+		
+		final String userId = principal.getName();
 		final RequestResolver<TransactionContext> resolver = new RefSetRequestResolver();
 		
 		final RestRequest change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		final String defaultModuleId = body.getDefaultModuleId();
+		
 		change.setSource("referenceSetId", refSetId);
 		
-		SnomedRequests
-			.prepareCommit()
-			.setBody(body.getChange().resolve(resolver))
-			.setCommitComment(body.getCommitComment())
-			.setUserId(principal.getName())
+		SnomedRequests.prepareCommit()
+			.setDefaultModuleId(defaultModuleId)
+			.setBody(change.resolve(resolver))
+			.setCommitComment(commitComment)
+			.setUserId(userId)
 			.build(repositoryId, branchPath)
 			.execute(bus)
 			.getSync();
@@ -255,8 +264,13 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 		
+		final String userId = principal.getName();
 		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
+		
 		final BulkRestRequest bulkRequest = request.getChange();
+		final String commitComment = request.getCommitComment();
+		final String defaultModuleId = request.getDefaultModuleId();
+		
 		// FIXME setting referenceSetId even if defined??? 
 		// enforces that new members will be created in the defined refset
 		for (RestRequest req : bulkRequest.getRequests()) {
@@ -266,11 +280,11 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		final BulkRequestBuilder<TransactionContext> updateRequestBuilder = BulkRequest.create();
 		bulkRequest.resolve(resolver).forEach(updateRequestBuilder::add);
 		
-		SnomedRequests
-			.prepareCommit()
+		SnomedRequests.prepareCommit()
+			.setDefaultModuleId(defaultModuleId)
 			.setBody(updateRequestBuilder.build())
-			.setUserId(principal.getName())
-			.setCommitComment(request.getCommitComment())
+			.setUserId(userId)
+			.setCommitComment(commitComment)
 			.build(repositoryId, branchPath)
 			.execute(bus)
 			.getSync();

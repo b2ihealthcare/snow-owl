@@ -1,0 +1,52 @@
+/*
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.snomed.reasoner.domain;
+
+import com.b2international.commons.StringUtils;
+
+/**
+ * Enumerates possible change types for a particular component.
+ * 
+ * @since
+ */
+public enum ChangeNature {
+
+	/**
+	 * The component does not exist yet; it should be created as an inferred
+	 * instance based on another component (with some properties adjusted as
+	 * appropriate).
+	 */
+	NEW,
+
+	/**
+	 * The component exists; it should be update in place, using the properties on
+	 * the component change object.
+	 */
+	UPDATED,
+	
+	/**
+	 * The component exists; it should be removed or deactivated, depending on
+	 * whether it has been published earlier.
+	 */
+	REDUNDANT;
+	
+	/**
+	 * @return the (capitalized) display name of this nature
+	 */
+	public String getDisplayName() {
+		return StringUtils.capitalizeFirstLetter(name().toLowerCase());
+	}
+}

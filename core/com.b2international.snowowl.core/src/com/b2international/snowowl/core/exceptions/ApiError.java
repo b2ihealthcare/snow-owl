@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.exceptions;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import com.b2international.snowowl.core.internal.exceptions.ApiErrorImpl;
@@ -32,7 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 4.1
  */
 @JsonDeserialize(builder = ApiError.Builder.class)
-public interface ApiError {
+public interface ApiError extends Serializable {
 
 	/**
 	 * Returns a user-friendly error message, which can be directly used in User interfaces to show the error to the end-user. It should never contain

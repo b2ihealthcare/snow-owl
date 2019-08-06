@@ -2,12 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test Dependencies
 Bundle-SymbolicName: com.b2international.snowowl.test.dependencies
-Bundle-Version: 6.12.0.qualifier
+Bundle-Version: 6.19.0.qualifier
 Bundle-Vendor: B2iHealthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
  contiperf-2.3.2.jar,
- jukito-1.2.jar
+ jukito-1.2.jar,
+ system-rules-1.18.0.jar
 Export-Package: org.databene.contiperf,
  org.databene.contiperf.clock,
  org.databene.contiperf.junit,
@@ -18,6 +19,6 @@ Export-Package: org.databene.contiperf,
  org.databene.contiperf.util,
  org.databene.profile,
  org.databene.stat,
- org.jukito
-Require-Bundle: org.junit;bundle-version="4.11.0",
- org.eclipse.xtend.lib;bundle-version="[2.11.0,2.13.0)"
+ org.jukito,
+ org.junit.contrib.java.lang.system
+Require-Bundle: org.junit;bundle-version="4.11.0"

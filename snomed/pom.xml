@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>6.12.0-SNAPSHOT</version>
+		<version>6.19.0-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
@@ -26,6 +26,7 @@
 		<module>com.b2international.snowowl.snomed.refset.model</module>
 		
 		<!-- SNOMED CT Core modules -->
+		<module>com.b2international.snowowl.snomed.icons</module>
 		<module>com.b2international.snowowl.snomed.common</module>
 		<module>com.b2international.snowowl.snomed.datastore</module>
 		<module>com.b2international.snowowl.snomed.datastore.tests</module>
@@ -33,26 +34,19 @@
 		
 		<!-- SNOMED CT Classification Support -->
 		<module>com.b2international.snowowl.snomed.reasoner</module>
-		<module>com.b2international.snowowl.snomed.reasoner.server</module>
-		
-		<!-- SNOMED CT SemanticEngine -->
-		<module>com.b2international.snowowl.snomed.semanticengine</module>
-		<module>com.b2international.snowowl.snomed.semanticengine.test</module>
-		<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module>
-		<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module>
+		<module>com.b2international.snowowl.snomed.reasoner.tests</module>
 		
 		<!-- SNOMED CT MRCM Support -->
 		<module>com.b2international.snowowl.snomed.mrcm.model</module>
 		
 		<!-- SNOMED CT Import-Export -->
-		<module>com.b2international.snowowl.snomed.exporter.server</module>
 		<module>com.b2international.snowowl.snomed.importer</module>
 		<module>com.b2international.snowowl.snomed.importer.rf2</module>
 		
 		<!-- SNOMED CT DSLs -->
 		<module>com.b2international.snowowl.snomed.dsl</module>
-		<module>com.b2international.snowowl.snomed.scg</module>
 		<module>com.b2international.snowowl.snomed.ecl</module>
+		<module>com.b2international.snowowl.snomed.ql</module>
 		<module>com.b2international.snowowl.snomed.ecl.tests</module>
 		
 		<!-- SNOMED CT Core Features -->
@@ -61,5 +55,19 @@
 		<!-- SNOMED CT Generic Validation Rules -->
 		<module>com.b2international.snowowl.validation.snomed</module>
 	</modules>
+	
+	<profiles>
+		<profile>
+      		<id>extras</id>
+      		<modules>
+				<!-- SNOMED CT SemanticEngine -->
+				<module>com.b2international.snowowl.snomed.semanticengine</module>
+				<module>com.b2international.snowowl.snomed.semanticengine.test</module>
+				<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module>
+				<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module>
+				<module>com.b2international.snowowl.snomed.scg</module>
+      		</modules>
+    	</profile>
+	</profiles>
 	
 </project>

@@ -25,11 +25,9 @@
         
         <artifact type="bundle" name="com.b2international.snowowl.datastore" version="0.0.0"/>
 
-        <!-- Add reasoner implementation bundles here before reasoner.server bundle, so they will be picked up during init -->
+        <!-- Add reasoner implementation bundles here, so they will be picked up during init -->
         <artifact type="bundle" name="org.semanticweb.elk" version="0.0.0"/>
-        <artifact type="bundle" name="com.b2international.snowowl.snomed.reasoner.server" version="0.0.0"/>
 
-        <artifact type="bundle" name="com.b2international.snowowl.snomed.exporter.server" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.datastore.server" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.server.console" version="0.0.0"/>
 

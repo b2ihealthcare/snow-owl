@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		 */
 		PROPS
 	}
-	
+
 	SnomedRefSetMemberSearchRequest() {}
 	
 	@Override
@@ -117,7 +117,22 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				queryBuilder.filter(acceptabilityIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)) {
-				queryBuilder.filter(relationshipGroup(propsFilter.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class)));
+				final String operatorKey = SearchResourceRequest.operator(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
+				SearchResourceRequest.Operator op;
+				if (propKeys.remove(operatorKey)) {
+					op = propsFilter.get(operatorKey, Operator.class);
+				} else {
+					op = SearchResourceRequest.Operator.EQUALS;
+				}
+				switch (op) {
+				case EQUALS:
+					queryBuilder.filter(relationshipGroup(propsFilter.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class)));
+					break;
+				case NOT_EQUALS:
+					queryBuilder.mustNot(relationshipGroup(propsFilter.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class)));
+					break;
+				default: throw new NotImplementedException("Unsupported relationship group operator %s", op);
+				}
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
 				queryBuilder.filter(characteristicTypeIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class)));
@@ -130,6 +145,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
 				queryBuilder.filter(mapCategoryIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)) {
+				queryBuilder.filter(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
 				queryBuilder.filter(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class)));
@@ -157,6 +175,21 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)) {
 				queryBuilder.filter(ruleRefSetIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_GROUPED)) {
+				queryBuilder.filter(grouped(propsFilter.getBoolean(SnomedRf2Headers.FIELD_MRCM_GROUPED)));
+			}
+			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID)) {
+				queryBuilder.filter(owlExpressionConcept(propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID, String.class)));
+			}
+			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID)) {
+				queryBuilder.filter(owlExpressionDestination(propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID, String.class)));
+			}
+			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID)) {
+				queryBuilder.filter(owlExpressionType(propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID, String.class)));
+			}
+			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI)) {
+				queryBuilder.filter(gciAxiom(propsFilter.getBoolean(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI)));
 			}
 			final Collection<DataType> dataTypes = propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class);
 			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {

@@ -23,10 +23,8 @@ import com.b2international.index.query.Expression;
 /**
  * @since 5.0
  */
-public final class BulkUpdate<T> implements ScriptExpression {
+public final class BulkUpdate<T> extends BulkOperation<T> implements ScriptExpression {
 	
-	private final Class<? extends T> type;
-	private final Expression filter;
 	private final String idField;
 	
 	private final String script;
@@ -37,21 +35,12 @@ public final class BulkUpdate<T> implements ScriptExpression {
 	}
 	
 	public BulkUpdate(Class<? extends T> type, Expression filter, String idField, String script, Map<String, Object> params) {
-		this.type = type;
-		this.filter = filter;
+		super(type, filter);
 		this.idField = idField;
 		this.script = script;
 		this.params = params;
 	}
 	
-	public Class<? extends T> getType() {
-		return type;
-	}
-	
-	public Expression getFilter() {
-		return filter;
-	}
-
 	public String getIdField() {
 		return idField;
 	}
@@ -66,4 +55,8 @@ public final class BulkUpdate<T> implements ScriptExpression {
 		return params;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("update with script '%s'", getScript());
+	}
 }

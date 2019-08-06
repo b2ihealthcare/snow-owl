@@ -38,13 +38,14 @@ public final class Environment implements ServiceProvider {
 
 	private final IManagedContainer container = IPluginContainer.INSTANCE;
 
-	private File installationDirectory;
+	private final File homeDirectory;
+	
 	private File configDirectory;
 	private File resourcesDirectory;
-	private File defaultsDirectory;
 
-	public Environment(final Bootstrap bootstrap, final SnowOwlConfiguration configuration) throws Exception {
-		initializeEnvironmentDirectories(bootstrap.getInstallationDirectory(), configuration);
+	public Environment(final Bootstrap bootstrap, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
+		this.homeDirectory = homeDirectory;
+		initializeEnvironmentDirectories(configuration);
 		final PreferencesService preferences = PlatformUtil.getPreferencesService(bootstrap.getBundleContext());
 		services().registerService(PreferencesService.class, preferences);
 		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(getConfigDirectory()));
@@ -53,17 +54,14 @@ public final class Environment implements ServiceProvider {
 		services().registerService(ClientPreferences.class, cdoClientConfiguration);
 	}
 	
-	private void initializeEnvironmentDirectories(File installationDirectory, SnowOwlConfiguration configuration) throws Exception {
-		this.installationDirectory = installationDirectory;
+	private void initializeEnvironmentDirectories(SnowOwlConfiguration configuration) throws Exception {
 		// TODO check if the configuration uses an absolute path
-		this.configDirectory = createDirectory(installationDirectory, configuration.getConfigurationDirectory());
-		this.resourcesDirectory = createDirectory(installationDirectory, configuration.getResourceDirectory());
-		this.defaultsDirectory = createDirectory(installationDirectory, configuration.getDefaultsDirectory());
+		this.configDirectory = createDirectory(homeDirectory, configuration.getConfigurationDirectory());
+		this.resourcesDirectory = createDirectory(homeDirectory, configuration.getResourceDirectory());
 		// set resolved directory paths to configuration
-		configuration.setInstallationDirectory(this.installationDirectory.getAbsolutePath());
+		configuration.setInstallationDirectory(this.homeDirectory.getAbsolutePath());
 		configuration.setConfigurationDirectory(this.configDirectory.getAbsolutePath());
 		configuration.setResourceDirectory(this.resourcesDirectory.getAbsolutePath());
-		configuration.setDefaultsDirectory(this.defaultsDirectory.getAbsolutePath());
 	}
 
 	/**
@@ -95,12 +93,12 @@ public final class Environment implements ServiceProvider {
 	}
 
 	/**
-	 * Returns the current installation directory.
+	 * Returns the current HOME directory.
 	 * 
 	 * @return
 	 */
-	public File getInstallationDirectory() {
-		return installationDirectory;
+	public File getHomeDirectory() {
+		return homeDirectory;
 	}
 
 	/**
@@ -119,15 +117,6 @@ public final class Environment implements ServiceProvider {
 	 */
 	public File getDataDirectory() {
 		return resourcesDirectory;
-	}
-
-	/**
-	 * Returns the defaults directory location.
-	 * 
-	 * @return
-	 */
-	public File getDefaultsDirectory() {
-		return defaultsDirectory;
 	}
 
 	/**

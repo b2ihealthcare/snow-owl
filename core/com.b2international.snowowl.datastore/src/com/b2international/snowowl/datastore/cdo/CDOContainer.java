@@ -307,47 +307,32 @@ public abstract class CDOContainer<T extends ICDOManagedItem<T>> extends Lifecyc
 		LOGGER.info("Deactivating " + this.getClass().getSimpleName() + "...");
 		
 		if (null != uuidToItems) {
-		
 			for (final Iterator<T> itr = Iterators.unmodifiableIterator(uuidToItems.values().iterator()); itr.hasNext(); /* nothing */) {
-				
 				itr.next().deactivate();
-				
 			}
-			
 		}
 		
 		if (null != nsUriToUuidMap) {
-			
 			nsUriToUuidMap.clear();
 			nsUriToUuidMap = null;
-			
 		}
 		
 		if (null != eclassToNsUriMap) {
-			
 			eclassToNsUriMap.cleanUp();
 			eclassToNsUriMap = null;
-			
 		}
 		
 		if (null != namespaceToUuidMap) {
-			
 			namespaceToUuidMap.clear();
 			namespaceToUuidMap = null;
-			
 		}
 		
 		if (null != nsUriToItems) {
-			
-			nsUriToItems.clear();
 			nsUriToItems = null;
-			
 		}
 	
-		super.deactivate();
-		
+		super.doDeactivate();
 		LOGGER.info(this.getClass().getSimpleName() + " has been successfully deactivated.");
-		
 	}
 	
 	/* (non-Javadoc)

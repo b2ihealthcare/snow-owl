@@ -24,8 +24,8 @@ import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;

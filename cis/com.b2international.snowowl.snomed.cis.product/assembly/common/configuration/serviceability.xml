@@ -1,0 +1,198 @@
+<configuration>
+
+	<jmxConfigurator />
+
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+
+	<!--  Application specific auditing log. - added by bbanfai-->
+	<!--  Markers are defined in com.b2international.snowowl.core.LogUtils -->	
+	<appender name="SNOWOWL_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>serviceability/logs/snowowl/snowowl_user_audit.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<FileNamePattern>serviceability/logs/snowowl/snowowl_user_audit%i.log</FileNamePattern>
+			<MinIndex>1</MinIndex>
+			<MaxIndex>10</MaxIndex>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>50MB</MaxFileSize>
+		</triggeringPolicy>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>SNOW_OWL</marker>
+			</evaluator>
+			<onMismatch>DENY</onMismatch>
+			<onMatch>ACCEPT</onMatch>
+			
+		</filter>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Branch: %X{BRANCH} Event: %msg %ex%n</Pattern>
+		</encoder>
+	</appender>
+	
+	<!--  Appender for user access to be logged in a file -->
+	<appender name="SNOWOWL_ACCESS_LOG_FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>serviceability/logs/snowowl/snowowl_user_access.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<FileNamePattern>serviceability/logs/snowowl/snowowl_user_access%i.log</FileNamePattern>
+			<MinIndex>1</MinIndex>
+			<MaxIndex>10</MaxIndex>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>50MB</MaxFileSize>
+		</triggeringPolicy>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>SNOW_OWL_USER_ACCESS</marker>
+			</evaluator>
+			<onMismatch>DENY</onMismatch>
+			<onMatch>ACCEPT</onMatch>
+		</filter>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
+		</encoder>
+	</appender>
+	
+	<!--  Application specific import log. - added by bbanfai-->
+	<!--  Markers are defined in com.b2international.snowowl.core.LogUtils -->	
+	<appender name="SNOWOWL_IMPORT_ACTIVITY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>serviceability/logs/snowowl/snowowl_import.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<FileNamePattern>serviceability/logs/snowowl/snowowl_import%i.log</FileNamePattern>
+			<MinIndex>1</MinIndex>
+			<MaxIndex>10</MaxIndex>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>50MB</MaxFileSize>
+		</triggeringPolicy>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>SNOW_OWL_IMPORT</marker>
+			</evaluator>
+			<onMismatch>DENY</onMismatch>
+			<onMatch>ACCEPT</onMatch>
+			
+		</filter>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Branch: %X{BRANCH} Event: %msg %ex%n</Pattern>
+		</encoder>
+	</appender>
+	
+	<!--  Application specific export log. - added by bbanfai-->
+	<!--  Markers are defined in com.b2international.snowowl.core.LogUtils -->	
+	<appender name="SNOWOWL_EXPORT_ACTIVITY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>serviceability/logs/snowowl/snowowl_export.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<FileNamePattern>serviceability/logs/snowowl/snowowl_export%i.log</FileNamePattern>
+			<MinIndex>1</MinIndex>
+			<MaxIndex>10</MaxIndex>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>50MB</MaxFileSize>
+		</triggeringPolicy>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>SNOW_OWL_EXPORT</marker>
+			</evaluator>
+			<onMismatch>DENY</onMismatch>
+			<onMatch>ACCEPT</onMatch>
+			
+		</filter>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Branch: %X{BRANCH} Event: %msg %ex%n</Pattern>
+		</encoder>
+	</appender>
+	
+	<!-- Turned off this log file as everything is already logged in the generic log file (APPENDER LOG_FILE) -->
+	<!-- 
+	<appender name="SIFTED_LOG_FILE" class="ch.qos.logback.classic.sift.SiftingAppender">
+		<discriminator>
+			<Key>applicationName</Key>
+			<DefaultValue>virgo-server</DefaultValue>
+		</discriminator>
+		<sift>
+			<appender name="${applicationName}_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+				<file>serviceability/logs/${applicationName}/log.log</file>
+				<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+					<FileNamePattern>serviceability/logs/${applicationName}/log_%i.log</FileNamePattern>
+					<MinIndex>1</MinIndex>
+					<MaxIndex>4</MaxIndex>
+				</rollingPolicy>
+				<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+					<MaxFileSize>10MB</MaxFileSize>
+				</triggeringPolicy>
+				<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+					<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level %-28.28thread %-64.64logger{64} %X{medic.eventCode} %msg %ex%n</Pattern>
+				</encoder>
+			</appender>
+		</sift>
+	</appender>
+	-->
+	
+	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>serviceability/logs/log.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>serviceability/logs/log_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<!-- keep 90 days' worth of history -->
+      		<maxHistory>90</maxHistory>
+		</rollingPolicy>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>SNOW_OWL_USER_ACCESS</marker>
+			</evaluator>
+			<onMismatch>ACCEPT</onMismatch>
+			<onMatch>DENY</onMatch>
+		</filter>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level %-28.28thread %-64.64logger{64} %X{medic.eventCode} %msg %ex%n</Pattern>
+		</encoder>
+	</appender>
+
+	<appender name="EVENT_LOG_STDOUT" class="org.eclipse.virgo.medic.log.logback.ReroutingAwareConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-28.28thread &lt;%X{medic.eventCode}&gt; %msg %ex%n</Pattern>
+		</encoder>
+	</appender>
+
+	<appender name="EVENT_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>serviceability/eventlogs/eventlog.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>serviceability/eventlogs/eventlog_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<!-- keep 90 days' worth of history -->
+      		<maxHistory>90</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-28.28thread &lt;%X{medic.eventCode}&gt; %msg %ex%n</Pattern>
+		</encoder>
+	</appender>
+
+	<logger level="INFO" additivity="false" name="com.b2international.snowowl.userevents">
+		<appender-ref ref="SNOWOWL_LOG_FILE" />
+	</logger>
+
+	<logger level="INFO" additivity="false" name="org.eclipse.virgo.medic.eventlog.localized">
+		<appender-ref ref="EVENT_LOG_STDOUT" />
+		<appender-ref ref="EVENT_LOG_FILE" />
+	</logger>
+	
+	<logger level="INFO" additivity="false" name="org.eclipse.virgo.medic.eventlog.default">
+		<!-- appender-ref ref="SIFTED_LOG_FILE" /-->
+		<appender-ref ref="LOG_FILE" />
+	</logger>
+	
+	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
+
+	<root level="INFO">
+		<!-- appender-ref ref="SIFTED_LOG_FILE" / -->
+		<appender-ref ref="LOG_FILE" />
+		<appender-ref ref="SNOWOWL_LOG_FILE" />
+		<appender-ref ref="SNOWOWL_ACCESS_LOG_FILE" />
+		<appender-ref ref="SNOWOWL_IMPORT_ACTIVITY" />
+		<appender-ref ref="SNOWOWL_EXPORT_ACTIVITY" />
+	</root>
+
+</configuration>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -25,6 +23,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT concepts.
@@ -83,8 +82,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	}
 
 	/**
-	 * Filters the concepts based on the type of its descriptions where the description type is specified by concept ID 
-	 * representing the type. E.g.: "900000000000003001" for <i>Fully Specified Name</i>.
+	 * Filters the concepts based on the type of its descriptions where the description type is specified by an ECL expression. 
+	 * For example: "900000000000003001" for <i>Fully Specified Name</i>.
 	 * @param description type represented by its concept ID
 	 * @return SnomedConceptSearchRequestBuilder
 	 * 
@@ -93,17 +92,48 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	public final SnomedConceptSearchRequestBuilder filterByDescriptionType(String type) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_TYPE, type);
 	}
+	
+	/**
+	 * Filters the concepts based on the semantic tag of its descriptions.
+	 * 
+	 * @param semanticTags
+	 * @return {@link SnomedConceptSearchRequestBuilder}
+	 * @see SnomedDescription
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByDescriptionSemanticTags(Iterable<String> semanticTags) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_SEMANTIC_TAG, semanticTags);
+	}
 
 	/**
 	 * Filter matches by the specified Expression Constraint Language (ECL) expression. 
-	 * The currently supported ECL version is v1.1. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a> or
-	 * <a href="http://www.snomed.org/news-articles/expression-constraint-language">About ECL</a> for more information.
+	 * The currently supported ECL version is v1.1. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a>.
 	 * 
 	 * @param expression ECL expression
 	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByEcl(String expression) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ECL, expression);
+	}
+	
+	/**
+	 * Filter matches in the stated tree by the specified Expression Constraint Language (ECL) expression. 
+	 * The currently supported ECL version is v1.3. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a>.
+	 * 
+	 * @param expression ECL expression
+	 * @return SnomedConceptSearchRequestBuilder
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByStatedEcl(String expression) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ECL, expression);
+	}
+	
+	/**
+	 * Filter matches by the specified Snomed Query Language (QL) expression.
+	 * 
+	 * @param expression QL expression
+	 * @return SnomedConceptSearchRequestBuilder
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByQuery(String expression) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.QUERY, expression);
 	}
 
 	/**
@@ -126,7 +156,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
  	 * @return SnomedConceptSearchRequestBuilder
  	 * @see CharacteristicType
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByParents(Set<String> parentIds) {
+	public final SnomedConceptSearchRequestBuilder filterByParents(Iterable<String> parentIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentIds);
 	}
 
@@ -150,7 +180,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return SnomedConceptSearchRequestBuilder
 	 * @see CharacteristicType
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByStatedParents(Set<String> parentIds) {
+	public final SnomedConceptSearchRequestBuilder filterByStatedParents(Iterable<String> parentIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_PARENT, parentIds);
 	}
 
@@ -174,7 +204,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return SnomedConceptSearchRequestBuilder
 	 * @see CharacteristicType
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByAncestors(Collection<String> ancestorIds) {
+	public final SnomedConceptSearchRequestBuilder filterByAncestors(Iterable<String> ancestorIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorIds);
 	}
 
@@ -198,7 +228,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return SnomedConceptSearchRequestBuilder
 	 * @see CharacteristicType
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByStatedAncestors(Set<String> ancestorIds) {
+	public final SnomedConceptSearchRequestBuilder filterByStatedAncestors(Iterable<String> ancestorIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorIds);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a SNOMED&nbsp;CT relationship.
@@ -52,6 +56,37 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class SnomedRelationship extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = -1131388567716570593L;
+	
+	/**
+	 * @since 6.16 
+	 */
+	public static final class Fields extends SnomedCoreComponent.Fields {
+
+		public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
+		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
+		public static final String GROUP = "group";
+		public static final String UNION_GROUP = "unionGroup";
+		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
+		
+		public static final Set<String> ALL = ImmutableSet.of(
+				// RF2 fields
+				ID,
+				ACTIVE,
+				EFFECTIVE_TIME,
+				MODULE_ID,
+				SOURCE_ID,
+				DESTINATION_ID,
+				GROUP,
+				UNION_GROUP,
+				TYPE_ID,
+				CHARACTERISTIC_TYPE_ID,
+				MODIFIER_ID,
+				// additional fields
+				RELEASED);
+
+	}
 	
 	private boolean destinationNegated;
 	private Integer group;
@@ -152,18 +187,36 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * Returns the characteristic type of the relationship.
 	 * 
 	 * @return the relationship's characteristic type
+	 * @deprecated - get the characteristicTypeId from {@link #getCharacteristicTypeId()} method
 	 */
+	@JsonProperty
 	public CharacteristicType getCharacteristicType() {
 		return characteristicType;
 	}
-
+	
+	/**
+	 * @return the characteristicType ID of the relationship
+	 */
+	public String getCharacteristicTypeId() {
+		return getCharacteristicType() == null ? null : getCharacteristicType().getConceptId();
+	}
+	
 	/**
 	 * Returns the relationship's modifier value.
 	 * 
 	 * @return the modifier of this relationship
+	 * @deprecated - get the modifierId from {@link #getModifierId()} method
 	 */
+	@JsonProperty
 	public RelationshipModifier getModifier() {
 		return modifier;
+	}
+	
+	/**
+	 * @return the modifierId of the relationship.
+	 */
+	public String getModifierId() {
+		return getModifier() == null ? null : getModifier().getConceptId();
 	}
 
 	public void setSource(SnomedConcept source) {
@@ -205,12 +258,36 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		this.unionGroup = unionGroup;
 	}
 
+	/**
+	 * @param characteristicType
+	 * @deprecated - set characteristicTypeId via {@link #setCharacteristicTypeId(String)} method
+	 */
+	@JsonIgnore
 	public void setCharacteristicType(final CharacteristicType characteristicType) {
 		this.characteristicType = characteristicType;
 	}
+	
+	/**
+	 * @param characteristicTypeId
+	 */
+	public void setCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicType = CharacteristicType.getByConceptId(characteristicTypeId);
+	}
 
+	/**
+	 * @param modifier
+	 * @deprecated - set modifierId via {@link #setModifierId(String)} method
+	 */
+	@JsonIgnore
 	public void setModifier(final RelationshipModifier modifier) {
 		this.modifier = modifier;
+	}
+	
+	/**
+	 * @param modifierId
+	 */
+	public void setModifierId(final String modifierId) {
+		this.modifier = RelationshipModifier.getByConceptId(modifierId);
 	}
 
 	@Override

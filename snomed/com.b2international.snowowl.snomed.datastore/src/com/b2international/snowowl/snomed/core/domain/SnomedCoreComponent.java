@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.DatabindContext;
@@ -44,6 +44,19 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	 */
 	public SnomedReferenceSetMembers getMembers() {
 		return members;
+	}
+	
+	/**
+	 * @since 6.16
+	 */
+	public static abstract class Expand {
+		public static final String REFERRING_MEMBERS = "members";
+	}
+	
+	/**
+	 * @since 6.16
+	 */
+	public static abstract class Fields extends SnomedComponent.Fields {
 	}
 	
 	/**

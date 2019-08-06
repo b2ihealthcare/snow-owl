@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,14 @@ import static com.b2international.snowowl.datastore.index.RevisionDocument.Expre
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Fields.ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
@@ -46,7 +44,9 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
@@ -85,12 +85,20 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	@Nullable
 	@JsonProperty
 	private String expression;
+	
+	@NotNull
+	@JsonProperty
+	private String expressionForm = Trees.INFERRED_FORM;
 
 	SnomedEclEvaluationRequest() {
 	}
 
 	void setExpression(String expression) {
 		this.expression = expression;
+	}
+	
+	void setExpressionForm(String expressionForm) {
+		this.expressionForm = expressionForm;
 	}
 
 	@Override
@@ -137,7 +145,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			return Promise.immediate(Expressions.exists(ACTIVE_MEMBER_OF));
 		} else if (inner instanceof NestedExpression) {
 			final String focusConceptExpression = context.service(EclSerializer.class).serializeWithoutTerms(inner);
-			return EclExpression.of(focusConceptExpression)
+			return EclExpression.of(focusConceptExpression, expressionForm)
 					.resolve(context)
 					.then(ids -> activeMemberOf(ids));
 		} else {
@@ -154,20 +162,15 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		// <* should eval to * MINUS parents IN (ROOT_ID)
 		if (inner instanceof Any) {
 			return Promise.immediate(Expressions.builder()
-					.mustNot(parents(Collections.singleton(IComponent.ROOT_ID)))
+					.mustNot(parentsExpression(Collections.singleton(IComponent.ROOT_ID)))
 					.build());
 		} else {
 			return evaluate(context, inner)
-					.thenWith(resolveIds(context, inner))
-					.then(new Function<Set<String>, Expression>() {
-						@Override
-						public Expression apply(Set<String> ids) {
-							return Expressions.builder()
-									.should(parents(ids))
-									.should(ancestors(ids))
-									.build();
-						}
-					});
+					.thenWith(resolveIds(context, inner, expressionForm))
+					.then(ids -> Expressions.builder()
+							.should(parentsExpression(ids))
+							.should(ancestorsExpression(ids))
+							.build());
 		}
 	}
 	
@@ -182,17 +185,12 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			return evaluate(context, inner);
 		} else {
 			return evaluate(context, inner)
-					.thenWith(resolveIds(context, inner))
-					.then(new Function<Set<String>, Expression>() {
-						@Override
-						public Expression apply(Set<String> ids) {
-							return Expressions.builder()
-									.should(ids(ids))
-									.should(parents(ids))
-									.should(ancestors(ids))
-									.build();
-						}
-					});
+					.thenWith(resolveIds(context, inner, expressionForm))
+					.then(ids -> Expressions.builder()
+							.should(ids(ids))
+							.should(parentsExpression(ids))
+							.should(ancestorsExpression(ids))
+							.build());
 		}
 	}
 	
@@ -205,17 +203,12 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		// <!* should eval to * MINUS parents in (ROOT_ID)
 		if (innerConstraint instanceof Any) {
 			return Promise.immediate(Expressions.builder()
-					.mustNot(parents(Collections.singleton(IComponent.ROOT_ID)))
+					.mustNot(parentsExpression(Collections.singleton(IComponent.ROOT_ID)))
 					.build());
 		} else {
 			return evaluate(context, innerConstraint)
-					.thenWith(resolveIds(context, innerConstraint))
-					.then(new Function<Set<String>, Expression>() {
-						@Override
-						public Expression apply(Set<String> ids) {
-							return parents(ids);
-						}
-					});
+					.thenWith(resolveIds(context, innerConstraint, expressionForm))
+					.then(ids -> parentsExpression(ids));
 		}
 	}
 	
@@ -225,17 +218,14 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, final ParentOf parentOf) {
 		final String inner = context.service(EclSerializer.class).serializeWithoutTerms(parentOf.getConstraint());
-		return EclExpression.of(inner)
+		return EclExpression.of(inner, expressionForm)
 				.resolveConcepts(context)
-				.then(new Function<SnomedConcepts, Set<String>>() {
-					@Override
-					public Set<String> apply(SnomedConcepts concepts) {
-						final Set<String> parents = newHashSet();
-						for (SnomedConcept concept : concepts) {
-							addParentIds(concept, parents);
-						}
-						return parents;
+				.then(concepts -> {
+					final Set<String> parents = newHashSet();
+					for (SnomedConcept concept : concepts) {
+						addParentIds(concept, parents);
 					}
+					return parents;
 				})
 				.then(matchIdsOrNone());
 	}
@@ -246,18 +236,15 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, final AncestorOf ancestorOf) {
 		final String inner = context.service(EclSerializer.class).serializeWithoutTerms(ancestorOf.getConstraint());
-		return EclExpression.of(inner)
+		return EclExpression.of(inner, expressionForm)
 				.resolveConcepts(context)
-				.then(new Function<SnomedConcepts, Set<String>>() {
-					@Override
-					public Set<String> apply(SnomedConcepts concepts) {
-						final Set<String> ancestors = newHashSet();
-						for (SnomedConcept concept : concepts) {
-							addParentIds(concept, ancestors);
-							addAncestorIds(concept, ancestors);
-						}
-						return ancestors;
+				.then(concepts -> {
+					final Set<String> ancestors = newHashSet();
+					for (SnomedConcept concept : concepts) {
+						addParentIds(concept, ancestors);
+						addAncestorIds(concept, ancestors);
 					}
+					return ancestors;
 				})
 				.then(matchIdsOrNone());
 	}
@@ -273,19 +260,16 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			return evaluate(context, innerConstraint);
 		} else {
 			final String inner = context.service(EclSerializer.class).serializeWithoutTerms(innerConstraint);
-			return EclExpression.of(inner)
+			return EclExpression.of(inner, expressionForm)
 					.resolveConcepts(context)
-					.then(new Function<SnomedConcepts, Set<String>>() {
-						@Override
-						public Set<String> apply(SnomedConcepts concepts) {
-							final Set<String> ancestors = newHashSet();
-							for (SnomedConcept concept : concepts) {
-								ancestors.add(concept.getId());
-								addParentIds(concept, ancestors);
-								addAncestorIds(concept, ancestors);
-							}
-							return ancestors;
+					.then(concepts -> {
+						final Set<String> ancestors = newHashSet();
+						for (SnomedConcept concept : concepts) {
+							ancestors.add(concept.getId());
+							addParentIds(concept, ancestors);
+							addAncestorIds(concept, ancestors);
 						}
+						return ancestors;
 					})
 					.then(matchIdsOrNone());
 		}
@@ -297,16 +281,13 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, final AndExpressionConstraint and) {
 		return Promise.all(evaluate(context, and.getLeft()), evaluate(context, and.getRight()))
-				.then(new Function<List<Object>, Expression>() {
-					@Override
-					public Expression apply(List<Object> innerExpressions) {
-						final Expression left = (Expression) innerExpressions.get(0);
-						final Expression right = (Expression) innerExpressions.get(1);
-						return Expressions.builder()
-								.filter(left)
-								.filter(right)
-								.build();
-					}
+				.then(innerExpressions -> {
+					final Expression left = (Expression) innerExpressions.get(0);
+					final Expression right = (Expression) innerExpressions.get(1);
+					return Expressions.builder()
+							.filter(left)
+							.filter(right)
+							.build();
 				});
 	}
 	
@@ -316,16 +297,13 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, final OrExpressionConstraint or) {
 		return Promise.all(evaluate(context, or.getLeft()), evaluate(context, or.getRight()))
-				.then(new Function<List<Object>, Expression>() {
-					@Override
-					public Expression apply(List<Object> innerExpressions) {
-						final Expression left = (Expression) innerExpressions.get(0);
-						final Expression right = (Expression) innerExpressions.get(1);
-						return Expressions.builder()
-								.should(left)
-								.should(right)
-								.build();
-					}
+				.then(innerExpressions -> {
+					final Expression left = (Expression) innerExpressions.get(0);
+					final Expression right = (Expression) innerExpressions.get(1);
+					return Expressions.builder()
+							.should(left)
+							.should(right)
+							.build();
 				});
 	}
 	
@@ -335,16 +313,13 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, final ExclusionExpressionConstraint exclusion) {
 		return Promise.all(evaluate(context, exclusion.getLeft()), evaluate(context, exclusion.getRight()))
-				.then(new Function<List<Object>, Expression>() {
-					@Override
-					public Expression apply(List<Object> innerExpressions) {
-						final Expression left = (Expression) innerExpressions.get(0);
-						final Expression right = (Expression) innerExpressions.get(1);
-						return Expressions.builder()
-								.filter(left)
-								.mustNot(right)
-								.build();
-					}
+				.then(innerExpressions -> {
+					final Expression left = (Expression) innerExpressions.get(0);
+					final Expression right = (Expression) innerExpressions.get(1);
+					return Expressions.builder()
+							.filter(left)
+							.mustNot(right)
+							.build();
 				});
 	}
 	
@@ -353,7 +328,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined) {
 		final String focusConceptExpression = context.service(EclSerializer.class).serializeWithoutTerms(refined.getConstraint());
-		return new SnomedEclRefinementEvaluator(EclExpression.of(focusConceptExpression)).evaluate(context, refined.getRefinement());
+		return new SnomedEclRefinementEvaluator(EclExpression.of(focusConceptExpression, expressionForm)).evaluate(context, refined.getRefinement());
 	}
 	
 	/**
@@ -364,7 +339,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final Collection<String> sourceFilter = Collections.singleton(serializer.serializeWithoutTerms(dotted.getConstraint()));
 		final Collection<String> typeFilter = Collections.singleton(serializer.serializeWithoutTerms(dotted.getAttribute()));
-		return SnomedEclRefinementEvaluator.evalRelationships(context, sourceFilter, typeFilter, Collections.emptySet(), false)
+		return SnomedEclRefinementEvaluator.evalStatements(context, sourceFilter, typeFilter, Collections.singleton(Ecl.ANY), false, expressionForm)
 				.then(new Function<Collection<SnomedEclRefinementEvaluator.Property>, Set<String>>() {
 					@Override
 					public Set<String> apply(Collection<SnomedEclRefinementEvaluator.Property> input) {
@@ -392,19 +367,20 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		throw new NotImplementedException("Not implemented ECL feature: %s", eObject.eClass().getName());
 	}
 	
+	static boolean canExtractIds(Expression expression) {
+		return expression instanceof Predicate && ID.equals(((Predicate) expression).getField());
+	}
+	
 	/*Extract SNOMED CT IDs from the given expression if it is either a String/Long single/multi-valued predicate and the field is equal to RevisionDocument.Fields.ID*/
-	private static Set<String> extractIds(Expression expression) {
-		if (expression instanceof Predicate) {
-			final Predicate predicate = (Predicate) expression;
-			if (ID.equals(predicate.getField())) {
-				if (predicate instanceof StringSetPredicate) {
-					return ((StringSetPredicate) predicate).values();
-				} else if (predicate instanceof StringPredicate) {
-					return Collections.singleton(((StringPredicate) expression).getArgument());
-				}
-			}
+	/*package*/ static Set<String> extractIds(Expression expression) {
+		if (!canExtractIds(expression)) {
+			throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
 		}
-		throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
+		if (expression instanceof StringSetPredicate) {
+			return ((StringSetPredicate) expression).values();
+		} else {
+			return Collections.singleton(((StringPredicate) expression).getArgument());
+		}
 	}
 	
 	/**
@@ -412,48 +388,68 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * Otherwise it will try to evaluate the ecl completely without using the first returned expression.
 	 * @param ecl - the original ECL which will resolve to the returned function parameter as {@link Expression}
 	 */
-	private static Function<Expression, Promise<Set<String>>> resolveIds(BranchContext context, ExpressionConstraint ecl) {
-		return new Function<Expression, Promise<Set<String>>>() {
-			@Override
-			public Promise<Set<String>> apply(Expression expression) {
-				try {
-					return Promise.immediate(extractIds(expression));
-				} catch (UnsupportedOperationException e) {
-					final String eclExpression = context.service(EclSerializer.class).serializeWithoutTerms(ecl);
-					// otherwise always evaluate the expression to ID set and return that
-					return EclExpression.of(eclExpression).resolve(context);
-				}
+	private static Function<Expression, Promise<Set<String>>> resolveIds(BranchContext context, ExpressionConstraint ecl, String expressionForm) {
+		return expression -> {
+			try {
+				return Promise.immediate(extractIds(expression));
+			} catch (UnsupportedOperationException e) {
+				final String eclExpression = context.service(EclSerializer.class).serializeWithoutTerms(ecl);
+				// otherwise always evaluate the expression to ID set and return that
+				return EclExpression.of(eclExpression, expressionForm).resolve(context);
 			}
 		};
 	}
 	
-	private static void addParentIds(SnomedConcept concept, final Set<String> collection) {
-		if (concept.getParentIds() != null) {
-			for (long parent : concept.getParentIds()) {
-				if (IComponent.ROOT_IDL != parent) {
-					collection.add(Long.toString(parent));
+	private Expression parentsExpression(Set<String> ids) {
+		return Trees.INFERRED_FORM.equals(expressionForm) ? SnomedConceptDocument.Expressions.parents(ids) : SnomedConceptDocument.Expressions.statedParents(ids);
+	}
+
+	private Expression ancestorsExpression(Set<String> ids) {
+		return Trees.INFERRED_FORM.equals(expressionForm) ? SnomedConceptDocument.Expressions.ancestors(ids) : SnomedConceptDocument.Expressions.statedAncestors(ids);
+	}
+	
+	private void addParentIds(SnomedConcept concept, final Set<String> collection) {
+		if (Trees.INFERRED_FORM.equals(expressionForm)) {
+			if (concept.getParentIds() != null) {
+				for (long parent : concept.getParentIds()) {
+					if (IComponent.ROOT_IDL != parent) {
+						collection.add(Long.toString(parent));
+					}
+				}
+			}
+		} else {
+			if (concept.getStatedParentIds() != null) {
+				for (long statedParent : concept.getStatedParentIds()) {
+					if (IComponent.ROOT_IDL != statedParent) {
+						collection.add(Long.toString(statedParent));
+					}
 				}
 			}
 		}
 	}
 	
-	private static void addAncestorIds(SnomedConcept concept, Set<String> collection) {
-		if (concept.getAncestorIds() != null) {
-			for (long ancestor : concept.getAncestorIds()) {
-				if (IComponent.ROOT_IDL != ancestor) {
-					collection.add(Long.toString(ancestor));
+	private void addAncestorIds(SnomedConcept concept, Set<String> collection) {
+		if (Trees.INFERRED_FORM.equals(expressionForm)) {
+			if (concept.getAncestorIds() != null) {
+				for (long ancestor : concept.getAncestorIds()) {
+					if (IComponent.ROOT_IDL != ancestor) {
+						collection.add(Long.toString(ancestor));
+					}
+				}
+			}
+		} else {
+			if (concept.getStatedAncestorIds() != null) {
+				for (long statedAncestor : concept.getStatedAncestorIds()) {
+					if (IComponent.ROOT_IDL != statedAncestor) {
+						collection.add(Long.toString(statedAncestor));
+					}
 				}
 			}
 		}		
 	}
 	
 	/*package*/ static Function<Set<String>, Expression> matchIdsOrNone() {
-		return new Function<Set<String>, Expression>() {
-			@Override
-			public Expression apply(Set<String> ids) {
-				return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
-			}
-		};
+		return ids -> ids.isEmpty() ? Expressions.matchNone() : ids(ids);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
@@ -32,13 +33,14 @@ final class ValidationWhiteListCreateRequest implements Request<ValidationReposi
 
 	@NotEmpty String ruleId;
 	@NotNull ComponentIdentifier componentIdentifier;
+	@NotNull List<String> affectedComponentLabels;
 	@NotEmpty String reporter;
 	private long createdAt;
 	
 	@Override
 	public String execute(ValidationRepositoryContext context) {
 		final String id = UUID.randomUUID().toString();
-		context.save(id, new ValidationWhiteList(id, ruleId, reporter, createdAt, componentIdentifier));
+		context.save(id, new ValidationWhiteList(id, ruleId, reporter, createdAt, componentIdentifier, affectedComponentLabels));
 		return id;
 	}
 
@@ -48,6 +50,10 @@ final class ValidationWhiteListCreateRequest implements Request<ValidationReposi
 	
 	void setComponentIdentifier(ComponentIdentifier componentIdentifier) {
 		this.componentIdentifier = componentIdentifier;
+	}
+	
+	void setAffectedComponentLabels(List<String> affectedComponentLabels) {
+		this.affectedComponentLabels = affectedComponentLabels;
 	}
 	
 	void setReporter(String reporter) {

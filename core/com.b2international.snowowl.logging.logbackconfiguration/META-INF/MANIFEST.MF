@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Logback Configuration Fragment
 Bundle-SymbolicName: com.b2international.snowowl.logging.logbackconfiguration
-Bundle-Version: 6.12.0.qualifier
+Bundle-Version: 6.19.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: ch.qos.logback.classic;bundle-version="0.9.27.v20110224-1110"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

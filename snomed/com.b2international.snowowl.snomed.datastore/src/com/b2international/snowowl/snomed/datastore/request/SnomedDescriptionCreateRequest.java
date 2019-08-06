@@ -25,9 +25,11 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -53,6 +55,8 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 
 	@NotEmpty
 	private Map<String, Acceptability> acceptability;
+
+	private DescriptionInactivationIndicator inactivationIndicator;
 
 	SnomedDescriptionCreateRequest() {
 	}
@@ -105,6 +109,10 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 		this.acceptability = acceptability;
 	}
 	
+	public void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
+		this.inactivationIndicator = inactivationIndicator;
+	}
+	
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		Builder<String> result = ImmutableSet.<String>builder()
@@ -145,9 +153,19 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 			acceptabilityUpdate.setDescriptionId(description.getId());
 			acceptabilityUpdate.execute(context);
 			
+			if (inactivationIndicator != null) {
+				final SnomedInactivationReasonUpdateRequest<Description> inactivationUpdate =  new SnomedInactivationReasonUpdateRequest<>(
+						description.getId(), 
+						Description.class, 
+						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
+				inactivationUpdate.setInactivationValueId(inactivationIndicator.getConceptId());
+				inactivationUpdate.execute(context);
+			}
+			
 			return description.getId();
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
 	}
+
 }

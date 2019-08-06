@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package com.b2international.snowowl.validation.snomed;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
+import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -27,9 +29,17 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
+import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import com.google.common.collect.ImmutableList;
 
 /**
  * 
@@ -76,8 +86,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		assertAffectedComponents(validationIssues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidSourceRelationship.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidDestinationRelationship.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidTypeRelationship.getId()));
-		
-		
 	}
 	
 	@Test
@@ -111,6 +119,215 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, d1.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, d2.getId()));
+	}
+	
+	@Test
+	public void ruleSnomedCommon3() throws Exception {
+		final String ruleId = "snomed-common-3";
+		indexRule(ruleId);
+
+		// Relationships with deprecated characteristic types
+		SnomedRelationshipIndexEntry relationshipWithDefiningCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.DEFINING_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithDefiningCharType);
+		
+		SnomedRelationshipIndexEntry relationshipWithQualifingCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.QUALIFYING_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithQualifingCharType);
+
+		
+		// Relationships with acceptable characteristic types
+		SnomedRelationshipIndexEntry  relationshipWithStatedCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithStatedCharType);
+
+		SnomedRelationshipIndexEntry relationshipWithInferredCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithInferredCharType);
+		
+		SnomedRelationshipIndexEntry relationshipWithAdditionalCharType = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.ADDITIONAL_RELATIONSHIP)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithAdditionalCharType);
+		
+		SnomedRelationshipIndexEntry relationshipWithCharTypeOutsideOfCharTypeHierarchy = relationship(generateConceptId(), Concepts.IS_A, generateConceptId())
+				.characteristicTypeId(Concepts.ROOT_CONCEPT)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), relationshipWithCharTypeOutsideOfCharTypeHierarchy);
+
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues,
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipWithDefiningCharType.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipWithQualifingCharType.getId())
+		);
+
+	}
+	
+	@Test
+	public void ruleSnomedCommon4() throws Exception {
+		final String ruleId = "snomed-common-4";
+		indexRule(ruleId);
+
+		// index concept with two FSNs in the same language refset
+		String concept1Id = generateConceptId();
+		SnomedDescriptionIndexEntry fsn1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 1 (tag)")
+				.conceptId(concept1Id)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), fsn1);
+		SnomedDescriptionIndexEntry fsn2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 2 (tag)")
+				.conceptId(concept1Id)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), fsn2);
+		SnomedConceptDocument c1 = concept(concept1Id)
+				.preferredDescriptions(ImmutableList.of(
+						new SnomedDescriptionFragment(fsn1.getId(), fsn1.getStorageKey(), fsn1.getTypeId(), fsn1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getStorageKey(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), c1);
+
+		// index concept with two PTs in the same language refset
+		String concept2Id = generateConceptId();
+		SnomedDescriptionIndexEntry pt1 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 1")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.conceptId(concept2Id)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), pt1);
+		SnomedDescriptionIndexEntry pt2 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 2")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.conceptId(concept2Id)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), pt2);
+		SnomedConceptDocument c2 = concept(concept2Id)
+				.preferredDescriptions(
+						ImmutableList.of(
+								new SnomedDescriptionFragment(pt1.getId(), pt1.getStorageKey(), pt1.getTypeId(), pt1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+								new SnomedDescriptionFragment(pt2.getId(), pt2.getStorageKey(), pt2.getTypeId(), pt2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), c2);
+
+		// index concept with only one PT and one FSN in a given language refset
+		String concept3Id = generateConceptId();
+		SnomedDescriptionIndexEntry fsn3 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 3 (tag)")
+				.conceptId(concept3Id)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), fsn3);
+		SnomedDescriptionIndexEntry pt3 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 3")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.conceptId(concept3Id)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), pt3);
+		SnomedConceptDocument c3 = concept(concept3Id)
+				.preferredDescriptions(ImmutableList.of(
+						new SnomedDescriptionFragment(fsn3.getId(), fsn3.getStorageKey(), fsn3.getTypeId(), fsn3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+						new SnomedDescriptionFragment(pt3.getId(), pt3.getStorageKey(), pt3.getTypeId(), pt3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)
+						))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), c3);
+		
+		ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c2.getId()));
+	}
+	
+	@Test
+	public void rule_mrcm_constraint() throws Exception {
+		final String ruleId = "rule_mrcm_constraint";
+		indexRule(ruleId);
+		
+		//Create MRCM rule
+		final HierarchyConceptSetDefinition conceptSetDefinition = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF);
+		final HierarchyConceptSetDefinition predicateType = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
+		final HierarchyConceptSetDefinition predicateRange = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
+		final RelationshipPredicate conceptModelPredicate = relationshipPredicate(predicateType, predicateRange);
+		
+		final AttributeConstraint attributeConstraint = attributeConstraint(conceptSetDefinition, conceptModelPredicate);
+		long attributeConsrtaintStorageKey = nextStorageKey();
+		((InternalCDOObject) attributeConstraint).cdoInternalSetID(CDOIDUtil.createLong(attributeConsrtaintStorageKey));
+	
+		final SnomedConstraintDocument constraint = constraint(attributeConstraint).build();
+		indexRevision(MAIN, attributeConsrtaintStorageKey, constraint);
+		
+		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.group(1).build();
+		indexRevision(MAIN, nextStorageKey(), relationship1);
+		
+		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+				.group(1).build();
+		indexRevision(MAIN, nextStorageKey(), relationship2);
+		
+		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+				.group(2).build();
+		indexRevision(MAIN, nextStorageKey(), relationship3);
+		
+		ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()));
+	}
+	
+	@Test
+	public void rule_mrcm_constraint_type() throws Exception {
+		final String ruleId = "rule_mrcm_constraint_type";
+		indexRule(ruleId);
+		
+		//First mrcm rule
+		final HierarchyConceptSetDefinition conceptSetDefinition1 = hierarchyConceptSetDefinition(Concepts.CONCEPT_MODEL_ATTRIBUTE, HierarchyInclusionType.SELF);
+		final HierarchyConceptSetDefinition predicateType1 = hierarchyConceptSetDefinition(Concepts.FINDING_SITE, HierarchyInclusionType.SELF);
+		final HierarchyConceptSetDefinition predicateRange1 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
+		final RelationshipPredicate conceptModelPredicate1 = relationshipPredicate(predicateType1, predicateRange1);
+		
+		final AttributeConstraint attributeConstraint1 = attributeConstraint(conceptSetDefinition1, conceptModelPredicate1);
+		long attributeConsrtaintStorageKey1 = nextStorageKey();
+		((InternalCDOObject) attributeConstraint1).cdoInternalSetID(CDOIDUtil.createLong(attributeConsrtaintStorageKey1));
+	
+		final SnomedConstraintDocument constraint1 = constraint(attributeConstraint1).build();
+		indexRevision(MAIN, attributeConsrtaintStorageKey1, constraint1);
+		
+		//Second mrcm rule
+		final HierarchyConceptSetDefinition conceptSetDefinition2 = hierarchyConceptSetDefinition(Concepts.PHYSICAL_OBJECT, HierarchyInclusionType.SELF);
+		final HierarchyConceptSetDefinition predicateType2 = hierarchyConceptSetDefinition(Concepts.HAS_ACTIVE_INGREDIENT, HierarchyInclusionType.SELF);
+		final HierarchyConceptSetDefinition predicateRange2 = hierarchyConceptSetDefinition(Concepts.TEXT_DEFINITION, HierarchyInclusionType.SELF);
+		final RelationshipPredicate conceptModelPredicate2 = relationshipPredicate(predicateType2, predicateRange2);
+		
+		final AttributeConstraint attributeConstraint2 = attributeConstraint(conceptSetDefinition2, conceptModelPredicate2);
+		long attributeConsrtaintStorageKey2 = nextStorageKey();
+		((InternalCDOObject) attributeConstraint2).cdoInternalSetID(CDOIDUtil.createLong(attributeConsrtaintStorageKey2));
+	
+		final SnomedConstraintDocument constraint2 = constraint(attributeConstraint2).build();
+		indexRevision(MAIN, attributeConsrtaintStorageKey2, constraint2);
+		
+		//Relationships
+		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.IS_A, Concepts.CONCEPT_MODEL_ATTRIBUTE)
+				.group(1).build();
+		indexRevision(MAIN, nextStorageKey(), relationship1);
+		
+		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+				.group(1).build();
+		indexRevision(MAIN, nextStorageKey(), relationship2);
+		
+		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
+				.group(2).build();
+		indexRevision(MAIN, nextStorageKey(), relationship3);
+		
+		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, Concepts.TEXT_DEFINITION)
+				.group(0).build();
+		indexRevision(MAIN, nextStorageKey(), relationship4);
+		
+		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.PHYSICAL_OBJECT)
+				.group(3).build();
+		indexRevision(MAIN, nextStorageKey(), relationship5);
+		
+		ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship3.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()));
 	}
 	
 }

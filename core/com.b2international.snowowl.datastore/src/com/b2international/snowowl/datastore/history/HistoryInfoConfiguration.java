@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.datastore.history;
 
+import java.util.List;
+
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 
 /**
@@ -41,4 +44,9 @@ public interface HistoryInfoConfiguration {
 	 * Returns the active branch path from where history should be computed.
 	 */
 	IBranchPath getBranchPath();
+	
+	/**
+	 * @return the locales to use when looking up terms to display
+	 */
+	List<ExtendedLocale> getLocales();
 }

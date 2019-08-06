@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
  */
 package com.b2international.snowowl.server.console;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.eclipse.emf.cdo.session.remote.CDORemoteSession;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
@@ -33,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.collections.Procedure;
@@ -60,6 +60,7 @@ import com.b2international.snowowl.datastore.server.oplock.OperationLockInfo;
 import com.b2international.snowowl.datastore.server.oplock.impl.DatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.rpc.RpcSession;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 
@@ -144,26 +145,17 @@ public class UserSessionCommandProvider implements CommandProvider {
 	 */
 	public synchronized void users(final CommandInterpreter interpreter) {
 		
-		final List<Pair<String, String>> info = newArrayList(ApplicationContext.getInstance().getService(IApplicationSessionManager.class).getConnectedSessionInfo());
+		final IApplicationSessionManager sessionManager = getServiceForClass(IApplicationSessionManager.class);
+		final Map<Long, String> connectedSessions = sessionManager.getConnectedSessionInfo();
 		
-		if (CompareUtils.isEmpty(info)) {
-			
+		if (CompareUtils.isEmpty(connectedSessions)) {
 			interpreter.println("No users are connected to the server.");
-			
-		} else {
-		
-			Collections.sort(info, new Comparator<Pair<String, String>>() {
-				@Override public int compare(final Pair<String, String> o1, final Pair<String, String> o2) {
-					return Strings.nullToEmpty(o1.getA()).compareTo(Strings.nullToEmpty(o2.getA()));
-				}
-			});
-			
-			for (final Pair<String, String> pair : info) {
-					interpreter.println("User: " + pair.getA() + " | session ID: " + pair.getB());
-			}
-			
+			return;
 		}
-
+		
+		for (final Entry<Long, String> session : connectedSessions.entrySet()) {
+			interpreter.println("User: " + session.getValue() + " | session ID: " + session.getKey());
+		}
 	}
 
 	/**
@@ -240,31 +232,23 @@ public class UserSessionCommandProvider implements CommandProvider {
 		final String userNamesParameter = interpreter.nextArgument();
 
 		if (StringUtils.isEmpty(userNamesParameter)) {
-			interpreter.print("Command usage: session disconnect [userName1,userName2,userNameN|ALL]");
+			interpreter.println("Command usage: session disconnect [userName1,userName2,userNameN|ALL]");
 			return;
 		}
 
 		final AtomicBoolean success = new AtomicBoolean(false);
-		final ICDORepositoryManager repositoryManager = ApplicationContext.getInstance().getService(ICDORepositoryManager.class);
+		final IApplicationSessionManager sessionManager = getServiceForClass(IApplicationSessionManager.class);
 
-		final ISessionOperationCallback callback = new ISessionOperationCallback() {
+		final Consumer<RpcSession> callback = session -> {
+			final String userId = (String) session.get(IApplicationSessionManager.KEY_USER_ID);
+			final Long sessionId = (Long) session.get(IApplicationSessionManager.KEY_SESSION_ID);
 			
-			@Override public void done(final CDORemoteSession session) {
-				interpreter.println("User: " + session.getUserID() + " | session ID: " + session.getSessionID() + " was disconnected.");
-				LogUtils.logUserEvent(USER_ACTIVITY_LOGGER, "admin", "Disconnected user: " + session.getUserID() + " from session: " + session.getSessionID() + ".");
-				success.compareAndSet(false, true);
-			}
+			interpreter.println(String.format("User: %s | session ID: %s was disconnected.", userId, sessionId));
+			LogUtils.logUserEvent(USER_ACTIVITY_LOGGER, "admin", String.format("Disconnected user: %s from session: %s.", userId, sessionId));
+			success.compareAndSet(false, true);
 		};
-
-		if ("ALL".equals(userNamesParameter)) {
-			
-			repositoryManager.disconnectAll(callback);
-			
-		} else {
-			
-			repositoryManager.disconnect(tokenizeParameter(userNamesParameter), callback);
-			
-		}
+		
+		sessionManager.disconnectSessions(tokenizeParameter(userNamesParameter), callback);
 
 		if (!success.get()) {
 			interpreter.println("Failed to disconnect user(s): " + userNamesParameter + ". Are these users active? Currently active users are:\n");
@@ -279,7 +263,7 @@ public class UserSessionCommandProvider implements CommandProvider {
 		final String subCommand = interpreter.nextArgument();
 		
 		if (StringUtils.isEmpty(subCommand) || !ALLOWED_SUBCOMMANDS.contains(subCommand.toLowerCase())) {
-			interpreter.print("Command usage: session login [enabled|disabled|status]");
+			interpreter.println("Command usage: session login [enabled|disabled|status]");
 			return;
 		}
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,6 +148,8 @@ public abstract class SnomedConstants {
 		public static final String DESCRIPTION_FORMAT_TYPE_ROOT_CONCEPT = "900000000000539002";
 		public static final String DESCRIPTION_FORMAT_PLAIN_TEXT = "900000000000540000";
 		
+		public static final String DEVICE = "49062001";
+		
 		//ref sets
 		public static final String REFSET_ROOT_CONCEPT = "900000000000455006";
 		public static final String REFSET_ALL = REFSET_ROOT_CONCEPT;
@@ -167,6 +169,8 @@ public abstract class SnomedConstants {
 		public static final String REFSET_CONCRETE_DOMAIN_TYPE_AU = "50131000036100"; //AU release -> NEHTA_0856_2012_AMTImplentationKit_20120229
 		public static final String REFSET_MODULE_DEPENDENCY_TYPE = "900000000000534007";
 		
+		public static final String REFSET_DESCRIPTOR_REFSET = "900000000000456007";
+
 		public static final String REFSET_ANNOTATION_TYPE = "900000000000516008";
 		public static final String REFSET_OWL_EXPRESSION_TYPE = "762676003";
 		public static final String REFSET_OWL_ONTOLOGY = "762103008";
@@ -269,10 +273,6 @@ public abstract class SnomedConstants {
 		public static final String REFSET_DESCRIPTION_INACTIVITY_INDICATOR = "900000000000490003";
 		public static final String REFSET_RELATIONSHIP_INACTIVITY_INDICATOR = "900000000000547002";
 		
-		// MRCM related concepts
-		public static final String RULE_STRENGTH_ROOT = "723573005";
-		public static final String CONTENT_TYPE_ROOT = "723574004";
-		
 		//component incativation reasons
 		public static final String LIMITED = "900000000000486000";
 		public static final String DUPLICATE = "900000000000482003";
@@ -319,6 +319,7 @@ public abstract class SnomedConstants {
 		public static final String CONCEPT_MODEL_DATA_ATTRIBUTE = "762706009";
 		
 		// Concepts that require special care when classifying
+		public static final String ROLE_GROUP = "609096000";
 		public static final String PART_OF = "123005000";
 		public static final String LATERALITY = "272741003";
 		public static final String HAS_ACTIVE_INGREDIENT = "127489000";
@@ -345,6 +346,7 @@ public abstract class SnomedConstants {
 		
 		// Modules
 		public static final String MODULE_ROOT = "900000000000443000";
+		public static final String IHTSDO_MAINTAINED_MODULE = "900000000000445007";
 		public static final String MODULE_SCT_CORE = "900000000000207008";
 		public static final String MODULE_SCT_MODEL_COMPONENT = "900000000000012004";
 		public static final String MODULE_B2I_EXTENSION = "636635721000154103";
@@ -365,19 +367,6 @@ public abstract class SnomedConstants {
 		public static final String UK_EXCLUDE_FROM_CLINICAL_RELEASE_MODULE = "15211000000101";
 		public static final String UK_EXCLUDE_FROM_DRUG_EXTENSION_RELEASE_MODULE = "13088301000001107";
 		
-		public static final Set<String> UK_MODULES_NOCLASSIFY = ImmutableSet.of(
-			UK_MAINTAINED_CLINICAL_MODULE, 
-			UK_EDITION_MODULE,
-			UK_EDITION_REFERENCE_SET_MODULE,
-			// UK_CLINICAL_EXTENSION_MODULE is part of classification
-			UK_CLINICAL_EXTENSION_REFERENCE_SET_MODULE,
-			UK_MAINTAINED_PHARMACY_MODULE,
-			UK_DRUG_EXTENSION_MODULE,
-			UK_DRUG_EXTENSION_REFERENCE_SET_MODULE,
-			UK_EXCLUDE_FROM_DRUG_EXTENSION_RELEASE_MODULE,
-			UK_EXCLUDE_FROM_CLINICAL_RELEASE_MODULE
-		);
-
 		// SG specific concepts
 		public static final String GENERATED_SINGAPORE_MEDICINAL_PRODUCT = "551000991000133100";
 		public static final String HAS_RELEASE_CHARACTERISTIC = "9141000132106";
@@ -393,6 +382,7 @@ public abstract class SnomedConstants {
 		public static final String PRODUCT_TERM_PLURAL = "69701000132106";
 		public static final String SEARCH_TERM = "9221000132108";
 		public static final String SHORT_NAME = "9211000132103";
+		
 		public static final String HAS_PRODUCT_HIERARCHY_LEVEL = "9171000132101";
 		public static final String SUBSTANCE = "105590001";
 		public static final String HAS_COMPONENT = "246093002";
@@ -407,6 +397,82 @@ public abstract class SnomedConstants {
 		public static final String DESCRIPTION_INACTIVATION_VALUE = "900000000000493001";
 		public static final String CONCEPT_INACTIVATION_VALUE = "900000000000481005";
 
+		// IDs used in RefSet Descriptor RefSet
+		// AttributeDescription Field
+		public static final String ATTRIBUTE_DESCRIPTION_REFERENCED_COMPONENT = "449608002";
+		// AttributeType Field
+		// Referenced Components
+		public static final String ATTRIBUTE_TYPE_COMPONENT_TYPE = "900000000000460005";
+		public static final String ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT = "900000000000461009";
+		public static final String ATTRIBUTE_TYPE_DESCRIPTION_TYPE_COMPONENT = "900000000000462002";
+		public static final String ATTRIBUTE_TYPE_RELATIONSHIP_TYPE_COMPONENT = "900000000000463007";
+		public static final String ATTRIBUTE_TYPE_MEMBER_TYPE_COMPONENT = "900000000000464001";
+		
+		// Generic types
+		public static final String ATTRIBUTE_TYPE_STRING_TYPE = "900000000000465000";
+		public static final String ATTRIBUTE_TYPE_INTEGER_TYPE = "900000000000476001";
+		public static final String ATTRIBUTE_TYPE_SIGNED_INTEGER_TYPE = "900000000000477005";
+		public static final String ATTRIBUTE_TYPE_UNSIGNED_INTEGER_TYPE = "900000000000478000";
+		public static final String ATTRIBUTE_TYPE_TIME = "900000000000475002";
+		public static final String ATTRIBUTE_TYPE_SNOMEDCT_PARSABLE_STRING = "707000009";
+		
+		// Language RefSet
+		public static final String ATTRIBUTE_TYPE_ACCEPTABILITY = "900000000000511003";
+		
+		// OWL RefSet
+		public static final String ATTRIBUTE_TYPE_OWL_EXPRESSION = "762677007";
+		public static final String ATTRIBUTE_TYPE_OWL2_LANG_SYNTAX = "762678002";
+		
+		// Description Format
+		public static final String ATTRIBUTE_TYPE_DESCRIPTION_FORMAT_LENGTH = "900000000000544009";
+		
+		// Map attributes
+		public static final String ATTRIBUTE_TYPE_CORRELATION_VALUE = "447247004";
+		public static final String ATTRIBUTE_TYPE_MAP_ADVICE = "900000000000504002";
+		public static final String ATTRIBUTE_TYPE_MAP_CATEGORY_VALUE = "609330002";
+		public static final String ATTRIBUTE_TYPE_MAP_GROUP = "900000000000501005";
+		public static final String ATTRIBUTE_TYPE_MAP_PRIORITY = "900000000000502003";
+		public static final String ATTRIBUTE_TYPE_MAP_RULE = "900000000000503008";
+		public static final String ATTRIBUTE_TYPE_MAP_TARGET = "900000000000505001";
+		
+		// Query attributes
+		public static final String ATTRIBUTE_TYPE_QUERY = "900000000000515007";
+		
+		// Attribute attributes
+		public static final String ATTRIBUTE_TYPE_ATTRIBUTE_VALUE = "900000000000491004";
+		
+		// Association attributes
+		public static final String ATTRIBUTE_TYPE_ASSOCIATION_TARGET = "900000000000533001";
+		public static final String ATTRIBUTE_TYPE_SCHEME_VALUE = "900000000000499002";
+
+		// MRCM Domain
+		public static final String ATTRIBUTE_TYPE_DOMAIN_CONSTRAINT = "723565001";
+		public static final String ATTRIBUTE_TYPE_PARENT_DOMAIN = "723566000";
+		public static final String ATTRIBUTE_TYPE_PROXIMAL_PRIMITIVE_CONSTRAINT = "723567009";
+		public static final String ATTRIBUTE_TYPE_PROXIMAL_PRIMITIVE_REFINEMENT = "723568004";
+		public static final String ATTRIBUTE_TYPE_DOMAIN_TEMPLATE_FOR_PRECOORDINATION = "723600000";
+		public static final String ATTRIBUTE_TYPE_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION = "723601001";
+		public static final String ATTRIBUTE_TYPE_GUIDE_URL = "723570008";
+		
+		// MRCM Attribute Domain
+		public static final String ATTRIBUTE_TYPE_DOMAIN = "609431004";
+		public static final String ATTRIBUTE_TYPE_GROUPED = "723572000";
+		public static final String ATTRIBUTE_TYPE_ATTRIBUTE_CARDINALITY = "723602008";
+		public static final String ATTRIBUTE_TYPE_ATTRIBUTE_IN_GROUP_CARDINALITY = "723603003";
+		public static final String ATTRIBUTE_TYPE_CONCEPT_MODEL_RULE_STRENGTH = "723573005";
+		public static final String ATTRIBUTE_TYPE_CONTENT_TYPE = "723574004";
+		
+		// MRCM Attribute Range
+		public static final String ATTRIBUTE_TYPE_RANGE_CONSTRAINT = "723575003";
+		public static final String ATTRIBUTE_TYPE_ATTRIBUTE_RULE = "723576002";
+
+		// MRCM Module Scope
+		public static final String ATTRIBUTE_TYPE_RULE_REFSET = "723577006";
+		
+		// Module dependency
+		public static final String ATTRIBUTE_TYPE_SOURCE_EFFECTIVE_TIME = "900000000000536009";
+		public static final String ATTRIBUTE_TYPE_TARGET_EFFECTIVE_TIME = "900000000000537000";
+		
 	}
 	
 	// RF2 effective time format

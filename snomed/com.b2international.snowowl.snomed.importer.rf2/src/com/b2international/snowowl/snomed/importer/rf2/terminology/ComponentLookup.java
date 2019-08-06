@@ -37,6 +37,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.collections.longs.LongValueMap;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -44,13 +45,14 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -174,14 +176,22 @@ public final class ComponentLookup<C extends CDOObject> {
 				final Multimap<Class<? extends SnomedDocument>, String> idsByType = Multimaps.index(componentIds, id -> SnomedDocument.getType(SnomedIdentifiers.getComponentCategory(id)));
 				for (Class<? extends SnomedDocument> type : idsByType.keySet()) {
 					// execute queries for each type and based on the current clazz extract either refset or concept storage keys
-					final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.ids(componentIds)).limit(componentIds.size()).build();
-					final Hits<? extends SnomedDocument> hits = index.search(query);
-					for (SnomedDocument doc : hits) {
-						if (SnomedRefSet.class.isAssignableFrom(clazz)) {
-							map.put(doc.getId(), ((SnomedConceptDocument) doc).getRefSetStorageKey());
-						} else {
-							map.put(doc.getId(), doc.getStorageKey());
-						}
+					ImmutableList.Builder<String> fields = ImmutableList.builder();
+					fields.add(SnomedDocument.Fields.ID);
+					if (SnomedConceptDocument.class.isAssignableFrom(type) && SnomedRefSet.class.isAssignableFrom(clazz)) {
+						fields.add(SnomedConceptDocument.Fields.REFSET_STORAGEKEY);
+					} else {
+						fields.add(Revision.STORAGE_KEY);
+					}
+					final Query<String[]> query = Query.select(String[].class)
+							.from(type)
+							.fields(fields.build())
+							.where(SnomedDocument.Expressions.ids(componentIds))
+							.limit(componentIds.size())
+							.build();
+					final Hits<String[]> hits = index.search(query);
+					for (String[] doc : hits) {
+						map.put(doc[0], Long.parseLong(doc[1]));
 					}
 				}
 				return map;

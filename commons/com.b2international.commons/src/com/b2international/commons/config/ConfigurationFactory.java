@@ -24,9 +24,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -43,8 +46,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TreeTraversingParser;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.base.Strings;
 
 /**
  * A factory class for loading JSON and YAML configuration files, binding them
@@ -60,6 +65,10 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 public class ConfigurationFactory<T> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigurationFactory.class);
+	
+	// match ${ENV_VAR_NAME}
+	private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{(\\w+)\\}");
+	
 	private Class<T> klass;
 	private ObjectMapper mapper;
 	private Validator validator;
@@ -101,6 +110,7 @@ public class ConfigurationFactory<T> {
 				LOG.info("No configuration found at {}, falling back to default configurations", path);
 				return klass.newInstance();
 			}
+			replaceEnvironmentVariables(node);
 			return build(node, path);
 		} catch (RuntimeException e) {
 			throw e;
@@ -191,7 +201,36 @@ public class ConfigurationFactory<T> {
 			config.getConfigurationClassToNode().put(fieldType, moduleConfig);
 		}
 	}
-
+	
+	/**
+	 * Recursively replaces environment variables from a given node.
+	 * 
+	 * @param node
+	 */
+	private void replaceEnvironmentVariables(JsonNode node) {
+		final Iterator<Entry<String, JsonNode>> fields = node.fields();
+		while (fields.hasNext()) {
+			final Entry<String, JsonNode> field = fields.next();
+			
+			final String fieldName = field.getKey();
+			final String textValue = field.getValue().textValue();
+			if (!Strings.isNullOrEmpty(textValue)) {
+				final Matcher matcher = ENV_VAR_PATTERN.matcher(textValue); 
+				if (matcher.matches()) {
+					final String envVariableName = matcher.group(1);
+					if (System.getenv().containsKey(envVariableName)) {
+						final String envVariableValue = System.getenv(envVariableName);
+						((ObjectNode) node).put(fieldName, envVariableValue);
+					}
+				}
+			}
+		}
+		
+		for (JsonNode child : node) {
+			replaceEnvironmentVariables(child);
+		}
+	}
+	
 	/**
 	 * Validates the given instance of configuration class against the
 	 * validation constraints defined in the current {@link #klass}.

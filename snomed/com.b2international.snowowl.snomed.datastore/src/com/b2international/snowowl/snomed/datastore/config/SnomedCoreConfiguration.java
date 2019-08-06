@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,20 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
+import java.util.Collections;
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.config.ConnectionPoolConfiguration;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -34,11 +40,11 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
-	public static final String DEFAULT_LANGUAGE = "en-gb"; //$NON-NLS-1$
 	public static final int DEFAULT_MAXIMUM_REASONER_COUNT = 2;
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	public static final String DEFAULT_NAMESPACE = ""; //$NON-NLS-1$
+	public static final String DEFAULT_MODULE = Concepts.MODULE_SCT_CORE;
 	
 	@Min(1)
 	@Max(3)
@@ -54,9 +60,6 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	@NotEmpty
 	private String defaultReasoner = DEFAULT_REASONER;
-	
-	@NotEmpty
-	private String language = DEFAULT_LANGUAGE;
 	
 	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
@@ -76,8 +79,9 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
 	
+	@Deprecated
 	@Valid
-	private SnomedIdentifierConfiguration ids = new SnomedIdentifierConfiguration();
+	private SnomedIdentifierConfiguration ids;
 	
 	@Valid
 	private SnomedExportDefaultConfiguration export = new SnomedExportDefaultConfiguration();
@@ -90,7 +94,19 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	//enables the manual editing of inferred relationships and concrete data types
 	private boolean inferredEditingEnabled = false;
-		
+
+	@NotNull
+	private String defaultNamespace = DEFAULT_NAMESPACE;
+	
+	@NotEmpty
+	private String defaultModule = DEFAULT_MODULE;
+	
+	@NotNull
+	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
+	
+	@NotNull
+	private String namespaceModuleAssigner = "default";
+
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
 	 */
@@ -137,22 +153,6 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@JsonProperty
 	public void setMaxReasonerRuns(int maxReasonerRuns) {
 		this.maxReasonerRuns = maxReasonerRuns;
-	}
-	
-	/**
-	 * @return the language code currently used for SNOMED CT
-	 */
-	@JsonProperty
-	public String getLanguage() {
-		return language;
-	}
-	
-	/**
-	 * @param language the SNOMED CT language code to set
-	 */
-	@JsonProperty
-	public void setLanguage(String language) {
-		this.language = language;
 	}
 	
 	/**
@@ -213,6 +213,7 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	/**
 	 * @return the identifier generation sub-section of the SNOMED CT core configuration object
+	 * @deprecated - no longer supported and it will be removed in a future release, access the identifiers configuration via {@link SnowOwlConfiguration#getModuleConfig(Class)}
 	 */
 	public SnomedIdentifierConfiguration getIds() {
 		return ids;
@@ -351,6 +352,52 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@JsonProperty("datetimeDataTypeRefsetIdentifier")
 	public void setDatetimeDatatypeRefsetIdentifier(String datetimeDatatypeRefsetIdentifier) {
 		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
+	}
+	
+	/**
+	 * @return the default module ID to use when not set in any other way
+	 */
+	@JsonProperty
+	public String getDefaultModule() {
+		return defaultModule;
+	}
+	
+	/**
+	 * @return the default namespace to use for ID generation when not set in any other way
+	 */
+	@JsonProperty
+	public String getDefaultNamespace() {
+		return defaultNamespace;
+	}
+	
+	@JsonProperty
+	public String getNamespaceModuleAssigner() {
+		return namespaceModuleAssigner;
+	}
+	
+	@JsonProperty
+	public void setDefaultModule(String defaultModule) {
+		this.defaultModule = defaultModule;
+	}
+	
+	@JsonProperty
+	public void setDefaultNamespace(String defaultNamespace) {
+		this.defaultNamespace = defaultNamespace;
+	}
+	
+	@JsonProperty
+	public void setNamespaceModuleAssigner(String namespaceModuleAssigner) {
+		this.namespaceModuleAssigner = namespaceModuleAssigner;
+	}
+	
+	@JsonProperty
+	public Set<String> getReasonerExcludedModuleIds() {
+		return this.reasonerExcludedModuleIds;
+	}
+	
+	@JsonProperty
+	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
+		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
 	}
 	
 }

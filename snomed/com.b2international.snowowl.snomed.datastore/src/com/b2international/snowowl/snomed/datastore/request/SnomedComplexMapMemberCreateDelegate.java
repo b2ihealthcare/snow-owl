@@ -18,9 +18,9 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -40,12 +40,10 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.COMPLEX_MAP);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_GROUP);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_PRIORITY);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_RULE);
-		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_ADVICE);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_CORRELATION_ID);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_GROUP);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_RULE);
+		checkHasProperty(SnomedRf2Headers.FIELD_MAP_ADVICE);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
@@ -74,6 +72,8 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MAP_TARGET);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_CORRELATION_ID);
 		
 		Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
 			.add(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID));

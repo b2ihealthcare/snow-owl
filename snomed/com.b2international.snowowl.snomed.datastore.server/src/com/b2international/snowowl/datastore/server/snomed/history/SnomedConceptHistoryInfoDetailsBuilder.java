@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
 
 /**
@@ -68,11 +69,11 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		@Override
 		public String load(final CDOObject object) throws Exception {
 			if (object instanceof Concept) {
-				return SnomedHistoryUtils.getLabelForConcept((Concept) object);
+				return SnomedHistoryUtils.getLabelForConcept((Concept) object, getLocales());
 			} else if (object instanceof Description) {
 				return SnomedHistoryUtils.getLabelForDescription((Description) object);
 			} else if (object instanceof Relationship) {
-				return SnomedHistoryUtils.getLabelForRelationship((Relationship) object);
+				return SnomedHistoryUtils.getLabelForRelationship((Relationship) object, getLocales());
 			}
 			throw new IllegalArgumentException("Unknown object type: " + object.getClass());
 		}
@@ -271,6 +272,9 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 				} else {
 					return "Unknown change on status feature for '" + changedObject + "'.";
 				}
+			} else if (SERIALIZED_VALUE_FEATURE_NAME.equals(featureName)) {
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
+						getReferencedComponentLabel((SnomedConcreteDataTypeRefSetMember) changedObject)).toString();
 			}
 		} else if (changedObject instanceof SnomedComplexMapRefSetMember) {
 			if (CORRELATION_ID_FEATURE_NAME.equals(featureName)) {
@@ -531,6 +535,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 					map.put(VALUE_ID_FEATURE_NAME, "value");
 					map.put(SOURCE_EFFECTIVE_TIME_FEATURE_NAME, "source effective time");
 					map.put(TARGET_EFFECTIVE_TIME_FEATURE_NAME, "target effective time");
+					map.put(SERIALIZED_VALUE_FEATURE_NAME, "value");
 				}
 			}
 		}
@@ -538,16 +543,21 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	}
 	
 	private String getReferencedComponentLabel(final SnomedRefSetMember member) {
-		switch (member.getReferencedComponentType()) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
-			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
-				return getConceptLabel(getConcept(member.getReferencedComponentId(), member.cdoView()));
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-				return getDescriptionLabel(getDescription(member.getReferencedComponentId(), member.cdoView()));
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-				return getRelationshipLabel(getRelationship(member.getReferencedComponentId(), member.cdoView()));
-			default:
-				throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + member.getReferencedComponentType());
+		try {
+			switch (member.getReferencedComponentType()) {
+				case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
+				case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
+					return getConceptLabel(getConcept(member.getReferencedComponentId(), member.cdoView()));
+				case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+					return getDescriptionLabel(getDescription(member.getReferencedComponentId(), member.cdoView()));
+				case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+					return getRelationshipLabel(getRelationship(member.getReferencedComponentId(), member.cdoView()));
+				default:
+					throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + member.getReferencedComponentType());
+			}
+		} catch (final InvalidCacheLoadException e) {
+			// Component could not be loaded, fall back to referenced component ID
+			return member.getReferencedComponentId();
 		}
 	}
 

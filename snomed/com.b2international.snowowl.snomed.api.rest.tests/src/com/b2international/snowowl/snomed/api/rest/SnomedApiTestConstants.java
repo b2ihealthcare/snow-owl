@@ -74,28 +74,10 @@ public abstract class SnomedApiTestConstants {
 	public static final Joiner PATH_JOINER = Joiner.on('/');
 
 	public static final String OWL_AXIOM_1 = 
-			"SubClassOf(\n" +
-				"ObjectIntersectionOf(\n" +
-					"sct:73211009 Diabetes mellitus (disorder)\n" +
-					"ObjectSomeValuesFrom(\n" +
-						"sct:246075003 Causative agent (attribute)\n" +
-						"sct:410942007 Drug or medicament (substance)\n" +
-					")\n" +
-				")\n" + 
-				"sct:8801005 Secondary diabetes mellitus (disorder)\n" +
-			")";
+			"SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:246075003 :410942007)) :8801005)";
 	
 	public static final String OWL_AXIOM_2 =
-			"SubClassOf(\n" +
-				"ObjectIntersectionOf(\n" +
-					"sct:73211009 Diabetes mellitus (disorder)\n" +
-					"ObjectSomeValuesFrom(\n" +
-						"sct:42752001 Due to (attribute)\n" +
-						"sct:64572001 Disease (disorder)\n" +
-					")\n" +
-				")\n" + 
-				"sct:8801005 Secondary diabetes mellitus (disorder)\n" +
-			")";
+			"SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :8801005)";
 	
 	public static final String OWL_ONTOLOGY_1 = "Ontology(<http://snomed.info/sct/900000000000207008>)";
 	public static final String OWL_ONTOLOGY_2 = "Prefix(:=<http://snomed.info/id/>)";

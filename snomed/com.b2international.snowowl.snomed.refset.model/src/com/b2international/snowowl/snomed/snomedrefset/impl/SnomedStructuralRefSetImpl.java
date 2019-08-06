@@ -24,8 +24,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Snomed Structural Ref Set</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

@@ -174,7 +174,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	 * @param message the message to log.
 	 */
 	protected void log(final String message, Object...arguments) {
-		LogUtils.logImportActivity(IMPORT_LOGGER, userIdSupplier.get(), branchPathSupplier.get(), message, arguments);
+		LogUtils.logImportActivity(IMPORT_LOGGER, userIdSupplier.get(), branchPathSupplier.get().getPath(), message, arguments);
 	}
 	
 	protected SnomedImportConfiguration<T> getImportConfiguration() {
@@ -285,7 +285,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			}
 			
 			final CellProcessor[] validatingCellProcessors = createValidatingCellProcessors();
-			final LongValueMap<String> availableComponentsAndEffectiveTimes = getAvailableComponents();
+			final Supplier<LongValueMap<String>> availableComponentsAndEffectiveTimes = Suppliers.memoize(() -> getAvailableComponents());
 			
 			while (true) {
 				
@@ -312,8 +312,9 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 				final String effectiveTimeString = row.get(EFFECTIVE_TIME_IDX);
 				final Date rf2RowDate = Strings.isNullOrEmpty(effectiveTimeString) ? null : EffectiveTimes.parse(effectiveTimeString, DateFormats.SHORT);
 				
-				if (availableComponentsAndEffectiveTimes.containsKey(id)) {
-					final Date existingComponentDate = EffectiveTimes.toDate(availableComponentsAndEffectiveTimes.get(id));
+				final LongValueMap<String> availableComponents = availableComponentsAndEffectiveTimes.get();
+				if (availableComponents.containsKey(id)) {
+					final Date existingComponentDate = EffectiveTimes.toDate(availableComponents.get(id));
 					if (skipCurrentRow(rf2RowDate, existingComponentDate)) {
 						continue;
 					}

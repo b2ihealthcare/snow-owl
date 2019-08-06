@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.LogUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -44,10 +44,10 @@ public class XMIMrcmImporter implements MrcmImporter {
 
 	@Override
 	public void doImport(final String userName, final InputStream content) {
-		final IBranchPath branch = BranchPathUtils.createMainPath();
+		final String branch = Branch.MAIN_PATH;
 		LogUtils.logImportActivity(LOGGER, userName, branch, "Importing MRCM rules...");
 		final URI uri = URI.createFileURI(UUID.randomUUID().toString());
-		try (SnomedEditingContext context = new SnomedEditingContext(branch)) {
+		try (SnomedEditingContext context = new SnomedEditingContext(BranchPathUtils.createPath(branch))) {
 			
 			final ResourceSet resourceSet = new ResourceSetImpl();
 			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
@@ -59,7 +59,7 @@ public class XMIMrcmImporter implements MrcmImporter {
 			// Prevent container changes by copying all constraints
 			context.getConstraints().addAll(EcoreUtil.copyAll(model.getConstraints()));
 
-			LogUtils.logImportActivity(LOGGER, userName, branch, "MRCM rule import to {} successfully finished.", branch.getPath());
+			LogUtils.logImportActivity(LOGGER, userName, branch, "MRCM rule import to {} successfully finished.", branch);
 			CDOServerUtils.commit(context, userName, "Imported MRCM rules", null);
 		} catch (final Throwable t) {
 			LogUtils.logImportActivity(LOGGER, userName, branch, "Failed to import MRCM rules to {}", branch, t);

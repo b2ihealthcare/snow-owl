@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
@@ -31,14 +30,11 @@ import org.eclipse.emf.cdo.common.protocol.CDOProtocolConstants;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.server.IRepository.Handler;
 import org.eclipse.emf.cdo.server.net4j.CDONet4jServerUtil;
-import org.eclipse.emf.cdo.session.CDORepositoryInfo;
 import org.eclipse.emf.cdo.session.remote.CDORemoteSession;
 import org.eclipse.emf.cdo.session.remote.CDORemoteSessionManager;
 import org.eclipse.emf.cdo.session.remote.CDORemoteSessionMessage;
 import org.eclipse.emf.cdo.session.remote.CDORemoteSessionMessage.Priority;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
-import org.eclipse.emf.cdo.spi.server.InternalSession;
-import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.acceptor.IAcceptor;
 import org.eclipse.net4j.jvm.JVMUtil;
@@ -94,42 +90,6 @@ import com.google.common.net.HostAndPort;
 			((InternalCDORevisionManager) repository.getRepository().getRevisionManager()).getCache().clear();
 		}
 	};
-	
-	private static final Procedure<Collection<CDORemoteSession>> DISCONNECT_SESSIONS = new Procedure<Collection<CDORemoteSession>>() {
-		@Override protected void doApply(final Collection<CDORemoteSession> sessions) {
-			
-			final AtomicBoolean messageSent = new AtomicBoolean(false);
-			
-			for (final CDORemoteSession session : sessions) {
-			
-				try {
-		
-					final CDORemoteSessionManager remoteSessionManager = session.getManager();
-					final CDORepositoryInfo repositoryInfo = remoteSessionManager.getLocalSession().getRepositoryInfo();
-					final String uuid = repositoryInfo.getUUID();
-					
-					final ICDORepository repository = ApplicationContext.getInstance().getService(ICDORepositoryManager.class).getByUuid(uuid);
-	
-					final InternalSessionManager localSessionManager = (InternalSessionManager) repository.getRepository().getSessionManager();
-					
-					final InternalSession localSession = (InternalSession) localSessionManager.getSession(session.getSessionID());
-					
-					//send message only once although we have multiple connections
-					if (messageSent.compareAndSet(false, true)) {
-						session.sendMessage(createMessage("Remote disconnect."));
-					}
-					
-					localSessionManager.sessionClosed(localSession);
-					localSession.close();
-					
-				} catch (final Throwable t) {
-					
-					LOGGER.error("Error while remotely disconnecting '" + session.getUserID() + "'.");
-					
-				}			
-			}
-		}
-	};
 
 	private static CDORepositoryManager instance;
 	
@@ -140,25 +100,6 @@ import com.google.common.net.HostAndPort;
 	public void clearRevisionCache() {
 		Collections3.forEach(this, CLEAR_REVISION_CACHE);
 		
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.ICDORepositoryManager#disconnect(java.lang.Iterable, com.b2international.snowowl.datastore.server.ICDORepositoryManager.ISessionOperationCallback[])
-	 */
-	@Override
-	public void disconnect(final Iterable<String> userIds, final ISessionOperationCallback... callbacks) {
-		Preconditions.checkNotNull(userIds, "User ID iterable argument cannot be null.");
-		applyDisconnect(Predicates.in(Sets.newHashSet(userIds)), callbacks);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.ICDORepositoryManager#disconnectAll(com.b2international.snowowl.datastore.server.ICDORepositoryManager.ISessionOperationCallback[])
-	 */
-	@Override
-	public void disconnectAll(final ISessionOperationCallback... callbacks) {
-		applyDisconnect(Predicates.<String>alwaysTrue(), callbacks);
 	}
 	
 	/*
@@ -228,7 +169,7 @@ import com.google.common.net.HostAndPort;
 		
 		final HostAndPort hostAndPort = getRepositoryConfiguration().getHostAndPort();
 		// open port in server environments
-		if (SnowOwlApplication.INSTANCE.getEnviroment().isServer()) {
+		if (SnowOwlApplication.INSTANCE.getEnviroment().isServer() && hostAndPort.getPort() > 0) {
 			IAcceptor acceptor = TCPUtil.getAcceptor(IPluginContainer.INSTANCE, hostAndPort.toString()); // Start the TCP transport
 			if (getSnowOwlConfiguration().isGzip()) {
 				IPluginContainer.INSTANCE.addPostProcessor(new TcpGZIPStreamWrapperInjector(CDOProtocolConstants.PROTOCOL_NAME, acceptor));
@@ -296,11 +237,6 @@ import com.google.common.net.HostAndPort;
 		}
 		
 		return message;
-	}
-	
-	/*applies the disconnect function to a subset of sessions*/
-	private void applyDisconnect(final Predicate<String> p, final ISessionOperationCallback... callbacks) {
-		apply(p, DISCONNECT_SESSIONS, callbacks);
 	}
 	
 	private void sendMessage(final Predicate<String>p, final String message, final ISessionOperationCallback... callbacks) {

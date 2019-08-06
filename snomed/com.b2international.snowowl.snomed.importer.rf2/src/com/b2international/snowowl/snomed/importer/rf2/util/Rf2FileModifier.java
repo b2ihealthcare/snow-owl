@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.util;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,7 +25,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import com.google.common.base.Charsets;
@@ -51,10 +50,10 @@ public class Rf2FileModifier {
 	 * @return a map of effective times and the corresponding RF2 file fragments
 	 * @throws IOException if splitting fails for some reason
 	 */
-	public static Map<String, File> split(final File toSplit) throws IOException {
+	public static SortedMap<String, File> split(final File toSplit) throws IOException {
 
-		final Map<String, File> fileFragments = newHashMap();
-		final Map<String, PrintWriter> writers = newHashMap();
+		final SortedMap<String, File> fileFragments = new TreeMap<>();
+		final SortedMap<String, PrintWriter> writers = new TreeMap<>();
 		
 		String line = null;
 		boolean firstLine = true;
@@ -97,40 +96,6 @@ public class Rf2FileModifier {
 		return fileFragments;
 	}
 	
-	/**
-	 * Cuts the very fist line of the file and returns with the modified file.
-	 * 
-	 * @param toCutHeader the file to cut the first line from
-	 * @return the modified file
-	 * @throws IOException if cutting the header fails for some reason
-	 */
-	public static File removeHeader(final File toCutHeader) throws IOException {
-		
-		final File outputFile = createTempFile();
-		
-		String line = null;
-		boolean firstLine = true;
-		
-		try (
-				final BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(toCutHeader), Charsets.UTF_8));
-				final PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8)));
-		) {
-			
-			while ((line = reader.readLine()) != null) {
-				
-				if (firstLine) {
-					firstLine = false;
-					continue;
-				}
-				
-				writer.print(line);
-				writer.print("\r\n");
-			}
-		}
-		
-		return outputFile;
-	}
-
 	private static File createTempFile() throws IOException {
 		final File output = File.createTempFile(UUID.randomUUID().toString(), ".txt");
 		output.deleteOnExit();

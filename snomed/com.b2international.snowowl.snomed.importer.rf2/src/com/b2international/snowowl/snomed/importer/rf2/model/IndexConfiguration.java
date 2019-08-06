@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.importer.rf2.refset.AbstractSnomedOWLExpressionRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedOWLExpressionRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedAssociationRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedAttributeValueRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedComplexMapTypeRefSetImporter;
@@ -67,7 +67,7 @@ public class IndexConfiguration {
 			.put(ComponentImportType.RELATIONSHIP, SnomedRelationshipImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_MAP_TYPE_REFSET, SnomedSimpleMapTypeRefSetImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_TYPE_REFSET, SnomedSimpleTypeRefSetImporter.INDEXES)
-			.put(ComponentImportType.OWL_EXPRESSION_REFSET, AbstractSnomedOWLExpressionRefSetImporter.INDEXES)
+			.put(ComponentImportType.OWL_EXPRESSION_REFSET, SnomedOWLExpressionRefSetImporter.INDEXES)
 			.put(ComponentImportType.MRCM_DOMAIN_REFSET, SnomedMRCMDomainRefSetImporter.INDEXES)
 			.put(ComponentImportType.MRCM_ATTRIBUTE_DOMAIN_REFSET, SnomedMRCMAttributeDomainRefSetImporter.INDEXES)
 			.put(ComponentImportType.MRCM_ATTRIBUTE_RANGE_REFSET, SnomedMRCMAttributeRangeRefSetImporter.INDEXES)

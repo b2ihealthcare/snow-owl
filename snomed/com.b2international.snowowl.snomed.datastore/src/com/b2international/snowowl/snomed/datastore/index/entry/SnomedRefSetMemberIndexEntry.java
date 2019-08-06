@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,32 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.*;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.exists;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyDecimal;
+import static com.b2international.index.query.Expressions.matchAnyInt;
+import static com.b2international.index.query.Expressions.matchRange;
+import static com.b2international.index.query.Expressions.nestedMatch;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.RevisionHash;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -43,23 +55,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.*;
 import com.b2international.snowowl.snomed.snomedrefset.util.SnomedRefSetSwitch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -67,9 +63,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Lightweight representation of a SNOMED CT reference set member.
@@ -198,6 +194,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		// MRCM module scope
 		public static final String MRCM_RULE_REFSET_ID = SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
+		public static final String CLASS_AXIOM_RELATIONSHIP = "classAxiomRelationships";
+		public static final String GCI_AXIOM_RELATIONSHIP = "gciAxiomRelationships";
 	}
 	
 	public static Builder builder() {
@@ -320,11 +318,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 						.field(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId())
 						.field(Fields.CORRELATION_ID, mapRefSetMember.getCorrelationId())
 						.field(Fields.MAP_GROUP, Integer.valueOf(mapRefSetMember.getMapGroup()))
-						.field(Fields.MAP_ADVICE, Strings.nullToEmpty(mapRefSetMember.getMapAdvice()))
+						.field(Fields.MAP_ADVICE, mapRefSetMember.getMapAdvice())
 						.field(Fields.MAP_PRIORITY, Integer.valueOf(mapRefSetMember.getMapPriority()))
-						.field(Fields.MAP_RULE, Strings.nullToEmpty(mapRefSetMember.getMapRule()))
+						.field(Fields.MAP_RULE, mapRefSetMember.getMapRule())
 						// extended refset
-						.field(Fields.MAP_CATEGORY_ID, Strings.nullToEmpty(mapRefSetMember.getMapCategoryId()));
+						.field(Fields.MAP_CATEGORY_ID, mapRefSetMember.getMapCategoryId());
 			}
 			
 			@Override
@@ -480,6 +478,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.MRCM_RULE_REFSET_ID, refSetIds);
 		}
 		
+		public static Expression grouped(boolean grouped) {
+			return match(Fields.MRCM_GROUPED, grouped);
+		}
+		
 		public static Expression values(DataType type, Collection<? extends Object> values) {
 			switch (type) {
 			case STRING: 
@@ -540,6 +542,53 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression refSetTypes(Collection<SnomedRefSetType> refSetTypes) {
 			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(type -> type.name()).toSet());
 		}
+		
+		public static Expression mrcmGrouped(boolean mrcmGrouped) {
+			return match(Fields.MRCM_GROUPED, mrcmGrouped);
+		}
+
+		public static Expression gciAxiom(boolean isGci) {
+			Expression nestedQuery = nestedMatch("gciAxiomRelationships", exists("typeId"));
+			if (isGci) {
+				return nestedQuery;
+			} else {
+				final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+				query.mustNot(nestedQuery);
+				return query.build();
+			}
+		}
+
+		public static Expression owlExpressionConcept(String...conceptIds) {
+			return owlExpressionConcept(ImmutableSet.copyOf(conceptIds));
+		}
+		
+		public static Expression owlExpressionConcept(Iterable<String> conceptIds) {
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			query.should(nestedMatch("classAxiomRelationships", com.b2international.index.query.Expressions.builder()
+					.should(matchAny("typeId", conceptIds))
+					.should(matchAny("destinationId", conceptIds))
+					.build()));
+			query.should(nestedMatch("gciAxiomRelationships", com.b2international.index.query.Expressions.builder()
+					.should(matchAny("typeId", conceptIds))
+					.should(matchAny("destinationId", conceptIds))
+					.build()));
+			return query.build();
+		}
+		
+		public static Expression owlExpressionDestination(Iterable<String> destinationIds) {
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			query.should(nestedMatch("classAxiomRelationships", matchAny("destinationId", destinationIds)));
+			query.should(nestedMatch("gciAxiomRelationships", matchAny("destinationId", destinationIds)));
+			return query.build();
+		}
+		
+		public static Expression owlExpressionType(Iterable<String> typeIds) {
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			query.should(nestedMatch("classAxiomRelationships", matchAny("typeId", typeIds)));
+			query.should(nestedMatch("gciAxiomRelationships", matchAny("typeId", typeIds)));
+			return query.build();
+		}
+		
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
@@ -584,6 +633,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String query;
 		// OWL Axiom
 		private String owlExpression;
+		private List<SnomedOWLRelationshipDocument> classAxiomRelationships;
+		private List<SnomedOWLRelationshipDocument> gciAxiomRelationships;
 		// MRCM Domain
 		private String domainConstraint;
 		private String parentDomain;
@@ -820,8 +871,18 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder owlExpression(String owlExpression) {
+		public Builder owlExpression(String owlExpression) {
 			this.owlExpression = owlExpression;
+			return getSelf();
+		}
+		
+		public Builder classAxiomRelationships(List<SnomedOWLRelationshipDocument> classAxiomRelationships) {
+			this.classAxiomRelationships = Collections3.toImmutableList(classAxiomRelationships);
+			return getSelf();
+		}
+		
+		public Builder gciAxiomRelationships(List<SnomedOWLRelationshipDocument> gciAxiomRelationships) {
+			this.gciAxiomRelationships = Collections3.toImmutableList(gciAxiomRelationships);
 			return getSelf();
 		}
 		
@@ -975,6 +1036,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			doc.query = query;
 			// OWL Axiom
 			doc.owlExpression = owlExpression;
+			doc.classAxiomRelationships = classAxiomRelationships;
+			doc.gciAxiomRelationships = gciAxiomRelationships;
 			
 			// MRCM Domain
 			doc.domainConstraint = domainConstraint;
@@ -1057,6 +1120,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private String query;
 	// OWL Axiom
 	private String owlExpression;
+	private List<SnomedOWLRelationshipDocument> classAxiomRelationships;
+	private List<SnomedOWLRelationshipDocument> gciAxiomRelationships;
 
 	// MRCM Domain
 	private String domainConstraint;
@@ -1263,6 +1328,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public String getOwlExpression() {
 		return owlExpression;
+	}
+	
+	public List<SnomedOWLRelationshipDocument> getClassAxiomRelationships() {
+		return classAxiomRelationships;
+	}
+	
+	public List<SnomedOWLRelationshipDocument> getGciAxiomRelationships() {
+		return gciAxiomRelationships;
 	}
 	
 	public String getDomainConstraint() {

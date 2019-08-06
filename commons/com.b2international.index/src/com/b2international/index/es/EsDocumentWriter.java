@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -32,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.action.DocWriteRequest.OpType;
 import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -41,10 +39,8 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.rest.RestStatus;
 
+import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.DocSearcher;
 import com.b2international.index.IndexClientFactory;
@@ -52,7 +48,6 @@ import com.b2international.index.IndexException;
 import com.b2international.index.Writer;
 import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.client.EsClient;
-import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,18 +70,14 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public class EsDocumentWriter implements Writer {
 
-	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
-
-	private static final int BATCHS_SIZE = 10_000;
-	
 	private final EsIndexAdmin admin;
 	private final DocSearcher searcher;
 
-	private final Random random = new Random();
 	private final Table<Class<?>, String, Object> indexOperations = HashBasedTable.create();
 	private final Multimap<Class<?>, String> deleteOperations = HashMultimap.create();
 	private final ObjectMapper mapper;
-	private List<BulkUpdate<?>> updateOperations = newArrayList();
+	private List<BulkUpdate<?>> bulkUpdateOperations = newArrayList();
+	private List<BulkDelete<?>> bulkDeleteOperations = newArrayList();
  	
 	public EsDocumentWriter(EsIndexAdmin admin, DocSearcher searcher, ObjectMapper mapper) {
 		this.admin = admin;
@@ -106,7 +97,12 @@ public class EsDocumentWriter implements Writer {
 
 	@Override
 	public <T> void bulkUpdate(BulkUpdate<T> update) throws IOException {
-		updateOperations.add(update);
+		bulkUpdateOperations.add(update);
+	}
+	
+	@Override
+	public <T> void bulkDelete(BulkDelete<T> delete) throws IOException {
+		bulkDeleteOperations.add(delete);
 	}
 
 	@Override
@@ -123,7 +119,7 @@ public class EsDocumentWriter implements Writer {
 
 	@Override
 	public void commit() throws IOException {
-		if (indexOperations.isEmpty() && deleteOperations.isEmpty() && updateOperations.isEmpty()) {
+		if (indexOperations.isEmpty() && deleteOperations.isEmpty() && bulkUpdateOperations.isEmpty() && bulkDeleteOperations.isEmpty()) {
 			return;
 		}
 		
@@ -131,14 +127,18 @@ public class EsDocumentWriter implements Writer {
 		final EsClient client = admin.client();
 		// apply bulk updates first
 		final ListeningExecutorService executor;
-		if (updateOperations.size() > 1) {
-			executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Math.min(4, updateOperations.size())));
+		if (bulkUpdateOperations.size() > 1 || bulkDeleteOperations.size() > 1) {
+			final int threads = Math.min(4, Math.max(bulkUpdateOperations.size(), bulkDeleteOperations.size()));
+			executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(threads));
 		} else {
 			executor = MoreExecutors.newDirectExecutorService();
 		}
 		final List<ListenableFuture<?>> updateFutures = newArrayList();
-		for (BulkUpdate<?> update : updateOperations) {
-			updateFutures.add(executor.submit(() -> bulkUpdate(client, update, mappingsToRefresh)));
+		for (BulkUpdate<?> update : bulkUpdateOperations) {
+			updateFutures.add(executor.submit(() -> admin.bulkUpdate(update, mappingsToRefresh)));
+		}
+		for (BulkDelete<?> delete: bulkDeleteOperations) {
+			updateFutures.add(executor.submit(() -> admin.bulkDelete(delete, mappingsToRefresh)));
 		}
 		try {
 			executor.shutdown();
@@ -256,86 +256,6 @@ public class EsDocumentWriter implements Writer {
 		admin.refresh(mappingsToRefresh);
 	}
 
-	private void bulkUpdate(final EsClient client, final BulkUpdate<?> update, Set<DocumentMapping> mappingsToRefresh) {
-		final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
-		final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
-		org.elasticsearch.script.Script script = update.toEsScript(mapping);
-		
-		long versionConflicts = 0;
-		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;
-		final String index = admin.getTypeIndex(mapping);
-		final String type = mapping.typeAsString();
-		
-		do {
-
-			try {
-				
-				BulkByScrollResponse response = client.updateByQuery(index, type, BATCHS_SIZE, script, getConcurrencyLevel(), query);
-				
-				final long updateCount = response.getUpdated();
-				final long deleteCount = response.getDeleted();
-				final long noops = response.getNoops();
-				final List<Failure> failures = response.getBulkFailures();
-				
-				versionConflicts = response.getVersionConflicts();
-				
-				boolean updated = updateCount > 0;
-				if (updated) {
-					mappingsToRefresh.add(mapping);
-					admin.log().info("Updated {} {} documents with script '{}'", updateCount, type, update.getScript());
-				}
-				
-				boolean deleted = deleteCount > 0;
-				if (deleted) {
-					mappingsToRefresh.add(mapping);
-					admin.log().info("Deleted {} {} documents with script '{}'", deleteCount, type, update.getScript());
-				}
-				
-				if (!updated && !deleted) {
-					admin.log().warn("Couldn't bulk update '{}' documents with script '{}', no-ops ({}), conflicts ({})", 
-							type, 
-							update.getScript(), 
-							noops, 
-							versionConflicts);
-				}
-				
-				if (failures.size() > 0) {
-					boolean versionConflictsOnly = true;
-					for (Failure failure : failures) {
-						final String failureMessage = failure.getCause().getMessage();
-						final int failureStatus = failure.getStatus().getStatus();
-						
-						if (failureStatus != RestStatus.CONFLICT.getStatus()) {
-							versionConflictsOnly = false;
-							admin.log().error("Index failure during bulk update: {}", failureMessage);
-						} else {
-							admin.log().warn("Version conflict reason: {}", failureMessage);
-						}
-					}
-					if (!versionConflictsOnly) {
-						throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.");
-					}
-				}
-				
-				if (attempts <= 0) {
-					throw new IndexException("There were indexing failures during bulk updates. See logs for all failures.", null);
-				}
-				
-				if (versionConflicts > 0) {
-					--attempts;
-					try {
-						Thread.sleep(100 + random.nextInt(900));
-						admin.refresh(Collections.singleton(mapping));
-					} catch (InterruptedException e) {
-						throw new IndexException("Interrupted", e);
-					}
-				}
-			} catch (IOException e) {
-				throw new IndexException("Could not execute bulk update.", e);
-			}
-		} while (versionConflicts > 0);
-	}
-
 	private int getConcurrencyLevel() {
 		return (int) admin.settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL);
 	}
@@ -355,8 +275,12 @@ public class EsDocumentWriter implements Writer {
 			System.err.format("\t%s -> %s\n", admin.mappings().getMapping(type).typeAsString(), deleteOperations.get(type));
 		}
 		System.err.println("Bulk updates: ");
-		for (BulkUpdate<?> update : updateOperations) {
+		for (BulkUpdate<?> update : bulkUpdateOperations) {
 			System.err.format("\t%s -> %s, %s, %s\n", admin.mappings().getMapping(update.getType()).typeAsString(), update.getFilter(), update.getScript(), update.getParams());
+		}
+		System.err.println("Bulk deletes: ");
+		for (BulkDelete<?> delete : bulkDeleteOperations) {
+			System.err.format("\t%s -> %s\n", admin.mappings().getMapping(delete.getType()).typeAsString(), delete.getFilter());
 		}
 	}
 

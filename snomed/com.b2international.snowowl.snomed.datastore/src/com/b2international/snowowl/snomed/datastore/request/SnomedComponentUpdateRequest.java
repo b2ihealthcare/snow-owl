@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.collect.Maps;
 
 /** 
  * @since 4.5
@@ -70,34 +59,6 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 		return componentId;
 	}
 	
-	static String getLatestReleaseBranch(TransactionContext context) {
-		final String branch = context.branch().path();
-		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem().all().build().execute(context);
-		final Map<String, CodeSystemEntry> codeSystemsByMainBranch = Maps.uniqueIndex(codeSystems, CodeSystemEntry::getBranchPath);
-		
-		CodeSystemEntry relativeCodeSystem = null; 
-		Iterator<IBranchPath> bottomToTop = BranchPathUtils.bottomToTopIterator(BranchPathUtils.createPath(branch));
-		while (bottomToTop.hasNext()) {
-			final IBranchPath candidate = bottomToTop.next();
-			relativeCodeSystem = codeSystemsByMainBranch.get(candidate.getPath());
-			if (relativeCodeSystem != null) {
-				break;
-			}
-		}
-		if (relativeCodeSystem == null) {
-			throw new BadRequestException("No relative code system has been found for branch '%s'", branch);
-		}
-		return CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName(relativeCodeSystem.getShortName())
-				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-				.build()
-				.execute(context)
-				.first()
-				.map(CodeSystemVersionEntry::getPath)
-				.orElse(null);
-	}
-		
 	protected boolean updateModule(final TransactionContext context, final Component component) {
 		if (null == moduleId) {
 			return false;

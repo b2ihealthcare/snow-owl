@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranchRecursively;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
@@ -29,6 +32,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -48,13 +52,13 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
-import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -135,7 +139,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		
 		SctId relationshipSctId = SnomedRequests.identifiers().prepareGet()
 				.setComponentId(relationshipId)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync()
 				.first()
@@ -465,5 +469,47 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 		
+	}
+	
+	@Test
+	public void restoreEffectiveTimeOnReleasedRelationship() throws Exception {
+		final String relationshipId = createNewRelationship(branchPath);
+
+		final String shortName = "SNOMEDCT-REL-1";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		final String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		// After versioning, the relationship should be released and have an effective time set on it
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("active", equalTo(true))
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(effectiveDate));
+		
+		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated relationship")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, inactivationRequestBody).statusCode(204);
+
+		// An inactivation should unset the effective time field
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("active", equalTo(false))
+		.body("released", equalTo(true))
+ 		.body("effectiveTime", nullValue());
+
+		Map<?, ?> reactivationRequestBody = ImmutableMap.builder()
+				.put("active", true)
+				.put("commitComment", "Inactivated relationships")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, reactivationRequestBody).statusCode(204);
+
+		// Getting the relationship back to its originally released state should restore the effective time
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("active", equalTo(true))
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(effectiveDate));
 	}
 }

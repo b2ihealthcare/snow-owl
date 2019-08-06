@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,28 +27,25 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
+import java.util.SortedMap;
 
 import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongCollection;
-import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyStatus;
+import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraphStatus;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonomyValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
+import com.b2international.snowowl.snomed.importer.rf2.RF2TaxonomyGraph;
+import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 
@@ -76,25 +73,35 @@ public class SnomedTaxonomyValidator {
 	// new RF2 state
 	private final File conceptsFile;
 	private final File relationshipsFile;
+	private final File owlExpressionFile;
 	private final boolean snapshot;
 	// current store state
+	private final SnomedImportContext context;
 	private final String characteristicType;
-	private final LongCollection conceptIds;
-	private final Collection<String[]> statements;
 
-	public SnomedTaxonomyValidator(final ImportConfiguration configuration,
-			final RepositoryState repositoryState,
+	private final LongCollection conceptIds;
+	private final Collection<Object[]> isaStatements;
+
+
+	public SnomedTaxonomyValidator(
+			final SnomedImportContext context,
+			final LongCollection conceptIds,
+			final Collection<Object[]> isaStatements, 
+			final ImportConfiguration configuration,
+			final File owlExpressionFile,
 			final String characteristicType) {
+		this.context = context;
+		this.conceptIds = conceptIds;
+		this.isaStatements = isaStatements;
 		this.characteristicType = characteristicType;
 		this.snapshot = SNAPSHOT.equals(configuration.getContentSubType());
 		this.conceptsFile = configuration.getConceptFile();
-		this.conceptIds = repositoryState.getConceptIds(); 
-		this.statements = Concepts.INFERRED_RELATIONSHIP.equals(characteristicType) ? repositoryState.getInferredStatements() : repositoryState.getStatedStatements();
+		this.owlExpressionFile = owlExpressionFile;
 		
 		if (Concepts.STATED_RELATIONSHIP.equals(characteristicType)) {
 			relationshipsFile = configuration.getStatedRelationshipFile();
 		} else if (Concepts.INFERRED_RELATIONSHIP.equals(characteristicType)) {
-			relationshipsFile = configuration.getRelationshipFile();
+				relationshipsFile = configuration.getRelationshipFile();
 		} else {
 			throw new IllegalArgumentException("Collection mode " + characteristicType + " is not allowed.");
 		}
@@ -134,8 +141,8 @@ public class SnomedTaxonomyValidator {
 			
 			if (!invalidRelationships.isEmpty()) {
 				
-				String messageWithEffectiveTime = "'%s' relationship refers to an inactive concept '%s' (%s) in effective time '%s'";
-				String messageWithOutEffectiveTime = "'%s' relationship refers to an inactive concept '%s' (%s)";
+				String messageWithEffectiveTime = "ISA Relationship [%s -> %s] refers to an inactive concept '%s' (%s) in effective time '%s'";
+				String messageWithOutEffectiveTime = "ISA Relationship [%s -> %s] refers to an inactive concept '%s' (%s)";
 				
 				List<String> validationMessages = invalidRelationships.asMap().entrySet().stream().flatMap(entry -> {
 					
@@ -144,17 +151,15 @@ public class SnomedTaxonomyValidator {
 					
 					return relationships.stream().map(relationship -> {
 						
-						String relationshipId = String.valueOf(relationship.getRelationshipId());
-						
 						String missingReference = MissingConcept.DESTINATION == relationship.getMissingConcept()
 								? String.valueOf(relationship.getDestinationId()) : String.valueOf(relationship.getSourceId());
 								
 						String missingReferenceLabel = relationship.getMissingConcept().getLabel();
 						
 						if (!Strings.isNullOrEmpty(effectiveTime)) {
-							return String.format(messageWithEffectiveTime, relationshipId, missingReference, missingReferenceLabel, effectiveTime);
+							return String.format(messageWithEffectiveTime, relationship.getSourceId(), relationship.getDestinationId(), missingReference, missingReferenceLabel, effectiveTime);
 						} else {
-							return String.format(messageWithOutEffectiveTime, relationshipId, missingReference, missingReferenceLabel);
+							return String.format(messageWithOutEffectiveTime, relationship.getSourceId(), relationship.getDestinationId(), missingReference, missingReferenceLabel);
 						}
 								
 					});
@@ -182,24 +187,20 @@ public class SnomedTaxonomyValidator {
 	}
 
 	private Multimap<String, InvalidRelationship> processTaxonomy() throws IOException {
-		final Rf2BasedSnomedTaxonomyBuilder builder = Rf2BasedSnomedTaxonomyBuilder.newInstance(new SnomedTaxonomyBuilder(conceptIds, statements), characteristicType);
+		final RF2TaxonomyGraph graph = new RF2TaxonomyGraph(context, characteristicType);
+		graph.init(conceptIds, isaStatements);
+		
 		final Multimap<String, InvalidRelationship> invalidRelationships = ArrayListMultimap.create();
 		if (snapshot) {
 			
 			LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
 			
 			
-			if (hasConceptImport()) {
-				final String conceptFilePath = removeConceptHeader();
-				builder.applyNodeChanges(conceptFilePath);
-			}
+			graph.applyNodeChanges(conceptsFile);
+			graph.applyEdgeChanges(relationshipsFile);
+			graph.applyAxioms(owlExpressionFile);
 			
-			if (hasRelationshipImport()) {
-				final String relationshipFilePath = removeRelationshipHeader();
-				builder.applyEdgeChanges(relationshipFilePath);
-			}
-			
-			final SnomedTaxonomyStatus result = builder.build();
+			final TaxonomyGraphStatus result = graph.update();
 			if (!result.getStatus().isOK()) {
 				invalidRelationships.putAll("", result.getInvalidRelationships());
 			}
@@ -208,8 +209,9 @@ public class SnomedTaxonomyValidator {
 		
 			LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
 			
-			final Map<String, File> conceptFiles = hasConceptImport() ? Rf2FileModifier.split(conceptsFile) : ImmutableMap.<String, File>of();
-			final Map<String, File> relationshipFiles = hasRelationshipImport() ? Rf2FileModifier.split(relationshipsFile) : ImmutableMap.<String, File>of();
+			final SortedMap<String, File> conceptFiles = hasConceptImport() ? Rf2FileModifier.split(conceptsFile) : ImmutableSortedMap.of();
+			final SortedMap<String, File> relationshipFiles = hasRelationshipImport() ? Rf2FileModifier.split(relationshipsFile) : ImmutableSortedMap.of();
+			final SortedMap<String, File> owlFiles = hasOwlExpressionFile() ? Rf2FileModifier.split(owlExpressionFile) : ImmutableSortedMap.of();
 
 			final List<String> effectiveTimes = ImmutableSortedSet.orderedBy(EFFECTIVE_TIME_COMPARATOR)
 					.addAll(conceptFiles.keySet())
@@ -222,10 +224,13 @@ public class SnomedTaxonomyValidator {
 				
 				final File conceptFile = conceptFiles.get(effectiveTime);
 				final File relationshipFile = relationshipFiles.get(effectiveTime);
+				final File owlFile = owlFiles.get(effectiveTime);
 				
-				builder.applyNodeChanges(getFilePath(conceptFile));
-				builder.applyEdgeChanges(getFilePath(relationshipFile));
-				final SnomedTaxonomyStatus result = builder.build();
+				graph.applyNodeChanges(conceptFile);
+				graph.applyEdgeChanges(relationshipFile);
+				graph.applyAxioms(owlFile);
+				
+				final TaxonomyGraphStatus result = graph.update();
 				if (!result.getStatus().isOK()) {
 					invalidRelationships.putAll(effectiveTime, result.getInvalidRelationships());
 				}
@@ -236,20 +241,8 @@ public class SnomedTaxonomyValidator {
 		return invalidRelationships;
 	}
 
-	private String getFilePath(@Nullable final File file) {
-		return null == file ?  null : file.getPath();
-	}
-	
-	private String removeConceptHeader() throws IOException {
-		return Rf2FileModifier.removeHeader(conceptsFile).getPath();
-	}
-	
-	private String removeRelationshipHeader() throws IOException {
-		return Rf2FileModifier.removeHeader(relationshipsFile).getPath();
-	}
-
 	private boolean canValidate() {
-		return hasConceptImport() || hasRelationshipImport();
+		return hasConceptImport() || hasRelationshipImport() || hasOwlExpressionFile();
 	}
 
 	private boolean hasConceptImport() {
@@ -259,4 +252,9 @@ public class SnomedTaxonomyValidator {
 	private boolean hasRelationshipImport() {
 		return null != relationshipsFile && !relationshipsFile.getPath().isEmpty();
 	}
+	
+	private boolean hasOwlExpressionFile() {
+		return owlExpressionFile != null;
+	}
+	
 }

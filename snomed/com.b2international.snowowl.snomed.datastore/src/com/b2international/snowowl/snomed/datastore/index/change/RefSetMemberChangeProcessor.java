@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,22 @@ import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 
 /**
  * @since 4.3
  */
-public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
+public final class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 
-	public RefSetMemberChangeProcessor() {
+	private final SnomedOWLExpressionConverter expressionConverter;
+
+	public RefSetMemberChangeProcessor(SnomedOWLExpressionConverter expressionConverter) {
 		super("reference set member changes");
+		this.expressionConverter = expressionConverter;
 	}
 
 	@Override
@@ -40,13 +46,29 @@ public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 		
 		for (SnomedRefSetMember member : commitChangeSet.getNewComponents(SnomedRefSetMember.class)) {
 			final Builder doc = SnomedRefSetMemberIndexEntry.builder(member);
+			convertOwlExpression(member, doc);
 			indexNewRevision(member.cdoID(), doc.build());
 		}
 		
 		for (SnomedRefSetMember member : commitChangeSet.getDirtyComponents(SnomedRefSetMember.class)) {
 			final Builder doc = SnomedRefSetMemberIndexEntry.builder(member);
+			convertOwlExpression(member, doc);
 			indexChangedRevision(member.cdoID(), doc.build());
 		}
+	}
+
+	private void convertOwlExpression(SnomedRefSetMember member, final Builder doc) {
+		if (!member.isActive()) {
+			return;
+		}
+		if (!(member instanceof SnomedOWLExpressionRefSetMember)) {
+			return;
+		}
+		
+		SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(member.getReferencedComponentId(), ((SnomedOWLExpressionRefSetMember) member).getOwlExpression());
+		doc
+			.classAxiomRelationships(result.getClassAxiomRelationships())
+			.gciAxiomRelationships(result.getGciAxiomRelationships());
 	}
 	
 }

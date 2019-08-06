@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -40,11 +39,11 @@ import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.TransactionalRequest;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -55,11 +54,12 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
  */
-final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C, R> {
+public final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C, R> {
 
 	/** 
 	 * The maximum number of identifier service reservation calls (after which a namespace is known to be completely full). 
@@ -82,7 +82,7 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 		return CATEGORY_TO_DOCUMENT_CLASS_MAP.get(category);
 	}
 
-	protected IdRequest(final Request<C, R> next) {
+	public IdRequest(final Request<C, R> next) {
 		super(next);
 	}
 
@@ -222,14 +222,13 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 		
 		try {
 			
-			final Query<? extends SnomedComponentDocument> getComponentsById = Query.select(documentClass)
+			final Query<String> getComponentsById = Query.select(String.class).from(documentClass)
 					.fields(RevisionDocument.Fields.ID)
 					.where(RevisionDocument.Expressions.ids(ids))
 					.limit(ids.size())
 					.build();
 			
-			final Hits<? extends SnomedComponentDocument> hits = context.service(RevisionSearcher.class).search(getComponentsById);
-			return FluentIterable.from(hits).transform(SnomedComponentDocument::getId).toSet();
+			return Sets.newHashSet(context.service(RevisionSearcher.class).search(getComponentsById));
 			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);

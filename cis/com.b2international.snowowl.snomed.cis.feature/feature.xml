@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.b2international.snowowl.snomed.cis.feature"
+      label="Snow Owl SNOMED CT CIS Feature"
+      version="6.19.0.qualifier"
+      provider-name="B2i Healthcare">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.jetty.continuation" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.deploy" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.http" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.io" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.osgi.boot" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.security" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.server" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.servlet" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.util" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.webapp" version="9.4.5"/>
+      <import plugin="org.eclipse.jetty.xml" version="9.4.5"/>
+   </requires>
+
+   <plugin
+         id="com.b2international.snowowl.snomed.cis.rest"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.snowowl.snomed.cis"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.snowowl.logging.logbackconfiguration"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+</feature>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.http.ContentType;
+
+import io.restassured.http.ContentType;
 
 /**
  * @since 2.0
@@ -274,6 +275,9 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		waitForReviewJob(reviewId).body("status", equalTo(ReviewStatus.CURRENT.name()));
 
 		createNewConcept(branchPath);
+		
+		// wait .5s before checking review state
+		Thread.sleep(500);
 
 		getReview(reviewId).statusCode(200).body("status", equalTo(ReviewStatus.STALE.toString()));		
 	}

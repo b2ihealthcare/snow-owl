@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,12 +38,9 @@ final class SnomedMRCMAttributeDomainMemberCreateDelegate extends SnomedRefSetMe
 	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_GROUPED);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MRCM_GROUPED);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
@@ -71,6 +68,9 @@ final class SnomedMRCMAttributeDomainMemberCreateDelegate extends SnomedRefSetMe
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		checkNonEmptyProperty( SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID);
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID);
 		return ImmutableSet.of(
 				getComponentId(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID),
 				getComponentId(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID),

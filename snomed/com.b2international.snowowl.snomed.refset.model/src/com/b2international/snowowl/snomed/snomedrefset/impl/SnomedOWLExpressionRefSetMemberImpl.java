@@ -58,6 +58,7 @@ public class SnomedOWLExpressionRefSetMemberImpl extends SnomedRefSetMemberImpl 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getOwlExpression() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__OWL_EXPRESSION, true);
 	}
@@ -67,6 +68,7 @@ public class SnomedOWLExpressionRefSetMemberImpl extends SnomedRefSetMemberImpl 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setOwlExpression(String newOwlExpression) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__OWL_EXPRESSION, newOwlExpression);
 	}

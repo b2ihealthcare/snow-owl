@@ -25,9 +25,9 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
@@ -141,16 +141,16 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		}
 	}
 
-	protected final void checkHasProperty(SnomedRefSet refSet, String key) {
+	protected final void checkHasProperty(String key) {
 		if (!hasProperty(key)) {
-			throw new BadRequestException("Property '%s' must be set for '%s' reference set members.", key, refSet.getIdentifierId());
+			throw new BadRequestException("Property '%s' must be set for '%s' reference set members.", key, request.getReferenceSetId());
 		}
 	}
 
-	protected final void checkNonEmptyProperty(SnomedRefSet refSet, String key) {
-		checkHasProperty(refSet, key);
+	protected final void checkNonEmptyProperty(String key) {
+		checkHasProperty(key);
 		if (CompareUtils.isEmpty(getProperty(key, Object.class))) {
-			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, refSet.getIdentifierId());
+			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, request.getReferenceSetId());
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVersionSearchRequest.OptionKey;
 
 /**
  * @since 4.7
@@ -46,6 +47,11 @@ public final class CodeSystemVersionSearchRequestBuilder
 		return getSelf();
 	}
 	
+	/**
+	 * Filter versions by their version ID.
+	 * @param versionId - the versionId to look for.
+	 * @return
+	 */
 	public CodeSystemVersionSearchRequestBuilder filterByVersionId(String versionId) {
 		this.versionId = versionId;
 		return getSelf();
@@ -80,6 +86,25 @@ public final class CodeSystemVersionSearchRequestBuilder
 		this.parentBranchPath = parentBranchPath;
 		return getSelf();
 		
+	}
+
+	/**
+	 * Filter versions by created at (formerly import date) using the specified range.
+	 * @param fromCreatedAt - the lower bound of the created at date range
+	 * @param toCreatedAt - the upper bound of the created at date range
+	 * @return
+	 */
+	public CodeSystemVersionSearchRequestBuilder filterByCreatedAt(final long fromCreatedAt, final long toCreatedAt) {
+		return addOption(OptionKey.CREATED_AT_START, fromCreatedAt).addOption(OptionKey.CREATED_AT_END, toCreatedAt);
+	}
+	
+	/**
+	 * Filter versions by created at date (formerly import date) using the specified value.
+	 * @param createdAt the exact created at date to match for
+	 * @return
+	 */
+	public CodeSystemVersionSearchRequestBuilder filterByCreatedAt(final long createdAt) {
+		return filterByCreatedAt(createdAt, createdAt);
 	}
 
 	@Override

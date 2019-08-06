@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.dismax;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.matchTextRegexp;
+import static com.b2international.index.query.Expressions.scriptScore;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -44,10 +47,10 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -56,6 +59,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -193,6 +197,14 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
 		
 		private Expressions() {
+		}
+		
+		public static Expression termDisjunctionQuery(final String searchTerm) {
+			final List<Expression> disjuncts = newArrayList();
+			disjuncts.add(scriptScore(matchEntireTerm(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
+			disjuncts.add(scriptScore(allTermsPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+			disjuncts.add(scriptScore(allTermPrefixesPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			return dismax(disjuncts);
 		}
 
 		public static Expression fuzzy(String term) {

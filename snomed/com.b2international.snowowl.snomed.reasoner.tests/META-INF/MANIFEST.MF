@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Snow Owl SNOMED CT Reasoner Tests
+Bundle-SymbolicName: com.b2international.snowowl.snomed.reasoner.tests;singleton:=true
+Bundle-Version: 6.19.0.qualifier
+Bundle-Vendor: B2i Healthcare
+Fragment-Host: com.b2international.snowowl.snomed.reasoner
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.junit;bundle-version="4.11.0",
+ org.assertj.core;bundle-version="1.7.1",
+ com.b2international.index.tests.tools,
+ com.b2international.collections.jackson

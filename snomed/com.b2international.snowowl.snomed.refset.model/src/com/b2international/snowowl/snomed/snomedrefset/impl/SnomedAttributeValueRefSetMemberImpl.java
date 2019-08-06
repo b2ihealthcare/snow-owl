@@ -26,10 +26,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAttributeValueRefSetMemberImpl#getValueId <em>Value Id</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -58,6 +58,7 @@ public class SnomedAttributeValueRefSetMemberImpl extends SnomedRefSetMemberImpl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getValueId() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_ATTRIBUTE_VALUE_REF_SET_MEMBER__VALUE_ID, true);
 	}
@@ -67,6 +68,7 @@ public class SnomedAttributeValueRefSetMemberImpl extends SnomedRefSetMemberImpl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setValueId(String newValueId) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_ATTRIBUTE_VALUE_REF_SET_MEMBER__VALUE_ID, newValueId);
 	}

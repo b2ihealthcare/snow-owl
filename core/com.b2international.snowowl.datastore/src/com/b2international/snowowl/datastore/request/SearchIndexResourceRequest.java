@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,22 +99,23 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	protected final SortBy sortBy() {
 		if (containsKey(OptionKey.SORT_BY)) {
 			List<Sort> sorts = getList(OptionKey.SORT_BY, Sort.class);
-			SortBy.Builder sortBuilder = SortBy.builder();
-			for (Sort sort : sorts) {
-				if (sort instanceof SortField) {
-					SortField sortField = (SortField) sort;
-					sortBuilder.sortByField(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
-				} else if (sort instanceof SortScript) {
-					SortScript sortScript = (SortScript) sort;
-					sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
-				} else {
-					throw new UnsupportedOperationException("Cannot handle sort type " + sort);
+			if (!sorts.isEmpty()) {
+				SortBy.Builder sortBuilder = SortBy.builder();
+				for (Sort sort : sorts) {
+					if (sort instanceof SortField) {
+						SortField sortField = (SortField) sort;
+						sortBuilder.sortByField(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
+					} else if (sort instanceof SortScript) {
+						SortScript sortScript = (SortScript) sort;
+						sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
+					} else {
+						throw new UnsupportedOperationException("Cannot handle sort type " + sort);
+					}
 				}
+				return sortBuilder.build();
 			}
-			return sortBuilder.build();
-		} else {
-			return SortBy.DOC_ID;
 		}		
+		return SortBy.DOC_ID;
 	}
 	
 	/**

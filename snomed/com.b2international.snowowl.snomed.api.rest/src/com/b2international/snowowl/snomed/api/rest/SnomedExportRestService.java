@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -67,20 +68,21 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Api("Exports")
+@Api(value = "Exports", description="Exports", tags = { "exports" })
 @RestController
 @RequestMapping(
 		value="/exports", produces = { AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedExportRestService extends AbstractSnomedRestService {
+public class SnomedExportRestService extends AbstractRestService {
 
 	@Autowired
 	private ISnomedExportService exportService;
@@ -89,6 +91,10 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	private FileRegistry fileRegistry;
 	
 	private ConcurrentMap<UUID, SnomedExportRestRun> exports = new MapMaker().makeMap();
+	
+	public SnomedExportRestService() {
+		super(Collections.emptySet());
+	}
 	
 	@ApiOperation(
 			value="Initiate a SNOMED CT export", 
@@ -239,15 +245,17 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final SnomedExportRestRun export = getExport(exportId);
 		final boolean includeUnpublished = export.isIncludeUnpublished() || isDeltaWithoutRange(export);
 		
-		Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
+		final Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
 		final Rf2ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
 			.setUserId(principal.getName())
 			.setReleaseType(export.getType())
 			.setCodeSystem(export.getCodeSystemShortName())
 			.setExtensionOnly(export.isExtensionOnly())
+			.setLocales(export.getLocales())
 			.setIncludePreReleaseContent(includeUnpublished)
 			.setModules(export.getModuleIds())
+			.setRefSets(export.getRefsetIds())
 			.setCountryNamespaceElement(export.getNamespaceId())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(export.getTransientEffectiveTime())

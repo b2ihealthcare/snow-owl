@@ -84,7 +84,12 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SnomedQueryRefSetMember" eSuperTypes="#//SnomedRefSetMember">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="query" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="query" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="VARCHAR"/>
+        <details key="columnLength" value="8192"/>
+      </eAnnotations>
+    </eStructuralFeatures>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SnomedAttributeValueRefSetMember" eSuperTypes="#//SnomedRefSetMember">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="valueId" lowerBound="1"

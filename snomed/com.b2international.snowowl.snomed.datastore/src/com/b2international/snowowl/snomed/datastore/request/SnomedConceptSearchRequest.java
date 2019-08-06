@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,13 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
+import com.b2international.snowowl.snomed.core.ql.SnomedQueryExpression;
+import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -69,11 +71,26 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		 * Description type to match
 		 */
 		DESCRIPTION_TYPE,
+		
+		/**
+		 * Description semantic tag(s) to match
+		 */
+		DESCRIPTION_SEMANTIC_TAG,
 
 		/**
-		 * ECL expression to match
+		 * ECL expression to match on the inferred form
 		 */
 		ECL,
+		
+		/**
+		 * ECL expression to match on the state form
+		 */
+		STATED_ECL,
+		
+		/**
+		 * Snomed CT Query expression to match
+		 */
+		QUERY,
 		
 		/**
 		 * The definition status to match
@@ -166,7 +183,17 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 
 		if (containsKey(OptionKey.ECL)) {
 			final String ecl = getString(OptionKey.ECL);
-			queryBuilder.filter(EclExpression.of(ecl).resolveToExpression(context).getSync());
+			queryBuilder.filter(EclExpression.of(ecl, Trees.INFERRED_FORM).resolveToExpression(context).getSync());
+		}
+		
+		if (containsKey(OptionKey.STATED_ECL)) {
+			final String ecl = getString(OptionKey.STATED_ECL);
+			queryBuilder.filter(EclExpression.of(ecl, Trees.STATED_FORM).resolveToExpression(context).getSync());
+		}
+		
+		if (containsKey(OptionKey.QUERY)) {
+			final String ql = getString(OptionKey.QUERY);
+			queryBuilder.filter(SnomedQueryExpression.of(ql).resolveToExpression(context).getSync());
 		}
 		
 		Expression searchProfileQuery = null;
@@ -265,6 +292,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);
 			requestBuilder.filterByType(type);
+		}
+		
+		if (containsKey(OptionKey.DESCRIPTION_SEMANTIC_TAG)) {
+			final Collection<String> semanticTags = getCollection(OptionKey.DESCRIPTION_SEMANTIC_TAG, String.class);
+			requestBuilder.filterBySemanticTags(semanticTags);
 		}
 		
 		if (containsKey(OptionKey.USE_FUZZY)) {

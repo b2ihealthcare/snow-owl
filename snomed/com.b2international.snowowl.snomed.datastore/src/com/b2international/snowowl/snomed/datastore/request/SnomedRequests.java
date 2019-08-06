@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.Identifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -45,6 +46,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
+import com.b2international.snowowl.snomed.core.ql.SnomedQueryEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
@@ -310,10 +312,20 @@ public abstract class SnomedRequests {
 	/**
 	 * Returns a SNOMED CT request builder to prepare the evaluation of an 
 	 * Expression Constraint Language (ECL) expression.
+	 * @param expression - the ECL expression to evaluate
 	 * @return SNOMED CT ECL evaluation request builder
 	 */
 	public static SnomedEclEvaluationRequestBuilder prepareEclEvaluation(String expression) {
 		return new SnomedEclEvaluationRequestBuilder(expression);
+	}
+	
+	/**
+	 * Returns a SNOMED CT request builder to prepare the evaluation of a SNOMED CT Query Language (QL) expression.
+	 * @param expression - the QL expression to evaluate
+	 * @return SNOMED CT Query evaluation request builder
+	 */
+	public static SnomedQueryEvaluationRequestBuilder prepareQueryEvaluation(String expression) {
+		return new SnomedQueryEvaluationRequestBuilder(expression);
 	}
 	
 	/**

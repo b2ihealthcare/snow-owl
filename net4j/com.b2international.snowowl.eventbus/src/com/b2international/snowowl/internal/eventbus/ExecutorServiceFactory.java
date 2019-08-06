@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.internal.eventbus;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
+import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * @since 4.5.1
@@ -24,4 +27,11 @@ import java.util.concurrent.ExecutorService;
 public interface ExecutorServiceFactory {
 
 	List<ExecutorService> createExecutorServices(String description, int numberOfWorkers);
+	
+	ExecutorServiceFactory DIRECT = new ExecutorServiceFactory() {
+		@Override
+		public List<ExecutorService> createExecutorServices(String description, int numberOfWorkers) {
+			return Collections.singletonList(MoreExecutors.newDirectExecutorService());
+		}
+	}; 
 }

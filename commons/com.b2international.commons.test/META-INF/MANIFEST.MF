@@ -2,10 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: B2i Commons Test
 Bundle-SymbolicName: com.b2international.commons.test
-Bundle-Version: 6.12.0.qualifier
+Bundle-Version: 6.19.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Fragment-Host: com.b2international.commons;bundle-version="3.9.0"
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.6.0",
  org.junit;bundle-version="4.11.0",
- org.mockito.mockito-all;bundle-version="1.9.5"
+ org.mockito;bundle-version="2.13.0",
+ com.b2international.snowowl.test.dependencies

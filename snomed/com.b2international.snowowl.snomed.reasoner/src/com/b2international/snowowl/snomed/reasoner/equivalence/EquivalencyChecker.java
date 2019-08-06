@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,87 +16,109 @@
 package com.b2international.snowowl.snomed.reasoner.equivalence;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.collections.PrimitiveMaps;
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
-import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
-import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
-import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
-import com.b2international.snowowl.snomed.reasoner.classification.GetEquivalentConceptsResponse;
-import com.b2international.snowowl.snomed.reasoner.classification.operation.ClassifyOperation;
-import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerException;
-import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassifyOperation;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSet;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
+import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 
 /**
- * Utility class that uses Snow Owl's current reasoner settings to run an equivalency check on the supplied concepts and offer replacement concept IDs
+ * Utility class that uses Snow Owl's current reasoner settings to run an
+ * equivalency check on the supplied concepts and offer replacement concept IDs
  * if an equivalency is detected.
+ * 
+ * @since
  */
-public class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
+public final class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 
-	public EquivalencyChecker(ClassificationSettings settings) {
-		super(settings);
+	public EquivalencyChecker(final String reasonerId, 
+			final String userId, 
+			final List<SnomedConcept> additionalConcepts,
+			final String repositoryId, 
+			final String branch,
+			final String parentLockContext) {
+
+		super(reasonerId, userId, additionalConcepts, repositoryId, branch, parentLockContext);
 	}
 
 	@Override
-	protected LongKeyLongMap processResults(String classificationId) {
+	protected LongKeyLongMap processResults(final String classificationId) {
 
-		List<ConceptDefinition> additionalDefinitions = settings.getAdditionalDefinitions();
-		LongSet conceptIdsToCheck = collectConceptIds(additionalDefinitions);
-		LongKeyLongMap equivalentConceptMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
-		GetEquivalentConceptsResponse response = getReasonerService().getEquivalentConcepts(classificationId);
+		final Set<String> conceptIdsToCheck = additionalConcepts.stream()
+				.map(SnomedConcept::getId)
+				.collect(Collectors.toSet());
 
-		if (Type.NOT_AVAILABLE == response.getType()) {
-			throw new ReasonerException("Selected reasoner could not start or failed to finish its job.");
+		final LongKeyLongMap equivalentConceptMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
+
+		final ClassificationTask classificationTask = ClassificationRequests.prepareGetClassification(classificationId)
+				.setExpand("equivalentConceptSets()")
+				.build(repositoryId)
+				.execute(getEventBus())
+				.getSync();
+
+		if (!ClassificationStatus.COMPLETED.equals(classificationTask.getStatus())) {
+			throw new ReasonerApiException("Selected reasoner could not start or failed to finish its job.");
 		}
 
-		List<AbstractEquivalenceSet> equivalentConcepts = response.getEquivalenceSets();
-		registerEquivalentConcepts(equivalentConcepts, conceptIdsToCheck, equivalentConceptMap);
+		if (!classificationTask.getEquivalentConceptsFound()) {
+			return equivalentConceptMap;
+		}
+
+		final EquivalentConceptSets equivalentConceptSets = classificationTask.getEquivalentConceptSets();
+		registerEquivalentConcepts(equivalentConceptSets, conceptIdsToCheck, equivalentConceptMap);
 		return equivalentConceptMap;
 	}
 
-	private void registerEquivalentConcepts(List<AbstractEquivalenceSet> equivalentConcepts, 
-			LongSet conceptIdsToCheck,
-			LongKeyLongMap equivalentConceptMap) {
+	private void registerEquivalentConcepts(final EquivalentConceptSets equivalentConceptSets, 
+			final Set<String> conceptIdsToCheck,
+			final LongKeyLongMap equivalentConceptMap) {
 
-		for (AbstractEquivalenceSet equivalenceSet : equivalentConcepts) {
-
+		for (final EquivalentConceptSet equivalenceSet : equivalentConceptSets) {
 			if (equivalenceSet.isUnsatisfiable()) {
 				continue;
 			}
 
-			String suggestedConceptId = ((EquivalenceSet) equivalenceSet).getSuggestedConceptId();
-			registerEquivalentConcepts(suggestedConceptId, equivalenceSet.getConceptIds(), equivalentConceptMap, conceptIdsToCheck);
-		}
-	}
+			final String suggestedConceptId = equivalenceSet.getEquivalentConcepts()
+					.first()
+					.map(SnomedConcept::getId)
+					.get();
 
-	private LongSet collectConceptIds(List<ConceptDefinition> conceptDefinitions) {
+			final Set<String> equivalentIds = equivalenceSet.getEquivalentConcepts()
+					.stream()
+					.map(SnomedConcept::getId)
+					.collect(Collectors.toSet());
 
-		LongSet conceptIds = PrimitiveSets.newLongOpenHashSet();
+			equivalentIds.remove(suggestedConceptId);
 
-		for (ConceptDefinition definition : conceptDefinitions) {
-			conceptIds.add(definition.getConceptId());
-		}
-
-		return conceptIds;
-	}
-
-	private void registerEquivalentConcepts(String suggestedConceptId, 
-			List<String> equivalentConceptIds,
-			LongKeyLongMap equivalentConceptMap, 
-			LongSet conceptIdsToCheck) {
-
-		long replacementConceptId = Long.parseLong(suggestedConceptId);
-		boolean registerAll = conceptIdsToCheck.isEmpty();
-
-		for (String equivalentConcept : equivalentConceptIds) {
-			long equivalentConceptId = Long.parseLong(equivalentConcept);
-			if (registerAll || conceptIdsToCheck.contains(equivalentConceptId)) {
-				equivalentConceptMap.put(equivalentConceptId, replacementConceptId);
+			if (!conceptIdsToCheck.isEmpty()) {
+				equivalentIds.retainAll(conceptIdsToCheck);
 			}
+
+			registerEquivalentConcepts(suggestedConceptId, 
+					equivalentIds, 
+					equivalentConceptMap, 
+					conceptIdsToCheck);
 		}
 	}
 
+	private void registerEquivalentConcepts(final String suggestedConceptId, 
+			final Set<String> equivalentIds,
+			final LongKeyLongMap equivalentConceptMap, 
+			final Set<String> conceptIdsToCheck) {
+
+		final long replacementConceptId = Long.parseLong(suggestedConceptId);
+
+		for (final String equivalentConcept : equivalentIds) {
+			final long equivalentConceptId = Long.parseLong(equivalentConcept);
+			equivalentConceptMap.put(equivalentConceptId, replacementConceptId);
+		}
+	}
 }

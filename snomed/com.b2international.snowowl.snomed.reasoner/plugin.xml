@@ -1,17 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="equivalentConceptMerger" name="Equivalent Concept Merger" schema="schema/equivalentConceptMerger.exsd"/>
    <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedReasonerClientServiceConfigJob"
-            id="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedReasonerClientServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedPreferencesClientServiceConfigJob"
-            id="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedPreferencesClientServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
+         point="com.b2international.snowowl.core.bootstrapFragments">
+      <bootstrapFragment
+            class="com.b2international.snowowl.snomed.reasoner.SnomedReasonerBootstrap">
+      </bootstrapFragment>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.mappingProvider">
+      <provider
+            class="com.b2international.snowowl.snomed.reasoner.index.ClassificationMappingProvider">
+      </provider>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.server.classLoaderProvider">
+      <classLoaderProvider
+            class="com.b2international.snowowl.snomed.reasoner.SnomedReasonerClassLoaderProvider">
+      </classLoaderProvider>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.snomed.reasoner.equivalentConceptMerger">
+      <equivalentConceptMerger
+            class="com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger$Default"
+            priority="10">
+      </equivalentConceptMerger>
    </extension>
 </plugin>

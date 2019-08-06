@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,27 +39,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import com.b2international.index.Index;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.MetadataImpl;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContextProvider;
-import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
-import com.b2international.snowowl.datastore.internal.branch.CDOMainBranchImpl;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,7 +71,6 @@ public class CDOBranchManagerTest {
 	private CDOMainBranchImpl main;
 	
 	private InternalRepository repository;
-	private ServiceProvider context;
 	private Index store;
 	
 	@Before
@@ -94,12 +80,10 @@ public class CDOBranchManagerTest {
 		cdoBranchManager.initMainBranch(false, clock.getTimeStamp());
 
 		repository = mock(InternalRepository.class, RETURNS_MOCKS);
-		final ICDOConflictProcessor conflictProcessor = mock(ICDOConflictProcessor.class, RETURNS_DEFAULTS);
 		final InternalCDOBranch mainBranch = cdoBranchManager.getMainBranch();
 		
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
-		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		store = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(BranchDocument.class));
 		store.admin().create();
@@ -107,20 +91,6 @@ public class CDOBranchManagerTest {
 		
 		manager = new CDOBranchManagerImpl(repository, mapper);
 		main = (CDOMainBranchImpl) manager.getMainBranch();
-		
-		context = mock(ServiceProvider.class);
-		final RepositoryContextProvider repositoryContextProvider = mock(RepositoryContextProvider.class);
-		final RepositoryContext repositoryContext = mock(RepositoryContext.class);
-		
-		final IDatastoreOperationLockManager lockManager = mock(IDatastoreOperationLockManager.class);
-		final ReviewManager reviewManager = mock(ReviewManager.class);
-		
-		when(repositoryContext.service(IDatastoreOperationLockManager.class)).thenReturn(lockManager);
-		when(repositoryContext.service(ReviewManager.class)).thenReturn(reviewManager);
-		when(repositoryContext.service(BranchManager.class)).thenReturn(manager);
-		
-		when(repositoryContextProvider.get(repository.id())).thenReturn(repositoryContext);
-		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
 	}
 	
 	@After

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
 import java.io.Serializable;
@@ -111,6 +112,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 
 		public static Expression shortName(String shortName) {
 			return exactMatch(Fields.CODE_SYSTEM_SHORT_NAME, shortName);
+		}
+
+		public static Expression createdAt(long from, long to) {
+			return matchRange(Fields.IMPORT_DATE, from, to);
 		}
 		
 		public static Expression effectiveDate(Date effectiveDate) {

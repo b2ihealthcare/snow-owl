@@ -43,11 +43,11 @@ import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -206,6 +206,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 	}
 
 	public static class Fields extends SnomedComponentDocument.Fields {
+		
 		public static final String REFSET_STORAGEKEY = "refSetStorageKey";
 		public static final String REFERRING_PREDICATES = "referringPredicates";
 		public static final String PRIMITIVE = "primitive";
@@ -335,6 +336,12 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
+		@JsonIgnore
+		public Builder statedParents(final long ...statedParents) {
+			return statedParents(PrimitiveSets.newLongOpenHashSet(statedParents));
+		}
+		
+		@JsonProperty("statedParents")
 		public Builder statedParents(final LongSet statedParents) {
 			this.statedParents = statedParents;
 			return getSelf();

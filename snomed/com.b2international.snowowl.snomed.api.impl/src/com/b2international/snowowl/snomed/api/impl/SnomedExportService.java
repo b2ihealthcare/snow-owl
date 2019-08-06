@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.impl;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.google.common.base.Strings;
 
 /**

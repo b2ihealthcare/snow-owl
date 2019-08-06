@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -213,8 +214,7 @@ public abstract class AbstractSnomedValidator {
 				
 				final List<String> row = TAB_SPLITTER.splitToList(line);
 				
-				// skip not current effective times, also skips the first line
-				if (!effectiveTime.equals(row.get(1))) {
+				if (!SPECIAL_EFFECTIVE_TIME_KEY.equals(effectiveTime) && !effectiveTime.equals(row.get(1))) {
 					continue;
 				}
 				
@@ -410,6 +410,14 @@ public abstract class AbstractSnomedValidator {
 		conceptIdDescriptionStatus.add(row.get(2)); // status
 		
 		return conceptIdDescriptionStatus;
+	}
+	
+	public File getReleaseFile() {
+		try {
+			return new File(releaseUrl.toURI());
+		} catch (URISyntaxException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 	
 	/**

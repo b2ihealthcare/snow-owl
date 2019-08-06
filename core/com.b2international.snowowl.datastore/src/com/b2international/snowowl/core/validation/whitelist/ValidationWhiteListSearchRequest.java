@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
@@ -27,6 +28,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.1
@@ -58,8 +61,17 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		/**
 		 * Filter matches by reporter
 		 */
-		REPORTER
+		REPORTER,
 		
+		/**
+		 * Filter matches created after given time stamp
+		 */
+		CREATED_START,
+		
+		/**
+		 * Filter matches created before given time stamp
+		 */
+		CREATED_END
 	}
 	
 	@Override
@@ -75,9 +87,18 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		
 		if (containsKey(OptionKey.TERM)) {
 			String searchTerm = getString(OptionKey.TERM);
-
-			queryBuilder.should(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, Collections.singleton(searchTerm)));
-			queryBuilder.should(Expressions.prefixMatch(ValidationWhiteList.Fields.REPORTER, searchTerm));
+			
+			List<Expression> disjuncts = Lists.newArrayListWithExpectedSize(2);
+			disjuncts.add(Expressions.scriptScore(Expressions.matchTextPhrase(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS, searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+			disjuncts.add(Expressions.scriptScore(Expressions.matchTextAll(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			
+			queryBuilder.must(
+					Expressions.builder()
+						.should(Expressions.dismax(disjuncts))
+						.should(Expressions.boost(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, Collections.singleton(searchTerm)), 1000f))
+						.should(Expressions.boost(Expressions.prefixMatch(ValidationWhiteList.Fields.REPORTER, searchTerm), 1000f))
+					.build()
+			);
 		}
 		
 		if (containsKey(OptionKey.RULE_ID)) {
@@ -98,6 +119,12 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		if (containsKey(OptionKey.REPORTER)) {
 			Collection<String> reporters = getCollection(OptionKey.REPORTER, String.class);
 			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.REPORTER, reporters));
+		}
+		
+		if (containsKey(OptionKey.CREATED_START) || containsKey(OptionKey.CREATED_END)) {
+			final long createdAfter = containsKey(OptionKey.CREATED_START) ? get(OptionKey.CREATED_START, Long.class) : Long.MIN_VALUE;
+			final long createdBefore = containsKey(OptionKey.CREATED_END) ? get(OptionKey.CREATED_END, Long.class) : Long.MAX_VALUE;
+			queryBuilder.filter(Expressions.matchRange(ValidationWhiteList.Fields.CREATED_AT, createdAfter, createdBefore));
 		}
 		
 		return queryBuilder.build();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.branch;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.b2international.snowowl.core.Metadata;
@@ -27,6 +28,7 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a {@link Branch} in a terminology repository. A {@link Branch} can be uniquely identified by using its {@link #path()} and
@@ -36,6 +38,27 @@ import com.google.common.base.Strings;
  */
 public interface Branch extends Deletable, MetadataHolder, Serializable {
 
+	/**
+	 * @since 6.16
+	 */
+	final class Fields {
+		
+		public static final String PATH = "path";
+		public static final String PARENT_PATH = "parentPath";
+		public static final String NAME = "name";
+		public static final String BASE_TIMESTAMP = "baseTimestamp";
+		public static final String HEAD_TIMESTAMP = "headTimestamp";
+		public static final String STATE = "state";
+		public static final Set<String> ALL = ImmutableSet.of(
+				PATH,
+				PARENT_PATH,
+				NAME,
+				BASE_TIMESTAMP,
+				HEAD_TIMESTAMP,
+				STATE);
+		
+	}
+	
 	/**
 	 * Allowed set of characters for a branch name.
 	 */

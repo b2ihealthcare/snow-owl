@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.refset.automap;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,7 +31,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
@@ -64,7 +64,7 @@ public class SnomedRefSetAutoMapper {
 		final Map<Integer, String> resolvedValues = newHashMap();
 		final Map<Integer, String> values = getValuesFromColumn(model.getMappedSourceColumnIndex());
 		
-		final List<ExtendedLocale> locales = ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
+		final List<ExtendedLocale> locales = Collections.singletonList(ExtendedLocale.valueOf("en-gb"));
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 		final String userId = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getUserId();
 		
@@ -81,7 +81,6 @@ public class SnomedRefSetAutoMapper {
 						.prepareSearchConcept()
 						.filterByActive(true)
 						.filterByTerm(entry.getValue())
-						.filterByDescriptionLanguageRefSet(locales)
 						.filterByAncestor(topLevelConceptId)
 						.withSearchProfile(userId)
 						.withDoi()

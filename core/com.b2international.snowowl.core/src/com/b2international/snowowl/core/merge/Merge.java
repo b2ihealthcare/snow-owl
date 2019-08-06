@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.merge;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
@@ -31,9 +32,9 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 4.6
  */
 @JsonDeserialize(builder=Merge.Builder.class)
-public interface Merge {
+public interface Merge extends Serializable {
 
-	public enum Status {
+	enum Status {
 		SCHEDULED,
 		IN_PROGRESS,
 		COMPLETED,

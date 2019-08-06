@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,19 @@ import java.io.FileInputStream;
 import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.net4j.util.om.monitor.Monitor;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientProtocol;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportClientRequest;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -69,7 +69,7 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	public UUID execute(BranchContext context) {
 		File file = null;
 		try {
-			file = doExport(toExportModel(context));
+			file = getRefSetExporter(context).executeDSVExport(context.service(IProgressMonitor.class));
 			UUID fileId = UUID.randomUUID();
 			context.service(FileRegistry.class).upload(fileId, new FileInputStream(file));
 			return fileId;
@@ -82,25 +82,19 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		}
 	}
 
-	private File doExport(SnomedRefSetDSVExportModel exportModel) throws Exception {
-		SnomedRefSetDSVExportClientRequest dsvRequest = new SnomedRefSetDSVExportClientRequest(SnomedClientProtocol.getInstance(), exportModel);
-
-		File exportFile = dsvRequest.send(new Monitor());
-		SnomedExportResult result = dsvRequest.getExportResult();
-		if (result.getResult().equals(SnomedExportResult.Result.CANCELED) || result.getResult().equals(SnomedExportResult.Result.EXCEPTION)) {
-			throw new SnowowlRuntimeException(result.getMessage());
+	private IRefSetDSVExporter getRefSetExporter(BranchContext context) {
+		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet(refSetId).build().execute(context);
+		if (SnomedRefSetType.SIMPLE.equals(refSet.getType())) {
+			return new SnomedSimpleTypeRefSetDSVExporter(context, toExportModel(context));
+		} else if (SnomedRefSetUtil.isMapping(refSet.getType())) {
+			return new MapTypeRefSetDSVExporter(context, toExportModel(context));
+		} else {
+			throw new BadRequestException("Unsupported reference set '%s' with type '%s' in DSV export", refSetId, refSet.getType());
 		}
-		
-		exportModel.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
-		return exportFile;
 	}
 
 	private SnomedRefSetDSVExportModel toExportModel(BranchContext context) {
 		SnomedRefSetDSVExportModel model = new SnomedRefSetDSVExportModel();
-		Branch branch = context.branch();
-		
-		model.setBranchBase(branch.baseTimestamp());
-		model.setBranchPath(context.branchPath());
 		model.setDelimiter(delimiter);
 		model.setIncludeDescriptionId(descriptionIdExpected);
 		model.setIncludeRelationshipTargetId(relationshipTargetExpected);

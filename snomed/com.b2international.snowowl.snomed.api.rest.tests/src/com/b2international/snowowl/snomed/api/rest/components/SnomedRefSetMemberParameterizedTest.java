@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.*;
@@ -61,7 +63,8 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.response.ValidatableResponse;
+
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 5.7
@@ -282,6 +285,57 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 		deleteComponent(branchPath, SnomedComponentType.MEMBER, memberId, true).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(404);
+	}
+	
+	@Test
+	public void testRestorationOfEffectiveTimeOnMutablePropertyChange() {
+		Assume.assumeFalse(SnomedRefSetType.SIMPLE.equals(refSetType));
+
+		final String memberId = createRefSetMember();
+
+		final String shortName = String.format("SNOMEDCT-REFM-%s", refSetType);
+		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
+
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		createVersion(shortName, "v1", effectiveTime).statusCode(201);
+
+		// After versioning the member should be released and have an effective time
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveTime));
+
+		final Map<?, ?> updateRequest = ImmutableMap.builder()
+				.putAll(ImmutableMap.<String, Object>builder().putAll(getUpdateProperties()).build())
+				.put("commitComment", "Updated reference set member")
+				.build();
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
+
+		// Updating a member's properties should unset the effective time
+		final ValidatableResponse updateResponse = getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+				.body("released", equalTo(true))
+				.body("effectiveTime", equalTo(null));
+
+		for (Entry<String, Object> updateProperty : getUpdateProperties().entrySet()) {
+			updateResponse.body(updateProperty.getKey(), equalTo(updateProperty.getValue()));
+		}
+
+		final Map<?, ?> revertUpdateRequest = ImmutableMap.builder()
+				.putAll(ImmutableMap.<String, Object>builder().putAll(getValidProperties()).build())
+				.put("commitComment", "Reverted previous update of reference set member")
+				.build();
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, revertUpdateRequest, false).statusCode(204);
+
+		// Getting the member back to its originally released state should restore the effective time
+		ValidatableResponse revertResponse = getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveTime));
+
+		for (Entry<String, Object> validProperty : getValidProperties().entrySet()) {
+			revertResponse.body(validProperty.getKey(), equalTo(validProperty.getValue()));
+		}
+
 	}
 
 	private String createRefSetMember() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import java.util.Date;
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -28,6 +31,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public abstract class SnomedComponent extends BaseComponent {
 
+	/**
+	 * @since 6.16
+	 */
+	public static abstract class Fields extends BaseComponent.Fields {
+		
+		public static final String ACTIVE = SnomedRf2Headers.FIELD_ACTIVE;
+		public static final String EFFECTIVE_TIME = SnomedRf2Headers.FIELD_EFFECTIVE_TIME;
+		public static final String MODULE_ID = SnomedRf2Headers.FIELD_MODULE_ID;
+		public static final String ICON_ID = "iconId";
+		
+	} 
+	
 	private Boolean active;
 	private Date effectiveTime;
 	private String moduleId;
@@ -48,6 +63,7 @@ public abstract class SnomedComponent extends BaseComponent {
 	 * 
 	 * @return the component's effective time
 	 */
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
 	public Date getEffectiveTime() {
 		return effectiveTime;
 	}
@@ -82,6 +98,7 @@ public abstract class SnomedComponent extends BaseComponent {
 		this.active = active;
 	}
 
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
 	public void setEffectiveTime(final Date effectiveTime) {
 		this.effectiveTime = effectiveTime;
 	}

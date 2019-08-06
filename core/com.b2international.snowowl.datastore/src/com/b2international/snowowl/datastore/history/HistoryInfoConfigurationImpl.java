@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.List;
 
+import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -36,19 +39,21 @@ public final class HistoryInfoConfigurationImpl implements HistoryInfoConfigurat
 	private final String terminologyComponentId;
 	private final IBranchPath branchPath;
 	private final String componentId;
+	private final List<ExtendedLocale> locales;
 
-	public static HistoryInfoConfiguration create(final IBranchPath branchPath, final long storageKey, final ComponentIdentifier componentIdentifier) {
+	public static HistoryInfoConfiguration create(final IBranchPath branchPath, final long storageKey, final ComponentIdentifier componentIdentifier, final List<ExtendedLocale> locales) {
 		checkNotNull(branchPath, "branchPath");
 		String terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentId(componentIdentifier.getTerminologyComponentId());
-		return new HistoryInfoConfigurationImpl(storageKey, componentIdentifier.getComponentId(), terminologyComponentId, branchPath);
+		return new HistoryInfoConfigurationImpl(storageKey, componentIdentifier.getComponentId(), terminologyComponentId, branchPath, locales);
 	}
 
-	public HistoryInfoConfigurationImpl(final long storageKey, final String componentId, final String terminologyComponentId, final IBranchPath branchPath) {
+	public HistoryInfoConfigurationImpl(final long storageKey, final String componentId, final String terminologyComponentId, final IBranchPath branchPath, final List<ExtendedLocale> locales) {
 		checkArgument(checkId(storageKey), "Invalid storage key of: " + storageKey);
 		this.storageKey = storageKey;
 		this.componentId = checkNotNull(componentId, "componentId");
 		this.terminologyComponentId = checkNotNull(terminologyComponentId, "terminologyComponentId");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
+		this.locales = Collections3.toImmutableList(locales);
 	}
 	
 	@Override
@@ -69,6 +74,11 @@ public final class HistoryInfoConfigurationImpl implements HistoryInfoConfigurat
 	@Override
 	public IBranchPath getBranchPath() {
 		return branchPath;
+	}
+	
+	@Override
+	public List<ExtendedLocale> getLocales() {
+		return locales;
 	}
 	
 }

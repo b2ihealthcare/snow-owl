@@ -4,10 +4,133 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snomed-parent</artifactId>
-		<version>6.12.0-SNAPSHOT</version>
+		<version>6.19.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>com.b2international.snowowl.snomed.api.rest</artifactId>
 	<packaging>eclipse-plugin</packaging>
+
+	<properties>
+		<spring.version>4.3.22.RELEASE</spring.version>
+		<spring.security.version>4.2.11.RELEASE</spring.security.version>
+		<spring.hateoas.version>0.25.1.RELEASE</spring.hateoas.version>
+		<springfox.version>2.8.0</springfox.version>
+	</properties>
+
+	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
+	<dependencies>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>${springfox.version}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+          			<groupId>org.reflections</groupId>
+          			<artifactId>reflections</artifactId>
+        		</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-webmvc</artifactId>
+		    <version>${spring.version}</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+			<version>${spring.security.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>${spring.security.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
+			<version>${spring.hateoas.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>copy-runtime-dependencies</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
+							<includeArtifactIds>
+								spring-aop,
+								spring-beans,
+								spring-context,
+								spring-core,
+								spring-expression,
+								spring-hateoas,
+								spring-plugin-core,
+								spring-plugin-metadata,
+								spring-security-config,
+								spring-security-core,
+								spring-security-web,
+								spring-web,
+								spring-webmvc,
+								springfox-core,
+								springfox-schema,
+								springfox-spi,
+								springfox-spring-web,
+								springfox-swagger-common,
+								springfox-swagger2
+							</includeArtifactIds>
+							<outputDirectory>WEB-INF/lib</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[3.0.2,)</versionRange>
+										<goals>
+											<goal>copy-dependencies</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute>
+											<runOnIncremental>false</runOnIncremental>
+										</execute>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 
 </project>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.cre
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -50,10 +51,12 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -352,6 +355,36 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void searchOWLAxiomRefsetMemberBySourceTypeDestination() {
+		
+		String conceptId = createNewConcept(branchPath);
+		
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, conceptId)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "SubClassOf(:" + conceptId + " :" + Concepts.NAMESPACE_ROOT + ")")
+				.put("commitComment", "Created new OWL Axiom reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		SnomedReferenceSetMembers results = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.queryParam("referencedComponentId", conceptId)
+			.queryParam("owlExpression.typeId", Concepts.IS_A)
+			.queryParam("owlExpression.destinationId", Concepts.NAMESPACE_ROOT)
+			.get("/{path}/members", branchPath.getPath())
+			.then()
+			.extract().as(SnomedReferenceSetMembers.class);
+		
+		assertEquals(1, results.getItems().size());
+		
+		SnomedReferenceSetMember member = results.getItems().stream().findFirst().get();
+		
+		assertEquals(memberId, member.getId());
+		
+	}
+	
+	@Test
 	public void deleteReferringOwlAxiomRefsetMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.OWL_AXIOM));
@@ -360,7 +393,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "owl expression")
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
 				.put("commitComment", "Created new OWL Axiom reference set member")
 				.build();
 
@@ -386,7 +419,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "owl expression")
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
 				.put("commitComment", "Created new OWL Ontology reference set member")
 				.build();
 

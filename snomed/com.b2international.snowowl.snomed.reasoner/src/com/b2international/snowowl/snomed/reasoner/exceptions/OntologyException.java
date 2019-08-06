@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,25 @@ package com.b2international.snowowl.snomed.reasoner.exceptions;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 
 /**
- * Generic runtime exception thrown when an OWL ontology service operation fails for some reason.
+ * Generic runtime exception thrown when an OWL ontology-related operation fails for some reason.
  * 
+ * @since
  */
-public class OntologyException extends SnowowlRuntimeException {
-
-	private static final long serialVersionUID = -2159120938269639375L;
+public final class OntologyException extends SnowowlRuntimeException {
 
 	public OntologyException() {
 		super();
 	}
 
-	public OntologyException(final String message, final Throwable throwable) {
-		super(message, throwable);
+	public OntologyException(final String message, final Throwable cause) {
+		super(message, cause);
 	}
 
 	public OntologyException(final String message) {
 		super(message);
 	}
 
-	public OntologyException(final Throwable throwable) {
-		super(throwable);
+	public OntologyException(final Throwable cause) {
+		super(cause);
 	}
 }

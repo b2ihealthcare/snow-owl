@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -42,7 +43,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.request.RefSetSupport;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -51,7 +51,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.jayway.restassured.response.ValidatableResponse;
+
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 5.0
@@ -354,23 +355,23 @@ public abstract class SnomedRestFixtures {
 
 	@SuppressWarnings("unchecked")
 	public static void reactivateConcept(IBranchPath conceptPath, String id) {
-		Map<String, Object> concept = getComponent(conceptPath, SnomedComponentType.CONCEPT, id, "descriptions()", "relationships()")
+		final Map<String, Object> concept = getComponent(conceptPath, SnomedComponentType.CONCEPT, id, "descriptions()", "relationships()")
 				.statusCode(200)
 				.extract().as(Map.class);
 
-		Map<String, Object> reactivationRequest = Maps.newHashMap(concept);
+		final Map<String, Object> reactivationRequest = Maps.newHashMap(concept);
 		reactivationRequest.put("active", true);
 		reactivationRequest.remove("inactivationIndicator");
 		reactivationRequest.remove("associationTargets");
 		reactivationRequest.put("commitComment", "Reactivated concept");
 
-		Map<String, Object> relationships = (Map<String, Object>) reactivationRequest.get("relationships");
-		List<Map<String, Object>> relationshipItems = (List<Map<String, Object>>) relationships.get("items");
+		final Map<String, Object> relationships = (Map<String, Object>) reactivationRequest.get("relationships");
+		final List<Map<String, Object>> relationshipItems = (List<Map<String, Object>>) relationships.get("items");
 		relationshipItems.get(0).put("active", true);
 
 		updateComponent(conceptPath, SnomedComponentType.CONCEPT, id, reactivationRequest).statusCode(204);
 	}
-
+	
 	public static void changeCaseSignificance(IBranchPath descriptionPath, String descriptionId) {
 		changeCaseSignificance(descriptionPath, descriptionId, CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE);
 	}

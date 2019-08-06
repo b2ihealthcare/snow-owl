@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,8 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.importer.ITerminologyExporter;
 
 /**
@@ -46,7 +44,7 @@ import com.b2international.snowowl.datastore.server.importer.ITerminologyExporte
 public abstract class AbstractExportIndication extends IndicationWithMonitoring {
 	
 	private String userId;
-	private IBranchPath branchPath;
+	private String branchPath;
 
 	/**
 	 * @param protocol
@@ -71,16 +69,10 @@ public abstract class AbstractExportIndication extends IndicationWithMonitoring 
 	protected void indicating(ExtendedDataInputStream in, OMMonitor monitor) throws Exception {
 		
 		userId = in.readUTF();
-		final String branchPathString = in.readUTF();
+		branchPath = in.readUTF();
 		
-		if (StringUtils.isEmpty(branchPathString)) {
+		if (StringUtils.isEmpty(branchPath)) {
 			throw new SnowowlServiceException("Null or empty branch path is prohibited.");
-		}
-		
-		try {
-			branchPath = BranchPathUtils.createPath(branchPathString);
-		} catch (final Throwable t) {
-			throw new SnowowlServiceException("Failed to perform terminology export due to incorrect branch path.");
 		}
 		
 		postIndicating(in);
@@ -124,7 +116,7 @@ public abstract class AbstractExportIndication extends IndicationWithMonitoring 
 	/**
 	 * Returns with the branch path. Could be {@code null}.
 	 */
-	@Nullable protected IBranchPath getBranchPath() {
+	@Nullable protected String getBranchPath() {
 		return branchPath;
 	}
 	

@@ -194,7 +194,7 @@ backup_mysql() {
 
 backup_resources() {
 	echo_date "Backing up resources directory (indexes, attachments, etc)..."
-	rsync --verbose --recursive --dirs --exclude=segments.gen --exclude=write.lock "resources" "$ABSOLUTE_ARCHIVE_PREFIX"
+	rsync --verbose --recursive --dirs --exclude=segments.gen --exclude=write.lock "resources/" "$ABSOLUTE_ARCHIVE_PREFIX"
 	echo_date "Done backing up resources directory (indexes, attachments, etc)."
 }
 

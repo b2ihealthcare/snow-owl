@@ -69,7 +69,8 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 		monitor.begin(1 + 5 + 1);
 		OMMonitor refSetSubmonitor = null;
 		
-		final ImportConfiguration importConfiguration = new ImportConfiguration(in.readUTF()); // branchPath
+		final ImportConfiguration importConfiguration = new ImportConfiguration();
+		importConfiguration.setBranchPath(in.readUTF()); // branchPath
 		
 		try {
 			// XXX: source kind is always FILES, since the server just receives a bunch of them

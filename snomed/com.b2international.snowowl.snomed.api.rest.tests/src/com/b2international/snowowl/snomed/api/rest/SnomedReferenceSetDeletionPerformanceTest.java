@@ -21,8 +21,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.databene.contiperf.PerfTest;
+import org.databene.contiperf.Required;
 import org.databene.contiperf.junit.ContiPerfRule;
 import org.databene.contiperf.junit.ContiPerfRuleExt;
 import org.junit.Rule;
@@ -33,6 +35,7 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
@@ -53,7 +56,8 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 	public ContiPerfRule rule = new ContiPerfRuleExt();
 	
 	@Test
-	@PerfTest(duration = 30000) // miliseconds
+	@PerfTest(invocations = 1)
+	@Required(totalTime = 30000) // max 10 seconds to execute large refset deletion tests, but this should not take longer than 5-6 sec
 	public void testLargeReferenceSetDeletion() {
 		final String refSetId = createNewRefSet(branchPath);
  		final Set<String> conceptIds = generateConceptIds(CONCEPT_CREATION_LIMIT);
@@ -125,14 +129,17 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 	}
 	
 	private Set<String> generateConceptIds(int quantity) {
-		return Sets.newHashSet(SnomedRequests.identifiers()
-					.prepareGenerate()
-					.setNamespace(Concepts.B2I_NAMESPACE)
-					.setCategory(ComponentCategory.CONCEPT)
-					.setQuantity(quantity)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.execute(getBus())
-				.getSync().getItems());
+		return SnomedRequests.identifiers()
+				.prepareGenerate()
+				.setNamespace(Concepts.B2I_NAMESPACE)
+				.setCategory(ComponentCategory.CONCEPT)
+				.setQuantity(quantity)
+				.buildAsync()
+				.execute(getBus())
+				.getSync()
+				.stream()
+				.map(SctId::getSctid)
+				.collect(Collectors.toSet());
 	}
 	
 	private SnomedRelationshipCreateRequestBuilder createRelationshipRequest(String typeId, CharacteristicType characteristicType, String desctinationId) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,13 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.ValidatableResponse;
+
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 5.0
@@ -47,12 +48,14 @@ public abstract class SnomedClassificationRestRequests {
 			ClassificationStatus.SAVE_FAILED.name());
 
 	public static ValidatableResponse beginClassification(IBranchPath branchPath) {
-		Map<String, Object> requestBody = ImmutableMap.<String, Object>of("reasonerId", SnomedCoreConfiguration.ELK_REASONER_ID);
+		Map<String, Object> requestBody = ImmutableMap.of(
+				"reasonerId", SnomedCoreConfiguration.ELK_REASONER_ID,
+				"branch", branchPath.getPath());
 
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.post("/{path}/classifications", branchPath.getPath())
+				.post("/classifications")
 				.then();
 	}
 
@@ -64,20 +67,21 @@ public abstract class SnomedClassificationRestRequests {
 
 	public static ValidatableResponse getClassification(IBranchPath branchPath, String classificationId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get("/{path}/classifications/{id}", branchPath.getPath(), classificationId)
+				.get("/classifications/{id}", classificationId)
 				.then();
 	}
 
 	public static ValidatableResponse getRelationshipChanges(IBranchPath branchPath, String classificationId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.queryParam("limit", 2000)
-				.get("/{path}/classifications/{id}/relationship-changes", branchPath.getPath(), classificationId)
+				.queryParam("expand", "relationship()")
+				.get("/classifications/{id}/relationship-changes", classificationId)
 				.then();
 	}
 	
 	public static ValidatableResponse getEquivalentConceptSets(IBranchPath branchPath, String classificationId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get("/{path}/classifications/{id}/equivalent-concepts", branchPath.getPath(), classificationId)
+				.get("/classifications/{id}/equivalent-concepts", classificationId)
 				.then();
 	}
 
@@ -91,7 +95,7 @@ public abstract class SnomedClassificationRestRequests {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.put("/{path}/classifications/{id}", branchPath.getPath(), classificationId)
+				.put("/classifications/{id}", classificationId)
 				.then();
 	}
 

@@ -19,11 +19,11 @@ import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExis
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_DUE_TO_RELEASED_INBOUND_RSHIP_MESSAGE;
@@ -75,13 +75,14 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Concepts;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
@@ -111,13 +112,14 @@ import com.google.common.collect.Sets;
  * 
  */
 public class SnomedEditingContext extends BaseSnomedEditingContext {
-
+	
 	private SnomedRefSetEditingContext refSetEditingContext;
 	private Concept moduleConcept;
 	private String nameSpace;
 	private boolean uniquenessCheckEnabled = true;
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
 	private SnomedDeletionPlan deletionPlan = new SnomedDeletionPlan();
+	private EffectiveTimeRestorer effectiveTimeRestorer;
 
 	/**
 	 * Creates a new SNOMED CT core components editing context on the specified branch of the SNOMED CT repository.
@@ -143,6 +145,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	private void init(final String namespace) {
 		this.refSetEditingContext = new SnomedRefSetEditingContext(this);
+		this.effectiveTimeRestorer = new EffectiveTimeRestorer();
 		setNamespace(namespace);
 	}
 
@@ -168,7 +171,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	@Override
 	protected <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type) {
-		if (type.isAssignableFrom(Concept.class)) {
+		if (Concept.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByIds(componentIds)
@@ -176,7 +179,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
-		} else if (type.isAssignableFrom(Description.class)) {
+		} else if (Description.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchDescription()
 					.all()
 					.filterByIds(componentIds)
@@ -184,7 +187,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
-		} else if (type.isAssignableFrom(Relationship.class)) {
+		} else if (Relationship.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchRelationship()
 					.all()
 					.filterByIds(componentIds)
@@ -192,7 +195,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
-		} else if (type.isAssignableFrom(SnomedRefSetMember.class)) {
+		} else if (SnomedRefSetMember.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchMember()
 					.all()
 					.filterByIds(componentIds)
@@ -200,7 +203,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
-		} else if (type.isAssignableFrom(SnomedRefSet.class)) {
+		} else if (SnomedRefSet.class.isAssignableFrom(type)) {
 			return SnomedRequests.prepareSearchRefSet()
 					.all()
 					.filterByIds(componentIds)
@@ -217,7 +220,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 			SnomedRequests.identifiers().prepareRelease()
 				.setComponentIds(newComponentIds)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(bus)
 				.getSync();
 			
@@ -700,18 +703,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public Concept getDefaultModuleConcept() {
 		if (moduleConcept == null) {
-			for (String modulePreference : ModulePreference.getModulePreference()) {
-				if (moduleConcept != null) {
-					break;
-				}
-				try {
-					moduleConcept = getConcept(modulePreference);
-				} catch (ComponentNotFoundException e) {
-					// ignore and proceed to the next preference
-				}
-			}
-			if (moduleConcept == null) {
-				LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
+			String defaultModuleId = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getDefaultModule();
+			try {
+				moduleConcept = getConcept(defaultModuleId);
+			} catch (ComponentNotFoundException e) {
+				moduleConcept = getConcept(SnomedConstants.Concepts.MODULE_SCT_CORE);
 			}
 		}
 		return moduleConcept;
@@ -744,13 +740,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return nameSpace;
 	}
 
-	@Deprecated
 	public static String getDefaultNamespace() {
-		return getSnomedConfiguration().getNamespaces().getDefaultChildKey();
+		return getSnomedCoreConfiguration().getDefaultNamespace();
 	}
 	
-	public static SnomedConfiguration getSnomedConfiguration() {
-		return ApplicationContext.getInstance().getService(SnomedConfiguration.class);
+	public static SnomedCoreConfiguration getSnomedCoreConfiguration() {
+		return ApplicationContext.getInstance().getService(SnomedCoreConfiguration.class);
 	}
 	
 	@Override
@@ -791,8 +786,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				}
 			}
 		}
+		
+		final long branchBaseTimestamp = getTransaction().getBranch().getBase().getTimeStamp();
+		effectiveTimeRestorer.restoreEffectiveTimes(transaction.getChangeSetData().getChangedObjects().stream().map(cdoKey -> transaction.getObject(cdoKey.getID()))::iterator, getBranch(), branchBaseTimestamp);
 	}
-	
+
 	private Set<SnomedRefSetMember> getReferringRefSetMembers(Iterable<String> deletedIds) {
 		return SnomedRequests.prepareSearchMember()
 				.all()
@@ -1047,11 +1045,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		final String generatedId = SnomedRequests.identifiers().prepareGenerate()
 				.setCategory(componentNature)
 				.setNamespace(namespace)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(bus)
 				.getSync()
 				.first()
-				.get();
+				.get()
+				.getSctid();
 		newComponentIds.add(generatedId);
 		return generatedId;
 	}

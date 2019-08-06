@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.history;
 
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -33,7 +34,9 @@ public interface IHistoryService {
 	/**
 	 * Collects component history, which describes past modifications for the specified component.
 	 * 
-	 * @param ref the {@code IComponentRef} pointing to the component (may not be {@code null})
+	 * @param branch 
+	 * @param componentId
+	 * @param locales
 	 * 
 	 * @return an object wrapping historical information, describing all changes made to the component
 	 * 
@@ -42,5 +45,5 @@ public interface IHistoryService {
 	 *                                            is not registered
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 */
-	List<IHistoryInfo> getHistory(String branch, String componentId);
+	List<IHistoryInfo> getHistory(String branch, String componentId, List<ExtendedLocale> locales);
 }

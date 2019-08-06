@@ -32,8 +32,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.ImportAction;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractTerminologyComponentRow;
@@ -60,7 +59,9 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	@Override
 	protected ImportAction commit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
 		final ImportAction action = super.commit(subMonitor, formattedEffectiveTime);
-		getComponentLookup().registerNewComponentStorageKeys();
+		if (ImportAction.CONTINUE.equals(action)) {
+			getComponentLookup().registerNewComponentStorageKeys();
+		}
 		return action;
 	}
 	
@@ -104,7 +105,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 		if (importSupported && !CompareUtils.isEmpty(componentIdsToRegister)) {
 			SnomedRequests.identifiers().prepareRegister()
 					.setComponentIds(componentIdsToRegister)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.buildAsync()
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 

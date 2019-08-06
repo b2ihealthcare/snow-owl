@@ -187,10 +187,13 @@ rem ------------------------------
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
+	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.stream.XMLInputFactory=com.sun.xml.internal.stream.XMLInputFactoryImpl
+	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.stream.XMLOutputFactory=com.sun.xml.internal.stream.XMLOutputFactoryImpl
 	set JAVA_OPTS=%JAVA_OPTS% -XX:+AlwaysLockClassLoader
 	set JAVA_OPTS=%JAVA_OPTS% -Dosgi.classloader.type=nonparallel
 	set JAVA_OPTS=%JAVA_OPTS% -Djava.awt.headless=true
 	set JAVA_OPTS=%JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
+	set JAVA_OPTS=%JAVA_OPTS% -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true
     rem Run the server
   
       rem Marshall parameters

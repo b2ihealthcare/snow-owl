@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -51,7 +52,6 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionPredicate;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
@@ -67,6 +67,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 
@@ -78,6 +79,8 @@ public class SnomedRefSetDSVExportTest {
 	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
 	
 	private static final String MAIN_BRANCH = Branch.MAIN_PATH;
+	
+	private static final List<ExtendedLocale> LOCALES = ImmutableList.of(ExtendedLocale.valueOf("en-gb"));
 
 	private static final String DELIMITER = "|";
 	
@@ -109,7 +112,7 @@ public class SnomedRefSetDSVExportTest {
 		UUID fileId = 
 			SnomedRequests.dsv()
 				.prepareExport()
-				.setLocales(locales())
+				.setLocales(LOCALES)
 				.setDelimiter(DELIMITER)
 				.setDescriptionIdExpected(true)
 				.setRelationshipTargetExpected(true)
@@ -137,7 +140,7 @@ public class SnomedRefSetDSVExportTest {
 		
 		UUID fileId = SnomedRequests.dsv()
 				.prepareExport()
-				.setLocales(locales())
+				.setLocales(LOCALES)
 				.setDelimiter(DELIMITER)
 				.setDescriptionIdExpected(true)
 				.setRelationshipTargetExpected(true)
@@ -154,10 +157,6 @@ public class SnomedRefSetDSVExportTest {
 
 		List<String> dsvExportLines = Files.readLines(dsvExportFile, Charsets.UTF_8);
 		Assert.assertTrue(MessageFormat.format("Expected 3 lines in the exported file (2 header and 2 member lines) instead of {0} lines.", dsvExportLines.size()), dsvExportLines.size() == 3);
-	}
-
-	private List<ExtendedLocale> locales() {
-		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
 	private List<AbstractSnomedDsvExportItem> createExportItems(String refsetId) {
@@ -275,9 +274,12 @@ public class SnomedRefSetDSVExportTest {
 					.setNamespace(Concepts.B2I_NAMESPACE)
 					.setCategory(ComponentCategory.CONCEPT)
 					.setQuantity(1)
-					.build(REPOSITORY_ID)
+					.buildAsync()
 					.execute(bus)
-				.getSync().first().orElseThrow(() -> new IllegalStateException("Couldn't generate identifier concept ID"));
+					.getSync()
+					.first()
+					.map(SctId::getSctid)
+					.orElseThrow(() -> new IllegalStateException("Couldn't generate identifier concept ID"));
 	}
 
 	private SnomedRelationshipCreateRequestBuilder toRelationshipRequest(String typeId, CharacteristicType characteristicType, String desctinationId) {

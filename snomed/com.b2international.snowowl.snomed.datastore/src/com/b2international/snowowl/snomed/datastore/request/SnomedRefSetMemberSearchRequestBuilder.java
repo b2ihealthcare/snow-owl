@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.commons.collections.Collections3;
+import java.util.Collections;
+
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -37,6 +38,11 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 		extends SnomedSearchRequestBuilder<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers>
 		implements RevisionIndexRequestBuilder<SnomedReferenceSetMembers> {
 
+	public static final String OWL_EXPRESSION_CONCEPTID = "owlExpression.conceptId";
+	public static final String OWL_EXPRESSION_DESTINATIONID = "owlExpression.destinationId";
+	public static final String OWL_EXPRESSION_TYPEID = "owlExpression.typeId";
+	public static final String OWL_EXPRESSION_GCI = "owlExpression.gci";
+
 	SnomedRefSetMemberSearchRequestBuilder() {
 		super();
 	}
@@ -51,7 +57,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSet(Iterable<String> referenceSetIds) {
-		return addOption(OptionKey.REFSET, Collections3.toImmutableSet(referenceSetIds));
+		return addOption(OptionKey.REFSET, referenceSetIds);
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponent(String referencedComponentId) {
@@ -59,11 +65,15 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponent(Iterable<String> referencedComponentIds) {
-		return addOption(OptionKey.REFERENCED_COMPONENT, Collections3.toImmutableSet(referencedComponentIds));
+		return addOption(OptionKey.REFERENCED_COMPONENT, referencedComponentIds);
+	}
+	
+	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final SnomedRefSetType refSetType) {
+		return filterByRefSetType(Collections.singleton(refSetType));
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final Iterable<SnomedRefSetType> refSetTypes) {
-		return addOption(OptionKey.REFSET_TYPE, Collections3.toImmutableSet(refSetTypes));
+		return addOption(OptionKey.REFSET_TYPE, refSetTypes);
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByProps(Options memberProps) {

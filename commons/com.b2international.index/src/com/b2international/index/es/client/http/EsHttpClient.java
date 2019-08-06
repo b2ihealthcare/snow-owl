@@ -49,6 +49,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.RestHighLevelClientExt;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
@@ -158,16 +159,30 @@ public final class EsHttpClient implements EsClient {
 	}
 	
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, QueryBuilder query)
-			throws IOException {
+	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, 
+			QueryBuilder query) throws IOException {
 		UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(index)
 			.setDocTypes(type)
 			.setBatchSize(batchSize)
 			.setQuery(query)
 			.setScript(script)
-			.setSlices(numberOfSlices);
+			.setSlices(numberOfSlices)
+			.setAbortOnVersionConflict(false);
 		
 		return client.updateByQuery(updateByQueryRequest, RequestOptions.DEFAULT);
+	}
+	
+	@Override
+	public BulkByScrollResponse deleteByQuery(String index, String type, int batchSize, int numberOfSlices,
+			QueryBuilder query) throws IOException {
+		DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index)
+				.setDocTypes(type)
+				.setBatchSize(batchSize)
+				.setQuery(query)
+				.setSlices(numberOfSlices)
+				.setAbortOnVersionConflict(false);
+			
+		return client.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
 	}
 
 }
