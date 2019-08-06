@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.List;
 
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -209,7 +209,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("name", name)
 					.add("title", title)
 					.add("version", version)
@@ -243,7 +243,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("name", name).toString();
+			return MoreObjects.toStringHelper(this).add("name", name).toString();
 		}
 	}
 	
@@ -272,7 +272,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("name", name).toString();
+			return MoreObjects.toStringHelper(this).add("name", name).toString();
 		}
 	}
 	
@@ -309,7 +309,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("name", name).add("mark", mark).toString();
+			return MoreObjects.toStringHelper(this).add("name", name).add("mark", mark).toString();
 		}
 
 	}
@@ -361,7 +361,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("name", name).add("value", value).toString(); 
+			return MoreObjects.toStringHelper(this).add("name", name).add("value", value).toString(); 
 		}
 	}
 	
@@ -396,7 +396,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("uid", uid)
 					.add("authority", authority)
 					.toString();
@@ -448,7 +448,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("code", getCode())
 					.toString();
 		}
@@ -534,7 +534,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("code", getCode())
 					.add("modifier", modifier)
 					.add("usage", usage)
@@ -596,7 +596,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("code", getCode())
 					.add("position", position)
 					.add("all", all)
@@ -625,7 +625,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("code", getCode()).toString();
+			return MoreObjects.toStringHelper(this).add("code", getCode()).toString();
 		}
 
 		@Override
@@ -739,7 +739,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("code", getCode())
 					.add("kind", kind)
 					.toString();
@@ -775,7 +775,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("code", getCode()).toString();
+			return MoreObjects.toStringHelper(this).add("code", getCode()).toString();
 		}
 
 		@Override
@@ -803,7 +803,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("code", getCode()).toString();
+			return MoreObjects.toStringHelper(this).add("code", getCode()).toString();
 		}
 
 		@Override
@@ -866,7 +866,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("id", id)
 					.add("kind", kind)
 					.toString();
@@ -918,7 +918,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("language", language)
 					.add("content", content)
 					.toString();
@@ -949,7 +949,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("language", language).add("mixedContent", getMixedContent()).toString();
+			return MoreObjects.toStringHelper(this).add("language", language).add("mixedContent", getMixedContent()).toString();
 		}
 	}
 	
@@ -1010,7 +1010,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("class", clazz)
 					.add("code", code)
 					.add("usage", usage)
@@ -1079,7 +1079,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("type", type)
 					.add("usageKind", getUsageKind())
 					.add("mixedContent", getMixedContent())
@@ -1143,7 +1143,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("class", clazz)
 					.add("items", listItems)
 					.toString();
@@ -1246,7 +1246,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("head", head)
 					.add("body", body)
 					.add("foot", foot)
@@ -1300,7 +1300,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("rows", rows)
 					.toString();
 		}
@@ -1377,7 +1377,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("cells", cells)
 					.toString();
 		}
@@ -1443,7 +1443,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("rowspan", rowSpan)
 					.add("colspan", colSpan)
 					.add("mixedContent", getMixedContent())
@@ -1510,7 +1510,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("class", clazz)
 					.add("content", content)
 					.toString();
@@ -1572,7 +1572,7 @@ public class ClamlModel implements VisitableClamlModelElement {
 		
 		@Override
 		public String toString() {
-			return Objects.toStringHelper(this).add("mixedContent", mixedContent).add("usageKind", usageKind).toString();
+			return MoreObjects.toStringHelper(this).add("mixedContent", mixedContent).add("usageKind", usageKind).toString();
 		}
 
 		@Override

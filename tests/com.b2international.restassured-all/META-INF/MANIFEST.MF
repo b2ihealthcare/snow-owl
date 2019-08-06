@@ -4,7 +4,7 @@ Bundle-Name: Restassured-all Wrapper Bundle
 Bundle-SymbolicName: com.b2international.restassured-all;singleton:=true
 Bundle-Version: 3.2.0.b2i
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: io.restassured,
  io.restassured.assertion,
  io.restassured.authentication,
@@ -44,9 +44,13 @@ Require-Bundle: org.hamcrest.core;bundle-version="1.3.0";visibility:=reexport,
  org.apache.httpcomponents.httpclient;bundle-version="4.5.3",
  org.apache.httpcomponents.httpcore;bundle-version="4.4.10",
  org.ccil.cowan.tagsoup;bundle-version="1.2.0",
- com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.8.11",
- com.fasterxml.jackson.core.jackson-core;bundle-version="2.8.11",
- com.fasterxml.jackson.core.jackson-databind;bundle-version="2.8.11"
+ com.sun.xml.bind.jaxb-core;bundle-version="2.3.0",
+ com.sun.xml.bind.jaxb-impl;bundle-version="2.3.0",
+ jaxb-api;bundle-version="2.3.0",
+ javax.annotation-api;bundle-version="1.3.1",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.8.11,2.9.0)",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="[2.8.11,2.9.0)",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.8.11,2.9.0)"
 Bundle-ClassPath: lib/json-path-3.2.0.jar,
  lib/rest-assured-3.2.0.jar,
  lib/rest-assured-common-3.2.0.jar,

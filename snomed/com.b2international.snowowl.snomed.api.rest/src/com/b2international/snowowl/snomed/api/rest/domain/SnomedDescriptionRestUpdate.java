@@ -15,13 +15,16 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import java.util.List;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.google.common.collect.Multimap;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionUpdateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableListMultimap;
 
 /**
  * @since 1.0
@@ -31,7 +34,7 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
 	private DescriptionInactivationIndicator inactivationIndicator;
-	private Multimap<AssociationType, String> associationTargets;
+	private Map<AssociationType, List<String>> associationTargets;
 	private String typeId;
 	private String term;
 	private String languageCode;
@@ -48,7 +51,7 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 		return inactivationIndicator;
 	}
 	
-	public Multimap<AssociationType, String> getAssociationTargets() {
+	public Map<AssociationType, List<String>> getAssociationTargets() {
 		return associationTargets;
 	}
 	
@@ -76,7 +79,7 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 		this.inactivationIndicator = inactivationIndicator;
 	}
 	
-	public void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
+	public void setAssociationTargets(Map<AssociationType, List<String>> associationTargets) {
 		this.associationTargets = associationTargets;
 	}
 	
@@ -90,6 +93,27 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 	
 	public void setTypeId(String typeId) {
 		this.typeId = typeId;
+	}
+
+	public SnomedDescriptionUpdateRequestBuilder toRequestBuilder(final String descriptionId) {
+		final ImmutableListMultimap.Builder<AssociationType, String> targets;
+		if (associationTargets != null) {
+			targets = ImmutableListMultimap.<AssociationType, String>builder();
+			associationTargets.forEach(targets::putAll);
+		} else {
+			targets = null;
+		}
+		return SnomedRequests
+			.prepareUpdateDescription(descriptionId)
+			.setActive(isActive())
+			.setModuleId(getModuleId())
+			.setAssociationTargets(targets == null ? null : targets.build())
+			.setInactivationIndicator(getInactivationIndicator())
+			.setCaseSignificance(getCaseSignificance())
+			.setAcceptability(getAcceptability())
+			.setTypeId(getTypeId())
+			.setTerm(getTerm())
+			.setLanguageCode(getLanguageCode());
 	}
 
 }

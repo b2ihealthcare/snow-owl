@@ -4,7 +4,7 @@ Bundle-Name: Snow Owl FHIR API
 Bundle-SymbolicName: com.b2international.snowowl.fhir.api
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Import-Package: javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0",
  javax.validation.constraints,
@@ -16,7 +16,6 @@ Import-Package: javax.servlet;version="2.6.0",
 Bundle-ActivationPolicy: lazy
 Web-ContextPath: /snowowl/fhir
 Require-Bundle: org.eclipse.equinox.security;bundle-version="1.1.100",
- com.fasterxml.jackson.datatype.jackson-datatype-guava;bundle-version="2.8.10",
  com.fasterxml.jackson.module.jackson-module-jaxb-annotations;bundle-version="2.8.10",
  org.apache.commons.logging;bundle-version="[1.2.0,1.3.0)",
  net.bytebuddy.byte-buddy;bundle-version="1.7.9",
@@ -25,7 +24,8 @@ Require-Bundle: org.eclipse.equinox.security;bundle-version="1.1.100",
  io.swagger.models;bundle-version="1.5.14",
  io.swagger.annotations;bundle-version="1.5.14",
  com.b2international.snowowl.fhir.core,
- com.b2international.snowowl.datastore
+ com.b2international.snowowl.datastore,
+ jaxb-api;bundle-version="2.3.0"
 Bundle-ClassPath: .,
  WEB-INF/lib/spring-aop-4.3.22.RELEASE.jar,
  WEB-INF/lib/spring-beans-4.3.22.RELEASE.jar,

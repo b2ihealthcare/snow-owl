@@ -5,13 +5,13 @@ Bundle-SymbolicName: com.b2international.snowowl.datastore;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Bundle-Activator: com.b2international.snowowl.datastore.DatastoreActivator
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.net4j.jvm;bundle-version="[4.1.600,4.2.0)";visibility:=reexport,
  org.eclipse.net4j.tcp;bundle-version="[4.1.600,4.2.0)";visibility:=reexport,
  org.eclipse.core.expressions;bundle-version="3.4.400",
- org.eclipse.xtext.util;bundle-version="[2.15.0,2.16.0)";visibility:=reexport,
+ org.eclipse.xtext.util;bundle-version="[2.18.0,2.19.0)";visibility:=reexport,
  xstream;bundle-version="1.4.7";visibility:=reexport,
  groovy-all;bundle-version="[2.4.13,2.5.0)",
  com.b2international.snowowl.rpc;visibility:=reexport,
@@ -19,7 +19,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.identity;visibility:=reexport,
  com.b2international.scripting.api;visibility:=reexport,
  com.b2international.collections.jackson,
- com.b2international.snowowl.dependencies
+ com.b2international.snowowl.dependencies,
+ com.google.guava;bundle-version="[18.0.0,22.0.0)"
 Export-Package: com.b2international.snowowl.core.attachments,
  com.b2international.snowowl.core.commit,
  com.b2international.snowowl.core.compare,

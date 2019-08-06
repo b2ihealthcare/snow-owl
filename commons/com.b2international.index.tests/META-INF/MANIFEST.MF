@@ -4,10 +4,11 @@ Bundle-Name: Generic Index API Test Suite
 Bundle-SymbolicName: com.b2international.index.tests;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Fragment-Host: com.b2international.index
 Require-Bundle: org.junit;bundle-version="4.12.0",
  org.assertj.core;bundle-version="1.7.1",
  com.b2international.index.tests.tools,
- org.apache.commons.lang
+ org.apache.commons.lang,
+ com.fasterxml.jackson.core.jackson-annotations

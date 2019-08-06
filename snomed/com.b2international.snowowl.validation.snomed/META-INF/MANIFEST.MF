@@ -4,15 +4,17 @@ Bundle-Name: Snow Owl SNOMED CT Validation Rules
 Bundle-SymbolicName: com.b2international.snowowl.validation.snomed;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.xtext;bundle-version="2.11.0",
  org.junit;bundle-version="4.12.0",
  org.assertj.core;bundle-version="1.7.1",
  com.b2international.snowowl.snomed.ecl,
  com.b2international.snowowl.snomed.datastore,
- com.b2international.index.tests.tools,
  com.b2international.collections.jackson,
- com.b2international.snowowl.test.commons
+ com.b2international.snowowl.test.commons,
+ com.b2international.index.tests.tools,
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.8.11,2.9.0]",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.8.11,2.9.0]"
 Bundle-ActivationPolicy: lazy
 Import-Package: groovy.lang;version="[2.4.13,2.5.0)"

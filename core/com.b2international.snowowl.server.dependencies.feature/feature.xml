@@ -197,13 +197,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.google.inject"
-         download-size="0"
-         install-size="0"
-         version="3.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.core.expressions"
          download-size="0"
          install-size="0"
@@ -491,13 +484,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="javax.xml"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="io.reactivex.rxjava2.rxjava"
          download-size="0"
          install-size="0"
@@ -603,13 +589,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.fasterxml.jackson.datatype.jackson-datatype-guava"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="com.fasterxml.jackson.module.jackson-module-jaxb-annotations"
          download-size="0"
          install-size="0"
@@ -639,13 +618,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="slf4j.api"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.objectweb.asm.commons"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -758,6 +730,98 @@ Visit us at http://b2i.sg
 
    <plugin
          id="net.bytebuddy.byte-buddy"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.google.inject"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.osgi.compatibility.state"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.continuation"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.deploy"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.http"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.io"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.osgi.boot"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.security"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.server"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.servlet"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.util"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.webapp"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.jetty.xml"
          download-size="0"
          install-size="0"
          version="0.0.0"

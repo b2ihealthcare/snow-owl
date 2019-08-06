@@ -25,7 +25,7 @@ import com.b2international.index.Text;
 import com.b2international.index.WithScore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
  * @since 4.7

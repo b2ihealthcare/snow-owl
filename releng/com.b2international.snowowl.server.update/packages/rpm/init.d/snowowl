@@ -33,11 +33,11 @@ fi
 
 # Sets the default values for snowowl variables used in this script
 SO_HOME="/usr/share/snowowl"
+SO_PATH_CONF="/etc/snowowl"
 MAX_OPEN_FILES=65536
 MAX_MAP_COUNT=262144
-SO_PATH_CONF="${path.conf}"
 
-exec="$SO_HOME/bin/startup.sh -configDir=${SO_PATH_CONF}"
+exec="$SO_HOME/bin/snowowl.sh"
 prog="snowowl"
 
 export SO_JAVA_OPTS

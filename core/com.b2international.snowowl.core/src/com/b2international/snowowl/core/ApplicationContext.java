@@ -256,7 +256,7 @@ public class ApplicationContext {
 					((IDisposableService) ((ServiceRegistryEntry<?>) service).implementation).dispose();
 
 				} catch (final Exception e) {
-					CoreActivator.logError("Error while disposing service " + service.getClass().getCanonicalName(), e);
+					LOGGER.error("Error while disposing service " + service.getClass().getCanonicalName(), e);
 				}
 			}
 		}

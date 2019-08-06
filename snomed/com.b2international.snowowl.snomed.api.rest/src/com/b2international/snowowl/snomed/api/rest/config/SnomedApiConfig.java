@@ -80,7 +80,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
@@ -129,7 +128,6 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public ObjectMapper objectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new GuavaModule());
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -218,7 +216,7 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	
 	@Bean
 	public ISnomedBrowserService browserService() {
-		return new SnomedBrowserService();
+		return new SnomedBrowserService(eventBus());
 	}
 	
 	@Override

@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Snow Owl Administrative API
+Bundle-SymbolicName: com.b2international.snowowl.api;singleton:=true
+Bundle-Version: 7.1.0.qualifier
+Bundle-Vendor: B2i Healthcare
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: com.b2international.snowowl.api.admin,
+ com.b2international.snowowl.api.admin.exception,
+ com.b2international.snowowl.api.codesystem,
+ com.b2international.snowowl.api.codesystem.domain
+Bundle-ActivationPolicy: lazy
+Import-Package: org.osgi.framework
+Require-Bundle: com.google.guava;bundle-version="21.0.0";visibility:=reexport,
+ com.b2international.commons.base,
+ com.b2international.snowowl.core;visibility:=reexport

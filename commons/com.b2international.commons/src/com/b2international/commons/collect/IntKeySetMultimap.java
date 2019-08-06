@@ -15,7 +15,7 @@
  */
 package com.b2international.commons.collect;
 
-import static com.google.common.collect.Sets.newHashSet;
+import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -76,7 +76,7 @@ public class IntKeySetMultimap<V> {
 		Set<V> values = delegateGet(key);
 		
 		if (values == null) {
-			values = newHashSet();
+			values = Sets.newHashSet();
 			delegatePut(key, values);
 		}
 		

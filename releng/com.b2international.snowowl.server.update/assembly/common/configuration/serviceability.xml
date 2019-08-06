@@ -11,9 +11,9 @@
 	</appender>
 	
 	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>serviceability/logs/snow-owl/log.log</file>
+		<file>${so.home}/serviceability/logs/log.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>serviceability/logs/snow-owl/log_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<fileNamePattern>serviceability/logs/log_%d{yyyy-MM-dd}.log</fileNamePattern>
 			<!-- keep 90 days' worth of history -->
       		<maxHistory>90</maxHistory>
 		</rollingPolicy>
@@ -22,56 +22,15 @@
 		</encoder>
 	</appender>
 
-	<appender name="VIRGO_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>serviceability/logs/virgo/log.log</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>serviceability/logs/virgo/log_%d{yyyy-MM-dd}.log</fileNamePattern>
-			<!-- keep 90 days' worth of history -->
-      		<maxHistory>90</maxHistory>
-		</rollingPolicy>
-		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-			<MaxFileSize>10MB</MaxFileSize>
-		</triggeringPolicy>
-		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] %-5level %-28.28thread %-64.64logger{64} %X{medic.eventCode} %msg %ex%n</Pattern>
-		</encoder>
-	</appender>
-
-	<appender name="EVENT_LOG_STDOUT" class="org.eclipse.virgo.medic.log.logback.ReroutingAwareConsoleAppender">
-		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] %-28.28thread &lt;%X{medic.eventCode}&gt; %msg %ex%n</Pattern>
-		</encoder>
-	</appender>
-
-	<appender name="EVENT_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>serviceability/eventlogs/eventlog.log</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>serviceability/eventlogs/eventlog_%d{yyyy-MM-dd}.log</fileNamePattern>
-			<!-- keep 90 days' worth of history -->
-      		<maxHistory>90</maxHistory>
-		</rollingPolicy>
-		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] %-28.28thread &lt;%X{medic.eventCode}&gt; %msg %ex%n</Pattern>
-		</encoder>
-	</appender>
-
-	<logger level="INFO" additivity="false" name="org.eclipse.virgo.medic.eventlog.localized">
-		<appender-ref ref="EVENT_LOG_STDOUT" />
-		<appender-ref ref="EVENT_LOG_FILE" />
-	</logger>
-	
 	<logger level="INFO" additivity="false" name="org.osgi.service.log.LogService">
-		<appender-ref ref="VIRGO_LOG_FILE" />
-	</logger>
-	
-	<logger level="INFO" additivity="false" name="org.eclipse.virgo.medic.eventlog.default">
-		<appender-ref ref="VIRGO_LOG_FILE" />
+		<appender-ref ref="LOG_FILE" />
 	</logger>
 	
 	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
 
 	<root level="INFO">
 		<appender-ref ref="LOG_FILE" />
+		<appender-ref ref="STDOUT" />
 	</root>
 
 </configuration> 

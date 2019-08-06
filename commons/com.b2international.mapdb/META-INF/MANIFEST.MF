@@ -4,7 +4,7 @@ Bundle-Name: MapDB Wrapper Bundle
 Bundle-SymbolicName: com.b2international.mapdb;singleton:=true
 Bundle-Version: 3.0.7.b2i
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .,
  lib/annotations-13.0.jar,
  lib/eclipse-collections-9.1.0.jar,

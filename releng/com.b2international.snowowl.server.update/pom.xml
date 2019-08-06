@@ -13,6 +13,11 @@
 	
 	<properties>
 		<packageFiles>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</packageFiles>
+		<product.rootFolder>snow-owl-oss-${build.version}</product.rootFolder>
+		<products.directory>${project.build.directory}/products</products.directory>
+		<product.id>com.b2international.snowowl.server</product.id>
+		<so.products.directory>${products.directory}/${product.id}</so.products.directory>
+		<linux.product.path>${so.products.directory}/linux/gtk/x86_64/${product.rootFolder}</linux.product.path>
 	</properties>
 	
 	<dependencies>
@@ -32,27 +37,6 @@
 		<finalName>snow-owl-oss-${build.version}</finalName>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<id>prepare</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<echo message="Unzipping Virgo archive..." />
-								<unzip src="assembly/virgo-tomcat-server-3.7.2.RELEASE.zip"
-									dest="target/" />
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-director-plugin</artifactId>
 				<executions>
@@ -63,6 +47,14 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<products>
+						<product>
+							<id>${product.id}</id>
+							<rootFolder>${product.rootFolder}</rootFolder>
+						</product>
+					</products>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
@@ -73,7 +65,6 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.3</version>
 				<executions>
 					<execution>
 						<id>package-oss</id>
@@ -89,6 +80,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- create RPM -->
 			<plugin>
 				<groupId>de.dentrassi.maven</groupId>
 				<artifactId>rpm</artifactId>
@@ -226,6 +218,9 @@
 							<ruleset>data</ruleset>
 							<collect>
 								<from>${packageFiles}/resources</from>
+								<excludes>
+									<exclude>.gitignore</exclude>
+								</excludes>
 							</collect>
 						</entry>
 						<entry>
@@ -279,6 +274,132 @@
 					</beforeInstallation>
 				</configuration>
 			</plugin>
+			<!-- Create deb -->
+			<plugin>
+				<groupId>org.vafer</groupId>
+				<artifactId>jdeb</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>generate-deb</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jdeb</goal>
+						</goals>
+						<configuration>
+							<deb>${project.build.directory}/${product.rootFolder}-all.deb</deb>
+							<controlDir>${project.basedir}/packages/common/scripts</controlDir>
+							<snapshotExpand>true</snapshotExpand>
+							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
+							<verbose>true</verbose>
+							<classifier>all</classifier>
+							<signPackage>false</signPackage>
+							<skipPOMs>false</skipPOMs>
+							<dataSet>
+								<!-- Installation directory -->
+								<data>
+									<src>${packageFiles}</src>
+									<type>directory</type>
+									<excludes>serviceability/**,resources/**,.gitignore</excludes>
+									<mapper>
+										<type>perm</type>
+										<prefix>/usr/share/snowowl</prefix>
+										<user>snowowl</user>
+										<group>snowowl</group>
+									</mapper>
+								</data>
+								<!-- Configuration directory -->
+								<data>
+									<src>${packageFiles}/configuration</src>
+									<dst>/etc/snowowl</dst>
+									<type>directory</type>
+									<conffile>true</conffile>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0660</filemode>
+									</mapper>
+								</data>
+								<!-- Data directory -->
+								<data>
+									<src>${packageFiles}/resources</src>
+									<dst>/var/lib/snowowl</dst>
+									<type>directory</type>
+									<excludes>.gitignore</excludes>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0755</filemode>
+										<dirmode>0755</dirmode>
+									</mapper>
+								</data>	
+								<data>
+									<linkName>/usr/share/snowowl/resources</linkName>
+									<linkTarget>/var/lib/snowowl</linkTarget>
+									<type>link</type>
+									<symlink>true</symlink>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+									</mapper>
+								</data>
+								<!-- Log directory -->
+								<data>
+									<linkName>/usr/share/snowowl/serviceability</linkName>
+									<linkTarget>/var/log/snowowl</linkTarget>
+									<type>link</type>
+									<symlink>true</symlink>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0644</filemode>
+										<dirmode>0755</dirmode>
+									</mapper>
+								</data>
+								<!-- SysV configuration -->
+								<entry>
+									<src>${basedir}/packages/deb/init.d/</src>
+									<type>directory</type>
+									<mapper>
+										<type>perm</type>
+										<prefix>/etc/init.d</prefix>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0750</filemode>
+									</mapper>
+								</entry>
+								<!-- systemd configuration -->
+								<entry>
+									<src>${basedir}/packages/common/systemd/sysctl/snowowl.conf</src>
+									<type>file</type>
+									<dst>/usr/lib/sysctl.d/snowowl.conf</dst>
+									<conffile>true</conffile>
+									<mapper>
+										<type>perm</type>
+										<user>snowowl</user>
+										<group>snowowl</group>
+										<filemode>0644</filemode>
+									</mapper>
+								</entry>
+								<entry>
+									<src>${basedir}/packages/common/systemd/snowowl.service</src>
+									<dst>/usr/lib/systemd/system/snowowl.service</dst>
+									<type>file</type>
+									<conffile>true</conffile>
+									<mapper>
+										<type>perm</type>
+										<filemode>0644</filemode>
+									</mapper>
+								</entry>
+							</dataSet>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -311,6 +432,8 @@
 											<includes>
 												<include>users</include>
 												<include>snowowl.yml</include>
+												<include>serviceability.xml</include>
+												<include>jetty*.xml</include>
 											</includes>
 										</resource>
 									</resources>

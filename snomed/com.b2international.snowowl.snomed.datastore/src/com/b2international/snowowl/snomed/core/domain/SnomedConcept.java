@@ -17,8 +17,10 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,9 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -233,7 +237,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * Returns the concept's corresponding inactivation indicator member value.
 	 * 
-	 * @return the inactivation indicator value, or {@code null} if the concept is still active
+	 * @return the inactivation indicator value, or {@code null} if the concept does not have an inactivation indicator
 	 */
 	public InactivationIndicator getInactivationIndicator() {
 		return inactivationIndicator;
@@ -242,10 +246,32 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * Returns association reference set member targets keyed by the association type.
 	 * 
-	 * @return related association targets, or {@code null} if the concept is still active
+	 * @return related association targets, or {@code null} if the concept does not have any association targets
 	 */
+	@JsonIgnore
 	public Multimap<AssociationType, String> getAssociationTargets() {
 		return associationTargets;
+	}
+	
+	/**
+	 * Returns association reference set member targets keyed by the association type as a {@link java.util.Map}.
+	 * 
+	 * @return related association targets, or {@code null} if the concept does not have any association targets
+	 */
+	@JsonProperty("associationTargets")
+	public Map<AssociationType, List<String>> getAssociationTargetsAsMap() {
+		if (associationTargets == null) {
+			return null;
+		} else {
+			final Map<AssociationType, List<String>> targets = Maps.newHashMapWithExpectedSize(associationTargets.size());
+			associationTargets.forEach((key, value) -> {
+				if (!targets.containsKey(key)) {
+					targets.put(key, new ArrayList<>(associationTargets.get(key).size()));
+				}
+				targets.get(key).add(value);
+			});
+			return targets;
+		}
 	}
 
 	/**
@@ -409,8 +435,20 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		this.inactivationIndicator = inactivationIndicator;
 	}
 
+	@JsonIgnore
 	public void setAssociationTargets(final Multimap<AssociationType, String> associationTargets) {
 		this.associationTargets = associationTargets;
+	}
+	
+	@JsonProperty("associationTargets")
+	public void setAssociationTargets(final Map<AssociationType, Iterable<String>> associationTargets) {
+		if (associationTargets == null) {
+			this.associationTargets = null;
+		} else {
+			final ImmutableListMultimap.Builder<AssociationType, String> targets = ImmutableListMultimap.<AssociationType, String>builder();
+			associationTargets.forEach(targets::putAll);
+			this.associationTargets = targets.build();
+		}
 	}
 	
 	public void setDescriptions(SnomedDescriptions descriptions) {

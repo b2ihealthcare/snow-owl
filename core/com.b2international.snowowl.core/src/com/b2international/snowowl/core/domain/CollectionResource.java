@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -92,7 +92,7 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(CollectionResource.class).add("items", getItems()).toString();
+		return MoreObjects.toStringHelper(CollectionResource.class).add("items", getItems()).toString();
 	}
 	
 	/**

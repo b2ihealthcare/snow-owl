@@ -25,8 +25,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,12 +106,11 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedBrowserService.class);
 
 	private final InputFactory inputFactory;
+	private final IEventBus bus;
 
-	@Resource
-	private IEventBus bus;
-
-	public SnomedBrowserService() {
-		inputFactory = new InputFactory();
+	public SnomedBrowserService(IEventBus bus) {
+		this.bus = bus;
+		this.inputFactory = new InputFactory();
 	}
 
 	@Override

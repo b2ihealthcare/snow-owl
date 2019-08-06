@@ -4,7 +4,7 @@ Bundle-Name: Snow Owl REST SNOMED CT
 Bundle-SymbolicName: com.b2international.snowowl.snomed.api;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Import-Package: org.osgi.framework
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.snomed.api,
