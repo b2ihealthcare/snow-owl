@@ -51,6 +51,7 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -59,6 +60,8 @@ import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceA
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.IdRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
@@ -544,6 +547,25 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			}
 		}
 		
+		// Descriptions are also "outbound"
+		assigner.clear();
+		assigner.collectRelationshipNamespacesAndModules(conceptIdsToKeep, context);
+
+		for (final SnomedConcept conceptToKeep : equivalentConcepts.keySet()) {
+			for (final SnomedDescription description : conceptToKeep.getDescriptions()) {
+				if (description.getId().startsWith(IEquivalentConceptMerger.PREFIX_NEW)) {
+					description.setId(null);
+					addComponent(bulkRequestBuilder, assigner, description);
+				} else if (description.getId().startsWith(IEquivalentConceptMerger.PREFIX_UPDATED)) { 
+					// Trim the prefix from the ID to restore its original form
+					description.setId(description.getId().substring(IEquivalentConceptMerger.PREFIX_UPDATED.length()));
+					bulkRequestBuilder.add(description.toUpdateRequest());
+				} else if (!description.isActive()) {
+					removeOrDeactivate(bulkRequestBuilder, assigner, description);
+				}
+			}
+		}
+		
 		// Inactivation of "removed" concepts also requires modules to be collected according to the assigner rules
 		assigner.clear();
 		assigner.collectRelationshipNamespacesAndModules(conceptIdsToSkip, context);
@@ -664,6 +686,27 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		bulkRequestBuilder.add(request);
 	}
 
+	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			final SnomedDescription description) {
+
+		final Request<TransactionContext, Boolean> request;
+		
+		if (description.isReleased()) {
+			request = SnomedRequests
+					.prepareUpdateDescription(description.getId())
+					.setActive(false)
+					.setAcceptability(ImmutableMap.of())
+					.build();
+		} else {
+			request = SnomedRequests
+					.prepareDeleteDescription(description.getId())
+					.build();
+		}
+	
+		bulkRequestBuilder.add(request);
+	}
+
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final ReasonerRelationship relationship) {
@@ -681,7 +724,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				sourceId, typeId, destinationId, destinationNegated,
 				characteristicType, group, unionGroup, modifier);
 	}
-	
 
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
@@ -774,7 +816,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		
 		final String moduleId = namespaceAndModuleAssigner.getConcreteDomainModuleId(referencedComponentId);
 	
-		final Request<TransactionContext, String> createRequest = SnomedRequests.prepareNewMember()
+		final SnomedRefSetMemberCreateRequestBuilder createRequest = SnomedRequests.prepareNewMember()
 				.setActive(true)
 				.setModuleId(moduleId)
 				.setReferencedComponentId(referencedComponentId)
@@ -783,8 +825,28 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 						SnomedRf2Headers.FIELD_TYPE_ID, typeId,
 						SnomedRf2Headers.FIELD_VALUE, serializedValue,
 						SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, group,
-						SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId))
-				.build();
+						SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId));
+	
+		bulkRequestBuilder.add(createRequest);
+	}
+
+	private void addComponent(BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			SnomedDescription description) {
+
+		final String moduleId = namespaceAndModuleAssigner.getRelationshipModuleId(description.getConceptId());
+		final String namespace = namespaceAndModuleAssigner.getRelationshipNamespace(description.getConceptId());
+		
+		final SnomedDescriptionCreateRequestBuilder createRequest = SnomedRequests.prepareNewDescription()
+				.setIdFromNamespace(namespace)
+				.setAcceptability(description.getAcceptabilityMap())
+				.setActive(true)
+				.setCaseSignificance(description.getCaseSignificance())
+				.setConceptId(description.getConceptId())
+				.setLanguageCode(description.getLanguageCode())
+				.setModuleId(moduleId)
+				.setTerm(description.getTerm())
+				.setTypeId(description.getTypeId());
 	
 		bulkRequestBuilder.add(createRequest);
 	}
