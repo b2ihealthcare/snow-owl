@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public final class ValidationWhiteListCreateRequestBuilder
 
 	private String ruleId;
 	private ComponentIdentifier componentIdentifier;
-	private List<String> affectedComponentLabels;
+	private List<String> affectedComponentLabels = Collections.emptyList();
 	private String reporter;
 	private long createdAt = new Date().getTime();
 	
