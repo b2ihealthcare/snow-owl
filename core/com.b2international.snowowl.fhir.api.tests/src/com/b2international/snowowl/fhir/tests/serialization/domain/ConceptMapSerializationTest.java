@@ -97,7 +97,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 		DependsOn dependsOn = DependsOn.builder()
 		.property("Property")
 		.system("System")
-		.code("Code")
+		.value("Value")
 		.display("Display")
 		.build();
 		
@@ -107,7 +107,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		assertThat(jsonPath.get("property"), equalTo("Property"));
 		assertThat(jsonPath.get("system"), equalTo("System"));
-		assertThat(jsonPath.get("code"), equalTo("Code"));
+		assertThat(jsonPath.get("value"), equalTo("Value"));
 		assertThat(jsonPath.getString("display"), equalTo("Display"));
 	}
 	
@@ -117,7 +117,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 		DependsOn dependsOn = DependsOn.builder()
 		.property("Property")
 		//.system("System")
-		.code("Code")
+		.value("Value")
 		//.display("Display")
 		.build();
 		
@@ -127,7 +127,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		assertThat(jsonPath.get("property"), equalTo("Property"));
 		assertNull(jsonPath.get("system"));
-		assertThat(jsonPath.get("code"), equalTo("Code"));
+		assertThat(jsonPath.get("value"), equalTo("Value"));
 		assertNull(jsonPath.get("display"));
 	}
 	
@@ -137,7 +137,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 		exception.expect(ValidationException.class);
 		
 		DependsOn.builder()
-			.code("Code")
+			.value("Value")
 			.system("System")
 			.display("Display")
 			.build();
@@ -153,19 +153,19 @@ public class ConceptMapSerializationTest extends FhirTest {
 			.comment("Comment")
 			.addDependsOn(DependsOn.builder()
 				.property("Property")
-				.code("Code")
+				.value("Code")
 				.build())
 			.addDependsOn(DependsOn.builder()
 				.property("Property.2")
-				.code("Code 2")
+				.value("Code 2")
 				.build())
 			.addProduct(DependsOn.builder()
 				.property("ProductProperty")
-				.code("ProductCode")
+				.value("ProductCode")
 				.build())
 			.addProduct(DependsOn.builder()
 				.property("ProductProperty.2")
-				.code("ProductCode 2")
+				.value("ProductCode 2")
 				.build())
 			.build();
 		
@@ -250,7 +250,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 			.addElement(ConceptMapElement.builder()
 					.code("ElementCode")
 					.display("ElementDisplay")
-					
 					.build())
 			.unmapped(UnMapped.builder()
 					.mode("Mode")

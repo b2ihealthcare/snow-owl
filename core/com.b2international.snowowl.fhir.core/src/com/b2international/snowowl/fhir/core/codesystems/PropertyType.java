@@ -29,6 +29,7 @@ public enum PropertyType implements FhirCodeSystem {
 	CODING("Coding"), 
 	STRING("string"), 
 	INTEGER("integer"),
+	DECIMAL("decimal"),
 	BOOLEAN("boolean"),
 	DATETIME("dateTime");
 	

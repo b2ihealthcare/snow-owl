@@ -51,6 +51,7 @@ import com.b2international.snowowl.fhir.core.model.property.BooleanConceptProper
 import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.CodingConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.DateTimeConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.DecimalConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.IntegerConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.StringConceptProperty;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
@@ -118,6 +119,20 @@ public class CodeSystemSerializationTest extends FhirTest {
 		printPrettyJson(conceptProperty);
 		
 		String expected = "{\"code\":\"childConcept\",\"valueInteger\":1}";
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
+	}
+
+	@Test
+	public void returnedDecimalConceptPropertyTest() throws Exception {
+		
+		DecimalConceptProperty conceptProperty = DecimalConceptProperty.builder()
+				.code("childConcept")
+				.value(1.12f)
+				.build();
+		
+		printPrettyJson(conceptProperty);
+		
+		String expected = "{\"code\":\"childConcept\",\"valueDecimal\":1.12}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
 	

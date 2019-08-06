@@ -29,7 +29,6 @@ import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Reference;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
@@ -72,7 +71,7 @@ public class ConceptMap extends MetadataResource {
 
 	@Summary
 	@Valid
-	private Reference sourceReference;
+	private Uri sourceCanonical;
 
 	@Summary
 	@Valid
@@ -80,7 +79,7 @@ public class ConceptMap extends MetadataResource {
 
 	@Summary
 	@Valid
-	private Reference targetReference;
+	private Uri targetCanonical;
 
 	@Valid
 	@JsonProperty("group")
@@ -92,8 +91,8 @@ public class ConceptMap extends MetadataResource {
 	}
 
 	@JsonProperty
-	public Reference getSourceReference() {
-		return sourceReference;
+	public Uri getSourceCanonical() {
+		return sourceCanonical;
 	}
 
 	@JsonProperty
@@ -102,8 +101,8 @@ public class ConceptMap extends MetadataResource {
 	}
 
 	@JsonProperty
-	public Reference getTargetReference() {
-		return targetReference;
+	public Uri getTargetCanonical() {
+		return targetCanonical;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -111,26 +110,26 @@ public class ConceptMap extends MetadataResource {
 			Identifier identifier, String version, String name, String title, Code status, Date date, String publisher,
 			Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
 			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, Uri sourceUri,
-			Reference sourceReference, Uri targetUri, Reference targetReference, Collection<Group> groups) {
+			Uri sourceCanonical, Uri targetUri, Uri targetCanonical, Collection<Group> groups) {
 		
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
 				contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.sourceUri = sourceUri;
-		this.sourceReference = sourceReference;
+		this.sourceCanonical = sourceCanonical;
 		this.targetUri = targetUri;
-		this.targetReference = targetReference;
+		this.targetCanonical = targetCanonical;
 		this.groups = groups;
 	}
 
-	@AssertTrue(message = "Both URI and Reference cannot be set for the 'source' and 'target' fields")
+	@AssertTrue(message = "Both URI and Canonical URI cannot be set for the 'source' and 'target' fields")
 	private boolean isValid() {
 
-		if (sourceUri != null && sourceReference != null) {
+		if (sourceUri != null && sourceCanonical != null) {
 			return false;
 		}
 
-		if (targetUri != null && targetReference != null) {
+		if (targetUri != null && targetCanonical != null) {
 			return false;
 		}
 		return true;
@@ -143,9 +142,9 @@ public class ConceptMap extends MetadataResource {
 	public static class Builder extends MetadataResource.Builder<Builder, ConceptMap> {
 
 		private Uri sourceUri;
-		private Reference sourceReference;
+		private Uri sourceCanonical;
 		private Uri targetUri;
-		private Reference targetReference;
+		private Uri targetCanonical;
 		private Collection<Group> groups = Lists.newArrayList();
 
 		public Builder(String conceptMapId) {
@@ -162,8 +161,13 @@ public class ConceptMap extends MetadataResource {
 			return getSelf();
 		}
 
-		public Builder sourceUri(Reference sourceReference) {
-			this.sourceReference = sourceReference;
+		public Builder sourceCanonical(Uri sourceCanonical) {
+			this.sourceCanonical = sourceCanonical;
+			return getSelf();
+		}
+
+		public Builder sourceCanonical(String sourceCanonical) {
+			this.sourceCanonical = new Uri(sourceCanonical);
 			return getSelf();
 		}
 
@@ -177,8 +181,13 @@ public class ConceptMap extends MetadataResource {
 			return getSelf();
 		}
 
-		public Builder targetReference(Reference targetReference) {
-			this.targetReference = targetReference;
+		public Builder targetCanonical(Uri targetCanonical) {
+			this.targetCanonical = targetCanonical;
+			return getSelf();
+		}
+
+		public Builder targetCanonical(String targetCanonical) {
+			this.targetCanonical = new Uri(targetCanonical);
 			return getSelf();
 		}
 		
@@ -201,7 +210,7 @@ public class ConceptMap extends MetadataResource {
 		protected ConceptMap doBuild() {
 			return new ConceptMap(id, meta, implicitRules, language, text, url, identifier, version, name, title,
 					status, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
-					sourceUri, sourceReference, targetUri, targetReference, groups);
+					sourceUri, sourceCanonical, targetUri, targetCanonical, groups);
 		}
 
 	}

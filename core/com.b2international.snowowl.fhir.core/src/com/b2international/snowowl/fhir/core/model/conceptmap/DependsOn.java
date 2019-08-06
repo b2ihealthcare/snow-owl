@@ -18,8 +18,9 @@ package com.b2international.snowowl.fhir.core.model.conceptmap;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,19 +42,19 @@ public class DependsOn {
 	private final Uri system;
 	
 	@Valid
-	@NotNull
+	@NotEmpty
 	@JsonProperty
-	private final Code code;
+	private final String value;
 	
 	@Summary
 	@JsonProperty
 	private final String display;
 
-	public DependsOn(Uri property, Uri system, Code code, String display) {
+	public DependsOn(Uri property, Uri system, String value, String display) {
 		
 		this.property = property;
 		this.system = system;
-		this.code = code;
+		this.value = value;
 		this.display = display;
 	}
 	
@@ -65,7 +66,7 @@ public class DependsOn {
 
 		private Uri property;
 		private Uri system;
-		private Code code;
+		private String value;
 		private String display;
 
 		public Builder property(final Uri property) {
@@ -88,13 +89,8 @@ public class DependsOn {
 			return this;
 		}
 		
-		public Builder code(final Code code) {
-			this.code = code;
-			return this;
-		}
-		
-		public Builder code(final String codeString) {
-			this.code = new Code(codeString);
+		public Builder value(final String value) {
+			this.value = value;
 			return this;
 		}
 		
@@ -106,7 +102,7 @@ public class DependsOn {
 		@Override
 		protected DependsOn doBuild() {
 			
-			return new DependsOn(property, system, code, display);
+			return new DependsOn(property, system, value, display);
 		}
 	}
 	
