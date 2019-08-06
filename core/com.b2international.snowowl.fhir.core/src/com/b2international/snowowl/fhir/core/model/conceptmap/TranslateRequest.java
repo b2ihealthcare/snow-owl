@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,15 @@ import com.google.common.collect.ImmutableList;
 	"target", "targetsystem", "dependency", "reverse"})
 public class TranslateRequest {
 	
+	//A canonical URL for the concept map. (0..1)
+	private final Uri url;
+	
+	//The concept map is provided directly as part of the request. Servers may choose not to accept concept maps in this fashion. (0..1)
+	private final ConceptMap conceptMap;
+	
+	//The identifier that is used to identify a specific version of the concept map to be used for the translation. (0..1)
+	private final String conceptMapVersion;
+	
 	// The code that is to be translated. If a code is provided, a system must be provided (0..1)
 	private final Code code;
 
@@ -75,6 +84,9 @@ public class TranslateRequest {
 	private final Boolean reverse;
 	
 	TranslateRequest(
+			Uri url,
+			ConceptMap conceptMap,
+			String conceptMapVersion,
 			Code code, 
 			Uri system, 
 			String version, 
@@ -85,6 +97,10 @@ public class TranslateRequest {
 			Uri targetsystem,
 			Collection<Dependency> dependencies,
 			Boolean isReverse) {
+		
+		this.url = url;
+		this.conceptMap = conceptMap;
+		this.conceptMapVersion = conceptMapVersion;
 		this.code = code;
 		this.system = system;
 		this.version = version;
@@ -95,6 +111,21 @@ public class TranslateRequest {
 		this.targetsystem = targetsystem;
 		this.dependency = dependencies;
 		this.reverse = isReverse;
+	}
+	
+	public String getUrlValue() {
+		if (url != null) {
+			return url.getUriValue();
+		}
+		return null;
+	}
+	
+	public ConceptMap getConceptMap() {
+		return conceptMap;
+	}
+	
+	public String getConceptMapVersion() {
+		return conceptMapVersion;
 	}
 	
 	public String getCodeValue() {
@@ -220,6 +251,9 @@ public class TranslateRequest {
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends ValidatingBuilder<TranslateRequest> {
 
+		private Uri url;
+		private ConceptMap conceptMap;
+		private String conceptMapVersion;
 		private Code code;
 		private Uri system;
 		private String version;
@@ -232,6 +266,21 @@ public class TranslateRequest {
 		private Boolean isReverse;
 		
 		Builder() {}
+		
+		public Builder url(final String url) {
+			this.url = new Uri(url);
+			return this;
+		}
+		
+		public Builder conceptMap(final ConceptMap conceptMap) {
+			this.conceptMap =conceptMap;
+			return this;
+		}
+		
+		public Builder conceptMapVersion(final String conceptMapVersion) {
+			this.conceptMapVersion = conceptMapVersion;
+			return this;
+		}
 		
 		public Builder code(final String code) {
 			this.code = new Code(code);
@@ -301,8 +350,8 @@ public class TranslateRequest {
 
 		@Override
 		protected TranslateRequest doBuild() {
-			return new TranslateRequest(code, system, version, source, coding, codeableConcept, 
-					target, targetsystem, dependencies.build(), isReverse);
+			return new TranslateRequest(url, conceptMap, conceptMapVersion, code, system, version, 
+					source, coding, codeableConcept, target, targetsystem, dependencies.build(), isReverse);
 		}
 
 	}

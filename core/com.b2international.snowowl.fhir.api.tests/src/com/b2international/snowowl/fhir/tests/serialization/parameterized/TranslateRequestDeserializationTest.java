@@ -43,7 +43,7 @@ import com.b2international.snowowl.snomed.fhir.SnomedUri;
  */
 public class TranslateRequestDeserializationTest extends FhirTest {
 	
-	//@Test
+	@Test
 	public void missingSystemTest() {
 		
 		Issue expectedIssue = Issue.builder()
@@ -66,7 +66,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 		
 	}
 
-	//@Test
+	@Test
 	public void invalidSourceTest() {
 		
 		Issue expectedIssue = Issue.builder()
@@ -97,7 +97,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void missingSourceTest() {
 		
 		Issue expectedIssue = Issue.builder()
@@ -119,7 +119,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void missingTargetTest() {
 		
 		Issue expectedIssue = Issue.builder()
@@ -142,7 +142,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void validRequestTest() throws Exception {
 		
 		TranslateRequest request = TranslateRequest.builder()
@@ -167,7 +167,7 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void validRequestWithCodingTest() throws Exception {
 		
 		TranslateRequest request = TranslateRequest.builder()
@@ -194,12 +194,12 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void validRequestWithDependencyTest() throws Exception {
 		
 		Coding dependencyCoding = Coding.builder()
 			.code("1234")
-			.system("http://snomed.info/sct")
+			.system("http://www.whocc.no/atc")
 			.version("20180131")
 			.build();
 		
