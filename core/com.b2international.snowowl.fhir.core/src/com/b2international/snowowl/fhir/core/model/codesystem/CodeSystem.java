@@ -96,6 +96,11 @@ public class CodeSystem extends MetadataResource {
 	@NotNull
 	@JsonProperty
 	private Code content;
+	
+	@Summary
+	@Valid
+	@JsonProperty
+	private Uri supplements;
 
 	//not primitive int to avoid serialization when the default value is 0
 	@Summary
@@ -131,7 +136,7 @@ public class CodeSystem extends MetadataResource {
 			
 			//CodeSystem only
 			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
-			final Code content, final Integer count, 
+			final Code content, final Uri supplements, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
@@ -143,6 +148,7 @@ public class CodeSystem extends MetadataResource {
 		this.compositional = compositional;
 		this.versionNeeded = versionNeeded;
 		this.content = content;
+		this.supplements = supplements;
 		this.count = count;
 		this.filters = filters;
 		this.properties = properties;
@@ -170,6 +176,8 @@ public class CodeSystem extends MetadataResource {
 		private Boolean versionNeeded;
 
 		private Code content;
+		
+		private Uri supplements;
 
 		private Integer count;
 
@@ -229,6 +237,11 @@ public class CodeSystem extends MetadataResource {
 			return getSelf();
 		}
 
+		public Builder supplements(Uri supplementsUri) {
+			this.supplements = supplementsUri;
+			return getSelf();
+		}
+
 		public Builder count(int count) {
 			this.count = count;
 			return getSelf();
@@ -254,7 +267,7 @@ public class CodeSystem extends MetadataResource {
 			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright,
 				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
-				content, count, filters, properties, concepts);
+				content, supplements, count, filters, properties, concepts);
 		}
 	}
 

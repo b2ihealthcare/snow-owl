@@ -52,7 +52,6 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -116,7 +115,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	protected Collection<IConceptProperty> getSupportedConceptProperties() {
 		
 		// what should be the locale here? Likely we need to add the config locale as well
-		final List<ExtendedLocale> locales = newArrayList(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference());
+		final List<ExtendedLocale> locales = newArrayList();
 		locales.add(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US));
 		
 		final ImmutableList.Builder<IConceptProperty> properties = ImmutableList.builder();

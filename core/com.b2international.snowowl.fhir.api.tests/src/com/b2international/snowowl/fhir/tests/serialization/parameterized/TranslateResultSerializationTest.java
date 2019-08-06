@@ -26,19 +26,16 @@ import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
-import com.b2international.snowowl.fhir.core.model.conceptmap.Product;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirParameterMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.fhir.SnomedUri;
-import com.jayway.restassured.path.json.JsonPath;
+
+import io.restassured.path.json.JsonPath;
 
 /**
  * Test for serializing the @see {@link TranslateResult} class.

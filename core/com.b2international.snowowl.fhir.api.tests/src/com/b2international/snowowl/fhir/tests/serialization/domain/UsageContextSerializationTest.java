@@ -30,7 +30,8 @@ import com.b2international.snowowl.fhir.core.model.usagecontext.CodeableConceptU
 import com.b2international.snowowl.fhir.core.model.usagecontext.QuantityUsageContext;
 import com.b2international.snowowl.fhir.core.model.usagecontext.RangeUsageContext;
 import com.b2international.snowowl.fhir.tests.FhirTest;
-import com.jayway.restassured.path.json.JsonPath;
+
+import io.restassured.path.json.JsonPath;
 
 /**
  * Usage context serialization tests.

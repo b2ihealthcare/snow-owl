@@ -57,7 +57,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.primitives.Bytes;
-import com.jayway.restassured.path.json.JsonPath;
+
+import io.restassured.path.json.JsonPath;
 
 /**
  * 
@@ -78,14 +79,27 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Coding coding = Coding.builder()
 			.code("1234")
-			.system("http://snomed.info/sct")
+			.system("http://www.whocc.no/atc")
 			.version("20180131")
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(coding));
 		assertThat(jsonPath.getString("code"), equalTo("1234"));
-		assertThat(jsonPath.getString("system"), equalTo("http://snomed.info/sct"));
+		assertThat(jsonPath.getString("system"), equalTo("http://www.whocc.no/atc"));
 		assertThat(jsonPath.getString("version"), equalTo("20180131"));
+	}
+	
+	@Test
+	public void invalidSnomedVersionCodingTest() throws Exception {
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		
+		Coding.builder()
+				.code("1234")
+				.system("http://snomed.info/sct")
+				.version("20180131")
+				.build();
 	}
 	
 	@Test
@@ -102,7 +116,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Coding.builder()
 			.code("")
-			.system("http://snomed.info/sct")
+			.system("http://www.whocc.no/atc")
 			.version("20180131")
 			.build();
 	}
@@ -112,7 +126,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Coding coding = Coding.builder()
 				.code("1234")
-				.system("http://snomed.info/sct")
+				.system("http://www.whocc.no/atc")
 				.version("20180131")
 				.build();
 		
@@ -126,7 +140,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cc));
 		assertThat(jsonPath.getString("text"), equalTo("text"));
 		assertThat(jsonPath.getString("coding[0].code"), equalTo("1234"));
-		assertThat(jsonPath.getString("coding[0].system"), equalTo("http://snomed.info/sct"));
+		assertThat(jsonPath.getString("coding[0].system"), equalTo("http://www.whocc.no/atc"));
 		assertThat(jsonPath.getString("coding[0].version"), equalTo("20180131"));
 		
 	}

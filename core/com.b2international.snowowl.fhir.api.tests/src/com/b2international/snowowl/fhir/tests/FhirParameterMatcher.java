@@ -21,7 +21,8 @@ import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
-import com.jayway.restassured.path.json.JsonPath;
+
+import io.restassured.path.json.JsonPath;
 
 /**
  * Custom matcher to check primitive type FHIR parameters e.g.:

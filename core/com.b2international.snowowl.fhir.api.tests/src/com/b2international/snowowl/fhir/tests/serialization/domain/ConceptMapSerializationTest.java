@@ -37,7 +37,8 @@ import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.usagecontext.CodeableConceptUsageContext;
 import com.b2international.snowowl.fhir.tests.FhirTest;
-import com.jayway.restassured.path.json.JsonPath;
+
+import io.restassured.path.json.JsonPath;
 
 /**
  * Test for checking the ConceptMap serialization

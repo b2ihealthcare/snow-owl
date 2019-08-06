@@ -55,7 +55,8 @@ import com.b2international.snowowl.fhir.core.model.property.IntegerConceptProper
 import com.b2international.snowowl.fhir.core.model.property.StringConceptProperty;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
-import com.jayway.restassured.path.json.JsonPath;
+
+import io.restassured.path.json.JsonPath;
 
 /**
  * Test for checking the serialization from model->JSON.
@@ -277,6 +278,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.publisher("B2i")
 			.status(PublicationStatus.ACTIVE)
 			.content(CodeSystemContentMode.COMPLETE)
+			.supplements(new Uri("http://b2i.sg/supplement"))
 			.url(new Uri("code system uri"))
 			.version("2018.01.01")
 			.addConcept(Concept.builder()
@@ -324,6 +326,8 @@ public class CodeSystemSerializationTest extends FhirTest {
 		assertThat(jsonPath.getString("description"), equalTo("Code system description"));
 		assertThat(jsonPath.getString("hierarchyMeaning"), equalTo("is-a"));
 		assertThat(jsonPath.getString("content"), equalTo("complete"));
+		assertThat(jsonPath.getString("supplements"), equalTo("http://b2i.sg/supplement"));
+		
 		assertThat(jsonPath.getString("property[0].code"), equalTo("child"));
 		assertThat(jsonPath.getString("property[0].uri"), equalTo("http://hl7.org/fhir/concept-properties/child"));
 		assertThat(jsonPath.getString("property[0].description"), equalTo("Child"));

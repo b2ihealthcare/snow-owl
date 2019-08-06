@@ -80,6 +80,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Transl
 	ModelSerializationTest.class,
 	ModelDeserializationTest.class,
 	BundleSerializationTest.class,
+
 	CodeSystemSerializationTest.class,
 	ValueSetSerializationTest.class,
 	ConceptMapSerializationTest.class,

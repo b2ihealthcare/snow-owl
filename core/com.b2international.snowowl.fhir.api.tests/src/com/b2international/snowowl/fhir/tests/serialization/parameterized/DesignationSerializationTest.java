@@ -32,7 +32,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
-import com.jayway.restassured.path.json.JsonPath;
+
+import io.restassured.path.json.JsonPath;
 
 /**
  * Test for serializing the Designation class.
@@ -47,7 +48,7 @@ public class DesignationSerializationTest extends FhirTest {
 
 		Coding coding = Coding.builder()
 				.code("1234")
-				.system("http://snomed.info/sct")
+				.system("http://www.whocc.no/atc")
 				.version("20180131")
 				.build();
 		
@@ -73,7 +74,7 @@ public class DesignationSerializationTest extends FhirTest {
 		
 		assertThat(jsonPath.getString("name"), equalTo("use"));
 		assertThat(jsonPath.getString("valueCoding.code"), equalTo("1234"));
-		assertThat(jsonPath.getString("valueCoding.system"), equalTo("http://snomed.info/sct"));
+		assertThat(jsonPath.getString("valueCoding.system"), equalTo("http://www.whocc.no/atc"));
 		assertThat(jsonPath.getString("valueCoding.version"), equalTo("20180131"));
 	}
 	

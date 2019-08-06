@@ -49,7 +49,8 @@ import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.Summa
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
-import com.jayway.restassured.path.json.JsonPath;
+
+import io.restassured.path.json.JsonPath;
 
 /**
  * @since 6.4
