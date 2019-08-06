@@ -112,11 +112,11 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	}
 
 	private void updateAcceptability(TransactionContext context, final SnomedDescriptionIndexEntry description, final SnomedDescriptionIndexEntry.Builder updatedDescription) {
-		new SnomedDescriptionAcceptabilityUpdateRequest(description.getId(), description.getModuleId(), acceptability, false).execute(context);
+		new SnomedDescriptionAcceptabilityUpdateRequest(description, acceptability, false).execute(context);
 	}
 
 	private void updateAssociationTargets(TransactionContext context, final SnomedDescriptionIndexEntry description, final Multimap<AssociationType, String> associationTargets) {
-		final SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(description.getId(), SnomedDescriptionIndexEntry.class);
+		final SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(description);
 		associationUpdateRequest.setNewAssociationTargets(associationTargets);
 		associationUpdateRequest.execute(context);
 	}
@@ -178,11 +178,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			return;
 		}
 		
-		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(
-				description.getId(), 
-				Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
-				SnomedDescriptionIndexEntry.class);
-		
+		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
 		inactivationUpdateRequest.setInactivationValueId(inactivationIndicator.getConceptId());
 		inactivationUpdateRequest.execute(context);
 	}

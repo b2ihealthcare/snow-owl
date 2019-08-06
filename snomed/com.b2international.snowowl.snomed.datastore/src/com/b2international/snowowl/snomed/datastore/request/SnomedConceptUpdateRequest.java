@@ -336,7 +336,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			return;
 		}
 		
-		SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(concept.getId(), SnomedConceptDocument.class);
+		SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(concept);
 		associationUpdateRequest.setNewAssociationTargets(associationTargets);
 		associationUpdateRequest.execute(context);
 	}
@@ -346,12 +346,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			return;
 		}
 		
-		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(
-			getComponentId(), 
-			Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
-			SnomedConceptDocument.class
-		);
-		
+		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(concept, Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR);
 		inactivationUpdateRequest.setInactivationValueId(indicator.getConceptId());
 		inactivationUpdateRequest.execute(context);
 	}

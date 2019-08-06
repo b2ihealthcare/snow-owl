@@ -148,7 +148,7 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 				.withConcept(getConceptId())
 				.build(context);
 			
-			new SnomedDescriptionAcceptabilityUpdateRequest(description.getId(), description.getModuleId(), acceptability, true)
+			new SnomedDescriptionAcceptabilityUpdateRequest(description, acceptability, true)
 				.execute(context);
 			
 			// FIXME: Acceptability updates and member create requests can overlap
@@ -156,10 +156,7 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 			context.add(description);
 			
 			if (inactivationIndicator != null) {
-				final SnomedInactivationReasonUpdateRequest inactivationUpdate =  new SnomedInactivationReasonUpdateRequest(
-						description.getId(), 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
-						SnomedDescriptionIndexEntry.class);
+				final SnomedInactivationReasonUpdateRequest inactivationUpdate =  new SnomedInactivationReasonUpdateRequest(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
 				inactivationUpdate.setInactivationValueId(inactivationIndicator.getConceptId());
 				inactivationUpdate.execute(context);
 			}
