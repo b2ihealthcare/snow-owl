@@ -57,6 +57,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 
 /**
@@ -432,19 +433,21 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 						for (Integer propertyGroup : propertyCountByGroup.keySet()) {
 							final String typeId = relationshipItem.getComponentId();
-							Map<String, Integer> groupOccurrences = propertyCountByGroup.getOrDefault(propertyGroup, NO_OCCURRENCES);
+							final Map<String, Integer> groupOccurrences = propertyCountByGroup.getOrDefault(propertyGroup, NO_OCCURRENCES);
 							
-							int occurrences = groupOccurrences.getOrDefault(typeId, 0);
-							final Map<String, String> destinationsById = concept.getRelationships()
+							final int occurrences = groupOccurrences.getOrDefault(typeId, 0);
+							final Map<String, String> destinationsById = Maps.newHashMap();
+							concept.getRelationships()
 									.stream()
 									.filter(r -> typeId.equals(r.getTypeId())
 											&& r.getGroup() == propertyGroup 
 											&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
 													|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
-									.collect(Collectors.toMap(
-											SnomedRelationship::getDestinationId, 
-											r -> getPreferredTerm(r.getDestination())));
-
+									.forEach(relationship -> {
+										// XXX - Avoid duplicate keys in case of bad data
+										destinationsById.put(relationship.getDestinationId(), getPreferredTerm(relationship.getDestination()));
+									});
+							
 							addCells(dataRow, occurrences, includeRelationshipId, destinationsById);
 						}
 						break;
