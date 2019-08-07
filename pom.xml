@@ -24,7 +24,7 @@
 		<guava.versionRange>[21.0.0,22.0.0)</guava.versionRange>
 		<net.bytebuddy.version>1.9.3</net.bytebuddy.version>
 		<javax.annotation.version>1.3.1</javax.annotation.version>
-		<groovy.version>2.4.13</groovy.version>
+		<groovy.version>2.4.17</groovy.version>
 		<commons.collections.version>3.2.2</commons.collections.version>
 		<commons.collections.versionRange>[3.2.2,3.3.0)</commons.collections.versionRange>
 		<kotlin.version>1.2.51</kotlin.version>
@@ -204,7 +204,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>[${guava.version}]</version>
+			<version>${guava.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -292,12 +292,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.github.classgraph</groupId>
-			<artifactId>classgraph</artifactId>
-			<version>${classgraph.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>${slf4j.version}</version>
@@ -313,6 +307,12 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
 			<version>${slf4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.classgraph</groupId>
+			<artifactId>classgraph</artifactId>
+			<version>${classgraph.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -682,7 +682,7 @@
 								<versionRange>${guava.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
-						<!-- Restrict SLF4J version to Virgo 3.7.0 compatible version -->
+						<!-- Restrict SLF4J version -->
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>slf4j.api</id>
@@ -845,8 +845,8 @@
 					<artifactId>tycho-compiler-plugin</artifactId>
 					<version>${tycho.version}</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<source>11</source>
+						<target>11</target>
 						<excludeResources>
 							<excludeResource>**/*.groovy</excludeResource>
 							<excludeResource>**/*.xtend</excludeResource>
@@ -857,10 +857,10 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.1</version>
+					<version>3.8.0</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<source>11</source>
+						<target>11</target>
 					</configuration>
 				</plugin>
 				<plugin>
