@@ -194,7 +194,7 @@ public final class Parameters {
 		}
 		
 		/**
-		 * Returns the optinal parameter with matching name provided.
+		 * Returns the optional parameter with matching name provided.
 		 * @param parameterName
 		 * @return
 		 */

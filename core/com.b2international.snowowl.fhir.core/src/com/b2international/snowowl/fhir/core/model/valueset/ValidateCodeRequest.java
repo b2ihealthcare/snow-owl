@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 6.9
  */
 @JsonDeserialize(builder = ValidateCodeRequest.Builder.class)
-@JsonPropertyOrder({"url", "context", "valueSet", "code", "system", "version", "display", "coding", "codeableConcept", "date",
-	"abstract", "displayLanguage"})
+@JsonPropertyOrder({"url", "context", "valueSet", "valueSetVersion", "code", "system", "systemVersion", "display", 
+	"coding", "codeableConcept", "date", "abstract", "displayLanguage"})
 public class ValidateCodeRequest {
 	
 	//Value set Canonical URL. The server must know the value set (e.g. it is defined explicitly in the server's value sets, or it is defined implicitly by some code system known to the server
@@ -48,6 +48,9 @@ public class ValidateCodeRequest {
 	
 	private final ValueSet valueSet;
 	
+	//The identifier that is used to identify a specific version of the value set to be used when validating the code.
+	private final String valueSetVersion;
+	
 	// The code that is to be validated. If a code is provided, a system must be provided (0..1)
 	private final String code;
 
@@ -55,7 +58,7 @@ public class ValidateCodeRequest {
 	private final String system;
 	
 	// The code system version of the code to be validated (0..1)
-	private final String version;
+	private final String systemVersion;
 	
 	private final String display;
 
@@ -85,9 +88,10 @@ public class ValidateCodeRequest {
 			Uri url,
 			Uri context,
 			ValueSet valueSet,
+			String valueSetVersion,
 			String code, 
 			String system, 
-			String version,
+			String systemVersion,
 			String display,
 			Coding coding,
 			CodeableConcept codeableConcept,
@@ -98,9 +102,10 @@ public class ValidateCodeRequest {
 		this.url = url;
 		this.context = context;
 		this.valueSet = valueSet;
+		this.valueSetVersion = valueSetVersion;
 		this.code = code;
 		this.system = system;
-		this.version = version;
+		this.systemVersion = systemVersion;
 		this.display = display;
 		this.coding = coding;
 		this.codeableConcept = codeableConcept;
@@ -121,6 +126,10 @@ public class ValidateCodeRequest {
 		return valueSet;
 	}
 	
+	public String getValueSetVersion() {
+		return valueSetVersion;
+	}
+	
 	public String getCode() {
 		if (code != null) {
 			return code;
@@ -139,8 +148,8 @@ public class ValidateCodeRequest {
 		return null;
 	}
 
-	public String getVersion() {
-		return version;
+	public String getSystemVersion() {
+		return systemVersion;
 	}
 	
 	public String getDisplay() {
@@ -177,9 +186,10 @@ public class ValidateCodeRequest {
 		private Uri url;
 		private Uri context;
 		private ValueSet valueSet;
+		private String valueSetVersion;
 		private String code;
 		private String system;
-		private String version;
+		private String systemVersion;
 		private String display;
 		private Coding coding;
 		private CodeableConcept codeableConcept;
@@ -208,6 +218,11 @@ public class ValidateCodeRequest {
 			this.valueSet = valueSet;
 			return this;
 		}
+
+		public Builder valueSetVersion(final String valueSetVersion) {
+			this.valueSetVersion = valueSetVersion;
+			return this;
+		}
 		
 		public Builder code(final String code) {
 			this.code = code;
@@ -219,8 +234,8 @@ public class ValidateCodeRequest {
 			return this;
 		}
 		
-		public Builder version(final String version) {
-			this.version = version;
+		public Builder systemVersion(final String systemVersion) {
+			this.systemVersion = systemVersion;
 			return this;
 		}
 		
@@ -260,7 +275,7 @@ public class ValidateCodeRequest {
 
 		@Override
 		protected ValidateCodeRequest doBuild() {
-			return new ValidateCodeRequest(url, context, valueSet, code, system, version, display, coding, codeableConcept, date, isAbstract, displayLanguage);
+			return new ValidateCodeRequest(url, context, valueSet, valueSetVersion, code, system, systemVersion, display, coding, codeableConcept, date, isAbstract, displayLanguage);
 		}
 
 	}

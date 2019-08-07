@@ -41,8 +41,8 @@ import com.google.common.collect.ImmutableList;
  * @since 7.1
  */
 @JsonDeserialize(builder = TranslateRequest.Builder.class)
-@JsonPropertyOrder({"code", "system", "version", "source", "coding", "codeableConcept",
-	"target", "targetsystem", "dependency", "reverse"})
+@JsonPropertyOrder({"url", "conceptMap", "conceptMapVersion", "code", "system",	"version", 
+	"source", "coding", "codeableConcept", "target", "targetsystem", "dependency", "reverse"})
 public class TranslateRequest {
 	
 	//A canonical URL for the concept map. (0..1)

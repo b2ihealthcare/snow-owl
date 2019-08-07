@@ -240,7 +240,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	 * @param valueSetId the logical ID of the valueSet
 	 * @param code code to validate
 	 * @param system the code system of the code to validate
-	 * @param version the optional version of the code to validate
+	 * @param systemVersion the optional version of the code to validate
 	 *
 	 * @return validation results as {@link OperationOutcome}
 	 */
@@ -258,14 +258,14 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			@ApiParam(value="The id of the value set to validate") @PathVariable("valueSetId") String valueSetId, 
 			@ApiParam(value="The code to to be validated") @RequestParam(value="code") final String code,
 			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String version) {
+			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
 		
 		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
 		
 		ValidateCodeRequest validateCodeRequest = ValidateCodeRequest.builder()
 			.code(code)
 			.system(system)
-			.version(version)
+			.systemVersion(systemVersion)
 			.build();
 		
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(logicalId);
@@ -280,7 +280,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	 * @param url the canonical URL of the value set to validate the code against
 	 * @param code code to validate
 	 * @param system the code system of the code to validate
-	 * @param version the optional version of the code to validate
+	 * @param systemVersion the optional version of the code to validate
 	 * @return validation results as {@link OperationOutcome}
 	 */
 	@ApiOperation(
@@ -297,7 +297,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			@ApiParam(value="Canonical URL of the value set") @RequestParam(value="url") final String url,
 			@ApiParam(value="The code to to be validated") @RequestParam(value="code") final String code,
 			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String version) {
+			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
 		
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(url);
 		
@@ -306,7 +306,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.url(url)
 			.code(code)
 			.system(system)
-			.version(version)
+			.systemVersion(systemVersion)
 			.build();
 		
 		ValidateCodeResult validateCodeResult = valueSetProvider.validateCode(validateCodeRequest);

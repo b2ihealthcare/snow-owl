@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.valueset;
 
+import java.util.Collection;
 import java.util.Date;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -24,9 +25,11 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * This class represents a FHIR ValueSet$expand operation request.
@@ -35,20 +38,28 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 6.9
  */
 @JsonDeserialize(builder = ExpandValueSetRequest.Builder.class)
-@JsonPropertyOrder({"url", "valueSet", "context", "filter", "profile", "date", "offset", "count", "includeDesignations", "includeDefinition", "activeOnly", "excludeNested", 
-	"excludeNotForUI", "excludePostCoordinated", "displayLanguage", "limitedExpansion"})
+@JsonPropertyOrder({"url", "valueSet", "valueSetVersion", "context", "contextDirection", "filter", "date", "offset", "count", "includeDesignations", "designation", "includeDefinition", "activeOnly", "excludeNested", 
+	"excludeNotForUI", "excludePostCoordinated", "displayLanguage", "excludeSystem", "systemVersion", "checkSystemVersion", "forceSystemVersion" })
 public class ExpandValueSetRequest {
 	
 	//Value set Canonical URL. The server must know the value set (e.g. it is defined explicitly in the server's value sets, or it is defined implicitly by some code system known to the server
 	private final Uri url;
 	
 	private final ValueSet valueSet;
+	
+	//The identifier that is used to identify a specific version of the value set to be used when generating the expansion.
+	private final String valueSetVersion;
 
 	private final Uri context;
 	
-	private final String filter;
+	/*
+	 * If a context is provided, a context direction may also be provided. Valid values are:
+	 * 'incoming' - the codes a client can use for PUT/POST operations, and
+	 * 'outgoing' -  the codes a client might receive from the server.
+	 */
+	private final Code contextDirection;
 	
-	private final Uri profile;
+	private final String filter;
 	
 	private final Date date;
 	
@@ -57,6 +68,13 @@ public class ExpandValueSetRequest {
 	private final Integer count;
 	
 	private final Boolean includeDesignations;
+	
+	/*
+	 * A token that specifies a system+code that is either a use or a language. 
+	 * Designations that match by language or use are included in the expansion.
+	 * If no designation is specified, it is at the server discretion which designations to return. 
+	 */
+	private final Collection<String> designation;
 	
 	private final Boolean includeDefinition;
 	
@@ -70,42 +88,58 @@ public class ExpandValueSetRequest {
 
 	private final Code displayLanguage;
 	
-	private final Boolean limitedExpansion;
+	private final Uri excludeSystem;
+	
+	private final Uri systemVersion;
+
+	private final Uri checkSystemVersion;
+
+	private final Uri forceSystemVersion;
 	
 	ExpandValueSetRequest(
 		Uri url,
 		ValueSet valueSet,
+		String valueSetVersion,
 		Uri context,
+		Code contextDirection,
 		String filter,
-		Uri profile,
 		Date date,
 		Integer offset,
 		Integer count,
 		Boolean includeDesignations,
+		Collection<String> designation,
 		Boolean includeDefinition,
 		Boolean activeOnly,
 		Boolean excludeNested,
 		Boolean excludeNotForUI,
 		Boolean excludePostCoordinated,
 		Code displayLanguage,
-		Boolean limitedExpansion) {
+		Uri excludeSystem,
+		Uri systemVersion,
+		Uri checkSystemVersion,
+		Uri forceSystemVersion) {
 		
 		this.url = url;
 		this.valueSet = valueSet;
+		this.valueSetVersion = valueSetVersion;
 		this.context = context;
+		this.contextDirection = contextDirection;
 		this.filter = filter;
-		this.profile = profile;
 		this.date = date;
 		this.offset = offset;
 		this.count = count;
 		this.includeDesignations = includeDesignations;
+		this.designation = designation;
 		this.includeDefinition = includeDefinition;
 		this.activeOnly = activeOnly;
 		this.excludeNested = excludeNested;
 		this.excludeNotForUI = excludeNotForUI;
 		this.excludePostCoordinated = excludePostCoordinated;
 		this.displayLanguage = displayLanguage;
-		this.limitedExpansion = limitedExpansion;
+		this.excludeSystem = excludeSystem;
+		this.systemVersion = systemVersion;
+		this.checkSystemVersion = checkSystemVersion;
+		this.forceSystemVersion = forceSystemVersion;
 	}
 	
 	public Uri getUrl() {
@@ -116,16 +150,20 @@ public class ExpandValueSetRequest {
 		return valueSet;
 	}
 	
+	public String getValueSetVersion() {
+		return valueSetVersion;
+	}
+	
 	public Uri getContext() {
 		return context;
 	}
 	
+	public Code getContextDirection() {
+		return contextDirection;
+	}
+	
 	public String getFilter() {
 		return filter;
-	}
-
-	public Uri getProfile() {
-		return profile;
 	}
 
 	public Date getDate() {
@@ -142,6 +180,10 @@ public class ExpandValueSetRequest {
 
 	public Boolean getIncludeDesignations() {
 		return includeDesignations;
+	}
+	
+	public Collection<String> getDesignations() {
+		return designation;
 	}
 
 	public Boolean getIncludeDefinition() {
@@ -167,11 +209,23 @@ public class ExpandValueSetRequest {
 	public Code getDisplayLanguage() {
 		return displayLanguage;
 	}
-
-	public Boolean getLimitedExpansion() {
-		return limitedExpansion;
+	
+	public Uri getExcludeSystem() {
+		return excludeSystem;
 	}
 	
+	public Uri getSystemVersion() {
+		return systemVersion;
+	}
+	
+	public Uri getCheckSystemVersion() {
+		return checkSystemVersion;
+	}
+	
+	public Uri getForceSystemVersion() {
+		return forceSystemVersion;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -181,20 +235,25 @@ public class ExpandValueSetRequest {
 
 		private Uri url;
 		private ValueSet valueSet;
+		private String valueSetVersion;
 		private Uri context;
+		private Code contextDirection;
 		private String filter;
-		private Uri profile;
 		private Date date;
 		private Integer offset;
 		private Integer count;
 		private Boolean includeDesignations;
+		private ImmutableList.Builder<String> designations = ImmutableList.builder();
 		private Boolean includeDefinition;
 		private Boolean activeOnly;
 		private Boolean excludeNested;
 		private Boolean excludeNotForUI;
 		private Boolean excludePostCoordinated;
 		private Code displayLanguage;
-		private Boolean limitedExpansion;
+		private Uri excludeSystem;
+		private Uri systemVersion;
+		private Uri checkSystemVersion;
+		private Uri forceSystemVersion;
 		
 		Builder() {}
 		
@@ -212,19 +271,29 @@ public class ExpandValueSetRequest {
 			this.valueSet = valueSet;
 			return this;
 		}
+
+		public Builder valueSetVersion(final String valueSetVersion) {
+			this.valueSetVersion = valueSetVersion;
+			return this;
+		}
 		
 		public Builder context(final Uri context) {
 			this.context = context;
 			return this;
 		}
-		
-		public Builder filter(final String filter) {
-			this.filter = filter;
+
+		public Builder contextDirection(final Code contextDirection) {
+			this.contextDirection = contextDirection;
 			return this;
 		}
 		
-		public Builder profile(final Uri profile) {
-			this.profile = profile;
+		public Builder contextDirection(final String contextDirection) {
+			this.contextDirection = new Code(contextDirection);
+			return this;
+		}
+		
+		public Builder filter(final String filter) {
+			this.filter = filter;
 			return this;
 		}
 		
@@ -249,6 +318,22 @@ public class ExpandValueSetRequest {
 		
 		public Builder includeDesignations(final Boolean includeDesignations) {
 			this.includeDesignations = includeDesignations;
+			return this;
+		}
+		
+		public Builder addDesignation(String designation) {
+			designations.add(designation);
+			return this;
+		}
+		
+		public void addDesignations(Collection<String> additionalDesignations) {
+			designations.addAll(additionalDesignations);
+		}
+		
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder designation(Collection<String> designationCollection) {
+			designations = ImmutableList.builder();
+			designations.addAll(designationCollection);
 			return this;
 		}
 		
@@ -282,15 +367,30 @@ public class ExpandValueSetRequest {
 			return this;
 		}
 		
-		public Builder limitedExpansion(final Boolean limitedExpansion) {
-			this.limitedExpansion = limitedExpansion;
+		public Builder excludeSystem(final Uri excludeSystem) {
+			this.excludeSystem = excludeSystem;
+			return this;
+		}
+		
+		public Builder systemVersion(final Uri systemVersion) {
+			this.systemVersion = systemVersion;
+			return this;
+		}
+		
+		public Builder checkSystemVersion(final Uri checkSystemVersion) {
+			this.checkSystemVersion = checkSystemVersion;
+			return this;
+		}
+		
+		public Builder forceSystemVersion(final Uri forceSystemVersion) {
+			this.forceSystemVersion = forceSystemVersion;
 			return this;
 		}
 		
 		@Override
 		protected ExpandValueSetRequest doBuild() {
-			return new ExpandValueSetRequest(url, valueSet, context, filter, profile, date, offset, count, includeDesignations, 
-					includeDefinition, activeOnly, excludeNested, excludeNotForUI, excludePostCoordinated, displayLanguage, limitedExpansion);
+			return new ExpandValueSetRequest(url, valueSet, valueSetVersion, context, contextDirection, filter, date, offset, count, includeDesignations, designations.build(),
+					includeDefinition, activeOnly, excludeNested, excludeNotForUI, excludePostCoordinated, displayLanguage, excludeSystem, systemVersion, checkSystemVersion, forceSystemVersion);
 		}
 
 	}

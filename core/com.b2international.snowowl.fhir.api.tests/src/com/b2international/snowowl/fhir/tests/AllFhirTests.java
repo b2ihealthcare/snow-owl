@@ -34,6 +34,7 @@ import com.b2international.snowowl.fhir.tests.serialization.domain.ValueSetSeria
 import com.b2international.snowowl.fhir.tests.serialization.dt.ComplexDataTypeSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.dt.PrimitiveDataTypeSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.DesignationSerializationTest;
+import com.b2international.snowowl.fhir.tests.serialization.parameterized.ExpandValueSetRequestDeserializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.LookupRequestDeserializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.LookupResultSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.ParameterDeserializationTest;
@@ -73,6 +74,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Transl
 	TranslateRequestDeserializationTest.class,
 	TranslateResultSerializationTest.class,
 	SubsumptionRequestDeserializationTest.class,
+	ExpandValueSetRequestDeserializationTest.class,
 
 	//Domain models
 	TypedPropertySerializationTest.class,
