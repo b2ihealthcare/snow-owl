@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.eclipse.core.runtime.ListenerList;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.oplock.impl.AbstractDatastoreLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -47,8 +51,6 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 	private static final int EXPECTED_LOCKS = 128;
 
 	private final Object syncObject = new Object();
-
-	private final Map<IOperationLockTarget, IOperationLock<C>> grantedLocks = Maps.newHashMap();
 
 	private final ListenerList listenerList = new ListenerList();
 	
@@ -149,7 +151,7 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 
 		synchronized (syncObject) {
 			
-			for (IOperationLock<C> lockToRemove : getAllGrantedLocks()) {
+			for (IOperationLock<C> lockToRemove : getExistingLocks()) {
 				
 				if (!lockToRemove.isLocked()) {
 					throw new IllegalStateException(MessageFormat.format(LOCK_EXISTS_BUT_NOT_HELD_MESSAGE, lockToRemove.getTarget()));
@@ -174,7 +176,7 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 		
 		synchronized (syncObject) {
 			
-			for (IOperationLock<C> lockToRemove : getAllGrantedLocks()) {
+			for (IOperationLock<C> lockToRemove : getExistingLocks()) {
 				
 				if (!lockToRemove.isLocked()) {
 					throw new IllegalStateException(MessageFormat.format(LOCK_EXISTS_BUT_NOT_HELD_MESSAGE, lockToRemove.getTarget()));
@@ -189,10 +191,6 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 		}
 		
 		return false;
-	}
-
-	private ImmutableList<IOperationLock<C>> getAllGrantedLocks() {
-		return ImmutableList.copyOf(grantedLocks.values());
 	}
 
 	/**
@@ -260,31 +258,38 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 	}
 
 	private IOperationLock<C> getOrCreateLock(final IOperationLockTarget target) {
-		IOperationLock<C> existingLock = grantedLocks.get(target);
-
-		if (null == existingLock) {
+		final DatastoreLockEntry existingLockEntry = Iterables.getOnlyElement(getLockIndex().search(DatastoreLockEntry.Expressions.lockTarget(target), 1), null);
+		
+		if (existingLockEntry == null) {
 			lastAssignedId = assignedIds.nextClearBit(lastAssignedId);
-			existingLock = createLock(lastAssignedId, target);
-			assignedIds.set(lastAssignedId);
+			final String lockId = Integer.toString(lastAssignedId);
+			final IOperationLock<C> newLock = createLock(lastAssignedId, target);
+			final DatastoreLockEntry newEntry = buildIndexEntry(lockId, newLock, target);
+			getLockIndex().put(lockId, newEntry);
 			
+			assignedIds.set(lastAssignedId);
 			/* 
 			 * XXX (apeteri): this makes the lock manager revisit low IDs after every 128 issued locks, but 
 			 * it can still assign a number over 128 if all of the early ones are in use, since the BitSet grows unbounded. 
 			 */
 			lastAssignedId = lastAssignedId % EXPECTED_LOCKS;
 		}
+		
+		return existingLockEntry.getLock();
+	}
 
-		grantedLocks.put(target, existingLock);
-		return existingLock;
+	private DatastoreLockEntry buildIndexEntry(final String lockId, IOperationLock<C> lock, final IOperationLockTarget target) {
+		final DatastoreLockEntry entry = DatastoreLockEntry.builder()
+			.id(lockId)
+			.lock(lock)
+			.lockTarget(target)
+			.build();
+		
+		return entry;
 	}
 
 	private void removeLock(final IOperationLock<C> existingLock) {
-		if (grantedLocks.values().remove(existingLock)) {
-			assignedIds.clear(existingLock.getId());
-			for (final C context : existingLock.getAllContexts()) {
-				fireTargetReleased(existingLock.getTarget(), context);
-			}
-		}
+		// TODO: remove from index
 	}
 
 	@SuppressWarnings("unchecked")
@@ -302,6 +307,10 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 	}
 
 	private Collection<IOperationLock<C>> getExistingLocks() {
-		return grantedLocks.values();
+		return getLockIndex().search(null, Integer.MAX_VALUE).stream().map(DatastoreLockEntry::getLock).collect(Collectors.toList());
+	}
+	
+	private DatastoreLockIndex getLockIndex() {
+		return ApplicationContext.getServiceForClass(DatastoreLockIndex.class);
 	}
 }
