@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,8 @@ import com.b2international.snowowl.datastore.internal.session.ApplicationSession
 import com.b2international.snowowl.datastore.internal.session.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.LogListener;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
+import com.b2international.snowowl.datastore.oplock.DatastoreLockEntry;
+import com.b2international.snowowl.datastore.oplock.DatastoreLockIndex;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
@@ -249,21 +251,30 @@ public final class RepositoryPlugin extends Plugin {
 	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
+			initializeLockSupport(env, configuration);
 		}
 	}
 	
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
-		final Index index = Indexes.createIndex("jobs", env.service(ObjectMapper.class), new Mappings(RemoteJobEntry.class), env.service(IndexSettings.class));
+		final ObjectMapper objectMapper = env.service(ObjectMapper.class);
+		final Index jobsIndex = Indexes.createIndex("jobs", objectMapper, new Mappings(RemoteJobEntry.class), env.service(IndexSettings.class));
 		// TODO make this configurable
 		final long defaultJobCleanUpInterval = TimeUnit.MINUTES.toMillis(1);
 		env.services()
 			.registerService(RemoteJobTracker.class, 
 				new RemoteJobTracker(
-					index, 
+					jobsIndex, 
 					env.service(IEventBus.class), 
-					env.service(ObjectMapper.class), 
+					objectMapper, 
 					defaultJobCleanUpInterval)
 			);
+	}
+	
+	private void initializeLockSupport(Environment env, SnowOwlConfiguration configuration) {
+		final ObjectMapper objectMapper = env.service(ObjectMapper.class);
+		final Index locksIndex = Indexes.createIndex("locks", objectMapper, new Mappings(DatastoreLockEntry.class), env.service(IndexSettings.class));
+		env.services().registerService(DatastoreLockIndex.class,
+				new DatastoreLockIndex(locksIndex));
 	}
 
 	private void initializeRequestSupport(Environment env, int numberOfWorkers) {
