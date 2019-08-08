@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.oplock.impl;
 
-import java.io.Serializable;
 import java.text.MessageFormat;
 
 import com.google.common.base.Preconditions;
@@ -25,7 +24,7 @@ import com.google.common.base.Preconditions;
  * be acquired. Context equality is only based on the user ID.
  * 
  */
-public class DatastoreLockContext implements Serializable {
+public class DatastoreLockContext {
 
 	private static final long serialVersionUID = 1L;
 

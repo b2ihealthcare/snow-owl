@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,13 @@ import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.DatastoreOperationLockManager;
+import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.OperationLockInfo;
-import com.b2international.snowowl.datastore.oplock.impl.AllRepositoriesLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTarget;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.b2international.snowowl.identity.domain.User;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
@@ -71,8 +68,8 @@ public final class LocksCommand extends Command {
 	
 	@Override
 	public void run(CommandLineStream out) {
-		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getService(IDatastoreOperationLockManager.class);
-		final List<OperationLockInfo<DatastoreLockContext>> locks = ((DatastoreOperationLockManager) lockManager).getLocks();
+		final IOperationLockManager lockManager = ApplicationContext.getInstance().getService(IOperationLockManager.class);
+		final List<OperationLockInfo> locks = ((DatastoreOperationLockManager) lockManager).getLocks();
 		
 		if (locks.isEmpty()) {
 			out.println("No locks are currently granted on this server.");
@@ -83,7 +80,7 @@ public final class LocksCommand extends Command {
 		out.println(COLUMN_FORMAT, "Id", "Lvl", "Created on", "Locked area", "Owner context");
 		out.println(Strings.repeat("-", 135));
 		
-		for (final OperationLockInfo<DatastoreLockContext> lockEntry : locks) {
+		for (final OperationLockInfo lockEntry : locks) {
 			out.println(String.format(COLUMN_FORMAT, 
 					lockEntry.getId(),
 					lockEntry.getLevel(),
@@ -110,14 +107,14 @@ public final class LocksCommand extends Command {
 		
 		@Override
 		public void run(CommandLineStream out) {
-			final IOperationLockTarget target = parseLockTarget(repositoryOrAll); 
+			final DatastoreLockTarget target = parseLockTarget(repositoryOrAll); 
 			
 			if (null == target) {
 				out.println("Couldn't find resource '%s' to acquire lock for.", repositoryOrAll);
 				return;
 			}
 			
-			final IDatastoreOperationLockManager lockManager = getLockManager();
+			final IOperationLockManager lockManager = getLockManager();
 			final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.MAINTENANCE);
 			
 			try {
@@ -147,7 +144,7 @@ public final class LocksCommand extends Command {
 		public void run(CommandLineStream out) {
 			// first try to parse it as LOCK ID and release if succeeded
 			Integer lockId = Ints.tryParse(lockTargetOrLockIdOrAll);
-			IOperationLockTarget target = null;
+			DatastoreLockTarget target = null;
 			if (lockId == null) {
 				// then try to parse it as lock target
 				target = parseLockTarget(lockTargetOrLockIdOrAll);
@@ -161,7 +158,7 @@ public final class LocksCommand extends Command {
 				if (lockId != null) {
 					getLockManager().unlockById(lockId);
 					out.println("Released lock by ID '%s'.", lockId);
-				} else if (target == AllRepositoriesLockTarget.INSTANCE) {
+				} else if (target == (DatastoreLockTarget.ALL)) {
 					getLockManager().unlockAll();
 					out.println("Released ALL locks.");
 				} else {
@@ -176,12 +173,12 @@ public final class LocksCommand extends Command {
 	}
 
 	private static DatastoreOperationLockManager getLockManager() {
-		return (DatastoreOperationLockManager) ApplicationContext.getInstance().getService(IDatastoreOperationLockManager.class);
+		return (DatastoreOperationLockManager) ApplicationContext.getInstance().getService(IOperationLockManager.class);
 	}
 	
-	private static IOperationLockTarget parseLockTarget(final String lockTargetOrAll) {
+	private static DatastoreLockTarget parseLockTarget(final String lockTargetOrAll) {
 		if (ALL.equalsIgnoreCase(lockTargetOrAll)) {
-			return AllRepositoriesLockTarget.INSTANCE;
+			return DatastoreLockTarget.ALL;
 		}
 		
 		final String repositoryId;
@@ -205,11 +202,12 @@ public final class LocksCommand extends Command {
 			return null;
 		}
 		
+	
 		if (Strings.isNullOrEmpty(path)) {
-			return new SingleRepositoryLockTarget(repositoryId);
+			return new DatastoreLockTarget(repositoryId, null);
 		}
 		
-		IBranchPath branchPath = BranchPathUtils.createPath(path);
+		final IBranchPath branchPath = BranchPathUtils.createPath(path);
 		//assuming active connection manager service here
 		
 		RevisionBranch branch = repository.service(BaseRevisionBranching.class).getBranch(path);
@@ -217,7 +215,7 @@ public final class LocksCommand extends Command {
 			return null;
 		}
 		
-		return new SingleRepositoryAndBranchLockTarget(repositoryId, branchPath);
+		return new DatastoreLockTarget(repositoryId, branchPath.getPath());
 	}
 	
 }
