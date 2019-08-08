@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,16 @@
  */
 package com.b2international.snowowl.datastore.oplock;
 
-import java.io.Serializable;
 import java.util.Date;
+
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 
 /**
  * Contains all information about an operation lock which should be presented on an administrative interface. Sorts by date.
  *
  */
-public class OperationLockInfo<C extends Serializable> implements Comparable<OperationLockInfo<C>> {
+public class OperationLockInfo implements Comparable<OperationLockInfo> {
 
 	private final int id;
 
@@ -30,11 +32,11 @@ public class OperationLockInfo<C extends Serializable> implements Comparable<Ope
 
 	private final Date creationDate;
 	
-	private final IOperationLockTarget target;
+	private final DatastoreLockTarget target;
 	
-	private final C context;
+	private final DatastoreLockContext context;
 
-	public OperationLockInfo(final int id, final int lockLevel, final Date creationDate, final IOperationLockTarget target, final C context) {
+	public OperationLockInfo(final int id, final int lockLevel, final Date creationDate, final DatastoreLockTarget target, final DatastoreLockContext context) {
 		this.id = id;
 		this.level = lockLevel;
 		this.creationDate = creationDate;
@@ -54,16 +56,16 @@ public class OperationLockInfo<C extends Serializable> implements Comparable<Ope
 		return creationDate;
 	}
 
-	public IOperationLockTarget getTarget() {
+	public DatastoreLockTarget getTarget() {
 		return target;
 	}
 	
-	public C getContext() {
+	public DatastoreLockContext getContext() {
 		return context;
 	}
 
 	@Override
-	public int compareTo(final OperationLockInfo<C> otherInfo) {
+	public int compareTo(final OperationLockInfo otherInfo) {
 		return creationDate.compareTo(otherInfo.creationDate);
 	}
 }

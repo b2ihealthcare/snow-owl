@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,15 @@ package com.b2international.snowowl.datastore.oplock;
 
 import java.text.MessageFormat;
 
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
+
 /**
  * Represents a reentrant lock that can be acquired and released in a balanced fashion multiple times by the same context.
  *
  * @param C the lock context type
  * @see IOperationLock
  */
-public class ReentrantOperationLock<C> extends AbstractOperationLock<C> {
+public class OperationLock extends AbstractOperationLock {
 
 	private static final String LOCK_NOT_HELD_MESSAGE = "Can''t release lock for {0} because it is not held.";
 
@@ -33,7 +35,7 @@ public class ReentrantOperationLock<C> extends AbstractOperationLock<C> {
 	 * @param id the lock identifier
 	 * @param target the lock target (may not be {@code null})
 	 */
-	public ReentrantOperationLock(final int id, final IOperationLockTarget target) {
+	public OperationLock(final int id, final DatastoreLockTarget target) {
 		super(id, target);
 	}
 
