@@ -16,14 +16,22 @@
 package com.b2international.snowowl.datastore.oplock.impl;
 
 import com.b2international.commons.extension.Component;
+import com.b2international.index.Index;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
+import com.b2international.snowowl.datastore.oplock.DatastoreLockIndexEntry;
+import com.b2international.snowowl.datastore.oplock.DatastoreOperationLockManager;
+import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 7.0
@@ -34,7 +42,8 @@ public final class LockPlugin extends Plugin {
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
-			final DatastoreOperationLockManager lockManager = new DatastoreOperationLockManager();
+			final Index locksIndex = Indexes.createIndex("locks", env.service(ObjectMapper.class), new Mappings(DatastoreLockIndexEntry.class), env.service(IndexSettings.class));
+			final DatastoreOperationLockManager lockManager = new DatastoreOperationLockManager(locksIndex);
 			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
 			lockManager.addLockTargetListener(new Slf4jOperationLockTargetListener());
 			lockManager.addLockTargetListener(remoteLockTargetListener);
@@ -48,14 +57,15 @@ public final class LockPlugin extends Plugin {
 					((ApplicationSessionManager) newService).addListener(remoteLockTargetListener);
 				}
 			});
-			env.services().registerService(IDatastoreOperationLockManager.class, lockManager);
+			env.services().registerService(IOperationLockManager.class, lockManager);
 			final RpcSession session = RpcUtil.getInitialServerSession(env.container());
-			session.registerClassLoader(IDatastoreOperationLockManager.class, DatastoreOperationLockManager.class.getClassLoader());
+			session.registerClassLoader(IOperationLockManager.class, DatastoreOperationLockManager.class.getClassLoader());
 		}
 		
 		if (!env.isEmbedded()) {
-			env.services().registerService(IDatastoreOperationLockManager.class, RpcUtil.createProxy(env.container(), IDatastoreOperationLockManager.class));
+			env.services().registerService(IOperationLockManager.class, RpcUtil.createProxy(env.container(), IOperationLockManager.class));
 		}
 	}
+	
 	
 }

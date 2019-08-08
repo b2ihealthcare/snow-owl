@@ -58,8 +58,6 @@ import com.b2international.snowowl.datastore.internal.session.ApplicationSession
 import com.b2international.snowowl.datastore.internal.session.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.LogListener;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
-import com.b2international.snowowl.datastore.oplock.DatastoreLockEntry;
-import com.b2international.snowowl.datastore.oplock.DatastoreLockIndex;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
@@ -251,7 +249,6 @@ public final class RepositoryPlugin extends Plugin {
 	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
-			initializeLockSupport(env, configuration);
 		}
 	}
 	
@@ -270,13 +267,6 @@ public final class RepositoryPlugin extends Plugin {
 			);
 	}
 	
-	private void initializeLockSupport(Environment env, SnowOwlConfiguration configuration) {
-		final ObjectMapper objectMapper = env.service(ObjectMapper.class);
-		final Index locksIndex = Indexes.createIndex("locks", objectMapper, new Mappings(DatastoreLockEntry.class), env.service(IndexSettings.class));
-		env.services().registerService(DatastoreLockIndex.class,
-				new DatastoreLockIndex(locksIndex));
-	}
-
 	private void initializeRequestSupport(Environment env, int numberOfWorkers) {
 		final IEventBus events = env.service(IEventBus.class);
 		final ClassLoader classLoader = env.plugins().getCompositeClassLoader();
