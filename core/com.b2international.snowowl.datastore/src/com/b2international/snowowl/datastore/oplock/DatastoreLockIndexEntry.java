@@ -31,8 +31,8 @@ import com.google.common.base.MoreObjects;
  * @since 7.1.0
  */
 @Doc(type = "lock")
-@JsonDeserialize(builder=DatastoreLockEntry.Builder.class)
-public class DatastoreLockEntry implements Serializable {
+@JsonDeserialize(builder=DatastoreLockIndexEntry.Builder.class)
+public class DatastoreLockIndexEntry implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -40,7 +40,8 @@ public class DatastoreLockEntry implements Serializable {
 		public static final String ID = "id";
 		public static final String USER_ID = "userId";
 		public static final String DESCRIPTION = "description";
-		public static final String LOCK_TARGET = "lockTarget";
+		public static final String REPOSITORYUUID= "repositoryUuid";
+		public static final String BRANCHPATH = "branchPath";
 	}
 	
 	public static class Expressions {
@@ -60,32 +61,37 @@ public class DatastoreLockEntry implements Serializable {
 			return com.b2international.index.query.Expressions.exactMatch(Fields.DESCRIPTION, description);
 		}
 		
-		public static Expression lockTarget(final IOperationLockTarget lockTarget) {
-			return com.b2international.index.query.Expressions.exactMatch(Fields.LOCK_TARGET, lockTarget.toString());
+		public static Expression repositoryUuid(final String repositoryUuid) {
+			return com.b2international.index.query.Expressions.exactMatch(Fields.REPOSITORYUUID, repositoryUuid);
+		}
+		
+		public static Expression branchPath(final String branchPath) {
+			return com.b2international.index.query.Expressions.exactMatch(Fields.BRANCHPATH, branchPath);
 		}
 		
 	}
 	 
-	public static DatastoreLockEntry.Builder from(DatastoreLockEntry source) {
+	public static DatastoreLockIndexEntry.Builder from(DatastoreLockIndexEntry source) {
 		return builder()
 				.id(source.getId())
-				.description(source.getDescription())
 				.userId(source.getUserId())
-				.lockTarget(source.getLockTarget());
+				.description(source.getDescription())
+				.repositoryUuid(source.getRepositoryUuid())
+				.branchPath(source.getBranchPath());
 	}
 	
-	public static DatastoreLockEntry.Builder builder() {
+	public static DatastoreLockIndexEntry.Builder builder() {
 		return new Builder();
 	}
 	
-	@JsonPOJOBuilder
+	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder {
 		
 		private String id;
 		private String userId;
 		private String description;
-		private IOperationLockTarget lockTarget;
-		private IOperationLock lock;
+		private String repositoryUuid;
+		private String branchPath;
 		
 		@JsonCreator
 		private Builder() {
@@ -106,33 +112,33 @@ public class DatastoreLockEntry implements Serializable {
 			return this;
 		}
 		
-		public Builder lockTarget(final IOperationLockTarget lockTarget) {
-			this.lockTarget = lockTarget;
+		public Builder repositoryUuid(final String repositoryUuid) {
+			this.repositoryUuid = repositoryUuid;
 			return this;
 		}
 		
-		public Builder lock(final IOperationLock lock) {
-			this.lock = lock;
+		public Builder branchPath(final String branchPath) {
+			this.branchPath = branchPath;
 			return this;
 		}
 		
-		public DatastoreLockEntry build() {
-			return new DatastoreLockEntry(id, userId, description, lockTarget, lock);
+		public DatastoreLockIndexEntry build() {
+			return new DatastoreLockIndexEntry(id, userId, description, repositoryUuid, branchPath);
 		}
 	}
 	
 	private final String id;
 	private final String userId;
 	private final String description;
-	private final IOperationLockTarget lockTarget;
-	private final IOperationLock lock;
+	private final String repositoryUuid;
+	private final String branchPath;
 	
-	private DatastoreLockEntry(final String id, final String userId, final String description, final IOperationLockTarget lockTarget, IOperationLock lock) {
+	private DatastoreLockIndexEntry(final String id, final String userId, final String description, final String repositoryUUid, final String branchPath) {
 		this.id = id;
 		this.userId = userId;
 		this.description = description;
-		this.lockTarget = lockTarget;
-		this.lock = lock;
+		this.repositoryUuid = repositoryUUid;
+		this.branchPath = branchPath;
 	}
 	
 	public String getId() {
@@ -147,17 +153,17 @@ public class DatastoreLockEntry implements Serializable {
 		return description;
 	}
 	
-	public IOperationLockTarget getLockTarget() {
-		return lockTarget;
+	public String getRepositoryUuid() {
+		return repositoryUuid;
 	}
 	
-	public IOperationLock getLock() {
-		return lock;
+	public String getBranchPath() {
+		return branchPath;
 	}
 	
 	@Override
 	public int hashCode() {
-		return 31 + id.hashCode() + description.hashCode() + lockTarget.hashCode() + lock.hashCode();
+		return 31 + id.hashCode() + description.hashCode() + branchPath.hashCode() + repositoryUuid.hashCode() + userId.hashCode();
 	}
 	
 	@Override
@@ -170,15 +176,16 @@ public class DatastoreLockEntry implements Serializable {
 			return false;
 		}
 		
-		if (!(other instanceof DatastoreLockEntry)) {
+		if (!(other instanceof DatastoreLockIndexEntry)) {
 			return false;
 		}
 		
-		final DatastoreLockEntry otherEntry = (DatastoreLockEntry) other;
-		return Objects.equals(id, otherEntry.id) 
-				&& Objects.equals(description, otherEntry.description)
-				&& Objects.equals(lockTarget, otherEntry.lockTarget)
-				&& Objects.equals(lock, otherEntry.lock);
+		final DatastoreLockIndexEntry otherEntry = (DatastoreLockIndexEntry) other;
+		return Objects.equals(id, otherEntry.getId()) 
+				&& Objects.equals(userId, otherEntry.getUserId())
+				&& Objects.equals(description, otherEntry.getDescription())
+				&& Objects.equals(repositoryUuid, otherEntry.getRepositoryUuid())
+				&& Objects.equals(branchPath, otherEntry.getBranchPath());
 	}
 	
 	@Override
@@ -187,7 +194,8 @@ public class DatastoreLockEntry implements Serializable {
 				.add("id", id)
 				.add("userId", userId)
 				.add("description", description)
-				.add("lockTarget", lockTarget)
+				.add("repositoryUuid", repositoryUuid)
+				.add("branchPath", branchPath)
 				.toString();
 	}
 	
