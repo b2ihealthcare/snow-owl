@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,43 +16,50 @@
 package com.b2international.snowowl.datastore.oplock.impl;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import javax.annotation.Nullable;
 
 /**
  * A lock target referring to a single repository branch by the unique identifier of the repository and the branch path.
- * Conflicts with other {@link SingleRepositoryLockTarget}s which refer to the same repository, or
- * {@link SingleRepositoryAndBranchLockTarget}s which refer to the same repository-and-branch pair.
- * 
  */
-public class SingleRepositoryAndBranchLockTarget extends SingleRepositoryLockTarget {
+public class DatastoreLockTarget {
+	
+	private static final String _ALL = "all";
 
-	private static final long serialVersionUID = 1L;
+	public static DatastoreLockTarget ALL = new DatastoreLockTarget(_ALL, _ALL);
 
-	private final IBranchPath branchPath;
+	@Nullable
+	private final String branchPath;
+	
+	private final String repositoryUuid;
 
 	/**
 	 * Creates a new instance based on the specified repository identifier and branch path.
 	 * 
 	 * @param repositoryUuid the target repository's unique identifier (may not be {@code null})
-	 * @param branchPath the target repository's branch path (may not be {@code null})
+	 * @param branchPath the target repository's branch path 
 	 */
-	public SingleRepositoryAndBranchLockTarget(final String repositoryUuid, final IBranchPath branchPath) {
-		super(repositoryUuid);
+	public DatastoreLockTarget(final String repositoryUuid, final String branchPath) {
+		this.repositoryUuid = repositoryUuid;
 		this.branchPath = branchPath;
 	}
 
-	public IBranchPath getBranchPath() {
+	public String getBranchPath() {
 		return branchPath;
 	}
-
-	protected boolean _conflicts(final SingleRepositoryLockTarget other) {
-		return other.equals(this);
+	
+	public String getRepositoryUuid() {
+		return repositoryUuid;
+	}
+	
+	public boolean conflicts(final DatastoreLockTarget other) {
+		return equals(other);
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 * super.hashCode() + branchPath.hashCode();
+		return 31 * super.hashCode() + branchPath.hashCode() + repositoryUuid.hashCode();
 	}
 
 	@Override
@@ -66,16 +73,16 @@ public class SingleRepositoryAndBranchLockTarget extends SingleRepositoryLockTar
 			return false;
 		}
 
-		if (!(obj instanceof SingleRepositoryAndBranchLockTarget)) {
+		if (!(obj instanceof DatastoreLockTarget)) {
 			return false;
 		}
 
-		final SingleRepositoryAndBranchLockTarget other = (SingleRepositoryAndBranchLockTarget) obj;
-		return branchPath.equals(other.branchPath);
+		final DatastoreLockTarget other = (DatastoreLockTarget) obj;
+		return Objects.equals(branchPath, other.branchPath) && Objects.equals(repositoryUuid, other.repositoryUuid);
 	}
 
 	@Override
 	public String toString() {
-		return MessageFormat.format("branch ''{0}'' of repository ''{1}''", branchPath, getRepositoryUuid());
+		return MessageFormat.format("branch ''{0}'' of repository ''{1}''", branchPath, repositoryUuid);
 	}
 }
