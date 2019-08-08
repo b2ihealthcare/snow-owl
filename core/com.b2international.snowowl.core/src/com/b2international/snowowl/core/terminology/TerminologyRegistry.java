@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 7.0
@@ -41,12 +42,13 @@ public enum TerminologyRegistry {
 	private final Map<String, TerminologyComponent> terminologyComponentsById = newHashMap();
 	private final Map<Short, TerminologyComponent> terminologyComponentsByShortId = newHashMap();
 	private final Map<Class<?>, TerminologyComponent> terminologyComponentsByDocType = newHashMap();
+	private final Map<String, String> terminologyIdByTerminologyComponentId = newHashMap(); 
 	
 	private TerminologyRegistry() {
 		registerTerminology(new Terminology() {
 			@Override
-			public Collection<Class<? extends IComponent>> getTerminologyComponents() {
-				return Collections.emptySet();
+			public List<Class<? extends IComponent>> getTerminologyComponents() {
+				return Collections.emptyList();
 			}
 			
 			@Override
@@ -67,9 +69,11 @@ public enum TerminologyRegistry {
 		if (prev != null) {
 			throw new IllegalArgumentException(String.format("A terminology is already registered with id '%s'", terminology.getId()));
 		}
-		for (Class<? extends IComponent> terminologyComponent : terminology.getTerminologyComponents()) {
-			checkArgument(terminologyComponent.isAnnotationPresent(TerminologyComponent.class), "%s domain class must have a @TerminologyComponent annotation.", terminologyComponent.getSimpleName());
-			register(terminologyComponent.getAnnotation(TerminologyComponent.class));
+		for (Class<? extends IComponent> terminologyComponentType : terminology.getTerminologyComponents()) {
+			checkArgument(terminologyComponentType.isAnnotationPresent(TerminologyComponent.class), "%s domain class must have a @TerminologyComponent annotation.", terminologyComponentType.getSimpleName());
+			TerminologyComponent terminologyComponent = terminologyComponentType.getAnnotation(TerminologyComponent.class);
+			register(terminologyComponent);
+			terminologyIdByTerminologyComponentId.put(terminology.getId(), terminologyComponent.id());
 		}
 	}
 
@@ -102,6 +106,11 @@ public enum TerminologyRegistry {
 	public TerminologyComponent getTerminologyComponentByDocType(Class<?> docType) {
 		checkArgument(terminologyComponentsByDocType.containsKey(docType), "Missing terminology component for document type '%s'.", docType);
 		return terminologyComponentsByDocType.get(docType);
+	}
+	
+	public Terminology getTerminologyByTerminologyComponentId(String terminologyComponentId) {
+		checkArgument(terminologyIdByTerminologyComponentId.containsKey(terminologyComponentId), "Missing terminology component for ID '%s'.", terminologyComponentId);
+		return getTerminology(terminologyIdByTerminologyComponentId.get(terminologyComponentId));
 	}
 	
 	private static TerminologyComponent createUnspecifiedTerminologyComponent() {
