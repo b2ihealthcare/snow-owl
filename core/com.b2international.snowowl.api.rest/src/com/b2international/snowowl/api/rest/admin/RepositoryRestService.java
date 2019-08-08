@@ -40,14 +40,12 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.AllRepositoriesLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTarget;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.identity.domain.User;
 
@@ -96,7 +94,7 @@ public class RepositoryRestService extends AbstractRestService {
 			String id) {
 		return DeferredResults.wrap(RepositoryRequests.prepareGet(id).buildAsync().execute(bus));
 	}
-
+	
 	@ApiOperation(
 			value="Lock all repositories",
 			notes="Places a global lock, which prevents other users from making changes to any of the repositories "
@@ -119,7 +117,7 @@ public class RepositoryRestService extends AbstractRestService {
 		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
-		final IOperationLockTarget target = AllRepositoriesLockTarget.INSTANCE;
+		final DatastoreLockTarget target = DatastoreLockTarget.ALL;
 		doLock(timeoutMillis, context, target);
 	}
 
@@ -134,7 +132,7 @@ public class RepositoryRestService extends AbstractRestService {
 	@PostMapping("/unlock")
 	public void unlockGlobal() {
 		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.CREATE_BACKUP);
-		final IOperationLockTarget target = AllRepositoriesLockTarget.INSTANCE;
+		final DatastoreLockTarget target = DatastoreLockTarget.ALL;
 		doUnlock(context, target);
 	}
 
@@ -166,7 +164,7 @@ public class RepositoryRestService extends AbstractRestService {
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
-		final IOperationLockTarget target = new SingleRepositoryLockTarget(id);
+		final DatastoreLockTarget target = new DatastoreLockTarget(id, null);
 		doLock(timeoutMillis, context, target);
 	}
 
@@ -191,7 +189,7 @@ public class RepositoryRestService extends AbstractRestService {
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
-		final IOperationLockTarget target = new SingleRepositoryLockTarget(repositoryUuid);
+		final DatastoreLockTarget target = new DatastoreLockTarget(repositoryUuid, null);
 		doUnlock(context, target);
 	}
 	
@@ -208,7 +206,7 @@ public class RepositoryRestService extends AbstractRestService {
 		checkArgument(timeoutMillis >= 0, "Timeout in milliseconds may not be negative.");
 	}
 
-	private void doUnlock(final DatastoreLockContext context, final IOperationLockTarget target) {
+	private void doUnlock(final DatastoreLockContext context, final DatastoreLockTarget target) {
 		try {
 			getLockManager().unlock(context, target);
 		} catch (final OperationLockException e) {
@@ -216,7 +214,7 @@ public class RepositoryRestService extends AbstractRestService {
 		}
 	}
 	
-	private void doLock(final int timeoutMillis, final DatastoreLockContext context, final IOperationLockTarget target) {
+	private void doLock(final int timeoutMillis, final DatastoreLockContext context, final DatastoreLockTarget target) {
 		try {
 			getLockManager().lock(context, timeoutMillis, target);
 		} catch (final DatastoreOperationLockException e) {
@@ -229,8 +227,8 @@ public class RepositoryRestService extends AbstractRestService {
 		}
 	}
 	
-	private static IDatastoreOperationLockManager getLockManager() {
-		return ApplicationContext.getServiceForClass(IDatastoreOperationLockManager.class);
+	private static IOperationLockManager getLockManager() {
+		return ApplicationContext.getServiceForClass(IOperationLockManager.class);
 	}
 	
 }

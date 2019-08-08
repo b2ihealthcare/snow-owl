@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,15 +44,13 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.CommitResult;
@@ -92,7 +90,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	String codeSystemShortName;
 	
 	// lock props
-	private transient Multimap<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> lockTargetsByContext;
+	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
@@ -212,11 +210,9 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			
 			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
 			for (CodeSystemEntry codeSystem : codeSystems) {
-				final SingleRepositoryAndBranchLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(
-						codeSystem.getRepositoryUuid(),
-						BranchPathUtils.createPath(codeSystem.getBranchPath()));
+				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryUuid(), codeSystem.getBranchPath());
 				
-				context.service(IDatastoreOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
+				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
 
 				lockTargetsByContext.put(lockContext, lockTarget);
 			}
@@ -233,8 +229,8 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void releaseLocks(ServiceProvider context) {
-		for (Entry<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> entry : lockTargetsByContext.entries()) {
-			context.service(IDatastoreOperationLockManager.class).unlock(entry.getKey(), entry.getValue());
+		for (Entry<DatastoreLockContext, DatastoreLockTarget> entry : lockTargetsByContext.entries()) {
+			context.service(IOperationLockManager.class).unlock(entry.getKey(), entry.getValue());
 		}
 	}
 	
