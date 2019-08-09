@@ -94,6 +94,5 @@ public class LockIndexTests {
 			assertEquals(String.format("Field '%s' should be equal", f.getName()), Reflections.getValue(expected, f), Reflections.getValue(actual, f));
 		}
 	}
-
 	
 }
