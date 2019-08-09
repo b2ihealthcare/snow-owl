@@ -20,6 +20,8 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Strings;
+
 /**
  * A lock target referring to a single repository branch by the unique identifier of the repository and the branch path.
  */
@@ -54,12 +56,20 @@ public class DatastoreLockTarget {
 	}
 	
 	public boolean conflicts(final DatastoreLockTarget other) {
+		if (this.equals(ALL) || other.equals(ALL)) {
+			return true;
+		}
+		
+		if (Strings.isNullOrEmpty(branchPath)) {
+			return repositoryUuid.equals(other.getRepositoryUuid());
+		}
+		
 		return equals(other);
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 * super.hashCode() + branchPath.hashCode() + repositoryUuid.hashCode();
+		return Objects.hash(repositoryUuid, branchPath);
 	}
 
 	@Override
@@ -68,11 +78,7 @@ public class DatastoreLockTarget {
 		if (this == obj) {
 			return true;
 		}
-
-		if (!super.equals(obj)) {
-			return false;
-		}
-
+		
 		if (!(obj instanceof DatastoreLockTarget)) {
 			return false;
 		}
