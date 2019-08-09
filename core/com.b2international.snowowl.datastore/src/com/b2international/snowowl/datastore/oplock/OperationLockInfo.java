@@ -16,13 +16,14 @@
 package com.b2international.snowowl.datastore.oplock;
 
 import java.util.Date;
+import java.util.Objects;
 
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
+import com.google.common.base.MoreObjects;
 
 /**
  * Contains all information about an operation lock which should be presented on an administrative interface. Sorts by date.
- *
  */
 public class OperationLockInfo implements Comparable<OperationLockInfo> {
 
@@ -67,5 +68,38 @@ public class OperationLockInfo implements Comparable<OperationLockInfo> {
 	@Override
 	public int compareTo(final OperationLockInfo otherInfo) {
 		return creationDate.compareTo(otherInfo.creationDate);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, level, target, context);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+
+		if (!(obj instanceof OperationLockInfo)) {
+			return false;
+		}
+
+		final OperationLockInfo other = (OperationLockInfo) obj;
+		return Objects.equals(id, other.getId()) 
+				&& Objects.equals(level, other.getLevel())
+				&& Objects.equals(target, other.getTarget())
+				&& Objects.equals(context, other.getContext());
+	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("id", id)
+				.add("level", level)
+				.add("creationDate", creationDate)
+				.add("target", target)
+				.add("context", context)
+				.toString();
 	}
 }
