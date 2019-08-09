@@ -35,11 +35,13 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.datastore.oplock.DatastoreLockIndexEntry.Builder;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.identity.domain.User;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -96,7 +98,6 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 				if (alreadyLockedTargets.isEmpty()) {
 					for (final DatastoreLockTarget newTarget : targets) {
 						final IOperationLock existingLock = getOrCreateLock(context, newTarget);
-						existingLock.acquire(context);
 						fireTargetAcquired(existingLock.getTarget(), context);
 					}
 					
@@ -262,9 +263,9 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 				alreadyLockedTargets.put(target, disposedContext);
 			}
 			
+			throwLockException(ACQUIRE_FAILED_MESSAGE, alreadyLockedTargets);
 		}
 		
-		throwLockException(ACQUIRE_FAILED_MESSAGE, alreadyLockedTargets);
 	}
 	
 	private boolean canContextLock(final DatastoreLockContext context, final IOperationLock existingLock) {
@@ -310,19 +311,22 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 			lastAssignedId = lastAssignedId % EXPECTED_LOCKS;
 		}
 		
+		lock.acquire(context);
 		return lock;
 	}
 
 	private DatastoreLockIndexEntry buildIndexEntry(final String lockId, final String branchPath, final String repositoryUuid, final DatastoreLockContext context) {
-		final DatastoreLockIndexEntry entry = DatastoreLockIndexEntry.builder()
+		final Builder entryBuilder = DatastoreLockIndexEntry.builder()
 			.id(lockId)
 			.userId(context.getUserId())
 			.description(context.getDescription())
-			.repositoryUuid(repositoryUuid)
-			.branchPath(branchPath)
-			.build();
+			.repositoryUuid(repositoryUuid);
 		
-		return entry;
+		if (!Strings.isNullOrEmpty(branchPath)) {
+			entryBuilder.branchPath(branchPath);
+		}
+		
+		return entryBuilder.build();
 	}
 
 	private void removeLock(final IOperationLock existingLock) {
@@ -357,7 +361,10 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	
 	private Collection<IOperationLock> getExistingLocks() {
 		return search(Expressions.matchAll(), Integer.MAX_VALUE).stream().map(entry -> {
-			return new OperationLock(Integer.parseInt(entry.getId()), new DatastoreLockTarget(entry.getRepositoryUuid(), entry.getBranchPath()));
+			final DatastoreLockContext context = new DatastoreLockContext(entry.getUserId(), entry.getDescription());
+			final OperationLock lock = new OperationLock(Integer.parseInt(entry.getId()), new DatastoreLockTarget(entry.getRepositoryUuid(), entry.getBranchPath()));
+			lock.acquire(context);
+			return lock;
 		}).collect(Collectors.toSet());
 	}
 	
