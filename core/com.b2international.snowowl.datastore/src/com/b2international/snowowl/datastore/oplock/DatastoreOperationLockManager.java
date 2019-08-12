@@ -258,7 +258,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 				}
 			}
 		} else {
-			final DatastoreLockContext disposedContext = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.DISPOSE_LOCK_MANAGER);
+			final DatastoreLockContext disposedContext = createLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.DISPOSE_LOCK_MANAGER, null);
 			for (final DatastoreLockTarget target : targets) {
 				alreadyLockedTargets.put(target, disposedContext);
 			}
@@ -295,7 +295,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 			.build();
 		
 		final DatastoreLockIndexEntry existingLockEntry = Iterables.getOnlyElement(search(searchExpression, 2), null);
-		IOperationLock lock = new OperationLock(lastAssignedId, target);
+		final IOperationLock lock;
 		if (existingLockEntry == null) {
 			lastAssignedId = assignedIds.nextClearBit(lastAssignedId);
 			final String lockId = Integer.toString(lastAssignedId);
@@ -309,6 +309,8 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 			 * it can still assign a number over 128 if all of the early ones are in use, since the BitSet grows unbounded. 
 			 */
 			lastAssignedId = lastAssignedId % EXPECTED_LOCKS;
+		} else {
+			lock = new OperationLock(Integer.parseInt(existingLockEntry.getId()), target);
 		}
 		
 		lock.acquire(context);
@@ -320,6 +322,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 			.id(lockId)
 			.userId(context.getUserId())
 			.description(context.getDescription())
+			.parentDescription(context.getParentDescription())
 			.repositoryUuid(repositoryUuid);
 		
 		if (!Strings.isNullOrEmpty(branchPath)) {
@@ -330,9 +333,11 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	}
 
 	private void removeLock(final IOperationLock existingLock) {
-		final String lockId = Iterables.getOnlyElement(search(DatastoreLockIndexEntry.Expressions.id(Integer.toString(existingLock.getId())), 2), null).getId();
-		if (lockId != null) {
-			remove(lockId);
+		final DatastoreLockIndexEntry entry = Iterables.getOnlyElement(search(DatastoreLockIndexEntry.Expressions.id(Integer.toString(existingLock.getId())), 2), null);
+		if (entry != null) {
+			remove(entry.getId());
+		} else {
+			System.err.println("Failed to remove lock: " + existingLock + " with id:" + existingLock.getId());
 		}
 	}
 
@@ -361,11 +366,19 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	
 	private Collection<IOperationLock> getExistingLocks() {
 		return search(Expressions.matchAll(), Integer.MAX_VALUE).stream().map(entry -> {
-			final DatastoreLockContext context = new DatastoreLockContext(entry.getUserId(), entry.getDescription());
+			final DatastoreLockContext context = createLockContext(entry.getUserId(), entry.getDescription(), entry.getParentDescription());
 			final OperationLock lock = new OperationLock(Integer.parseInt(entry.getId()), new DatastoreLockTarget(entry.getRepositoryUuid(), entry.getBranchPath()));
 			lock.acquire(context);
 			return lock;
 		}).collect(Collectors.toSet());
+	}
+	
+	private DatastoreLockContext createLockContext(String userId, String description, String parentDescription) {
+		if (Strings.isNullOrEmpty(parentDescription)) {
+			return new DatastoreLockContext(userId, description);
+		}
+		
+		return new DatastoreLockContext(userId, description, parentDescription);
 	}
 	
 	private DatastoreLocks search(Expression query, int limit) {

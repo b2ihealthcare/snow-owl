@@ -158,7 +158,7 @@ public final class LocksCommand extends Command {
 				if (lockId != null) {
 					getLockManager().unlockById(lockId);
 					out.println("Released lock by ID '%s'.", lockId);
-				} else if (target == (DatastoreLockTarget.ALL)) {
+				} else if (target.equals(DatastoreLockTarget.ALL)) {
 					getLockManager().unlockAll();
 					out.println("Released ALL locks.");
 				} else {
