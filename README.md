@@ -13,7 +13,7 @@ Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server wi
 # Introduction
 
 Features include:
-* Revision-controlled authoring
+* Revision- controlled authoring
     * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
