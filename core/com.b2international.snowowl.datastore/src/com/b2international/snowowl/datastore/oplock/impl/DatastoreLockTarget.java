@@ -60,7 +60,7 @@ public class DatastoreLockTarget {
 			return true;
 		}
 		
-		if (Strings.isNullOrEmpty(branchPath)) {
+		if (Strings.isNullOrEmpty(branchPath) || Strings.isNullOrEmpty(other.getBranchPath())) {
 			return repositoryUuid.equals(other.getRepositoryUuid());
 		}
 		
