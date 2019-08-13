@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,14 +36,12 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.events.RepositoryEvent;
-import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
-import com.b2international.snowowl.datastore.internal.merge.MergeServiceImpl;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.review.ReviewManagerImpl;
@@ -59,7 +57,6 @@ public final class TerminologyRepository extends DelegatingContext implements In
 
 	private final String toolingId;
 	private final String repositoryId;
-	private final int mergeMaxResults;
 	private final Mappings mappings;
 	private final Logger log;
 	
@@ -72,7 +69,6 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		super(env);
 		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
-		this.mergeMaxResults = mergeMaxResults;
 		this.mappings = mappings;
 		this.log = log;
 	}
@@ -81,7 +77,7 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		bind(Logger.class, log);
 		
 		final ObjectMapper mapper = service(ObjectMapper.class);
-		initializeServices(mergeMaxResults);
+		initializeServices();
 		RevisionIndex index = initIndex(mapper, mappings);
 		bind(Repository.class, this);
 		bind(ClassLoader.class, getDelegate().plugins().getCompositeClassLoader());
@@ -117,13 +113,10 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		}
 	}
 	
-	private void initializeServices(int mergeMaxResults) {
+	private void initializeServices() {
 		final ReviewConfiguration reviewConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
 		bind(ReviewManager.class, reviewManager);
-
-		final MergeServiceImpl mergeService = new MergeServiceImpl(this, mergeMaxResults);
-		bind(MergeService.class, mergeService);
 	}
 
 	private RevisionIndex initIndex(final ObjectMapper mapper, Mappings mappings) {

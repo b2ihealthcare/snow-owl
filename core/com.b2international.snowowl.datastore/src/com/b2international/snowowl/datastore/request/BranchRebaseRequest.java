@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,15 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.BranchMergeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.MergeService;
+import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
+import com.b2international.snowowl.datastore.oplock.OperationLockException;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.google.common.base.Strings;
 
 /**
@@ -33,7 +38,9 @@ import com.google.common.base.Strings;
  *
  * @since 4.6
  */
-public final class BranchRebaseRequest extends AbstractBranchChangeRequest<Merge> {
+public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
+
+	private static final long serialVersionUID = 1L;
 
 	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
 		return !Strings.isNullOrEmpty(commitMessage) 
@@ -46,7 +53,20 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest<Merge
 	}
 	
 	@Override
-	protected Merge execute(RepositoryContext context, Branch source, Branch target) {
-		return context.service(MergeService.class).enqueue(sourcePath, targetPath, userId, commitMessage, reviewId, parentLockContext);
+	protected void applyChanges(RepositoryContext context, Branch source, Branch target) {
+		if (!target.parentPath().equals(source.path())) {
+			throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
+		}
+		
+		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
+			context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, context.service(ComponentRevisionConflictProcessor.class));
+		} catch (BranchMergeException e) {
+			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);
+		} catch (OperationLockException e) {
+			throw new ConflictException("Lock exception caught while rebasing target '%s' on source '%s'. %s", target.path(), source.path(), e.getMessage());
+		} catch (InterruptedException e) {
+			throw new ConflictException("Lock obtaining process was interrupted while rebasing target '%s' on source '%s'.", target.path(), source.path());
+		}
 	}
+	
 }

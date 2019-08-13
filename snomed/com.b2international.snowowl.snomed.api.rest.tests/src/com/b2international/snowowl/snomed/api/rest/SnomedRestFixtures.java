@@ -332,14 +332,18 @@ public abstract class SnomedRestFixtures {
 				.put("referenceSetId", refSetId)
 				.put("referencedComponentId", referencedComponentId);
 	}
-
-	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment) {
-		String mergeLocation = createMerge(sourcePath, targetPath, commitComment)
+	
+	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment, String expectedStatus) {
+		return merge(sourcePath, targetPath, commitComment, null, expectedStatus);
+	}
+	
+	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment, String reviewId, String expectedStatus) {
+		String mergeLocation = createMerge(sourcePath, targetPath, commitComment, reviewId)
 				.statusCode(202)
 				.body(equalTo(""))
 				.extract().header("Location");
 
-		return waitForMergeJob(lastPathSegment(mergeLocation));
+		return waitForMergeJob(lastPathSegment(mergeLocation), expectedStatus);
 	}
 
 	public static String createInactiveConcept(IBranchPath conceptPath) {

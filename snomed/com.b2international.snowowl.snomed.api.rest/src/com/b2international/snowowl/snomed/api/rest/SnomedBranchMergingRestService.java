@@ -20,8 +20,11 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import java.net.URI;
 import java.security.Principal;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,14 +35,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
+import com.b2international.snowowl.core.merge.MergeImpl;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.snomed.api.rest.domain.MergeRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -54,6 +65,12 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(value="/merges", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchMergingRestService extends AbstractRestService {
+	
+	private static final String SOURCE_KEY = "source";
+	private static final String TARGET_KEY = "target";
+	
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	public SnomedBranchMergingRestService() {
 		super(Collections.emptySet());
@@ -72,32 +89,86 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest, Principal principal) {
 		ApiValidation.checkInput(restRequest);
 		
-		final Merge merge = RepositoryRequests.merging()
-			.prepareCreate()
-			.setSource(restRequest.getSource())
-			.setTarget(restRequest.getTarget())
-			.setReviewId(restRequest.getReviewId())
-			.setUserId(principal.getName())
-			.setCommitComment(restRequest.getCommitComment())
-			.build(repositoryId)
-			.execute(bus)
-			.getSync();
+		final String sourcePath = restRequest.getSource();
+		final String targetPath = restRequest.getTarget();
+		final String username = principal.getName();
 		
-		final URI linkUri = linkTo(SnomedBranchMergingRestService.class).slash(merge.getId()).toUri();
+		final Request<ServiceProvider, Merge> mergeRequest = RepositoryRequests.merging()
+				.prepareCreate()
+				.setSource(sourcePath)
+				.setTarget(targetPath)
+				.setReviewId(restRequest.getReviewId())
+				.setUserId(username)
+				.setCommitComment(restRequest.getCommitComment())
+				.build(repositoryId)
+				.getRequest();
+		
+		final String jobId = UUID.randomUUID().toString();
+		
+		JobRequests.prepareSchedule()
+			.setId(jobId)
+			.setUser(username)
+			.setDescription(String.format("Merging branches %s to %s", sourcePath, targetPath))
+			.setRequest(mergeRequest)
+			.buildAsync()
+			.execute(bus);
+		
+		final URI linkUri = linkTo(SnomedBranchMergingRestService.class).slash(jobId).toUri();
 		return Responses.accepted(linkUri).build();
 	}
 	
 	@ApiOperation(
-			value = "Get merge or rebase status", 
+			value = "Get merge or rebase job", 
 			notes = "Retrieves the parameters and status for a queued request.")
+		@ApiResponses({
+			@ApiResponse(code = 200, message = "OK"),
+			@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class),
+			@ApiResponse(code = 404, message = "Merge request not found in job pool.", response=RestApiError.class)
+		})
+	@RequestMapping(method = RequestMethod.GET, value="/mergeJob/{id}")
+	public DeferredResult<RemoteJobEntry> getMerge(@PathVariable("id") String id) {
+		
+		final RemoteJobEntry mergeJob = getMergeJob(id);
+		
+		if (mergeJob != null) {
+			return DeferredResults.wrap(Promise.immediate(mergeJob));
+		}
+		
+		throw new NotFoundException("Merge job", id);
+	}
+	
+	@ApiOperation(
+			value = "Get merge or rebase result", 
+			notes = "Retrieves the merge result of a merge request.")
 		@ApiResponses({
 			@ApiResponse(code = 200, message = "OK"),
 			@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class),
 			@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
 		})
-	@RequestMapping(method = RequestMethod.GET, value="/{id}")
-	public DeferredResult<Merge> getMerge(@PathVariable("id") UUID id) {
-		return DeferredResults.wrap(RepositoryRequests.merging().prepareGet(id).build(repositoryId).execute(bus));
+	@RequestMapping(method = RequestMethod.GET, value="{id}")
+	public DeferredResult<Merge> getMergeResult(@PathVariable("id") String id) {
+		return DeferredResults.wrap(JobRequests.prepareSearch()
+			.filterById(id)
+			.buildAsync()
+			.execute(bus)
+			.then(jobs -> {
+				if (jobs.isEmpty()) {
+					throw new NotFoundException("Merge job", id);
+				}
+				
+				final RemoteJobEntry mergeJob = jobs.stream().findFirst().get();
+				if (mergeJob.getResult() == null) {
+					final Map<String, Object> params = mergeJob.getParameters(objectMapper);
+					final String sourcePath = (String) params.get(SOURCE_KEY);
+					final String object = (String) params.get(TARGET_KEY);
+					
+					MergeImpl.builder(sourcePath, object).build();
+					return null;
+				} else {
+					return mergeJob.getResultAs(objectMapper, Merge.class);
+				}
+			}));
+		
 	}
 	
 	@ApiOperation(
@@ -115,19 +186,25 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 			
 			@ApiParam(value="The target branch path to match")
 			@RequestParam(value="target", required = false) 
-			final String target,
-			
-			@ApiParam(value="The current status of the request")
-			@RequestParam(value="status", required = false) 
-			final Merge.Status status) {
+			final String target) {
+		return DeferredResults.wrap(JobRequests.prepareSearch()
+			.all()
+			.buildAsync()
+			.execute(bus)
+			.then(jobs -> {
+				return new MergeCollection(
+					jobs.stream()
+						.filter(job -> job.getDescription().contains("merging"))
+						.filter(job -> job.isDone())
+						.filter(job -> {
+							final Map<String, Object> jobParams = job.getParameters(objectMapper);
+							return jobParams.get(SOURCE_KEY).equals(source) && jobParams.get(TARGET_KEY).equals(target);
+						})
+						.map(job -> job.getResultAs(objectMapper, Merge.class))
+						.collect(Collectors.toList())
+				);
+			}));
 		
-		 return DeferredResults.wrap(RepositoryRequests.merging()
-				.prepareSearch()
-				.withSource(source)
-				.withTarget(target)
-				.withStatus(status)
-				.build(repositoryId)
-				.execute(bus));
 	}
 	
 	@ApiOperation(
@@ -138,7 +215,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
 	})
 	@RequestMapping(method=RequestMethod.DELETE, value="/{id}")
-	public DeferredResult<ResponseEntity<Void>> deleteMerge(@PathVariable("id") UUID id) {
+	public DeferredResult<ResponseEntity<Void>> deleteMerge(@PathVariable("id") String id) {
 		return DeferredResults.wrap(
 				RepositoryRequests.merging()
 					.prepareDelete(id)
@@ -146,4 +223,14 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 					.execute(bus),
 				Responses.noContent().build());
 	}
+	
+	public RemoteJobEntry getMergeJob(String id) {
+		return JobRequests.prepareSearch()
+			.all()
+			.filterById(id)
+			.buildAsync()
+			.execute(bus)
+			.getSync().stream().findFirst().orElse(null);
+	}
+	
 }

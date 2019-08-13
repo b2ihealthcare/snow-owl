@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package com.b2international.snowowl.core.merge;
 
 import java.util.Collection;
-import java.util.Date;
-import java.util.UUID;
 
 import com.b2international.commons.exceptions.ApiError;
 
@@ -26,13 +24,8 @@ import com.b2international.commons.exceptions.ApiError;
  */
 public class MergeImpl implements Merge {
 
-	private final UUID id;
 	private final String source;
 	private final String target;
-	private final Status status;
-	private final Date scheduledDate;
-	private final Date startDate;
-	private final Date endDate;
 	private final ApiError apiError;
 	private final Collection<MergeConflict> conflicts;
 	
@@ -40,27 +33,11 @@ public class MergeImpl implements Merge {
 		return new Builder(source, target);
 	}
 
-	MergeImpl(UUID id, String source, String target, Status status, 
-			Date scheduledDate, 
-			Date startDate,
-			Date endDate, 
-			ApiError apiError, 
-			Collection<MergeConflict> conflicts) {
-
-		this.id = id;
+	MergeImpl(String source, String target, ApiError apiError, Collection<MergeConflict> conflicts) {
 		this.source = source;
 		this.target = target;
-		this.status = status;
-		this.scheduledDate = scheduledDate;
-		this.startDate = startDate;
-		this.endDate = endDate;
 		this.apiError = apiError;
 		this.conflicts = conflicts;
-	}
-
-	@Override
-	public UUID getId() {
-		return id;
 	}
 
 	@Override
@@ -71,26 +48,6 @@ public class MergeImpl implements Merge {
 	@Override
 	public String getTarget() {
 		return target;
-	}
-
-	@Override
-	public Status getStatus() {
-		return status;
-	}
-
-	@Override
-	public Date getScheduledDate() {
-		return scheduledDate;
-	}
-
-	@Override
-	public Date getStartDate() {
-		return startDate;
-	}
-
-	@Override
-	public Date getEndDate() {
-		return endDate;
 	}
 
 	@Override
@@ -105,27 +62,27 @@ public class MergeImpl implements Merge {
 
 	@Override
 	public Merge start() {
-		return new MergeImpl(id, source, target, Status.IN_PROGRESS, scheduledDate, new Date(), endDate, apiError, conflicts);
+		return new MergeImpl(source, target, apiError, conflicts);
 	}
 
 	@Override
 	public Merge completed() {
-		return new MergeImpl(id, source, target, Status.COMPLETED, scheduledDate, startDate, new Date(), apiError, conflicts);
+		return new MergeImpl(source, target, apiError, conflicts);
 	}
 
 	@Override
 	public Merge failed(ApiError newApiError) {
-		return new MergeImpl(id, source, target, Status.FAILED, scheduledDate, startDate, new Date(), newApiError, conflicts);
+		return new MergeImpl(source, target, newApiError, conflicts);
 	}
 
 	@Override
 	public Merge failedWithConflicts(Collection<MergeConflict> newConflicts) {
-		return new MergeImpl(id, source, target, Status.CONFLICTS, scheduledDate, startDate, new Date(), apiError, newConflicts);
+		return new MergeImpl(source, target, apiError, newConflicts);
 	}
 
 	@Override
 	public Merge cancelRequested() {
-		return new MergeImpl(id, source, target, Status.CANCEL_REQUESTED, scheduledDate, startDate, endDate, apiError, conflicts);
+		return new MergeImpl(source, target, apiError, conflicts);
 	}
 
 }
