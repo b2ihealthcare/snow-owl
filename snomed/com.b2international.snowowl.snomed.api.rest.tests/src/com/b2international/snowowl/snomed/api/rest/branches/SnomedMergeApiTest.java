@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeCaseSignificance;
@@ -46,8 +45,8 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -76,7 +75,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		updateComponent(parentPath, SnomedComponentType.CONCEPT, conceptId, changeOnParent).statusCode(204);
 		deleteComponent(childPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
-		merge(parentPath, childPath, "Rebased concept deletion over concept change").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(parentPath, childPath, "Rebased concept deletion over concept change", RemoteJobState.FINISHED.name());
 	}
 
 	@Test
@@ -85,7 +84,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		createBranch(a).statusCode(201);
 
 		String conceptId = createNewConcept(a);
-		merge(a, branchPath, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, branchPath, "Merged new concept from child branch", RemoteJobState.FINISHED.name());
 
 		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
@@ -97,7 +96,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		createBranch(a).statusCode(201);
 
 		String descriptionId = createNewDescription(a);
-		merge(a, branchPath, "Merged new description from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, branchPath, "Merged new description from child branch", RemoteJobState.FINISHED.name());
 
 		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
@@ -109,7 +108,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		createBranch(a).statusCode(201);
 
 		String relationshipId = createNewRelationship(a);
-		merge(a, branchPath, "Merged new relationship from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, branchPath, "Merged new relationship from child branch", RemoteJobState.FINISHED.name());
 
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
@@ -119,9 +118,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void noMergeWithNonExistentReview() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
-
+		
 		createNewConcept(a);
-		createMerge(a, branchPath, "Merged new concept from child branch with non-existent review ID", "non-existent-id").statusCode(400);
+		merge(a, branchPath, "Merged new concept from child branch with non-existent review ID", "non-existent-id", RemoteJobState.FAILED.name());
 	}
 
 //	@Test
@@ -138,7 +137,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 //		getComponent(branchPath, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
 //		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(404);
 //
-//		merge(a, branchPath, "Merged new concept from diverged branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+//		merge(a, branchPath, "Merged new concept from diverged branch", RemoteJobState.FINISHED.name());
 //
 //		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(404);
 //		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
@@ -184,7 +183,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 //		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(200);
 //		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(404);
 //
-//		merge(a, branchPath, "Merged new relationship from diverged branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+//		merge(a, branchPath, "Merged new relationship from diverged branch", RemoteJobState.FINISHED.name());
 //
 //		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(404);
 //		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(200);
@@ -217,7 +216,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(404);
 		getComponent(b, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
 
-		merge(a, b, "Merged new concept from unrelated branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, b, "Merged new concept from unrelated branch", RemoteJobState.FINISHED.name());
 
 		getComponent(b, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
 		getComponent(b, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
@@ -234,7 +233,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
 		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
 
-		merge(a, b, "Merged new description from unrelated branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, b, "Merged new description from unrelated branch", RemoteJobState.FINISHED.name());
 
 		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
 		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
@@ -251,7 +250,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
 		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(404);
 
-		merge(a, b, "Merged new relationship from unrelated branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, b, "Merged new relationship from unrelated branch", RemoteJobState.FINISHED.name());
 
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
 		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
@@ -266,7 +265,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		reactivateConcept(a, conceptId);
 
-		merge(a, branchPath, "Merged reactivation from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, branchPath, "Merged reactivation from child branch", RemoteJobState.FINISHED.name());
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "descriptions()", "relationships()").statusCode(200)
 		.body("active", equalTo(true))
@@ -288,7 +287,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		// Create concept 2 on "branchPath" so that "a" can be rebased
 		String concept2Id = createNewConcept(branchPath);
 
-		merge(branchPath, a, "Rebased reactivation on child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased reactivation on child branch", RemoteJobState.FINISHED.name());
 
 		// Concept 1 should be active on "a", but still inactive on "branchPath"
 		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id, "descriptions()", "relationships()").statusCode(200)
@@ -322,7 +321,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, concept2Id).statusCode(404);
 		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
 
-		merge(branchPath, a, "Rebased new concept").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased new concept", RemoteJobState.FINISHED.name());
 
 		// Concept 1 from the parent becomes visible on the child after rebasing
 		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
@@ -347,7 +346,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(404);
 		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
 
-		merge(branchPath, a, "Rebased new description").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased new description", RemoteJobState.FINISHED.name());
 
 		// Description 1 from the parent becomes visible on the child after rebasing
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200);
@@ -372,7 +371,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(404);
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(200);
 
-		merge(branchPath, a, "Rebased new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased new relationship", RemoteJobState.FINISHED.name());
 
 		// Relationship 1 from the parent becomes visible on the child after rebasing
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(200);
@@ -395,7 +394,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		String concept2Id = createNewConcept(a);
 		String concept3Id = createNewConcept(branchPath);
 
-		merge(branchPath, a, "Rebased new concept on child over new concept on parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased new concept on child over new concept on parent", RemoteJobState.FINISHED.name());
 
 		// "a" now knows about concept 3
 		getComponent(branchPath, SnomedComponentType.CONCEPT, concept3Id).statusCode(200);
@@ -405,7 +404,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(b, SnomedComponentType.CONCEPT, concept3Id).statusCode(404);
 		getComponent(b, SnomedComponentType.CONCEPT, concept2Id).statusCode(404);
 
-		merge(a, b, "Rebased new concept on nested child over new concepts on child").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, b, "Rebased new concept on nested child over new concepts on child", RemoteJobState.FINISHED.name());
 
 		// Now "b" should see all three concepts
 		getComponent(b, SnomedComponentType.CONCEPT, concept3Id).statusCode(200);
@@ -437,7 +436,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		changeCaseSignificance(branchPath, descriptionId); // Parent branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
 		deleteComponent(a, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204);
 
-		merge(branchPath, a, "Rebased deletion over case significance change").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased deletion over case significance change", RemoteJobState.FINISHED.name());
 
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name()));
 		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
@@ -452,7 +451,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		rebaseConceptDeletionOverChange(branchPath, a, conceptId);
 
-		merge(a, branchPath, "Merged concept deletion").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, branchPath, "Merged concept deletion", RemoteJobState.FINISHED.name());
 
 		// Concept should now be deleted everywhere
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
@@ -476,7 +475,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		updateComponent(a, SnomedComponentType.DESCRIPTION, description1Id, requestBody);
 
-		merge(branchPath, a, "Rebased description change over new description creation").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased description change over new description creation", RemoteJobState.FINISHED.name());
 
 		// Description 2 is now visible on both parent and child
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
@@ -491,7 +490,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
 		.body("moduleId", equalTo(Concepts.MODULE_ROOT));
 
-		merge(a, branchPath, "Merged description change to parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, branchPath, "Merged description change to parent", RemoteJobState.FINISHED.name());
 
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
 		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
@@ -523,8 +522,8 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		 * add an empty commit to the new instance of the child; it will be in UP_TO_DATE state and can 
 		 * not be promoted.
 		 */
-		merge(branchPath, a, "Rebased description dual deletion over description creation").body("status", equalTo(Merge.Status.COMPLETED.name()));
-		merge(a, branchPath, "Merged description dual deletion").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased description dual deletion over description creation", RemoteJobState.FINISHED.name());
+		merge(a, branchPath, "Merged description dual deletion", RemoteJobState.FINISHED.name());
 
 		// Description 1 is now deleted on both branches
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(404);
@@ -559,7 +558,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("typeId", equalTo(Concepts.FINDING_SITE));
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("typeId", equalTo(Concepts.PART_OF));
 
-		merge(branchPath, a, "Rebase after new relationship creation on parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebase after new relationship creation on parent", RemoteJobState.FINISHED.name());
 
 		// Same relationships after rebase
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("typeId", equalTo(Concepts.FINDING_SITE));
@@ -578,7 +577,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		// Create change on parent
 		String relationshipId = createNewRelationship(branchPath);
 
-		merge(branchPath, a, "Rebased new text definitions over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased new text definitions over new relationship", RemoteJobState.FINISHED.name());
 
 		// Relationship should be visible on both branches
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
@@ -610,10 +609,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		// Make change on "branchPath" so "a" can be rebased
 		createNewRelationship(branchPath);
-		merge(branchPath, a, "Rebased component deletion over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased component deletion over new relationship", RemoteJobState.FINISHED.name());
 
 		// "b" should be STALE at this point, try to rebase it, it should pass and the components should be deleted
-		merge(a, b, "Rebased component updates over deletion").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, b, "Rebased component updates over deletion", RemoteJobState.FINISHED.name());
 
 		// Verify that the two deleted components are really deleted
 		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
@@ -636,13 +635,13 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		// Make change on "branchPath" so "a" can be rebased
 		createNewRelationship(branchPath);
-		merge(branchPath, a, "Rebased new components over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased new components over new relationship", RemoteJobState.FINISHED.name());
 
 		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.name()));
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("group", equalTo(0));
 
 		// "b" should be STALE at this point, try to rebase it, it should pass and the components should still exist with changed content
-		merge(a, b, "Rebased changed components over new components").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, b, "Rebased changed components over new components", RemoteJobState.FINISHED.name());
 
 		// Verify that the two components have the modified values
 		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name()));
@@ -670,10 +669,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		
 		// Make change on "branchPath" so "a" can be rebased
 		createNewRelationship(branchPath);
-		merge(branchPath, a, "Rebased changed components over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased changed components over new relationship", RemoteJobState.FINISHED.name());
 
 		// "b" should be STALE at this point, try to rebase it, it should pass and the description should be deleted
-		merge(a, b, "Rebased description deletion over changed components").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, b, "Rebased description deletion over changed components", RemoteJobState.FINISHED.name());
 
 		// Verify that the relationship has the modified values, and the description stayed deleted
 		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
@@ -696,7 +695,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		updateComponent(a, SnomedComponentType.CONCEPT, conceptId, requestBody).statusCode(204);
 		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
-		merge(branchPath, a, "Rebased concept change over deletion").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased concept change over deletion", RemoteJobState.FINISHED.name());
 	}
 
 	@Test
@@ -720,7 +719,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		updateRefSetComponent(a, SnomedComponentType.MEMBER, memberId, childRequest, false).statusCode(204); // Child unsets it and inactivates the member
 
-		merge(branchPath, a, "Rebased update over effective time change").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased update over effective time change", RemoteJobState.FINISHED.name());
 
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
 		.body("released", equalTo(true))
@@ -754,7 +753,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		calendar.add(Calendar.DATE, 1);
 		updateRefSetMemberEffectiveTime(a, memberId, calendar.getTime()); // Child increases the effective time by one day
 
-		merge(branchPath, a, "Rebased effective time change over update").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased effective time change over update", RemoteJobState.FINISHED.name());
 
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
 		.body("released", equalTo(true))
@@ -783,10 +782,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		deleteComponent(a, SnomedComponentType.CONCEPT, deletedConcept, false);
 		
 		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
-		merge(branchPath, a, "Rebased concept deletion over new outbound relationship").body("status", equalTo(Merge.Status.CONFLICTS.name()));
+		merge(branchPath, a, "Rebased concept deletion over new outbound relationship", RemoteJobState.FAILED.name());
 		
 		// TODO allow deletion of source relationships of a concept without reporting conflict
-//		merge(branchPath, a, "Rebased concept deletion over new outbound relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+//		merge(branchPath, a, "Rebased concept deletion over new outbound relationship", RemoteJobState.FINISHED.name());
 //		// relationships should be deleted along with the already deleted destination concept
 //		getComponent(a, SnomedComponentType.RELATIONSHIP, newOutboundRelationshipFromDeletedConcept).statusCode(404);
 	}
@@ -807,7 +806,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		deleteComponent(a, SnomedComponentType.CONCEPT, deletedConcept, false);
 		
 		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
-		merge(branchPath, a, "Rebased concept deletion over new inbound relationship").body("status", equalTo(Merge.Status.CONFLICTS.name()));
+		merge(branchPath, a, "Rebased concept deletion over new inbound relationship", RemoteJobState.FAILED.name());
 		
 		// TODO when new conflict 
 //		// relationships should be deleted along with the already deleted destination concept
@@ -831,7 +830,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		deleteComponent(a, SnomedComponentType.CONCEPT, deletedConcept, false);
 		
 		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
-		merge(branchPath, a, "Rebased concept deletion over new outbound and inbound relationships").body("status", equalTo(Merge.Status.CONFLICTS.name()));
+		merge(branchPath, a, "Rebased concept deletion over new outbound and inbound relationships", RemoteJobState.FAILED.name());
 		
 		// when new conflict processing rules are in place enable
 //		// relationships should be deleted along with the already deleted destination concept

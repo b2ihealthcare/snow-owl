@@ -41,8 +41,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -195,7 +195,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		// Create new concept on "branchPath" so "a" can be rebased (and "b" becomes stale)
 		String newConcept2Id = createNewConcept(branchPath);
 
-		merge(branchPath, a, "Rebased changes over appearing and then deleted concept").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased changes over appearing and then deleted concept", RemoteJobState.FINISHED.name());
 
 		// Generate review for a rebase of "b" on top of the now-rebased "a" 
 		String reviewId = getReviewJobId(createReview(a, b));
@@ -228,7 +228,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		createNewRelationship(a);
 
 		// Merge "a" back to "branchPath"
-		merge(a, branchPath, "Merged changes on child to parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, branchPath, "Merged changes on child to parent", RemoteJobState.FINISHED.name());
 
 		// Create another new concept on "branchPath"
 		String newConcept2Id = createNewConcept(branchPath);
@@ -294,7 +294,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		String reviewId = getReviewJobId(createReview(a, b));
 		waitForReviewJob(reviewId).body("status", equalTo(ReviewStatus.CURRENT.name()));
 
-		merge(branchPath, a, "Rebased child branch over new concept").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(branchPath, a, "Rebased child branch over new concept", RemoteJobState.FINISHED.name());
 
 		getReview(reviewId).statusCode(200).body("status", equalTo(ReviewStatus.STALE.toString()));
 	}

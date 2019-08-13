@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -31,8 +30,8 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
-import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -215,8 +214,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		System.err.println("Bulk move 10_000 concepts to Clinical Finding took: " + w);
 		w.reset().start();
 		
-		SnomedRestFixtures.merge(branch, branchPath, "Promote changes from task...")
-			.body("status", CoreMatchers.equalTo(Merge.Status.COMPLETED.name()));
+		SnomedRestFixtures.merge(branch, branchPath, "Promote changes from task...", RemoteJobState.FINISHED.name());
 		System.err.println("Merge took: " + w);
 	}
 	
