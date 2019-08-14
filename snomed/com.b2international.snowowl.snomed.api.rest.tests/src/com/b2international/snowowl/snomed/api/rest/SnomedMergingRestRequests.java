@@ -32,7 +32,7 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedMergingRestRequests {
 	
-	private static final long MERGE_POLLING_INTERVAL = 5_000L;
+	private static final long MERGE_POLLING_INTERVAL = 2_000L;
 
 	public static ValidatableResponse createMerge(IBranchPath source, IBranchPath target, String commitComment, String reviewId) {
 		ImmutableMap.Builder<String, Object> requestBuilder = ImmutableMap.<String, Object>builder()
@@ -53,7 +53,7 @@ public abstract class SnomedMergingRestRequests {
 
 	public static ValidatableResponse waitForMergeJob(String id, String expectedStatus) {
 
-		long endTime = System.currentTimeMillis() + SnomedApiTestConstants.POLL_TIMEOUT;
+		final long endTime = System.currentTimeMillis() + SnomedApiTestConstants.POLL_TIMEOUT;
 		long currentTime;
 		String mergeStatus = null;
 
@@ -70,8 +70,9 @@ public abstract class SnomedMergingRestRequests {
 			currentTime = System.currentTimeMillis();
 		} while (!isMergeFinished(mergeStatus) || !mergeStatus.equals(expectedStatus) && currentTime < endTime);
 		
-		assertNotNull(getMerge(id));
-		return getMerge(id);
+		final ValidatableResponse merge = getMerge(id);
+		assertNotNull(merge);
+		return merge;
 	}
 	
 	public static ValidatableResponse getMerge(String id) {
