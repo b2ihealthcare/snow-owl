@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -214,7 +213,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		System.err.println("Bulk move 10_000 concepts to Clinical Finding took: " + w);
 		w.reset().start();
 		
-		SnomedRestFixtures.merge(branch, branchPath, "Promote changes from task...", RemoteJobState.FINISHED.name());
+		SnomedRestFixtures.merge(branch, branchPath, "Promote changes from task...");
 		System.err.println("Merge took: " + w);
 	}
 	

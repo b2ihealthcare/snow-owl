@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -51,7 +52,7 @@ public abstract class SnomedMergingRestRequests {
 				.then();
 	}
 
-	public static ValidatableResponse waitForMergeJob(String id, String expectedStatus) {
+	public static ValidatableResponse waitForMergeJob(String id) {
 
 		final long endTime = System.currentTimeMillis() + SnomedApiTestConstants.POLL_TIMEOUT;
 		long currentTime;
@@ -68,7 +69,8 @@ public abstract class SnomedMergingRestRequests {
 			final ValidatableResponse mergeJobResponse = getMergeJob(id).statusCode(200);
 			mergeStatus = mergeJobResponse.extract().path("state");
 			currentTime = System.currentTimeMillis();
-		} while (!isMergeFinished(mergeStatus) || !mergeStatus.equals(expectedStatus) && currentTime < endTime);
+		} while (!isMergeFinished(mergeStatus) && currentTime < endTime);
+		
 		
 		final ValidatableResponse merge = getMerge(id);
 		assertNotNull(merge);

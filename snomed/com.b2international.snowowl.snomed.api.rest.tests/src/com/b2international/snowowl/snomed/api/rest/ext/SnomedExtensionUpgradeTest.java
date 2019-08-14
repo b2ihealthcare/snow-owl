@@ -47,8 +47,8 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.BranchBase;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
@@ -87,7 +87,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 
 		createBranch(targetPath).statusCode(201);		
 
-		merge(branchPath, targetPath, "Upgraded B2i extension to v1.", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v1.");
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -115,7 +115,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 
 		String conceptId = createNewConcept(branchPath);
 
-		merge(branchPath, targetPath, "Upgraded B2i extension to v2.", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v2.");
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -145,7 +145,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 
 		String conceptId = createNewConcept(targetPath);
 
-		merge(branchPath, targetPath, "Upgraded B2i extension to v3.", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v3.");
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -188,7 +188,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 
 		createComponent(targetPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201);
 
-		merge(branchPath, targetPath, "Upgraded B2i extension to v4.", RemoteJobState.FAILED.name());
+		final Merge merge = merge(branchPath, targetPath, "Upgraded B2i extension to v4.").extract().as(Merge.class);
+		
+		assertTrue(!merge.getConflicts().isEmpty());
 	}
 	
 	@Test
@@ -235,7 +237,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 
 		createBranch(targetPath).statusCode(201);
 		
-		merge(branchPath, targetPath, "Upgraded B2i extension to v10", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v10");
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -305,7 +307,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 
 		createBranch(newTargetPath).statusCode(201);
 		
-		merge(targetPath, newTargetPath, "Upgraded B2i extension to v11", RemoteJobState.FINISHED.name());
+		merge(targetPath, newTargetPath, "Upgraded B2i extension to v11");
 
 		Map<?, ?> newUpdateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -433,7 +435,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				
 		// upgrade extension to new INT version
 		
-		merge(branchPath, targetPath, "Upgraded B2i extension to v5", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v5");
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -542,7 +544,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		
 		// upgrade extension to new INT version
 		
-		merge(branchPath, targetPath, "Upgraded B2i extension to v6", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v6");
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -631,7 +633,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		
 		// upgrade extension to new INT version
 		
-		merge(branchPath, targetPath, "Upgraded B2i extension to v9", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v9");
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -754,7 +756,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				
 		// upgrade extension to new INT version
 		
-		merge(branchPath, targetPath, "Upgraded B2i extension to v7", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v7");
 	
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -901,7 +903,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				
 		// upgrade extension to new INT version
 		
-		merge(branchPath, targetPath, "Upgraded B2i extension to v8", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v8");
 	
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -1152,7 +1154,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		
 		// upgrade extension to new INT version
 		
-		merge(branchPath, targetPath, "Upgraded B2i extension to v13", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v13");
 	
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -1432,7 +1434,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		
 		// upgrade extension to new INT version
 		
-		merge(branchPath, targetPath, "Upgraded B2i extension to v12", RemoteJobState.FINISHED.name());
+		merge(branchPath, targetPath, "Upgraded B2i extension to v12");
 	
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)

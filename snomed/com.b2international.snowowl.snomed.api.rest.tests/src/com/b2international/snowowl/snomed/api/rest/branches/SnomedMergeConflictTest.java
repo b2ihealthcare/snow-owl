@@ -47,7 +47,6 @@ import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -73,7 +72,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		changeCaseSignificance(branchPath, descriptionId, CaseSignificance.CASE_INSENSITIVE); // Parent branch changes to CaseSignificance.CASE_INSENSITIVE
 		changeCaseSignificance(a, descriptionId); // Child branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
 
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased case significance change over case significance change", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased case significance change over case significance change")
 				.extract().as(Merge.class)
 				.getConflicts();
 
@@ -115,7 +114,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, changesOnParent).statusCode(204);
 		updateComponent(a, SnomedComponentType.DESCRIPTION, descriptionId, changesOnBranch).statusCode(204);
 
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased description changes over conflicting description changes", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased description changes over conflicting description changes")
 				.extract().as(Merge.class)
 				.getConflicts();
 
@@ -167,7 +166,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, effectiveTimeUpdateRequest, true).statusCode(204);
 		deleteComponent(a, SnomedComponentType.MEMBER, memberId, false).statusCode(204);
 
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased reference set member deletion over effective time update", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased reference set member deletion over effective time update")
 				.extract().as(Merge.class)
 				.getConflicts();
 
@@ -221,7 +220,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		createComponent(a, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201);
 
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased new description over new description with same SCTID", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased new description over new description with same SCTID")
 				.extract().as(Merge.class)
 				.getConflicts();
 
@@ -246,7 +245,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 		String relationshipId = createNewRelationship(a, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
 
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased new relationship over deleted concept", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased new relationship over deleted concept")
 				.extract().as(Merge.class)
 				.getConflicts();
 
@@ -274,7 +273,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
 		deleteComponent(a, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased deleted concept over new relationship", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased deleted concept over new relationship")
 				.extract().as(Merge.class)
 				.getConflicts();
 
@@ -297,7 +296,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 		String memberId = createNewRefSetMember(a, conceptId);
 
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased new reference set member over deleted referenced component", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased new reference set member over deleted referenced component")
 				.extract().as(Merge.class)
 				.getConflicts();
 
@@ -329,10 +328,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		Collection<MergeConflict> conflicts = merge(
 				branchPath,
 				a,
-				"Rebased deleted referenced component over new reference set member",
-				RemoteJobState.FAILED.name())
-					.extract().as(Merge.class)
-					.getConflicts();
+				"Rebased deleted referenced component over new reference set member"
+				).extract().as(Merge.class).getConflicts();
 
 		assertEquals(1, conflicts.size());
 
@@ -361,7 +358,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		deleteComponent(b, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
-		Collection<MergeConflict> conflicts = merge(a, b, "Merged new description to unrelated branch", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(a, b, "Merged new description to unrelated branch")
 				.extract().as(Merge.class)
 				.getConflicts();
 
@@ -389,7 +386,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		deleteComponent(b, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
-		Collection<MergeConflict> conflicts = merge(a, b, "Merged new relationship to unrelated branch", RemoteJobState.FAILED.name())
+		Collection<MergeConflict> conflicts = merge(a, b, "Merged new relationship to unrelated branch")
 				.extract().as(Merge.class)
 				.getConflicts();
 
