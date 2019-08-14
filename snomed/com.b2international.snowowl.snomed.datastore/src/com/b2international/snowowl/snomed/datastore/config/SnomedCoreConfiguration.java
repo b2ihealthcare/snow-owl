@@ -25,8 +25,10 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.config.ConnectionPoolConfiguration;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -77,8 +79,9 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
 	
+	@Deprecated
 	@Valid
-	private SnomedIdentifierConfiguration ids = new SnomedIdentifierConfiguration();
+	private SnomedIdentifierConfiguration ids;
 	
 	@Valid
 	private SnomedExportDefaultConfiguration export = new SnomedExportDefaultConfiguration();
@@ -101,6 +104,9 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@NotNull
 	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
 	
+	@NotNull
+	private String namespaceModuleAssigner = "default";
+
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
 	 */
@@ -207,6 +213,7 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	/**
 	 * @return the identifier generation sub-section of the SNOMED CT core configuration object
+	 * @deprecated - no longer supported and it will be removed in a future release, access the identifiers configuration via {@link SnowOwlConfiguration#getModuleConfig(Class)}
 	 */
 	public SnomedIdentifierConfiguration getIds() {
 		return ids;
@@ -364,6 +371,11 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	}
 	
 	@JsonProperty
+	public String getNamespaceModuleAssigner() {
+		return namespaceModuleAssigner;
+	}
+	
+	@JsonProperty
 	public void setDefaultModule(String defaultModule) {
 		this.defaultModule = defaultModule;
 	}
@@ -371,6 +383,11 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@JsonProperty
 	public void setDefaultNamespace(String defaultNamespace) {
 		this.defaultNamespace = defaultNamespace;
+	}
+	
+	@JsonProperty
+	public void setNamespaceModuleAssigner(String namespaceModuleAssigner) {
+		this.namespaceModuleAssigner = namespaceModuleAssigner;
 	}
 	
 	@JsonProperty

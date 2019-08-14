@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,13 +96,13 @@ public class EventBusProtocol extends SignalProtocol<IEventBus> implements IEven
 
 	@Override
 	public void handle(IMessage message) {
-		LOG.trace("Handling message: " + message);
+		LOG.trace("Handling message: {}", message);
 		send(EventBusConstants.SEND_MESSAGE_SIGNAL, message);
 	}
 
 	@Override
 	public void notifyEvent(IEvent event) {
-		LOG.trace("Got notification event: " + event);
+		LOG.trace("Got notification event: {}", event);
 		if (event instanceof HandlerChangedEvent) {
 			final HandlerChangedEvent changedEvent = (HandlerChangedEvent) event;
 			final Object result = sendSync(changedEvent.isAdded() ? EventBusConstants.HANDLER_REGISTRATION

@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Snow Owl SNOMED CT CIS
+Bundle-SymbolicName: com.b2international.snowowl.snomed.cis;singleton:=true
+Bundle-Version: 6.19.0.qualifier
+Bundle-Vendor: B2i Healthcare
+Automatic-Module-Name: com.b2international.snowowl.snomed.cis
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
+ com.b2international.snowowl.datastore;visibility:=reexport,
+ org.apache.httpcomponents.httpasyncclient;bundle-version="4.1.4",
+ org.apache.httpcomponents.httpclient;bundle-version="4.5.3",
+ org.apache.httpcomponents.httpcore;bundle-version="4.4.10"
+Import-Package: org.slf4j;version="1.7.25"
+Export-Package: com.b2international.snowowl.snomed.cis,
+ com.b2international.snowowl.snomed.cis.action,
+ com.b2international.snowowl.snomed.cis.client,
+ com.b2international.snowowl.snomed.cis.domain,
+ com.b2international.snowowl.snomed.cis.gen,
+ com.b2international.snowowl.snomed.cis.internal.reservations,
+ com.b2international.snowowl.snomed.cis.memory,
+ com.b2international.snowowl.snomed.cis.model,
+ com.b2international.snowowl.snomed.cis.request,
+ com.b2international.snowowl.snomed.cis.reservations

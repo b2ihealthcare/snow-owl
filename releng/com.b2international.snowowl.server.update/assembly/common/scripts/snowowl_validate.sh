@@ -31,7 +31,7 @@ SNOW_OWL_ADMIN_USER=""
 SNOW_OWL_ADMIN_USER_PASSWORD=""
 
 # The target folder to save the validation report
-TARGET_FOLDER=""
+TARGET_FOLDER="/opt"
 
 #
 # Global variables / constants, advanced parameters

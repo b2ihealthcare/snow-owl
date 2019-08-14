@@ -1,0 +1,29 @@
+Snow Owl® Component Identifier Service
+Copyright 2011-2019 B2i Healthcare Pte Ltd. All rights reserved.
+Visit us at http://b2i.sg
+
+Licensed under the Apache License, Version 2.0 (the "License"). You
+may not use this file except in compliance with the License. A copy of
+the License is located at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+or in the "license" file accompanying this software. Snow Owl is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ANY KIND, either express or implied. See the License for the specific
+language governing permissions and limitations under the License.
+
+Snow Owl includes software developed by the Eclipse Foundation and the Apache Software Foundation and others.
+
+**********************
+THIRD PARTY COMPONENTS
+**********************
+This software includes third party software subject to the following licenses:
+- Base64 encoding implementation from http://iharder.net/base64 - under Public domain
+- IStatus implementations from Eclipse ECF - under Eclipse Public License v1.0
+- OrderedBytes implementation from Apache HBase - under Apache License v2.0
+- HTTP utility classes from Apache Tomcat - under Apache License v2.0
+- Time utility classes from Google Guava - under Apache License v2.0
+- Token replacer from niesfisch/tokenreplacer - under Apache License v2.0
+- Improved wildcard path matching from Spring Framework - under Apache License v2.0
+- XSSF parsing from Apache POI - under Apache License v2.0

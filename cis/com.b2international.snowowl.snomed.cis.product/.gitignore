@@ -1,0 +1,3 @@
+# Allow bin folder in this directory
+!bin
+runtime

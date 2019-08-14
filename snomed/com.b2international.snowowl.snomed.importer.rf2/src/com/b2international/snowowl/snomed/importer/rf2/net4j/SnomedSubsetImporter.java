@@ -46,6 +46,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.server.snomed.ImportOnlySnomedTransactionContext;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.refset.automap.CsvVariableFieldCountParser;
@@ -157,7 +158,7 @@ public class SnomedSubsetImporter {
 	 */
 	public SnomedUnimportedRefSets doImport() throws SnowowlRuntimeException {
 		return ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class).read(branchPath.getPath(), searcher -> {
-			try (TransactionContext context = new ImportOnlySnomedTransactionContext(userId, searcher, new SnomedEditingContext(this.branchPath))) {
+			try (TransactionContext context = new ImportOnlySnomedTransactionContext(userId, searcher, new SnomedEditingContext(this.branchPath), moduleId)) {
 				
 				final SubsetInformation information = createSubsetInformation();
 				final SnomedUnimportedRefSets unimportedRefSets;
@@ -339,14 +340,15 @@ public class SnomedSubsetImporter {
 
 		private String generateComponentId(TransactionContext context, ComponentCategory category, String namespace) {
 			return SnomedRequests.identifiers()
-											.prepareGenerate()
-											.setQuantity(1)
-											.setNamespace(namespace)
-											.setCategory(category)
-											.build()
-											.execute(context)
-											.first()
-											.orElseThrow(() -> new BadRequestException("Couldn't generate ID for args (%s, %s).", category, namespace));
+								.prepareGenerate()
+								.setQuantity(1)
+								.setNamespace(namespace)
+								.setCategory(category)
+								.build()
+								.execute(context)
+								.first()
+								.map(SctId::getSctid)
+								.orElseThrow(() -> new BadRequestException("Couldn't generate ID for args (%s, %s).", category, namespace));
 		}
 		
 		private String getIdIfCMTConcept(String label) {

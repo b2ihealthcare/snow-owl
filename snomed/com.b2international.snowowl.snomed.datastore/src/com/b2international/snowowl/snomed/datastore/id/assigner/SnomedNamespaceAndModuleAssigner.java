@@ -33,6 +33,11 @@ import com.b2international.snowowl.core.domain.BranchContext;
 public interface SnomedNamespaceAndModuleAssigner {
 
 	/**
+	 * Returns the configuration key of the assigner
+	 */
+	String getName();
+	
+	/**
 	 * Returns an SCTID to be registered to a relationship based on its source
 	 * concept ID.
 	 * 

@@ -77,12 +77,12 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
@@ -220,7 +220,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 			SnomedRequests.identifiers().prepareRelease()
 				.setComponentIds(newComponentIds)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(bus)
 				.getSync();
 			
@@ -1045,11 +1045,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		final String generatedId = SnomedRequests.identifiers().prepareGenerate()
 				.setCategory(componentNature)
 				.setNamespace(namespace)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.buildAsync()
 				.execute(bus)
 				.getSync()
 				.first()
-				.get();
+				.get()
+				.getSctid();
 		newComponentIds.add(generatedId);
 		return generatedId;
 	}

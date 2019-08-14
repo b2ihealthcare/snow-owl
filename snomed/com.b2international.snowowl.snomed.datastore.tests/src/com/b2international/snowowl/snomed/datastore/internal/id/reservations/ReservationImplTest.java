@@ -31,15 +31,16 @@ import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
-import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifier;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.cis.gen.ItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.cis.internal.reservations.SnomedIdentifierReservationServiceImpl;
+import com.b2international.snowowl.snomed.cis.memory.DefaultSnomedIdentifierService;
+import com.b2international.snowowl.snomed.cis.reservations.Reservation;
+import com.b2international.snowowl.snomed.cis.reservations.Reservations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

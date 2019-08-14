@@ -59,13 +59,6 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="priority" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Higher priority has precendence in case of multiple extensions. It should be a number.
-               </documentation>
-            </annotation>
-         </attribute>
       </complexType>
    </element>
 

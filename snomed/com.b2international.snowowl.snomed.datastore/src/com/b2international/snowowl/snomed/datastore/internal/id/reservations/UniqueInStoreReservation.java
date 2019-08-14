@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@ import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifier;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.cis.reservations.Reservation;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
@@ -76,15 +76,14 @@ public class UniqueInStoreReservation implements Reservation {
 				throw new NotImplementedException("Cannot check whether components of type '%s' are unique.", category);
 			}
 			
-			final PageableCollectionResource<?> results = searchRequest
+			searchRequest
 				.all()
 				.filterByIds(identifiersToCheck)
 				.setFields(SnomedComponentDocument.Fields.ID)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, BranchPathUtils.createMainPath().getPath())
 				.execute(bus.get())
-				.getSync();
-		
-			results.stream()
+				.getSync()
+				.stream()
 				.filter(SnomedComponent.class::isInstance)
 				.map(SnomedComponent.class::cast)
 				.map(SnomedComponent::getId)

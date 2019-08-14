@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,10 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 		
 		if (options().containsKey(USER)) {
 			queryBuilder.filter(user(options().getString(USER)));
+		}
+		
+		if (options().containsKey("type")) {
+			queryBuilder.filter(Expressions.nestedMatch("parameters", Expressions.matchAny("", options().getCollection("type", String.class))));
 		}
 		
 		return queryBuilder.build();

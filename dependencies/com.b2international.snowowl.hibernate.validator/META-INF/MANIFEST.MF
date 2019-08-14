@@ -1,15 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Hibernate Validator Wrapper
-Bundle-SymbolicName: com.b2international.snowowl.hibernate.validator
+Bundle-SymbolicName: com.b2international.snowowl.hibernate.validator;singleton:=true
 Bundle-Version: 5.1.3.Final-b2i
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
- lib/classmate_1.0.0.jar,
- lib/javax.validation.api_1.1.0.Final.jar,
  lib/org.hibernate.validator_5.1.1.Final.jar,
- lib/org.jboss.logging.jboss-logging_3.1.3.GA.jar
+ lib/org.jboss.logging.jboss-logging_3.1.3.GA.jar,
+ lib/javax.validation.api_1.1.0.Final.jar
 Export-Package: com.b2international.snowowl.hibernate.validator,javax.
  validation,javax.validation.bootstrap,javax.validation.constraints,ja
  vax.validation.constraintvalidation,javax.validation.executable,javax
@@ -27,3 +26,5 @@ Import-Package: com.sun.el;version="2.2.0";resolution:=optional,
  org.apache.el.lang;version="7.0.35";resolution:=optional,
  org.apache.el.parser;version="7.0.35";resolution:=optional,
  org.apache.el.util;version="7.0.35";resolution:=optional
+Bundle-ActivationPolicy: lazy
+Require-Bundle: com.fasterxml.classmate;bundle-version="1.3.4"

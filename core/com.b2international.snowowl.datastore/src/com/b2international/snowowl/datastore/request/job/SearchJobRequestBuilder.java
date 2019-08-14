@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,19 @@ public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<
 		return addOption(RemoteJobEntry.Fields.USER, user);
 	}
 	
+	/**
+	 * Filter {@link RemoteJob job entries} by parameter name and values.
+	 * @param parameter
+	 * @param values
+	 * @return
+	 */
+	public SearchJobRequestBuilder filterByParameter(String parameter, Iterable<String> values) {
+		return addOption(parameter, values);
+	}
+	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, RemoteJobs> createSearch() {
 		return new SearchJobRequest();
 	}
-	
+
 }
