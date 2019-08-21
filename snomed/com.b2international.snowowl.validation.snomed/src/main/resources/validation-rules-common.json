@@ -29,7 +29,7 @@
   {
   	"id": "snomed-common-4",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Concepts should not carry more than one PT or FSN per language reference set.",
+    "messageTemplate": "Concept should not carry more than one PT or preferred FSN per language reference set",
     "severity": "WARNING",
     "checkType": "NORMAL",
     "type": "script-groovy",
