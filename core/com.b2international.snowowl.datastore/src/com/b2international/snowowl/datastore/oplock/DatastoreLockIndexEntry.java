@@ -44,7 +44,7 @@ public final class DatastoreLockIndexEntry implements Serializable {
 		public static final String USER_ID = "userId";
 		public static final String DESCRIPTION = "description";
 		public static final String PARENT_DESCRIPTION = "parentDescription";
-		public static final String REPOSITORY_ID= "repositoryid";
+		public static final String REPOSITORY_ID= "repositoryId";
 		public static final String BRANCHPATH = "branchPath";
 	}
 	
