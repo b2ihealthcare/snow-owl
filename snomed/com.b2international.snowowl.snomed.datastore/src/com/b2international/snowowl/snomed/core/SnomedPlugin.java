@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
@@ -156,7 +157,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
-	public Collection<Class<? extends IComponent>> getTerminologyComponents() {
+	public List<Class<? extends IComponent>> getTerminologyComponents() {
 		return ImmutableList.<Class<? extends IComponent>>of(
 			SnomedConcept.class,
 			SnomedDescription.class,
