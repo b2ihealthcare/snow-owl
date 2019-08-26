@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
+import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -213,7 +215,8 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		System.err.println("Bulk move 10_000 concepts to Clinical Finding took: " + w);
 		w.reset().start();
 		
-		SnomedRestFixtures.merge(branch, branchPath, "Promote changes from task...");
+		SnomedRestFixtures.merge(branch, branchPath, "Promote changes from task...")
+			.body("status", CoreMatchers.equalTo(Merge.Status.COMPLETED.name()));
 		System.err.println("Merge took: " + w);
 	}
 	

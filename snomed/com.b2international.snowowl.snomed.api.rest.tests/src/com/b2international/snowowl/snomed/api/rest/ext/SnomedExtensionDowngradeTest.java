@@ -32,6 +32,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemVersion;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -63,7 +64,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
 		createBranch(targetPath).statusCode(201);
-		merge(branchPath, targetPath, "Downgraded B2i extension to 2016-01-31.");
+		merge(branchPath, targetPath, "Downgraded B2i extension to 2016-01-31.").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -91,7 +92,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 
 		String conceptId = createNewConcept(targetPath);
 
-		merge(branchPath, targetPath, "Downgraded B2i extension to 2015-07-31.");
+		merge(branchPath, targetPath, "Downgraded B2i extension to 2015-07-31.").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -106,7 +107,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 		getComponent(targetPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
 	}
 
-//	@Test
+	@Test
 	public void downgradeWithConflictingContent() {
 		CodeSystemVersion version = getVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, "2015-01-31")
 				.statusCode(200)
@@ -132,7 +133,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 
 		createComponent(targetPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201);
 
-		merge(branchPath, targetPath, "Downgraded B2i extension to 2015-01-31.");
+		merge(branchPath, targetPath, "Downgraded B2i extension to 2015-01-31.").body("status", equalTo(Merge.Status.CONFLICTS.name()));
 	}
 
 	@AfterClass
