@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -35,7 +34,7 @@ public class DatastoreOperationLockException extends OperationLockException {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Map<IOperationLockTarget, DatastoreLockContext> targetMap;
+	private final Map<DatastoreLockTarget, DatastoreLockContext> targetMap;
 
 	/**
 	 * Creates a new instance with the specified detail message.
@@ -43,7 +42,7 @@ public class DatastoreOperationLockException extends OperationLockException {
 	 * @param message the detail message
 	 */
 	public DatastoreOperationLockException(final @Nullable String message) {
-		this(message, ImmutableMap.<IOperationLockTarget, DatastoreLockContext>of());
+		this(message, ImmutableMap.<DatastoreLockTarget, DatastoreLockContext>of());
 	}
 
 	/**
@@ -53,7 +52,7 @@ public class DatastoreOperationLockException extends OperationLockException {
 	 * @param targetMap a map keyed by lock targets with issues; the corresponding values are the lock contexts
 	 * currently holding the requested lock, or a conflicting lock (may not be {@code null})
 	 */
-	public DatastoreOperationLockException(final @Nullable String message, final Map<IOperationLockTarget, DatastoreLockContext> targetMap) {
+	public DatastoreOperationLockException(final @Nullable String message, final Map<DatastoreLockTarget, DatastoreLockContext> targetMap) {
 		super(message);
 		Preconditions.checkNotNull(targetMap, "Lock target map may not be null.");
 		this.targetMap = ImmutableMap.copyOf(targetMap);
@@ -65,7 +64,7 @@ public class DatastoreOperationLockException extends OperationLockException {
 	 * @param target the lock target to check (may not be {@code null})
 	 * @return the current owner for the specified target, or {@code null}
 	 */
-	public DatastoreLockContext getContext(final IOperationLockTarget target) {
+	public DatastoreLockContext getContext(final DatastoreLockTarget target) {
 		Preconditions.checkNotNull(target, "Lock target to check may not be null.");
 		return targetMap.get(target);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.datastore.oplock;
 
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
+
 /**
  * Represents a lock target listener that receives notifications of an appearing or disappearing {@link IOperationLockTarget} in
  * an {@link AbstractOperationLockManager} instance.
  * 
  */
-public interface IOperationLockTargetListener<C> {
+public interface IOperationLockTargetListener {
 
 	/**
 	 * Called when a lock for a target is granted in an {@link AbstractOperationLockManager}.
@@ -28,7 +31,7 @@ public interface IOperationLockTargetListener<C> {
 	 * @param target the added lock target (may not be {@code null})
 	 * @param context the lock context (may not be {@code null})
 	 */
-	void targetAcquired(IOperationLockTarget target, C context);
+	void targetAcquired(DatastoreLockTarget target, DatastoreLockContext context);
 
 	/**
 	 * Called when a lock for a target is released in an {@link AbstractOperationLockManager}.
@@ -36,5 +39,5 @@ public interface IOperationLockTargetListener<C> {
 	 * @param target the removed lock target (may not be {@code null})
 	 * @param context the lock context (may not be {@code null})
 	 */
-	void targetReleased(IOperationLockTarget target, C context);
+	void targetReleased(DatastoreLockTarget target, DatastoreLockContext context);
 }

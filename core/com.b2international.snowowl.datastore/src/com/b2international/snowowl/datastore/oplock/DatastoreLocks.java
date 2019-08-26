@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.oplock.impl;
+package com.b2international.snowowl.datastore.oplock;
 
-import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 
 /**
- * Marker interface for pinning the type parameter of {@link IOperationLockManager}.
- *
+ * @since 7.1.0
  */
-public interface IDatastoreOperationLockManager extends IOperationLockManager<DatastoreLockContext> {
+public class DatastoreLocks extends PageableCollectionResource<DatastoreLockIndexEntry> {
+
+	private static final long serialVersionUID = 1L;
+	
+	public DatastoreLocks(List<DatastoreLockIndexEntry> items, String scrollId, String searchAfter, int limit, int total) {
+		super(items, scrollId, searchAfter, limit, total);
+	}
 
 }

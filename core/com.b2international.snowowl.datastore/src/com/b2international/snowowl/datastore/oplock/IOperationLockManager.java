@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
  */
 package com.b2international.snowowl.datastore.oplock;
 
-import java.io.Serializable;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 
 /**
  * Represents an exclusive lock manager that allows contexts of arbitrary type to lock potentially nested
  * {@link IOperationLockTarget}s. The first context to acquire a lock for a certain target may add multiple following locks to
  * the same or any {@link IOperationLockTarget#conflicts(IOperationLockTarget) included} target, while all lock requests will be refused
  * if another context has already acquired the lock for a target overlapping with the requested target.
- * 
- * @param <C> the lock context type (must implement {@link Serializable})
  */
-public interface IOperationLockManager<C extends Serializable> {
+public interface IOperationLockManager {
 
 	/**
 	 * Special timeout value indicating that the specified lock attempt should never throw a {@link OperationLockException}
@@ -49,7 +48,7 @@ public interface IOperationLockManager<C extends Serializable> {
 	 * @throws OperationLockException when one or more locks for the given targets can not be acquired for some reason
 	 * @throws InterruptedException if waiting for the requested locks to be acquired is interrupted 
 	 */
-	void lock(C context, long timeoutMillis, IOperationLockTarget firstTarget, IOperationLockTarget... restTargets) throws OperationLockException, InterruptedException;
+	void lock(DatastoreLockContext context, long timeoutMillis, DatastoreLockTarget firstTarget, DatastoreLockTarget... restTargets) throws OperationLockException, InterruptedException;
 
 	/**
 	 * Locks one or more {@link IOperationLockTarget targets} for the specified lock context.
@@ -60,7 +59,7 @@ public interface IOperationLockManager<C extends Serializable> {
 	 * @throws OperationLockException when one or more locks for the given targets can not be acquired for some reason
 	 * @throws InterruptedException if waiting for the requested locks to be acquired is interrupted
 	 */
-	void lock(C context, long timeoutMillis, Iterable<? extends IOperationLockTarget> targets) throws OperationLockException, InterruptedException;
+	void lock(DatastoreLockContext context, long timeoutMillis, Iterable<DatastoreLockTarget> targets) throws OperationLockException, InterruptedException;
 
 	/**
 	 * Unlocks one or more {@link IOperationLockTarget targets} with the specified lock context.
@@ -70,7 +69,7 @@ public interface IOperationLockManager<C extends Serializable> {
 	 * @param restTargets subsequent targets to unlock (may not be {@code null}; individual elements may not be {@code null})
 	 * @throws OperationLockException when one or more locks for the given targets could not be released for some reason
 	 */
-	void unlock(C context, IOperationLockTarget firstTarget, IOperationLockTarget... restTargets) throws OperationLockException;
+	void unlock(DatastoreLockContext context, DatastoreLockTarget firstTarget, DatastoreLockTarget... restTargets) throws OperationLockException;
 
 	/**
 	 * Unlocks one or more {@link IOperationLockTarget targets} with the specified lock context.
@@ -79,5 +78,5 @@ public interface IOperationLockManager<C extends Serializable> {
 	 * @param targets the targets to unlock (may not be {@code null}; can be empty)
 	 * @throws OperationLockException when one or more locks for the given targets could not be released for some reason
 	 */
-	void unlock(C context, Iterable<? extends IOperationLockTarget> targets) throws OperationLockException;
+	void unlock(DatastoreLockContext context, Iterable<DatastoreLockTarget> targets) throws OperationLockException;
 }

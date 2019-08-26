@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package com.b2international.snowowl.datastore.oplock;
 import java.util.Collection;
 import java.util.Date;
 
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
+
 /**
  * Represents a lock for an owning context of arbitrary type and a lock target. 
- *
- * @param C the lock context type
  */
-public interface IOperationLock<C> {
+public interface IOperationLock {
 
 	int getId();
 	
@@ -31,19 +32,19 @@ public interface IOperationLock<C> {
 	
 	Date getCreationDate();
 	
-	C getContext();
+	DatastoreLockContext getContext();
 
-	Collection<C> getAllContexts();
+	Collection<DatastoreLockContext> getAllContexts();
 	
-	IOperationLockTarget getTarget();
+	DatastoreLockTarget getTarget();
 	
-	boolean targetConflicts(IOperationLockTarget otherTarget);
+	boolean targetConflicts(DatastoreLockTarget otherTarget);
 	
-	boolean targetEquals(IOperationLockTarget otherTarget);
+	boolean targetEquals(DatastoreLockTarget otherTarget);
 	
-	void acquire(C context) throws OperationLockException;
+	void acquire(DatastoreLockContext context) throws OperationLockException;
 	
-	void release(C context) throws OperationLockException;
+	void release(DatastoreLockContext context) throws OperationLockException;
 	
 	boolean isLocked();
 }

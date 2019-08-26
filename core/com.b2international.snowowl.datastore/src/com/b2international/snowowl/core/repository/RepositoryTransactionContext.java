@@ -47,19 +47,16 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Throwables;
@@ -227,8 +224,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
 		final DatastoreLockContext lockContext = createLockContext(userId, parentContextDescription);
-		final SingleRepositoryAndBranchLockTarget lockTarget = createLockTarget(id(), branchPath());
-		IOperationLockManager<DatastoreLockContext> locks = service(IDatastoreOperationLockManager.class);
+		final DatastoreLockTarget lockTarget = createLockTarget(id(), branchPath());
+		IOperationLockManager locks = service(IOperationLockManager.class);
 		Commit commit = null;
 		try {
 			acquireLock(locks, lockContext, lockTarget);
@@ -268,7 +265,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		resolvedObjectsById.clear();
 	}
 
-	private void acquireLock(IOperationLockManager<DatastoreLockContext> locks, DatastoreLockContext lockContext, IOperationLockTarget lockTarget) {
+	private void acquireLock(IOperationLockManager locks, DatastoreLockContext lockContext, DatastoreLockTarget lockTarget) {
 		try {
 			locks.lock(lockContext, 1000L, lockTarget);
 		} catch (final DatastoreOperationLockException e) {
@@ -301,8 +298,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		return new DatastoreLockContext(userId, DatastoreLockContextDescriptions.COMMIT, parentContextDescription);
 	}
 	
-	private static SingleRepositoryAndBranchLockTarget createLockTarget(String repositoryId, String branch) {
-		return new SingleRepositoryAndBranchLockTarget(repositoryId, BranchPathUtils.createPath(branch));
+	private static DatastoreLockTarget createLockTarget(String repositoryId, String branch) {
+		return new DatastoreLockTarget(repositoryId, branch);
 	}
 
 }

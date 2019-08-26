@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Deque;
 
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -29,14 +31,14 @@ import com.google.common.collect.ImmutableList;
  * @param C the lock context type
  * @see IOperationLock
  */
-public abstract class AbstractOperationLock<C> implements IOperationLock<C> {
+public abstract class AbstractOperationLock implements IOperationLock {
 
 	private static final String CONTEXT_NOT_IN_STACK_MESSAGE = "Context is not registered as a lock owner.";
 	
 	private final int id;
 	private final Date creationDate = new Date();
-	private final Deque<C> contextStack = new ArrayDeque<C>(); 
-	private final IOperationLockTarget target;
+	private final Deque<DatastoreLockContext> contextStack = new ArrayDeque<DatastoreLockContext>(); 
+	private final DatastoreLockTarget target;
 
 	/**
 	 * Creates a new abstract lock instance.
@@ -44,18 +46,18 @@ public abstract class AbstractOperationLock<C> implements IOperationLock<C> {
 	 * @param id the lock identifier
 	 * @param target the lock target (may not be {@code null})
 	 */
-	protected AbstractOperationLock(final int id, final IOperationLockTarget target) {
+	protected AbstractOperationLock(final int id, final DatastoreLockTarget target) {
 		Preconditions.checkNotNull(target, "Lock target may not be null.");
 		
 		this.id = id;
 		this.target = target; 
 	}
 
-	private void pushContext(C context) {
+	private void pushContext(DatastoreLockContext context) {
 		contextStack.push(context);
 	}
 
-	private void removeContext(C otherContext) {
+	private void removeContext(DatastoreLockContext otherContext) {
 		if (!contextStack.remove(otherContext)) {
 			throw new OperationLockException(CONTEXT_NOT_IN_STACK_MESSAGE);
 		}
@@ -72,38 +74,38 @@ public abstract class AbstractOperationLock<C> implements IOperationLock<C> {
 	}
 	
 	@Override
-	public C getContext() {
+	public DatastoreLockContext getContext() {
 		return contextStack.peek();
 	}
 	
 	@Override
-	public Collection<C> getAllContexts() {
+	public Collection<DatastoreLockContext> getAllContexts() {
 		return ImmutableList.copyOf(contextStack);
 	}
 
 	@Override
-	public IOperationLockTarget getTarget() {
+	public DatastoreLockTarget getTarget() {
 		return target;
 	}
 
 	@Override
-	public boolean targetConflicts(final IOperationLockTarget otherTarget) {
+	public boolean targetConflicts(final DatastoreLockTarget otherTarget) {
 		return target.conflicts(otherTarget);
 	}
 	
 	@Override
-	public boolean targetEquals(final IOperationLockTarget otherTarget) {
+	public boolean targetEquals(final DatastoreLockTarget otherTarget) {
 		return target.equals(otherTarget);
 	}
 	
 	@Override
-	public final void acquire(final C otherContext) throws OperationLockException {
+	public final void acquire(final DatastoreLockContext otherContext) throws OperationLockException {
 		pushContext(otherContext);
 		doAcquire();
 	}
 
 	@Override
-	public final void release(final C otherContext) throws OperationLockException {
+	public final void release(final DatastoreLockContext otherContext) throws OperationLockException {
 		doRelease();
 		removeContext(otherContext);
 	}

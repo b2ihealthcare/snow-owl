@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.internal.session.SessionEventListener;
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTargetListener;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
@@ -36,14 +36,14 @@ import com.google.common.collect.Multimap;
 /**
  * 
  */
-public class RemoteLockTargetListener extends SessionEventListener implements IOperationLockTargetListener<DatastoreLockContext> {
+public class RemoteLockTargetListener extends SessionEventListener implements IOperationLockTargetListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RemoteLockTargetListener.class);
 
-	private final Map<RpcSession, Multimap<IOperationLockTarget, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
+	private final Map<RpcSession, Multimap<DatastoreLockTarget, DatastoreLockContext>> remotelyLockedContexts = Maps.newHashMap();
 
 	@Override
-	public void targetAcquired(final IOperationLockTarget target, final DatastoreLockContext context) {
+	public void targetAcquired(final DatastoreLockTarget target, final DatastoreLockContext context) {
 
 		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
 
@@ -51,7 +51,7 @@ public class RemoteLockTargetListener extends SessionEventListener implements IO
 			return;
 		}
 
-		final Multimap<IOperationLockTarget, DatastoreLockContext> targetsForSession;
+		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession;
 
 		if (remotelyLockedContexts.containsKey(session)) {
 			targetsForSession = remotelyLockedContexts.get(session);
@@ -64,7 +64,7 @@ public class RemoteLockTargetListener extends SessionEventListener implements IO
 	}
 
 	@Override
-	public void targetReleased(final IOperationLockTarget target, final DatastoreLockContext context) {
+	public void targetReleased(final DatastoreLockTarget target, final DatastoreLockContext context) {
 
 		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
 
@@ -76,7 +76,7 @@ public class RemoteLockTargetListener extends SessionEventListener implements IO
 			return;
 		}
 
-		final Multimap<IOperationLockTarget, DatastoreLockContext> targetsForSession = remotelyLockedContexts.get(session);
+		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession = remotelyLockedContexts.get(session);
 		targetsForSession.remove(target, context);
 	}
 
@@ -91,7 +91,7 @@ public class RemoteLockTargetListener extends SessionEventListener implements IO
 			return;
 		}
 
-		final Multimap<IOperationLockTarget, DatastoreLockContext> targetsForSession = remotelyLockedContexts.remove(session);
+		final Multimap<DatastoreLockTarget, DatastoreLockContext> targetsForSession = remotelyLockedContexts.remove(session);
 
 		if (targetsForSession.isEmpty()) {
 			return;
@@ -104,9 +104,9 @@ public class RemoteLockTargetListener extends SessionEventListener implements IO
 
 		LOGGER.warn("Disconnected client had locks granted, unlocking.");
 
-		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IDatastoreOperationLockManager.class);
+		final IOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IOperationLockManager.class);
 
-		for (final Entry<IOperationLockTarget, DatastoreLockContext> targetContextPair : targetsForSession.entries()) {
+		for (final Entry<DatastoreLockTarget, DatastoreLockContext> targetContextPair : targetsForSession.entries()) {
 			try {
 				lockManager.unlock(targetContextPair.getValue(), targetContextPair.getKey());
 			} catch (final OperationLockException e) {
