@@ -286,11 +286,11 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	}
 
 	private IOperationLock getOrCreateLock(DatastoreLockContext context, final DatastoreLockTarget target) {
-		final String repositoryUuid = target.getRepositoryUuid();
+		final String repositoryId = target.getRepositoryId();
 		final String branchPath = target.getBranchPath();
 		
 		final Expression searchExpression = Expressions.builder()
-			.filter(DatastoreLockIndexEntry.Expressions.repositoryUuid(repositoryUuid))
+			.filter(DatastoreLockIndexEntry.Expressions.repositoryId(repositoryId))
 			.filter(DatastoreLockIndexEntry.Expressions.branchPath(branchPath))
 			.build();
 		
@@ -300,7 +300,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 			lastAssignedId = assignedIds.nextClearBit(lastAssignedId);
 			final String lockId = Integer.toString(lastAssignedId);
 			lock = createLock(lastAssignedId, target);
-			final DatastoreLockIndexEntry newEntry = buildIndexEntry(lockId, branchPath, repositoryUuid, context);
+			final DatastoreLockIndexEntry newEntry = buildIndexEntry(lockId, branchPath, repositoryId, context);
 			put(lockId, newEntry);
 			
 			assignedIds.set(lastAssignedId);
@@ -317,13 +317,13 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 		return lock;
 	}
 
-	private DatastoreLockIndexEntry buildIndexEntry(final String lockId, final String branchPath, final String repositoryUuid, final DatastoreLockContext context) {
+	private DatastoreLockIndexEntry buildIndexEntry(final String lockId, final String branchPath, final String repositoryId, final DatastoreLockContext context) {
 		final Builder entryBuilder = DatastoreLockIndexEntry.builder()
 			.id(lockId)
 			.userId(context.getUserId())
 			.description(context.getDescription())
 			.parentDescription(context.getParentDescription())
-			.repositoryUuid(repositoryUuid);
+			.repositoryId(repositoryId);
 		
 		if (!Strings.isNullOrEmpty(branchPath)) {
 			entryBuilder.branchPath(branchPath);
@@ -367,7 +367,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	private Collection<IOperationLock> getExistingLocks() {
 		return search(Expressions.matchAll(), Integer.MAX_VALUE).stream().map(entry -> {
 			final DatastoreLockContext context = createLockContext(entry.getUserId(), entry.getDescription(), entry.getParentDescription());
-			final OperationLock lock = new OperationLock(Integer.parseInt(entry.getId()), new DatastoreLockTarget(entry.getRepositoryUuid(), entry.getBranchPath()));
+			final OperationLock lock = new OperationLock(Integer.parseInt(entry.getId()), new DatastoreLockTarget(entry.getRepositoryId(), entry.getBranchPath()));
 			lock.acquire(context);
 			return lock;
 		}).collect(Collectors.toSet());

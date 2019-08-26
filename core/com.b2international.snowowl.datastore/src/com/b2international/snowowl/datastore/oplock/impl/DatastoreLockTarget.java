@@ -34,16 +34,16 @@ public class DatastoreLockTarget {
 	@Nullable
 	private final String branchPath;
 	
-	private final String repositoryUuid;
+	private final String repositoryId;
 
 	/**
 	 * Creates a new instance based on the specified repository identifier and branch path.
 	 * 
-	 * @param repositoryUuid the target repository's unique identifier (may not be {@code null})
+	 * @param repositoryId the target repository's unique identifier (may not be {@code null})
 	 * @param branchPath the target repository's branch path 
 	 */
-	public DatastoreLockTarget(final String repositoryUuid, final String branchPath) {
-		this.repositoryUuid = repositoryUuid;
+	public DatastoreLockTarget(final String repositoryId, final String branchPath) {
+		this.repositoryId = repositoryId;
 		this.branchPath = branchPath;
 	}
 
@@ -51,8 +51,8 @@ public class DatastoreLockTarget {
 		return branchPath;
 	}
 	
-	public String getRepositoryUuid() {
-		return repositoryUuid;
+	public String getRepositoryId() {
+		return repositoryId;
 	}
 	
 	public boolean conflicts(final DatastoreLockTarget other) {
@@ -61,7 +61,7 @@ public class DatastoreLockTarget {
 		}
 		
 		if (Strings.isNullOrEmpty(branchPath) || Strings.isNullOrEmpty(other.getBranchPath())) {
-			return repositoryUuid.equals(other.getRepositoryUuid());
+			return repositoryId.equals(other.getRepositoryId());
 		}
 		
 		return equals(other);
@@ -69,7 +69,7 @@ public class DatastoreLockTarget {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(repositoryUuid, branchPath);
+		return Objects.hash(repositoryId, branchPath);
 	}
 
 	@Override
@@ -84,11 +84,11 @@ public class DatastoreLockTarget {
 		}
 
 		final DatastoreLockTarget other = (DatastoreLockTarget) obj;
-		return Objects.equals(branchPath, other.branchPath) && Objects.equals(repositoryUuid, other.repositoryUuid);
+		return Objects.equals(branchPath, other.branchPath) && Objects.equals(repositoryId, other.repositoryId);
 	}
 
 	@Override
 	public String toString() {
-		return MessageFormat.format("branch ''{0}'' of repository ''{1}''", branchPath, repositoryUuid);
+		return MessageFormat.format("branch ''{0}'' of repository ''{1}''", branchPath, repositoryId);
 	}
 }

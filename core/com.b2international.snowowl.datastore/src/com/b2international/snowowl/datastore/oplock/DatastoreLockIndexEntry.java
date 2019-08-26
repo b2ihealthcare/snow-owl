@@ -42,7 +42,7 @@ public class DatastoreLockIndexEntry implements Serializable {
 		public static final String USER_ID = "userId";
 		public static final String DESCRIPTION = "description";
 		public static final String PARENT_DESCRIPTION = "parentDescription";
-		public static final String REPOSITORYUUID= "repositoryUuid";
+		public static final String REPOSITORY_ID= "repositoryid";
 		public static final String BRANCHPATH = "branchPath";
 	}
 	
@@ -67,8 +67,8 @@ public class DatastoreLockIndexEntry implements Serializable {
 			return com.b2international.index.query.Expressions.exactMatch(Fields.PARENT_DESCRIPTION, parentDescription);
 		}
 		
-		public static Expression repositoryUuid(final String repositoryUuid) {
-			return com.b2international.index.query.Expressions.exactMatch(Fields.REPOSITORYUUID, repositoryUuid);
+		public static Expression repositoryId(final String repositoryId) {
+			return com.b2international.index.query.Expressions.exactMatch(Fields.REPOSITORY_ID, repositoryId);
 		}
 		
 		public static Expression branchPath(final String branchPath) {
@@ -83,7 +83,7 @@ public class DatastoreLockIndexEntry implements Serializable {
 				.userId(source.getUserId())
 				.description(source.getDescription())
 				.parentDescription(source.getParentDescription())
-				.repositoryUuid(source.getRepositoryUuid())
+				.repositoryId(source.getRepositoryId())
 				.branchPath(source.getBranchPath());
 	}
 	
@@ -98,7 +98,7 @@ public class DatastoreLockIndexEntry implements Serializable {
 		private String userId;
 		private String description;
 		private String parentDescription;
-		private String repositoryUuid;
+		private String repositoryId;
 		private String branchPath;
 		
 		@JsonCreator
@@ -125,9 +125,9 @@ public class DatastoreLockIndexEntry implements Serializable {
 			return this;
 		}
 		
-		public Builder repositoryUuid(final String repositoryUuid) {
-			Preconditions.checkNotNull(repositoryUuid);
-			this.repositoryUuid = repositoryUuid;
+		public Builder repositoryId(final String repositoryId) {
+			Preconditions.checkNotNull(repositoryId);
+			this.repositoryId = repositoryId;
 			return this;
 		}
 		
@@ -137,7 +137,7 @@ public class DatastoreLockIndexEntry implements Serializable {
 		}
 		
 		public DatastoreLockIndexEntry build() {
-			return new DatastoreLockIndexEntry(id, userId, description, parentDescription, repositoryUuid, branchPath);
+			return new DatastoreLockIndexEntry(id, userId, description, parentDescription, repositoryId, branchPath);
 		}
 	}
 	
@@ -145,15 +145,15 @@ public class DatastoreLockIndexEntry implements Serializable {
 	private final String userId;
 	private final String description;
 	private final String parentDescription;
-	private final String repositoryUuid;
+	private final String repositoryId;
 	private final String branchPath;
 	
-	private DatastoreLockIndexEntry(final String id, final String userId, final String description, final String parentDescription, final String repositoryUUid, final String branchPath) {
+	private DatastoreLockIndexEntry(final String id, final String userId, final String description, final String parentDescription, final String repositoryId, final String branchPath) {
 		this.id = id;
 		this.userId = userId;
 		this.description = description;
 		this.parentDescription = parentDescription;
-		this.repositoryUuid = repositoryUUid;
+		this.repositoryId = repositoryId;
 		this.branchPath = branchPath;
 	}
 	
@@ -173,8 +173,8 @@ public class DatastoreLockIndexEntry implements Serializable {
 		return parentDescription;
 	}
 	
-	public String getRepositoryUuid() {
-		return repositoryUuid;
+	public String getRepositoryId() {
+		return repositoryId;
 	}
 	
 	public String getBranchPath() {
@@ -183,7 +183,7 @@ public class DatastoreLockIndexEntry implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, description, parentDescription, branchPath, repositoryUuid, userId);
+		return Objects.hash(id, description, parentDescription, branchPath, repositoryId, userId);
 	}
 	
 	@Override
@@ -205,7 +205,7 @@ public class DatastoreLockIndexEntry implements Serializable {
 				&& Objects.equals(userId, otherEntry.getUserId())
 				&& Objects.equals(description, otherEntry.getDescription())
 				&& Objects.equals(parentDescription, otherEntry.getParentDescription())
-				&& Objects.equals(repositoryUuid, otherEntry.getRepositoryUuid())
+				&& Objects.equals(repositoryId, otherEntry.getRepositoryId())
 				&& Objects.equals(branchPath, otherEntry.getBranchPath());
 	}
 	
@@ -216,7 +216,7 @@ public class DatastoreLockIndexEntry implements Serializable {
 				.add("userId", userId)
 				.add("description", description)
 				.add("parentDescription", parentDescription)
-				.add("repositoryUuid", repositoryUuid)
+				.add("repositoryId", repositoryId)
 				.add("branchPath", branchPath)
 				.toString();
 	}
