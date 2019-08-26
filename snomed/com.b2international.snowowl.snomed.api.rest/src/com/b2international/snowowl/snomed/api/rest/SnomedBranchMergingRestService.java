@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -68,6 +69,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 	
 	private static final String SOURCE_KEY = "source";
 	private static final String TARGET_KEY = "target";
+	private static final String STATUS_KEY = "status";
 	
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -159,13 +161,21 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 				final RemoteJobEntry mergeJob = jobs.stream().findFirst().get();
 				if (mergeJob.getResult() == null) {
 					final Map<String, Object> params = mergeJob.getParameters(objectMapper);
-					final String sourcePath = (String) params.get(SOURCE_KEY);
-					final String object = (String) params.get(TARGET_KEY);
+					final String source = (String) params.get(SOURCE_KEY);
+					final String target = (String) params.get(TARGET_KEY);
 					
-					MergeImpl.builder(sourcePath, object).build();
-					return null;
-				} else {
+					return MergeImpl.builder(source, target).build();
+				} else if(mergeJob.isSuccessful()) {
 					return mergeJob.getResultAs(objectMapper, Merge.class);
+				} else {
+					// Job failed to start merge process
+					final Map<String, Object> params = mergeJob.getParameters(objectMapper);
+					final String source = (String) params.get(SOURCE_KEY);
+					final String target = (String) params.get(TARGET_KEY);
+					
+					final Merge failedMerge = MergeImpl.builder(source, target).build().failed(mergeJob.getResultAs(objectMapper, ApiError.class));
+					
+					return failedMerge;
 				}
 			}));
 		
@@ -186,7 +196,11 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 			
 			@ApiParam(value="The target branch path to match")
 			@RequestParam(value="target", required = false) 
-			final String target) {
+			final String target,
+			
+			@ApiParam(value="The current status of the request")
+			@RequestParam(value=STATUS_KEY, required = false) 
+			final Merge.Status status) {
 		return DeferredResults.wrap(JobRequests.prepareSearch()
 			.all()
 			.buildAsync()
@@ -198,7 +212,9 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 						.filter(job -> job.isDone())
 						.filter(job -> {
 							final Map<String, Object> jobParams = job.getParameters(objectMapper);
-							return jobParams.get(SOURCE_KEY).equals(source) && jobParams.get(TARGET_KEY).equals(target);
+							return jobParams.get(SOURCE_KEY).equals(source)
+									&& jobParams.get(TARGET_KEY).equals(target)
+									&& jobParams.get(STATUS_KEY).equals(status);
 						})
 						.map(job -> job.getResultAs(objectMapper, Merge.class))
 						.collect(Collectors.toList())
