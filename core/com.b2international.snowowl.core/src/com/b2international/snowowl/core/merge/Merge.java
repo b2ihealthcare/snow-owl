@@ -19,6 +19,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -32,14 +34,33 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder=Merge.Builder.class)
 public interface Merge extends Serializable {
 
+	enum Status {
+		SCHEDULED,
+		IN_PROGRESS,
+		COMPLETED,
+		CONFLICTS,
+		FAILED, 
+		CANCEL_REQUESTED;
+	}
+	
+	UUID getId();
+	
 	String getSource();
 
 	String getTarget();
 
+	Status getStatus();
+	
+	Date getScheduledDate();
+	
+	Date getStartDate();
+	
+	Date getEndDate();
+	
 	ApiError getApiError();
 	
 	Collection<MergeConflict> getConflicts();
-	
+
 	Merge start();
 
 	Merge completed();
@@ -56,6 +77,11 @@ public interface Merge extends Serializable {
 		private final String source;
 		private final String target;
 		
+		private UUID id = UUID.randomUUID();
+		private Status status = Status.SCHEDULED;
+		private Date scheduledDate = new Date();
+		private Date startDate;
+		private Date endDate;
 		private ApiError apiError;
 		private Collection<MergeConflict> conflicts = newArrayList();
 
@@ -65,6 +91,25 @@ public interface Merge extends Serializable {
 			this.target = target;
 		}
 
+		public void id(UUID id) {
+			this.id = id;
+		}
+
+		public void status(Status status) {
+			this.status = status;
+		}
+
+		public void scheduledDate(Date scheduledDate) {
+			this.scheduledDate = scheduledDate;
+		}
+
+		public void startDate(Date startDate) {
+			this.startDate = startDate;
+		}
+
+		public void endDate(Date endDate) {
+			this.endDate = endDate;
+		}
 
 		public void apiError(ApiError apiError) {
 			this.apiError = apiError;
@@ -75,7 +120,7 @@ public interface Merge extends Serializable {
 		}
 
 		public Merge build() {
-			return new MergeImpl(source, target, apiError, conflicts);
+			return new MergeImpl(id, source, target, status, scheduledDate, startDate, endDate, apiError, conflicts);
 		}
 	}
 }
