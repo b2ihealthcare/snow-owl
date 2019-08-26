@@ -17,13 +17,15 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
+import com.b2international.snowowl.core.merge.Merge;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
@@ -34,6 +36,11 @@ import io.restassured.response.ValidatableResponse;
 public abstract class SnomedMergingRestRequests {
 	
 	private static final long MERGE_POLLING_INTERVAL = 2_000L;
+	
+	private static final Set<String> FINISH_STATES = ImmutableSet.of(
+			Merge.Status.COMPLETED.name(), 
+			Merge.Status.FAILED.name(), 
+			Merge.Status.CONFLICTS.name());
 
 	public static ValidatableResponse createMerge(IBranchPath source, IBranchPath target, String commitComment, String reviewId) {
 		ImmutableMap.Builder<String, Object> requestBuilder = ImmutableMap.<String, Object>builder()
@@ -56,6 +63,7 @@ public abstract class SnomedMergingRestRequests {
 
 		final long endTime = System.currentTimeMillis() + SnomedApiTestConstants.POLL_TIMEOUT;
 		long currentTime;
+		ValidatableResponse response = null;
 		String mergeStatus = null;
 
 		do {
@@ -66,31 +74,20 @@ public abstract class SnomedMergingRestRequests {
 				fail(e.toString());
 			}
 
-			final ValidatableResponse mergeJobResponse = getMergeJob(id).statusCode(200);
-			mergeStatus = mergeJobResponse.extract().path("state");
+			response = getMerge(id).statusCode(200);
+			mergeStatus = response.extract().path("status");
 			currentTime = System.currentTimeMillis();
-		} while (!isMergeFinished(mergeStatus) && currentTime < endTime);
-		
-		
-		final ValidatableResponse merge = getMerge(id);
-		assertNotNull(merge);
-		return merge;
+
+		} while (!FINISH_STATES.contains(mergeStatus) && currentTime < endTime);
+
+		assertNotNull(response);
+		return response;
 	}
 	
 	public static ValidatableResponse getMerge(String id) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.get("/merges/{id}", id)
 				.then();
-	}
-	
-	public static ValidatableResponse getMergeJob(String id) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get("/merges/mergeJob/{id}", id)
-				.then();
-	}
-
-	private static boolean isMergeFinished(String mergeStatus) {
-		return mergeStatus.equalsIgnoreCase(RemoteJobState.FINISHED.name()) || mergeStatus.equalsIgnoreCase(RemoteJobState.FAILED.name());
 	}
 
 	private SnomedMergingRestRequests() {
