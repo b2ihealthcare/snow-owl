@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 
+import static com.b2international.index.query.Expressions.*;
+
 import com.b2international.index.Doc;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
@@ -33,7 +35,7 @@ import com.google.common.base.Preconditions;
  */
 @Doc(type = "lock")
 @JsonDeserialize(builder=DatastoreLockIndexEntry.Builder.class)
-public class DatastoreLockIndexEntry implements Serializable {
+public final class DatastoreLockIndexEntry implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -52,27 +54,27 @@ public class DatastoreLockIndexEntry implements Serializable {
 		}
 		
 		public static Expression ids(final Collection<String> ids) {
-			return com.b2international.index.query.Expressions.matchAny(DocumentMapping._ID, ids);
+			return matchAny(DocumentMapping._ID, ids);
 		}
 		
 		public static Expression userId(final String userId) {
-			return com.b2international.index.query.Expressions.exactMatch(Fields.USER_ID, userId);
+			return exactMatch(Fields.USER_ID, userId);
 		}
 		
 		public static Expression description(final String description) {
-			return com.b2international.index.query.Expressions.exactMatch(Fields.DESCRIPTION, description);
+			return exactMatch(Fields.DESCRIPTION, description);
 		}
 		
 		public static Expression parentDescription(final String parentDescription) {
-			return com.b2international.index.query.Expressions.exactMatch(Fields.PARENT_DESCRIPTION, parentDescription);
+			return exactMatch(Fields.PARENT_DESCRIPTION, parentDescription);
 		}
 		
 		public static Expression repositoryId(final String repositoryId) {
-			return com.b2international.index.query.Expressions.exactMatch(Fields.REPOSITORY_ID, repositoryId);
+			return exactMatch(Fields.REPOSITORY_ID, repositoryId);
 		}
 		
 		public static Expression branchPath(final String branchPath) {
-			return com.b2international.index.query.Expressions.exactMatch(Fields.BRANCHPATH, branchPath);
+			return exactMatch(Fields.BRANCHPATH, branchPath);
 		}
 		
 	}
