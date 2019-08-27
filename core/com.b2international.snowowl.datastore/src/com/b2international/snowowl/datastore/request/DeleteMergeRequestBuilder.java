@@ -22,11 +22,11 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 5.0
  */
-public final class MergeDeleteRequestBuilder extends BaseRequestBuilder<MergeDeleteRequestBuilder, RepositoryContext, Boolean> implements RepositoryRequestBuilder<Boolean> {
+public final class DeleteMergeRequestBuilder extends BaseRequestBuilder<DeleteMergeRequestBuilder, RepositoryContext, Boolean> implements RepositoryRequestBuilder<Boolean> {
 
 	private final String id;
 
-	MergeDeleteRequestBuilder(String id) {
+	DeleteMergeRequestBuilder(String id) {
 		this.id = id;
 	}
 	
