@@ -1,5 +1,5 @@
 #
-# Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
 # necessary to connect one user to the system otherwise Snow Owl startup fails
@@ -11,6 +11,16 @@ identity:
         name: users
   
 snomed:
+  languages:
+    -
+      code: en
+      refSetIds: ["900000000000509007", "900000000000508004"]
+    -
+      code: en-us
+      refSetIds: ["900000000000509007"]
+    -
+      code: en-gb
+      refSetIds: ["900000000000508004"]
   # Disable concrete domains, we are going to import the required concepts to an extension
   concreteDomainSupport: false
   maxReasonerCount: 1

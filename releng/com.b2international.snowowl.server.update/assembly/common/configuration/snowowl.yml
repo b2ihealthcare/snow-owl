@@ -1,5 +1,5 @@
 #
-# Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
 # Default identity provider is `unprotected`.
@@ -22,9 +22,20 @@
 repository:
   host: 0.0.0.0
   port: 2036
-  
   index:
     socketTimeout: 60000
+
+snomed:
+  languages:
+    -
+      code: en
+      refSetIds: ["900000000000509007", "900000000000508004"]
+    -
+      code: en-us
+      refSetIds: ["900000000000509007"]
+    -
+      code: en-gb
+      refSetIds: ["900000000000508004"]
 
 # Request execution metrics (response-time, jvm, gc, etc.)
 #monitoring:

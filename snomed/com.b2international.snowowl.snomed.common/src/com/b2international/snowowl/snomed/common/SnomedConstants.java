@@ -15,13 +15,9 @@
  */
 package com.b2international.snowowl.snomed.common;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -33,53 +29,6 @@ public abstract class SnomedConstants {
 	// suppress constructor to avoid instantiation 
 	private SnomedConstants() { }
 
-	/**
-	 * Mapping between language codes (e.g. "en-gb") and preferred term reference set identifiers.
-	 * TODO: not a very elegant solution, should eventually be replaced.
-	 */
-	public static abstract class LanguageCodeReferenceSetIdentifierMapping {
-		
-		public static final String EN_LANGUAGE_CODE = "en"; 
-		
-		// suppress constructor to avoid instantiation
-		private LanguageCodeReferenceSetIdentifierMapping() { }
-		
-		private static final BiMap<String, String> CODE_IDENTIFIER_BIMAP = ImmutableBiMap.of(
-				"en-us", SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US,
-				"en-gb", SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_UK,
-				"en-sg", SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_SG,
-				"en-au", SnomedConstants.Concepts.AUSTRALIAN_LANGUAGE_REFERENCE_SET,
-				"es", SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_ES);
-		
-		/**
-		 * @param languageCode
-		 * @return the language reference set identifier for the specified language code, or null if
-		 * 			the language code is not supported
-		 */
-		public static String getReferenceSetIdentifier(final String languageCode) {
-			final String refSetId = CODE_IDENTIFIER_BIMAP.get(languageCode);
-			return refSetId;
-		}
-		
-		/**
-		 * @param referenceSetIdentifier
-		 * @return the language code for the specified refset identifier, or null if
-		 * 			the refset identifier is not supported
-		 */
-		public static String getLanguageCode(final String referenceSetIdentifier) {
-			return CODE_IDENTIFIER_BIMAP.inverse().get(referenceSetIdentifier);
-		}
-		
-		/***
-		 * Returns with a collection of SNOMED&nbsp;CT language type reference set identifier concept IDs
-		 * supported by the application.
-		 * @return a collection of language type reference set identifier concept IDs.
-		 */
-		public static Collection<String> getSupportedLanguageIds() {
-			return Collections.unmodifiableCollection(CODE_IDENTIFIER_BIMAP.values());
-		}
-	}
-	
 	/**
 	 * Constant class for frequently used SNOMED CT concept IDs.
 	 * 
