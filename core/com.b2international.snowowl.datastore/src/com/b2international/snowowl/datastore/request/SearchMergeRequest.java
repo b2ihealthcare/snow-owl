@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.List;
-import java.util.Map;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.nestedMatch;
+
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
@@ -54,53 +55,23 @@ public class SearchMergeRequest implements Request<RepositoryContext, MergeColle
 	
 	@Override
 	public MergeCollection execute(RepositoryContext context) {
-		final RemoteJobs jobs = context.service(RemoteJobTracker.class).search(Expressions.matchAll(), Integer.MAX_VALUE);
-		final ObjectMapper mapper = context.service(ObjectMapper.class);
-		final Stream<RemoteJobEntry> resultingJobs = jobs.stream().filter(RemoteJobEntry::isDone);
-		
+		final ExpressionBuilder expressionBuilder = Expressions.builder();
 		if (!Strings.isNullOrEmpty(source)) {
-			addSourceClause(mapper, resultingJobs);
+			expressionBuilder.filter(nestedMatch(RemoteJobEntry.Fields.PARAMETERS, exactMatch(SOURCE_FIELD, source)));
 		}
 		
 		if  (!Strings.isNullOrEmpty(target)) {
-			addTargetClause(mapper, resultingJobs);
+			expressionBuilder.filter(nestedMatch(RemoteJobEntry.Fields.PARAMETERS, exactMatch(TARGET_FIELD, target)));
 		}
 		
 		if (!Strings.isNullOrEmpty(status)) {
-			addStatusClause(mapper, resultingJobs);
+			expressionBuilder.filter(nestedMatch(RemoteJobEntry.Fields.PARAMETERS, exactMatch(STATUS_FIELD, status)));
 		}
 		
-		final List<Merge> matchingMerges = resultingJobs.map(job -> job.getResultAs(mapper, Merge.class)).collect(Collectors.toList());
-		
-		return new MergeCollection(matchingMerges);
+		final RemoteJobs jobs = context.service(RemoteJobTracker.class).search(expressionBuilder.build(), Integer.MAX_VALUE);
+		final ObjectMapper mapper = context.service(ObjectMapper.class);
+		return new MergeCollection(jobs.stream().filter(RemoteJobEntry::isDone).map(job -> job.getResultAs(mapper, Merge.class)).collect(Collectors.toList()));
 	}
 	
-	private void addSourceClause(ObjectMapper mapper, final Stream<RemoteJobEntry> resultingJobs) {
-		resultingJobs.filter(job -> {
-			final Map<String, Object> jobParams = job.getParameters(mapper);
-			final String source = (String) jobParams.get(SOURCE_FIELD);
-			
-			return this.source.equals(source);
-		});
-	}
-	
-	private void addTargetClause(ObjectMapper mapper, final Stream<RemoteJobEntry> resultingJobs) {
-		resultingJobs.filter(job -> {
-			final Map<String, Object> jobParams = job.getParameters(mapper);
-			final String source = (String) jobParams.get(TARGET_FIELD);
-			
-			return this.target.equals(source);
-		});
-	}
-
-
-	private void addStatusClause(ObjectMapper mapper, final Stream<RemoteJobEntry> resultingJobs) {
-		resultingJobs.filter(job -> {
-			final Map<String, Object> jobParams = job.getParameters(mapper);
-			final String source = (String) jobParams.get(STATUS_FIELD);
-			
-			return this.status.equals(source);
-		});
-	}
 
 }
