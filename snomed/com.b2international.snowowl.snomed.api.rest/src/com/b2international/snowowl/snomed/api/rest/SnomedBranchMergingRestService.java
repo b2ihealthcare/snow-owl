@@ -166,7 +166,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 				.prepareSearch()
 					.filterBySource(source)
 					.filterByTarget(target)
-					.filterByStatus(status.name())
+					.filterByStatus(status != null ? status.name() : null)
 					.build(repositoryId)
 					.execute(bus));
 	}
