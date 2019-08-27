@@ -59,7 +59,6 @@ public enum ClassPathScanner {
 				}
 			}
 		}
-		System.err.println("Bundle read: " + w + " nob: " + classLoaders.size());
 		w.reset().start();
 		
 		registry = new ClassGraph()
@@ -68,7 +67,6 @@ public enum ClassPathScanner {
 				.enableAllInfo()
 				.scan();
 		
-		System.err.println("Classpath scanning: " + w);
 		w.reset().start();
 		
 	}
