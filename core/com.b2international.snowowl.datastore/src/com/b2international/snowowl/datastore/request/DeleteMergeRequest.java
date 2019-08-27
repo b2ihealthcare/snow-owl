@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.UUID;
+import java.util.Collections;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.merge.MergeService;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -28,15 +28,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 final class DeleteMergeRequest implements Request<RepositoryContext, Boolean> {
 
 	@JsonProperty
-	private final UUID id;
+	private final String id;
 
-	DeleteMergeRequest(UUID id) {
+	DeleteMergeRequest(String id) {
 		this.id = id;
 	}
 
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		context.service(MergeService.class).deleteMerge(id);
+		context.service(RemoteJobTracker.class).requestDeletes(Collections.singleton(id));
 		return Boolean.TRUE;
 	}
 

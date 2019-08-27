@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.BranchMergeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.MergeService;
+import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.google.common.base.Strings;
 
 /**
@@ -26,7 +30,9 @@ import com.google.common.base.Strings;
  * 
  * @since 4.1
  */
-public final class BranchMergeRequest extends AbstractBranchChangeRequest<Merge> {
+public final class BranchMergeRequest extends AbstractBranchChangeRequest {
+
+	private static final long serialVersionUID = 1L;
 
 	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
 		return !Strings.isNullOrEmpty(commitMessage) 
@@ -39,7 +45,16 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest<Merge>
 	}
 	
 	@Override
-	protected Merge execute(RepositoryContext context, Branch source, Branch target) {
-		return context.service(MergeService.class).enqueue(sourcePath, targetPath, userId, commitMessage, reviewId, parentLockContext);
+	protected void applyChanges(RepositoryContext context, Branch source, Branch target) {
+		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
+			context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, context.service(ComponentRevisionConflictProcessor.class), true);
+		} catch (BranchMergeException e) {
+			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
+		} catch (DatastoreOperationLockException e) {
+			throw new ConflictException("Lock exception caught while merging source '%s' into target '%s'. %s", source.path(), target.path(), e.getMessage());
+		} catch (InterruptedException e) {
+			throw new ConflictException("Lock obtaining process was interrupted while merging source '%s' into target '%s'.", source.path(), target.path());
+		}
 	}
+	
 }

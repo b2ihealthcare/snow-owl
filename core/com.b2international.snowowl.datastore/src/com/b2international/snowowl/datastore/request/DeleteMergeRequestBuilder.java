@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,27 +15,24 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.UUID;
-
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.merge.Merge;
 
 /**
  * @since 5.0
  */
-public final class MergeGetRequestBuilder extends BaseRequestBuilder<MergeGetRequestBuilder, RepositoryContext, Merge> implements RepositoryRequestBuilder<Merge> {
+public final class DeleteMergeRequestBuilder extends BaseRequestBuilder<DeleteMergeRequestBuilder, RepositoryContext, Boolean> implements RepositoryRequestBuilder<Boolean> {
 
-	private final UUID id;
+	private final String id;
 
-	MergeGetRequestBuilder(UUID id) {
+	DeleteMergeRequestBuilder(String id) {
 		this.id = id;
 	}
 	
 	@Override
-	protected Request<RepositoryContext, Merge> doBuild() {
-		return new GetMergeRequest(id);
+	protected Request<RepositoryContext, Boolean> doBuild() {
+		return new DeleteMergeRequest(id);
 	}
 
 }

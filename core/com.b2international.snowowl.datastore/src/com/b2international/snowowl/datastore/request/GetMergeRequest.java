@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,27 +15,56 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.UUID;
+import java.util.Map;
 
+import com.b2international.commons.exceptions.ApiError;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.MergeService;
+import com.b2international.snowowl.core.merge.MergeImpl;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Iterables;
 
 /**
- * @since 4.6
+ * @since 7.1
  */
-public final class GetMergeRequest implements Request<RepositoryContext, Merge> {
-
-	private final UUID id;
-
-	GetMergeRequest(UUID id) {
+public class GetMergeRequest implements Request<RepositoryContext, Merge> {
+	
+	private static final long serialVersionUID = 1L;
+	
+	private final String id;
+	
+	public GetMergeRequest(final String id) {
 		this.id = id;
 	}
 
 	@Override
 	public Merge execute(RepositoryContext context) {
-		return context.service(MergeService.class).getMerge(id);
+		final RemoteJobEntry job = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(DocumentMapping.matchId(id), 1), null);
+		if (job == null) {
+			throw new NotFoundException("Merge ", id);
+		}
+		
+		final ObjectMapper mapper = context.service(ObjectMapper.class);
+		
+		if (job.isSuccessful()) {
+			return job.getResultAs(mapper, Merge.class);
+		}
+		
+		final Map<String, Object> params = job.getParameters(mapper);
+		final String source = (String) params.get("source");
+		final String target = (String) params.get("target");
+		
+		if (job.getResult() == null) {
+			return MergeImpl.builder(source, target).build();
+		}
+		
+		// failed job result is ApiError
+		return MergeImpl.builder(source, target).build().failed(job.getResultAs(mapper, ApiError.class));
 	}
 
 }

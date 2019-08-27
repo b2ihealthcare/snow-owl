@@ -34,15 +34,13 @@ import io.restassured.response.ValidatableResponse;
  * @since 5.0
  */
 public abstract class SnomedMergingRestRequests {
-
+	
+	private static final long MERGE_POLLING_INTERVAL = 2_000L;
+	
 	private static final Set<String> FINISH_STATES = ImmutableSet.of(
 			Merge.Status.COMPLETED.name(), 
 			Merge.Status.FAILED.name(), 
 			Merge.Status.CONFLICTS.name());
-
-	public static ValidatableResponse createMerge(IBranchPath source, IBranchPath target, String commitComment) {
-		return createMerge(source, target, commitComment, null);
-	}
 
 	public static ValidatableResponse createMerge(IBranchPath source, IBranchPath target, String commitComment, String reviewId) {
 		ImmutableMap.Builder<String, Object> requestBuilder = ImmutableMap.<String, Object>builder()
@@ -61,15 +59,9 @@ public abstract class SnomedMergingRestRequests {
 				.then();
 	}
 
-	public static ValidatableResponse getMerge(String id) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get("/merges/{id}", id)
-				.then();
-	}
-
 	public static ValidatableResponse waitForMergeJob(String id) {
 
-		long endTime = System.currentTimeMillis() + SnomedApiTestConstants.POLL_TIMEOUT;
+		final long endTime = System.currentTimeMillis() + SnomedApiTestConstants.POLL_TIMEOUT;
 		long currentTime;
 		ValidatableResponse response = null;
 		String mergeStatus = null;
@@ -77,7 +69,7 @@ public abstract class SnomedMergingRestRequests {
 		do {
 
 			try {
-				Thread.sleep(SnomedApiTestConstants.POLL_INTERVAL);
+				Thread.sleep(MERGE_POLLING_INTERVAL);
 			} catch (InterruptedException e) {
 				fail(e.toString());
 			}
@@ -90,6 +82,12 @@ public abstract class SnomedMergingRestRequests {
 
 		assertNotNull(response);
 		return response;
+	}
+	
+	public static ValidatableResponse getMerge(String id) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.get("/merges/{id}", id)
+				.then();
 	}
 
 	private SnomedMergingRestRequests() {

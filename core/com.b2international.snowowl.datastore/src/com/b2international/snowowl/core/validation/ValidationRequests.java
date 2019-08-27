@@ -43,7 +43,6 @@ public final class ValidationRequests {
 	}
 
 	public static ValidateRequestBuilder prepareValidate() {
-		
 		return new ValidateRequestBuilder();
 	}
 	
@@ -58,7 +57,7 @@ public final class ValidationRequests {
 	}
 	
 	public static boolean isValidationJob(RemoteJobEntry job) {
-		return job != null && job.getId().startsWith(ValidationRequests.VALIDATION_JOB_ID_PREFIX);
+		return job != null && job.getId().startsWith(VALIDATION_JOB_ID_PREFIX);
 	}
 	
 	public static boolean isRelatedBranch(RemoteJobEntry job, String branch) {

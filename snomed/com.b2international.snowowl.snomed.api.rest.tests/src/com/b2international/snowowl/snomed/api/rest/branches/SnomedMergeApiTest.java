@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeCaseSignificance;
@@ -43,6 +42,7 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -68,7 +68,7 @@ import com.google.common.collect.ImmutableMap;
 public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	private static void rebaseConceptDeletionOverChange(IBranchPath parentPath, IBranchPath childPath, String conceptId) {
-		Map<?, ?> changeOnParent = ImmutableMap.builder()
+		final Map<?, ?> changeOnParent = ImmutableMap.builder()
 				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status on parent")
 				.build();
@@ -81,10 +81,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewConceptForward() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String conceptId = createNewConcept(a);
+		final String conceptId = createNewConcept(a);
 		merge(a, branchPath, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
@@ -93,10 +93,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewDescriptionForward() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String descriptionId = createNewDescription(a);
+		final String descriptionId = createNewDescription(a);
 		merge(a, branchPath, "Merged new description from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
@@ -105,7 +105,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewRelationshipForward() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		String relationshipId = createNewRelationship(a);
@@ -116,21 +116,22 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void noMergeWithNonExistentReview() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+	public void noMergeWithNonExistentReview() throws BadRequestException {
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		createNewConcept(a);
-		createMerge(a, branchPath, "Merged new concept from child branch with non-existent review ID", "non-existent-id").statusCode(400);
+		merge(a, branchPath, "Merged new concept from child branch with non-existent review ID", "non-existent-id")
+			.body("status", equalTo(Merge.Status.FAILED.name()));
 	}
 
 //	@Test
 //	public void noMergeNewConceptDiverged() {
-//		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+//		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 //		createBranch(a).statusCode(201);
 //
-//		String concept1Id = createNewConcept(a);
-//		String concept2Id = createNewConcept(branchPath);
+//		final String concept1Id = createNewConcept(a);
+//		final String concept2Id = createNewConcept(branchPath);
 //
 //		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(404);
 //		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
@@ -195,22 +196,22 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewConceptToUnrelatedBranch() {
-		IBranchPath v1 = BranchPathUtils.createPath(branchPath, "v1");
+		final IBranchPath v1 = BranchPathUtils.createPath(branchPath, "v1");
 		createBranch(v1).statusCode(201);
 
 		// Concept 1 is created on the two branches' common ancestor
-		String concept1Id = createNewConcept(branchPath);
+		final String concept1Id = createNewConcept(branchPath);
 
-		IBranchPath v2 = BranchPathUtils.createPath(branchPath, "v2");
+		final IBranchPath v2 = BranchPathUtils.createPath(branchPath, "v2");
 		createBranch(v2).statusCode(201);
 
-		IBranchPath a = BranchPathUtils.createPath(v1, "extension-old");
+		final IBranchPath a = BranchPathUtils.createPath(v1, "extension-old");
 		createBranch(a).statusCode(201);
-		IBranchPath b = BranchPathUtils.createPath(v2, "extension-new");
+		final IBranchPath b = BranchPathUtils.createPath(v2, "extension-new");
 		createBranch(b).statusCode(201);
 
 		// Concept 2 is initially only visible on branch "extension-old"
-		String concept2Id = createNewConcept(a);
+		final String concept2Id = createNewConcept(a);
 		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
@@ -225,12 +226,12 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewDescriptionToUnrelatedBranch() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
-		IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
+		final IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
 		createBranch(b).statusCode(201);
 
-		String descriptionId = createNewDescription(a);
+		final String descriptionId = createNewDescription(a);
 		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
 		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
 
@@ -242,12 +243,12 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewRelationshipToUnrelatedBranch() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
-		IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
+		final IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
 		createBranch(b).statusCode(201);
 
-		String relationshipId = createNewRelationship(a);
+		final String relationshipId = createNewRelationship(a);
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
 		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(404);
 
@@ -259,9 +260,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeReactivatedConcept() {
-		String conceptId = createInactiveConcept(branchPath);
+		final String conceptId = createInactiveConcept(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		reactivateConcept(a, conceptId);
@@ -278,15 +279,15 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseReactivatedConcept() {
-		String concept1Id = createInactiveConcept(branchPath);
+		final String concept1Id = createInactiveConcept(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		reactivateConcept(a, concept1Id);
 
 		// Create concept 2 on "branchPath" so that "a" can be rebased
-		String concept2Id = createNewConcept(branchPath);
+		final String concept2Id = createNewConcept(branchPath);
 
 		merge(branchPath, a, "Rebased reactivation on child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
@@ -310,11 +311,11 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewConceptDiverged() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String concept1Id = createNewConcept(branchPath);
-		String concept2Id = createNewConcept(a);
+		final String concept1Id = createNewConcept(branchPath);
+		final String concept2Id = createNewConcept(a);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
 		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(404);
@@ -335,11 +336,11 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewDescriptionDiverged() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String description1Id = createNewDescription(branchPath);
-		String description2Id = createNewDescription(a);
+		final String description1Id = createNewDescription(branchPath);
+		final String description2Id = createNewDescription(a);
 
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200);
 		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(404);
@@ -360,11 +361,11 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewRelationshipDiverged() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String relationship1Id = createNewRelationship(branchPath);
-		String relationship2Id = createNewRelationship(a);
+		final String relationship1Id = createNewRelationship(branchPath);
+		final String relationship2Id = createNewRelationship(a);
 
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(200);
 		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(404);
@@ -385,15 +386,15 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewConceptStale() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		final IBranchPath b = BranchPathUtils.createPath(a, "b");
 		createBranch(b).statusCode(201);
 
-		String concept1Id = createNewConcept(b);
-		String concept2Id = createNewConcept(a);
-		String concept3Id = createNewConcept(branchPath);
+		final String concept1Id = createNewConcept(b);
+		final String concept2Id = createNewConcept(a);
+		final String concept3Id = createNewConcept(branchPath);
 
 		merge(branchPath, a, "Rebased new concept on child over new concept on parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
@@ -415,9 +416,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseChangedConceptOnParentDeletedOnBranch() {
-		String conceptId = createNewConcept(branchPath);
+		final String conceptId = createNewConcept(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		rebaseConceptDeletionOverChange(branchPath, a, conceptId);
@@ -429,9 +430,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseChangedDescriptionOnParentDeletedOnBranch() {
-		String descriptionId = createNewDescription(branchPath);
+		final String descriptionId = createNewDescription(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		changeCaseSignificance(branchPath, descriptionId); // Parent branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
@@ -445,9 +446,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseAndMergeChangedOnParentDeletedOnBranch() {
-		String conceptId = createNewConcept(branchPath);
+		final String conceptId = createNewConcept(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		rebaseConceptDeletionOverChange(branchPath, a, conceptId);
@@ -461,14 +462,14 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseAndMergeChangedDescription() {
-		String description1Id = createNewDescription(branchPath);
+		final String description1Id = createNewDescription(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String description2Id = createNewDescription(branchPath);
+		final String description2Id = createNewDescription(branchPath);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
+		final Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
 				.put("moduleId", Concepts.MODULE_ROOT)
 				.put("commitComment", "Changed case significance and module on child")
@@ -508,12 +509,12 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseAndMergeNewDescriptionBothDeleted() {
-		String description1Id = createNewDescription(branchPath);
+		final String description1Id = createNewDescription(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String description2Id = createNewDescription(branchPath);
+		final String description2Id = createNewDescription(branchPath);
 
 		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id, false).statusCode(204);
 		deleteComponent(a, SnomedComponentType.DESCRIPTION, description1Id, false).statusCode(204);
@@ -537,14 +538,14 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseOverReusedRelationshipId() {
-		String relationshipId = createNewRelationship(branchPath);
+		final String relationshipId = createNewRelationship(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		deleteComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, false).statusCode(204);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
+		final Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("sourceId", Concepts.ROOT_CONCEPT)
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
 				.put("typeId", Concepts.FINDING_SITE)
@@ -568,15 +569,15 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseTextDefinitions() throws Exception {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		// Create two new text definitions with "cross-shaped" acceptability on child
-		String textDefinition1Id = createNewTextDefinition(a, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE));
-		String textDefinition2Id = createNewTextDefinition(a, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
+		final String textDefinition1Id = createNewTextDefinition(a, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE));
+		final String textDefinition2Id = createNewTextDefinition(a, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
 
 		// Create change on parent
-		String relationshipId = createNewRelationship(branchPath);
+		final String relationshipId = createNewRelationship(branchPath);
 
 		merge(branchPath, a, "Rebased new text definitions over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
@@ -593,13 +594,13 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseStaleBranchWithChangesOnDeletedContent() throws Exception {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String relationshipId = createNewRelationship(a);
-		String descriptionId = createNewDescription(a);
+		final String relationshipId = createNewRelationship(a);
+		final String descriptionId = createNewDescription(a);
 
-		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		final IBranchPath b = BranchPathUtils.createPath(a, "b");
 		createBranch(b).statusCode(201);
 
 		deleteComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId, false).statusCode(204);
@@ -622,13 +623,13 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseStaleBranchWithChangesOnNewContent() throws Exception {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String relationshipId = createNewRelationship(a);
-		String descriptionId = createNewDescription(a);
+		final String relationshipId = createNewRelationship(a);
+		final String descriptionId = createNewDescription(a);
 
-		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		final IBranchPath b = BranchPathUtils.createPath(a, "b");
 		createBranch(b).statusCode(201);
 
 		changeCaseSignificance(b, descriptionId);
@@ -651,13 +652,13 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseStaleBranchWithDeleteOnChangedContent() throws Exception {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		String relationshipId = createNewRelationship(a);
-		String descriptionId = createNewDescription(a);
+		final String relationshipId = createNewRelationship(a);
+		final String descriptionId = createNewDescription(a);
 
-		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		final IBranchPath b = BranchPathUtils.createPath(a, "b");
 		createBranch(b).statusCode(201);
 
 		// Make changes on branch "a"
@@ -683,12 +684,12 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	@Test
 	@Ignore("Currently always fails due to merge policy")
 	public void rebaseChangedConceptOnBranchDeletedOnParent() {
-		String conceptId = createNewConcept(branchPath);
+		final String conceptId = createNewConcept(branchPath);
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
+		final Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status on child")
 				.build();
@@ -701,19 +702,19 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseUnsetEffectiveTimeOnSource() {
-		String memberId = createNewRefSetMember(branchPath);
+		final String memberId = createNewRefSetMember(branchPath);
 
-		Calendar calendar = Calendar.getInstance();
+		final Calendar calendar = Calendar.getInstance();
 		calendar.setTime(getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
 		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime());
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
 		calendar.add(Calendar.DATE, 1);
 		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime()); // Parent increases the effective time by one day
 
-		Map<?, ?> childRequest = ImmutableMap.builder()
+		final Map<?, ?> childRequest = ImmutableMap.builder()
 				.put("active", false)
 				.put("commitComment", "Inactivated reference set member")
 				.build();
@@ -735,16 +736,16 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseUnsetEffectiveTimeOnTarget() {
-		String memberId = createNewRefSetMember(branchPath);
+		final String memberId = createNewRefSetMember(branchPath);
 
-		Calendar calendar = Calendar.getInstance();
+		final Calendar calendar = Calendar.getInstance();
 		calendar.setTime(getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
 		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime());
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		Map<?, ?> parentRequest = ImmutableMap.builder()
+		final Map<?, ?> parentRequest = ImmutableMap.builder()
 				.put("active", false)
 				.put("commitComment", "Inactivated reference set member")
 				.build();

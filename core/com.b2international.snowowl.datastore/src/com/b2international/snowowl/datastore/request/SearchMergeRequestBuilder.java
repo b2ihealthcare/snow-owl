@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,47 +15,40 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
 
 /**
- * @since 4.6
+ * @since 7.1 
  */
-public final class SearchMergeRequestBuilder extends BaseRequestBuilder<SearchMergeRequestBuilder, RepositoryContext, MergeCollection> implements RepositoryRequestBuilder<MergeCollection> {
+public class SearchMergeRequestBuilder extends BaseRequestBuilder<SearchMergeRequestBuilder, RepositoryContext, MergeCollection> implements RepositoryRequestBuilder<MergeCollection>  {
 
-	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
+	private String source;
+	private String target;
+	private String status;
 	
 	SearchMergeRequestBuilder() {}
-
-	public SearchMergeRequestBuilder withSource(String source) {
-		if (!CompareUtils.isEmpty(source)) {
-			optionsBuilder.put("source", source);
-		}
+	
+	public SearchMergeRequestBuilder filterBySource(String source) {
+		this.source = source;
 		return this;
-	}
-
-	public SearchMergeRequestBuilder withTarget(String target) {
-		if (!CompareUtils.isEmpty(target)) {
-			optionsBuilder.put("target", target);
-		}
-		return this;
-	}
-
-	public SearchMergeRequestBuilder withStatus(Merge.Status status) {
-		if (!CompareUtils.isEmpty(status)) {
-			optionsBuilder.put("status", status);
-		}
-		return this;
-	}
-
-	@Override
-	protected Request<RepositoryContext, MergeCollection> doBuild() {
-		return new SearchMergeRequest(optionsBuilder.build());
 	}
 	
+	public SearchMergeRequestBuilder filterByTarget(String target) {
+		this.target = target;
+		return this;
+	}
+	
+	public SearchMergeRequestBuilder filterByStatus(String status) {
+		this.status = status;
+		return this;
+	}
+	
+	@Override
+	protected Request<RepositoryContext, MergeCollection> doBuild() {
+		return new SearchMergeRequest(source, target, status);
+	}
+
 }

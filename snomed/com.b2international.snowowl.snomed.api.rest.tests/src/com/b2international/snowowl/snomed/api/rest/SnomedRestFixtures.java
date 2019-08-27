@@ -52,9 +52,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -332,9 +332,13 @@ public abstract class SnomedRestFixtures {
 				.put("referenceSetId", refSetId)
 				.put("referencedComponentId", referencedComponentId);
 	}
-
+	
 	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment) {
-		String mergeLocation = createMerge(sourcePath, targetPath, commitComment)
+		return merge(sourcePath, targetPath, commitComment, null);
+	}
+	
+	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment, String reviewId) {
+		final String mergeLocation = createMerge(sourcePath, targetPath, commitComment, reviewId)
 				.statusCode(202)
 				.body(equalTo(""))
 				.extract().header("Location");

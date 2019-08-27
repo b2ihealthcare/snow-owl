@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,81 +15,63 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.List;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.nestedMatch;
 
-import com.b2international.commons.options.Options;
+import java.util.stream.Collectors;
+
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
-import com.b2international.snowowl.core.merge.MergeService;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Lists;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 
 /**
- * @since 4.6
+ * @since 7.1
  */
-final class SearchMergeRequest implements Request<RepositoryContext, MergeCollection> {
+public class SearchMergeRequest implements Request<RepositoryContext, MergeCollection> {
 
-	public static class SourcePredicate implements Predicate<Merge> {
-		
-		private final String source;
-
-		public SourcePredicate(final String source) {
-			this.source = source;
-		}
+	private static final long serialVersionUID = 1L;
 	
-		@Override
-		public boolean apply(final Merge input) {
-			return input.getSource().equals(source);
-		}
-	}
-
-	public static class TargetPredicate implements Predicate<Merge> {
+	private static final String SOURCE_FIELD = "source";
+	private static final String TARGET_FIELD = "target";
+	private static final String STATUS_FIELD = "status";
 	
-		private final String target;
-
-		public TargetPredicate(final String target) {
-			this.target = target;
-		}
+	private final String source;
+	private final String target;
+	private final String status;
 	
-		@Override
-		public boolean apply(final Merge input) {
-			return input.getTarget().equals(target);
-		}
+	public SearchMergeRequest(final String source, final String target, final String status) {
+		this.source = source; 
+		this.target = target;
+		this.status = status;
 	}
-
-	public static class StatusPredicate implements Predicate<Merge> {
-
-		private final Merge.Status status;
-
-		public StatusPredicate(final Merge.Status status) {
-			this.status = status;
-		}
-
-		@Override
-		public boolean apply(final Merge input) {
-			return input.getStatus().equals(status);
-		}
-	}
-
-	private Options options;
-
-	public SearchMergeRequest(Options options) {
-		this.options = options;
-	}
-
+	
 	@Override
 	public MergeCollection execute(RepositoryContext context) {
-
-		final List<Predicate<Merge>> predicates = Lists.newArrayList();
+		final ExpressionBuilder expressionBuilder = Expressions.builder();
+		if (!Strings.isNullOrEmpty(source)) {
+			expressionBuilder.filter(nestedMatch(RemoteJobEntry.Fields.PARAMETERS, exactMatch(SOURCE_FIELD, source)));
+		}
 		
-		if (options.containsKey("source")) {  predicates.add(new SourcePredicate(options.getString("source"))); }
-		if (options.containsKey("target")) {  predicates.add(new TargetPredicate(options.getString("target"))); }
-		if (options.containsKey("status")) {  predicates.add(new StatusPredicate(options.get("status", Merge.Status.class))); }
+		if  (!Strings.isNullOrEmpty(target)) {
+			expressionBuilder.filter(nestedMatch(RemoteJobEntry.Fields.PARAMETERS, exactMatch(TARGET_FIELD, target)));
+		}
 		
-		return context.service(MergeService.class).search(Predicates.and(predicates));
+		if (!Strings.isNullOrEmpty(status)) {
+			expressionBuilder.filter(nestedMatch(RemoteJobEntry.Fields.PARAMETERS, exactMatch(STATUS_FIELD, status)));
+		}
+		
+		final RemoteJobs jobs = context.service(RemoteJobTracker.class).search(expressionBuilder.build(), Integer.MAX_VALUE);
+		final ObjectMapper mapper = context.service(ObjectMapper.class);
+		return new MergeCollection(jobs.stream().filter(RemoteJobEntry::isDone).map(job -> job.getResultAs(mapper, Merge.class)).collect(Collectors.toList()));
 	}
+	
 
 }

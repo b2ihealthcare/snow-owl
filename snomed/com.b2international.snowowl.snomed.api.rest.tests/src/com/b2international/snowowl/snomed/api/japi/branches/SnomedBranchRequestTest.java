@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,10 @@ package com.b2international.snowowl.snomed.api.japi.branches;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.SortedSet;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,20 +32,23 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSegment;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.Merge.Status;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Merging;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
@@ -64,8 +65,8 @@ public class SnomedBranchRequestTest {
 
 	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
 	
-	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
-	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
+//	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
+//	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
 	
 	@Rule
 	public TestMethodNameRule methodName = new TestMethodNameRule(); 
@@ -142,6 +143,7 @@ public class SnomedBranchRequestTest {
 		final Branching branches = RepositoryRequests.branching();
 		final Merging merges = RepositoryRequests.merging();
 		
+		final String mergeJobId = UUID.randomUUID().toString();
 		final String branchA = UUID.randomUUID().toString();
 		final String branchB = UUID.randomUUID().toString();
 
@@ -178,31 +180,39 @@ public class SnomedBranchRequestTest {
 		final String conceptId = info.getResultAs(String.class);
 		
 		final String firstParentPath = BranchPathUtils.createPath(first).getParentPath();
-		Merge merge = merges.prepareCreate()
+		final Request<ServiceProvider, Merge> mergeRequest = merges.prepareCreate()
 				.setSource(first)
 				.setTarget(firstParentPath)
 				.setUserId(User.SYSTEM.getUsername())
 				.setCommitComment("Merging changes")
 				.build(REPOSITORY_ID)
-				.execute(bus)
-				.getSync();
+				.getRequest();
 		
-		final long endTime = System.currentTimeMillis() + POLL_TIMEOUT;
-		while (System.currentTimeMillis() < endTime && mergeNotCompleted(merge)) {
-			
-			try {
-				Thread.sleep(POLL_INTERVAL);
-			} catch (final InterruptedException e) {
-				fail(e.toString());
-			}
-
-			merge = merges.prepareGet(merge.getId())
-					.build(REPOSITORY_ID)
+		JobRequests.prepareSchedule()
+			.setId(mergeJobId)
+			.setDescription("Merging changes")
+			.setRequest(mergeRequest)
+			.setUser(User.SYSTEM.getUsername())
+			.buildAsync()
+			.execute(bus)
+			.get();
+		
+		boolean isDone = false;
+		do {
+			isDone = JobRequests.prepareGet(mergeJobId)
+					.buildAsync()
 					.execute(bus)
-					.getSync();
-		}
+					.getSync()
+					.isDone();
+		} while (!isDone);
 		
-		assertEquals(Status.COMPLETED, merge.getStatus());
+		final Merge merge = JobRequests.prepareGet(mergeJobId)
+			.buildAsync()
+			.execute(bus)
+			.get()
+			.getResultAs(JsonSupport.getDefaultObjectMapper(), Merge.class);
+		
+		assertEquals(true, merge.getConflicts().isEmpty());
 		
 		String second = branches.prepareCreate()
 				.setParent(firstParentPath)
@@ -216,17 +226,13 @@ public class SnomedBranchRequestTest {
 		
 		assertBranchesCreated(branchA, branchB, sourceBranch, secondBranch);
 		assertBranchSegmentsValid(merge.getTarget(), sourceBranch.path(), secondBranch.path());
-		
+			
 		// Check that the concept is visible on parent
 		SnomedRequests.prepareGetConcept(conceptId)
 				.build(REPOSITORY_ID, firstParentPath)
 				.execute(bus)
 				.getSync();
-	}
-
-	private boolean mergeNotCompleted(Merge merge) {
-		final Status mergeStatus = merge.getStatus();
-		return Status.IN_PROGRESS.equals(mergeStatus) || Status.SCHEDULED.equals(mergeStatus) || Status.CANCEL_REQUESTED.equals(mergeStatus);
+		
 	}
 
 	private void assertBranchesCreated(final String branchA, final String branchB, final Branch first, final Branch second) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,27 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.UUID;
-
 /**
  * @since 4.6
  */
 public final class Merging {
-
+	
 	Merging() {}
 	
 	public CreateMergeRequestBuilder prepareCreate() {
 		return new CreateMergeRequestBuilder();
 	}
 
-	public MergeGetRequestBuilder prepareGet(UUID id) {
-		return new MergeGetRequestBuilder(id);
+	public DeleteMergeRequestBuilder prepareDelete(String id) {
+		return new DeleteMergeRequestBuilder(id);
 	}
 	
 	public SearchMergeRequestBuilder prepareSearch() {
 		return new SearchMergeRequestBuilder();
 	}
-
-	public MergeDeleteRequestBuilder prepareDelete(UUID id) {
-		return new MergeDeleteRequestBuilder(id);
+	
+	public GetMergeRequestBuilder prepareGet(String id) {
+		return new GetMergeRequestBuilder(id);
 	}
+	
 }
