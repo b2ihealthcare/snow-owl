@@ -55,11 +55,15 @@ public class GetMergeRequest implements Request<RepositoryContext, Merge> {
 			return job.getResultAs(mapper, Merge.class);
 		}
 		
-		// failed job result is ApiError
 		final Map<String, Object> params = job.getParameters(mapper);
 		final String source = (String) params.get("source");
 		final String target = (String) params.get("target");
 		
+		if (job.getResult() == null) {
+			return MergeImpl.builder(source, target).build();
+		}
+		
+		// failed job result is ApiError
 		return MergeImpl.builder(source, target).build().failed(job.getResultAs(mapper, ApiError.class));
 	}
 
