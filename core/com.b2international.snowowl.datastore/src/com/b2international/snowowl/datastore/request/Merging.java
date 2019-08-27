@@ -26,8 +26,16 @@ public final class Merging {
 		return new CreateMergeRequestBuilder();
 	}
 
-	public MergeDeleteRequestBuilder prepareDelete(String id) {
-		return new MergeDeleteRequestBuilder(id);
+	public DeleteMergeRequestBuilder prepareDelete(String id) {
+		return new DeleteMergeRequestBuilder(id);
+	}
+	
+	public SearchMergeRequestBuilder prepareSearch() {
+		return new SearchMergeRequestBuilder();
+	}
+	
+	public GetMergeRequestBuilder prepareGet(String id) {
+		return new GetMergeRequestBuilder(id);
 	}
 	
 }

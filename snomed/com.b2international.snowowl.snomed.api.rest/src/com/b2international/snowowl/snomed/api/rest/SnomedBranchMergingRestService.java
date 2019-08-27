@@ -20,11 +20,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import java.net.URI;
 import java.security.Principal;
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -43,7 +39,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
-import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
@@ -51,7 +46,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.MergeRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -67,13 +61,6 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value="/merges", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchMergingRestService extends AbstractRestService {
 	
-	private static final String SOURCE_KEY = "source";
-	private static final String TARGET_KEY = "target";
-	private static final String STATUS_KEY = "status";
-	
-	@Autowired
-	private ObjectMapper objectMapper;
-
 	public SnomedBranchMergingRestService() {
 		super(Collections.emptySet());
 	}
@@ -149,36 +136,10 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 		})
 	@RequestMapping(method = RequestMethod.GET, value="{id}")
 	public DeferredResult<Merge> getMergeResult(@PathVariable("id") String id) {
-		return DeferredResults.wrap(JobRequests.prepareSearch()
-			.filterById(id)
-			.buildAsync()
-			.execute(bus)
-			.then(jobs -> {
-				if (jobs.isEmpty()) {
-					throw new NotFoundException("Merge job", id);
-				}
-				
-				final RemoteJobEntry mergeJob = jobs.stream().findFirst().get();
-				if (mergeJob.getResult() == null) {
-					final Map<String, Object> params = mergeJob.getParameters(objectMapper);
-					final String source = (String) params.get(SOURCE_KEY);
-					final String target = (String) params.get(TARGET_KEY);
-					
-					return MergeImpl.builder(source, target).build();
-				} else if(mergeJob.isSuccessful()) {
-					return mergeJob.getResultAs(objectMapper, Merge.class);
-				} else {
-					// Job failed to start merge process
-					final Map<String, Object> params = mergeJob.getParameters(objectMapper);
-					final String source = (String) params.get(SOURCE_KEY);
-					final String target = (String) params.get(TARGET_KEY);
-					
-					final Merge failedMerge = MergeImpl.builder(source, target).build().failed(mergeJob.getResultAs(objectMapper, ApiError.class));
-					
-					return failedMerge;
-				}
-			}));
-		
+		return DeferredResults.wrap(RepositoryRequests.merging()
+					.prepareGet(id)
+					.build(repositoryId)
+					.execute(bus));	
 	}
 	
 	@ApiOperation(
@@ -199,28 +160,15 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 			final String target,
 			
 			@ApiParam(value="The current status of the request")
-			@RequestParam(value=STATUS_KEY, required = false) 
+			@RequestParam(value="status", required = false) 
 			final Merge.Status status) {
-		return DeferredResults.wrap(JobRequests.prepareSearch()
-			.all()
-			.buildAsync()
-			.execute(bus)
-			.then(jobs -> {
-				return new MergeCollection(
-					jobs.stream()
-						.filter(job -> job.getDescription().contains("merging"))
-						.filter(job -> job.isDone())
-						.filter(job -> {
-							final Map<String, Object> jobParams = job.getParameters(objectMapper);
-							return jobParams.get(SOURCE_KEY).equals(source)
-									&& jobParams.get(TARGET_KEY).equals(target)
-									&& jobParams.get(STATUS_KEY).equals(status);
-						})
-						.map(job -> job.getResultAs(objectMapper, Merge.class))
-						.collect(Collectors.toList())
-				);
-			}));
-		
+		return DeferredResults.wrap(RepositoryRequests.merging()
+				.prepareSearch()
+					.filterBySource(source)
+					.filterByTarget(target)
+					.filterByStatus(status.name())
+					.build(repositoryId)
+					.execute(bus));
 	}
 	
 	@ApiOperation(
