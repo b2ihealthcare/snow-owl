@@ -38,14 +38,22 @@
 				<include>**/*.sh</include>
 			</includes>
 		</fileSet>
-		<!-- Copy release files from the ROOT of the repository -->
+		<!-- Copy release files from the CIS ROOT directory -->
 		<fileSet>
-			<directory>${project.basedir}/../../</directory>
+			<directory>${project.basedir}/../</directory>
 			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>README*</include>
 				<include>LICENSE*</include>
 				<include>NOTICE*</include>
+			</includes>
+		</fileSet>
+		<!-- Copy license from the ROOT of the repository -->
+		<fileSet>
+			<directory>${project.basedir}/../../</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>LICENSE*</include>
 			</includes>
 		</fileSet>
 	</fileSets>

@@ -507,26 +507,52 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	
 	private Optional<Date> getLatestModuleEffectiveTime(final CodeSystemVersionEntry version) {
 		
-		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
-			.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
-			.filterByActive(true)
-			.sortBy(SortField.descending(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME))
-			.setLimit(1);
+		final Optional<Date> sourceEffectiveTime = getLatestModuleEffectiveTime(version, SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+		final Optional<Date> targetEffectiveTime = getLatestModuleEffectiveTime(version, SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
 		
-		// See the comment in setModules; a value of "null" means that all modules should be exported 
-		if (modules != null) {
-			requestBuilder.filterByModules(modules);
+		if (!sourceEffectiveTime.isPresent() && !targetEffectiveTime.isPresent()) {
+			return Optional.empty();
+		} else if(!sourceEffectiveTime.isPresent()) {
+			return targetEffectiveTime;
+		} else if (!targetEffectiveTime.isPresent()) {
+			return sourceEffectiveTime;
+		} else {
+			final Date sourceDate = sourceEffectiveTime.get();
+			final Date targetDate = targetEffectiveTime.get();
+			if (sourceDate.after(targetDate)) {
+				return sourceEffectiveTime;
+			}
+			
+			if (targetDate.after(sourceDate)) {
+				return targetEffectiveTime;
+			}
+			
+			// they are the same date
+			return sourceEffectiveTime;
 		}
-		
-		final Optional<SnomedReferenceSetMember> moduleDependencyMember = requestBuilder 
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, version.getPath())
-			.execute(getEventBus())
-			.getSync()
-			.first();
-		
-		return moduleDependencyMember.map(m -> {
-			return (Date) m.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-		});
+	}
+	
+	private Optional<Date> getLatestModuleEffectiveTime(final CodeSystemVersionEntry version, String field) {
+		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
+				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
+				.filterByActive(true)
+				.sortBy(SortField.descending(field))
+				.setLimit(1);
+			
+			// See the comment in setModules; a value of "null" means that all modules should be exported 
+			if (modules != null) {
+				requestBuilder.filterByModules(modules);
+			}
+			
+			final Optional<SnomedReferenceSetMember> moduleDependencyMember = requestBuilder 
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, version.getPath())
+				.execute(getEventBus())
+				.getSync()
+				.first();
+			
+			return moduleDependencyMember.map(m -> {
+				return (Date) m.getProperties().get(field);
+			});
 	}
 
 	private Date adjustCurrentHour(final Date effectiveDate) {

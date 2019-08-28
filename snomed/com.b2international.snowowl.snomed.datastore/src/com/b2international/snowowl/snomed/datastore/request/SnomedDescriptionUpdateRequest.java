@@ -32,6 +32,7 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -99,6 +100,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		changed |= processInactivation(context, description, updatedDescription);
 
 		// XXX: acceptability and association changes do not push the effective time forward on the description
+		// XXX: this should be executed after processInactivation 
 		updateAcceptability(context, description, updatedDescription);
 
 		if (changed) {
@@ -139,6 +141,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			updatedDescription.active(false);
 			updateInactivationIndicator(context, description, newIndicator);
 			updateAssociationTargets(context, description, newAssociationTargets);
+			setAcceptability(ImmutableMap.of());
 			return true;
 			
 		} else if (!currentStatus && newStatus) {
