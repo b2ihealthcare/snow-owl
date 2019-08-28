@@ -19,12 +19,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -42,7 +45,8 @@ public enum TerminologyRegistry {
 	private final Map<String, TerminologyComponent> terminologyComponentsById = newHashMap();
 	private final Map<Short, TerminologyComponent> terminologyComponentsByShortId = newHashMap();
 	private final Map<Class<?>, TerminologyComponent> terminologyComponentsByDocType = newHashMap();
-	private final Map<String, String> terminologyIdByTerminologyComponentId = newHashMap(); 
+	private final Map<String, String> terminologyIdByTerminologyComponentId = newHashMap();
+	private final Multimap<String, String> terminologyComponentIdsByTerminology = HashMultimap.create();
 	
 	private TerminologyRegistry() {
 		registerTerminology(new Terminology() {
@@ -73,7 +77,8 @@ public enum TerminologyRegistry {
 			checkArgument(terminologyComponentType.isAnnotationPresent(TerminologyComponent.class), "%s domain class must have a @TerminologyComponent annotation.", terminologyComponentType.getSimpleName());
 			TerminologyComponent terminologyComponent = terminologyComponentType.getAnnotation(TerminologyComponent.class);
 			register(terminologyComponent);
-			terminologyIdByTerminologyComponentId.put(terminology.getId(), terminologyComponent.id());
+			terminologyIdByTerminologyComponentId.put(terminologyComponent.id(), terminology.getId());
+			terminologyComponentIdsByTerminology.put(terminology.getId(), terminologyComponent.id());
 		}
 	}
 
@@ -111,6 +116,11 @@ public enum TerminologyRegistry {
 	public Terminology getTerminologyByTerminologyComponentId(String terminologyComponentId) {
 		checkArgument(terminologyIdByTerminologyComponentId.containsKey(terminologyComponentId), "Missing terminology component for ID '%s'.", terminologyComponentId);
 		return getTerminology(terminologyIdByTerminologyComponentId.get(terminologyComponentId));
+	}
+	
+	public Collection<String> getTerminologyComponentIdsByTerminology(String terminologyId) {
+		checkArgument(!terminologyComponentIdsByTerminology.containsKey(terminologyId), "");
+		return ImmutableSet.copyOf(terminologyComponentIdsByTerminology.get(terminologyId));
 	}
 	
 	private static TerminologyComponent createUnspecifiedTerminologyComponent() {

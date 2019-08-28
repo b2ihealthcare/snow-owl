@@ -24,10 +24,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
@@ -48,16 +48,16 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -80,26 +80,26 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		List<CodeSystemVersionEntry> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
 		
 		//might be nicer to maintain the order by version
-		List<ConceptMap> conceptMaps = codeSystemVersionList.stream().map(csve -> {
-			
-			return SnomedRequests.prepareSearchRefSet()
-				.all()
-				.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-				.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
-				.setLocales(locales)
-				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-				.build(repositoryId, csve.getPath())
-				.execute(getBus())
-				.then(refsets -> {
-					return refsets.stream()
-						.map(r -> buildConceptMap(r, csve, locales))
-						.map(ConceptMap.Builder::build)
-						.collect(Collectors.toList());
+		List<ConceptMap> conceptMaps = codeSystemVersionList.stream()
+				.map(csve -> {
+					return SnomedRequests.prepareSearchRefSet()
+						.all()
+						.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
+						.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
+						.setLocales(locales)
+						.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+						.build(repositoryId, csve.getPath())
+						.execute(getBus())
+						.then(refsets -> {
+							return refsets.stream()
+								.map(r -> buildConceptMap(r, csve, locales))
+								.map(ConceptMap.Builder::build)
+								.collect(Collectors.toList());
+						})
+						.getSync();
 				})
-				.getSync();
-				
-		}).collect(Collectors.toList())
-			.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
+				.flatMap(List::stream)
+				.collect(Collectors.toList()); //List<List<?> -> List<?>
 		
 		return conceptMaps;
 	}
@@ -169,7 +169,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		}
 				
 		try {
-			CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(targetSystem);
+			TerminologyRegistry.INSTANCE.getTerminologyComponentById(targetSystem);
 		} catch (RuntimeException ex) {
 			throw new BadRequestException("Target system '" + targetSystem + "' not found or invalid.", "$translate.targetsystem");
 		}
@@ -245,7 +245,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			targetSystem = SnomedTerminologyComponentConstants.CONCEPT;
 		}
 		
-		int terminologyComponentIdAsInt = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(targetSystem);
+		int terminologyComponentIdAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(targetSystem).shortId();
 		
 		String locationName = "$translate.system";
 		SnomedUri snomedUri = SnomedUri.fromUriString(sourceSystem, locationName);
@@ -496,7 +496,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			targetsystem = SnomedTerminologyComponentConstants.CONCEPT;
 		}
 		try {
-			CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(targetsystem);
+			TerminologyRegistry.INSTANCE.getTerminologyComponentById(targetsystem);
 		} catch (RuntimeException ex) {
 			return false;
 		}
@@ -516,13 +516,13 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			.orElseThrow(() -> new NotFoundException("Code system", codeSystemShortName));
 		
 		String toolingId = codeSystemEntry.getTerminologyComponentId();
-		Collection<String> componentTypeIds = CoreTerminologyBroker.getInstance().getAllRegisteredTerminologiesWithComponents().get(toolingId);
 		
 		//mighty hack
 		if (toolingId.contains("snomed")) {
 			return SnomedTerminologyComponentConstants.CONCEPT;
 		}
-		return componentTypeIds.iterator().next();
+		
+		return TerminologyRegistry.INSTANCE.getTerminologyComponentIdsByTerminology(toolingId).iterator().next();
 	}
 	
 	//This will be removed for 7.x
@@ -537,7 +537,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			return unknownTargetCodeSystem;
 		}
 		
-		String terminologyId = CoreTerminologyBroker.getInstance().getTerminologyIdForTerminologyComponentId(mapTargetComponentType);
+		String terminologyId = TerminologyRegistry.INSTANCE.getTerminologyByTerminologyComponentId(mapTargetComponentType).getId();
 		
 		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 			.all()

@@ -42,17 +42,8 @@ import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Meta;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
-import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -308,7 +299,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			Optional<CodeSystemVersionEntry> optionalVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build(getRepositoryId())
 				.execute(getBus())
 				.getSync()

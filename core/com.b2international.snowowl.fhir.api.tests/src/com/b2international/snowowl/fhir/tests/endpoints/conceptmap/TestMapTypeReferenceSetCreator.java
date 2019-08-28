@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.fhir.tests.endpoints.conceptmap;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.IS_A;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.SYNONYM;
 
 import java.util.List;
 import java.util.Map;
@@ -28,22 +28,21 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
-import com.b2international.snowowl.snomed.SnomedConstants;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
