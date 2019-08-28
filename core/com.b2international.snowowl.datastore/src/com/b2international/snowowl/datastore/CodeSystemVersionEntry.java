@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore;
 
 import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
@@ -97,7 +96,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 		public static final String DESCRIPTION = "description";
 		public static final String VERSION_ID = "versionId";
 		public static final String LATEST_UPDATE_DATE = "latestUpdateDate";
-		public static final String STORAGE_KEY = "storageKey";
 		public static final String REPOSITORY_UUID = "repositoryUuid";
 		public static final String CODE_SYSTEM_SHORT_NAME = "codeSystemShortName";
 		public static final String PARENT_BRANCH_PATH = "parentBranchPath";
@@ -115,10 +113,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 
 		public static Expression createdAt(long from, long to) {
 			return matchRange(Fields.IMPORT_DATE, from, to);
-		}
-		
-		public static Expression storageKeys(Iterable<Long> storageKeys) {
-			return matchAnyLong(Fields.STORAGE_KEY, storageKeys);
 		}
 		
 		public static Expression effectiveDate(Date effectiveDate) {
@@ -144,7 +138,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 		private String versionId;
 		private long latestUpdateDate;
 		private boolean patched;
-		private long storageKey;
 		private String repositoryUuid;
 		private String codeSystemShortName;
 		private String parentBranchPath = Branch.MAIN_PATH;
@@ -179,11 +172,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 			return this;
 		}
 		
-		public Builder storageKey(long storageKey) {
-			this.storageKey = storageKey;
-			return this;
-		}
-		
 		public Builder versionId(String versionId) {
 			this.versionId = versionId;
 			return this;
@@ -201,8 +189,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 		
 		public CodeSystemVersionEntry build() {
 			return new CodeSystemVersionEntry(importDate, effectiveDate, latestUpdateDate, description, versionId, parentBranchPath, 
-					patched, storageKey,
-					repositoryUuid, codeSystemShortName);
+					patched, repositoryUuid, codeSystemShortName);
 		}
 		
 	}
@@ -214,12 +201,11 @@ public final class CodeSystemVersionEntry implements Serializable {
 	private final long latestUpdateDate;
 	private final String parentBranchPath;
 	private boolean patched;
-	private final long storageKey;
 	private final String repositoryUuid;
 	private final String codeSystemShortName;
 	
 	private CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
-			final String description, final String versionId, final String parentBranchPath, final boolean patched, final long storageKey, final String repositoryUuid, 
+			final String description, final String versionId, final String parentBranchPath, final boolean patched, final String repositoryUuid, 
 			final String codeSystemShortName) {
 		
 		this.importDate = importDate;
@@ -231,7 +217,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 		this.versionId = versionId;
 		this.parentBranchPath = parentBranchPath;
 		this.patched = patched;
-		this.storageKey = storageKey;
 	}
 	
 	/**
@@ -299,14 +284,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 	 */
 	public long getLatestUpdateDate() {
 		return latestUpdateDate;
-	}
-
-	/**
-	 * Returns with the unique storage key of the version.
-	 * @return the storage key.
-	 */
-	public long getStorageKey() {
-		return storageKey;
 	}
 
 	/**
