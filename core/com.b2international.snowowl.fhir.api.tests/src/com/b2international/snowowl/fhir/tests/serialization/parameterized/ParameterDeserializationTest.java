@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.hamcrest.collection.IsArrayContainingInAnyOrder.arrayContainingInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -29,12 +29,12 @@ import java.util.Optional;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 /**
@@ -86,17 +86,6 @@ public class ParameterDeserializationTest extends FhirTest {
 				+ "]}";
 		
 		assertParameter(jsonParam, "paramName", FhirDataType.DECIMAL, 1.21);
-	}
-	
-	//@Test
-	public void decimalParameterTest2() throws Exception {
-		
-		String jsonParam = "{\"resourceType\":\"Parameters\"," + 
-				"\"parameter\":["
-					+ "{\"name\":\"paramName\",\"valueDecimal\":1.21}"
-				+ "]}";
-		
-		assertParameter(jsonParam, "paramName", FhirDataType.DECIMAL, 1.21f);
 	}
 	
 	@Test
@@ -216,7 +205,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
 		assertEquals(df.parse("2018-03-09T20:50:21+0100"), lookupRequest.getDate());
 		
-		assertEquals("us-en", lookupRequest.getDisplayLanguage());
+		assertEquals("us-en", lookupRequest.getDisplayLanguage().getCodeValue());
 		
 		Coding coding = lookupRequest.getCoding();
 		assertEquals("1234", coding.getCodeValue());
@@ -225,8 +214,8 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals(false, coding.isUserSelected());
 		
 		assertFalse(lookupRequest.getProperties().isEmpty());
-		Collection<String> properties = lookupRequest.getProperties();
-		assertThat(properties, contains("prop1", "prop2"));
+		Collection<String> properties = lookupRequest.getPropertyCodes();
+		assertThat(properties.toArray(), arrayContainingInAnyOrder("prop1", "prop2"));
 	}
 
 	private void assertParameter(String jsonParam, String paramName, FhirDataType fhirDataType, Object paramValue) throws Exception {

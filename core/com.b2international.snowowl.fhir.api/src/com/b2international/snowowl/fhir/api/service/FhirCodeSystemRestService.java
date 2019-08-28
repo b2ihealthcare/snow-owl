@@ -21,7 +21,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.text.ParseException;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -44,14 +43,14 @@ import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
-import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
-import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.google.common.collect.HashMultimap;
@@ -91,7 +90,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			value="Retrieve all code systems",
 			notes="Returns a collection of the supported code systems.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK")
+		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
@@ -142,7 +141,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			value="Retrieve the code system by id",
 			notes="Retrieves the code system specified by its logical id.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
@@ -181,20 +180,31 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-		@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version,
-		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
-		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
-		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) {
+		@ApiParam(value="The code system version") @RequestParam(value="version") final Optional<String> version,
+		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date") final Optional<String> date,
+		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage") final Optional<String> displayLanguage,
+		
+		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
+		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required = false) Set<String> properties) {
 		
 		Builder builder = LookupRequest.builder()
 			.code(code)
-			.system(system)
-			.version(version)
-			.displayLanguage(displayLanguage)
-			.properties(properties);
+			.system(system);
 		
-		if (date != null) {
-			builder.date(date);
+		if (version.isPresent()) {
+			builder.version(version.get());
+		}
+		
+		if (date.isPresent()) {
+			builder.date(date.get());
+		}
+
+		if (displayLanguage.isPresent()) {
+			builder.displayLanguage(displayLanguage.get());
+		}
+
+		if (properties != null && !properties.isEmpty()) {
+			builder.properties(properties);
 		}
 		
 		//all good, now do something
@@ -218,13 +228,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			@RequestBody Parameters.Fhir in) {
 		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
-
-		//validate the code/system/version parameters BOTH in the request as well as possibly in the coding
-		validateLookupRequest(req);
 		
-		//all good, now do something
 		LookupResult result = lookup(req);
-		
 		return toResponse(result);
 	}
 
@@ -274,7 +279,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	})
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.GET)
 	public Parameters.Fhir subsumes(
-			
 			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
@@ -284,11 +288,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		validateSubsumptionRequest(codeSystemId, codeA, codeB, system, version);
 		
 		final SubsumptionRequest req = SubsumptionRequest.builder()
-				.codeA(codeA)
-				.codeB(codeB)
-				.system(codeSystemId)
-				.version(version)
-				.build();
+			.codeA(codeA)
+			.codeB(codeB)
+			.system(codeSystemId)
+			.version(version)
+			.build();
 		
 		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem());
 		final SubsumptionResult result = codeSystemProvider.subsumes(req);
@@ -363,45 +367,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	private LookupResult lookup(LookupRequest lookupRequest) {
 		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(lookupRequest.getSystem());
 		return codeSystemProvider.lookup(lookupRequest);
-	}
-
-	/*
-	 * Cross-field validation of the incoming parameters
-	 * @param lookupRequest
-	 */
-	private void validateLookupRequest(LookupRequest lookupRequest) {
-		if (lookupRequest.getSystem() != null && lookupRequest.getCode() == null) {
-			throw new NotFoundException("Code", "");
-		}
-		
-		if (lookupRequest.getCode()!=null && lookupRequest.getSystem() == null) {
-			throw new BadRequestException("Parameter 'system' is not specified while code is present in the request.", "LookupRequest.system");
-		}
-		
-		if (lookupRequest.getCode() !=null && lookupRequest.getCoding() !=null) {
-			Coding coding = lookupRequest.getCoding();
-			if (!coding.getCode().getCodeValue().equals(lookupRequest.getCode())) {
-				throw new BadRequestException("Code and Coding.code are different. Probably would make sense to specify only one of them.", "LookupRequest");
-			}
-			
-			if (!coding.getSystem().getUriValue().equals(lookupRequest.getSystem())) {
-				throw new BadRequestException("System and Coding.system are different. Probably would make sense to specify only one of them.", "LookupRequest");
-			}
-			
-			if (!Objects.equals(coding.getVersion(), lookupRequest.getVersion())) {
-				throw new BadRequestException("Version and Coding.version are different. Probably would make sense to specify only one of them.", "LookupRequest");
-			}
-		}
-		
-		//SNOMED CT specific, both the URI and version identifies the version
-		if (lookupRequest.getSystem() != null) {
-			if (lookupRequest.getSystem().startsWith("http://snomed.info/sct") 
-					&& lookupRequest.getSystem().contains("version")
-					&& lookupRequest.getVersion() != null) {
-				
-				throw new BadRequestException("Both system URI and version tag identifies a version.", "LookupRequest");
-			}
-		}
 	}
 	
 	private void validateSubsumptionRequest(String codeA, String codeB, String system, String version) {

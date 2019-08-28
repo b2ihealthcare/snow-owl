@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -46,15 +47,15 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
-import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
-import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -137,6 +138,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 		return getCodeSystems()
 				.stream()
+				.filter(cs -> cs.getUrl().getUriValue().equals(codeSystemUri))
 				.findFirst()
 				.orElseThrow(() -> new NotFoundException("Could not find any code systems for %s.", codeSystemUri));
 	}
@@ -298,7 +300,45 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return version string
 	 */
 	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-		return subsumptionRequest.getVersion();
+		
+		String version = subsumptionRequest.getVersion();
+
+		//get the latest version
+		if (version == null) {
+			Optional<CodeSystemVersionEntry> optionalVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.one()
+				.filterByCodeSystemShortName(getCodeSystemShortName())
+				.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+				.build(getRepositoryId())
+				.execute(getBus())
+				.getSync()
+				.first();
+				
+			if (optionalVersion.isPresent()) {
+				return optionalVersion.get().getVersionId();
+			} else {
+				//never been versioned
+				return null;
+			}
+		}
+		
+		return version;
+	}
+	
+	/**
+	 * Builds a lookup result property for the given @see {@link IConceptProperty} based on the supplier's value
+	 * @param supplier
+	 * @param lookupRequest
+	 * @param resultBuilder
+	 * @param conceptProperty
+	 */
+	protected void addProperty(Supplier<?> supplier, LookupRequest lookupRequest, LookupResult.Builder resultBuilder, IConceptProperty conceptProperty) {
+		
+		if (lookupRequest.containsProperty(conceptProperty.getCode())) {
+			if (supplier.get() != null) {
+				resultBuilder.addProperty(conceptProperty.propertyOf(supplier));
+			}
+		}
 	}
 
 	/**
@@ -330,7 +370,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @param request - the lookup request
 	 */
 	protected void validateRequestedProperties(LookupRequest request) {
-		final Collection<String> properties = request.getProperties();
+		final Collection<String> properties = request.getPropertyCodes();
 		
 		final Set<String> supportedCodes = getSupportedProperties().stream().map(p -> {
 			if (p instanceof IConceptProperty.Dynamic) {

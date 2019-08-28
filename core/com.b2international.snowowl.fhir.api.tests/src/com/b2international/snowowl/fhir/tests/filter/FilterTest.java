@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.filter;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -49,6 +50,8 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
 
+import io.restassured.path.json.JsonPath;
+
 /**
  * @since 6.4
  */
@@ -63,45 +66,45 @@ public class FilterTest extends FhirTest {
 		filteredClass = new FilteredClass("ID123", "Balazs", "Banfai", "Andrassy Ave.");
 		
 		Identifier identifier = Identifier.builder()
-				.use(IdentifierUse.OFFICIAL)
-				.system(new Uri("www.hl7.org"))
-				.value("OID:1234.1234")
-				.build();
+			.use(IdentifierUse.OFFICIAL)
+			.system(new Uri("www.hl7.org"))
+			.value("OID:1234.1234")
+			.build();
 		
 		codeSystem = CodeSystem.builder("repo/shortName")
-				.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
-				.description("Code system description")
-				.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
-				.identifier(identifier)
-				.language("en")
-				.name("Local code system")
-				.narrative(NarrativeStatus.ADDITIONAL, "<div>Some html text</div>")
-				.title("title")
-				.publisher("B2i")
-				.status(PublicationStatus.ACTIVE)
-				.content(CodeSystemContentMode.COMPLETE)
-				.url(new Uri("code system uri"))
-				.version("2018.01.01")
-				.addConcept(Concept.builder()
-					.code("conceptCode")
-					.definition("This is a code definition")
-					.display("Label")
-					.addDesignation(Designation.builder()
-						.languageCode("uk_en")
-						.use(Coding.builder()
-							.code("internal")
-							.system("http://b2i.sg/test")
-							.build()
-							)
-						.value("conceptLabel_uk")
-						.build())
-					.addProperties(CodeConceptProperty.builder()
-							.code("childConcept")
-							.value(new Code("childId"))
-							.build())
+			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
+			.description("Code system description")
+			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
+			.identifier(identifier)
+			.language("en")
+			.name("Local code system")
+			.narrative(NarrativeStatus.ADDITIONAL, "<div>Some html text</div>")
+			.title("title")
+			.publisher("B2i")
+			.status(PublicationStatus.ACTIVE)
+			.content(CodeSystemContentMode.COMPLETE)
+			.url(new Uri("code system uri"))
+			.version("2018.01.01")
+			.addConcept(Concept.builder()
+				.code("conceptCode")
+				.definition("This is a code definition")
+				.display("Label")
+				.addDesignation(Designation.builder()
+					.languageCode("uk_en")
+					.use(Coding.builder()
+						.code("internal")
+						.system("http://b2i.sg/test")
+						.build()
+						)
+					.value("conceptLabel_uk")
 					.build())
-				.build();
-		
+				.addProperties(CodeConceptProperty.builder()
+						.code("childConcept")
+						.value(new Code("childId"))
+						.build())
+				.build())
+			.build();
+	
 	}
 	
 	//basic MVM capture of query parameters
@@ -181,7 +184,46 @@ public class FilterTest extends FhirTest {
 
 		printPrettyJson(filteredClass);
 		
-		//This is stupid, we should assert parts or use JSONAssert
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(codeSystem));
+		
+		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
+		assertThat(jsonPath.getString("id"), equalTo("repo/shortName"));
+		assertThat(jsonPath.getString("language"), equalTo("en"));
+		assertThat(jsonPath.getString("text.status"), equalTo("additional"));
+		assertThat(jsonPath.getString("text.div"), equalTo("<div>Some html text</div>"));
+		assertThat(jsonPath.getString("url"), equalTo("code system uri"));
+
+		assertThat(jsonPath.getString("identifier.use"), equalTo("official"));
+		assertThat(jsonPath.getString("identifier.system"), equalTo("www.hl7.org"));
+		assertThat(jsonPath.getString("identifier.value"), equalTo("OID:1234.1234"));
+		assertThat(jsonPath.getString("version"), equalTo("2018.01.01"));
+		assertThat(jsonPath.getString("name"), equalTo("Local code system"));
+		assertThat(jsonPath.getString("title"), equalTo("title"));
+		assertThat(jsonPath.getString("status"), equalTo("active"));
+		assertThat(jsonPath.getString("publisher"), equalTo("B2i"));
+		assertThat(jsonPath.getString("description"), equalTo("Code system description"));
+		assertThat(jsonPath.getString("hierarchyMeaning"), equalTo("is-a"));
+		assertThat(jsonPath.getString("content"), equalTo("complete"));
+		assertThat(jsonPath.getString("property[0].code"), equalTo("child"));
+		assertThat(jsonPath.getString("property[0].uri"), equalTo("http://hl7.org/fhir/concept-properties/child"));
+		assertThat(jsonPath.getString("property[0].description"), equalTo("Child"));
+		assertThat(jsonPath.getString("property[0].type"), equalTo("code"));
+		
+		jsonPath.setRoot("concept[0]");
+		
+		assertThat(jsonPath.getString("code"), equalTo("conceptCode"));
+		assertThat(jsonPath.getString("display"), equalTo("Label"));
+		assertThat(jsonPath.getString("definition"), equalTo("This is a code definition"));
+		assertThat(jsonPath.getString("designation[0].language"), equalTo("uk_en"));
+		assertThat(jsonPath.getString("designation[0].use.code"), equalTo("internal"));
+		assertThat(jsonPath.getString("designation[0].use.system"), equalTo("http://b2i.sg/test"));
+		assertThat(jsonPath.getString("designation[0].value"), equalTo("conceptLabel_uk"));
+		assertThat(jsonPath.getString("designation[0].languageCode"), equalTo("uk_en"));
+
+		assertThat(jsonPath.getString("property[0].code"), equalTo("childConcept"));
+		assertThat(jsonPath.getString("property[0].valueCode"), equalTo("childId"));
+		
+		//Just in case once again
 		String expectedJson = "{\"resourceType\":\"CodeSystem\","
 				+ "\"id\":\"repo/shortName\","
 				+ "\"language\":\"en\","
@@ -230,13 +272,14 @@ public class FilterTest extends FhirTest {
 
 		setupSummaryFilter(summaryParameter);
 
-		printJson(codeSystem);
+		printPrettyJson(codeSystem);
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
 		assertEquals("{\"resourceType\":\"CodeSystem\",\"id\":\"repo/shortName\","
 				+ "\"url\":\"code system uri\","
 				+ "\"identifier\":"
 				+ "{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
 				+ "\"version\":\"2018.01.01\","
+				+ "\"name\":\"Local code system\","
 				+ "\"title\":\"title\","
 				+ "\"status\":\"active\","
 				+ "\"publisher\":\"B2i\","

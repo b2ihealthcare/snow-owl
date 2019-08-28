@@ -240,7 +240,7 @@ public class SnomedUri {
 		if (StringUtils.isEmpty(pathSegment)) return builder.build();
 		
 		if (!SnomedIdentifiers.isValid(pathSegment)) {
-			throw new BadRequestException(String.format("Invalid extension module ID [%s] defined.", pathSegment), parameterName);
+			throw new BadRequestException(String.format("Invalid SNOMED CT extension module ID [%s] defined.", pathSegment), parameterName);
 		} else {
 			builder.extensionModuleId(pathSegment);
 		}

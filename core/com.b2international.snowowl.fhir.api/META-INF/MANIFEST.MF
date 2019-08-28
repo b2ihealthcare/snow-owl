@@ -24,7 +24,6 @@ Require-Bundle: org.eclipse.equinox.security;bundle-version="1.1.100",
  io.swagger.models;bundle-version="1.5.14",
  io.swagger.annotations;bundle-version="1.5.14",
  com.b2international.snowowl.fhir.core,
- com.b2international.snowowl.datastore,
  jaxb-api;bundle-version="2.3.0"
 Bundle-ClassPath: .,
  WEB-INF/lib/spring-aop-4.3.22.RELEASE.jar,

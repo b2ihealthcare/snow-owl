@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import javax.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
-import com.b2international.snowowl.fhir.core.model.TerminologyResource;
+import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -31,7 +31,10 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
@@ -50,19 +53,17 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("ValueSet")
-public class ValueSet extends TerminologyResource {
+@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
+public class ValueSet extends MetadataResource {
 	
 	//FHIR header "resourceType" : "ValueSet",
+	@Mandatory
 	@JsonProperty
 	private final String resourceType = "ValueSet";
 	
 	@Summary
 	@JsonProperty
 	private final Boolean immutable;
-	
-	@Summary
-	@JsonProperty
-	private final Boolean extensible;
 	
 	//at least one compose or expansion should exist
 	@Valid
@@ -79,13 +80,12 @@ public class ValueSet extends TerminologyResource {
 			final Uri url, final Identifier identifier, final String version, final String name, final String title, Code status, final Date date, String publisher, 
 			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
 			final Collection<CodeableConcept> jurisdictions, final Boolean immutable, final String purpose, final String copyright,
-			final Boolean extensible, final Collection<Compose> composeParts, final Expansion expansion) {
+			final Collection<Compose> composeParts, final Expansion expansion) {
 		
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts,
 				description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.immutable = immutable;
-		this.extensible = extensible;
 		this.composeParts = composeParts;
 		this.expansion = expansion;
 	}
@@ -98,10 +98,9 @@ public class ValueSet extends TerminologyResource {
 		return new Builder(valueSetId);
 	}
 
-	public static class Builder extends TerminologyResource.Builder<Builder, ValueSet> {
+	public static class Builder extends MetadataResource.Builder<Builder, ValueSet> {
 
 		private Boolean immutable;
-		private Boolean extensible;
 		private Collection<Compose> composeParts = Lists.newArrayList();
 		private Expansion expansion;
 		
@@ -111,11 +110,6 @@ public class ValueSet extends TerminologyResource {
 		
 		public Builder immutable(Boolean immutable) {
 			this.immutable = immutable;
-			return getSelf();
-		}
-		
-		public Builder extensible(Boolean extensible) {
-			this.extensible = extensible;
 			return getSelf();
 		}
 		
@@ -144,7 +138,7 @@ public class ValueSet extends TerminologyResource {
 			
 			return new ValueSet(id, meta, implicitRules, language, text, url, identifier, version, name, 
 					title, status, date, publisher, contacts, description, usageContexts, jurisdictions, immutable, 
-					purpose, copyright, extensible, composeParts, expansion);
+					purpose, copyright, composeParts, expansion);
 		}
 	}
 		

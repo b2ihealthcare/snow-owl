@@ -19,15 +19,15 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 /**
  * SubsumptionRequest Test
  * @since 6.6
  */
-public class SubsumptionRequestTest extends FhirTest {
+public class SubsumptionRequestDeserializationTest extends FhirTest {
 	
 	@Test
 	public void lookupRequestCodeTest() throws Exception {

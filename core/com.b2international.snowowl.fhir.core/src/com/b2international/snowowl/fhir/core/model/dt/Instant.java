@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2019 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.fhir.core.model.dt;
 
@@ -13,7 +13,6 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**

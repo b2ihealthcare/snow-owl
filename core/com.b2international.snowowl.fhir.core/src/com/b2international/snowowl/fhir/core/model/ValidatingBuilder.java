@@ -31,7 +31,7 @@ public abstract class ValidatingBuilder<T> {
 
 	public void validateModel(T model) {
 		Set<ConstraintViolation<T>> violations = ApiValidation.getValidator().validate(model);
-
+	
 		if (!violations.isEmpty()) {
 			throw new ValidationException(violations);
 		}

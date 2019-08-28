@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.endpoints.codesystem.fhir;
+package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -22,10 +22,10 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.service.BaseFhirResourceRestService;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 
 /**
@@ -126,9 +126,9 @@ public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 	public void lookupFhirCodeSystemPropertiesCodingTest() throws Exception {
 		
 		Coding coding = Coding.builder()
-				.system("http://hl7.org/fhir/issue-severity")
-				.code("fatal")
-				.build();
+			.system("http://hl7.org/fhir/issue-severity")
+			.code("fatal")
+			.build();
 
 		LookupRequest request = LookupRequest.builder()
 				.coding(coding)
@@ -151,37 +151,6 @@ public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 			.body("parameter[1].name", equalTo("display"))
 			.body("parameter[1].valueString", equalTo("Fatal"))
 			.statusCode(200);
-	}
-	
-	
-	//POST invalid request body
-	@Test
-	public void lookupFhirCodeSystemInvalidCodingTest() throws Exception {
-		
-		Coding coding = Coding.builder()
-				//.system("http://hl7.org/fhir/issue-severity")
-				.code("fatal")
-				.build();
-
-		LookupRequest request = LookupRequest.builder()
-				.coding(coding)
-				.build();
-		
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
-		printPrettyJson(fhirParameters);
-		
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
-			.body(jsonBody)
-			.when().post("/CodeSystem/$lookup")
-			.then()
-			.body("resourceType", equalTo("OperationOutcome"))
-			.body("issue.severity", hasItem("error"))
-			.body("issue.code", hasItem("invalid"))
-			.body("issue.diagnostics", hasItem("Parameter 'system' is not specified while code is present in the request."))
-			.statusCode(400);
 	}
 	
 }

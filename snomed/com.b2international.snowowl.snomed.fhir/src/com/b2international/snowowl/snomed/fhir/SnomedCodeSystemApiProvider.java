@@ -35,13 +35,13 @@ import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filters;
 import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
-import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -67,7 +67,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
-	private static final String URI_BASE = "http://snomed.info/sct";
+	private static final String URI_BASE = "http://snomed.info";
 	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
@@ -92,12 +92,12 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		validateRequestedProperties(lookup);
 		
-		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
-		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
+		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
+		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
 		
 		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
 		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
-		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage() : "en-GB";
+		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
 		
 		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
 			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
@@ -235,7 +235,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		//add terms as designations
 		if (lookupRequest.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
 				
-			String languageCode = lookupRequest.getDisplayLanguage() != null ? lookupRequest.getDisplayLanguage() : "en-GB";
+			String languageCode = lookupRequest.getDisplayLanguage() != null ? lookupRequest.getDisplayLanguage().getCodeValue() : "en-GB";
 				for (SnomedDescription description : concept.getDescriptions()) {
 						
 					Coding coding = Coding.builder()
@@ -270,8 +270,8 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		}
 		
 		//Optionally requested properties
-		boolean requestedChild = lookupRequest.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
-		boolean requestedParent = lookupRequest.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
+		boolean requestedChild = lookupRequest.containsProperty(CommonConceptProperties.CHILD.getCode());
+		boolean requestedParent = lookupRequest.containsProperty(CommonConceptProperties.PARENT.getCode());
 		
 		if (requestedChild && concept.getDescendants() != null) {
 			for (SnomedConcept child : concept.getDescendants()) {
@@ -286,7 +286,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		}
 		
 		//Relationship target properties
-		Collection<String> properties = lookupRequest.getProperties();
+		Collection<String> properties = lookupRequest.getPropertyCodes();
 		Set<String> relationshipTypeIds = properties.stream()
 			.filter(p -> p.startsWith("http://snomed.info/id/"))
 			.map(p -> p.substring(p.lastIndexOf('/') + 1, p.length()))
@@ -295,25 +295,27 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		String branchPath = getBranchPath(lookupRequest.getVersion());
 		
-		SnomedRequests.prepareSearchRelationship()
-			.all()
-			.filterByActive(true)
-			.filterByCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId())
-			.filterBySource(concept.getId())
-			.filterByType(relationshipTypeIds)
-			.build(getRepositoryId(), branchPath)
-			.execute(getBus())
-			.then(rels -> {
-				rels.forEach(r -> {
-					Property property = Property.builder()
-						.code(r.getTypeId())
-						.valueCode(r.getDestinationId())
-						.build();
-					resultBuilder.addProperty(property);
-				});
-				return null;
-			})
-			.getSync();
+		if (!relationshipTypeIds.isEmpty()) {
+			SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterByCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId())
+				.filterBySource(concept.getId())
+				.filterByType(relationshipTypeIds)
+				.build(getRepositoryId(), branchPath)
+				.execute(getBus())
+				.then(rels -> {
+					rels.forEach(r -> {
+						Property property = Property.builder()
+							.code(r.getTypeId())
+							.valueCode(r.getDestinationId())
+							.build();
+						resultBuilder.addProperty(property);
+					});
+					return null;
+				})
+				.getSync();
+		}
 		
 		return resultBuilder.build();
 	}

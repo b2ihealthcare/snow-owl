@@ -152,8 +152,8 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("meta.tag.code", hasItem("SUBSETTED"))
 			.body("status", equalTo("active"))
+			.body("name", equalTo("IssueType"))
 			//NOT part of the summary
-			.body("name", nullValue())
 			.body("concept", nullValue()) 
 			.body("copyright", nullValue()) 
 			.statusCode(200);

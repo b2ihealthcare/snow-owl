@@ -39,22 +39,6 @@ import com.google.common.collect.Lists;
  */
 public class Signature extends Element {
 	
-	@SuppressWarnings("rawtypes")
-	Signature(String id, Collection<Extension> extensions, Collection<Coding> types, final Instant when, final Uri whoUri, final Reference whoReference, 
-			final Uri onBehalfOfUri, final Reference onBehalfOfReference, final Code contentType, final Byte[] blob) {
-		
-		super(id, extensions);
-		
-		this.types = types;
-		this.when = when;
-		this.whoUri = whoUri;
-		this.whoReference = whoReference;
-		this.whoUri = whoUri;
-		this.onBehalfOfUri = onBehalfOfUri;
-		this.onBehalfOfReference = onBehalfOfReference;
-		this.blob = blob;
-	}
-
 	@Summary
 	@Valid
 	@NotEmpty
@@ -91,6 +75,23 @@ public class Signature extends Element {
 	@Valid
 	@JsonProperty
 	private Byte[] blob;
+	
+	@SuppressWarnings("rawtypes")
+	Signature(String id, Collection<Extension> extensions, Collection<Coding> types, final Instant when, final Uri whoUri, final Reference whoReference, 
+			final Uri onBehalfOfUri, final Reference onBehalfOfReference, final Code contentType, final Byte[] blob) {
+		
+		super(id, extensions);
+		
+		this.types = types;
+		this.when = when;
+		this.whoUri = whoUri;
+		this.whoReference = whoReference;
+		this.whoUri = whoUri;
+		this.onBehalfOfUri = onBehalfOfUri;
+		this.onBehalfOfReference = onBehalfOfReference;
+		this.contentType = contentType;
+		this.blob = blob;
+	}
 	
 	@JsonProperty
 	public Uri getWhoUri() {
@@ -191,11 +192,11 @@ public class Signature extends Element {
 		}
 		
 		public Builder blob(byte[] blob) {
-			byte[] bytes = "blob".getBytes();
-			this.blob = new Byte[bytes.length];
 			
-			for (int i = 0; i < bytes.length; i++) {
-		        this.blob[i] = Byte.valueOf(bytes[i]);
+			this.blob = new Byte[blob.length];
+			
+			for (int i = 0; i < blob.length; i++) {
+		        this.blob[i] = Byte.valueOf(blob[i]);
 		    }
 			return getSelf();
 		}

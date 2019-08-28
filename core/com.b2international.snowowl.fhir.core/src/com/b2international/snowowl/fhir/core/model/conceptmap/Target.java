@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import javax.validation.Valid;
 
+import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.search.Summary;
@@ -71,14 +72,12 @@ public class Target {
 
 	public static class Builder extends ValidatingBuilder<Target> {
 
-
 		private Code code;
 		private String display;
 		private Code equivalence;
 		private String comment;
 		private Collection<DependsOn> dependsOnElements = Sets.newHashSet();
 		private Collection<DependsOn> products = Sets.newHashSet();
-
 	
 		public Builder code(final Code code) {
 			this.code = code;
@@ -95,8 +94,8 @@ public class Target {
 			return this;
 		}
 
-		public Builder equivalence(final Code equivalence) {
-			this.equivalence = equivalence;
+		public Builder equivalence(final ConceptMapEquivalence conceptMapEquivalence) {
+			this.equivalence = conceptMapEquivalence.getCode();
 			return this;
 		}
 		
@@ -123,11 +122,8 @@ public class Target {
 		
 		@Override
 		protected Target doBuild() {
-
 			return new Target(code, display, equivalence, comment, dependsOnElements, products);
 		}
-
 	}
-
 
 }

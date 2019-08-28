@@ -19,19 +19,15 @@ import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.SYNONYM;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
+import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -48,32 +44,71 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
  * @since 7.0
  */
-public class TestArtifactCreator {
+public class TestReferenceSetCreator extends TestArtifactCreator {
 	
+	
+	/**
+	 * 
+	 * @param branchPath
+	 * @param refsetName
+	 * @param version
+	 * @return
+	 */
+	public static synchronized String createSimpleTypeReferenceSet(String branchPath, String refsetName, String version) {
+	
+		Optional<SnomedConcept> refsetConcept = getRefsetConcept(branchPath, refsetName);
+		if (!refsetConcept.isPresent()) {
+			System.out.println("Creating test simple type reference set...");
+			String refsetId = createSimpleTypeRefsetConcept(branchPath, refsetName);
+			
+			
+			System.out.println("Creating reference set members for simple type refset...");
+			createMember(branchPath, refsetId, FhirTestConcepts.BACTERIA);
+			createMember(branchPath, refsetId, FhirTestConcepts.MICROORGANISM);
+			
+			System.out.println("Versioning content...");
+			createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+			return refsetId;
+		} else {
+			System.out.println("Found existing test simple type reference set...");
+			String refsetId = refsetConcept.get().getId();
+			return refsetId;
+		}
+	}
+	
+	
+	private static void createMember(String branchPath, String refsetId, String referencedConceptId) {
+		
+		SnomedRequests.prepareNewMember()
+			.setId(UUID.randomUUID().toString())
+			.setModuleId(Concepts.MODULE_SCT_CORE)
+			.setActive(true)
+			.setReferenceSetId(refsetId)
+			.setReferencedComponentId(referencedConceptId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Type Refset Member")
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+	}
+
+
 	/**
 	 * @param branchPath
 	 * @param refsetName
 	 * @return refset logical id
 	 */
-	public static String createReferenceSet(String branchPath, String refsetName, String version) {
-		Optional<SnomedConcept> refsetConcept = SnomedRequests.prepareSearchConcept()
-				.filterByTerm(refsetName)
-				.all()
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync()
-				.first();
+	public static synchronized String createQueryTypeReferenceSet(String branchPath, String refsetName, String version) {
+		
+		Optional<SnomedConcept> refsetConcept = getRefsetConcept(branchPath, refsetName);
 			
 			if (!refsetConcept.isPresent()) {
 				System.out.println("Creating test query type reference set...");
-				String combinedId = createRefset(branchPath, refsetName);
+				String combinedId = createQueryTypeReferenceset(branchPath, refsetName);
 				System.out.println("Versioning content...");
 				createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 				
@@ -97,8 +132,19 @@ public class TestArtifactCreator {
 				return refsetId + "|" + firstMember.getId();
 			}
 	}
+
+	private static Optional<SnomedConcept> getRefsetConcept(String branchPath, String refsetName) {
+		Optional<SnomedConcept> refsetConcept = SnomedRequests.prepareSearchConcept()
+				.filterByTerm(refsetName)
+				.all()
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.first();
+		return refsetConcept;
+	}
 	
-	private static String createRefset(String branchPath, String refsetName) {
+	private static String createQueryTypeReferenceset(String branchPath, String refsetName) {
 		
 		CommitResult commitResult = SnomedRequests.prepareNewConcept()
 			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
@@ -121,10 +167,10 @@ public class TestArtifactCreator {
 		
 		String refsetId = commitResult.getResultAs(String.class);
 		
-		String referencedSimpleTypeRefsetId = createSimpleTypeRefsetConcept(branchPath);
+		String referencedSimpleTypeRefsetId = createSimpleTypeRefsetConcept(branchPath, "FHIR Automated Test Simple Type Refset");
 		
 		Map<String, Object> memberMap = Maps.newHashMap();
-		memberMap.put(SnomedRf2Headers.FIELD_QUERY, "<<49111001");
+		memberMap.put(SnomedRf2Headers.FIELD_QUERY, "<<410607006"); //Organism (SNOMED MINI)
 		
 		String memberId = SnomedRequests.prepareNewMember()
 			.setReferenceSetId(refsetId)
@@ -140,19 +186,19 @@ public class TestArtifactCreator {
 		return refsetId + "|" + memberId;
 	}
 	
-	private static String createSimpleTypeRefsetConcept(String branchPath) {
+	private static String createSimpleTypeRefsetConcept(String branchPath, String refsetName) {
 		return SnomedRequests.prepareNewConcept()
 			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.addDescription(createDescription("FHIR Automated Test Simple Type Refset (foundation metadata concept)", FULLY_SPECIFIED_NAME))
-			.addDescription(createDescription("FHIR Automated Test Simple Type Refset", SYNONYM))
+			.addDescription(createDescription(refsetName +" (foundation metadata concept)", FULLY_SPECIFIED_NAME))
+			.addDescription(createDescription(refsetName, SYNONYM))
 			.addRelationship(createIsaRelationship(CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
 			.addRelationship(createIsaRelationship(CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
 			.setRefSet(SnomedRequests.prepareNewRefSet()
 					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 					.setType(SnomedRefSetType.SIMPLE))
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Type Value Set")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Type Reference Set")
 			.execute(getEventBus())
 			.getSync()
 			.getResultAs(String.class);
@@ -182,41 +228,4 @@ public class TestArtifactCreator {
 			.setModifier(RelationshipModifier.EXISTENTIAL);
 	}
 	
-	private static void createVersion(String version, String codeSystemName) {
-		
-		Request<ServiceProvider, Boolean> request = CodeSystemRequests.prepareNewCodeSystemVersion()
-			.setCodeSystemShortName(codeSystemName)
-			.setDescription("FHIR Test version")
-			.setVersionId(version)
-			.setEffectiveTime(new Date())
-			.build();
-			
-		String jobId = JobRequests.prepareSchedule()
-			.setDescription(String.format("Creating version '%s/%s'", 
-					codeSystemName, version))
-			.setUser(User.SYSTEM.getUsername())
-			.setRequest(request)
-			.buildAsync()
-			.execute(getEventBus())
-			.getSync();
-		
-		RemoteJobEntry job = null;
-		do {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				throw new SnowowlRuntimeException(e);
-			}
-			
-			job = JobRequests.prepareGet(jobId)
-					.buildAsync()
-					.execute(getEventBus())
-					.getSync();
-		} while (job == null || !job.isDone());
-	}
-	
-	private static IEventBus getEventBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
-
 }

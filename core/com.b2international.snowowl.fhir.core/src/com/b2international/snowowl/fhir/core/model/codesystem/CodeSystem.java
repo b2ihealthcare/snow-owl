@@ -26,7 +26,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
-import com.b2international.snowowl.fhir.core.model.TerminologyResource;
+import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -63,7 +63,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("CodeSystem")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
-public class CodeSystem extends TerminologyResource {
+public class CodeSystem extends MetadataResource {
 
 	// FHIR header "resourceType" : "CodeSystem",
 	@Mandatory
@@ -96,6 +96,11 @@ public class CodeSystem extends TerminologyResource {
 	@NotNull
 	@JsonProperty
 	private Code content;
+	
+	@Summary
+	@Valid
+	@JsonProperty
+	private Uri supplements;
 
 	//not primitive int to avoid serialization when the default value is 0
 	@Summary
@@ -131,7 +136,7 @@ public class CodeSystem extends TerminologyResource {
 			
 			//CodeSystem only
 			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
-			final Code content, final Integer count, 
+			final Code content, final Uri supplements, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
@@ -143,6 +148,7 @@ public class CodeSystem extends TerminologyResource {
 		this.compositional = compositional;
 		this.versionNeeded = versionNeeded;
 		this.content = content;
+		this.supplements = supplements;
 		this.count = count;
 		this.filters = filters;
 		this.properties = properties;
@@ -157,7 +163,7 @@ public class CodeSystem extends TerminologyResource {
 		return new Builder(codeSystemId);
 	}
 
-	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
+	public static class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
 
 		private Boolean caseSensitive;
 		
@@ -170,6 +176,8 @@ public class CodeSystem extends TerminologyResource {
 		private Boolean versionNeeded;
 
 		private Code content;
+		
+		private Uri supplements;
 
 		private Integer count;
 
@@ -229,6 +237,11 @@ public class CodeSystem extends TerminologyResource {
 			return getSelf();
 		}
 
+		public Builder supplements(Uri supplementsUri) {
+			this.supplements = supplementsUri;
+			return getSelf();
+		}
+
 		public Builder count(int count) {
 			this.count = count;
 			return getSelf();
@@ -254,7 +267,7 @@ public class CodeSystem extends TerminologyResource {
 			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright,
 				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
-				content, count, filters, properties, concepts);
+				content, supplements, count, filters, properties, concepts);
 		}
 	}
 

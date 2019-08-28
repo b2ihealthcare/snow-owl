@@ -55,6 +55,16 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> {
 		return new Parameters.Fhir(Parameters.from(response));
 	}
 	
+	/**
+	 * Applies an empty filterprovider. It is required by Spring even if we don't want to filter the response.
+	 */
+	protected void applyEmptyContentFilter(FhirResource fhirResource) {
+		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(fhirResource);
+		mappingJacksonValue.setFilters(filterProvider);
+		mapper.setFilterProvider(filterProvider);
+	}
+	
 	protected MappingJacksonValue applyResponseContentFilter(FhirResource filteredFhirResource, SearchRequestParameters parameters) {
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);

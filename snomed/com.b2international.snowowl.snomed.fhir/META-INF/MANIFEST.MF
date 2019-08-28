@@ -10,3 +10,4 @@ Require-Bundle: com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.snomed.datastore
 Export-Package: com.b2international.snowowl.snomed.fhir
 Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: com.b2international.snowowl.snomed.fhir

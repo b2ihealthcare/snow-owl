@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
@@ -42,6 +42,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Period;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
+import io.restassured.path.json.JsonPath;
+
 /**
  * 
  * Test for domain model serialization.
@@ -49,13 +51,10 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
  */
 public class ModelSerializationTest extends FhirTest {
 	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
 	private Builder builder = Issue.builder()
-			.code(IssueType.INVALID)
-			.severity(IssueSeverity.ERROR)
-			.diagnostics("1 validation error");
+		.code(IssueType.INVALID)
+		.severity(IssueSeverity.ERROR)
+		.diagnostics("1 validation error");
 	
 	@Test
 	public void contactDetailTest() throws Exception {
@@ -74,16 +73,13 @@ public class ModelSerializationTest extends FhirTest {
 		
 		printPrettyJson(cd);
 		
-		String expected = "{\"name\":\"name\","
-				+ "\"telecom\":"
-					+ "[{\"system\":\"system\","
-					+ "\"value\":\"value\","
-					+ "\"rank\":1,"
-					+ "\"period\":{}}"
-					+ "]"
-				+ "}";
-		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(cd));
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cd));
+		assertThat(jsonPath.getString("name"), equalTo("name"));
+		jsonPath.setRoot("telecom[0]");
+		assertThat(jsonPath.getString("system"), equalTo("system"));
+		assertThat(jsonPath.getString("period.start"), equalTo(null));
+		assertThat(jsonPath.getString("value"), equalTo("value"));
+		assertThat(jsonPath.getInt("rank"), equalTo(1));
 	}
 	
 	@Test
@@ -97,20 +93,20 @@ public class ModelSerializationTest extends FhirTest {
 			.versionId(new Id("versionId"))
 			.lastUpdated(instant)
 			.addProfile("profileValue")
-			.addSecurity(Coding.builder().build())
-			.addTag(Coding.builder().build())
+			.addSecurity(Coding.builder()
+					.code("code").build())
+			.addTag(Coding.builder()
+					.code("tag").build())
 			.build();
 		
 		printPrettyJson(meta);
 		
-		String expected = "{\"versionId\":\"versionId\","
-				+ "\"lastUpdated\":\"2018-03-23T07:49:40Z\","
-				+ "\"profile\""
-					+ ":[\"profileValue\"],"
-				+ "\"security\":[{}],"
-				+ "\"tag\":[{}]}";
-		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(meta));
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(meta));
+		assertThat(jsonPath.getString("versionId"), equalTo("versionId"));
+		assertThat(jsonPath.getString("lastUpdated"), equalTo("2018-03-23T07:49:40Z"));
+		assertThat(jsonPath.getString("security[0].code"), equalTo("code"));
+		assertThat(jsonPath.getString("tag[0].code"), equalTo("tag"));
+		assertThat(jsonPath.getString("profile[0]"), equalTo("profileValue"));
 	}
 	
 	@Test
@@ -124,22 +120,20 @@ public class ModelSerializationTest extends FhirTest {
 		
 		printPrettyJson(ou);
 		
-		String expected = "{\"resourceType\":\"OperationOutcome\"," + 
-				"\"issue\":[{" + 
-					"\"severity\":\"error\"," + 
-					"\"code\":\"required\"" + 
-					"}]" + 
-				"}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(ou));
+		assertThat(jsonPath.getString("resourceType"), equalTo("OperationOutcome"));
+		jsonPath.setRoot("issue[0]");
 		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(ou));
+		assertThat(jsonPath.getString("severity"), equalTo("error"));
+		assertThat(jsonPath.getString("code"), equalTo("required"));
 	}
 	
 	@Test
 	public void missingIssueTest() throws Exception {
 		
 		Issue expectedIssue = builder.addLocation("OperationOutcome.issues")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [[]]. Violation: may not be empty.")
-				.build();
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [[]]. Violation: may not be empty.")
+			.build();
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");

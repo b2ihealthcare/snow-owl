@@ -28,6 +28,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public final class Uri {
 	
+	public static final String SNOMED_BASE_URI_STRING = "http://snomed.info/sct"; //$NON-NLS-N$
+	public static final Uri SNOMED_BASE_URI = new Uri(SNOMED_BASE_URI_STRING);
+	
 	@NotEmpty
 	@ValidUri
 	private String uriValue;
@@ -39,6 +42,14 @@ public final class Uri {
 	@JsonValue
 	public String getUriValue() {
 		return uriValue;
+	}
+	
+	/**
+	 * Returns true if this URI designates a SNOMED CT code system (starts with http://snomed.info/sct)
+	 * @return
+	 */
+	public boolean isSnomedUri() {
+		return uriValue !=null && uriValue.startsWith(SNOMED_BASE_URI_STRING);
 	}
 
 	@Override

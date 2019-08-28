@@ -34,7 +34,6 @@ import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.Include;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValueSetFilter;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
-import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -59,15 +57,12 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPartDefinition;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -77,20 +72,8 @@ import com.google.common.collect.Sets;
  * @since 6.4
  * @see IValueSetApiProvider
  */
-public final class SnomedValueSetApiProvider extends FhirApiProvider implements IValueSetApiProvider {
+public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider implements IValueSetApiProvider {
 
-	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
-		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
-		SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
-		SnomedUri.SNOMED_BASE_URI_STRING
-	);
-	
-	private String repositoryId;
-	
-	public SnomedValueSetApiProvider() {
-		this.repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID;
-	}
-	
 	@Override
 	public Collection<ValueSet> getValueSets() {
 		
@@ -114,6 +97,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
 		
+		//Simple type reference set
 		if (!logicalId.isMemberId()) {
 		
 			return getSimpleTypeRefsetSearchRequestBuilder(logicalId.getComponentId())
@@ -121,7 +105,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
-						.map(r -> buildSimpleTypeValueSet(r, codeSystemVersion, displayLanguage))
+						.map(r -> buildSimpleTypeValueSet(r, codeSystemVersion, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
@@ -131,25 +115,26 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.orElseThrow(() -> new NotFoundException("Active value set", logicalId.toString()));
 		} else {
 			
+			//Query type reference set
 			return SnomedRequests.prepareSearchMember()
 				.one()
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.filterByActive(true)
 				.filterById(logicalId.getMemberId())
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, logicalId.getBranchPath())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
-						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, displayLanguage))
+						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
 				.getSync()
 				.stream()
 				.findFirst()
-				.orElseThrow(() -> new NotFoundException("No active member found for ", logicalId.toString()));
+				.orElseThrow(() -> new NotFoundException("Active member", logicalId.toString()));
 		}
 		
 	}
@@ -168,13 +153,13 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.one()
 				.filterById(logicalId.getMemberId())
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, logicalId.getBranchPath())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
-						.map(member -> buildExpandedQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, displayLanguage))
+						.map(member -> buildExpandedQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
@@ -195,7 +180,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.execute(getBus())
 			.then(refsets -> {
 				return refsets.stream()
-					.map(r -> buildExpandedSimpleTypeValueSet(r, codeSystemVersion, displayLanguage))
+					.map(r -> buildExpandedSimpleTypeValueSet(r, codeSystemVersion, locales))
 					.map(ValueSet.Builder::build)
 					.collect(Collectors.toList());
 			})
@@ -214,8 +199,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		String locationName = "$expand.url";
 		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, locationName);
-		
-		//validateVersion(snomedUri, lookup.getVersion());
 		
 		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		
@@ -271,7 +254,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				}
 			}
 		}
-		
 		throw new NotImplementedException();
 	}
 	
@@ -310,7 +292,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			Optional<SnomedConcept> validatedConceptOptional = SnomedRequests.prepareSearchConcept()
 				.filterById(componentId)
 				.filterByActive(true)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("pt()")
 				.build(getRepositoryId(), codeSystemVersion.getPath())
 				.execute(getBus())
@@ -328,7 +310,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			//reference set should exist
 			try {
 				SnomedConcept snomedConcept = SnomedRequests.prepareGetConcept(queryPart.getQueryValue())
-					.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+					.setLocales(locales)
 					.setExpand("pt()")
 					.build(repositoryId, codeSystemVersion.getPath())
 					.execute(getBus())
@@ -352,7 +334,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.filterByActive(true)
 				.filterByReferencedComponent(componentId)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, codeSystemVersion.getPath())
 				.execute(getBus())
@@ -374,7 +356,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.filterByActive(true)
 				.filterByReferencedComponent(componentId)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, codeSystemVersion.getPath())
 				.execute(getBus())
@@ -395,7 +377,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.filterByEcl("<<" + queryPart.getQueryValue())
 				.filterById(componentId)
 				.filterByActive(true)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("pt()")
 				.build(repositoryId, codeSystemVersion.getPath())
 				.execute(getBus())
@@ -432,7 +414,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.filterById(valueSetLogicalId.getMemberId())
 				.filterByActive(true)
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, valueSetLogicalId.getBranchPath())
 				.execute(getBus())
@@ -441,7 +423,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.findFirst();
 			
 			if (!optionalRefsetMember.isPresent()) {
-				return ValidateCodeResult.builder().valueSetNotFoundResult(valueSetLogicalId).build();
+				throw new NotFoundException("Reference set member", valueSetLogicalId.getMemberId());
 			}
 			
 			SnomedReferenceSetMember referenceSetMember = optionalRefsetMember.get();
@@ -452,7 +434,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.all()
 				.filterByEcl(eclExpression)
 				.filterByActive(true)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("pt()")
 				.build(repositoryId, valueSetLogicalId.getBranchPath())
 				.execute(getBus())
@@ -487,7 +469,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		String codeSystem = validateCodeRequest.getSystem();
 		
 		//only SNOMED CT components can be present in a SNOMED CT reference set
-		if (!codeSystem.startsWith("http://snomed.info/sct")) {
+		if (!codeSystem.startsWith(SnomedUri.SNOMED_BASE_URI_STRING)) {
 			return ValidateCodeResult.builder()
 					.result(false)
 					.message(String.format("SNOMED CT reference sets can reference SNOMED CT components only. Referenced component is %s.", codeSystem))
@@ -500,7 +482,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.filterByActive(true)
 			.filterById(refsetId)
 			.filterByType(SnomedRefSetType.SIMPLE)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
 			.build(repositoryId, branchPath)
 			.execute(getBus())
@@ -508,7 +490,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		//Reference set not found
 		if (!snomedReferenceSets.first().isPresent()) {
-			return ValidateCodeResult.builder().valueSetNotFoundResult(valueSetLogicalId).build();
+			throw new NotFoundException("Reference set", refsetId);
 		} 
 		
 		//Refset is found, how about the concept as as member?
@@ -536,7 +518,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.filterByActive(true)
 			.filterByType(SnomedRefSetType.SIMPLE)
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ all +")")
 			.build(repositoryId, codeSystemVersion.getPath())
 			.execute(getBus())
@@ -575,7 +557,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		builder.status(PublicationStatus.ACTIVE)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
-			.language(displayLanguage)
+			.language(locales.get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersionId())
 			.identifier(identifier)
 			.url(uri.toUri())
@@ -623,7 +605,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		builder.status(PublicationStatus.ACTIVE)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
-			.language(displayLanguage)
+			.language(locales.get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersionId())
 			.identifier(identifier)
 			.url(uri.toUri());
@@ -639,7 +621,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		SnomedConceptSearchRequestBuilder snomedConceptSearchRequestBuilder = SnomedRequests.prepareSearchConcept()
 			.filterByEcl("<<" + parentConceptId)
 			.filterByActive(true)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.setExpand("pt()");
 		
 		if (fetchAll) {
@@ -675,7 +657,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		return builder.build();
 	}
 
-	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersionEntry codeSystemVersion, String displayLanguage) {
+	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersionEntry codeSystemVersion, List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
 		
@@ -695,7 +677,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.all()
 			.filterByEcl(eclExpression)
 			.filterByActive(true)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.setExpand("pt()")
 			.build(repositoryId, logicalId.getBranchPath())
 			.execute(getBus())
@@ -728,7 +710,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.expansion(expansionBuilder.build());
 	}
 	
-	private ValueSet.Builder buildSimpleTypeValueSet(final SnomedComponent snomedComponent, final CodeSystemVersionEntry codeSystemVersion, final String displayLanguage) {
+	private ValueSet.Builder buildSimpleTypeValueSet(final SnomedComponent snomedComponent, final CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), snomedComponent.getId());
 		
@@ -749,7 +731,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		return builder.addCompose(compose);
 	}
 	
-	private ValueSet.Builder buildExpandedSimpleTypeValueSet(SnomedReferenceSet referenceSet, CodeSystemVersionEntry codeSystemVersion, String displayLanguage) {
+	private ValueSet.Builder buildExpandedSimpleTypeValueSet(SnomedReferenceSet referenceSet, CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), referenceSet.getId());
 		
@@ -770,6 +752,9 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.build());
 			
 		for (SnomedReferenceSetMember snomedReferenceSetMember : members) {
+			
+			//skip inactive members
+			if (!snomedReferenceSetMember.isActive()) continue;
 			
 			SnomedConcept concept = (SnomedConcept) snomedReferenceSetMember.getReferencedComponent();
 			
@@ -796,14 +781,14 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
-						.map(r -> buildSimpleTypeValueSet(r, csve, displayLanguage))
+						.map(r -> buildSimpleTypeValueSet(r, csve, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
 				.getSync();
 				
 		}).collect(Collectors.toList())
-		.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
+			.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
 		
 		return simpleTypevalueSets;
 	}
@@ -823,13 +808,13 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.QUERY))
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.filterByActive(true)
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setLocales(locales)
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, csve.getPath())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
-						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), csve, displayLanguage))
+						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), csve, locales))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 					
@@ -851,7 +836,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.filterByActive(true)
 			.filterById(componentId)
 			.filterByType(SnomedRefSetType.SIMPLE)
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
+			.setLocales(locales);
 		
 		return searchBuilder;
 	}
@@ -879,7 +864,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		builder
 			.status(snomedComponent.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
-			.language(displayLanguage)
+			.language(locales.get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersionId())
 			.identifier(identifier)
 			.url(uri.toUri());
@@ -894,17 +879,18 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
 			.setExpand("pt()")
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setLocales(locales)
 			.build(getRepositoryId(), codeSystemVersion.getPath())
 			.execute(getBus())
 			.getSync();
 		
+		//TODO: potential NPE if there is no pt in a given language refset
 		builder.name(refsetConcept.getPt().getTerm())
 			.title(refsetConcept.getPt().getTerm());
 	}
 
 
-	private ValueSet.Builder buildQueryTypeValueSet(final SnomedReferenceSetMember refsetMember, final SnomedConcept referencedComponent, final CodeSystemVersionEntry codeSystemVersion, final String displayLanguage) {
+	private ValueSet.Builder buildQueryTypeValueSet(final SnomedReferenceSetMember refsetMember, final SnomedConcept referencedComponent, final CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
 	
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
 		
@@ -935,45 +921,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.title(referencedComponent.getPt().getTerm())
 			.addCompose(compose);
 		
-	}
-	
-	@Override
-	protected String getRepositoryId() {
-		return repositoryId;
-	}
-	
-	@Override
-	public boolean isSupported(LogicalId logicalId) {
-		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
-	}
-	
-	@Override
-	public Collection<String> getSupportedURIs() {
-		return SUPPORTED_URIS;
-	}
-	
-	@Override
-	public final boolean isSupported(String uri) {
-		if (Strings.isNullOrEmpty(uri)) return false;
-		
-		boolean foundInList = getSupportedURIs().stream()
-				.filter(uri::equalsIgnoreCase)
-				.findAny()
-				.isPresent();
-			
-		//extension and version is part of the URI
-		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
-		
-		return foundInList || extensionUri;
-	}
-
-	protected Uri getFhirUri() {
-		return SnomedUri.SNOMED_BASE_URI;
-	}
-
-	@Override
-	protected String getCodeSystemShortName() {
-		return SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	}
 
 }

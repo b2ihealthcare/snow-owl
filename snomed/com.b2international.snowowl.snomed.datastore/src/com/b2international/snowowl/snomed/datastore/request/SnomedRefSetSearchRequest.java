@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.mapTargetComponentTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.refSetTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.referencedComponentTypes;
 
@@ -44,7 +45,12 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		/**
 		 * A collection of referenced component types to use
 		 */
-		REFERENCED_COMPONENT_TYPE
+		REFERENCED_COMPONENT_TYPE,
+		
+		/**
+		 * A collection of map target component types, only applicable for maps
+		 */
+		MAP_TARGET_COMPONENT_TYPE
 	};
 
 	@Override
@@ -71,6 +77,10 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
 			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)));
+		}
+		
+		if (containsKey(OptionKey.MAP_TARGET_COMPONENT_TYPE)) {
+			queryBuilder.filter(mapTargetComponentTypes(getCollection(OptionKey.MAP_TARGET_COMPONENT_TYPE, Integer.class)));
 		}
 		
 		return queryBuilder.build();

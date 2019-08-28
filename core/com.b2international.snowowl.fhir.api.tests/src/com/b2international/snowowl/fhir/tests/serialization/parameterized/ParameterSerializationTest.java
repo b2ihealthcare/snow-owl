@@ -15,14 +15,19 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
+import java.util.Collection;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
+import com.b2international.snowowl.fhir.core.model.dt.FhirType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.common.collect.Lists;
 
 /**
  * Basic FHIR parameter serialization tests.
@@ -52,7 +57,7 @@ public class ParameterSerializationTest extends FhirTest {
 		String expected = buildExpectedJson("{\"name\":\"parameterName\",\"valueString\":\"test\"}");
 		Fhir fhirParameters = new Parameters.Fhir(new StringTestParameterObject());
 		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	
@@ -77,7 +82,7 @@ public class ParameterSerializationTest extends FhirTest {
 		String expected = buildExpectedJson("{\"name\":\"parameterName\",\"valueInteger\":1}");
 		
 		Fhir fhirParameters = new Parameters.Fhir(new Test());
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	
@@ -102,7 +107,43 @@ public class ParameterSerializationTest extends FhirTest {
 		String expected = buildExpectedJson("{\"name\":\"parameterName\",\"valueCode\":\"test\"}");
 		
 		Fhir fhirParameters = new Parameters.Fhir(new Test());
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+	}
+	
+	@Test
+	public void collectionParameterTest() throws Exception {
+		
+		@SuppressWarnings("unused")
+		@JsonPropertyOrder({"parameterName"})
+		class Test {
+			
+			@FhirType(FhirDataType.PART)
+			private Collection<Code> parameterName = Lists.newArrayList(new Code("first"), new Code("second"));
+
+			public Collection<Code> getParameterName() {
+				return parameterName;
+			}
+
+			public void setParameterName(Collection<Code> parameterName) {
+				this.parameterName = parameterName;
+			}
+		}
+		
+		String expected = buildExpectedJson("{\"name\":\"parameterName\"," + 
+				"\"part\":[{"+ 
+					"\"name\":\"codeValue\"," + 
+					"\"valueCode\":\"first\"" + 
+					"}]" + 
+				"},{" + 
+					"\"name\":\"parameterName\"," + 
+				"\"part\":[{" + 
+					"\"name\":\"codeValue\"," + 
+					"\"valueCode\":\"second\"" + 
+					"}]}"); 
+		
+		Fhir fhirParameters = new Parameters.Fhir(new Test());
+		printPrettyJson(fhirParameters);
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	

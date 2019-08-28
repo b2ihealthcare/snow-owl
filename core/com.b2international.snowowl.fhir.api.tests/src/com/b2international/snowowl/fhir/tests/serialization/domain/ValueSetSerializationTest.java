@@ -15,12 +15,18 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Designation;
@@ -31,10 +37,12 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
+import com.b2international.snowowl.fhir.core.model.valueset.expansion.DateTimeParameter;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.StringParameter;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
 import com.b2international.snowowl.fhir.tests.FhirTest;
+
 import io.restassured.path.json.JsonPath;
 
 /**
@@ -84,6 +92,23 @@ public class ValueSetSerializationTest extends FhirTest {
 		JsonPath jsonPath = getJsonPath(parameter);
 		assertThat(jsonPath.getString("name"), equalTo("paramName"));
 		assertThat(jsonPath.get("valueUri"), equalTo("paramValue"));
+	}
+	
+	@Test
+	public void dateTimeParameterTest() throws Exception {
+		
+		Date date = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse(TEST_DATE_STRING);
+		
+		DateTimeParameter parameter = DateTimeParameter.builder()
+			.name("paramName")
+			.value(date)
+			.build();
+		
+		printPrettyJson(parameter);
+		
+		JsonPath jsonPath = getJsonPath(parameter);
+		assertThat(jsonPath.getString("name"), equalTo("paramName"));
+		assertThat(jsonPath.get("valueDateTime"), equalTo(TEST_DATE_STRING));
 	}
 	
 	@Test
@@ -204,6 +229,7 @@ public class ValueSetSerializationTest extends FhirTest {
 			
 			.build();
 		
+		applyFilter(valueSet);
 		printPrettyJson(valueSet);
 		
 		JsonPath jsonPath = getJsonPath(valueSet);

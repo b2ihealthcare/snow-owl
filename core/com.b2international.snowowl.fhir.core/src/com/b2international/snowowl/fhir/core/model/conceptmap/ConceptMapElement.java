@@ -45,7 +45,6 @@ public class ConceptMapElement {
 	private final Collection<Target> targets;
 
 	ConceptMapElement(Code code, String display, Collection<Target> targets) {
-		
 		this.code = code;
 		this.display = display;
 		this.targets = targets;
@@ -55,7 +54,7 @@ public class ConceptMapElement {
 		return new Builder();
 	}
 	
-public static class Builder extends ValidatingBuilder<ConceptMapElement> {
+	public static class Builder extends ValidatingBuilder<ConceptMapElement> {
 		
 		private Code code;
 		private String display;
@@ -82,13 +81,10 @@ public static class Builder extends ValidatingBuilder<ConceptMapElement> {
 			return this;
 		}
 		
-		
-		
 		@Override
 		protected ConceptMapElement doBuild() {
 			return new ConceptMapElement(code, display, targets);
 		}
 	}
-	
 	
 }

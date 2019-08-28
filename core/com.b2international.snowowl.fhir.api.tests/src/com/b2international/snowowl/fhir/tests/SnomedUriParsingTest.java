@@ -54,7 +54,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/a";
 		
 		exception.expect(FhirException.class);
-		exception.expectMessage("Invalid extension module ID [a] defined.");
+		exception.expectMessage("Invalid SNOMED CT extension module ID [a] defined.");
 
 		SnomedUri.fromUriString(uriString, "uri");
 	}
