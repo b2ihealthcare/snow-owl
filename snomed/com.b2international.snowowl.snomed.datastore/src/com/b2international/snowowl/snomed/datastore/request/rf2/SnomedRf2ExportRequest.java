@@ -1023,7 +1023,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 		try {
 			archiveFile = exportDirectory.resolveSibling(exportDirectory.getFileName() + ".zip").toFile();
 			FileUtils.createZipArchive(exportDirectory.toFile(), archiveFile);
-			fileRegistry.upload(exportId, new FileInputStream(archiveFile));
+			fileRegistry.upload(exportId, new FileInputStream(archiveFile)); // lgtm[java/input-resource-leak]
 		} catch (final IOException e) {
 			throw new SnowowlRuntimeException("Failed to register archive file from export directory.", e);
 		} finally {
