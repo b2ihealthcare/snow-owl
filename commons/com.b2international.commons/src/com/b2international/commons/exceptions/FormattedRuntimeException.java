@@ -35,7 +35,7 @@ public class FormattedRuntimeException extends RuntimeException {
 	 * @see RuntimeException#RuntimeException(String, Throwable)
 	 */
 	public FormattedRuntimeException(String template, Object... args) {
-		super(String.format(template, args), extractCause(args));
+		super(String.format(template, args), extractCause(args)); // lgtm[java/tainted-format-string]
 	}
 
 	private static Throwable extractCause(Object[] args) {
