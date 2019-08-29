@@ -12,6 +12,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-6.8.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-high-level-client-6.8.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-secure-sm-6.8.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-ssl-config-6.8.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content-6.8.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppc-0.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-4.5.1.jar"/>

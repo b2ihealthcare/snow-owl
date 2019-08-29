@@ -99,6 +99,7 @@
 								elasticsearch-rest-client,
 								elasticsearch-rest-high-level-client,
 								elasticsearch-secure-sm,
+								elasticsearch-ssl-config,
 								elasticsearch-x-content,
 								hppc,
 								jna,
