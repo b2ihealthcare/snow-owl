@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.jvm.IJVMConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
@@ -48,7 +51,6 @@ import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.b2international.snowowl.datastore.ServerProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
@@ -239,10 +241,16 @@ public final class RepositoryPlugin extends Plugin {
 	}
 	
 	private void registerCustomProtocols(IManagedContainer container) {
-		final List<ServerProtocolFactory> serverProtocolFactories = ServerProtocolFactoryRegistry.getInstance().getRegisteredServerProtocolFactories();
-		for (final ServerProtocolFactory serverProtocolFactory : serverProtocolFactories) {
-			container.registerFactory(serverProtocolFactory);
-		}
+		final String EXTENSION_POINT_ID = "com.b2international.snowowl.datastore.server.protocolFactory";
+		final String CLASS_ATTRIBUTE = "class";
+		final IConfigurationElement[] configurationElements = Platform.getExtensionRegistry().getConfigurationElementsFor(EXTENSION_POINT_ID);
+		Arrays.stream(configurationElements).forEach(input -> {
+			try {
+				container.registerFactory((ServerProtocolFactory) input.createExecutableExtension(CLASS_ATTRIBUTE));
+			} catch (final CoreException e) {
+				throw new RuntimeException("Error while creating executable extension from the passed in configuration element: " + input, e);
+			}
+		});
 	}
 	
 	@Override
