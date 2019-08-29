@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -40,11 +43,19 @@ import com.google.common.collect.Sets;
  */
 public class Rf2GlobalValidator {
 
+	private final Logger log;
+
+	public Rf2GlobalValidator(Logger log) {
+		this.log = log;
+	}
+	
 	public void validateTerminologyComponents(Iterable<Rf2EffectiveTimeSlice> slices, Rf2ValidationIssueReporter reporter, BranchContext context) {
 		List<Rf2EffectiveTimeSlice> slicesToCheck = Lists.newArrayListWithExpectedSize(Iterables.size(slices)); 
 		final Map<String, String> missingDependenciesInEffectiveTime = Maps.newHashMap();
+		final LongSet checkedDependencies = PrimitiveSets.newLongOpenHashSet(); 
 		// check the slices first for missing dependencies
 		for (Rf2EffectiveTimeSlice slice : slices) {
+			log.info("Validating component consistency in effective time '{}'", slice.getEffectiveTime());
 			slicesToCheck.add(slice);
 			// collect missing dependencies from this slice
 			
@@ -55,11 +66,16 @@ public class Rf2GlobalValidator {
 			for (LongSet currentDependencyIds : slice.getDependenciesByComponent().values()) {
 				final LongIterator it = currentDependencyIds.iterator();
 				depCheck: while (it.hasNext()) {
-					final String stringDependencyId = Long.toString(it.next());
+					final long dependencyId = it.next();
+					if (checkedDependencies.contains(dependencyId)) {
+						continue depCheck;
+					}
+					final String stringDependencyId = Long.toString(dependencyId);
 					
 					// if this component is available in any of the current or previous slices then all is well
 					for (Rf2EffectiveTimeSlice sliceToCheck : slicesToCheck) {
 						if (sliceToCheck.getContent().containsKey(stringDependencyId)) {
+							checkedDependencies.add(dependencyId);
 							continue depCheck;
 						}
 					}
