@@ -228,7 +228,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 				// execute description change processor to get proper acceptabilityMap values before executing other change processors
 				// those values will be used in the ConceptChangeProcessor for example to properly compute the preferredDescriptions derived field
 				.add(new DescriptionChangeProcessor())
-				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
+				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.INSTANCE.getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new RelationshipChangeProcessor())
 				// effective time restore should be the last processing unit before we send the changes to commit
 				.add(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp))

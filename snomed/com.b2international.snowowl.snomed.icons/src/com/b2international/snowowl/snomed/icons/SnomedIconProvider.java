@@ -36,22 +36,12 @@ import com.google.common.io.Files;
  * An icon provider for SNOMED CT Concepts that doesn't have any dependency.
  * </p>
  */
-public final class SnomedIconProvider {
+public enum SnomedIconProvider {
 
-	private static final String ICONS_PATH = "icons";
-	private static SnomedIconProvider INSTANCE;
-
-	public static SnomedIconProvider getInstance() {
-		if (null == INSTANCE) {
-			synchronized (SnomedIconProvider.class) {
-				if (null == INSTANCE) {
-					INSTANCE = new SnomedIconProvider();
-				}
-			}
-		}
-		return INSTANCE;
-	}
+	INSTANCE;
 	
+	private static final String ICONS_PATH = "icons";
+
 	private final Map<String, URL> availableIcons;
 
 	private SnomedIconProvider() {
