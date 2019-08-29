@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
@@ -440,7 +441,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							concept.getRelationships()
 									.stream()
 									.filter(r -> typeId.equals(r.getTypeId())
-											&& r.getGroup() == propertyGroup 
+											&& Objects.equals(r.getGroup(), propertyGroup) 
 											&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
 													|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
 									.forEach(relationship -> {
@@ -469,7 +470,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
 											&& m.isActive()
 											&& typeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID))
-											&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == propertyGroup 
+											&& Objects.equals(m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP), propertyGroup) 
 											&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
 													|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
 									.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
