@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.connector.ConnectorException;
 import org.eclipse.net4j.connector.IConnector;
@@ -43,7 +47,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.datastore.ClientProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.DatastoreActivator;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
@@ -54,6 +57,7 @@ import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 /**
  * Abstract implementation of the {@link ICDOConnectionManager}.
@@ -247,7 +251,7 @@ import com.google.common.base.Preconditions;
 	@SuppressWarnings("unchecked")
 	private void openCustomProtocols() {
 		// other client protocols
-		final List<ClientProtocolFactory> protocolFactories = ClientProtocolFactoryRegistry.getInstance().getRegisteredClientProtocolFactories();
+		final List<ClientProtocolFactory> protocolFactories = getRegisteredClientProtocolFactories();
 		for (final ClientProtocolFactory clientProtocolFactory : protocolFactories) {
 			final SignalProtocol<Object> protocol = (SignalProtocol<Object>) clientProtocolFactory.create("");
 			openProtocol(protocol);
@@ -265,6 +269,20 @@ import com.google.common.base.Preconditions;
 			final IEventBusProtocol eventBusProtocol = EventBusNet4jUtil.getClientProtocol(IPluginContainer.INSTANCE);
 			openProtocol(eventBusProtocol);
 		}
+	}
+
+	private static final String EXTENSION_POINT_ID = "com.b2international.snowowl.datastore.protocolFactory";
+	private static final String CLASS_ATTRIBUTE = "class";
+	
+	private List<ClientProtocolFactory> getRegisteredClientProtocolFactories() {
+		IConfigurationElement[] configurationElements = Platform.getExtensionRegistry().getConfigurationElementsFor(EXTENSION_POINT_ID);
+		return Lists.transform(Arrays.asList(configurationElements), (input) -> {
+			try {
+				return (ClientProtocolFactory) input.createExecutableExtension(CLASS_ATTRIBUTE);
+			} catch (final CoreException e) {
+				throw new RuntimeException("Error while creating executable extension from the passed in configuration element: " + input, e);
+			}
+		});
 	}
 
 	private ClientPreferences getClientConfiguration() {
