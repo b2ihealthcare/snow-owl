@@ -216,7 +216,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			} else {
 				try {
 					// wait at least number of rules * 50ms for the next responses
-					Thread.sleep(Math.min(ruleIds.size() * 100, POLL_INTERVAL_MAX));
+					Thread.sleep(Math.min(((long) ruleIds.size()) * 100, POLL_INTERVAL_MAX));
 				} catch (InterruptedException e) {
 					throw new SnowowlRuntimeException(e);
 				}
