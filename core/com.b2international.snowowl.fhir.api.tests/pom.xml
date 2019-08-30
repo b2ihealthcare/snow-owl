@@ -56,12 +56,35 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
+				<executions>
+					<execution>
+            			<id>default-test</id>
+            			<phase>verify</phase>
+            			<goals>
+              				<goal>test</goal>
+            			</goals>
+			            <configuration>
+			            	<includes>
+								<include>**/AllFhirTests.java</include>
+							</includes>
+			            </configuration>
+          			</execution>
+          			<execution>
+            			<id>api-test</id>
+            			<phase>verify</phase>
+            			<goals>
+              				<goal>test</goal>
+            			</goals>
+			            <configuration>
+			            	<includes>
+								<include>**/AllFhirRestTests.java</include>
+							</includes>
+			            </configuration>
+          			</execution>
+				</executions>
 				<configuration>
 					<useUIThread>false</useUIThread>
 					<argLine>${tycho.testArgLine} -Xms2g -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
-					<includes>
-						<include>**/AllFhirRestTests.java</include>
-					</includes>
 					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
