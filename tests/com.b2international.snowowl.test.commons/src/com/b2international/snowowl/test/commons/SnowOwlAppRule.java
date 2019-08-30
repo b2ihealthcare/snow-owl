@@ -21,10 +21,15 @@ import java.nio.file.Path;
 import org.junit.rules.ExternalResource;
 
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.identity.IdentityProvider;
+import com.b2international.snowowl.identity.IdentityWriter;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * Bootstraps a {@link SnowOwl} and runs it before test method execution. After all test execution finished, shuts the application down.
@@ -134,6 +139,12 @@ public class SnowOwlAppRule extends ExternalResource {
 		}
 		snowowl.bootstrap();
 		snowowl.run();
+		// inject the test user to the current identity provider
+		try {
+			((IdentityWriter) ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class)).addUser(RestExtensions.USER, RestExtensions.PASS);
+		} catch (AlreadyExistsException e) {
+			// ignore existing user
+		}
 	}
 
 	@Override

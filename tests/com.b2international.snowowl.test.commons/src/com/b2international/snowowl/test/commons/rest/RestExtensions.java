@@ -27,11 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.CoreMatchers;
 
-import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.IdentityWriter;
 import com.b2international.snowowl.test.commons.json.JsonExtensions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -72,8 +68,8 @@ public class RestExtensions {
 	public static final String DEFAULT_PASS = "snowowl";
 	public static final String WRONG_PASS = "wrong";
 	
-	static final String USER;
-	static final String PASS; 
+	public static final String USER;
+	public static final String PASS; 
 	
 	static {
 		if (!Strings.isNullOrEmpty(System.getProperty("test.user"))) {
@@ -101,13 +97,6 @@ public class RestExtensions {
 			
 			RestAssured.config = RestAssuredConfig.config()
 				.logConfig(LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails());
-			
-			// add the user to the current identity provider
-			try {
-				((IdentityWriter) ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class)).addUser(USER, PASS);
-			} catch (AlreadyExistsException e) {
-				// ignore existing user
-			}
 		}
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'");
 		return given().port(getPort()).basePath(CONTEXT + api);
