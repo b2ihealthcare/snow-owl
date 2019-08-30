@@ -51,8 +51,14 @@ public class Activator implements BundleActivator {
 		 */
 		Codec.getDefault();
 		
+		// Elasticsearch's default JVM configurations for third party dependencies 
 		// Prevent Log4j2 from registering a shutdown hook; we will manage the logging system's lifecycle manually.
 		System.setProperty("log4j.shutdownHookEnabled", "false");
+		System.setProperty("log4j2.disable.jmx", "true");
+		
+		System.setProperty("io.netty.noUnsafe", "true");
+		System.setProperty("io.netty.noKeySetOptimization", "true");
+		System.setProperty("io.netty.recycler.maxCapacityPerThread", "0");
 		
 		withTccl(() -> {
 			// Initialize Log4j2
