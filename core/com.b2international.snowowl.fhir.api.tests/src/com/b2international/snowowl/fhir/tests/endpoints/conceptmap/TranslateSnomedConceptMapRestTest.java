@@ -126,7 +126,9 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 			.param("reverse", true)
 			.when()
 			.get("/ConceptMap/$translate")
-			.prettyPrint();
+			.then()
+			.extract()
+			.asString();
 		
 		Fhir parameters = objectMapper.readValue(response, Parameters.Fhir.class);
 		Json json = new Parameters.Json(parameters);

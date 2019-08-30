@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.tests.SnomedFhirRestTest;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * Generic ValueSet REST end-point test cases for SNOMED 'valuesets'
@@ -51,7 +52,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("total", notNullValue())
 			
 			//SNOMED CT
-			.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
+			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
 			.body("resource.resourceType", equalTo("ValueSet"))
 			.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
 			.body("resource.url", startsWith("http://snomed.info/sct/version"))
@@ -80,7 +81,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("total", notNullValue())
 			
 			//SNOMED CT
-			.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
+			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
 			.body("resource.resourceType", equalTo("ValueSet"))
 			.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
 			.body("resource.url", startsWith("http://snomed.info/sct/version"))

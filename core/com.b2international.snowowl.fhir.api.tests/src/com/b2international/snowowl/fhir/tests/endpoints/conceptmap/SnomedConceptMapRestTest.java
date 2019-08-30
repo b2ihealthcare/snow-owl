@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * Generic Concept Map REST end-point test cases for SNOMED Map Type reference sets
@@ -71,7 +72,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
 			.body("total", notNullValue())
-			.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ConceptMap/snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + simpleMapTypeRefsetId + "'}")
+			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ConceptMap/snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + simpleMapTypeRefsetId + "'}")
 			.appendRoot("resource")
 			.body("resourceType", equalTo("ConceptMap"))
 			.body("id", equalTo("snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + simpleMapTypeRefsetId))

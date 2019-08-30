@@ -15,12 +15,6 @@
  */
 package com.b2international.snowowl.fhir.tests;
 
-import org.junit.BeforeClass;
-
-import io.restassured.RestAssured;
-import io.restassured.config.LogConfig;
-import io.restassured.config.RestAssuredConfig;
-
 /**
  * Superclass for common REST-related test functionality
  * @since 6.9
@@ -31,18 +25,4 @@ public class FhirRestTest extends FhirTest {
 	
 	protected static final String SNOMED_VERSION = "2018-07-31";
 
-	@BeforeClass
-	public static void setupSpec() {
-		RestAssuredConfig config = RestAssured.config();
-		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(config.logConfig(logConfig));
-		
-		//config.httpClient(HttpClientConfig.httpClientConfig().dontReuseHttpClientInstance());
-		
-		//ResponseSpecBuilder builder = new ResponseSpecBuilder();
-		//builder.expectStatusCode(200);
-		//builder.expectBody("x.y.size()", is(2));
-		//ResponseSpecification responseSpec = builder.build();
-	}
-	
 }
