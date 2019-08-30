@@ -603,13 +603,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="groovy-all"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="log4j.over.slf4j"
          download-size="0"
          install-size="0"
@@ -826,5 +819,11 @@ Visit us at http://b2i.sg
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+         id="org.codehaus.groovy"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
 
 </feature>
