@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.tests;
 
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TestName;
 import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.snowowl.fhir.api.FhirApiConfig;
@@ -48,9 +47,9 @@ public class FhirTest {
 	@Rule
 	public TestMethodNameRule methodNameRule = new TestMethodNameRule();
 	
-	@Rule 
-	public TestName testName = new TestName();
-	
+	/**
+	 * @deprecated - should only be used for debugging purposes
+	 */
 	protected void printPrettyJson(Object object) throws Exception {
 		String result = objectMapper.writeValueAsString(object);
 		Object json = objectMapper.readValue(result, Object.class);
@@ -58,6 +57,9 @@ public class FhirTest {
 		System.out.println(prettyPrint);
 	}
 	
+	/**
+	 * @deprecated - should only be used for debugging purposes
+	 */
 	protected void printJson(Object object) throws Exception {
 		String result = objectMapper.writeValueAsString(object);
 		System.out.println(result);

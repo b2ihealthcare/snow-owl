@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,7 +114,6 @@ public class FilterTest extends FhirTest {
 		MultiValueMap<String,String> queryParams = uriComponentsBuilder.build().getQueryParams();
 		Set<String> keySet = queryParams.keySet();
 		for (String key : keySet) {
-			System.out.println("Key: " + key + ": " + queryParams.get(key));
 			assertThat(queryParams.get(key), contains("1, 2"));
 		}
 	}
@@ -129,17 +128,14 @@ public class FilterTest extends FhirTest {
 		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_elements=x, y").build().getQueryParams();
 
 		List<String> requestedFields = getRequestedFields(elements, "_elements");
-		System.out.println("Requested fields: " + requestedFields);
 
 		setupElementsFilter(requestedFields);
 
-		printPrettyJson(filteredClass);
 		String jsonString = objectMapper.writeValueAsString(filteredClass);
 		assertEquals("{\"id\":\"ID123\"}", jsonString);
 		
 		//questionable what to do if the requested fields are null or empty, for now we assume it to be a filter for mandatory only elements
 		setupElementsFilter(null);
-		printPrettyJson(filteredClass);
 		jsonString = objectMapper.writeValueAsString(filteredClass);
 		assertEquals("{\"id\":\"ID123\"}", jsonString);
 	}
@@ -151,11 +147,9 @@ public class FilterTest extends FhirTest {
 		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_elements=firstName, lastName").build().getQueryParams();
 
 		List<String> requestedFields = getRequestedFields(elements, "_elements");
-		System.out.println("Requested fields: " + requestedFields);
 
 		setupElementsFilter(requestedFields);
 
-		printPrettyJson(codeSystem);
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
 		
 		String expectedJson = "{\"resourceType\":\"CodeSystem\","
@@ -166,7 +160,6 @@ public class FilterTest extends FhirTest {
 		assertEquals(expectedJson, jsonString);
 		
 		setupElementsFilter(null);
-		printPrettyJson(codeSystem);
 		jsonString = objectMapper.writeValueAsString(codeSystem);
 		assertEquals(expectedJson, jsonString);
 	}
@@ -177,13 +170,10 @@ public class FilterTest extends FhirTest {
 		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_summary=false").build().getQueryParams();
 
 		List<String> requestedFields = getRequestedFields(elements, "_summary");
-		System.out.println("Requested fields: " + requestedFields);
 		SummaryParameterValue summaryParameter = SummaryParameterValue.fromRequestParameter(requestedFields.get(0));
 
 		setupSummaryFilter(summaryParameter);
 
-		printPrettyJson(filteredClass);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(codeSystem));
 		
 		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
@@ -266,13 +256,11 @@ public class FilterTest extends FhirTest {
 		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_summary=true").build().getQueryParams();
 
 		List<String> requestedFields = getRequestedFields(elements, "_summary");
-		System.out.println("Requested fields: " + requestedFields);
 		SummaryParameterValue summaryParameter = SummaryParameterValue.fromRequestParameter(requestedFields.get(0));
 
 
 		setupSummaryFilter(summaryParameter);
 
-		printPrettyJson(codeSystem);
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
 		assertEquals("{\"resourceType\":\"CodeSystem\",\"id\":\"repo/shortName\","
 				+ "\"url\":\"code system uri\","
@@ -303,12 +291,10 @@ public class FilterTest extends FhirTest {
 		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_summary=count").build().getQueryParams();
 
 		List<String> requestedFields = getRequestedFields(elements, "_summary");
-		System.out.println("Requested fields: " + requestedFields);
 		SummaryParameterValue summaryParameter = SummaryParameterValue.fromRequestParameter(requestedFields.get(0));
 
 		setupSummaryFilter(summaryParameter);
 
-		printJson(codeSystem);
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
 		assertEquals("{\"resourceType\":\"CodeSystem\","
 						+ "\"id\":\"repo/shortName\","

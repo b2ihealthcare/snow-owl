@@ -72,7 +72,6 @@ public class SubsumptionRequestDeserializationTest extends FhirTest {
 		Parameters.Fhir fhirParameters = objectMapper.readValue(jsonParam, Parameters.Fhir.class);
 		SubsumptionRequest request = objectMapper.convertValue(fhirParameters.toJson(), SubsumptionRequest.class);
 		
-		printPrettyJson(request);
 		assertEquals("http://snomed.info/sct", request.getSystem());
 		assertEquals("1234", request.getCodingA().getCodeValue());
 		assertEquals("5678", request.getCodingB().getCodeValue());

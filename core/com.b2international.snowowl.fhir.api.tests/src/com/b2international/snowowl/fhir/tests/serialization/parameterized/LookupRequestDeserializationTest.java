@@ -59,9 +59,7 @@ public class LookupRequestDeserializationTest extends FhirTest {
 		exception.expectMessage("1 validation error");
 		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
-		System.out.println("Building the lookup request object.");
-		LookupRequest.builder()
-			.system("system").build();
+		LookupRequest.builder().system("system").build();
 			
 	}
 	
@@ -73,7 +71,6 @@ public class LookupRequestDeserializationTest extends FhirTest {
 			.code("fatal")
 			.build();
 
-		System.out.println("Building the lookup request object.");
 		LookupRequest request = LookupRequest.builder()
 				.coding(coding)
 				.build();
@@ -107,7 +104,7 @@ public class LookupRequestDeserializationTest extends FhirTest {
 		LookupRequest request = LookupRequest.builder().coding(coding).build();
 
 		Fhir fhirParameters = new Parameters.Fhir(request);
-		fhirParameters.getParameters().forEach(p -> System.out.println(p));
+//		fhirParameters.getParameters().forEach(p -> System.out.println(p));
 		Optional<Parameter> findFirst = fhirParameters.getParameters().stream()
 				.filter(p -> {
 					Coding pCoding = (Coding) p.getValue();

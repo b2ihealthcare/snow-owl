@@ -64,7 +64,7 @@ public class BundleSerializationTest extends FhirTest {
 		
 		applyFilter(bundle);
 		
-		printPrettyJson(bundle);
+//		printPrettyJson(bundle);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(bundle));
 		

@@ -51,7 +51,6 @@ public class ParameterParsingTest extends FhirTest {
 		
 		Multimap<String, String> multiMap = HashMultimap.create();
 		queryParams.keySet().forEach(k -> multiMap.putAll(k, queryParams.get(k)));
-		multiMap.keySet().forEach(k-> System.out.println(k + " : " + multiMap.get(k)));
 		assertThat(multiMap.keySet().size(), equalTo(2));
 		assertThat(multiMap.get("_summary"), hasItems("1, 2", "3")); //note, that this is one string
 		

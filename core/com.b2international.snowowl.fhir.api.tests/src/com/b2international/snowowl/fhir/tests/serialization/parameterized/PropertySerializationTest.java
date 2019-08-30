@@ -58,8 +58,6 @@ public class PropertySerializationTest extends FhirTest {
 		 
 		Fhir fhirParameters = new Parameters.Fhir(property);
 		
-		printPrettyJson(fhirParameters);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
 		assertThat(jsonPath.getList("parameter").size(), is(1));
@@ -115,8 +113,6 @@ public class PropertySerializationTest extends FhirTest {
 		 
 		Fhir fhirParameters = new Parameters.Fhir(property);
 		
-		printPrettyJson(fhirParameters);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
 		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
@@ -138,8 +134,6 @@ public class PropertySerializationTest extends FhirTest {
 			.build();
 		 
 		Fhir fhirParameters = new Parameters.Fhir(property);
-		
-		printPrettyJson(fhirParameters);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
@@ -165,8 +159,6 @@ public class PropertySerializationTest extends FhirTest {
 			.build();
 		 
 		Fhir fhirParameters = new Parameters.Fhir(property);
-		
-		printPrettyJson(fhirParameters);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		

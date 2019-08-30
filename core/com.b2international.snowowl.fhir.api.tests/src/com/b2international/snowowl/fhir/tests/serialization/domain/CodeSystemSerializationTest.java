@@ -61,7 +61,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 	public void supportedConceptPropertyTest() throws Exception {
 		
 		SupportedConceptProperty conceptProperty = SupportedConceptProperty.builder(CommonConceptProperties.INACTIVE).build();
-		printPrettyJson(conceptProperty);
 		
 		String expectedJson = "{\"code\":\"inactive\","
 				+ "\"uri\":\"http://hl7.org/fhir/concept-properties/inactive\","
@@ -79,8 +78,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.value(true)
 			.build();
 		
-		printPrettyJson(conceptProperty);
-		
 		String expected = "{\"code\":\"childConcept\",\"valueBoolean\":true}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
@@ -92,8 +89,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.code("childConcept")
 			.value("string")
 			.build();
-		
-		printPrettyJson(conceptProperty);
 		
 		String expected = "{\"code\":\"childConcept\",\"valueString\":\"string\"}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
@@ -107,8 +102,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.value(1)
 			.build();
 		
-		printPrettyJson(conceptProperty);
-		
 		String expected = "{\"code\":\"childConcept\",\"valueInteger\":1}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
@@ -120,8 +113,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 				.code("childConcept")
 				.value(1.12f)
 				.build();
-		
-		printPrettyJson(conceptProperty);
 		
 		String expected = "{\"code\":\"childConcept\",\"valueDecimal\":1.12}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
@@ -137,8 +128,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.value(date)
 			.build();
 		
-		printPrettyJson(conceptProperty);
-		
 		String expected = "{\"code\":\"childConcept\",\"valueDateTime\":\"2018-03-23T07:49:40+0000\"}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
@@ -150,8 +139,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.code("childConcept")
 			.value(new Code("code"))
 			.build();
-		
-		printPrettyJson(conceptProperty);
 		
 		String expected = "{\"code\":\"childConcept\",\"valueCode\":\"code\"}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
@@ -167,8 +154,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 					.system("uri")
 					.build())
 				.build();
-		
-		printPrettyJson(conceptProperty);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(conceptProperty));
 		
@@ -225,7 +210,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.build();
 		
 		applyFilter(codeSystem);
-		printPrettyJson(codeSystem);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(codeSystem));
 		
@@ -308,8 +292,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.build();
 		
 		applyFilter(codeSystem);
-		
-		printPrettyJson(codeSystem);
 		
 		JsonPath jsonPath = getJsonPath(codeSystem);
 		

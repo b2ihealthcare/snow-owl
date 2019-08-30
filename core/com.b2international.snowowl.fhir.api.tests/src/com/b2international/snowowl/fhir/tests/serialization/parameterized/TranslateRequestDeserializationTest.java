@@ -152,9 +152,6 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 			.build();
 	
 		Fhir fhirParameters = new Parameters.Fhir(request);
-		fhirParameters.getParameters().forEach(p -> System.out.println(p));
-		
-		printPrettyJson(fhirParameters);
 		
 		Parameter parameter = fhirParameters.getByName("code").get();
 		assertEquals("fatal", ((Code) parameter.getValue()).getCodeValue());
@@ -179,9 +176,6 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 			.build();
 	
 		Fhir fhirParameters = new Parameters.Fhir(request);
-		fhirParameters.getParameters().forEach(p -> System.out.println(p));
-		
-		printPrettyJson(fhirParameters);
 		
 		Parameter parameter = fhirParameters.getByName("coding").get();
 		Coding coding = (Coding) parameter.getValue();
@@ -221,9 +215,6 @@ public class TranslateRequestDeserializationTest extends FhirTest {
 			.build();
 	
 		Fhir fhirParameters = new Parameters.Fhir(request);
-		fhirParameters.getParameters().forEach(p -> System.out.println(p));
-		
-		printPrettyJson(fhirParameters);
 		
 		Parameter parameter = fhirParameters.getByName("coding").get();
 		Coding coding = (Coding) parameter.getValue();

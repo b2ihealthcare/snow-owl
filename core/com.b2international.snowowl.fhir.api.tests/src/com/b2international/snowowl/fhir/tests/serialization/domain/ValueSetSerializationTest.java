@@ -56,8 +56,6 @@ public class ValueSetSerializationTest extends FhirTest {
 		
 		Extension<Integer> integerExtension = new IntegerExtension("testUri", 1);
 				
-		printPrettyJson(integerExtension);
-		
 		String expectedJson =  "{\"url\":\"testUri\","
 					+ "\"valueInteger\":1}";
 		
@@ -72,8 +70,6 @@ public class ValueSetSerializationTest extends FhirTest {
 			.value("paramValue")
 			.build();
 		
-		printPrettyJson(parameter);
-		
 		JsonPath jsonPath = getJsonPath(parameter);
 		assertThat(jsonPath.getString("name"), equalTo("paramName"));
 		assertThat(jsonPath.get("valueString"), equalTo("paramValue"));
@@ -86,8 +82,6 @@ public class ValueSetSerializationTest extends FhirTest {
 			.name("paramName")
 			.value(new Uri("paramValue"))
 			.build();
-		
-		printPrettyJson(parameter);
 		
 		JsonPath jsonPath = getJsonPath(parameter);
 		assertThat(jsonPath.getString("name"), equalTo("paramName"));
@@ -103,8 +97,6 @@ public class ValueSetSerializationTest extends FhirTest {
 			.name("paramName")
 			.value(date)
 			.build();
-		
-		printPrettyJson(parameter);
 		
 		JsonPath jsonPath = getJsonPath(parameter);
 		assertThat(jsonPath.getString("name"), equalTo("paramName"));
@@ -132,8 +124,6 @@ public class ValueSetSerializationTest extends FhirTest {
 			.addParameter(uriParameter)
 			.build();
 		
-		printPrettyJson(expansion);
-		
 		JsonPath jsonPath = getJsonPath(expansion);
 		assertThat(jsonPath.getString("identifier"), equalTo("identifier"));
 		assertThat(jsonPath.get("parameter.name"), hasItem("uriParamName"));
@@ -156,8 +146,6 @@ public class ValueSetSerializationTest extends FhirTest {
 				.build())
 			.addContains(Contains.builder().build())
 			.build();
-		
-		printPrettyJson(contains);
 		
 		JsonPath jsonPath = getJsonPath(contains);
 		assertThat(jsonPath.getString("system"), equalTo("systemUri"));
@@ -230,7 +218,6 @@ public class ValueSetSerializationTest extends FhirTest {
 			.build();
 		
 		applyFilter(valueSet);
-		printPrettyJson(valueSet);
 		
 		JsonPath jsonPath = getJsonPath(valueSet);
 		assertThat(jsonPath.getString("url"), equalTo("http://who.org"));

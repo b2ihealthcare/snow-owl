@@ -97,11 +97,9 @@ public class ConceptMapFilterTest extends FhirTest {
 		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_summary=false").build().getQueryParams();
 
 		List<String> requestedFields = getRequestedFields(elements, "_summary");
-		System.out.println("Requested fields: " + requestedFields);
 		SummaryParameterValue summaryParameter = SummaryParameterValue.fromRequestParameter(requestedFields.get(0));
 
 		setupSummaryFilter(summaryParameter);
-		printPrettyJson(filteredClass);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(conceptMap));
 		assertThat(jsonPath.getString("group"), notNullValue());
@@ -113,15 +111,10 @@ public class ConceptMapFilterTest extends FhirTest {
 		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_summary=true").build().getQueryParams();
 
 		List<String> requestedFields = getRequestedFields(elements, "_summary");
-		System.out.println("Requested fields: " + requestedFields);
 		SummaryParameterValue summaryParameter = SummaryParameterValue.fromRequestParameter(requestedFields.get(0));
-		System.out.println("Summary parameter: " + summaryParameter);
 
 		setupSummaryFilter(summaryParameter);
 
-		printPrettyJson(conceptMap);
-		//String jsonString = objectMapper.writeValueAsString(conceptMap);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(conceptMap));
 		assertThat(jsonPath.getString("group"), nullValue());
 	}

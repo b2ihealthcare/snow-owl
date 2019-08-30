@@ -57,7 +57,7 @@ public class UsageContextSerializationTest extends FhirTest {
 			.value(codeableConcept)
 			.build();
 		
-		printPrettyJson(usageContext);
+//		printPrettyJson(usageContext);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		
@@ -89,7 +89,7 @@ public class UsageContextSerializationTest extends FhirTest {
 			.value(quantity)
 			.build();
 		
-		printPrettyJson(usageContext);
+//		printPrettyJson(usageContext);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		
@@ -130,7 +130,7 @@ public class UsageContextSerializationTest extends FhirTest {
 			.value(range)
 			.build();
 		
-		printPrettyJson(usageContext);
+//		printPrettyJson(usageContext);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		

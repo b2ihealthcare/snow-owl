@@ -195,33 +195,33 @@ public class SnomedUriParsingTest extends FhirTest {
 	}
 	
 	@Test
-	public void testToUriWithQueryPart() {
-		
+	public void testToUriWithQuery_fhir_cm() {
 		SnomedUri uri = SnomedUri.builder().conceptMapQuery(Concepts.ROOT_CONCEPT).build();
-		
-		System.out.println("URI: " + uri);
 		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_cm=" + Concepts.ROOT_CONCEPT, uri.toString());
-		
-		uri = SnomedUri.builder().valueSetsQuery().build();
-		
-		System.out.println("URI: " + uri);
+	}
+
+	@Test
+	public void testToUriWithQuery_fhir_vs() {
+		SnomedUri uri = SnomedUri.builder().valueSetsQuery().build();
 		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_vs", uri.toString());
-		
-		uri = SnomedUri.builder().isAQuery(Concepts.ROOT_CONCEPT).build();
-		
-		System.out.println("URI: " + uri);
+	}
+
+	@Test
+	public void testToUriWithQuery_fhir_vs_isa() {
+		SnomedUri uri = SnomedUri.builder().isAQuery(Concepts.ROOT_CONCEPT).build();
 		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_vs=isa/" + Concepts.ROOT_CONCEPT, uri.toString());
-		
-		uri = SnomedUri.builder().refsetsQuery().build();
-		
-		System.out.println("URI: " + uri);
+	}
+
+	@Test
+	public void testToUriWithQuery_fhir_vs_refset() {
+		SnomedUri uri = SnomedUri.builder().refsetsQuery().build();
 		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_vs=refset", uri.toString());
-		
-		uri = SnomedUri.builder().refsetQuery(Concepts.ROOT_CONCEPT).build();
-		
-		System.out.println("URI: " + uri);
+	}
+	
+	@Test
+	public void testToUriWithQuery_fhir_vs_refset_slash() {
+		SnomedUri uri = SnomedUri.builder().refsetQuery(Concepts.ROOT_CONCEPT).build();
 		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_vs=refset/" + Concepts.ROOT_CONCEPT, uri.toString());
-		
 	}
 	
 }

@@ -53,7 +53,6 @@ public class PrimitiveDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void codeTest() throws Exception {
 		Code code = new Code("value");
-		printPrettyJson(code);
 		String expectedJson = "\"value\"";
 		assertEquals(expectedJson, objectMapper.writeValueAsString(code));
 	}
@@ -61,7 +60,6 @@ public class PrimitiveDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void idTest() throws Exception {
 		Id id = new Id("value");
-		printPrettyJson(id);
 		String expectedJson = "\"value\"";
 		assertEquals(expectedJson, objectMapper.writeValueAsString(id));
 	}
@@ -69,7 +67,6 @@ public class PrimitiveDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void uriTest() throws Exception {
 		Uri uri = new Uri("value");
-		printPrettyJson(uri);
 		String expectedJson = "\"value\"";
 		assertEquals(expectedJson, objectMapper.writeValueAsString(uri));
 	}
@@ -91,13 +88,10 @@ public class PrimitiveDataTypeSerializationTest extends FhirTest {
 	
 	@Test
 	public void instantTest() throws Exception {
-		
 		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
 		Date date = df.parse(TEST_DATE_STRING);
 		Instant instant = Instant.builder().instant(date).build();
-		printPrettyJson(instant);
-		String expectedJson = "\"2018-03-23T07:49:40Z\"";
-		assertEquals(expectedJson, objectMapper.writeValueAsString(instant));
+		assertEquals("\"2018-03-23T07:49:40Z\"", objectMapper.writeValueAsString(instant));
 	}
 
 }

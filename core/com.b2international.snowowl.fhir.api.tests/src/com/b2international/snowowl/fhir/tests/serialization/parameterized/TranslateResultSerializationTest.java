@@ -101,8 +101,6 @@ public class TranslateResultSerializationTest extends FhirTest {
 		
 		Fhir fhirParameters = new Parameters.Fhir(translateResult);
 		
-		printPrettyJson(fhirParameters);
-		
 		Parameter parameter = fhirParameters.getByName("result").get();
 		Boolean result = (Boolean) parameter.getValue();
 		assertEquals(true, result.booleanValue());
@@ -125,8 +123,6 @@ public class TranslateResultSerializationTest extends FhirTest {
 			.build();
 		
 		Fhir fhirParameters = new Parameters.Fhir(translateResult);
-		
-		printPrettyJson(fhirParameters);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		

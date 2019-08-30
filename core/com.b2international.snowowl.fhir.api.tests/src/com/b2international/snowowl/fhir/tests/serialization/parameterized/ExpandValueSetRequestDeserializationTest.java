@@ -60,10 +60,10 @@ public class ExpandValueSetRequestDeserializationTest extends FhirTest {
 				.build();
 		
 		Json json = new Parameters.Json(request);
-		System.out.println("JSON params:" + json);
+//		System.out.println("JSON params:" + json);
 		
 		Fhir fhirParameters = new Parameters.Fhir(request);
-		fhirParameters.getParameters().forEach(p -> System.out.println(p));
+//		fhirParameters.getParameters().forEach(p -> System.out.println(p));
 		Optional<Parameter> findFirst = fhirParameters.getParameters().stream()
 				.filter(p -> {
 					Uri url = (Uri) p.getValue();
@@ -73,10 +73,10 @@ public class ExpandValueSetRequestDeserializationTest extends FhirTest {
 
 		assertTrue(findFirst.isPresent());
 		
-		Fhir fhir = new Parameters.Fhir(json.parameters());
-		printPrettyJson(fhir);
-		String fhirJson = objectMapper.writeValueAsString(fhir);
-		System.out.println("This is the JSON request from the client: " + fhirJson);
+//		Fhir fhir = new Parameters.Fhir(json.parameters());
+//		printPrettyJson(fhir);
+//		String fhirJson = objectMapper.writeValueAsString(fhir);
+//		System.out.println("This is the JSON request from the client: " + fhirJson);
 	}
 	
 	//@Test

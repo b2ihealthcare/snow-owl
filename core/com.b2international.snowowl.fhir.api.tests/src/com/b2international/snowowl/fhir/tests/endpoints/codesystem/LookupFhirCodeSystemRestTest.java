@@ -106,7 +106,6 @@ public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 		Fhir fhirParameters = new Parameters.Fhir(request);
 		
 		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
-		printPrettyJson(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
@@ -138,7 +137,6 @@ public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 		Fhir fhirParameters = new Parameters.Fhir(request);
 		
 		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
-		printPrettyJson(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)

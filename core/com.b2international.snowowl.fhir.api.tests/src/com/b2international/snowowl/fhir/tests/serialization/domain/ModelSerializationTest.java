@@ -71,8 +71,6 @@ public class ModelSerializationTest extends FhirTest {
 			.addContactPoint(cp)
 			.build();
 		
-		printPrettyJson(cd);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cd));
 		assertThat(jsonPath.getString("name"), equalTo("name"));
 		jsonPath.setRoot("telecom[0]");
@@ -99,8 +97,6 @@ public class ModelSerializationTest extends FhirTest {
 					.code("tag").build())
 			.build();
 		
-		printPrettyJson(meta);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(meta));
 		assertThat(jsonPath.getString("versionId"), equalTo("versionId"));
 		assertThat(jsonPath.getString("lastUpdated"), equalTo("2018-03-23T07:49:40Z"));
@@ -117,8 +113,6 @@ public class ModelSerializationTest extends FhirTest {
 						.code(IssueType.REQUIRED)
 						.build())
 				.build();
-		
-		printPrettyJson(ou);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(ou));
 		assertThat(jsonPath.getString("resourceType"), equalTo("OperationOutcome"));

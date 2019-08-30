@@ -137,8 +137,6 @@ public class LookupResultSerializationTest extends FhirTest {
 		
 		Fhir fhirParameters = new Parameters.Fhir(lookupResult);
 		
-		printPrettyJson(fhirParameters);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
 		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));

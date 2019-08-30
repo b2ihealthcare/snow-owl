@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.dt;
 
 import javax.validation.constraints.Pattern;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -34,13 +34,9 @@ public class Code {
 	//When serialized into parameters, code will be: {"name":"codeValue","valueString":"value"}
 	@FhirType(FhirDataType.CODE)
 	@Pattern(regexp = CODE_REGEXP) //not empty is included
-	@JsonProperty("codeValue")
 	private String codeValue;
 
-	//For Jackson
-	@SuppressWarnings("unused")
-	private Code() {}
-	
+	@JsonCreator
 	public Code(String codeValue) {
 		this.codeValue = codeValue;
 	}

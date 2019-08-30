@@ -63,8 +63,6 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		
 		TestClass testObject = new TestClass();
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(testObject));
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
 		assertThat(jsonPath.getString("testString"), equalTo("test"));
 		assertThat(jsonPath.getString("valueString"), equalTo("stringValue"));
@@ -85,8 +83,6 @@ public class TypedPropertySerializationTest extends FhirTest {
 		}
 		
 		TestClass testObject = new TestClass();
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(testObject));
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
 		assertThat(jsonPath.getString("valueDate"), equalTo("2018-03-22T23:00:00+0000"));
 		
@@ -107,8 +103,6 @@ public class TypedPropertySerializationTest extends FhirTest {
 		}
 		
 		TestClass testObject = new TestClass();
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(testObject));
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
 		assertThat(jsonPath.getString("valueDate"), equalTo(TEST_DATE_STRING));
 	}
@@ -129,11 +123,8 @@ public class TypedPropertySerializationTest extends FhirTest {
 		}
 		
 		TestClass testObject = new TestClass();
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(testObject));
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
 		assertThat(jsonPath.getString("valueInstant"), equalTo("2018-03-23T07:49:40Z"));
-		
 	}
 
 }

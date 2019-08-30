@@ -56,8 +56,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 			.url("Url")
 			.build();
 
-		printPrettyJson(unMapped);
-	
 		JsonPath jsonPath = getJsonPath(unMapped);
 		
 		assertThat(jsonPath.get("mode"), equalTo("Mode"));
@@ -73,8 +71,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 			.mode("Mode")
 			.build();
 
-		printPrettyJson(unMapped);
-		
 		JsonPath jsonPath = getJsonPath(unMapped);
 		assertNull(jsonPath.get("code"));
 	}
@@ -101,8 +97,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		.display("Display")
 		.build();
 		
-		printPrettyJson(dependsOn);
-
 		JsonPath jsonPath = getJsonPath(dependsOn);
 		
 		assertThat(jsonPath.get("property"), equalTo("Property"));
@@ -121,8 +115,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		//.display("Display")
 		.build();
 		
-		printPrettyJson(dependsOn);
-
 		JsonPath jsonPath = getJsonPath(dependsOn);
 		
 		assertThat(jsonPath.get("property"), equalTo("Property"));
@@ -169,8 +161,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 				.build())
 			.build();
 		
-		printPrettyJson(target);
-		
 		JsonPath jsonPath = getJsonPath(target);
 		
 		assertThat(jsonPath.get("code"), equalTo("Code"));
@@ -186,8 +176,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		Target target = Target.builder()
 						.build();
-		
-		printPrettyJson(target);
 		
 		JsonPath jsonPath = getJsonPath(target);
 		
@@ -212,8 +200,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 				
 				.build();
 		
-		printPrettyJson(element);
-		
 		JsonPath jsonPath = getJsonPath(element);
 		
 		assertThat(jsonPath.get("code"), equalTo("Code"));
@@ -227,8 +213,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		ConceptMapElement element = ConceptMapElement.builder()
 									.build();
-		
-		printPrettyJson(element);
 		
 		JsonPath jsonPath = getJsonPath(element);
 		
@@ -256,8 +240,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 					.build())
 			.build();
 		
-		printPrettyJson(group);
-		
 		JsonPath jsonPath = getJsonPath(group);
 		
 		assertThat(jsonPath.get("source"), equalTo("Source"));
@@ -278,8 +260,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 				.display("ElementDisplay")
 				.build())
 			.build();
-		
-		printPrettyJson(group);
 		
 		JsonPath jsonPath = getJsonPath(group);
 		
@@ -345,7 +325,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 				.build();
 		
 		applyFilter(conceptMap);
-		printPrettyJson(conceptMap);
 		
 		JsonPath jsonPath = getJsonPath(conceptMap);
 		

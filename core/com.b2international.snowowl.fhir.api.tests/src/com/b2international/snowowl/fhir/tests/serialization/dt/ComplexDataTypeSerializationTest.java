@@ -135,8 +135,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 				.text("text")
 				.build();
 		
-		printPrettyJson(cc);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cc));
 		assertThat(jsonPath.getString("text"), equalTo("text"));
 		assertThat(jsonPath.getString("coding[0].code"), equalTo("1234"));
@@ -147,23 +145,18 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	
 	@Test
 	public void narrativeTest() throws Exception {
-		
 		Narrative narrative = Narrative.builder()
 				.div("<div>This is text</div>")
 				.status(NarrativeStatus.GENERATED)
 				.build();
 		
-		printPrettyJson(narrative);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(narrative));
 		assertThat(jsonPath.getString("status"), equalTo("generated"));
 		assertThat(jsonPath.getString("div"), equalTo("<div>This is text</div>"));
-		
 	}
 	
 	@Test
 	public void incorrentNarrativeTest() throws Exception {
-		
 		Issue expectedIssue = builder.addLocation("Narrative.div")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'div' content is invalid [<div>]. Violation: div content is invalid, minimally should be <div></div>.")
 				.build();
@@ -180,7 +173,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	
 	@Test
 	public void quantityTest() throws Exception {
-		
 		Quantity quantity = Quantity.builder()
 			.value(12.3)
 			.unit("mg")
@@ -188,8 +180,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.code("code")
 			.comparator(QuantityComparator.GREATER_OR_EQUAL_TO)
 			.build();
-		
-		printPrettyJson(quantity);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(quantity));
 		assertThat(jsonPath.getDouble("value"), equalTo(12.3));
@@ -230,8 +220,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Period period = new Period(startDate, cal.getTime());
 		
-		printPrettyJson(period);
-		
 		String expected = "{\"start\":\"2018-03-23T07:49:40+0000\"," + 
 				"\"end\":\"2018-03-24T07:49:40+0000\"}";
 		
@@ -258,8 +246,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Range range = new Range(low, high);
 		
-		printPrettyJson(range);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(range));
 		assertThat(jsonPath.getDouble("low.value"), equalTo(12.3));
 		assertThat(jsonPath.getString("low.unit"), equalTo("mg"));
@@ -280,8 +266,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Reference reference = new Reference("reference url", identifier, "displayString");
 		
-		printPrettyJson(reference);
-		
 		String expected = "{\"reference\":\"reference url\"," + 
 				"\"identifier\":{\"system\":\"system\"}," + 
 				"\"display\":\"displayString\"}";
@@ -300,8 +284,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		@SuppressWarnings("rawtypes")
 		Extension extension = new IntegerExtension("url", 1);
 		
-		printPrettyJson(extension);
-		
 		String expected = "{\"url\":\"url\",\"valueInteger\":1}";
 		
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(extension));
@@ -319,8 +301,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 				.system("system")
 				.value("value")
 				.build();
-		
-		printPrettyJson(cp);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cp));
 		assertThat(jsonPath.getString("id"), equalTo("element_id"));
@@ -406,8 +386,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.blob("blob".getBytes())
 			.build();
 		
-		printPrettyJson(signature);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(signature));
 		assertThat(jsonPath.getString("when"), equalTo("2018-03-23T07:49:40Z"));
 		assertThat(jsonPath.getString("whoUri"), equalTo("whoUri"));
@@ -438,8 +416,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.onBehalfOfUri(new Uri("onBehalfUri"))
 			.blob("blob".getBytes())
 			.build();
-		
-		printPrettyJson(signature);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(signature));
 		assertThat(jsonPath.getString("when"), equalTo("2018-03-23T07:49:40Z"));

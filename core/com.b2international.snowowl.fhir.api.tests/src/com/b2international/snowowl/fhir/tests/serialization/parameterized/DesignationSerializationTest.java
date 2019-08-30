@@ -60,8 +60,6 @@ public class DesignationSerializationTest extends FhirTest {
 		
 		Fhir fhirParameters = new Parameters.Fhir(designation);
 
-		printPrettyJson(fhirParameters);
-		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
 		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
