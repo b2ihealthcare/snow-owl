@@ -86,6 +86,17 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://b
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.19.0
+
+### Bugs/Improvements
+- [api] allow description reactivation with RETIRED (aka empty) inactivation indicator
+- [api] inactivate all language members when inactivating a SNOMED CT Description
+- [api] allow creating inactive concepts and descriptions
+- [export] avoid issues due to duplicate data during DSV export
+- [export] compare source and target effective dates of latest module dependencies when calculating effective time for RF2 export 
+- [validation] update snomed common rule 4's description
+- [classification] track redundant relationships as well in hasInferredChanges flag
+
 ## 6.18.0
 
 ### CIS

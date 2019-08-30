@@ -43,8 +43,6 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateRequest {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedDescriptionUpdateRequest.class);
-
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
 	private DescriptionInactivationIndicator inactivationIndicator;
@@ -149,7 +147,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			// Inactive --> Active: description reactivation, clear indicator and association targets
 			// (using default values at all times)
 
-			if (inactivationIndicator != null) {
+			if (inactivationIndicator != DescriptionInactivationIndicator.RETIRED && inactivationIndicator != null) {
 				throw new BadRequestException("Cannot reactivate description and retain or change its inactivation indicator at the same time.");
 			}
 			

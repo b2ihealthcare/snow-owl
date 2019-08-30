@@ -542,6 +542,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(String containerId) {
 		return SnomedRequests.prepareNewConcept()
+				.setActive(isActive())
 				.addMembers(getMembers())
 				.addRelationships(getRelationships())
 				.addDescriptions(getDescriptions())
