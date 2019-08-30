@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.fhir.tests;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
@@ -28,6 +25,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
@@ -42,30 +40,16 @@ public class FhirTest {
 	
 	protected static final String TEST_DATE_STRING = "2018-03-23T07:49:40+0000"; //$NON-NLS-N$
 	
-	protected static ObjectMapper objectMapper;
+	protected static final ObjectMapper objectMapper = new FhirApiConfig().objectMapper();
 	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 	
-	@BeforeClass
-	public static void setup() {
-		System.out.println(" --- Setting up object mapper --- ");
-		FhirApiConfig configuration = new FhirApiConfig();
-		objectMapper = configuration.objectMapper();
-	}
+	@Rule
+	public TestMethodNameRule methodNameRule = new TestMethodNameRule();
 	
 	@Rule 
 	public TestName testName = new TestName();
-	
-	@Before
-	public void dmdTestSetup() throws Exception {
-		System.out.println("--- Test method started: " + this.getClass().getSimpleName() + ":" + testName.getMethodName() + " ---");
-	}
-
-	@After
-	public void dmdTearDown() throws Exception {
-		System.out.println("--- Test method completed: " + this.getClass().getSimpleName() + ":" + testName.getMethodName() + " ---\n");
-	}
 	
 	protected void printPrettyJson(Object object) throws Exception {
 		String result = objectMapper.writeValueAsString(object);

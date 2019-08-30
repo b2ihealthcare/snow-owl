@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.CodeSystemRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupFhirCodeSystemRestTest;
@@ -44,7 +43,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	
 	/*
 	 */
 	CodeSystemRestTest.class,
@@ -64,17 +62,11 @@ public class AllFhirRestTests {
 	/**
 	 * Execute the tests with this rule if the dataset needs to be imported
 	 */
-	//@ClassRule
-	public static final RuleChain appRule = RuleChain
-		.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllFhirRestTests.class, "fhir-configuration.yml")))
-		.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
-		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-		.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
-	
 	@ClassRule
-	public static final RuleChain appRuleWithDB = RuleChain
-		.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllFhirRestTests.class, "fhir-configuration.yml")))
+	public static final RuleChain appRule = RuleChain
+		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(true))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-		.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
+		.around(new BundleStartRule("com.b2international.snowowl.fhir.api"))
+		.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL));
 	
 }
