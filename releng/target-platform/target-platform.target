@@ -7,6 +7,12 @@
 		<repository location="http://download.eclipse.org/eclipse/updates/4.12/R-4.12-201906051800/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+		<repository location="https://dist.springsource.org/release/GRECLIPSE/e4.12"/>
+		<unit id="org.codehaus.groovy.eclipse.feature.feature.group" version="3.4.0.v201906292136-e1906-RELEASE"/>
+		<unit id="org.codehaus.groovy.headless.feature.feature.group" version="3.4.0.v201906292136-e1906-RELEASE"/>
+		<unit id="org.codehaus.groovy24.feature.feature.group" version="3.4.0.v201906292136-e1906-RELEASE"/>
+	</location>
+	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.net4j.feature.group" version="4.7.0.v20180530-1201"/>
 		<unit id="org.eclipse.net4j.util.feature.group" version="4.7.0.v20180530-0909"/>
 		<repository location="http://download.eclipse.org/modeling/emf/cdo/drops/R20180613-0111/"/>
