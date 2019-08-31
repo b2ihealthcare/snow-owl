@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.typedproperty.DateProperty;
@@ -71,8 +72,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 	@Test
 	public void dateTypedPropertyTest() throws Exception {
 		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_SHORT_FORMAT);
-		Date date = df.parse(TEST_DATE_STRING);
+		Date date = Dates.parse(TEST_DATE_STRING, FhirConstants.DATE_SHORT_FORMAT);
 
 		final class TestClass {
 			
@@ -84,15 +84,14 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		TestClass testObject = new TestClass();
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
-		assertThat(jsonPath.getString("valueDate"), equalTo("2018-03-22T23:00:00+0000"));
+		assertThat(jsonPath.getString("valueDate"), equalTo("2018-03-23T00:00:00+0000"));
 		
 	}
 	
 	@Test
 	public void dateTimeTypedPropertyTest() throws Exception {
 		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-		Date date = df.parse(TEST_DATE_STRING);
+		Date date = Dates.parse(TEST_DATE_STRING, FhirConstants.DATE_TIME_FORMAT);
 
 		final class TestClass {
 			
@@ -110,8 +109,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 	@Test
 	public void instantTypedPropertyTest() throws Exception {
 		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-		Date date = df.parse(TEST_DATE_STRING);
+		Date date = Dates.parse(TEST_DATE_STRING, FhirConstants.DATE_TIME_FORMAT);
 		Instant instant = Instant.builder().instant(date).build();
 
 		final class TestClass {
