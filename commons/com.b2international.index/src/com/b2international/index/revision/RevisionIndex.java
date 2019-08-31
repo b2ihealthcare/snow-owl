@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	String REV_RANGE = "...";
 
 	/**
-	 * Single character that when put at the end of the branchPath along with a full timestamp modified the scope of the search operation to search at
+	 * Single character that when put at the end of the branchPath along with a full timestamp modifies the scope of the search operation to search at
 	 * the specified timestamp from the branch's perspective than search from the current HEAD. Negative timestamps throw
 	 * {@link IllegalArgumentException}.
 	 * <p>

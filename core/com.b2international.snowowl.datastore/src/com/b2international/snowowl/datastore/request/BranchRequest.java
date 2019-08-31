@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,9 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	
 	private Branch ensureAvailability(RepositoryContext context) {
 		final List<String> branchesToCheck = newArrayList();
-		if (RevisionIndex.isBaseRefPath(branchPath)) {
+		if (RevisionIndex.isBranchAtPath(branchPath)) {
+			branchesToCheck.add(branchPath.split(RevisionIndex.AT_CHAR)[0]);
+		} else if (RevisionIndex.isBaseRefPath(branchPath)) {
 			branchesToCheck.add(branchPath.substring(0, branchPath.length() - 1));
 		} else if (RevisionIndex.isRevRangePath(branchPath)) {
 			branchesToCheck.addAll(ImmutableList.copyOf(RevisionIndex.getRevisionRangePaths(branchPath)));
