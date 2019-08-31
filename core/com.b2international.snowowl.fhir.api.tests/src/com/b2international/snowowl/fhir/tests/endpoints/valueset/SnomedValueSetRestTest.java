@@ -60,7 +60,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
 			.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
 			.body("resource.status", equalTo("active"))
-			.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId+ "'}.resource.compose[0].include[0]")
+			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId+ "'}.resource.compose[0].include[0]")
 			.body("system", equalTo(SnomedUri.SNOMED_BASE_URI_STRING))
 			.body("filter.size()", equalTo(1))
 			.body("filter[0].property", equalTo("expression"))

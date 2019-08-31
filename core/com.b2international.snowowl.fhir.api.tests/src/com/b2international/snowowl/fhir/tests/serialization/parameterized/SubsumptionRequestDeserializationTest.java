@@ -58,13 +58,13 @@ public class SubsumptionRequestDeserializationTest extends FhirTest {
 					+ "{\"name\":\"system\",\"valueUri\":\"http://snomed.info/sct\"},"
 					+ "{\"name\":\"codingA\", \"valueCoding\":"
 							+ "{\"code\":\"1234\","
-							+ "\"system\":\"http://snomed.info/sct\","
-							+ "\"version\":\"20180131\",\"userSelected\":false}"
+							+ "\"system\":\"http://snomed.info/sct/version/20180131\","
+							+ "\"userSelected\":false}"
 						+ "},"
 					+ "{\"name\":\"codingB\", \"valueCoding\":"
 						+ "{\"code\":\"5678\","
-						+ "\"system\":\"http://snomed.info/sct\","
-						+ "\"version\":\"20180131\",\"userSelected\":false}"
+						+ "\"system\":\"http://snomed.info/sct/version/20180131\","
+						+ "\"userSelected\":false}"
 					+ "}"
 				+ "]}";
 		
@@ -75,6 +75,5 @@ public class SubsumptionRequestDeserializationTest extends FhirTest {
 		assertEquals("http://snomed.info/sct", request.getSystem());
 		assertEquals("1234", request.getCodingA().getCodeValue());
 		assertEquals("5678", request.getCodingB().getCodeValue());
-		assertEquals("20180131", request.getCodingA().getVersion());
 	}
 }

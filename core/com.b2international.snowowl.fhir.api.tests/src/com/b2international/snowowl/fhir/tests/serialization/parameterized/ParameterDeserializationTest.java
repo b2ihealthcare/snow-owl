@@ -105,8 +105,8 @@ public class ParameterDeserializationTest extends FhirTest {
 		String jsonParam = "{\"resourceType\":\"Parameters\","
 				+ "\"parameter\":["
 						+ "{\"name\":\"use\", \"valueCoding\":{\"code\":\"1234\","
-							+ "\"system\":\"http://snomed.info/sct\","
-							+ "\"version\":\"20180131\",\"userSelected\":false}"
+							+ "\"system\":\"http://snomed.info/sct/version/20180131\","
+							+ "\"userSelected\":false}"
 					+ "}]}";
 		
 		Fhir fhirParameters = objectMapper.readValue(jsonParam, Parameters.Fhir.class);
@@ -122,8 +122,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		Coding coding = (Coding) parameter.getValue();
 		
 		assertEquals("1234", coding.getCodeValue());
-		assertEquals("http://snomed.info/sct", coding.getSystemValue());
-		assertEquals("20180131", coding.getVersion());
+		assertEquals("http://snomed.info/sct/version/20180131", coding.getSystemValue());
 		assertEquals(false, coding.isUserSelected());
 	}
 	
@@ -182,16 +181,15 @@ public class ParameterDeserializationTest extends FhirTest {
 		String jsonParam = "{\"resourceType\":\"Parameters\","
 				+ "\"parameter\":["
 					+ "{\"name\":\"code\",\"valueCode\":\"1234\"},"
-					+ "{\"name\":\"system\",\"valueUri\":\"http://snomed.info/sct\"},"
-					+ "{\"name\":\"version\",\"valueString\":\"20180131\"},"
+					+ "{\"name\":\"system\",\"valueUri\":\"http://snomed.info/sct/version/20180131\"},"
 					+ "{\"name\":\"date\",\"valueDateTime\":\"2018-03-09T20:50:21+0100\"},"
 					+ "{\"name\":\"displayLanguage\",\"valueCode\":\"us-en\"},"
 					+ "{\"name\":\"property\",\"valueCode\":\"prop1\"},"
 					+ "{\"name\":\"property\",\"valueCode\":\"prop2\"},"
 					+ "{\"name\":\"coding\", \"valueCoding\":"
 							+ "{\"code\":\"1234\","
-							+ "\"system\":\"http://snomed.info/sct\","
-							+ "\"version\":\"20180131\",\"userSelected\":false}}"
+							+ "\"system\":\"http://snomed.info/sct/version/20180131\","
+							+ "\"userSelected\":false}}"
 					+ "]}";
 		
 		//Magic to turn the FHIR params -> Parameters -> LookupRequest
@@ -199,8 +197,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		LookupRequest lookupRequest = objectMapper.convertValue(fhirParameters.toJson(), LookupRequest.class);
 		
 		assertEquals("1234", lookupRequest.getCode());
-		assertEquals("http://snomed.info/sct", lookupRequest.getSystem());
-		assertEquals("20180131", lookupRequest.getVersion());
+		assertEquals("http://snomed.info/sct/version/20180131", lookupRequest.getSystem());
 		
 		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
 		assertEquals(df.parse("2018-03-09T20:50:21+0100"), lookupRequest.getDate());
@@ -209,8 +206,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		
 		Coding coding = lookupRequest.getCoding();
 		assertEquals("1234", coding.getCodeValue());
-		assertEquals("http://snomed.info/sct", coding.getSystemValue());
-		assertEquals("20180131", coding.getVersion());
+		assertEquals("http://snomed.info/sct/version/20180131", coding.getSystemValue());
 		assertEquals(false, coding.isUserSelected());
 		
 		assertFalse(lookupRequest.getProperties().isEmpty());

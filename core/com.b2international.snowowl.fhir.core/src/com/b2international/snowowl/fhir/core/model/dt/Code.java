@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model.dt;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -37,7 +38,12 @@ public class Code {
 	private String codeValue;
 
 	@JsonCreator
-	public Code(String codeValue) {
+	public static final Code valueOf(String value) {
+		return new Code(value);
+	}
+	
+	@JsonCreator
+	public Code(@JsonProperty("codeValue") String codeValue) {
 		this.codeValue = codeValue;
 	}
 

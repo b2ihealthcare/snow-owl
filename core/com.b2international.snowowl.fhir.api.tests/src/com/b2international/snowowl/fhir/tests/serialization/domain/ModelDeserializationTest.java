@@ -46,14 +46,13 @@ public class ModelDeserializationTest extends FhirTest {
 	public void codingTest() throws Exception {
 		
 		String jsonCoding = "{\"code\":\"1234\","
-				+ "\"system\":\"http://snomed.info/sct\","
-				+ "\"version\":\"20180131\",\"userSelected\":false}";
+				+ "\"system\":\"http://snomed.info/sct/version/20180131\","
+				+ "\"userSelected\":false}";
 		
 		Coding coding = objectMapper.readValue(jsonCoding, Coding.class);
 		
 		Assert.assertEquals(new Code("1234"), coding.getCode());
-		Assert.assertEquals(new Uri("http://snomed.info/sct"), coding.getSystem());
-		Assert.assertEquals("20180131", coding.getVersion());
+		Assert.assertEquals(new Uri("http://snomed.info/sct/version/20180131"), coding.getSystem());
 	}
 	
 	@Test

@@ -19,10 +19,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import io.swagger.annotations.ApiModel;
 
@@ -38,6 +41,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel
 @JsonInclude(Include.NON_NULL)
+@JsonDeserialize(builder = Coding.Builder.class)
 public class Coding {
 	
 	public static final Coding CODING_SUBSETTED = Coding.builder()
@@ -54,27 +58,28 @@ public class Coding {
 	
 	private String version;
 	
-	@JsonProperty("userSelected")
-	private Boolean isUserSelected;
+	private Boolean userSelected;
 	
 	private String display;
 
-	//Jackson ObjectMapper
-	@SuppressWarnings("unused")
-	private Coding() {}
-	
 	/**
 	 * @param code
 	 * @param system
 	 * @param version
-	 * @param isUserSelected
+	 * @param userSelected
 	 * @param display
 	 */
-	Coding(Code code, Uri system, String version, Boolean isUserSelected, String display) {
+	@JsonCreator
+	Coding(
+		@JsonProperty("code") Code code, 
+		@JsonProperty("system") Uri system, 
+		@JsonProperty("version") String version, 
+		@JsonProperty("userSelected") Boolean userSelected, 
+		@JsonProperty("display") String display) {
 		this.code = code;
 		this.system = system;
 		this.version = version;
-		this.isUserSelected = isUserSelected;
+		this.userSelected = userSelected;
 		this.display = display;
 	}
 
@@ -117,10 +122,10 @@ public class Coding {
 	}
 
 	/**
-	 * @return the isUserSelected
+	 * @return the userSelected
 	 */
 	public Boolean isUserSelected() {
-		return isUserSelected;
+		return userSelected;
 	}
 
 	/**
@@ -136,7 +141,7 @@ public class Coding {
 		int result = 1;
 		result = prime * result + ((code == null) ? 0 : code.hashCode());
 		result = prime * result + ((display == null) ? 0 : display.hashCode());
-		result = prime * result + ((isUserSelected == null) ? 0 : isUserSelected.hashCode());
+		result = prime * result + ((userSelected == null) ? 0 : userSelected.hashCode());
 		result = prime * result + ((system == null) ? 0 : system.hashCode());
 		result = prime * result + ((version == null) ? 0 : version.hashCode());
 		return result;
@@ -161,10 +166,10 @@ public class Coding {
 				return false;
 		} else if (!display.equals(other.display))
 			return false;
-		if (isUserSelected == null) {
-			if (other.isUserSelected != null)
+		if (userSelected == null) {
+			if (other.userSelected != null)
 				return false;
-		} else if (!isUserSelected.equals(other.isUserSelected))
+		} else if (!userSelected.equals(other.userSelected))
 			return false;
 		if (system == null) {
 			if (other.system != null)
@@ -192,12 +197,13 @@ public class Coding {
 		return true;
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<Coding> {
 		
 		private Code code;
 		private Uri system;
 		private String version;
-		private Boolean isUserSelected;
+		private Boolean userSelected;
 		private String display;
 
 		public Builder code(final String code) {
@@ -215,8 +221,8 @@ public class Coding {
 			return this;
 		}
 
-		public Builder isUserSelected(final boolean isUserSelected) {
-			this.isUserSelected = isUserSelected;
+		public Builder userSelected(final boolean userSelected) {
+			this.userSelected = userSelected;
 			return this;
 		}
 
@@ -226,15 +232,20 @@ public class Coding {
 		}
 		
 		@Override
+		public Coding build() {
+			return super.build();
+		}
+		
+		@Override
 		protected Coding doBuild() {
-			return new Coding(code, system, version, isUserSelected, display);
+			return new Coding(code, system, version, userSelected, display);
 		}
 		
 	}
 	
 	@Override
 	public String toString() {
-		return "Coding [code=" + code + ", systemUri=" + system + ", version=" + version + ", isUserSelected=" + isUserSelected + ", display="
+		return "Coding [code=" + code + ", systemUri=" + system + ", version=" + version + ", userSelected=" + userSelected + ", display="
 				+ display + "]";
 	}
 
