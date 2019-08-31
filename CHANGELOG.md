@@ -1,6 +1,54 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.1.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 7.1.0 (from any previous 6.x or 7.x version).
+
+#### Upgrade to Java 11
+
+Starting from `7.1.0`, Snow Owl requires Java 11 both compile and runtime as minimum Java version (see https://jdk.java.net/archive/ for OpenJDK downloads).
+
+#### Changes from 6.x stream since 7.0.0 release
+
+All changes happened on the 6.x stream (between `6.10.0` and `6.19.0`) has been merged into the `7.1.0` release.
+Major breaking changes that require `reindex` of any currently used 7.0.x dataset:
+- Concrete Domain Reference Set Member changes from #288 (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.11.0)
+- SNOMED CT Query Language Support (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.12.0)
+- OWL Axiom support (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.14.0)
+
+#### Packaging and platform changes
+
+Due to the move to Java 11, Snow Owl can no longer depend on `Eclipse Virgo with Tomcat` server as OSGi container to provide its services and functionality.
+Instead, it builds upon a bare Equinox OSGi runtime (Eclipse 4.12, Equinox 3.18.0) running a Jetty (9.4.18) web server.
+This resulted in a much faster startup time and development of third party terminology plug-ins.
+
+#### Configuration changes
+
+Important configuration changes that require attention when migrating to Snow Owl 7.1.0:
+- Configuration key `snomed.ids` has been replaced with the new `cis` root configuration node (#379)
+- `snomed.language` configuration key has been removed. APIs, commands now accept a list of `locales` in preference order to compute display names/labels/etc. (2ef2a4a) 
+
+### CIS package and API
+- Snow Owl 7.1.0 introduces a partial support for the official CIS API
+ * See full release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.18.0)
+
+### FHIR
+- Supported FHIR API version has been upgraded to [FHIR 4.0.0](https://www.hl7.org/fhir/history.html)
+ * See additional documentation at the [FHIR API docs](http://localhost:8080/snowowl/fhir)
+
+### Debian
+- Snow Owl 7.1.0 adds support for Debian systems with a dedicated `.deb` package. Download it [here](TODO)
+
+### Dependencies
+- Bump Eclipse Platform to 4.12
+- Bump Jetty to 9.4.18
+- Bump Elasticsearch to 6.8.2
+- Bump Classgraph (formerly `fast-classpath-scanner`) to 4.8.43
+- Remove Virgo packaging and dependencies
+
 ## 7.0.0
 
 ### Breaking changes
@@ -16,7 +64,7 @@ MySQL RDBMS software requirement has been removed and Snow Owl no longer require
 Instead, Snow Owl requires only a single Elasticsearch cluster to operate on.
 
 #### Documentation
-The new improved and shiny Snow Owl 7.x documentation is available at `https://b2i.gitbook.io/snow-owl/`
+The new improved and shiny Snow Owl 7.x documentation is available at `https://docs.b2i.sg/snow-owl/`
 
 ### Added
 - FHIR v3.0.1 API support (https://www.hl7.org/fhir/http.html)
