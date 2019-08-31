@@ -27,7 +27,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
 import com.b2international.commons.CommonsActivator;
-import com.google.common.base.Stopwatch;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -46,7 +45,6 @@ public enum ClassPathScanner {
 
 	private ClassPathScanner() {
 		List<ClassLoader> classLoaders = newArrayList();
-		Stopwatch w = Stopwatch.createStarted();
 		for (Bundle bundle : CommonsActivator.getContext().getBundles()) {
 			if (SYSTEM_BUNDLE_ID  == bundle.getBundleId()) {
 				continue;
@@ -59,15 +57,15 @@ public enum ClassPathScanner {
 				}
 			}
 		}
-		w.reset().start();
 		
 		registry = new ClassGraph()
-				.disableRuntimeInvisibleAnnotations()
+				.enableAnnotationInfo()
+				.enableClassInfo()
 				.overrideClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]))
-				.enableAllInfo()
+				.ignoreParentClassLoaders()
+				.disableRuntimeInvisibleAnnotations()
+				.disableNestedJarScanning()
 				.scan();
-		
-		w.reset().start();
 		
 	}
 	
