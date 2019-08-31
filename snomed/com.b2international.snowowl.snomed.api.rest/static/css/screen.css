@@ -1680,7 +1680,6 @@
 .content
 {
 	overflow: hidden;
-	padding: 1em 1.25em;
 	background-color: #fff;
 }
 
@@ -1693,19 +1692,11 @@
 {
 	.content { padding: 2em 3em; }
 
-	.info
-	{
-		float: left;
-		width: 48%;
-		margin-right: 2%;
-		margin-bottom: 1em;
-	}
-
 	.container
 	{
-		float: left;
-		width: 50%;
+		width: 100%;
 		margin-bottom: 1em;
+		padding-top: 2em;
 	}
 
 }
