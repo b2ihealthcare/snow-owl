@@ -104,7 +104,7 @@ public class ApplicationContext {
 		if (instance == null) {
 			synchronized (ApplicationContext.class) {
 				if (instance == null) {
-					instance = new ApplicationContext();
+					instance = new ApplicationContext(); // lgtm[java/unsafe-double-checked-locking]
 				}
 			}
 		}

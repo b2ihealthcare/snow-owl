@@ -230,22 +230,8 @@ import com.google.common.collect.Lists;
 	}
 
 	/*sets the embedded flag if necessary*/
-	private void setEmbedded(final boolean embedded) {
-
-		if (null == this.embedded) {
-
-			synchronized (CDOConnectionManager.class) {
-
-				if (null == this.embedded) {
-
-					this.embedded = new AtomicBoolean(embedded);
-
-				}
-
-			}
-
-		}
-
+	private synchronized void setEmbedded(final boolean embedded) {
+		this.embedded = new AtomicBoolean(embedded);
 	}
 
 	@SuppressWarnings("unchecked")

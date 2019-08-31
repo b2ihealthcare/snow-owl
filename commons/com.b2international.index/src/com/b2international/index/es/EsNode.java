@@ -47,7 +47,7 @@ public final class EsNode extends Node {
 	private static final String CONFIG_FILE = "elasticsearch.yml";
 	private static final Logger LOG = LoggerFactory.getLogger("elastic.snowowl");
 	
-	private static EsNode INSTANCE;
+	private static volatile EsNode INSTANCE;
 
 	private final Path dataPath;
 	private final boolean persistent;
