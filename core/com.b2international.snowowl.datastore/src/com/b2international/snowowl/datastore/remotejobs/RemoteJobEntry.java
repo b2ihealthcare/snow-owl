@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,8 +73,17 @@ public final class RemoteJobEntry implements Serializable {
 		public static final String DELETED = "deleted";
 		public static final String USER = "user";
 		public static final String STATE = "state";
+		public static final String START_DATE = "startDate";
 		public static final String SCHEDULE_DATE = "scheduleDate";
 		public static final String PARAMETERS = "parameters";
+		public static final Set<String> SORT_FIELDS = ImmutableSet.of(
+			ID,
+			DELETED,
+			USER,
+			STATE,
+			START_DATE,
+			SCHEDULE_DATE
+		);
 	}
 	
 	public static class Expressions {
