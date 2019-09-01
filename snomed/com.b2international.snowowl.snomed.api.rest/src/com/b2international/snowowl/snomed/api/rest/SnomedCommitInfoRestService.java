@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -46,7 +46,7 @@ import io.swagger.annotations.ApiResponses;
 public class SnomedCommitInfoRestService extends AbstractRestService {
 
 	public SnomedCommitInfoRestService() {
-		super(Collections.emptySet());
+		super(Commit.Fields.ALL);
 	}
 	
 	@ApiOperation(
@@ -82,6 +82,22 @@ public class SnomedCommitInfoRestService extends AbstractRestService {
 			@RequestParam(value="expand", required=false)
 			final String expand,
 			
+			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false)
+			final String scrollKeepAlive,
+			
+			@ApiParam(value = "A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false)
+			final String scrollId,
+			
+			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false)
+			final String searchAfter,
+			
+			@ApiParam(value="Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sort,
+			
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
@@ -94,8 +110,12 @@ public class SnomedCommitInfoRestService extends AbstractRestService {
 					.filterByComment(comment)
 					.filterByBranches(branch)
 					.filterByTimestamp(timestamp)
-					.setLimit(limit)
 					.setExpand(expand)
+					.setScroll(scrollKeepAlive)
+					.setScrollId(scrollId)
+					.setSearchAfter(searchAfter)
+					.setLimit(limit)
+					.sortBy(extractSortFields(sort))
 					.build(repositoryId)
 					.execute(bus));
 	}

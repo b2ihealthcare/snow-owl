@@ -24,6 +24,7 @@ import static com.b2international.index.query.Expressions.matchTextPhrase;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -40,6 +41,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -195,6 +197,8 @@ public final class Commit implements WithScore {
 		public static final String GROUP_ID = "groupId";
 		private static final String DETAILS_OBJECT = "details.objects";
 		private static final String DETAILS_COMPONENT = "details.components";
+		// Sort keys
+		public static final Set<String> ALL = ImmutableSet.of(BRANCH, AUTHOR, TIMESTAMP);
 	}
 
 	private final String id;
