@@ -12,7 +12,7 @@ SNOMED CT API endpoints currently have version **v3**. You have to explicitly se
 
     GET /snomed-ct/v3/branches
 
-## Available resources
+## Available resources and services
 
 * [Branching](./branching.md)
 * [Compare](./compare.md)

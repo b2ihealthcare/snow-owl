@@ -2,3 +2,4 @@ redirects:
   api/snomed: docs/api/snomed/index.md
   api/core: docs/api/admin/index.md
   api/fhir: docs/api/fhir/index.md
+  api/cis: docs/api/cis/index.md
