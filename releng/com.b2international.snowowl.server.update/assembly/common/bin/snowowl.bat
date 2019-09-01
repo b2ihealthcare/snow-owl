@@ -16,6 +16,7 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Declipse.ignoreApp=true
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.noShutdown=true
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Declipse.application.launchDefault=false
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.configuration.area="%CONFIG_AREA%"
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.console.port=2501
 
 REM Parallel classloader configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.classloader.type=nonparallel
@@ -23,14 +24,14 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+AlwaysLockClassLoader
 
 REM Jetty configuration 
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.port=8080
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.home.bundle=org.eclipse.jetty.osgi.boot
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog
 
 REM GC configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+UseConcMarkSweepGC
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:CMSInitiatingOccupancyFraction=75
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+UseCMSInitiatingOccupancyOnly
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
+
+REM Misc configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
 
 REM Run Snow Owl

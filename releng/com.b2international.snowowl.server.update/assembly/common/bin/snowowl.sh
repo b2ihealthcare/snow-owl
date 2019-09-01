@@ -58,10 +58,9 @@ SO_JAVA_OPTS="-Xms6g \
                 -Dosgi.noShutdown=true \
                 -Declipse.application.launchDefault=false \
                 -Dosgi.classloader.type=nonparallel \
+                -Dosgi.console.port=2501 \
                 -XX:+AlwaysLockClassLoader \
                 -Djetty.port=8080 \
-                -Djetty.home.bundle=org.eclipse.jetty.osgi.boot \
-                -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog \
                 -XX:+UseConcMarkSweepGC \
                 -XX:CMSInitiatingOccupancyFraction=75 \
                 -XX:+UseCMSInitiatingOccupancyOnly \
