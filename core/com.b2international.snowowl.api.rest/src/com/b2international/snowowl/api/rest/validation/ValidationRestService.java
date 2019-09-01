@@ -232,10 +232,6 @@ public class ValidationRestService extends AbstractRestService {
 			@PathVariable(value="validationId")
 			final String validationId,
 		
-			@ApiParam(value="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false)   
-			final int limit,
-			
 			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
 			@RequestParam(value="scrollKeepAlive", required=false) 
 			final String scrollKeepAlive,
@@ -247,6 +243,10 @@ public class ValidationRestService extends AbstractRestService {
 			@ApiParam(value="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
+			
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false)   
+			final int limit,
 			
 			@ApiIgnore
 			@RequestHeader(value=HttpHeaders.ACCEPT, defaultValue=AbstractRestService.JSON_MEDIA_TYPE,  required=false)
