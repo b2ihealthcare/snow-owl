@@ -64,7 +64,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 	
 	@ApiOperation(
 		value = "Create a new branch", 
-		notes = "Create a new branch in the SNOMED-CT repository.")
+		notes = "Create a new branch in the SNOMED CT repository.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
 		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
@@ -87,7 +87,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 	
 	@ApiOperation(
 		value = "Retrieve all branches", 
-		notes = "Returns all SNOMED-CT branches from the repository.")
+		notes = "Returns all SNOMED CT branches from the repository.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
@@ -101,28 +101,43 @@ public class SnomedBranchingRestService extends AbstractRestService {
 			@RequestParam(value="name", required=false)
 			final String[] names,
 			
-			@ApiParam(value="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit,
+			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false)
+			final String scrollKeepAlive,
+			
+			@ApiParam(value = "A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false)
+			final String scrollId,
+			
+			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false)
+			final String searchAfter,
 			
 			@ApiParam(value="Sort keys")
 			@RequestParam(value="sort", required=false)
-			final List<String> sortKeys) {
+			final List<String> sort,
+			
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false) 
+			final int limit) {
 		return DeferredResults.wrap(
 				RepositoryRequests
 					.branching()
 					.prepareSearch()
-					.setLimit(limit)
 					.filterByParent(parents == null ? null : ImmutableList.copyOf(parents))
 					.filterByName(names == null ? null : ImmutableList.copyOf(names))
-					.sortBy(extractSortFields(sortKeys))
+					.sortBy(extractSortFields(sort))
+					.setSearchAfter(searchAfter)
+					.setScrollId(scrollId)
+					.setScroll(scrollKeepAlive)
+					.setLimit(limit)
 					.build(repositoryId)
 					.execute(bus));
 	}
 	
 	@ApiOperation(
 		value = "Retrieve children of a single branch", 
-		notes = "Returns the children of a single SNOMED-CT branch (both direct and transitive).")
+		notes = "Returns the children of a single SNOMED CT branch (both direct and transitive).")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class),
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
@@ -141,7 +156,7 @@ public class SnomedBranchingRestService extends AbstractRestService {
 	
 	@ApiOperation(
 		value = "Retrieve a single branch", 
-		notes = "Returns a SNOMED-CT branch.")
+		notes = "Returns a SNOMED CT branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
