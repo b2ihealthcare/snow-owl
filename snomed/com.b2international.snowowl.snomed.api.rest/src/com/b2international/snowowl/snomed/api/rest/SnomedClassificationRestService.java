@@ -109,16 +109,35 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="userId", required=false) 
 			final String userId,
 			
+			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false)
+			final String scrollKeepAlive,
+			
+			@ApiParam(value = "A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false)
+			final String scrollId,
+			
+			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false)
+			final String searchAfter,
+			
 			@ApiParam(value="Sort keys")
 			@RequestParam(value="sort", required=false)
-			final List<String> sortKeys) {
+			final List<String> sort,
+			
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false) 
+			final int limit) {
 
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchClassification()
-			.all()
 			.filterByBranch(branch)
 			.filterByUserId(userId)
 			.filterByStatus(status)
-			.sortBy(extractSortFields(sortKeys))
+			.sortBy(extractSortFields(sort))
+			.setScroll(scrollKeepAlive)
+			.setScrollId(scrollId)
+			.setSearchAfter(searchAfter)
+			.setLimit(limit)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(bus));
 	}
@@ -188,16 +207,35 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@PathVariable(value="classificationId") 
 			final String classificationId,
 			
+			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false)
+			final String scrollKeepAlive,
+			
+			@ApiParam(value = "A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false)
+			final String scrollId,
+			
+			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false)
+			final String searchAfter,
+			
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false) 
+			final int limit,
+			
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchEquivalentConceptSet()
-				.all()
 				.filterByClassificationId(classificationId)
 				.setExpand("equivalentConcepts(expand(pt()))")
 				.setLocales(extendedLocales)
+				.setScroll(scrollKeepAlive)
+				.setScrollId(scrollId)
+				.setSearchAfter(searchAfter)
+				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus));
 	}
@@ -222,10 +260,18 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="expand", required=false)
 			final String expand,
 
-			@ApiParam(value="The search key")
-			@RequestParam(value="searchAfter", required=false) 
+			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false)
+			final String scrollKeepAlive,
+			
+			@ApiParam(value = "A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false)
+			final String scrollId,
+			
+			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
-
+			
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
@@ -240,6 +286,8 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchRelationshipChange()
 				.filterByClassificationId(classificationId)
 				.setExpand(expandWithRelationship)
+				.setScroll(scrollKeepAlive)
+				.setScrollId(scrollId)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
