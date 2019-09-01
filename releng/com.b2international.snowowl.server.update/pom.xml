@@ -20,19 +20,6 @@
 		<linux.product.path>${so.products.directory}/linux/gtk/x86_64/${product.rootFolder}</linux.product.path>
 	</properties>
 	
-	<dependencies>
-		<dependency>
-  			<groupId>org.apache.sshd</groupId>
-  			<artifactId>sshd-core</artifactId>
-  			<version>0.14.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.semanticweb.elk</groupId>
-			<artifactId>elk-protege</artifactId>
-			<version>${elk.version}</version>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<finalName>snow-owl-oss-${build.version}</finalName>
 		<plugins>
