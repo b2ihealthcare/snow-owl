@@ -119,8 +119,6 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 				} else if (Acceptability.PREFERRED == params.getAcceptability()) {
 					req.filterByPreferredIn(extendedLocales);
 				}
-			} else {
-				req.filterByLanguageRefSets(extendedLocales);
 			}
 		} else {
 			if (params.getLanguageRefSet() != null) {
