@@ -10,6 +10,7 @@ The Snow Owl terminology server's FHIR API release includes support for the foll
 
 * [CodeSystem API](./codesystems.md)
 * [ValueSet API](./valuesets.md)
+* [ConceptMap API](./conceptmaps.md)
 
 #Implementation
 
