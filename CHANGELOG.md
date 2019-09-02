@@ -14,7 +14,7 @@ Starting from `7.1.0`, Snow Owl requires Java 11 both compile and runtime as min
 #### Changes from 6.x stream since 7.0.0 release
 
 All changes happened on the 6.x stream (between `6.10.0` and `6.19.0`) has been merged into the `7.1.0` release.
-Major breaking changes that require `reindex` of any currently used 7.0.x dataset:
+Major breaking changes that require a full RF2 re-import of any existing 7.0.x data:
 - Concrete Domain Reference Set Member changes from #288 (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.11.0)
 - SNOMED CT Query Language Support (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.12.0)
 - OWL Axiom support (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.14.0)
@@ -32,15 +32,15 @@ Important configuration changes that require attention when migrating to Snow Ow
 - `snomed.language` configuration key has been removed. APIs, commands now accept a list of `locales` in preference order to compute display names/labels/etc. (2ef2a4a) 
 
 ### CIS package and API
-- Snow Owl 7.1.0 introduces a partial support for the official CIS API
+- Snow Owl 7.1.0 introduces partial support for the [official CIS API](https://github.com/IHTSDO/component-identifier-service)
  * See full release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.18.0)
 
 ### FHIR
 - Supported FHIR API version has been upgraded to [FHIR 4.0.0](https://www.hl7.org/fhir/history.html)
- * See additional documentation at the [FHIR API docs](http://localhost:8080/snowowl/fhir)
+ * See additional documentation at the [FHIR API docs](http://docs.b2i.sg/snow-owl/api/fhir)
 
 ### Debian
-- Snow Owl 7.1.0 adds support for Debian systems with a dedicated `.deb` package. Download it [here](TODO)
+- Snow Owl 7.1.0 adds support for Debian systems with a dedicated `.deb` package.
 
 ### Dependencies
 - Bump Eclipse Platform to 4.12
