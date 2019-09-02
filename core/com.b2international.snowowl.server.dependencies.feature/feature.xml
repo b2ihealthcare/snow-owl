@@ -347,7 +347,7 @@ Visit us at http://b2i.sg
          id="org.objectweb.asm"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="7.1.0.v20190412-2143"
          unpack="false"/>
 
    <plugin
@@ -459,14 +459,14 @@ Visit us at http://b2i.sg
          id="org.apache.httpcomponents.httpclient"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.5.3"
          unpack="false"/>
 
    <plugin
          id="org.apache.httpcomponents.httpcore"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.4.10"
          unpack="false"/>
 
    <plugin
@@ -620,7 +620,7 @@ Visit us at http://b2i.sg
          id="org.objectweb.asm.tree"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="7.1.0.v20190412-2143"
          unpack="false"/>
 
    <plugin
@@ -697,7 +697,7 @@ Visit us at http://b2i.sg
          id="org.apache.httpcomponents.httpasyncclient"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.4"
          unpack="false"/>
 
    <plugin
