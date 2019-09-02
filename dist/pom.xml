@@ -152,6 +152,24 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>com.b2international.snowowl.snomed.cis</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>com.b2international.snowowl.snomed.cis.product</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>com.b2international.snowowl.snomed.cis.rest</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.snomed.common</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
@@ -171,6 +189,18 @@
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.snomed.fhir</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>com.b2international.snowowl.snomed.icons</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>com.b2international.snowowl.snomed.ql</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -296,7 +326,7 @@
 									<additionalArgument>${javadoc-args}</additionalArgument>
 									<additionalArgument>
 										-link
-										http://docs.oracle.com/javase/8/docs/api/
+										https://docs.oracle.com/en/java/javase/11/docs/api/index.html
 									</additionalArgument>
 									<additionalArgument>-quiet</additionalArgument>
 									<additionalArgument>-windowtitle "Snow Owl"</additionalArgument>
@@ -326,7 +356,7 @@
 									<additionalArgument>${javadoc-args}</additionalArgument>
 									<additionalArgument>
 										-link
-										http://docs.oracle.com/javase/8/docs/api/
+										https://docs.oracle.com/en/java/javase/11/docs/api/index.html
 									</additionalArgument>
 									<additionalArgument>-quiet</additionalArgument>
 									<additionalArgument>-windowtitle "Snow Owl Scripting API"</additionalArgument>
