@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.server.product;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.SnowOwl;
 
@@ -44,8 +45,13 @@ public class ServerProductActivator implements BundleActivator {
 	 */
 	@Override
 	public void start(BundleContext context) throws Exception {
-		ServerProductActivator.bundleContext = context;
-		snowowl = SnowOwl.create().bootstrap().run();
+		try {
+			ServerProductActivator.bundleContext = context;
+			snowowl = SnowOwl.create().bootstrap().run();
+		} catch (Throwable e) {
+			LoggerFactory.getLogger("snowowl").error(e.getMessage(), e);
+			System.exit(-1);
+		}
 	}
 
 	/*
