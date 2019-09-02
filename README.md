@@ -34,7 +34,7 @@ Features include:
 * [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.1.0/snow-owl-oss-7.1.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.1.0/snow-owl-oss-7.1.0.zip.sha512)
 * [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.1.0/snow-owl-oss-7.1.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.1.0/snow-owl-oss-7.1.0.tar.gz.sha512) 
 * [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.1.0/snow-owl-oss-7.1.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.1.0/snow-owl-oss-7.1.0.rpm.sha512)
-* DEB (Coming soon!)
+* [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.1.0/snow-owl-oss-7.1.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.1.0/snow-owl-oss-7.1.0.deb.sha512)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
@@ -46,7 +46,7 @@ Not the version you're looking for? View [past releases](https://github.com/b2ih
 
 ### Install and Run
 
-NOTE: You need to have a recent version of Java installed (Java 8 update 171 or newer).
+NOTE: You need to have a recent version of Java installed (Java 11+, https://jdk.java.net/archive/).
 
 Once you have downloaded the appropriate package:
 
@@ -81,7 +81,7 @@ These instructions will get Snow Owl up and running on your local machine for de
 
 ## Prerequisites
 
-Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi). To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
+Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
 * Use latest Eclipse IDE for Eclipse Committers package: http://www.eclipse.org/downloads/eclipse-packages/
 
 Required Eclipse plug-ins (install the listed features via `Help` -> `Install New Software...`):
@@ -89,9 +89,9 @@ Required Eclipse plug-ins (install the listed features via `Help` -> `Install Ne
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
 * Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
-  * MWE 2 language SDK 2.9.0 (MWE)
-  * Xtend IDE 2.11.0 (Xtext)
-  * Xtext Complete SDK 2.11.0 (Xtext)
+  * MWE 2 language SDK 2.10.0 (MWE)
+  * Xtend IDE 2.18.0 (Xtext)
+  * Xtext Complete SDK 2.18.0 (Xtext)
 * Maven integration (http://download.eclipse.org/technology/m2e/releases) 
  
 ### Eclipse Preferences
