@@ -3,6 +3,14 @@ rem Snow Owl Windows startup script
 
 if "%OS%" == "Windows_NT" setlocal
 
+rem Derive full path for script (includes trailing backslash)
+  set SCRIPT_DIR=%~dp0
+
+rem Derive KERNEL_HOME full path from script's parent (no backslash)
+  for %%I in ("%SCRIPT_DIR%..") do set KERNEL_HOME=%%~fsI 
+
+set CONFIG_AREA=%KERNEL_HOME%/work
+
 REM Heap settings
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Xms6g
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Xmx6g
@@ -35,4 +43,6 @@ REM Misc configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
 
 REM Run Snow Owl
-"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar ..\plugins\org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar 
+PUSHD %KERNEL_HOME%
+"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.400.v20190515-0925.jar
+POPD

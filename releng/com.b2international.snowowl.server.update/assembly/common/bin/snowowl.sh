@@ -20,8 +20,6 @@ KERNEL_HOME=`dirname "$SCRIPT"`/..
 # make KERNEL_HOME absolute
 KERNEL_HOME=`cd "$KERNEL_HOME"; pwd`
 
-echo $KERNEL_HOME
-
 shopt -s extglob
 
 # start the kernel
@@ -68,9 +66,12 @@ SO_JAVA_OPTS="-Xms6g \
                 -Djdk.security.defaultKeySize=DSA:1024 \
                 $SO_JAVA_OPTS"
 
-cd "$KERNEL_HOME";
-exec "$JAVA_EXECUTABLE $SO_JAVA_OPTS \
+pushd "$KERNEL_HOME"
+
+exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
   -Dosgi.configuration.area="$CONFIG_AREA" \
-  -jar plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar"
+  -jar plugins/org.eclipse.equinox.launcher_1.5.400.v20190515-0925.jar
+
+popd
