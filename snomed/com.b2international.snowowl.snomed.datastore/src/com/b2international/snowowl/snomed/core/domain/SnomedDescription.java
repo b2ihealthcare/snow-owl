@@ -275,6 +275,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(final String conceptId) {
 		return SnomedRequests.prepareNewDescription()
+			.setActive(isActive())
 			.setAcceptability(getAcceptabilityMap())
 			.setCaseSignificance(getCaseSignificance())
 			// ensure that the description's conceptId property is the right one
