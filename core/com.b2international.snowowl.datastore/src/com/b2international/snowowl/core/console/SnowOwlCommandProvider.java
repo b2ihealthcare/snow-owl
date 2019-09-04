@@ -174,6 +174,9 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 		
 		@Override
 		public void println(Object o) {
+			if (o instanceof Throwable) {
+				interpreter.printStackTrace((Throwable) o);
+			}
 			interpreter.println(o);
 		}
 		
