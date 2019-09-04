@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,13 +57,6 @@ public interface IComponent extends Serializable {
 	 */
 	Boolean isReleased();
 
-	/**
-	 * @deprecated - figure out how to remove storage key from domain representation classes, currently required for CDO object lookups on
-	 *             server/client side
-	 */
-	@JsonIgnore
-	long getStorageKey();
-	
 	/**
 	 * Returns a {@link ComponentIdentifier} instance to identify this component using its {@link #getTerminologyComponentId() type} and {@link #getId() id}.
 	 * @return
