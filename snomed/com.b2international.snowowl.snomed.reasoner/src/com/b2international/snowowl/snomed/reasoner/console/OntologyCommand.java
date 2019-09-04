@@ -39,7 +39,7 @@ import picocli.CommandLine.HelpCommand;
 		OntologyCommand.ListCommand.class
 	}
 )
-public class OntologyCommand extends Command {
+public final class OntologyCommand extends Command {
 
 	@Override
 	public void run(CommandLineStream out) {
