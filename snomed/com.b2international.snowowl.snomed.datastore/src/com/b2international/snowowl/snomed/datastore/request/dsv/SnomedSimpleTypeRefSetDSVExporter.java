@@ -438,7 +438,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							concept.getRelationships()
 									.stream()
 									.filter(r -> typeId.equals(r.getTypeId()) && r.getGroup() == propertyGroup
-												&& (r.getCharacteristicType().equals(CharacteristicType.ADDITIONAL_RELATIONSHIP) 
+												&& (CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType()) 
 													|| CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType())))
 									.forEach(relationship -> {
 										addCells(dataRow, occurrences, includeRelationshipId, ImmutableMap.of(relationship.getDestinationId(), getPreferredTerm(relationship.getDestination())));
