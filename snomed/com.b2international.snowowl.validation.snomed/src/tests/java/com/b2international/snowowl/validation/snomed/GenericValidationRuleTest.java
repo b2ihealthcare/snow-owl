@@ -18,6 +18,9 @@ package com.b2international.snowowl.validation.snomed;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
+
+import java.util.UUID;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
@@ -25,21 +28,27 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * 
@@ -172,65 +181,118 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	public void ruleSnomedCommon4() throws Exception {
 		final String ruleId = "snomed-common-4";
 		indexRule(ruleId);
-
+		
+		SnomedReferenceSet refset = new SnomedReferenceSet();
+		refset.setActive(true);
+		refset.setStorageKey(nextStorageKey());
+		refset.setType(SnomedRefSetType.LANGUAGE);
+		refset.setReferencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION);
+		
+		SnomedConceptDocument languageRefset = concept(generateConceptId()).refSet(refset)
+				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT)))
+				.build();
+		
 		// index concept with two FSNs in the same language refset
 		String concept1Id = generateConceptId();
 		SnomedDescriptionIndexEntry fsn1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 1 (tag)")
 				.conceptId(concept1Id)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.activeMemberOf(ImmutableSet.of(languageRefset.getId()))
+				.acceptability(languageRefset.getId(), Acceptability.PREFERRED)
 				.build();
-		indexRevision(MAIN, nextStorageKey(), fsn1);
+		SnomedRefSetMemberIndexEntry fsn1Member = member(UUID.randomUUID().toString(), fsn1.getId(), DESCRIPTION_NUMBER, languageRefset.getId())
+					.active(true)
+					.referenceSetType(SnomedRefSetType.LANGUAGE)
+					.build();
 		SnomedDescriptionIndexEntry fsn2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 2 (tag)")
 				.conceptId(concept1Id)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.activeMemberOf(ImmutableSet.of(languageRefset.getId()))
+				.acceptability(languageRefset.getId(), Acceptability.PREFERRED)
+				.build();		
+		SnomedRefSetMemberIndexEntry fsn2Member = member(UUID.randomUUID().toString(), fsn2.getId(), DESCRIPTION_NUMBER, languageRefset.getId())
+				.active(true)
+				.referenceSetType(SnomedRefSetType.LANGUAGE)
 				.build();
-		indexRevision(MAIN, nextStorageKey(), fsn2);
 		SnomedConceptDocument c1 = concept(concept1Id)
 				.preferredDescriptions(ImmutableList.of(
-						new SnomedDescriptionFragment(fsn1.getId(), fsn1.getStorageKey(), fsn1.getTypeId(), fsn1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
-						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getStorageKey(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)))
+						new SnomedDescriptionFragment(fsn1.getId(), fsn1.getStorageKey(), fsn1.getTypeId(), fsn1.getTerm(), languageRefset.getId()),
+						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getStorageKey(), fsn2.getTypeId(), fsn2.getTerm(), languageRefset.getId())))
 				.build();
-		indexRevision(MAIN, nextStorageKey(), c1);
-
+		
 		// index concept with two PTs in the same language refset
 		String concept2Id = generateConceptId();
 		SnomedDescriptionIndexEntry pt1 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 1")
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.activeMemberOf(ImmutableSet.of(languageRefset.getId()))
+				.acceptability(languageRefset.getId(), Acceptability.PREFERRED)
 				.conceptId(concept2Id)
 				.build();
-		indexRevision(MAIN, nextStorageKey(), pt1);
+		SnomedRefSetMemberIndexEntry pt1Member = member(UUID.randomUUID().toString(), pt1.getId(), DESCRIPTION_NUMBER, languageRefset.getId())
+				.active(true)
+				.referenceSetType(SnomedRefSetType.LANGUAGE)
+				.build();
 		SnomedDescriptionIndexEntry pt2 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 2")
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.activeMemberOf(ImmutableSet.of(languageRefset.getId()))
+				.acceptability(languageRefset.getId(), Acceptability.PREFERRED)
 				.conceptId(concept2Id)
 				.build();
-		indexRevision(MAIN, nextStorageKey(), pt2);
+		SnomedRefSetMemberIndexEntry pt2Member = member(UUID.randomUUID().toString(), pt2.getId(), DESCRIPTION_NUMBER, languageRefset.getId())
+				.active(true)
+				.referenceSetType(SnomedRefSetType.LANGUAGE)
+				.build();
 		SnomedConceptDocument c2 = concept(concept2Id)
 				.preferredDescriptions(
 						ImmutableList.of(
-								new SnomedDescriptionFragment(pt1.getId(), pt1.getStorageKey(), pt1.getTypeId(), pt1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
-								new SnomedDescriptionFragment(pt2.getId(), pt2.getStorageKey(), pt2.getTypeId(), pt2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)))
+								new SnomedDescriptionFragment(pt1.getId(), pt1.getStorageKey(), pt1.getTypeId(), pt1.getTerm(), languageRefset.getId()),
+								new SnomedDescriptionFragment(pt2.getId(), pt2.getStorageKey(), pt2.getTypeId(), pt2.getTerm(), languageRefset.getId())))
 				.build();
-		indexRevision(MAIN, nextStorageKey(), c2);
-
+		
 		// index concept with only one PT and one FSN in a given language refset
 		String concept3Id = generateConceptId();
 		SnomedDescriptionIndexEntry fsn3 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 3 (tag)")
 				.conceptId(concept3Id)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.activeMemberOf(ImmutableSet.of(languageRefset.getId()))
+				.acceptability(languageRefset.getId(), Acceptability.PREFERRED)
 				.build();
-		indexRevision(MAIN, nextStorageKey(), fsn3);
+		SnomedRefSetMemberIndexEntry fsn3Member = member(UUID.randomUUID().toString(), fsn3.getId(), DESCRIPTION_NUMBER, languageRefset.getId())
+				.active(true)
+				.referenceSetType(SnomedRefSetType.LANGUAGE)
+				.build();
 		SnomedDescriptionIndexEntry pt3 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 3")
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.activeMemberOf(ImmutableSet.of(languageRefset.getId()))
+				.acceptability(languageRefset.getId(), Acceptability.PREFERRED)
 				.conceptId(concept3Id)
 				.build();
-		indexRevision(MAIN, nextStorageKey(), pt3);
+		SnomedRefSetMemberIndexEntry pt3Member = member(UUID.randomUUID().toString(), pt3.getId(), DESCRIPTION_NUMBER, languageRefset.getId())
+				.active(true)
+				.referenceSetType(SnomedRefSetType.LANGUAGE)
+				.build();
 		SnomedConceptDocument c3 = concept(concept3Id)
 				.preferredDescriptions(ImmutableList.of(
-						new SnomedDescriptionFragment(fsn3.getId(), fsn3.getStorageKey(), fsn3.getTypeId(), fsn3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
-						new SnomedDescriptionFragment(pt3.getId(), pt3.getStorageKey(), pt3.getTypeId(), pt3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)
+						new SnomedDescriptionFragment(fsn3.getId(), fsn3.getStorageKey(), fsn3.getTypeId(), fsn3.getTerm(), languageRefset.getId()),
+						new SnomedDescriptionFragment(pt3.getId(), pt3.getStorageKey(), pt3.getTypeId(), pt3.getTerm(), languageRefset.getId())
 						))
 				.build();
-		indexRevision(MAIN, nextStorageKey(), c3);
+		
+		index().write(MAIN, currentTime(), writer -> {
+			writer.put(nextStorageKey(), languageRefset);
+			writer.put(nextStorageKey(), fsn1);
+			writer.put(nextStorageKey(), fsn2);
+			writer.put(nextStorageKey(), c1);
+			writer.put(nextStorageKey(), pt1);
+			writer.put(nextStorageKey(), pt2);
+			writer.put(nextStorageKey(), c2);
+			writer.put(nextStorageKey(), fsn3);
+			writer.put(nextStorageKey(), pt3);
+			writer.put(nextStorageKey(), c3);
+			writer.put(nextStorageKey(), fsn1Member);
+			writer.put(nextStorageKey(), fsn2Member);
+			writer.put(nextStorageKey(), fsn3Member);
+			writer.put(nextStorageKey(), pt1Member);
+			writer.put(nextStorageKey(), pt2Member);
+			writer.put(nextStorageKey(), pt3Member);
+			
+			writer.commit();
+			return null;
+		});
 		
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c1.getId()),
