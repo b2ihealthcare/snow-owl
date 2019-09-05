@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.19.0
+
+### Bugs/Improvements
+- [api] allow description reactivation with RETIRED (aka empty) inactivation indicator
+- [api] inactivate all language members when inactivating a SNOMED CT Description
+- [api] allow creating inactive concepts and descriptions
+- [export] avoid issues due to duplicate data during DSV export
+- [export] compare source and target effective dates of latest module dependencies when calculating effective time for RF2 export 
+- [validation] update snomed common rule 4's description
+- [classification] track redundant relationships as well in hasInferredChanges flag
+
 ## 6.18.0
 
 ### CIS

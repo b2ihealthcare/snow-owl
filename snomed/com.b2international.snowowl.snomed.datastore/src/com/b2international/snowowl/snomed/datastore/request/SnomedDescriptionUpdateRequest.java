@@ -18,9 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.Concept;
@@ -31,7 +28,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -41,8 +37,6 @@ import com.google.common.collect.Multimap;
  * @since 4.5
  */
 public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateRequest {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedDescriptionUpdateRequest.class);
 
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
@@ -139,7 +133,6 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			description.setActive(false);
 			updateInactivationIndicator(context, newIndicator);
 			updateAssociationTargets(context, newAssociationTargets);
-			setAcceptability(ImmutableMap.of());
 			return true;
 			
 		} else if (!currentStatus && newStatus) {
@@ -147,7 +140,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			// Inactive --> Active: description reactivation, clear indicator and association targets
 			// (using default values at all times)
 
-			if (inactivationIndicator != null) {
+			if (inactivationIndicator != DescriptionInactivationIndicator.RETIRED && inactivationIndicator != null) {
 				throw new BadRequestException("Cannot reactivate description and retain or change its inactivation indicator at the same time.");
 			}
 			
