@@ -7,7 +7,7 @@ rem Derive full path for script (includes trailing backslash)
   set SCRIPT_DIR=%~dp0
 
 rem Derive KERNEL_HOME full path from script's parent (no backslash)
-  for %%I in ("%SCRIPT_DIR%..") do set KERNEL_HOME=%%~fsI 
+  for %%I in ("%SCRIPT_DIR%..") do set KERNEL_HOME=%%~fsI
 
 set CONFIG_AREA=%KERNEL_HOME%/work
 
