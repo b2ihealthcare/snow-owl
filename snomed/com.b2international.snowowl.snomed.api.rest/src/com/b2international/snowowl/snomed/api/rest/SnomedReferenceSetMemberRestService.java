@@ -38,16 +38,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.AcceptHeader;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
-
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
@@ -60,7 +52,6 @@ import com.b2international.snowowl.snomed.api.rest.request.RequestResolver;
 import com.b2international.snowowl.snomed.api.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
@@ -123,24 +114,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				.setLocales(extendedLocales)
 				.sortBy(extractSortFields(params.getSort()));
 		
-		OptionsBuilder propFilter = Options.builder();
-		if (!CompareUtils.isEmpty(params.getTargetComponent())) {
-			propFilter.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, params.getTargetComponent());
-		}
-		if (params.getOwlExpression() != null && !CompareUtils.isEmpty(params.getOwlExpression().getConceptId())) {
-			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID, params.getOwlExpression().getConceptId());
-		}
-		if (params.getOwlExpression() != null && !CompareUtils.isEmpty(params.getOwlExpression().getDestinationId())) {
-			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_DESTINATIONID, params.getOwlExpression().getDestinationId());
-		}
-		if (params.getOwlExpression() != null && !CompareUtils.isEmpty(params.getOwlExpression().getTypeId())) {
-			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_TYPEID, params.getOwlExpression().getTypeId());
-		}
-		if (params.getOwlExpression() != null && params.getOwlExpression().getGci() != null) {
-			propFilter.put(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_GCI, params.getOwlExpression().getGci());
-		}
-		
-		Options propFilters = propFilter.build();
+		Options propFilters = params.toPropsFilter();
 		if (!propFilters.isEmpty()) {
 			req.filterByProps(propFilters);
 		}
