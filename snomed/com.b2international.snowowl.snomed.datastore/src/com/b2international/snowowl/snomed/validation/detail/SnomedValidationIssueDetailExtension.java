@@ -118,9 +118,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					);
 					
 					queryBuilder.filter(effectiveTimeExpression);
-				} else {
-					queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(0L, Long.MAX_VALUE));
-				}
+				} 
 
 			} else if (contentTypeFilter != null && !contentTypeFilter) {
 				// unpublished only 
