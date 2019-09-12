@@ -19,4 +19,4 @@ Export-Package: org.mapdb,
  org.mapdb.serializer,
  org.mapdb.volume
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.jetbrains.kotlin.osgi-bundle;bundle-version="1.2.51"
+Require-Bundle: org.jetbrains.kotlin.osgi-bundle;bundle-version="1.2.71"
