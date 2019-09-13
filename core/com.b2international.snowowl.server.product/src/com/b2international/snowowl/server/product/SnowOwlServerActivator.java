@@ -17,6 +17,7 @@ package com.b2international.snowowl.server.product;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.SnowOwl;
@@ -48,6 +49,20 @@ public class SnowOwlServerActivator implements BundleActivator {
 		try {
 			SnowOwlServerActivator.bundleContext = context;
 			snowowl = SnowOwl.create().bootstrap().run();
+			Thread hook = new Thread() {
+	            @Override
+	            public void run() {
+	                try {
+	                    Framework systemBundle = context.getBundle(0).adapt(Framework.class);
+	                    systemBundle.stop();
+	                    systemBundle.waitForStop(60000);
+	                } catch (Exception e) {
+	                    System.err.println("Failed to cleanly shutdown OSGi Framework: " + e.getMessage());
+	                    e.printStackTrace();
+	                }
+	            }
+	        };
+	        Runtime.getRuntime().addShutdownHook(hook);
 		} catch (Throwable e) {
 			LoggerFactory.getLogger("snowowl").error(e.getMessage(), e);
 			System.exit(-1);
