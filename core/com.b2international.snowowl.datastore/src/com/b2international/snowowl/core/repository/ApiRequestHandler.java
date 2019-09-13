@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events.util;
+package com.b2international.snowowl.core.repository;
 
 import org.eclipse.emf.common.util.WrappedException;
 
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -43,7 +44,15 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 	public final void handle(IMessage message) {
 		try {
 			final Request<ServiceProvider, ?> req = message.body(Request.class, classLoader);
-			message.reply(new MonitoredRequest<>(req).execute(context));
+			message.reply(
+				// monitor each request execution
+				new MonitoredRequest<>(
+					// authorize each request execution
+					new AuthorizedRequest<>(
+						// additional middlewares go here
+						req
+					)
+				).execute(context));
 		} catch (WrappedException e) {
 			message.fail(e.getCause());
 		} catch (ApiException e) {
