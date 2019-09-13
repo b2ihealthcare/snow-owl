@@ -56,7 +56,7 @@ SO_JAVA_OPTS="-Xms6g \
                 -Dosgi.noShutdown=true \
                 -Declipse.application.launchDefault=false \
                 -Dosgi.classloader.type=nonparallel \
-                -Dosgi.console.port=2501 \
+                -Dosgi.console=2501 \
                 -XX:+AlwaysLockClassLoader \
                 -Djetty.port=8080 \
                 -XX:+UseConcMarkSweepGC \
