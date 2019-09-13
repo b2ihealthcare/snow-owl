@@ -21,7 +21,6 @@ REM Equinox Config
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -server
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djava.awt.headless=true
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.noShutdown=true
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Declipse.application.launchDefault=false
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.configuration.area="%CONFIG_AREA%"
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.console=2501
 

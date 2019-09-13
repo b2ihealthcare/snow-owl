@@ -53,7 +53,6 @@ SO_JAVA_OPTS="-Xms6g \
                 -server \
                 -Djava.awt.headless=true \
                 -Dosgi.noShutdown=true \
-                -Declipse.application.launchDefault=false \
                 -Dosgi.classloader.type=nonparallel \
                 -Dosgi.console=2501 \
                 -XX:+AlwaysLockClassLoader \
