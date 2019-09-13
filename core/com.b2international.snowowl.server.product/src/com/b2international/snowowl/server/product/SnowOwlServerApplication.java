@@ -19,9 +19,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.slf4j.LoggerFactory;
-
-import com.b2international.snowowl.core.SnowOwl;
 
 /**
  * @since 7.2
@@ -30,26 +27,15 @@ public class SnowOwlServerApplication implements IApplication {
 
 	private final CountDownLatch latch = new CountDownLatch(1);
 
-	private SnowOwl snowowl;
-
 	@Override
 	public Object start(IApplicationContext context) throws Exception {
-		try {
-			snowowl = SnowOwl.create().bootstrap().run();
-			context.applicationRunning();
-			latch.await();
-		} catch (Throwable e) {
-			LoggerFactory.getLogger("snowowl").error(e.getMessage(), e);
-			return -1;
-		}
+		context.applicationRunning();
+		latch.await();
 		return IApplication.EXIT_OK;
 	}
 
 	@Override
 	public void stop() {
-		if (snowowl != null) {
-			snowowl.shutdown();
-		}
 		latch.countDown();
 	}
 
