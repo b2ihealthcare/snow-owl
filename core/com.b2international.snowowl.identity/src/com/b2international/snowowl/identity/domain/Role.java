@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,7 @@ import com.google.common.collect.ImmutableSet;
 public final class Role implements Serializable {
 	
 	public static final Role UNSPECIFIED = new Role("Unspecified", Collections.emptySet());
-	public static final Role ADMINISTRATOR = new Role("Administrator", ImmutableSet.of(
-		new Permission(PermissionIdConstant.BROWSE),
-		new Permission(PermissionIdConstant.EDIT),
-		new Permission(PermissionIdConstant.EXPORT),
-		new Permission(PermissionIdConstant.IMPORT),
-		new Permission(PermissionIdConstant.VERSION),
-		new Permission(PermissionIdConstant.PROMOTE)
-	));
+	public static final Role ADMINISTRATOR = new Role("Administrator", ImmutableSet.of(new Permission(Permission.ALL, Permission.ALL, "")));
 	
 	private static final long serialVersionUID = 1601508745318826995L;
 
