@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.eventbus;
 
+import java.util.Map;
+
 /**
  * Represents a message to be send/receive over/from the {@link IEventBus}.
  *
@@ -31,6 +33,12 @@ public interface IMessage {
 	 * Tag for response messages.
 	 */
 	String REPLY_TAG = "reply";
+	
+	/**
+	 * @return the current headers {@link Map} or an empty {@link Map}.
+	 * @since 7.2
+	 */
+	Map<String, String> headers();
 
 	/**
 	 * Returns the body of this {@link IMessage}, can be used for simple types

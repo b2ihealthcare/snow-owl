@@ -47,7 +47,7 @@ public class PipeTest extends AbstractEventBusTest {
 		target.registerHandler(ADDRESS, new CountDownHandler(SEND_MESSAGE, targetLatch));
 		bus.registerHandler(ADDRESS, new Pipe(target, ADDRESS));
 		
-		bus.send(ADDRESS, SEND_MESSAGE);
+		bus.send(ADDRESS, SEND_MESSAGE, null);
 		
 		wait(targetLatch);
 	}
@@ -66,7 +66,7 @@ public class PipeTest extends AbstractEventBusTest {
 		});
 		bus.registerHandler(ADDRESS, new Pipe(target, ADDRESS));
 		
-		bus.send(ADDRESS, SEND_MESSAGE, new CountDownHandler(REPLY_MESSAGE, sourceLatch));
+		bus.send(ADDRESS, SEND_MESSAGE, null, new CountDownHandler(REPLY_MESSAGE, sourceLatch));
 		
 		wait(targetLatch);
 		wait(sourceLatch);
@@ -105,8 +105,8 @@ public class PipeTest extends AbstractEventBusTest {
 		 */
 		setWaitTime(1);
 		
-		target.send("work-address", new Object());
-		bus.send(ADDRESS, SEND_MESSAGE, new CountDownHandler(REPLY_MESSAGE, sourceLatch));
+		target.send("work-address", new Object(), null);
+		bus.send(ADDRESS, SEND_MESSAGE, null, new CountDownHandler(REPLY_MESSAGE, sourceLatch));
 		
 		wait(targetLatch);
 		wait(sourceLatch);
