@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,11 @@ import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiErrorException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.exceptions.RequestTimeoutException;
+import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -55,6 +57,20 @@ public class ControllerExceptionMapper {
 	public @ResponseBody RestApiError handle(final Exception ex) {
 		LOG.error("Exception during processing of a request", ex);
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.UNAUTHORIZED)
+	public @ResponseBody RestApiError handle(final UnauthorizedException ex) {
+		final ApiError err = ex.toApiError();
+		return RestApiError.of(err).build(HttpStatus.UNAUTHORIZED.value());
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	public @ResponseBody RestApiError handle(final ForbiddenException ex) {
+		final ApiError err = ex.toApiError();
+		return RestApiError.of(err).build(HttpStatus.FORBIDDEN.value());
 	}
 	
 	@ExceptionHandler

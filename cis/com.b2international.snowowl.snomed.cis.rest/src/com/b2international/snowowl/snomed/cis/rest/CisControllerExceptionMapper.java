@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.cis.rest.exceptions.UnauthorizedException;
+import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.snomed.cis.rest.model.CisError;
 import com.fasterxml.jackson.databind.JsonMappingException;
 

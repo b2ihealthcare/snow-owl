@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.cis.rest.exceptions;
-
-import com.b2international.commons.exceptions.ApiException;
+package com.b2international.commons.exceptions;
 
 /**
- * @since 
+ * @since 7.2
  */
 public final class UnauthorizedException extends ApiException {
 
-	private static final long serialVersionUID = 6433172801706150706L;
-
+	public UnauthorizedException(String message) {
+		super(message);
+	}
+	
 	public UnauthorizedException(String message, Object...args) {
 		super(message, args);
 	}
