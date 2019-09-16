@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,22 @@
  */
 package com.b2international.snowowl.test.commons;
 
+import java.util.Base64;
+
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
+import com.b2international.snowowl.core.authorization.AuthorizedRequest;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 3.3
  */
 public class Services {
 
-	private Services() {
-	}
+	private static IEventBus bus;
 
 	/**
 	 * Returns a must have service from the {@link ApplicationContext}.
@@ -33,6 +40,15 @@ public class Services {
 	 */
 	public static <T> T service(Class<T> type) {
 		return ApplicationContext.getInstance().getServiceChecked(type);
+	}
+	
+	public static IEventBus bus() {
+		if (bus == null) {
+			final String userPass = String.join(":", RestExtensions.USER, RestExtensions.PASS);
+			final String authorizationToken = new String(Base64.getEncoder().encode(userPass.getBytes()), Charsets.UTF_8);
+			bus = new AuthorizedEventBus(ApplicationContext.getServiceForClass(IEventBus.class), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, "Basic " + authorizationToken));
+		}
+		return bus;
 	}
 
 }
