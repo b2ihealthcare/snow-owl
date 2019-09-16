@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.events;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -30,11 +31,11 @@ import com.b2international.snowowl.eventbus.IMessage;
 public final class AsyncRequest<R> {
 
 	private final Request<ServiceProvider, R> request;
-
+	
 	public AsyncRequest(Request<ServiceProvider, R> request) {
 		this.request = request;
 	}
-	
+
 	/**
 	 * Executes the asynchronous request using the event bus passed in.
 	 * @param bus
@@ -44,7 +45,7 @@ public final class AsyncRequest<R> {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = request.getReturnType();
 		final ClassLoader classLoader = request.getClassLoader();
-		bus.send(Request.ADDRESS, request, Request.TAG, new IHandler<IMessage>() {
+		bus.send(Request.ADDRESS, request, Request.TAG, Collections.emptyMap(), new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
@@ -61,6 +62,9 @@ public final class AsyncRequest<R> {
 		return promise;
 	}
 	
+	/**
+	 * @return the underlying request to be sent asynchronously.
+	 */
 	public Request<ServiceProvider, R> getRequest() {
 		return request;
 	}

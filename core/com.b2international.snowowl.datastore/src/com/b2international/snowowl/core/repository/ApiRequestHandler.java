@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
+import com.b2international.snowowl.identity.IdentityProvider;
 
 /**
  * Generic Request handler class that handles all requests by executing them immediately.
@@ -44,11 +45,12 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 	public final void handle(IMessage message) {
 		try {
 			final Request<ServiceProvider, ?> req = message.body(Request.class, classLoader);
+			
 			message.reply(
 				// monitor each request execution
 				new MonitoredRequest<>(
 					// authorize each request execution
-					new AuthorizedRequest<>(
+					new AuthorizedRequest<>(message.headers(),
 						// additional middlewares go here
 						req
 					)

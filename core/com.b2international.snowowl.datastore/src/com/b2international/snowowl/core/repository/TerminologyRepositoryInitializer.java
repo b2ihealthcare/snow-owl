@@ -64,8 +64,8 @@ public abstract class TerminologyRepositoryInitializer {
 					.setRepositoryUuid(context.id())
 					.setBranchPath(Branch.MAIN_PATH)
 					.build(context.id(), Branch.MAIN_PATH, User.SYSTEM.getUsername(), "Create primary code system for repository")
-					.execute(context.service(IEventBus.class))
-					.getSync();
+					.getRequest()
+					.execute(context);
 			}
 		}
 	}

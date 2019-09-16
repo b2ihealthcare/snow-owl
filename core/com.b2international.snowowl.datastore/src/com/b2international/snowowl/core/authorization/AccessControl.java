@@ -15,29 +15,18 @@
  */
 package com.b2international.snowowl.core.authorization;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.identity.domain.Permission;
 
 /**
- * Annotation to categorize a {@link Request} implementation into a authorizable operation.
+ * Represents an authorization context where a permission is required to get access.
  * 
  * @since 7.2
  */
-@Documented
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Operation {
+public interface AccessControl {
 
 	/**
-	 * @return the operation name from {@link Permission} class's constant list
+	 * @return the {@link Permission} required to access/execute/etc. this object.
 	 */
-	String value();
-	
+	Permission getPermission();
+
 }
