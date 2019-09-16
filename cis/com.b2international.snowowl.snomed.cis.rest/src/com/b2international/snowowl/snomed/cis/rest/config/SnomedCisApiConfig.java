@@ -45,9 +45,12 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
+import com.b2international.snowowl.identity.JWTGenerator;
 import com.b2international.snowowl.snomed.cis.rest.CisAuthenticationProvider;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -133,7 +136,7 @@ public class SnomedCisApiConfig extends WebMvcConfigurerAdapter {
 	
 	@Bean
 	public CisAuthenticationProvider authenticationProvider() {
-		return new CisAuthenticationProvider(identityProvider(), UUID.randomUUID().toString());
+		return new CisAuthenticationProvider(identityProvider(), jwtGenerator(), jwtVerifier());
 	}
 	
 	@Bean
@@ -144,6 +147,16 @@ public class SnomedCisApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public IdentityProvider identityProvider() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class); 
+	}
+	
+	@Bean
+	public JWTVerifier jwtVerifier() {
+		return ApplicationContext.getInstance().getServiceChecked(JWTVerifier.class);
+	}
+	
+	@Bean
+	public JWTGenerator jwtGenerator() {
+		return ApplicationContext.getInstance().getServiceChecked(JWTGenerator.class);
 	}
 	
 	@Override

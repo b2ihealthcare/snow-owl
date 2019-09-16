@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/java-jwt-3.8.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-aop-4.3.22.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-beans-4.3.22.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-context-4.3.22.RELEASE.jar"/>

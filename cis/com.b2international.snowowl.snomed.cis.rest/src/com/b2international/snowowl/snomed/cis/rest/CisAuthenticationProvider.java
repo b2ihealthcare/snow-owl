@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.cis.rest;
 
-import java.util.Date;
+import java.util.Collections;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,13 +24,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.snomed.cis.rest.exceptions.UnauthorizedException;
+import com.b2international.snowowl.identity.JWTGenerator;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.cis.client.Credentials;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -40,15 +39,14 @@ import com.google.common.collect.ImmutableList;
  */
 public class CisAuthenticationProvider implements AuthenticationProvider {
 
-	private static final String ISSUER = "snow-owl";
-	
-	private final Algorithm algorithm;
 	private final IdentityProvider identityProvider;
-	private final long tokenTtl = 1 * 60 * 60 * 1000L;
+	private final JWTGenerator tokenGenerator;
+	private final JWTVerifier jwtVerifier;
 	
-	public CisAuthenticationProvider(IdentityProvider identityProvider, String secret) {
+	public CisAuthenticationProvider(IdentityProvider identityProvider, JWTGenerator tokenGenerator, JWTVerifier jwtVerifier) {
 		this.identityProvider = identityProvider;
-		this.algorithm = Algorithm.HMAC256(secret);
+		this.tokenGenerator = tokenGenerator;
+		this.jwtVerifier = jwtVerifier;
 	}
 	
 	@Override
@@ -74,10 +72,7 @@ public class CisAuthenticationProvider implements AuthenticationProvider {
 	
 	public String verify(String token) {
 		try {
-		    JWTVerifier verifier = JWT.require(algorithm)
-		        .withIssuer(ISSUER)
-		        .build(); //Reusable verifier instance
-		    return verifier.verify(token).getSubject();
+		    return jwtVerifier.verify(token).getSubject();
 		} catch (JWTVerificationException exception){
 		    // Invalid signature/claims
 			return null;
@@ -85,25 +80,12 @@ public class CisAuthenticationProvider implements AuthenticationProvider {
 	}
 
 	public String login(Credentials credentials) {
-		if (identityProvider.auth(credentials.getUsername(), credentials.getPassword())) {
-			return generateToken(credentials.getUsername());
+		User user = identityProvider.auth(credentials.getUsername(), credentials.getPassword());
+		if (user != null) {
+			return tokenGenerator.generate(credentials.getUsername(), Collections.emptyMap());
 		} else {
 			throw new UnauthorizedException("Incorrect username or password");
 		}
 	}
 
-	private String generateToken(String username) {
-		try {
-			final long now = System.currentTimeMillis();
-			return JWT.create()
-		        .withIssuer(ISSUER)
-		        .withSubject(username)
-		        .withIssuedAt(new Date())
-		        .withExpiresAt(new Date(now + tokenTtl))
-		        .sign(algorithm);
-		} catch (JWTCreationException e){
-			throw new RuntimeException(e);
-		}
-	}
-	
 }
