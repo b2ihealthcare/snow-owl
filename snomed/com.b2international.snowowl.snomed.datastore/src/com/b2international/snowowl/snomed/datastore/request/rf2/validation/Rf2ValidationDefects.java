@@ -22,7 +22,7 @@ public enum Rf2ValidationDefects {
 	
 	INCORRECT_COLUMN_NUMBER("Incorrect column number in release file"),
 	INVALID_ID("Component identifier is not of the expected type, malformed, or has an incorrect Verhoeff check digit."),
-	MISSING_DEPENDANT_ID("Component refers to a non-existing concept"),
+	MISSING_DEPENDANT_ID("Component refers to a non-existing"),
 	MODULE_CONCEPT_NOT_EXIST("Module concept does not exist"),
 	NOT_UNIQUE_DESCRIPTION_ID("Description identifier is not unique"),
 	CONCEPT_DEFINITION_STATUS_NOT_EXIST("Concept refers to a non-existing concept in column 'definitionStatusId'"),
