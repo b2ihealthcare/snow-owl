@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.identity;
 
+import java.util.Base64;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -25,12 +27,19 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
+import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.identity.domain.Users;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -49,8 +58,14 @@ public interface IdentityProvider {
 	IdentityProvider NOOP = new IdentityProvider() {
 		
 		@Override
-		public boolean auth(String username, String token) {
-			return true;
+		public User auth(String authorizationToken) {
+			// allow all tokens in unprotected mode
+			return User.SYSTEM;
+		}
+		
+		@Override
+		public User auth(String username, String password) {
+			return new User(username, ImmutableList.of(Role.ADMINISTRATOR));
 		}
 		
 		@Override
@@ -116,15 +131,48 @@ public interface IdentityProvider {
 	}
 	
 	/**
-	 * Authenticates the given user and his security token (eg. password, JWT, etc. depending on the implementation).
+	 * Authenticates an authorization token.
+	 * Supported formats are:
+	 * - Basic: Base64 encoded username:password
+	 * - Bearer: JWT token issued by Snow Owl
 	 * 
-	 * @param username
-	 *            - the user who would like to log in to the system
-	 * @param token
-	 *            - any kind of security token (simplest form is a password, but can be a JWT)
-	 * @return <code>true</code> if the user and his security token both valid, otherwise return <code>false</code>
+	 * @param authorizationToken - a supported security token
+	 * @return the {@link User} if the security token is valid otherwise return <code>null</code>
 	 */
-	boolean auth(String username, String token);
+	default User auth(String authorizationToken) {
+		final String[] parts = authorizationToken.trim().split(" ");
+		if (parts.length != 2) {
+			throw new UnauthorizedException("Incorrect authorization token");
+		}
+		switch (parts[0].toLowerCase()) {
+		case "basic":
+			final String decoded = new String(Base64.getDecoder().decode(parts[1]), Charsets.UTF_8);
+			final String[] base64Parts = decoded.split(":");
+			if (parts.length != 2) {
+				throw new UnauthorizedException("Incorrect username or password");
+			}
+			return auth(base64Parts[0], base64Parts[1]);
+		case "bearer":
+			try {
+				final DecodedJWT jwt = ApplicationContext.getServiceForClass(JWTVerifier.class).verify(parts[1]);
+				final String subject = jwt.getSubject();
+				final List<Permission> permissions = jwt.getClaim("").asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
+				return new User(subject, ImmutableList.of(new Role("oauth_scopes", permissions)));
+			} catch (JWTVerificationException e) {
+				throw new UnauthorizedException("Incorrect authorization token"); 
+			}
+		default: 
+			throw new UnauthorizedException("Incorrect authorization token");
+		}
+	}
+	
+	/**
+	 * Authenticates a username and password.
+	 * @param username - a username to use for authentication
+	 * @param password - the user's password to use for authentication
+	 * @return an authenticated {@link User} and its {@link Role}s or <code>null</code> if the username or password is incorrect.
+	 */
+	User auth(String username, String password);
 	
 	/**
 	 * Filters and return users based on the given filters. In case of no filters returns all users (paged response). 
