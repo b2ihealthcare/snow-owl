@@ -17,37 +17,52 @@ package com.b2international.snowowl.server.product;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.SnowOwl;
 
 /**
- * Server side Snow Owl product bootstraps and runs the entire headless server
- * application.
+ * Server side Snow Owl product bootstraps and runs the entire headless server application.
  * 
  */
-public class ServerProductActivator implements BundleActivator {
+public class SnowOwlServerActivator implements BundleActivator {
 
 	private static BundleContext bundleContext;
+	private static SnowOwl snowowl;
 
 	public static BundleContext getBundleContext() {
 		return bundleContext;
 	}
-
-	private SnowOwl snowowl;
+	
+	public static SnowOwl getSnowOwl() {
+		return snowowl;
+	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext
-	 * )
+	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	@Override
 	public void start(BundleContext context) throws Exception {
 		try {
-			ServerProductActivator.bundleContext = context;
+			SnowOwlServerActivator.bundleContext = context;
 			snowowl = SnowOwl.create().bootstrap().run();
+			Thread hook = new Thread() {
+	            @Override
+	            public void run() {
+	                try {
+	                    Framework systemBundle = context.getBundle(0).adapt(Framework.class);
+	                    systemBundle.stop();
+	                    systemBundle.waitForStop(60000);
+	                } catch (Exception e) {
+	                    System.err.println("Failed to cleanly shutdown OSGi Framework: " + e.getMessage());
+	                    e.printStackTrace();
+	                }
+	            }
+	        };
+	        Runtime.getRuntime().addShutdownHook(hook);
 		} catch (Throwable e) {
 			LoggerFactory.getLogger("snowowl").error(e.getMessage(), e);
 			System.exit(-1);
@@ -57,13 +72,12 @@ public class ServerProductActivator implements BundleActivator {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		snowowl.shutdown();
-		ServerProductActivator.bundleContext = null;
+		SnowOwlServerActivator.bundleContext = null;
 	}
 
 }

@@ -27,7 +27,7 @@
 		<groovy.version>2.4.17</groovy.version>
 		<commons.collections.version>3.2.2</commons.collections.version>
 		<commons.collections.versionRange>[3.2.2,3.3.0)</commons.collections.versionRange>
-		<kotlin.version>1.2.51</kotlin.version>
+		<kotlin.version>1.2.71</kotlin.version>
 		<protege.version>5.0.4-b2i</protege.version>
 		<owlapi.version>4.5.10</owlapi.version>
 		<elk.version>0.4.3</elk.version>
