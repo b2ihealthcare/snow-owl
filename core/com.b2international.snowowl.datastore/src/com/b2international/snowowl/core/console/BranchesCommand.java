@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.console;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -56,6 +57,7 @@ public final class BranchesCommand extends Command {
 			
 	@Override
 	public void run(CommandLineStream out) {
+		
 		if (isValidRepositoryName(repositoryId, out)) {
 			
 			if (!branchPath.startsWith(Branch.MAIN_PATH)) {
@@ -65,31 +67,38 @@ public final class BranchesCommand extends Command {
 			
 			
 			try {
+				
 				Branch parentBranch = RepositoryRequests.branching()
 						 			.prepareGet(branchPath)
 						 			.setExpand("children(direct:false)")
 						 			.build(repositoryId)
 						 			.execute(getBus())
 						 			.getSync(1, TimeUnit.MINUTES);
+				
 				out.println("Branch hierarchy for '%s' in repository '%s':", branchPath, repositoryId);
-				print(parentBranch, getDepthOfBranch(parentBranch), out);
+				
+				print(parentBranch, getDepthOfBranch(parentBranch), parentBranch.getChildren().getItems(), out);
+				
 			} catch (NotFoundException e) {
 				out.println("Unable to find branch '%s'", branchPath);
 				return;
 			}
 			
 		}
+		
 	}
 	
-	private void print(final Branch branch, final int parentDepth, CommandLineStream out) {
+	private void print(final Branch branch, final int parentDepth, List<Branch> children, CommandLineStream out) {
+		
 		printBranch(branch, getDepthOfBranch(branch) - parentDepth, out);
 		
-		branch.getChildren()
-			.stream()
+		children.stream()
+			.filter(child -> child.parentPath().equals(branch.path()))
 			.sorted((c1, c2) -> Longs.compare(c1.baseTimestamp(), c2.baseTimestamp()))
 			.forEach(child -> {
-				print(child, parentDepth, out);
+				print(child, parentDepth, children, out);
 			});
+		
 	}
 
 	private void printBranch(Branch branch, int depth, CommandLineStream out) {
