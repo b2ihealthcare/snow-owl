@@ -5,7 +5,8 @@ Bundle-SymbolicName: com.b2international.snowowl.identity.ldap
 Bundle-Version: 7.2.0.qualifier
 Fragment-Host: com.b2international.snowowl.identity
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Import-Package: javax.naming,
+Import-Package: com.fasterxml.jackson.annotation;version="2.9.9",
+ javax.naming,
  javax.naming.directory,
  javax.naming.ldap
 Automatic-Module-Name: com.b2international.snowowl.identity.ldap

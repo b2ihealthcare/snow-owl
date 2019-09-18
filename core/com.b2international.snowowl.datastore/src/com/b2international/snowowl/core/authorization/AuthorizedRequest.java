@@ -64,15 +64,15 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 			
 			// authorize user whether it is permitted to execute the operation or not
 			getNestedRequests()
-			.stream()
-			.filter(AccessControl.class::isInstance)
-			.map(AccessControl.class::cast)
-			.map(AccessControl::getPermission)
-			.forEach(permissionRequirement -> {
-				if (!user.hasPermission(permissionRequirement)) {
-					throw new ForbiddenException("Operation not permitted. '%s' permission is required.", permissionRequirement.getPermission());
-				}
-			});
+				.stream()
+				.filter(AccessControl.class::isInstance)
+				.map(AccessControl.class::cast)
+				.map(AccessControl::getPermission)
+				.forEach(permissionRequirement -> {
+					if (!user.hasPermission(permissionRequirement)) {
+						throw new ForbiddenException("Operation not permitted. '%s' permission is required.", permissionRequirement.getPermission());
+					}
+				});
 		}
 
 		// inject the User for later access
