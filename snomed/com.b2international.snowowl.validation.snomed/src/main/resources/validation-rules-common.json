@@ -36,6 +36,24 @@
     "implementation": "scripts/ruleSnomedCommon4.groovy"
   },
   {
+  	"id": "rule_definition_text_length",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Description term should not exceed the maximum amount of character length(4096)",
+    "severity": "WARNING",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule_definition_text_length.groovy"
+  },
+  {
+  	"id": "rule_fsn_synonym_length",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Description term should not exceed the maximum amount of character length(255)",
+    "severity": "WARNING",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule_fsn_synonym_length.groovy"
+  },
+  {
   	"id": "rule_mrcm_constraint",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationship target values must be consistent with MRCM.",
