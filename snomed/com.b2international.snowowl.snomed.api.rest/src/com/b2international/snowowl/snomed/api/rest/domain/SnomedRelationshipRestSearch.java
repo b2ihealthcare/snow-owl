@@ -18,59 +18,59 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import java.util.List;
 import java.util.Set;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 
 public final class SnomedRelationshipRestSearch {
 
-	@ApiParam(value = "The Relationship ID(s) to match")
+	@Parameter(description = "The Relationship ID(s) to match")
 	private Set<String> id;
 
-	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@ApiParam(value = "The status to match")
+	@Parameter(description = "The status to match")
 	private Boolean active;
 
-	@ApiParam(value = "The module identifier to match")
+	@Parameter(description = "The module identifier to match")
 	private String module;
 
-	@ApiParam(value = "The namespace to match")
+	@Parameter(description = "The namespace to match")
 	private String namespace;
 
-	@ApiParam(value = "The source concept to match")
+	@Parameter(description = "The source concept to match")
 	private String source;
 
-	@ApiParam(value = "The type concept to match")
+	@Parameter(description = "The type concept to match")
 	private String type;
 
-	@ApiParam(value = "The destination concept to match")
+	@Parameter(description = "The destination concept to match")
 	private String destination;
 
-	@ApiParam(value = "The characteristic type to match")
+	@Parameter(description = "The characteristic type to match")
 	private String characteristicType;
 
-	@ApiParam(value = "The group to match")
+	@Parameter(description = "The group to match")
 	private Integer group;
 
-	@ApiParam(value = "The union group to match")
+	@Parameter(description = "The union group to match")
 	private Integer unionGroup;
 
-	@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
+	@Parameter(description = "The scrollKeepAlive to start a scroll using this query")
 	private String scrollKeepAlive;
 
-	@ApiParam(value = "A scrollId to continue scrolling a previous query")
+	@Parameter(description = "A scrollId to continue scrolling a previous query")
 	private String scrollId;
 
-	@ApiParam(value = "The search key to use for retrieving the next page of results")
+	@Parameter(description = "The search key to use for retrieving the next page of results")
 	private String searchAfter;
 
-	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
+	@Parameter(description = "The maximum number of items to return")
 	private int limit = 50;
 
-	@ApiParam(value = "Expansion parameters")
+	@Parameter(description = "Expansion parameters")
 	private String expand;
 
-	@ApiParam(value = "Sort keys")
+	@Parameter(description = "Sort keys")
 	private List<String> sort;
 
 	public Set<String> getId() {

@@ -20,8 +20,7 @@ import java.util.Map;
 import com.b2international.commons.exceptions.ApiError;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * {@link RestApiError} represents a generic multi purpose user AND developer friendly error/exception representation, which should be used in all
@@ -29,22 +28,22 @@ import io.swagger.annotations.ApiModelProperty;
  * 
  * @since 3.7
  */
-@ApiModel("Error Response")
+//@ApiModel("Error Response")
 public class RestApiError implements ApiError {
 
-	@ApiModelProperty(required = true)
+	@Parameter(required = true)
 	private int status;
 
-	@ApiModelProperty(required = false)
+	@Parameter(required = false)
 	private Integer code;
 
-	@ApiModelProperty(required = true)
+	@Parameter(required = true)
 	private String message = "Request failed";
 
-	@ApiModelProperty(required = true)
+	@Parameter(required = true)
 	private String developerMessage;
 
-	@ApiModelProperty(required = false, hidden = true)
+	@Parameter(required = false, hidden = true)
 	private Map<String, Object> additionalInformation;
 
 	private RestApiError() {

@@ -24,20 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
@@ -51,16 +40,16 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 1.0
  */
-@Api(value = "Relationships", description="Relationships", tags = { "relationships" })
+@Tag(name = "relationships", description="Relationships")
 @RestController
 @RequestMapping(value = "/{path:**}/relationships")		
 public class SnomedRelationshipRestService extends AbstractRestService {
@@ -69,28 +58,29 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 		super(SnomedRelationship.Fields.ALL);
 	}
 	
-	@ApiOperation(
-			value="Retrieve Relationships from a branch", 
-			notes="Returns a list with all/filtered Relationships from a branch."
-					+ "<p>The following properties can be expanded:"
-					+ "<p>"
-					+ "&bull; type() &ndash; the relationship's type concept<br>"
-					+ "&bull; source() &ndash; the relationship's source concept<br>"
-					+ "&bull; destination() &ndash; the relationship's destination concept<br>")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
-		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
-	})
+	@Operation(
+		summary="Retrieve Relationships from a branch", 
+		description="Returns a list with all/filtered Relationships from a branch."
+				+ "<p>The following properties can be expanded:"
+				+ "<p>"
+				+ "&bull; type() &ndash; the relationship's type concept<br>"
+				+ "&bull; source() &ndash; the relationship's source concept<br>"
+				+ "&bull; destination() &ndash; the relationship's destination concept<br>"
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+//		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+//		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+//	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<SnomedRelationships> searchByGet(
-			@ApiParam(value="The branch path", required = true)
+			@Parameter(description="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
 			final SnomedRelationshipRestSearch params,
 			
-			@ApiParam(value="Accepted language tags, in order of preference")
+			@Parameter(description="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
@@ -119,49 +109,51 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 					.execute(bus));
 	}
 	
-	@ApiOperation(
-			value="Retrieve Relationships from a branch", 
-			notes="Returns a list with all/filtered Relationships from a branch."
-					+ "<p>The following properties can be expanded:"
-					+ "<p>"
-					+ "&bull; type() &ndash; the relationship's type concept<br>"
-					+ "&bull; source() &ndash; the relationship's source concept<br>"
-					+ "&bull; destination() &ndash; the relationship's destination concept<br>")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
-		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
-	})
+	@Operation(
+		summary="Retrieve Relationships from a branch", 
+		description="Returns a list with all/filtered Relationships from a branch."
+				+ "<p>The following properties can be expanded:"
+				+ "<p>"
+				+ "&bull; type() &ndash; the relationship's type concept<br>"
+				+ "&bull; source() &ndash; the relationship's source concept<br>"
+				+ "&bull; destination() &ndash; the relationship's destination concept<br>"
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+//		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+//		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+//	})
 	@PostMapping(value="/{path:**}/relationships/search")
 	public DeferredResult<SnomedRelationships> searchByPost(
-			@ApiParam(value="The branch path", required = true)
+			@Parameter(description="The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 	
 			@RequestBody(required = false)
 			final SnomedRelationshipRestSearch params,
 		
-			@ApiParam(value="Accepted language tags, in order of preference")
+			@Parameter(description="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return searchByGet(branch, params, acceptLanguage);
 	}
 	
-	@ApiOperation(
-			value="Create Relationship", 
-			notes="Creates a new Relationship directly on a version branch.")
-	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
-	})
+	@Operation(
+		summary="Create Relationship", 
+		description="Creates a new Relationship directly on a version branch."
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 201, message = "Created"),
+//		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+//	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value="The branch path")
+			@Parameter(description="The branch path")
 			@PathVariable("path") 
 			final String branchPath,
 			
-			@ApiParam(value="Relationship parameters")
+			@Parameter(description="Relationship parameters")
 			@RequestBody 
 			final ChangeRequest<SnomedRelationshipRestInput> body,
 			
@@ -182,21 +174,21 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 		return Responses.created(getRelationshipLocation(branchPath, createdRelationshipId)).build();
 	}
 
-	@ApiOperation(
-			value="Retrieve Relationship properties", 
-			notes="Returns all properties of the specified Relationship, including the associated refinability value.",
-			response=Void.class)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
-	})
+	@Operation(
+		summary="Retrieve Relationship properties", 
+		description="Returns all properties of the specified Relationship, including the associated refinability value."
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 200, message = "OK"),
+//		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
+//	})
 	@GetMapping(value = "/{relationshipId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<SnomedRelationship> read(
-			@ApiParam(value="The branch path")
+			@Parameter(description="The branch path")
 			@PathVariable("path") 
 			final String branchPath,
 			
-			@ApiParam(value="The Relationship identifier")
+			@Parameter(description="The Relationship identifier")
 			@PathVariable("relationshipId") 
 			final String relationshipId) {
 
@@ -206,25 +198,26 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 					.execute(bus));
 	}
 
-	@ApiOperation(
-			value="Update Relationship",
-			notes="Updates properties of the specified Relationship.")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
-	})
+	@Operation(
+		summary="Update Relationship",
+		description="Updates properties of the specified Relationship."
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 204, message = "Update successful"),
+//		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
+//	})
 	@PostMapping(value = "/{relationshipId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
-			@ApiParam(value="The branch path")
+			@Parameter(description="The branch path")
 			@PathVariable("path") 
 			final String branchPath,
 			
-			@ApiParam(value="The Relationship identifier")
+			@Parameter(description="The Relationship identifier")
 			@PathVariable("relationshipId") 
 			final String relationshipId,
 			
-			@ApiParam(value="Update Relationship parameters")
+			@Parameter(description="Update Relationship parameters")
 			@RequestBody 
 			final ChangeRequest<SnomedRelationshipRestUpdate> body,
 			
@@ -251,31 +244,32 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 
-	@ApiOperation(
-			value="Delete Relationship",
-			notes="Permanently removes the specified unreleased Relationship and related components.<p>If the Relationship "
-					+ "has already been released, it can not be removed and a <code>409</code> "
-					+ "status will be returned."
-					+ "<p>The force flag enables the deletion of a released Relationship. "
-					+ "Deleting published components is against the RF2 history policy so"
-					+ " this should only be used to remove a new component from a release before the release is published.</p>")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class),
-		@ApiResponse(code = 409, message = "Relationship cannot be deleted", response = RestApiError.class)
-	})
+	@Operation(
+		summary="Delete Relationship",
+		description="Permanently removes the specified unreleased Relationship and related components.<p>If the Relationship "
+				+ "has already been released, it can not be removed and a <code>409</code> "
+				+ "status will be returned."
+				+ "<p>The force flag enables the deletion of a released Relationship. "
+				+ "Deleting published components is against the RF2 history policy so"
+				+ " this should only be used to remove a new component from a release before the release is published.</p>"
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 204, message = "Delete successful"),
+//		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class),
+//		@ApiResponse(code = 409, message = "Relationship cannot be deleted", response = RestApiError.class)
+//	})
 	@DeleteMapping(value = "/{relationshipId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
-			@ApiParam(value="The branch path")
+			@Parameter(description="The branch path")
 			@PathVariable("path") 
 			final String branchPath,
 			
-			@ApiParam(value="The Relationship identifier")
+			@Parameter(description="The Relationship identifier")
 			@PathVariable("relationshipId") 
 			final String relationshipId,
 
-			@ApiParam(value="Force deletion flag")
+			@Parameter(description="Force deletion flag")
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			

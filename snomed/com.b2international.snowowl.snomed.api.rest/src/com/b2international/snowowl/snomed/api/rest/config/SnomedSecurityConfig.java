@@ -38,12 +38,6 @@ import com.b2international.snowowl.identity.IdentityProvider;
 @EnableWebSecurity
 public class SnomedSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Autowired
-	private AuthenticationProvider authenticationProvider;
-	
-	@Autowired
-	private IdentityProvider identityProvider;
-	
 	@Bean
 	public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
 	    StrictHttpFirewall firewall = new StrictHttpFirewall();
@@ -59,28 +53,10 @@ public class SnomedSecurityConfig extends WebSecurityConfigurerAdapter {
 			.and()
 			.csrf().disable();
 		
-		// auth
-		if (IdentityProvider.NOOP == identityProvider) {
-			http.authorizeRequests()
-				.antMatchers("/**")
-				.permitAll();
-		} else {
-			http
-				.authorizeRequests()
-					.antMatchers("/", "/static/**", "/api-docs")
-					.permitAll()
-				.and()
-				.authorizeRequests()
-					.antMatchers("/**")
-					.hasAuthority("ROLE_USER")
-				.and()
-					.httpBasic();
-		}
-	}
-	
-	@Override
-	protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-		auth.authenticationProvider(authenticationProvider);
+		// authentication is handled internally in AuthorizedRequest
+		http.authorizeRequests()
+			.antMatchers("/**")
+			.permitAll();
 	}
 	
 	@Override
@@ -88,10 +64,10 @@ public class SnomedSecurityConfig extends WebSecurityConfigurerAdapter {
 		web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
 	}
 	
-	@Bean
-	@Override
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
-	}
+//	@Bean
+//	@Override
+//	public AuthenticationManager authenticationManagerBean() throws Exception {
+//		return super.authenticationManagerBean();
+//	}
 
 }

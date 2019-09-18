@@ -17,23 +17,21 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 /**
  * @since 7.0
  */
-@ApiModel
 public final class SnomedCompareRestRequest {
 	
-	@ApiModelProperty(required = true)
+	@Parameter(required = true)
 	@NotEmpty
 	private String baseBranch;
 	
-	@ApiModelProperty(required = true)
+	@Parameter(required = true)
 	@NotEmpty
 	private String compareBranch;
 	
-	@ApiModelProperty(required = false)
+	@Parameter(required = false)
 	private int limit = 50;
 	
 	public String getBaseBranch() {

@@ -41,17 +41,15 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Provides REST endpoints for computing Reviewerences between branches.
  * 
  * @since 4.2
  */
-@Api(value = "Branches", description="Branches", tags = { "branches" })
+@Tag(name = "branches", description="Branches")
 @RestController
 @RequestMapping(value="/reviews", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchReviewRestService extends AbstractRestService {
@@ -60,13 +58,14 @@ public class SnomedBranchReviewRestService extends AbstractRestService {
 		super(Review.Fields.ALL);
 	}
 	
-	@ApiOperation(
-			value = "Create new review", 
-			notes = "Creates a new terminology review for the SNOMED CT repository.")
-	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
-	})
+	@Operation(
+		summary = "Create new review", 
+		description = "Creates a new terminology review for the SNOMED CT repository."
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 201, message = "Created"),
+//		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
+//	})
 	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
 	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
@@ -89,13 +88,14 @@ public class SnomedBranchReviewRestService extends AbstractRestService {
 		return result;
 	}
 
-	@ApiOperation(
-			value = "Retrieve single review", 
-			notes = "Retrieves an existing terminology review with the specified identifier, if it exists.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
-	})
+	@Operation(
+		summary = "Retrieve single review", 
+		description = "Retrieves an existing terminology review with the specified identifier, if it exists."
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 200, message = "OK"),
+//		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
+//	})
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public DeferredResult<Review> getReview(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(RepositoryRequests
@@ -105,13 +105,14 @@ public class SnomedBranchReviewRestService extends AbstractRestService {
 			.execute(bus));
 	}
 
-	@ApiOperation(
-			value = "Retrieve change set for review", 
-			notes = "Retrieves the set of created, changed and detached concepts for an existing review with the specified identifier, if it exists.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Review not found or changes are not yet available", response=RestApiError.class),
-	})
+	@Operation(
+		summary = "Retrieve change set for review", 
+		description = "Retrieves the set of created, changed and detached concepts for an existing review with the specified identifier, if it exists."
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 200, message = "OK"),
+//		@ApiResponse(code = 404, message = "Review not found or changes are not yet available", response=RestApiError.class),
+//	})
 	@RequestMapping(value="/{id}/concept-changes", method=RequestMethod.GET)
 	public DeferredResult<ConceptChanges> getConceptChanges(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(
@@ -122,13 +123,14 @@ public class SnomedBranchReviewRestService extends AbstractRestService {
 					.execute(bus));
 	}
 
-	@ApiOperation(
-			value = "Delete single review", 
-			notes = "Deletes a review run along with its computed change set, if any of them exist.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
-	})
+	@Operation(
+		summary = "Delete single review", 
+		description = "Deletes a review run along with its computed change set, if any of them exist."
+	)
+//	@ApiResponses({
+//		@ApiResponse(code = 200, message = "OK"),
+//		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
+//	})
 	@RequestMapping(value="/{id}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteReview(@PathVariable("id") final String reviewId) {

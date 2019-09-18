@@ -43,38 +43,35 @@ import com.b2international.snowowl.core.merge.MergeCollection;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.snomed.api.rest.domain.MergeRestRequest;
-import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 4.1
  */
-@Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
 @RequestMapping(value="/merges", produces={AbstractRestService.JSON_MEDIA_TYPE})
+@Tag(name = "branches", description="Branches")
 public class SnomedBranchMergingRestService extends AbstractRestService {
 	
 	public SnomedBranchMergingRestService() {
 		super(Collections.emptySet());
 	}
 	
-	@ApiOperation(
-		value = "Start branch merge or rebase", 
-		notes = "Signals that making changes on the source branch available on the target branch in the SNOMED CT repository " +
+	@Operation(
+		summary = "Start branch merge or rebase", 
+		description = "Signals that making changes on the source branch available on the target branch in the SNOMED CT repository " +
 				"should start as soon as possible."
 	)
-	@ApiResponses({
-		@ApiResponse(code = 202, message = "Accepted"),
-		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class),
-		@ApiResponse(code = 404, message = "Source or Target branch was not found", response=RestApiError.class)
-	})
+//	@ApiResponses({
+//		@ApiResponse(code = 202, message = "Accepted"),
+//		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class),
+//		@ApiResponse(code = 404, message = "Source or Target branch was not found", response=RestApiError.class)
+//	})
 	@PostMapping(consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest, Principal principal) {
 		ApiValidation.checkInput(restRequest);
@@ -107,18 +104,18 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 		return Responses.accepted(linkUri).build();
 	}
 	
-	@ApiOperation(
-		value = "Get merge or rebase result", 
-		notes = "Retrieves the merge result of a merge request."
+	@Operation(
+		summary = "Get merge or rebase result", 
+		description = "Retrieves the merge result of a merge request."
 	)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class),
-		@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
-	})
+//	@ApiResponses({
+//		@ApiResponse(code = 200, message = "OK"),
+//		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class),
+//		@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
+//	})
 	@RequestMapping(method = RequestMethod.GET, value="/{id}")
 	public DeferredResult<Merge> getMerge(
-			@ApiParam(value = "Merge identifier", required = true)
+			@Parameter(description = "Merge identifier", required = true)
 			@PathVariable("id") 
 			final String id) {
 		return DeferredResults.wrap(RepositoryRequests.merging()
@@ -127,24 +124,24 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 					.execute(bus));	
 	}
 	
-	@ApiOperation(
-		value = "Returns a list of merge resources", 
-		notes = "Retrieves the parameters and status for queued requests that match the specified condition(s).")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class)
-	})
+	@Operation(
+		summary = "Returns a list of merge resources", 
+		description = "Retrieves the parameters and status for queued requests that match the specified condition(s).")
+//	@ApiResponses({
+//		@ApiResponse(code = 200, message = "OK"),
+//		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class)
+//	})
 	@GetMapping
 	public DeferredResult<MergeCollection> searchMerge(			
-			@ApiParam(value="The source branch path to match")
+			@Parameter(description="The source branch path to match")
 			@RequestParam(value="source", required = false) 
 			final String source,
 			
-			@ApiParam(value="The target branch path to match")
+			@Parameter(description="The target branch path to match")
 			@RequestParam(value="target", required = false) 
 			final String target,
 			
-			@ApiParam(value="The current status of the request")
+			@Parameter(description="The current status of the request")
 			@RequestParam(value="status", required = false) 
 			final Merge.Status status) {
 		return DeferredResults.wrap(RepositoryRequests.merging()
@@ -156,16 +153,16 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 					.execute(bus));
 	}
 	
-	@ApiOperation(
-		value="Cancels queued merge or rebase request",
-		notes="Removes the request with the given identifier from the queue. If the request is not in progress, this effectively cancels the pending operation.")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "No content, delete successful"),
-		@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
-	})
+	@Operation(
+		summary="Cancels queued merge or rebase request",
+		description="Removes the request with the given identifier from the queue. If the request is not in progress, this effectively cancels the pending operation.")
+//	@ApiResponses({
+//		@ApiResponse(code = 204, message = "No content, delete successful"),
+//		@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
+//	})
 	@DeleteMapping(value="/{id}")
 	public DeferredResult<ResponseEntity<Void>> deleteMerge(
-			@ApiParam(value = "Merge identifier", required = true)
+			@Parameter(description = "Merge identifier", required = true)
 			@PathVariable("id") 
 			final String id) {
 		return DeferredResults.wrap(

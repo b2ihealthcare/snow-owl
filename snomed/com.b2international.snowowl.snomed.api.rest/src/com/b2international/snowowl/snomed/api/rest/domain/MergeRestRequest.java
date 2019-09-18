@@ -19,30 +19,28 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 4.1
  */
-@ApiModel
 public class MergeRestRequest {
 
-	@ApiModelProperty(required = true)
+	@Parameter(required = true)
 	@JsonProperty
 	@NotEmpty
 	private String source;
 
-	@ApiModelProperty(required = true)
+	@Parameter(required = true)
 	@JsonProperty
 	@NotEmpty
 	private String target;
 
-	@ApiModelProperty(required = false)
+	@Parameter(required = false)
 	@JsonProperty
 	private String commitComment;
 	
-	@ApiModelProperty(required = false)
+	@Parameter(required = false)
 	@JsonProperty
 	private String reviewId;
 
