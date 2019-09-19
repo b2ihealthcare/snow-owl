@@ -157,7 +157,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	}
 	
 	protected final SnomedConceptDocument.Builder concept(final String id) {
-		return DocumentBuilders.concept(id).effectiveTime(effectiveTime);
+		return DocumentBuilders.concept(id).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final SnomedConstraintDocument.Builder constraint(AttributeConstraint constraint) {
@@ -165,19 +165,19 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	}
 	
 	protected final SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
-		return DocumentBuilders.description(id, type, term).effectiveTime(effectiveTime);
+		return DocumentBuilders.description(id, type, term).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination) {
-		return DocumentBuilders.relationship(source, type, destination).effectiveTime(effectiveTime);
+		return DocumentBuilders.relationship(source, type, destination).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination, String characteristicTypeId) {
-		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(effectiveTime);
+		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
-		return DocumentBuilders.member(id, referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(effectiveTime);
+		return DocumentBuilders.member(id, referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final HierarchyConceptSetDefinition hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {
@@ -238,7 +238,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	}
 
 	protected final void indexRule(String ruleId) throws Exception {
-		URL rulesJson = getClass().getClassLoader().getResource("validation-rules-common.json");
+		final URL rulesJson = getClass().getClassLoader().getResource("validation-rules-common.json");
 		try (InputStream in = rulesJson.openStream()) {
 			MappingIterator<ValidationRule> it = context.service(ObjectMapper.class).readerFor(ValidationRule.class).readValues(in);
 			while (it.hasNext()) {
