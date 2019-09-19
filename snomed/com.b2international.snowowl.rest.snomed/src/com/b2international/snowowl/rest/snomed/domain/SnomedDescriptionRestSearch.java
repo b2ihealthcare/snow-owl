@@ -1,0 +1,261 @@
+/*
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.rest.snomed.domain;
+
+import java.util.List;
+import java.util.Set;
+
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+
+import io.swagger.v3.oas.annotations.Parameter;
+
+/**
+ * @since 6.16
+ */
+public final class SnomedDescriptionRestSearch {
+
+	@Parameter(description = "The Description identifier(s) to match")
+	private Set<String> id;
+
+	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
+	private String effectiveTime;
+
+	@Parameter(description = "The status to match")
+	private Boolean active;
+
+	@Parameter(description = "The module identifier to match")
+	private String module;
+
+	@Parameter(description = "The namespace to match")
+	private String namespace;
+
+	@Parameter(description = "The term to match")
+	private String term;
+
+	@Parameter(description = "The concept ECL expression to match")
+	private String concept;
+
+	@Parameter(description = "The language code to match")
+	private String[] languageCode;
+
+	@Parameter(description = "The type ECL expression to match")
+	private String type;
+
+	@Parameter(description = "The case significance ECL expression to match")
+	private String caseSignificance;
+
+	@Parameter(description = "Semantic tag(s) to match")
+	private String[] semanticTag;
+
+	@Parameter(description = "The acceptability to match. DEPRECATED! Use acceptableIn or preferredIn!")
+	private Acceptability acceptability;
+
+	@Parameter(description = "Acceptable membership to match in these language refsets")
+	private String[] acceptableIn;
+
+	@Parameter(description = "Preferred membership to match in these language refsets")
+	private String[] preferredIn;
+
+	@Parameter(description = "Any membership to match in these language refsets")
+	private String[] languageRefSet;
+
+	@Parameter(description = "The scrollKeepAlive to start a scroll using this query")
+	private String scrollKeepAlive;
+
+	@Parameter(description = "A scrollId to continue scrolling a previous query")
+	private String scrollId;
+
+	@Parameter(description = "The search key to use for retrieving the next page of results")
+	private String searchAfter;
+
+	@Parameter(description = "The maximum number of items to return")
+	private int limit = 50;
+
+	@Parameter(description = "Expansion parameters")
+	private String expand;
+
+	@Parameter(description = "Sort keys")
+	private List<String> sort;
+
+	public Set<String> getId() {
+		return id;
+	}
+
+	public void setId(Set<String> id) {
+		this.id = id;
+	}
+
+	public String getEffectiveTime() {
+		return effectiveTime;
+	}
+
+	public void setEffectiveTime(String effectiveTime) {
+		this.effectiveTime = effectiveTime;
+	}
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	public String getModule() {
+		return module;
+	}
+
+	public void setModule(String module) {
+		this.module = module;
+	}
+
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+
+	public String getTerm() {
+		return term;
+	}
+
+	public void setTerm(String term) {
+		this.term = term;
+	}
+
+	public String getConcept() {
+		return concept;
+	}
+
+	public void setConcept(String concept) {
+		this.concept = concept;
+	}
+	
+	public String[] getLanguageCode() {
+		return languageCode;
+	}
+	
+	public void setLanguageCode(String[] languageCode) {
+		this.languageCode = languageCode;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getCaseSignificance() {
+		return caseSignificance;
+	}
+
+	public void setCaseSignificance(String caseSignificance) {
+		this.caseSignificance = caseSignificance;
+	}
+
+	public String[] getSemanticTag() {
+		return semanticTag;
+	}
+
+	public void setSemanticTag(String[] semanticTag) {
+		this.semanticTag = semanticTag;
+	}
+
+	public Acceptability getAcceptability() {
+		return acceptability;
+	}
+
+	public void setAcceptability(Acceptability acceptability) {
+		this.acceptability = acceptability;
+	}
+
+	public String[] getAcceptableIn() {
+		return acceptableIn;
+	}
+
+	public void setAcceptableIn(String[] acceptableIn) {
+		this.acceptableIn = acceptableIn;
+	}
+
+	public String[] getPreferredIn() {
+		return preferredIn;
+	}
+
+	public void setPreferredIn(String[] preferredIn) {
+		this.preferredIn = preferredIn;
+	}
+
+	public String[] getLanguageRefSet() {
+		return languageRefSet;
+	}
+
+	public void setLanguageRefSet(String[] languageRefSet) {
+		this.languageRefSet = languageRefSet;
+	}
+
+	public String getScrollKeepAlive() {
+		return scrollKeepAlive;
+	}
+
+	public void setScrollKeepAlive(String scrollKeepAlive) {
+		this.scrollKeepAlive = scrollKeepAlive;
+	}
+
+	public String getScrollId() {
+		return scrollId;
+	}
+
+	public void setScrollId(String scrollId) {
+		this.scrollId = scrollId;
+	}
+
+	public String getSearchAfter() {
+		return searchAfter;
+	}
+
+	public void setSearchAfter(String searchAfter) {
+		this.searchAfter = searchAfter;
+	}
+
+	public int getLimit() {
+		return limit;
+	}
+
+	public void setLimit(int limit) {
+		this.limit = limit;
+	}
+
+	public String getExpand() {
+		return expand;
+	}
+
+	public void setExpand(String expand) {
+		this.expand = expand;
+	}
+
+	public List<String> getSort() {
+		return sort;
+	}
+
+	public void setSort(List<String> sort) {
+		this.sort = sort;
+	}
+
+}

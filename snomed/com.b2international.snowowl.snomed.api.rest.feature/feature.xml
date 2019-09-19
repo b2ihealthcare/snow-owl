@@ -15,10 +15,11 @@ Visit us at http://b2i.sg
    </copyright>
 
    <plugin
-         id="com.b2international.snowowl.snomed.api.rest"
+         id="com.b2international.snowowl.rest.snomed"
          download-size="0"
          install-size="0"
          version="0.0.0"
+         fragment="true"
          unpack="false"/>
 
 </feature>
