@@ -42,7 +42,7 @@ SnomedConceptSearchRequestBuilder conceptsRequestBuilder = SnomedRequests.prepar
 				
 if (params.isUnpublishedOnly) {
 
-	def unpublishedLangueMembers = SnomedRequests.prepareSearchMember()
+	def descriptionsIdsWithUnpublishedLanguageMembers = SnomedRequests.prepareSearchMember()
 		.filterByReferencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
 		.filterByRefSetType(SnomedRefSetType.LANGUAGE)
 		.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
@@ -53,8 +53,8 @@ if (params.isUnpublishedOnly) {
 		.collect({ it.referencedComponent.id})	
 	
 	def conceptsWithUnpublishedLanguageMembers = SnomedRequests.prepareSearchDescription()
-				.filterByIds(unpublishedLangueMembers)
-				.all()
+				.filterByIds(descriptionsIdsWithUnpublishedLanguageMembers)
+				.setLimit(descriptionsIdsWithUnpublishedLanguageMembers.size())
 				.setFields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 				.build()
 				.execute(ctx)
