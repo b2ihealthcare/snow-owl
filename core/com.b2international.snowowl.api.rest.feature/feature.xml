@@ -15,7 +15,15 @@ Visit us at http://b2i.sg
    </copyright>
 
    <plugin
-         id="com.b2international.snowowl.api.rest"
+         id="com.b2international.snowowl.rest.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.snowowl.rest"
          download-size="0"
          install-size="0"
          version="0.0.0"
