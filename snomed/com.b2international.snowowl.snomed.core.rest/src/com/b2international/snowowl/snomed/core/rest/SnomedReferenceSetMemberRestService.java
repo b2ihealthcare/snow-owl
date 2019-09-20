@@ -191,7 +191,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestBody 
 			final ChangeRequest<SnomedRefSetMemberRestInput> body,
 
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		
 		final SnomedRefSetMemberRestInput change = body.getChange();
@@ -233,7 +233,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		SnomedRequests.prepareDeleteMember(memberId)
 			.force(force)
@@ -273,7 +273,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		
 		final SnomedMemberRestUpdate update = body.getChange();
@@ -318,7 +318,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestBody 
 			final ChangeRequest<RestRequest> body,
 			
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		
 		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();

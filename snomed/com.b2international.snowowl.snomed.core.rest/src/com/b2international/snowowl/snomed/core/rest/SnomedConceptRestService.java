@@ -233,7 +233,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedConceptRestInput> body,
 
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		
 		final SnomedConceptRestInput change = body.getChange();
@@ -283,7 +283,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedConceptRestUpdate> body,
 
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
 		final SnomedConceptRestUpdate change = body.getChange();
@@ -325,7 +325,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		SnomedRequests
 			.prepareDeleteConcept(conceptId)

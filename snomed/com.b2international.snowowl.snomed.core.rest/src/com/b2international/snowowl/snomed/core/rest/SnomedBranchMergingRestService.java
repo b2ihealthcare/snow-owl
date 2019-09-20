@@ -69,7 +69,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			MergeRestRequest restRequest, 
 			
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		ApiValidation.checkInput(restRequest);
 		

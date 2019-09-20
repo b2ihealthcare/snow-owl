@@ -234,10 +234,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			@PathVariable(value="id")
 			final UUID exportId,
 			
-			@RequestHeader
-			final HttpHeaders headers,
-			
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) throws IOException {
 
 		final SnomedExportRestRun export = getExport(exportId);

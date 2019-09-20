@@ -95,7 +95,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	public ResponseEntity<Void> createCodeSystem(
 			@RequestBody
 			final CodeSystem codeSystem,
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
 		ApiValidation.checkInput(codeSystem);
@@ -146,9 +146,8 @@ public class CodeSystemRestService extends AbstractRestService {
 			@RequestBody
 			final CodeSystem codeSystem,
 			
-			@RequestHeader(value = X_AUTHOR)
-			final String author
-			) {
+			@RequestHeader(value = X_AUTHOR, required = false)
+			final String author) {
 		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryUuid());
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
 		

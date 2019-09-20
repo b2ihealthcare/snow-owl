@@ -153,7 +153,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedRelationshipRestInput> body,
 			
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
 		final SnomedRelationshipRestInput change = body.getChange();
@@ -216,7 +216,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedRelationshipRestUpdate> body,
 			
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
 		final String commitComment = body.getCommitComment();
@@ -267,7 +267,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
-			@RequestHeader(value = X_AUTHOR)
+			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
 		SnomedRequests.prepareDeleteRelationship(relationshipId)
