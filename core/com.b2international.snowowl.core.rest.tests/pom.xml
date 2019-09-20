@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>com.b2international.snowowl.api.rest.tests</artifactId>
+	<artifactId>com.b2international.snowowl.core.rest.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 
 	<parent>

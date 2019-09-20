@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.b2international.snowowl.api.rest.feature"
+      id="com.b2international.snowowl.core.rest.feature"
       label="Snow Owl Administrative RESTful API Feature"
       version="7.2.0.qualifier"
       provider-name="B2i Healthcare">
@@ -15,15 +15,7 @@ Visit us at http://b2i.sg
    </copyright>
 
    <plugin
-         id="com.b2international.snowowl.rest.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.rest"
+         id="com.b2international.snowowl.core.rest"
          download-size="0"
          install-size="0"
          version="0.0.0"
