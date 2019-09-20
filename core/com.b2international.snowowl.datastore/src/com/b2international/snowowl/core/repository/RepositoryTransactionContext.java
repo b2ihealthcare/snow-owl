@@ -85,7 +85,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		this.author = author;
 		this.commitComment = commitComment;
 		this.parentContextDescription = parentContextDescription;
-		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath());
+		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath()).withContext(this);
 		bind(StagingArea.class, this.staging);
 	}
 	

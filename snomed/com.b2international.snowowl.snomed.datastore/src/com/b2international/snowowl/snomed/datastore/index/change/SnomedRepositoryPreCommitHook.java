@@ -24,23 +24,20 @@ import org.slf4j.Logger;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
-import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.index.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
-import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -66,17 +63,15 @@ import com.google.common.collect.Sets;
  */
 public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommitHook {
 
-	private final String repositoryId;
-
-	public SnomedRepositoryPreCommitHook(Logger log, String repositoryId) {
+	public SnomedRepositoryPreCommitHook(Logger log) {
 		super(log);
-		this.repositoryId = repositoryId;
 	}
 	
 	@Override
 	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
-		final FeatureToggles featureToggles = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(repositoryId, index.branch()));
+		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
+		final FeatureToggles featureToggles = context.service(FeatureToggles.class);
+		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(context.id(), index.branch()));
 		if (!importRunning) {
 			doProcess(ImmutableList.of(new ComponentInactivationChangeProcessor(), new DetachedContainerChangeProcessor()), staging, index);
 		}
@@ -84,16 +79,9 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	
 	@Override
 	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
+		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		// initialize OWL Expression converter on the current branch
-		SnomedOWLExpressionConverter expressionConverter = new RepositoryRequest<>(repositoryId,
-			new IndexReadRequest<>(
-				new BranchRequest<>(staging.getBranchPath(), 
-					new RevisionIndexReadRequest<>(branchContext -> {
-						return new SnomedOWLExpressionConverter(branchContext);
-					})
-				)
-			)
-		).execute(ApplicationContext.getServiceForClass(Environment.class));
+		final SnomedOWLExpressionConverter expressionConverter = new BranchRequest<>(staging.getBranchPath(), branchContext -> new SnomedOWLExpressionConverter(branchContext)).execute(context);
 		
 		final Set<String> statedSourceIds = Sets.newHashSet();
 		final Set<String> statedDestinationIds = Sets.newHashSet();
@@ -213,9 +201,9 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 
 		log.trace("Retrieving taxonomic information from store...");
 
-		final FeatureToggles featureToggles = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(repositoryId, index.branch()));
-		final boolean reindexRunning = featureToggles.isEnabled(Features.getReindexFeatureToggle(repositoryId));
+		final FeatureToggles featureToggles = context.service(FeatureToggles.class);
+		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(context.id(), index.branch()));
+		final boolean reindexRunning = featureToggles.isEnabled(Features.getReindexFeatureToggle(context.id()));
 		final boolean checkCycles = !importRunning && !reindexRunning;
 		
 		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, expressionConverter, staging, inferredConceptIds, checkCycles);
