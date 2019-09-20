@@ -51,6 +51,7 @@ import com.google.common.primitives.Ints;
 import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.schema.Maps;
 import springfox.documentation.schema.Types;
+import springfox.documentation.schema.property.bean.AccessorsProvider;
 import springfox.documentation.schema.property.field.FieldProvider;
 import springfox.documentation.service.Parameter;
 import springfox.documentation.spi.schema.AlternateTypeProvider;
@@ -60,6 +61,7 @@ import springfox.documentation.spi.service.contexts.ParameterExpansionContext;
 import springfox.documentation.spring.web.readers.parameter.ExpansionContext;
 import springfox.documentation.spring.web.readers.parameter.ModelAttributeField;
 import springfox.documentation.spring.web.readers.parameter.ModelAttributeParameterExpander;
+import springfox.documentation.spring.web.readers.parameter.ModelAttributeParameterMetadataAccessor;
 
 /**
  * Overriden {@link ModelAttributeParameterExpander} to provide consistent ordering for query parameters.
@@ -73,8 +75,8 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 	private final FieldProvider fieldProvider;
 	private final EnumTypeDeterminer enumTypeDeterminer;
 
-	public ModelAttributeParameterExpanderExt(FieldProvider fields, EnumTypeDeterminer enumTypeDeterminer) {
-		super(fields, enumTypeDeterminer);
+	public ModelAttributeParameterExpanderExt(FieldProvider fields, AccessorsProvider accessorsProvider, EnumTypeDeterminer enumTypeDeterminer) {
+		super(fields, accessorsProvider, enumTypeDeterminer);
 		this.fieldProvider = fields;
 		this.enumTypeDeterminer = enumTypeDeterminer;
 	}
@@ -91,22 +93,22 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 
 		FluentIterable<ModelAttributeField> expendables = modelAttributes.filter(not(simpleType())).filter(not(recursiveType(context)));
 		for (ModelAttributeField each : expendables) {
-			LOG.debug("Attempting to expand expandable field: {}", each.getField());
-			parameters.addAll(expand(context.childContext(nestedParentName(context.getParentName(), each.getField()), each.getFieldType(),
-					context.getDocumentationContext())));
+			LOG.debug("Attempting to expand expandable field: {}", each.getFieldType());
+			parameters.addAll(expand(context.childContext(nestedParentName(context.getParentName(), each), each.getFieldType(),
+					context.getOperationContext())));
 		}
 
 		FluentIterable<ModelAttributeField> collectionTypes = modelAttributes
 				.filter(and(isCollection(), not(recursiveCollectionItemType(context.getParamType()))));
 		for (ModelAttributeField each : collectionTypes) {
-			LOG.debug("Attempting to expand collection/array field: {}", each.getField());
+			LOG.debug("Attempting to expand collection/array field: {}", each.getName());
 
 			ResolvedType itemType = collectionElementType(each.getFieldType());
 			if (Types.isBaseType(itemType) || enumTypeDeterminer.isEnum(itemType.getErasedType())) {
 				parameters.add(simpleFields(context.getParentName(), context.getDocumentationContext(), each));
 			} else {
-				parameters.addAll(expand(context.childContext(nestedParentName(context.getParentName(), each.getField()), itemType,
-						context.getDocumentationContext())));
+				parameters.addAll(expand(context.childContext(nestedParentName(context.getParentName(), each), itemType,
+						context.getOperationContext())));
 			}
 		}
 
@@ -144,8 +146,16 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 		String dataTypeName = Optional.fromNullable(typeNameFor(each.getFieldType().getErasedType()))
 				.or(each.getFieldType().getErasedType().getSimpleName());
 		LOG.debug("Building parameter for field: {}, with type: ", each, each.getFieldType());
-		ParameterExpansionContext parameterExpansionContext = new ParameterExpansionContext(dataTypeName, parentName, each.getField(),
-				documentationContext.getDocumentationType(), new ParameterBuilder());
+		ParameterExpansionContext parameterExpansionContext = new ParameterExpansionContext(
+				dataTypeName, 
+				parentName, 
+				each.getFieldType().getTypeName(),
+				new ModelAttributeParameterMetadataAccessor(
+			            each.annotatedElements(),
+			            each.getFieldType(),
+			            each.getName()),
+				documentationContext.getDocumentationType(), 
+				new ParameterBuilder());
 		return pluginsManager.expandParameter(parameterExpansionContext);
 	}
 
@@ -202,7 +212,7 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 		return new Predicate<ModelAttributeField>() {
 			@Override
 			public boolean apply(ModelAttributeField input) {
-				return Types.isBaseType(input.getFieldType()) || input.getField().getType().isPrimitive();
+				return Types.isBaseType(input.getFieldType()) || input.getFieldType().isPrimitive();
 			}
 		};
 	}
@@ -211,7 +221,7 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 		return new Function<ResolvedField, ModelAttributeField>() {
 			@Override
 			public ModelAttributeField apply(ResolvedField input) {
-				return new ModelAttributeField(fieldType(alternateTypeProvider, input), input);
+				return new ModelAttributeField(fieldType(alternateTypeProvider, input), input.getName(), input, null);
 			}
 		};
 	}
@@ -225,9 +235,9 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 		};
 	}
 
-	private String nestedParentName(String parentName, ResolvedField field) {
+	private String nestedParentName(String parentName, ModelAttributeField field) {
 		String name = field.getName();
-		ResolvedType fieldType = field.getType();
+		ResolvedType fieldType = field.getFieldType();
 		if (isContainerType(fieldType) && !Types.isBaseType(collectionElementType(fieldType))) {
 			name += "[0]";
 		}
