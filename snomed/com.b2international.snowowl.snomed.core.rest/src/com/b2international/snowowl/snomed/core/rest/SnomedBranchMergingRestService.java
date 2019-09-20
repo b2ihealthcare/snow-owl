@@ -18,21 +18,12 @@ package com.b2international.snowowl.snomed.core.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.Collections;
 import java.util.UUID;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.validation.ApiValidation;
@@ -74,19 +65,23 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 //		@ApiResponse(code = 404, message = "Source or Target branch was not found", response=RestApiError.class)
 //	})
 	@PostMapping(consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest, Principal principal) {
+	public ResponseEntity<Void> createMerge(
+			@RequestBody 
+			MergeRestRequest restRequest, 
+			
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		ApiValidation.checkInput(restRequest);
 		
 		final String sourcePath = restRequest.getSource();
 		final String targetPath = restRequest.getTarget();
-		final String username = principal.getName();
 		
 		final Request<ServiceProvider, Merge> mergeRequest = RepositoryRequests.merging()
 				.prepareCreate()
 				.setSource(sourcePath)
 				.setTarget(targetPath)
 				.setReviewId(restRequest.getReviewId())
-				.setUserId(username)
+				.setUserId(author)
 				.setCommitComment(restRequest.getCommitComment())
 				.build(repositoryId)
 				.getRequest();
@@ -95,7 +90,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 		
 		JobRequests.prepareSchedule()
 			.setId(jobId)
-			.setUser(username)
+			.setUser(author)
 			.setDescription(String.format("Merging branches %s to %s", sourcePath, targetPath))
 			.setRequest(mergeRequest)
 			.buildAsync()

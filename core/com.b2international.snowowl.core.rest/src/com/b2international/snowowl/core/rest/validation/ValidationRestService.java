@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.rest.validation;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -121,8 +120,7 @@ public class ValidationRestService extends AbstractRestService {
 	public DeferredResult<ResponseEntity<URI>> beginValidation(
 			@ApiParam(value="Validation parameters")
 			@RequestBody 
-			final ValidationRestInput validationInput,
-			final Principal principal) {
+			final ValidationRestInput validationInput) {
 
 		final String codeSystemShortName = validationInput.codeSystemShortName();
 		final CodeSystemEntry codeSystem = getCodeSystem(codeSystemShortName);
@@ -173,7 +171,6 @@ public class ValidationRestService extends AbstractRestService {
 				return JobRequests.prepareSchedule()
 					.setRequest(request)
 					.setDescription(String.format("Validating SNOMED CT on branch '%s'", validationInput.branchPath()))
-					.setUser(principal.getName())
 					.setId(uniqueJobId)
 					.buildAsync()
 					.execute(bus);

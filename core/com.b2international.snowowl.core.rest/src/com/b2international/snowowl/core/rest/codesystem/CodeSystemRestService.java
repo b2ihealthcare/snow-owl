@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.rest.codesystem;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-import java.security.Principal;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -148,7 +146,8 @@ public class CodeSystemRestService extends AbstractRestService {
 			@RequestBody
 			final CodeSystem codeSystem,
 			
-			final Principal principal
+			@RequestHeader(value = X_AUTHOR)
+			final String author
 			) {
 		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryUuid());
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
@@ -161,7 +160,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setIconPath(codeSystem.getIconPath())
 				.setLanguage(codeSystem.getPrimaryLanguage())
 				.setLink(codeSystem.getOrganizationLink())
-				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, principal.getName(), commitComment)
+				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, author, commitComment)
 				.execute(bus)
 				.getSync();
 	}

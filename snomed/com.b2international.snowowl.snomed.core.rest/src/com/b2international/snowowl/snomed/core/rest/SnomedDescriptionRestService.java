@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -186,16 +185,15 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedDescriptionRestInput> body,
 			
-			final Principal principal) {
-		
-		final String userId = principal.getName();
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
 		final SnomedDescriptionRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId();
 			
 		final String createdDescriptionId = change.toRequestBuilder()
-			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
+			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -255,15 +253,14 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedDescriptionRestUpdate> body,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 
-		final String userId = principal.getName();
-		
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId();
 		body.getChange()
 			.toRequestBuilder(descriptionId)
-			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
+			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 		
@@ -295,11 +292,12 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
 		SnomedRequests.prepareDeleteDescription(descriptionId)
 			.force(force)
-			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Description '%s' from store.", descriptionId))
+			.build(repositoryId, branchPath, author, String.format("Deleted Description '%s' from store.", descriptionId))
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}

@@ -21,7 +21,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.security.Principal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
@@ -238,7 +237,8 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			@RequestHeader
 			final HttpHeaders headers,
 			
-			final Principal principal) throws IOException {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) throws IOException {
 
 		final SnomedExportRestRun export = getExport(exportId);
 		final boolean includeUnpublished = export.isIncludeUnpublished() || isDeltaWithoutRange(export);
@@ -246,7 +246,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
 		final Rf2ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
-			.setUserId(principal.getName())
+			.setUserId(author)
 			.setReleaseType(export.getType())
 			.setCodeSystem(export.getCodeSystemShortName())
 			.setExtensionOnly(export.isExtensionOnly())

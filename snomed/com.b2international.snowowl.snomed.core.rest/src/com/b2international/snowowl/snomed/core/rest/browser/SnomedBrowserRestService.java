@@ -12,7 +12,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.browser;
 
-import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -89,11 +88,11 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@RequestBody
 			final SnomedBrowserConcept concept,
 
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 
-		final String userId = principal.getName();
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(languageSetting);
-		return browserService.create(branchPath, concept, userId, extendedLocales);
+		return browserService.create(branchPath, concept, author, extendedLocales);
 	}
 
 //	@ApiOperation(
@@ -122,16 +121,16 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@RequestBody
 			final SnomedBrowserConceptUpdate concept,
 
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 
-		final String userId = principal.getName();
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(languageSetting);
 		
 		if (!conceptId.equals(concept.getConceptId())) {
 			throw new BadRequestException("The concept ID in the request body does not match the ID in the URL.");
 		}
 		
-		return browserService.update(branchPath, concept, userId, extendedLocales);
+		return browserService.update(branchPath, concept, author, extendedLocales);
 	}
 
 //	@ApiOperation(

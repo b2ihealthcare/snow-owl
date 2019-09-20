@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -154,16 +153,15 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedRelationshipRestInput> body,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 
-		final String userId = principal.getName();
-		
 		final SnomedRelationshipRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId();
 		
 		final String createdRelationshipId = change.toRequestBuilder()
-				.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
+				.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 				.execute(bus)
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
@@ -218,10 +216,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedRelationshipRestUpdate> body,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 
-		final String userId = principal.getName();
-		
 		final String commitComment = body.getCommitComment();
 		final SnomedRelationshipRestUpdate update = body.getChange();
 		final String defaultModuleId = body.getDefaultModuleId();
@@ -236,7 +233,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.setModifier(update.getModifier())
 			.setTypeId(update.getTypeId())
 			.setDestinationId(update.getDestinationId())
-			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
+			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
@@ -270,11 +267,12 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 
 		SnomedRequests.prepareDeleteRelationship(relationshipId)
 			.force(force)
-			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Relationship '%s' from store.", relationshipId))
+			.build(repositoryId, branchPath, author, String.format("Deleted Relationship '%s' from store.", relationshipId))
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}

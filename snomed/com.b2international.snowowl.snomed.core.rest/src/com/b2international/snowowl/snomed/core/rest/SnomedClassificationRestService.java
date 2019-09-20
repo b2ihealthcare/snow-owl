@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -148,7 +147,8 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestBody 
 			final ClassificationRestInput request,
 
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
 		ApiValidation.checkInput(request);
 		
@@ -157,7 +157,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		
 		return DeferredResults.wrap(ClassificationRequests.prepareCreateClassification()
 				.setReasonerId(request.getReasonerId())
-				.setUserId(principal.getName())
+				.setUserId(author)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
 				.execute(bus)
 				.then(id -> {
@@ -392,13 +392,14 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestBody 
 			final ClassificationRunRestUpdate updatedRun,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
 		// TODO: compare all fields to find out what the client wants us to do, check for conflicts, etc.
 		if (ClassificationStatus.SAVED.equals(updatedRun.getStatus())) {
 			ClassificationRequests.prepareSaveClassification()
 					.setClassificationId(classificationId)
-					.setUserId(principal.getName())
+					.setUserId(author)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(bus)
 					.getSync();

@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -192,16 +191,15 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestBody 
 			final ChangeRequest<SnomedRefSetMemberRestInput> body,
 
-			final Principal principal) {
-		
-		final String userId = principal.getName();
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
 		final SnomedRefSetMemberRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId();
 		
 		final String createdRefSetMemberId = change.toRequestBuilder()
-				.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
+				.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 				.execute(bus)
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
@@ -235,10 +233,11 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		SnomedRequests.prepareDeleteMember(memberId)
 			.force(force)
-			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted reference set member '%s' from store.", memberId))
+			.build(repositoryId, branchPath, author, String.format("Deleted reference set member '%s' from store.", memberId))
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
@@ -274,9 +273,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
-			final Principal principal) {
-		
-		final String userId = principal.getName();
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
 		final SnomedMemberRestUpdate update = body.getChange();
 		final String commitComment = body.getCommitComment();
@@ -286,7 +284,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.setMemberId(memberId)
 			.setSource(update.getSource())
 			.force(force)
-			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
+			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
