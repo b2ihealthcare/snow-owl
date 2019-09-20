@@ -41,7 +41,8 @@ public class CoreApiConfig extends BaseApiConfig {
 			"https://b2i.sg",
 			"support@b2i.sg",
 			"API License",
-			"https://b2i.sg"
+			"https://b2i.sg",
+			"This describes the resources that make up the official Snow Owl® Admin API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/core)."
 		);
 	}
 	

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import java.io.File;
-import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.UUID;
@@ -25,12 +23,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.fasterxml.classmate.TypeResolver;
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Files;
 
 import io.swagger.v3.oas.models.security.SecurityScheme.In;
 import springfox.documentation.builders.PathSelectors;
@@ -62,7 +56,8 @@ public abstract class BaseApiConfig {
 			final String apiTermsOfServiceUrl,
 			final String apiContact,
 			final String apiLicense,
-			final String apiLicenseUrl) {
+			final String apiLicenseUrl,
+			final String apiDescription) {
 		final TypeResolver resolver = new TypeResolver();
 		return new Docket(DocumentationType.SWAGGER_2)
 				.securitySchemes(ImmutableList.of(
@@ -84,16 +79,7 @@ public abstract class BaseApiConfig {
 				.alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
 				.groupName(apiGroup)
 	            .select().paths(PathSelectors.regex(apiBaseUrl + "/.*")).build()
-	            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
-	}
-	
-	private String readApiDescription() {
-		try {
-			final File apiDesc = PlatformUtil.toAbsolutePath(getClass(), "api-description.mkd").toFile();
-			return Joiner.on("\n").join(Files.readLines(apiDesc, Charsets.UTF_8));
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to read api-description.html file", e);
-		}
+	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
 	
 }

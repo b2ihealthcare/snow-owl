@@ -53,7 +53,10 @@ public class SnomedApiConfig extends BaseApiConfig {
 			"https://b2i.sg",
 			"support@b2i.sg",
 			"API License",
-			"https://b2i.sg"
+			"https://b2i.sg",
+			"This describes the resources that make up the official Snow Owl® SNOMED CT Terminology API.\n" + 
+			"\n" + 
+			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/snomed)."
 		);
 	}
 	

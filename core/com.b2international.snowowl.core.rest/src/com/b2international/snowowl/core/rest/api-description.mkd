@@ -1,1 +1,0 @@
-This describes the resources that make up the official Snow Owlï¿½ Admin API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/core).
