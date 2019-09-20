@@ -27,19 +27,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -123,10 +112,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 	@JsonProperty
 	@NotEmpty
-	private String userId;
-
-	@JsonProperty
-	@NotEmpty
 	private String codeSystem;
 
 	@JsonProperty
@@ -177,10 +162,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	private List<ExtendedLocale> locales;
 
 	SnomedRf2ExportRequest() {}
-
-	void setUserId(final String userId) {
-		this.userId = userId;
-	}
 
 	void setCodeSystem(final String codeSystem) {
 		this.codeSystem = codeSystem;

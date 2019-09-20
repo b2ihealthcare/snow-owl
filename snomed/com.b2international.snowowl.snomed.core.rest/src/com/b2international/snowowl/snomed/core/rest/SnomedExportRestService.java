@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -232,10 +231,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	public @ResponseBody ResponseEntity<?> getArchive(
 			@Parameter(description="Export run ID")
 			@PathVariable(value="id")
-			final UUID exportId,
-			
-			@RequestHeader(value = X_AUTHOR, required = false)
-			final String author) throws IOException {
+			final UUID exportId) throws IOException {
 
 		final SnomedExportRestRun export = getExport(exportId);
 		final boolean includeUnpublished = export.isIncludeUnpublished() || isDeltaWithoutRange(export);
@@ -243,7 +239,6 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
 		final Rf2ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
-			.setUserId(author)
 			.setReleaseType(export.getType())
 			.setCodeSystem(export.getCodeSystemShortName())
 			.setExtensionOnly(export.isExtensionOnly())

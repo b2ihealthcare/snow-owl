@@ -152,6 +152,6 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.setRequest(saveRequest)
 				.setDescription(String.format("Saving classification changes on %s", branch.path()))
 				.buildAsync()
-				.get(SCHEDULE_TIMEOUT_MILLIS);
+				.get(context, SCHEDULE_TIMEOUT_MILLIS);
 	}
 }

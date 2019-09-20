@@ -46,8 +46,16 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 	
 	@Override
 	protected void applyChanges(RepositoryContext context, Branch source, Branch target) {
-		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
-			context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, context.service(ComponentRevisionConflictProcessor.class), true);
+		final String author = userId(context);
+		try (Locks locks = new Locks(context, author, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
+			context.service(BaseRevisionBranching.class)
+				.prepareMerge(source.path(), target.path())
+				.author(author)
+				.commitMessage(commitMessage)
+				.conflictProcessor(context.service(ComponentRevisionConflictProcessor.class))
+				.squash(true)
+				.context(context)
+				.merge();
 		} catch (BranchMergeException e) {
 			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
 		} catch (DatastoreOperationLockException e) {

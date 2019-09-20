@@ -35,7 +35,6 @@ public final class SnomedRf2ExportRequestBuilder
 		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, Rf2ExportResult> 
 		implements RepositoryRequestBuilder<Rf2ExportResult> {
 
-	private String userId;
 	private String codeSystem;
 	private String referenceBranch;
 	private Rf2ReleaseType releaseType;
@@ -53,11 +52,6 @@ public final class SnomedRf2ExportRequestBuilder
 	private List<ExtendedLocale> locales;
 	
 	SnomedRf2ExportRequestBuilder() {}
-	
-	public SnomedRf2ExportRequestBuilder setUserId(final String userId) {
-		this.userId = userId;
-		return getSelf();
-	}
 	
 	public SnomedRf2ExportRequestBuilder setCodeSystem(final String codeSystem) {
 		this.codeSystem = codeSystem;
@@ -137,7 +131,6 @@ public final class SnomedRf2ExportRequestBuilder
 	@Override
 	protected Request<RepositoryContext, Rf2ExportResult> doBuild() {
 		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
-		req.setUserId(userId);
 		req.setCodeSystem(codeSystem);
 		req.setReferenceBranch(referenceBranch);
 		req.setReleaseType(releaseType);
