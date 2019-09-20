@@ -21,10 +21,10 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -45,6 +45,9 @@ public final class CodeSystemService {
 
 	private static final Ordering<CodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystem::getShortName);
 
+	@Autowired
+	private IEventBus bus;
+	
 	/**
 	 * Lists all registered code systems.
 	 * 
@@ -53,7 +56,7 @@ public final class CodeSystemService {
 	public List<CodeSystem> getCodeSystems() {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
-			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(bus));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(results -> {
@@ -64,10 +67,6 @@ public final class CodeSystemService {
 					return SHORT_NAME_ORDERING.immutableSortedCopy(codeSystems);
 				})
 				.getSync();
-	}
-
-	private IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
 	/**
@@ -87,7 +86,7 @@ public final class CodeSystemService {
 					.all()
 					.filterById(shortNameOrOid)
 					.build(repositoryId)
-					.execute(getBus()));
+					.execute(bus));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(results -> {
@@ -105,7 +104,7 @@ public final class CodeSystemService {
 		return RepositoryRequests.prepareSearch()
 				.all()
 				.buildAsync()
-				.execute(getBus())
+				.execute(bus)
 				.then(repos -> repos.stream().map(RepositoryInfo::id).collect(Collectors.toList()))
 				.getSync();
 	}

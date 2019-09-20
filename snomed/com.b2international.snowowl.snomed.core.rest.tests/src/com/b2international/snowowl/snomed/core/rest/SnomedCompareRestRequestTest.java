@@ -29,7 +29,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -44,7 +43,9 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.ImmutableMap;
+
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 /**
@@ -71,7 +72,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 	@Before
 	public void setup() {
 		parentBranch = BranchPathUtils.createPath("MAIN/SnomedCompareRestRequestTest");
-		bus = ApplicationContext.getServiceForClass(IEventBus.class);
+		bus = Services.bus();
 		repositoryUuid = SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
 	

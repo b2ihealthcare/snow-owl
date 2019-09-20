@@ -64,11 +64,10 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
@@ -165,7 +164,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		SctId descriptionSctId = SnomedRequests.identifiers().prepareGet()
 				.setComponentId(descriptionId)
 				.buildAsync()
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(getBus())
 				.getSync()
 				.first()
 				.get();
@@ -712,7 +711,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.accept(ContentType.JSON)
 		.queryParam("term", "<<")
-		.get("/{path}/descriptions", branchPath.getPath())
+		.get("/{path:**}/descriptions", branchPath.getPath())
 		.then()
 		.statusCode(200);
 	}
@@ -835,9 +834,9 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Delete multiple descriptions")
-			.setUserId("test")
+			.setAuthor("test")
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getBus())
 			.getSync();
 		
 	}

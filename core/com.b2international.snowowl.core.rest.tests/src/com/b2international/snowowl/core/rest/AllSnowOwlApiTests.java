@@ -51,6 +51,6 @@ public class AllSnowOwlApiTests {
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnowOwlApiTests.class).clearResources(true))
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
+			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
 			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL));
 }

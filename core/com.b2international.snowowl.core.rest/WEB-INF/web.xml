@@ -5,7 +5,7 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	id="WebApp_ID" version="3.0">
 
-	<display-name>com.b2international.snowowl.rest.config</display-name>
+	<display-name>com.b2international.snowowl.rest</display-name>
 
 	<welcome-file-list>
 		<welcome-file>/static/index.html</welcome-file>

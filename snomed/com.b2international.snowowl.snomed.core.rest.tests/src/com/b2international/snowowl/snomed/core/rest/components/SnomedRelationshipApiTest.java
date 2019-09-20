@@ -41,25 +41,24 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.ConflictException;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
@@ -140,7 +139,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		SctId relationshipSctId = SnomedRequests.identifiers().prepareGet()
 				.setComponentId(relationshipId)
 				.buildAsync()
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(getBus())
 				.getSync()
 				.first()
 				.get();
@@ -464,9 +463,8 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Delete multiple relationships")
-			.setUserId("test")
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(Services.bus())
 			.getSync();
 		
 	}

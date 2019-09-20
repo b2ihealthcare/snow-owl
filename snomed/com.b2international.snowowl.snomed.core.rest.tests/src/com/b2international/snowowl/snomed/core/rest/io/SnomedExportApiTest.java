@@ -74,7 +74,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -300,7 +299,6 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	public void executeMultipleExportsAtTheSameTime() throws Exception {
 		
 		Promise<Rf2ExportResult> first = SnomedRequests.rf2().prepareExport()
-			.setUserId("System")
 			.setCodeSystem("SNOMEDCT")
 			.setReleaseType(Rf2ReleaseType.FULL)
 			.setCountryNamespaceElement("INT")
@@ -308,10 +306,9 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.setReferenceBranch(branchPath.getPath())
 			.setLocales(LOCALES)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
+			.execute(getBus());
 		
 		Promise<Rf2ExportResult> second = SnomedRequests.rf2().prepareExport()
-			.setUserId("System")
 			.setCodeSystem("SNOMEDCT")
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
@@ -319,7 +316,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.setReferenceBranch(branchPath.getPath())
 			.setLocales(LOCALES)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
+			.execute(getBus());
 		
 		String message = Promise.all(first, second)
 			.then(new Function<List<Object>, String>() {

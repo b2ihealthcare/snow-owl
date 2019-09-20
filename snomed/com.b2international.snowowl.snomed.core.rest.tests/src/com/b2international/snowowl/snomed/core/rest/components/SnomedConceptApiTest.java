@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.components;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
@@ -66,11 +65,10 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -160,7 +158,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithReservedId() {
-		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
+		ISnomedIdentifierService identifierService = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class);
 		String conceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
 
 		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
@@ -174,7 +172,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		SctId conceptSctId = SnomedRequests.identifiers().prepareGet()
 			.setComponentId(conceptId)
 			.buildAsync()
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getBus())
 			.getSync()
 			.first()
 			.get();
@@ -727,9 +725,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Delete multiple concepts")
-			.setUserId("test")
+			.setAuthor("test")
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getBus())
 			.getSync();
 		
 	}

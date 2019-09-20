@@ -75,6 +75,9 @@ public class CodeSystemVersionService {
 
 	@Autowired
 	private CodeSystemService codeSystems;
+	
+	@Autowired
+	private IEventBus bus;
 
 	/**
 	 * Lists all released code system versions for a single code system with the specified short name, if it exists.
@@ -114,7 +117,7 @@ public class CodeSystemVersionService {
 				.filterByCodeSystemShortName(shortName)
 				.filterByVersionId(versionId)
 				.build(codeSystem.getRepositoryUuid())
-				.execute(getEventBus())
+				.execute(bus)
 				.getSync();
 		
 		final CodeSystemVersionEntry version = Iterables.getOnlyElement(versions, null);
@@ -147,7 +150,7 @@ public class CodeSystemVersionService {
 				.setUser(User.SYSTEM.getUsername())
 				.setRequest(req)
 				.buildAsync()
-				.execute(getEventBus())
+				.execute(bus)
 				.getSync();
 		
 		RemoteJobEntry job = null;
@@ -160,7 +163,7 @@ public class CodeSystemVersionService {
 			
 			job = JobRequests.prepareGet(jobId)
 					.buildAsync()
-					.execute(getEventBus())
+					.execute(bus)
 					.getSync();
 		} while (job == null || !job.isDone());
 		
@@ -180,15 +183,11 @@ public class CodeSystemVersionService {
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.build(repositoryId)
-				.execute(getEventBus())
+				.execute(bus)
 				.getSync()
 				.getItems();
 	}
 	
-	private IEventBus getEventBus() {
-		return ApplicationContext.getInstance().getService(IEventBus.class);
-	}
-
 	private List<CodeSystemVersion> toSortedCodeSystemVersionList(final Collection<CodeSystemVersionEntry> sourceCodeSystemVersions) {
 		final Collection<CodeSystemVersion> targetCodeSystemVersions = Collections2.transform(sourceCodeSystemVersions, CODE_SYSTEM_VERSION_CONVERTER);
 		return VERSION_ID_ORDERING.immutableSortedCopy(targetCodeSystemVersions);

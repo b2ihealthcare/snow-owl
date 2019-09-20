@@ -15,18 +15,11 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.rest.BaseApiConfig;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.rest.browser.ISnomedBrowserService;
-import com.b2international.snowowl.snomed.core.rest.browser.SnomedBrowserService;
-import com.b2international.snowowl.snomed.core.rest.services.ISnomedRf2ImportService;
-import com.b2international.snowowl.snomed.core.rest.services.SnomedRf2ImportService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 
 import springfox.documentation.spring.web.plugins.Docket;
@@ -65,16 +58,6 @@ public class SnomedApiConfig extends BaseApiConfig {
 				.getServiceChecked(SnowOwlConfiguration.class)
 				.getModuleConfig(SnomedCoreConfiguration.class)
 				.getMaxReasonerRuns();
-	}
-	
-	@Bean
-	public ISnomedRf2ImportService importService() {
-		return new SnomedRf2ImportService();
-	}
-	
-	@Bean
-	public ISnomedBrowserService browserService(@Autowired IEventBus bus) {
-		return new SnomedBrowserService(bus);
 	}
 	
 }

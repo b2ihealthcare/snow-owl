@@ -25,7 +25,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
@@ -35,8 +34,6 @@ import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -47,6 +44,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -70,7 +68,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 			RepositoryRequests.branching()
 				.prepareDelete("MAIN/SnomedMergePerformanceTest/testPerf")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(Services.bus())
 				.getSync();
 		} catch (NotFoundException e) {
 			// ignore
@@ -112,7 +110,6 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		CommitResult createCommitResult = SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Commit large bulk request")
-			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
 			.execute(getBus())
 			.getSync();
@@ -179,7 +176,6 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Commit update bulk request")
-			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
 			.execute(getBus())
 			.getSync();
@@ -208,7 +204,6 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Commit update bulk request")
-			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
 			.execute(getBus())
 			.getSync();

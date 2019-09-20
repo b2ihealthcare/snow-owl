@@ -28,12 +28,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -45,9 +45,9 @@ import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.rest.exceptions.SnomedImportConfigurationNotFoundException;
-import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -69,6 +69,12 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	 * Keys are versions.<br>Values are mapping between the import IDs and the configurations.
 	 */
 	private final Map<UUID, ISnomedImportConfiguration> configurationMapping = synchronizedMap(Maps.<UUID, ISnomedImportConfiguration>newHashMap());
+	
+	@Autowired
+	private IEventBus bus;
+	
+	@Autowired
+	private AttachmentRegistry fileRegistry;
 	
 	@Override
 	public ISnomedImportConfiguration getImportDetails(final UUID importId) {
@@ -150,7 +156,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					codeSystemShortName);
 		}
 
-		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(importId, inputStream);
+		fileRegistry.upload(importId, inputStream);
 		
 		SnomedRequests.rf2().prepareImport()
 			.setRf2ArchiveId(importId)
@@ -159,7 +165,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			.setCodeSystemShortName(configuration.getCodeSystemShortName())
 			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
-			.execute(getEventBus())
+			.execute(bus)
 			.then(result -> {
 				((SnomedImportConfiguration) configuration).setStatus(result.getStatus());
 				return null;
@@ -181,15 +187,11 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		try {
 			return CodeSystemRequests.prepareGetCodeSystem(shortName)
 					.build(REPOSITORY_UUID)
-					.execute(getEventBus())
+					.execute(bus)
 					.getSync();
 		} catch (NotFoundException e) {
 			return null;
 		}
-	}
-	
-	private IEventBus getEventBus() {
-		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 	
 	@Override
@@ -201,7 +203,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		// FULL AND SNAPSHOT can be import into empty databases
 		if (Rf2ReleaseType.DELTA == configuration.getRf2ReleaseType()) {
 			// will throw exception internally if the branch is not found
-			RepositoryRequests.branching().prepareGet(configuration.getBranchPath()).build(REPOSITORY_UUID).execute(getEventBus()).getSync(1, TimeUnit.MINUTES);
+			RepositoryRequests.branching().prepareGet(configuration.getBranchPath()).build(REPOSITORY_UUID).execute(bus).getSync(1, TimeUnit.MINUTES);
 		}
 		
 		final UUID importId = randomUUID();

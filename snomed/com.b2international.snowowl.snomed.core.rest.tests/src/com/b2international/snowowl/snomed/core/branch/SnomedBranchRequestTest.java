@@ -53,6 +53,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
@@ -76,7 +77,7 @@ public class SnomedBranchRequestTest {
 	
 	@Before
 	public void setup() {
-		bus = ApplicationContext.getInstance().getService(IEventBus.class);
+		bus = Services.bus();
 		branchPath = RepositoryRequests.branching().prepareCreate()
 				.setParent(Branch.MAIN_PATH)
 				.setName(methodName.get())

@@ -34,7 +34,6 @@ import com.b2international.snowowl.snomed.core.rest.branches.SnomedBranchingApiT
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedReviewApiTest;
-import com.b2international.snowowl.snomed.core.rest.browser.SnomedBrowserApiTest;
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
 import com.b2international.snowowl.snomed.core.rest.components.SnomedConceptApiTest;
 import com.b2international.snowowl.snomed.core.rest.components.SnomedDescriptionApiTest;
@@ -81,7 +80,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedRefSetMemberParameterizedTest.class,
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
-	SnomedBrowserApiTest.class,
 	// Merge, Review test cases
 	SnomedMergeApiTest.class,
 	SnomedMergeConflictTest.class,
@@ -99,7 +97,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 //	SnomedExtensionUpgradeTest.class, 
 //	SnomedExtensionDowngradeTest.class,
 //	SnomedExtensionVersioningTest.class,
-	// MRCM export/import
+	// MRCM export/importF
 	MrcmImportExportTest.class,
 	// Performance test cases
 	SnomedConceptCreatePerformanceTest.class,
@@ -111,8 +109,7 @@ public class AllSnomedApiTests {
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnomedApiTests.class).clearResources(true))
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
-			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"))
+			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
 			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
 			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, SnomedApiTestConstants.EXTENSION_PATH, Resources.Snomed.MINI_RF2_EXT, Rf2ReleaseType.DELTA));
 

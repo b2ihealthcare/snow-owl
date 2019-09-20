@@ -41,14 +41,12 @@ import java.util.Map;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -62,6 +60,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -372,7 +371,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.queryParam("referencedComponentId", conceptId)
 			.queryParam("owlExpression.typeId", Concepts.IS_A)
 			.queryParam("owlExpression.destinationId", Concepts.NAMESPACE_ROOT)
-			.get("/{path}/members", branchPath.getPath())
+			.get("/{path:**}/members", branchPath.getPath())
 			.then()
 			.extract().as(SnomedReferenceSetMembers.class);
 		
@@ -867,9 +866,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Delete reference set members in ascending index order")
-			.setUserId("test")
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(Services.bus())
 			.getSync();
 		
 		// Check that member 2 still exists

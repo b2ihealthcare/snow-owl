@@ -15,8 +15,12 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.function.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,21 +28,27 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.annotation.Order;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.lang.Nullable;
+import org.springframework.util.StringValueResolver;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.springframework.web.servlet.mvc.condition.RequestCondition;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConfiguration;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
@@ -67,6 +77,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import springfox.documentation.schema.property.bean.AccessorsProvider;
 import springfox.documentation.schema.property.field.FieldProvider;
 import springfox.documentation.spi.schema.EnumTypeDeterminer;
 import springfox.documentation.spring.web.readers.parameter.ModelAttributeParameterExpander;
@@ -77,14 +88,12 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  *
  * @since 1.0
  */
-@Order(1)
 @EnableSwagger2
-@EnableWebMvc
 @Configuration
 @ComponentScan({"com.b2international.snowowl.core.rest"})
 @Import({ SnowOwlSecurityConfig.class })
 @PropertySource("classpath:com/b2international/snowowl/core/rest/service_configuration.properties")
-public class SnowOwlApiConfig implements WebMvcConfigurer {
+public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 
 	@Autowired
 	private org.springframework.context.ApplicationContext ctx;
@@ -158,8 +167,9 @@ public class SnowOwlApiConfig implements WebMvcConfigurer {
 	@Bean
 	public ModelAttributeParameterExpander modelAttributeParameterExpander(
 			@Autowired FieldProvider fieldProvider, 
+			@Autowired AccessorsProvider accessorsProvider,
 			@Autowired EnumTypeDeterminer enumTypeDeterminer) {
-		return new ModelAttributeParameterExpanderExt(fieldProvider, enumTypeDeterminer);
+		return new ModelAttributeParameterExpanderExt(fieldProvider, accessorsProvider, enumTypeDeterminer);
 	}
 
 	@Bean
@@ -219,6 +229,61 @@ public class SnowOwlApiConfig implements WebMvcConfigurer {
 						.build()
 				);
 			});
+	}
+	
+	@Override
+	protected RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
+		return new RequestMappingHandlerMapping() {
+			
+			private StringValueResolver embeddedValueResolver;
+			
+			@Override
+			public void setEmbeddedValueResolver(StringValueResolver resolver) {
+				super.setEmbeddedValueResolver(resolver);
+				this.embeddedValueResolver = resolver;
+			}
+			
+			@Override
+			protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
+				RequestMappingInfo info = createRequestMappingInfo(method);
+				if (info != null) {
+					RequestMappingInfo typeInfo = createRequestMappingInfo(handlerType);
+					if (typeInfo != null) {
+						info = typeInfo.combine(info);
+					}
+					String prefix = getPrefix(handlerType);
+					if (prefix != null) {
+						BuilderConfiguration config = new BuilderConfiguration();
+						config.setPathMatcher(getPathMatcher());
+						config.setSuffixPatternMatch(true);
+						info = RequestMappingInfo.paths(prefix).options(config).build().combine(info);
+					}
+				}
+				return info;
+			}
+
+			@Nullable
+			private RequestMappingInfo createRequestMappingInfo(AnnotatedElement element) {
+				RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(element, RequestMapping.class);
+				RequestCondition<?> condition = (element instanceof Class ?
+						getCustomTypeCondition((Class<?>) element) : getCustomMethodCondition((Method) element));
+				return (requestMapping != null ? createRequestMappingInfo(requestMapping, condition) : null);
+			}
+			
+			private String getPrefix(Class<?> handlerType) {
+				for (Map.Entry<String, Predicate<Class<?>>> entry : getPathPrefixes().entrySet()) {
+					if (entry.getValue().test(handlerType)) {
+						String prefix = entry.getKey();
+						if (this.embeddedValueResolver != null) {
+							prefix = this.embeddedValueResolver.resolveStringValue(prefix);
+						}
+						return prefix;
+					}
+				}
+				return null;
+			}
+			
+		};
 	}
 
 }

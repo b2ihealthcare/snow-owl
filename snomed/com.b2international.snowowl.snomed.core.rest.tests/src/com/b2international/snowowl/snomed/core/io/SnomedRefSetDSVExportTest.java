@@ -41,8 +41,8 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -68,6 +68,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
@@ -98,7 +99,7 @@ public class SnomedRefSetDSVExportTest {
 	
 	@Before
 	public void setup() {
-		bus = ApplicationContext.getInstance().getService(IEventBus.class);
+		bus = Services.bus();
 		fileRegistry = ApplicationContext.getInstance().getService(AttachmentRegistry.class);
 		tempDir = Files.createTempDir();
 		branchPath = createBranch(methodName.get());

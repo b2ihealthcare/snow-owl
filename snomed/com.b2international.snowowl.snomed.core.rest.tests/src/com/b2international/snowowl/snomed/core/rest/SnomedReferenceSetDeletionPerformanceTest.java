@@ -34,8 +34,8 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
@@ -72,7 +72,6 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Bulk request of " + CONCEPT_CREATION_LIMIT +  "reference set member creation and id generation")
-			.setUserId("info@b2international.com")
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus())
 			.getSync();
