@@ -42,7 +42,7 @@
     "severity": "WARNING",
     "checkType": "EXPENSIVE",
     "type": "script-groovy",
-    "implementation": "scripts/rule_definition_text_length.groovy"
+    "implementation": "scripts/rule_description_text_length.groovy"
   },
   {
   	"id": "rule_mrcm_constraint",
