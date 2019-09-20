@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.rest.codesystem;
+package com.b2international.snowowl.core.rest.codesystem;
 
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemCreated;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemExists;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemHasAttributeValue;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemNotCreated;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemNotExists;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemNotUpdated;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemUpdatedWithStatus;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemExists;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemHasAttributeValue;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemNotCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemNotExists;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemNotUpdated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdatedWithStatus;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
@@ -31,7 +31,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.api.rest.CodeSystemApiAssert;
+import com.b2international.snowowl.core.rest.CodeSystemApiAssert;
 import com.google.common.collect.ImmutableMap;
 
 /**

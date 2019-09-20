@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.rest;
+package com.b2international.snowowl.core.rest;
 
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
@@ -21,12 +21,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.api.japi.codesystem.CodeSystemRequestTest;
-import com.b2international.snowowl.api.japi.commitinfo.CommitInfoRequestTest;
-import com.b2international.snowowl.api.rest.auth.BasicAuthenticationTest;
-import com.b2international.snowowl.api.rest.codesystem.CodeSystemApiTest;
-import com.b2international.snowowl.api.rest.info.RepositoryApiTest;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequestTest;
+import com.b2international.snowowl.core.commitinfo.CommitInfoRequestTest;
+import com.b2international.snowowl.core.rest.auth.BasicAuthenticationTest;
+import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiTest;
+import com.b2international.snowowl.core.rest.info.RepositoryApiTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
