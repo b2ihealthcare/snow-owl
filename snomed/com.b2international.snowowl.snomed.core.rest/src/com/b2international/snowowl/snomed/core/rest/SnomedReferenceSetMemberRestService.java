@@ -320,9 +320,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestBody 
 			final ChangeRequest<RestRequest> body,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
-		final String userId = principal.getName();
 		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
 		
 		final RestRequest change = body.getChange();
@@ -333,7 +333,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		
 		return SnomedRequests.prepareCommit()
 				.setDefaultModuleId(defaultModuleId)
-				.setUserId(userId)
+				.setAuthor(author)
 				.setBody(change.resolve(resolver))
 				.setCommitComment(commitComment)
 				.build(repositoryId, branchPath)

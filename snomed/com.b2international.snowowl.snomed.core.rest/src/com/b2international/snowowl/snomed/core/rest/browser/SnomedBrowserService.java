@@ -144,7 +144,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.prepareCommit()
 				.setCommitComment(commitComment)
 				.setBody(req)
-				.setUserId(userId)
+				.setAuthor(userId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(bus)
 				.getSync()
@@ -219,7 +219,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final String commitComment = getCommitComment(userId, newVersionConcept, "updating");
 		SnomedRequests
 			.prepareCommit()
-			.setUserId(userId)
+			.setAuthor(userId)
 			.setCommitComment(commitComment)
 			.setBody(commitReq)
 			.setPreparationTime(watch.elapsed(TimeUnit.MILLISECONDS))

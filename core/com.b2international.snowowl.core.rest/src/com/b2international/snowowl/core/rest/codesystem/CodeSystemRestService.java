@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -96,11 +97,11 @@ public class CodeSystemRestService extends AbstractRestService {
 	public ResponseEntity<Void> createCodeSystem(
 			@RequestBody
 			final CodeSystem codeSystem,
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 
 		ApiValidation.checkInput(codeSystem);
 		
-		final String userId = principal.getName();
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
 		final String shortName = CodeSystemRequests
@@ -116,7 +117,10 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setExtensionOf(codeSystem.getExtensionOf())
-				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, userId, commitComment)
+				.commit()
+				.setAuthor(author)
+				.setCommitComment(commitComment)
+				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
 				.execute(bus)
 				.getSync().getResultAs(String.class);
 		

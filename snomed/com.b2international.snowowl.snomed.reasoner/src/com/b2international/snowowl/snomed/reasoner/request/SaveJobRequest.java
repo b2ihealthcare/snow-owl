@@ -208,7 +208,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			.setBody(bulkRequestBuilder)
 			.setCommitComment(commitComment)
 			.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
-			.setUserId(userId)
+			.setAuthor(userId)
 			.build();
 
 		final CommitResult commitResult = new IdRequest<>(commitRequest)  

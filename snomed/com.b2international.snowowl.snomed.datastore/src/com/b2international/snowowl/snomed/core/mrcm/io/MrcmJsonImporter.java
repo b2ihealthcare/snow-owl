@@ -47,7 +47,7 @@ public class MrcmJsonImporter implements MrcmImporter {
 	}
 	
 	@Override
-	public void doImport(String user, InputStream source) {
+	public void doImport(String author, InputStream source) {
 		final String branch = Branch.MAIN_PATH;
 		ObjectMapper mapper = ApplicationContext.getServiceForClass(ObjectMapper.class);
 		
@@ -73,7 +73,7 @@ public class MrcmJsonImporter implements MrcmImporter {
 			}
 			
 			SnomedRequests.prepareCommit()
-				.setUserId(user)
+				.setAuthor(author)
 				.setCommitComment("Imported MRCM from JSON file.")
 				.setBody(bulk)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)

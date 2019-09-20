@@ -37,7 +37,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * The author of the changes. 
 	 * @return
 	 */
-	String userId();
+	String author();
 	
 	/**
 	 * Adds the given {@link Object} to this transaction context as a completely new object. 

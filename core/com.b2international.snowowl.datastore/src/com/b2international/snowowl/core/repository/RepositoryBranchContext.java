@@ -40,8 +40,8 @@ public final class RepositoryBranchContext extends DefaultBranchContext implemen
 	}
 	
 	@Override
-	public TransactionContext get(BranchContext context, String userId, String commitComment, String parentContextDescription) {
-		return new RepositoryTransactionContext(context, userId, commitComment, parentContextDescription);
+	public TransactionContext get(BranchContext context, String author, String commitComment, String parentContextDescription) {
+		return new RepositoryTransactionContext(context, author, commitComment, parentContextDescription);
 	}
 	
 }

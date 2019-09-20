@@ -30,14 +30,14 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
  */
 public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, BranchContext, CommitResult> implements AllowedHealthStates {
 
-	private String userId;
+	private String author;
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
 	private long preparationTime = -1L;
 	private String parentContextDescription = DatastoreLockContextDescriptions.ROOT;
 
-	public final RepositoryCommitRequestBuilder setUserId(String userId) {
-		this.userId = userId;
+	public final RepositoryCommitRequestBuilder setAuthor(String author) {
+		this.author = author;
 		return getSelf();
 	}
 
@@ -82,7 +82,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 
 	@Override
 	protected final Request<BranchContext, CommitResult> doBuild() {
-		return new TransactionalRequest(userId, commitComment, getBody(), preparationTime, parentContextDescription);
+		return new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription);
 	}
 	
 	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {

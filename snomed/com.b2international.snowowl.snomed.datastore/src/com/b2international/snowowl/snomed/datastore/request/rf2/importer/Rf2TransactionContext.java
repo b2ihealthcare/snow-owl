@@ -82,8 +82,8 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
-	public String userId() {
-		return getDelegate().userId();
+	public String author() {
+		return getDelegate().author();
 	}
 
 	@Override

@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -174,16 +173,15 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<SnomedRefSetRestInput> body,
 
-			final Principal principal) {
-		
-		final String userId = principal.getName();
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
 		final SnomedRefSetRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId(); 
 		
 		final String createdRefSetId = change.toRequestBuilder() 
-			.build(repositoryId, branchPath, userId, commitComment, defaultModuleId)
+			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -217,9 +215,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final ChangeRequest<RestRequest> body,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
-		final String userId = principal.getName();
 		final RequestResolver<TransactionContext> resolver = new RefSetRequestResolver();
 		
 		final RestRequest change = body.getChange();
@@ -232,7 +230,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setDefaultModuleId(defaultModuleId)
 			.setBody(change.resolve(resolver))
 			.setCommitComment(commitComment)
-			.setUserId(userId)
+			.setAuthor(author)
 			.build(repositoryId, branchPath)
 			.execute(bus)
 			.getSync();
@@ -262,9 +260,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestBody
 			final ChangeRequest<BulkRestRequest> request,
 			
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
-		final String userId = principal.getName();
 		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
 		
 		final BulkRestRequest bulkRequest = request.getChange();
@@ -283,7 +281,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		SnomedRequests.prepareCommit()
 			.setDefaultModuleId(defaultModuleId)
 			.setBody(updateRequestBuilder.build())
-			.setUserId(userId)
+			.setAuthor(author)
 			.setCommitComment(commitComment)
 			.build(repositoryId, branchPath)
 			.execute(bus)
@@ -313,10 +311,11 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 
-			final Principal principal) {
+			@RequestHeader(value = X_AUTHOR)
+			final String author) {
 		
 		SnomedRequests.prepareDeleteReferenceSet(referenceSetId, force)
-				.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Reference Set '%s' from store.", referenceSetId))
+				.build(repositoryId, branchPath, author, String.format("Deleted Reference Set '%s' from store.", referenceSetId))
 				.execute(bus)
 				.getSync();
 	}
