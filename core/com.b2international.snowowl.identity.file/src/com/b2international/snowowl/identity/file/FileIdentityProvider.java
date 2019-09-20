@@ -76,8 +76,10 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 			boolean success = user != null && BCrypt.checkpw(token, user.getHashedPassword());
 			if (success) {
 				verifiedTokens.put(username, token);
+				return new User(username, ImmutableList.of(Role.ADMINISTRATOR));
+			} else {
+				return null;
 			}
-			return new User(username, ImmutableList.of(Role.ADMINISTRATOR));
 		}
 	}
 
