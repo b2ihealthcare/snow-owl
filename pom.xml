@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
-			<version>1.17</version>
+			<version>1.25</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
