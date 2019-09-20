@@ -26,15 +26,15 @@ import springfox.documentation.spring.web.plugins.Docket;
 @Configuration
 public class CoreApiConfig extends BaseApiConfig {
 
-	@Bean
-	public String coreApiBaseUrl() {
+	@Override
+	public String getApiBaseUrl() {
 		return "/admin";
 	}
 	
 	@Bean
 	public Docket coreDocs() {
 		return docs(
-			coreApiBaseUrl(),
+			getApiBaseUrl(),
 			"admin",
 			"1.0",
 			"Admin API",

@@ -25,18 +25,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
@@ -79,11 +81,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @EnableWebMvc
 @Configuration
-@ComponentScan({"com.b2international.snowowl.core.rest", "org.springdoc.core"})
-@Import({ SnowOwlSecurityConfig.class, CoreApiConfig.class })
+@ComponentScan({"com.b2international.snowowl.core.rest"})
+@Import({ SnowOwlSecurityConfig.class })
 @PropertySource("classpath:com/b2international/snowowl/core/rest/service_configuration.properties")
-public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
+public class SnowOwlApiConfig implements WebMvcConfigurer {
 
+	@Autowired
+	private org.springframework.context.ApplicationContext ctx;
+	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new AuthorizationTokenInterceptor());
@@ -164,7 +169,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 	
 	@Bean
 	public IEventBus eventBus() {
-		return new AuthorizedEventBus(ApplicationContext.getInstance().getServiceChecked(IEventBus.class), () -> ImmutableMap.of("Authorization", Strings.nullToEmpty(AuthorizationTokenThreadLocal.get())));
+		return new AuthorizedEventBus(ApplicationContext.getInstance().getServiceChecked(IEventBus.class), () -> ImmutableMap.of(HttpHeaders.AUTHORIZATION, Strings.nullToEmpty(AuthorizationTokenThreadLocal.get())));
 	}
 	
 	@Bean
@@ -201,6 +206,19 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 	public void configurePathMatch(final PathMatchConfigurer configurer) {
 		configurer.setUseRegisteredSuffixPatternMatch(true);
 		configurer.setPathMatcher(new AntPathWildcardMatcher());
+		ctx.getBeansWithAnnotation(Configuration.class)
+			.values()
+			.stream()
+			.filter(BaseApiConfig.class::isInstance)
+			.map(BaseApiConfig.class::cast)
+			.forEach(conf -> {
+				configurer.addPathPrefix(
+					conf.getApiBaseUrl(), 
+					HandlerTypePredicate.builder()
+						.basePackage(conf.getApiBasePackages())
+						.build()
+				);
+			});
 	}
 
 }

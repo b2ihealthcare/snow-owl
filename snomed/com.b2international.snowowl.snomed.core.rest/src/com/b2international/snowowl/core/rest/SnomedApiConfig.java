@@ -38,15 +38,15 @@ import springfox.documentation.spring.web.plugins.Docket;
 @ComponentScan("com.b2international.snowowl.snomed.core.rest")
 public class SnomedApiConfig extends BaseApiConfig {
 	
-	@Bean
-	public String snomedApiBaseUrl() {
+	@Override
+	public String getApiBaseUrl() {
 		return "/snomed-ct/v3";
 	}
 	
 	@Bean
 	public Docket snomedDocs() {
 		return docs(
-			snomedApiBaseUrl(),
+			getApiBaseUrl(),
 			"snomed",
 			"3.0",
 			"SNOMED CT API",
@@ -55,7 +55,6 @@ public class SnomedApiConfig extends BaseApiConfig {
 			"API License",
 			"https://b2i.sg",
 			"This describes the resources that make up the official Snow Owl® SNOMED CT Terminology API.\n" + 
-			"\n" + 
 			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/snomed)."
 		);
 	}

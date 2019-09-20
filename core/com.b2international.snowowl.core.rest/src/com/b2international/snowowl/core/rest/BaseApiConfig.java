@@ -19,11 +19,14 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.UUID;
 
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.fasterxml.classmate.TypeResolver;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import io.swagger.v3.oas.models.security.SecurityScheme.In;
@@ -45,6 +48,23 @@ import springfox.documentation.spring.web.plugins.Docket;
 public abstract class BaseApiConfig {
 
 	/**
+	 * @return the api base url for all services grouped by this configuration class
+	 */
+	public abstract String getApiBaseUrl();
+	
+	/**
+	 * @return the base packages where all controllers classes can be found for this API group
+	 */
+	public final String[] getApiBasePackages() {
+		ComponentScan scan = AnnotationUtils.findAnnotation(getClass(), ComponentScan.class);
+		if (scan != null) {
+			return scan.value();
+		} else {
+			return new String[]{getClass().getPackageName()};
+		}
+	}
+	
+	/**
 	 * Expose this as @Bean annotated component in the implementation configuration class.
 	 * @return a configured docket for this API module
 	 */
@@ -59,6 +79,7 @@ public abstract class BaseApiConfig {
 			final String apiLicenseUrl,
 			final String apiDescription) {
 		final TypeResolver resolver = new TypeResolver();
+		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + "/.*");
 		return new Docket(DocumentationType.SWAGGER_2)
 				.securitySchemes(ImmutableList.of(
 					new BasicAuth("basic"),
@@ -66,7 +87,7 @@ public abstract class BaseApiConfig {
 				))
 				.securityContexts(ImmutableList.of(
 					SecurityContext.builder()
-						.forPaths(PathSelectors.regex(apiBaseUrl + "/.*"))
+						.forPaths(paths)
 						.securityReferences(ImmutableList.of(
 							new SecurityReference("basic", new AuthorizationScope[0]),
 							new SecurityReference("bearer", new AuthorizationScope[0])
@@ -78,7 +99,7 @@ public abstract class BaseApiConfig {
 				.genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
 				.alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
 				.groupName(apiGroup)
-	            .select().paths(PathSelectors.regex(apiBaseUrl + "/.*")).build()
+	            .select().paths(paths).build()
 	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
 	
