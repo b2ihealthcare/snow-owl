@@ -51,6 +51,8 @@ import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -149,7 +151,18 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 			writer.put(nextStorageKey(), concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build());
 			writer.put(nextStorageKey(), concept(Concepts.REFSET_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build());
 			writer.put(nextStorageKey(), concept(Concepts.REFSET_LANGUAGE_TYPE).parents(REFSET_ROOTL).build());
-
+			writer.put(nextStorageKey(), concept(Concepts.REFSET_DESCRIPTION_TYPE).parents(REFSET_ROOTL).build());
+			// Members
+			writer.put(nextStorageKey(), member(Concepts.FULLY_SPECIFIED_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_DESCRIPTION_TYPE)
+					.field(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 255)
+					.build());
+			writer.put(nextStorageKey(), member(Concepts.SYNONYM, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_DESCRIPTION_TYPE)
+					.field(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 255)
+					.build());
+			writer.put(nextStorageKey(), member(Concepts.TEXT_DEFINITION, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_DESCRIPTION_TYPE)
+					.field(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 4096)
+					.build());
+			
 			writer.commit();
 			return null;
 		});
@@ -176,8 +189,12 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(generateRandomEffectiveTime());
 	}
 	
-	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
-		return DocumentBuilders.member(id, referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(generateRandomEffectiveTime());
+	protected final SnomedRefSetMemberIndexEntry.Builder member(String referencedComponentId, short referencedComponentType, String referenceSetId) {
+		return member(UUID.randomUUID().toString(), referencedComponentId, referencedComponentType, referenceSetId);
+	}
+	
+	protected final SnomedRefSetMemberIndexEntry.Builder member(String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
+		return DocumentBuilders.member(UUID.randomUUID().toString(), referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final HierarchyConceptSetDefinition hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {
@@ -251,13 +268,35 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 		}
 	}
 	
+	protected final String generateTermOfLength(int length) {
+		final char[] characters = new char[length];
+		
+		int pos = 0;
+		final Random random = new Random();
+		while (pos < length) {
+			final char charToAdd;
+			if (pos == 0 || pos == length - 1) {
+				// XXX - Avoid test failures by ensuring that first and last characters won't be spaces
+				charToAdd = 'a';
+			} else {
+				final long randomNumber = random.nextInt(1000) + 1;
+				charToAdd = randomNumber > 800 ? ' ' : 'a';
+			}
+			
+			characters[pos] = charToAdd;
+			pos++;
+		}
+		
+		return new String(characters);
+	}
+	
 	private final long generateRandomEffectiveTime() {
 		if (EffectiveTimes.UNSET_EFFECTIVE_TIME == effectiveTime) {
 			return EffectiveTimes.UNSET_EFFECTIVE_TIME;
 		}
 		
-		final Random rnd = new Random();
-		long randomEffectiveTime = rnd.nextInt(1000) + 1;
+		final Random random = new Random();
+		long randomEffectiveTime = random.nextInt(1000) + 1;
 		
 		return randomEffectiveTime > 500 ? EffectiveTimes.UNSET_EFFECTIVE_TIME : randomEffectiveTime;
 	}

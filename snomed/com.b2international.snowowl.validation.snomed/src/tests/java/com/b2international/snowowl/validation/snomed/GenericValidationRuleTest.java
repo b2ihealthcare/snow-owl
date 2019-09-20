@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
-
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 
@@ -28,12 +27,14 @@ import org.junit.runners.Parameterized;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
@@ -42,7 +43,6 @@ import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 import com.google.common.collect.ImmutableList;
 
 /**
- * 
  * @since 6.4
  */
 @RunWith(Parameterized.class)
@@ -235,6 +235,49 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c1.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c2.getId()));
+	}
+	
+	@Test
+	public void rule_description_text_length() throws Exception {
+		final String ruleId = "rule_description_text_length";
+		indexRule(ruleId);
+		
+		final SnomedDescriptionIndexEntry correctSynonym = description(generateDescriptionId(), Concepts.SYNONYM, "correct synonym length").build();
+		indexRevision(MAIN, nextStorageKey(), correctSynonym);
+		
+		final SnomedDescriptionIndexEntry incorrectSynonym = description(generateDescriptionId(), Concepts.SYNONYM, generateTermOfLength(256)).build();
+		indexRevision(MAIN, nextStorageKey(), incorrectSynonym);
+		
+		final SnomedDescriptionIndexEntry correctFsn = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "correct FSN length(this is an fsn)").build();
+		indexRevision(MAIN, nextStorageKey(), correctFsn);
+		
+		final SnomedDescriptionIndexEntry incorrectFsn = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, generateTermOfLength(256)).build();
+		indexRevision(MAIN, nextStorageKey(), incorrectFsn);
+		
+		final SnomedDescriptionIndexEntry correctTextDefinition = description(generateDescriptionId(), Concepts.TEXT_DEFINITION, "Correct text definition length").build();
+		indexRevision(MAIN, nextStorageKey(), correctTextDefinition);
+		
+		final SnomedDescriptionIndexEntry incorrectTextDefinition = description(generateDescriptionId(), Concepts.TEXT_DEFINITION, generateTermOfLength(4097)).build();
+		indexRevision(MAIN, nextStorageKey(), incorrectTextDefinition);		
+		
+		final String newDescriptionTypeId = generateConceptId();
+		final SnomedRefSetMemberIndexEntry descriptionFormatEntry = member(newDescriptionTypeId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_DESCRIPTION_TYPE)
+				.field(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 50)
+				.build();
+		indexRevision(MAIN, nextStorageKey(), descriptionFormatEntry);
+		
+		final SnomedDescriptionIndexEntry newCorrectDescriptionTypedDesc = description(generateConceptId(), newDescriptionTypeId, "correct new description type length").build();
+		indexRevision(MAIN, nextStorageKey(), newCorrectDescriptionTypedDesc);
+		
+		final SnomedDescriptionIndexEntry newIncorrectDescriptionTypedDesc = description(generateConceptId(), newDescriptionTypeId, generateTermOfLength(51)).build();
+		indexRevision(MAIN, nextStorageKey(), newIncorrectDescriptionTypedDesc);
+		
+		final ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectSynonym.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectFsn.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectTextDefinition.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, newIncorrectDescriptionTypedDesc.getId()));
 	}
 	
 	@Test
