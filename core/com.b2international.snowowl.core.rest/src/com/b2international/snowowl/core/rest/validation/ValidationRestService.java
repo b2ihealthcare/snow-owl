@@ -78,7 +78,7 @@ import springfox.documentation.annotations.ApiIgnore;
  */
 @Api(value = "Validations", description="Validations", tags = { "validations" })
 @Controller
-@RequestMapping(value = "#{coreApiBaseUrl}/validations", produces={ AbstractRestService.JSON_MEDIA_TYPE })
+@RequestMapping(value = "/validations", produces={ AbstractRestService.JSON_MEDIA_TYPE })
 public class ValidationRestService extends AbstractRestService {
 	
 	@Autowired

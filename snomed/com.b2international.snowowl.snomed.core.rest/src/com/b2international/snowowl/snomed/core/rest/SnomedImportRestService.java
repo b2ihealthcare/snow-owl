@@ -55,7 +55,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "imports", description="Imports")
 @RestController
-@RequestMapping(value = "#{snomedApiBaseUrl}/imports")
+@RequestMapping(value = "/imports")
 public class SnomedImportRestService extends AbstractSnomedRestService {
 
 	@Autowired

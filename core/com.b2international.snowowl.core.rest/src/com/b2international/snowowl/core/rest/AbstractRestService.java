@@ -73,6 +73,11 @@ public abstract class AbstractRestService {
 	 */
 	public static final String MULTIPART_MEDIA_TYPE = MediaType.MULTIPART_FORM_DATA_VALUE;
 	
+	/**
+	 * Header to use when impersonating a commit request. 
+	 */
+	public static final String X_AUTHOR = "X-Author";
+	
 	@Autowired
 	protected IEventBus bus;
 

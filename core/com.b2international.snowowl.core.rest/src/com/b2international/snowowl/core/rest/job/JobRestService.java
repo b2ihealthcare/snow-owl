@@ -42,7 +42,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Jobs", description="Jobs", tags = { "jobs" })
 @RestController
-@RequestMapping(value = "#{coreApiBaseUrl}/jobs")
+@RequestMapping(value = "/jobs")
 public class JobRestService extends AbstractRestService {
 
 	public JobRestService() {

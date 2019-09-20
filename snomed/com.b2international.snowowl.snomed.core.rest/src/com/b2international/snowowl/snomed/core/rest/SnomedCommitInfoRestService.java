@@ -40,7 +40,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "commits", description="Commits")
 @RestController
-@RequestMapping(value="#{snomedApiBaseUrl}/commits")
+@RequestMapping(value="/commits")
 public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 
 	public SnomedCommitInfoRestService() {

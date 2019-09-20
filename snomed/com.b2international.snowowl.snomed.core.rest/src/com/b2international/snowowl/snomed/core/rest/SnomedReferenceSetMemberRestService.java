@@ -55,7 +55,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "members", description="Members")
 @Controller
-@RequestMapping(value="#{snomedApiBaseUrl}/{path:**}/members")
+@RequestMapping(value="/{path:**}/members")
 public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestService {
 	
 	public SnomedReferenceSetMemberRestService() {

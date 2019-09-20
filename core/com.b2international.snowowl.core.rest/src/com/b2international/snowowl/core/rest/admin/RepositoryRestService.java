@@ -61,7 +61,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Repositories", description="Repositories", tags = { "repositories" })
 @RestController
-@RequestMapping(value = "#{coreApiBaseUrl}/repositories") 
+@RequestMapping(value = "/repositories") 
 public class RepositoryRestService extends AbstractRestService {
 	
 	@ApiOperation(

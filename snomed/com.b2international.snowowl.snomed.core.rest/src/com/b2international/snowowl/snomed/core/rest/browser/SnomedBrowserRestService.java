@@ -32,7 +32,7 @@ import io.swagger.annotations.Api;
  */
 @Api(value = "IHTSDO SNOMED CT Browser", description="IHTSDO SNOMED CT Browser", tags = { "browser" })
 @RestController
-@RequestMapping(value="#{snomedApiBaseUrl}/browser/{path:**}")
+@RequestMapping(value="/browser/{path:**}")
 public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 	@Autowired

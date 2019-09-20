@@ -53,7 +53,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
 @RestController
-@RequestMapping(value = "#{coreApiBaseUrl}/codesystems") 
+@RequestMapping(value = "/codesystems") 
 public class CodeSystemRestService extends AbstractRestService {
 
 	@Autowired

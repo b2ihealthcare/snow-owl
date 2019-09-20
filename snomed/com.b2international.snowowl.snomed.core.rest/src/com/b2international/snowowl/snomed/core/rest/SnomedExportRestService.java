@@ -80,7 +80,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "exports", description="Exports")
 @RestController
-@RequestMapping(value="#{snomedApiBaseUrl}/exports")
+@RequestMapping(value="/exports")
 public class SnomedExportRestService extends AbstractSnomedRestService {
 
 	@Autowired

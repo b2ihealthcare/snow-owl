@@ -38,7 +38,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Administration", description="Administration", tags = { "administration" })
 @RestController
-@RequestMapping(value = "#{coreApiBaseUrl}/messages")
+@RequestMapping(value = "/messages")
 public class MessagingRestService extends AbstractRestService {
 
 	@PostMapping(value = "/send", consumes = { AbstractRestService.TEXT_MEDIA_TYPE })

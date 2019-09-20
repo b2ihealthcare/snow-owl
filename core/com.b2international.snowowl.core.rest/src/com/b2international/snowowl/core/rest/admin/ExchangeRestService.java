@@ -59,7 +59,7 @@ import io.swagger.annotations.ApiResponses;
 @Api("Exchange")
 @Controller
 @RequestMapping(
-		value="#{coreApiBaseUrl}/exchange/{shortName}", 
+		value="/exchange/{shortName}", 
 		produces={ AbstractRestService.JSON_MEDIA_TYPE })
 public class ExchangeRestService {
 	

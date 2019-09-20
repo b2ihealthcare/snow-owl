@@ -51,7 +51,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "branches", description="Branches")
 @RestController
-@RequestMapping(value="#{snomedApiBaseUrl}/reviews", produces={AbstractRestService.JSON_MEDIA_TYPE})
+@RequestMapping(value="/reviews", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 
 	public SnomedBranchReviewRestService() {

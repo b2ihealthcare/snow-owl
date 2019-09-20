@@ -34,7 +34,7 @@ import io.swagger.annotations.ApiOperation;
  */
 @Api(value = "Server info", description="Info", tags = { "info" })
 @Controller
-@RequestMapping(value = "#{coreApiBaseUrl}/info") 
+@RequestMapping(value = "/info") 
 public class ServerInfoRestService extends AbstractRestService {
 
 	@ApiOperation(

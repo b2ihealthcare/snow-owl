@@ -37,7 +37,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "reasoners", description="Reasoners")
 @Controller
-@RequestMapping(value="#{snomedApiBaseUrl}/reasoners", produces={ AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+@RequestMapping(value="/reasoners", produces={ AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedReasonerRestService {
 	
 	@Operation(
