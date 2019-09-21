@@ -23,7 +23,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  */
 public final class SnomedRf2ExportRequestBuilder 
 		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, Rf2ExportResult> 
-		implements RepositoryRequestBuilder<Rf2ExportResult> {
+		implements RepositoryIndexRequestBuilder<Rf2ExportResult> {
 
 	private String codeSystem;
 	private String referenceBranch;
