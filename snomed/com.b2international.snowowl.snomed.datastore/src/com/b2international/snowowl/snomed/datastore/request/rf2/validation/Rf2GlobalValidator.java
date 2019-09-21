@@ -202,7 +202,7 @@ public class Rf2GlobalValidator {
 					.limit(componentIdsToFetch.size())
 					.build();
 				
-				componentIdsToFetch.removeAll(newHashSet(context.service(RevisionSearcher.class).search(query)));
+				componentIdsToFetch.removeAll(context.service(RevisionSearcher.class).search(query).getHits());
 				
 			} catch (IOException e) {
 				throw new SnowowlRuntimeException(e);

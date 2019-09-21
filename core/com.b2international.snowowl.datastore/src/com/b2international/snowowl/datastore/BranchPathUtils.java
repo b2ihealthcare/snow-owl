@@ -27,10 +27,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.collections.BackwardListIterator;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
@@ -161,30 +159,17 @@ public abstract class BranchPathUtils {
 	 * @param branchPath
 	 * @return true if the branch exists in the repository
 	 */
-	public static boolean exists(String repositoryUUID, String branchPath) {
+	public static boolean exists(IEventBus bus, String repositoryUUID, String branchPath) {
 		try {
 			RepositoryRequests.branching()
 				.prepareGet(branchPath)
 				.build(repositoryUUID)
-				.execute(ApplicationContext.getInstance().getService(IEventBus.class))
+				.execute(bus)
 				.getSync(1000, TimeUnit.MILLISECONDS);
 		} catch (NotFoundException e) {
 			return false;
 		}
 		return true;
-	}
-	
-	/**
-	 * Returns the MAIN branch for the repository specified by it's repository UUID.
-	 * @param repositoryUUID
-	 * @return
-	 */
-	public static Branch getMainBranchForRepository(String repositoryUUID) {
-		return RepositoryRequests.branching()
-				.prepareGet(IBranchPath.MAIN_BRANCH)
-				.build(repositoryUUID)
-				.execute(ApplicationContext.getInstance().getService(IEventBus.class))
-				.getSync(1000, TimeUnit.MILLISECONDS);
 	}
 	
 	private static IBranchPath getOrCache(final IBranchPath branchPath) {

@@ -115,7 +115,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		}
 		
 		final Rf2ReleaseType releaseType = configuration.getRf2ReleaseType();
-		final boolean contentAvailable = ContentAvailabilityInfoManager.INSTANCE.isAvailable(REPOSITORY_UUID);
+		final boolean contentAvailable = ContentAvailabilityInfoManager.INSTANCE.isAvailable(bus, REPOSITORY_UUID);
 		final boolean isMain = Branch.MAIN_PATH.equals(configuration.getBranchPath());
 		
 		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType) && isMain) {
@@ -140,7 +140,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		}
 		
 		final String branchPath = configuration.getBranchPath();
-		if (!isMain && !BranchPathUtils.exists(REPOSITORY_UUID, branchPath)) {
+		if (!isMain && !BranchPathUtils.exists(bus, REPOSITORY_UUID, branchPath)) {
 			throw new BadRequestException("Importing a release of SNOMED CT from an "
 					+ "archive to other than MAIN branch is prohibited when the given "
 					+ "branch does not exist. Please perform a branch creation first.");
