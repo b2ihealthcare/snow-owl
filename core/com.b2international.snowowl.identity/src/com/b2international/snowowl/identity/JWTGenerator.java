@@ -16,11 +16,19 @@
 package com.b2international.snowowl.identity;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.identity.domain.Role;
+import com.b2international.snowowl.identity.domain.User;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -28,15 +36,20 @@ import com.google.common.collect.Iterables;
  */
 public final class JWTGenerator {
 
+	private static final String PERMISSION = "permission";
+	
 	private final Algorithm algorithm;
+	private final String issuer;
 
 	public JWTGenerator(final Algorithm algorithm, final String issuer) {
 		this.algorithm = algorithm;
+		this.issuer = issuer;
 	}
 	
 	public String generate(String subject, Map<String, Object> claims) {
 		Builder builder = JWT.create()
-				.withIssuer(subject)
+				.withIssuer(issuer)
+				.withSubject(subject)
 				.withIssuedAt(new Date());
 		
 		// add claims
@@ -50,7 +63,32 @@ public final class JWTGenerator {
 			}
 		});
 		
-		return builder.sign(algorithm);
+		try {
+			return builder.sign(algorithm);
+		} catch (Throwable e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	/**
+	 * Generate a JWT security token from the information available in the given {@link User} object.
+	 * @param user
+	 * @return
+	 */
+	public String generate(User user) {
+		return generate(user.getUsername(), ImmutableMap.of(PERMISSION, user.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList())));
+	}	
+	
+	/**
+	 * Extract subject and claim information to reconstruct a {@link User} object.
+	 * @param jwt - the verified token to extract information from
+	 * @return
+	 */
+	public static User toUser(DecodedJWT jwt) {
+		final String subject = jwt.getSubject();
+		final List<Permission> permissions = jwt.getClaim(PERMISSION).asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
+		return new User(subject, ImmutableList.of(new Role("oauth_scopes", permissions)));
 	}
 	
 }

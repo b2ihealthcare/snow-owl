@@ -7,7 +7,8 @@ Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- com.b2international.snowowl.core;visibility:=reexport
+ com.b2international.snowowl.core;visibility:=reexport,
+ org.apache.commons.codec;bundle-version="1.10.0"
 Export-Package: com.auth0.jwt,
  com.auth0.jwt.algorithms,
  com.auth0.jwt.exceptions,

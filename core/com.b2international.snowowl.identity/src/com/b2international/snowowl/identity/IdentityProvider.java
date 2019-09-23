@@ -17,7 +17,6 @@ package com.b2international.snowowl.identity;
 
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +34,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.identity.domain.Users;
@@ -138,32 +136,55 @@ public interface IdentityProvider {
 	 * 
 	 * @param authorizationToken - a supported security token
 	 * @return the {@link User} if the security token is valid otherwise return <code>null</code>
+	 * @throws UnauthorizedException
 	 */
 	default User auth(String authorizationToken) {
 		final String[] parts = authorizationToken.trim().split(" ");
-		if (parts.length != 2) {
+		if (parts.length == 2) {
+			switch (parts[0].toLowerCase()) {
+			case "basic":
+				return authBase64(parts[1]);
+			case "bearer": 
+				return authJWT(parts[1]);
+			// treat any other authorization token as bearer token and verify as JWT
+			default: 
+				throw new UnauthorizedException("Incorrect authorization token");
+			}
+		} else if (parts.length == 1) {
+			return authJWT(parts[0]);
+		} else {
 			throw new UnauthorizedException("Incorrect authorization token");
 		}
-		switch (parts[0].toLowerCase()) {
-		case "basic":
-			final String decoded = new String(Base64.getDecoder().decode(parts[1]), Charsets.UTF_8);
-			final String[] base64Parts = decoded.split(":");
-			if (parts.length != 2) {
-				throw new UnauthorizedException("Incorrect username or password");
-			}
-			return auth(base64Parts[0], base64Parts[1]);
-		case "bearer":
-			try {
-				final DecodedJWT jwt = ApplicationContext.getServiceForClass(JWTVerifier.class).verify(parts[1]);
-				final String subject = jwt.getSubject();
-				final List<Permission> permissions = jwt.getClaim("").asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
-				return new User(subject, ImmutableList.of(new Role("oauth_scopes", permissions)));
-			} catch (JWTVerificationException e) {
-				throw new UnauthorizedException("Incorrect authorization token"); 
-			}
-		default: 
-			throw new UnauthorizedException("Incorrect authorization token");
+	}
+
+	/**
+	 * Authenticates a token as JWT and returns the authenticated {@link User} object or throws an {@link UnauthorizedException}.
+	 * @param token
+	 * @return
+	 * @throws UnauthorizedException
+	 */
+	default User authJWT(final String token) {
+		try {
+			final DecodedJWT jwt = ApplicationContext.getServiceForClass(JWTVerifier.class).verify(token);
+			return JWTGenerator.toUser(jwt);
+		} catch (JWTVerificationException e) {
+			throw new UnauthorizedException("Incorrect authorization token"); 
 		}
+	}
+
+	/**
+	 * Authenticates a token as Base64 encoded user:pass String (HTTP Basic) and returns a {@link User} object or throws an {@link UnauthorizedException}.
+	 * @param token
+	 * @return
+	 * @throws UnauthorizedException
+	 */
+	default User authBase64(final String token) {
+		final String decoded = new String(Base64.getDecoder().decode(token), Charsets.UTF_8);
+		final String[] base64Parts = decoded.split(":");
+		if (base64Parts.length != 2) {
+			throw new UnauthorizedException("Incorrect username or password");
+		}
+		return auth(base64Parts[0], base64Parts[1]);
 	}
 	
 	/**

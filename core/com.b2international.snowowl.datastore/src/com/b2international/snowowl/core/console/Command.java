@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.console;
-
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.eventbus.IEventBus;
 
 import picocli.CommandLine;
 
@@ -33,9 +30,5 @@ import picocli.CommandLine;
     optionListHeading = "%nOptions:%n"
 )
 public abstract class Command extends BaseCommand {
-
-	protected final IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
 
 }
