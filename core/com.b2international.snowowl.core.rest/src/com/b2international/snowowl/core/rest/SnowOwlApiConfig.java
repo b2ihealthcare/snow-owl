@@ -255,7 +255,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 					if (prefix != null) {
 						BuilderConfiguration config = new BuilderConfiguration();
 						config.setPathMatcher(getPathMatcher());
-						config.setSuffixPatternMatch(true);
+						config.setSuffixPatternMatch(false);
 						info = RequestMappingInfo.paths(prefix).options(config).build().combine(info);
 					}
 				}

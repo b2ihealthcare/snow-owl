@@ -47,7 +47,7 @@ Require-Bundle: org.eclipse.equinox.security;bundle-version="1.3.200",
  io.swagger.annotations;bundle-version="1.5.14",
  io.swagger.models;bundle-version="1.5.14",
  org.apache.commons.lang3;bundle-version="3.7.0",
- com.b2international.snowowl.datastore;bundle-version="7.2.0"
+ com.b2international.snowowl.datastore
 Import-Package: javax.servlet;version="3.1.0",
  javax.servlet.http;version="3.1.0",
  org.eclipse.core.runtime;version="3.5.0",
