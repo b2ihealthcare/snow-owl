@@ -29,23 +29,25 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 6.16
  */
-@Tag(name = "reasoners", description="Reasoners")
+@Api(value = "Reasoners", description="Reasoners", tags = "reasoners")
 @Controller
 @RequestMapping(value="/reasoners", produces={ AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedReasonerRestService {
 	
-	@Operation(
-		summary="Retrieve reasoner id-s from the running Snow Owl instance.", 
-		description="Retrieve reasoner id-s from the running Snow Owl instance.")
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK"),
-//	})
+	@ApiOperation(
+		value="Retrieve reasoner id-s from the running Snow Owl instance.", 
+		notes="Retrieve reasoner id-s from the running Snow Owl instance.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+	})
 	@GetMapping
 	public @ResponseBody DeferredResult<ReasonerExtensions> getReasoners() {
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchReasonerExtensions()

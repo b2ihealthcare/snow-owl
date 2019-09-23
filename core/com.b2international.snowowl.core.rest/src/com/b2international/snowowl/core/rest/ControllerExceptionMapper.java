@@ -36,8 +36,6 @@ import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-import io.swagger.v3.oas.annotations.Operation;
-
 /**
  * @since 4.1
  */
@@ -53,7 +51,6 @@ public class ControllerExceptionMapper {
 	 * @param ex
 	 * @return {@link RestApiError} instance with detailed messages
 	 */
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody RestApiError handle(final Exception ex) {
@@ -61,7 +58,6 @@ public class ControllerExceptionMapper {
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 	
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
 	public @ResponseBody RestApiError handle(final UnauthorizedException ex) {
@@ -69,7 +65,6 @@ public class ControllerExceptionMapper {
 		return RestApiError.of(err).build(HttpStatus.UNAUTHORIZED.value());
 	}
 	
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	public @ResponseBody RestApiError handle(final ForbiddenException ex) {
@@ -77,7 +72,6 @@ public class ControllerExceptionMapper {
 		return RestApiError.of(err).build(HttpStatus.FORBIDDEN.value());
 	}
 	
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
 	public @ResponseBody RestApiError handle(RequestTimeoutException ex) {
@@ -91,7 +85,6 @@ public class ControllerExceptionMapper {
 	 * @param ex
 	 * @return {@link RestApiError} instance with detailed messages
 	 */
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(HttpMessageNotReadableException ex) {
@@ -99,7 +92,6 @@ public class ControllerExceptionMapper {
 		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").developerMessage(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
-	@Operation(hidden = true)
 	@ExceptionHandler
 	public ResponseEntity<RestApiError> handle(final ApiErrorException ex) {
 		final ApiError error = ex.toApiError();
@@ -113,7 +105,6 @@ public class ControllerExceptionMapper {
 	 * @param ex
 	 * @return {@link RestApiError} instance with detailed messages
 	 */
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public @ResponseBody RestApiError handle(final NotFoundException ex) {
@@ -126,7 +117,6 @@ public class ControllerExceptionMapper {
 	 * @param ex
 	 * @return {@link RestApiError} instance with detailed messages
 	 */
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
 	public @ResponseBody RestApiError handle(NotImplementedException ex) {
@@ -139,14 +129,12 @@ public class ControllerExceptionMapper {
 	 * @param ex
 	 * @return {@link RestApiError} instance with detailed messages
 	 */
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(final BadRequestException ex) {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(final IllegalArgumentException ex) {
@@ -160,7 +148,6 @@ public class ControllerExceptionMapper {
 	 * @param ex
 	 * @return {@link RestApiError} instance with detailed messages
 	 */
-	@Operation(hidden = true)
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.CONFLICT)
 	public @ResponseBody RestApiError handle(final ConflictException ex) {

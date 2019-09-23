@@ -52,6 +52,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -69,14 +70,16 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Tag(name = "exports", description="Exports")
+@Api(value = "Exports", description="Exports", tags = "exports")
 @RestController
 @RequestMapping(value="/exports")
 public class SnomedExportRestService extends AbstractSnomedRestService {
@@ -90,17 +93,18 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		super(Collections.emptySet());
 	}
 	
-	@Operation(
-			summary="Initiate a SNOMED CT export", 
-			description="Registers the specified export configuration and returns a location header pointing to the stored export run.")
-//	@ApiResponses({
-//		@ApiResponse(code=201, message="Created"),
-//		@ApiResponse(code=404, message="Code system version and/or task not found", response = RestApiError.class)
-//	})
+	@ApiOperation(
+		value="Initiate a SNOMED CT export", 
+		notes="Registers the specified export configuration and returns a location header pointing to the stored export run."
+	)
+	@ApiResponses({
+		@ApiResponse(code=201, message="Created"),
+		@ApiResponse(code=404, message="Code system version and/or task not found", response = RestApiError.class)
+	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> beginExport(
-			@Parameter(description="Export configuration")
+			@ApiParam(value = "Export configuration")
 			@RequestBody
 			final SnomedExportRestConfiguration configuration) throws IOException {
 
@@ -196,17 +200,17 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		}
 	}
 
-	@Operation(
-		summary="Retrieve export run resource", 
-		description = "Returns an export run resource by identifier."
+	@ApiOperation(
+		value="Retrieve export run resource", 
+		notes= "Returns an export run resource by identifier."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code=200, message="OK"),
-//		@ApiResponse(code=404, message="Export run not found", response = RestApiError.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code=200, message="OK"),
+		@ApiResponse(code=404, message="Export run not found", response = RestApiError.class)
+	})
 	@GetMapping(value="/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public SnomedExportRestRun getExport(
-			@Parameter(description="Export run identifier")
+			@ApiParam(value = "Export run identifier")
 			@PathVariable(value="id")
 			UUID exportId) {
 
@@ -219,17 +223,17 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		}
 	}
 	
-	@Operation(
-		summary="Retrieve finished export run's archive", 
-		description="Returns the export archive from a completed export run on the given version branch."
+	@ApiOperation(
+		value="Retrieve finished export run's archive", 
+		notes="Returns the export archive from a completed export run on the given version branch."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code=200, message="OK"),
-//		@ApiResponse(code=404, message="Export run not found", response = RestApiError.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code=200, message="OK"),
+		@ApiResponse(code=404, message="Export run not found", response = RestApiError.class)
+	})
 	@GetMapping(value="/{id}/archive", produces = { AbstractRestService.OCTET_STREAM_MEDIA_TYPE })
 	public @ResponseBody ResponseEntity<?> getArchive(
-			@Parameter(description="Export run ID")
+			@ApiParam(value = "Export run ID")
 			@PathVariable(value="id")
 			final UUID exportId) throws IOException {
 

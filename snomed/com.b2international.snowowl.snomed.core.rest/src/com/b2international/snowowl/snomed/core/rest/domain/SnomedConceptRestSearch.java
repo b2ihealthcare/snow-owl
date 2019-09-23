@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 import java.util.List;
 import java.util.Set;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 
 /**
  * @since 6.16
@@ -26,58 +26,58 @@ import io.swagger.v3.oas.annotations.Parameter;
 public final class SnomedConceptRestSearch {
 
 	// concept filters
-	@Parameter(description = "The Concept identifier(s) to match")
+	@ApiParam(value = "The Concept identifier(s) to match")
 	private Set<String> id;
-	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
+	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@Parameter(description = "The concept status to match")
+	@ApiParam(value = "The concept status to match")
 	private Boolean active = null;
-	@Parameter(description = "The concept module identifier to match")
+	@ApiParam(value = "The concept module identifier to match")
 	private String module;
-	@Parameter(description = "The definition status to match")
+	@ApiParam(value = "The definition status to match")
 	private String definitionStatus;
-	@Parameter(description = "The namespace to match")
+	@ApiParam(value = "The namespace to match")
 	private String namespace;
 
 	// query expressions
-	@Parameter(description = "The ECL expression to match on the inferred form")
+	@ApiParam(value = "The ECL expression to match on the inferred form")
 	private String ecl;
-	@Parameter(description = "The ECL expression to match on the stated form")
+	@ApiParam(value = "The ECL expression to match on the stated form")
 	private String statedEcl;
-	@Parameter(description = "The SNOMED CT Query expression to match (inferred form only)")
+	@ApiParam(value = "The SNOMED CT Query expression to match (inferred form only)")
 	private String query;
 
 	// description filters
-	@Parameter(description = "Description semantic tag(s) to match")
+	@ApiParam(value = "Description semantic tag(s) to match")
 	private String[] semanticTag;
-	@Parameter(description = "The description term to match")
+	@ApiParam(value = "The description term to match")
 	private String term;
-	@Parameter(description = "Description type ECL expression to match")
+	@ApiParam(value = "Description type ECL expression to match")
 	private String descriptionType;
 
 	// hiearchy filters
-	@Parameter(description = "The inferred parent(s) to match")
+	@ApiParam(value = "The inferred parent(s) to match")
 	private String[] parent;
-	@Parameter(description = "The inferred ancestor(s) to match")
+	@ApiParam(value = "The inferred ancestor(s) to match")
 	private String[] ancestor;
-	@Parameter(description = "The stated parent(s) to match")
+	@ApiParam(value = "The stated parent(s) to match")
 	private String[] statedParent;
-	@Parameter(description = "The stated ancestor(s) to match")
+	@ApiParam(value = "The stated ancestor(s) to match")
 	private String[] statedAncestor;
 
 	// scrolling/paging/expansion/sorting
-	@Parameter(description = "Expansion parameters")
+	@ApiParam(value = "Expansion parameters")
 	private String expand;
-	@Parameter(description = "The scrollKeepAlive to start a scroll using this query")
+	@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
 	private String scrollKeepAlive;
-	@Parameter(description = "A scrollId to continue scrolling a previous query")
+	@ApiParam(value = "A scrollId to continue scrolling a previous query")
 	private String scrollId;
-	@Parameter(description = "The search key to use for retrieving the next page of results")
+	@ApiParam(value = "The search key to use for retrieving the next page of results")
 	private String searchAfter;
-	@Parameter(description = "Sort keys")
+	@ApiParam(value = "Sort keys")
 	private List<String> sort;
-	@Parameter(description = "The maximum number of items to return")
+	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
 	private int limit = 50;
 
 	public Set<String> getId() {

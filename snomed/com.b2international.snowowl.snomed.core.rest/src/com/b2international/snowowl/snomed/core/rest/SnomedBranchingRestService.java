@@ -29,7 +29,9 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -37,14 +39,16 @@ import com.b2international.snowowl.snomed.core.rest.domain.BranchUpdateRestReque
 import com.b2international.snowowl.snomed.core.rest.domain.CreateBranchRestRequest;
 import com.google.common.collect.ImmutableList;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 4.1
  */
-@Tag(name = "branches", description="Branches")
+@Api(value = "Branches", description = "Branches", tags = "branches")
 @RestController
 @RequestMapping(value="/branches", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchingRestService extends AbstractSnomedRestService {
@@ -53,14 +57,14 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 		super(Branch.Fields.ALL);
 	}
 	
-	@Operation(
-		summary = "Create a new branch", 
-		description = "Create a new branch in the SNOMED CT repository."
+	@ApiOperation(
+		value = "Create a new branch", 
+		notes = "Create a new branch in the SNOMED CT repository."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 201, message = "Created"),
-//		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 201, message = "Created"),
+		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
+	})
 	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
 	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRestRequest request) {
@@ -77,13 +81,13 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 				Responses.created(getBranchLocationHeader(request.path())).build());
 	}
 	
-	@Operation(
-		summary = "Retrieve all branches", 
-		description = "Returns all SNOMED CT branches from the repository."
+	@ApiOperation(
+		value = "Retrieve all branches", 
+		notes = "Returns all SNOMED CT branches from the repository."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
+	})
 	@RequestMapping(method=RequestMethod.GET)
 	public DeferredResult<Branches> searchBranches(
 			@RequestParam(value="parent", required=false)
@@ -92,23 +96,23 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 			@RequestParam(value="name", required=false)
 			final String[] names,
 			
-			@Parameter(description = "The scrollKeepAlive to start a scroll using this query")
+			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
 			@RequestParam(value="scrollKeepAlive", required=false)
 			final String scrollKeepAlive,
 			
-			@Parameter(description = "A scrollId to continue scrolling a previous query")
+			@ApiParam(value = "A scrollId to continue scrolling a previous query")
 			@RequestParam(value="scrollId", required=false)
 			final String scrollId,
 			
-			@Parameter(description = "The search key to use for retrieving the next page of results")
+			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
 			
-			@Parameter(description="Sort keys")
+			@ApiParam(value = "Sort keys")
 			@RequestParam(value="sort", required=false)
 			final List<String> sort,
 			
-			@Parameter(description="The maximum number of items to return")
+			@ApiParam(value = "The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		return DeferredResults.wrap(
@@ -126,14 +130,14 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.execute(bus));
 	}
 	
-	@Operation(
-		summary = "Retrieve children of a single branch", 
-		description = "Returns the children of a single SNOMED CT branch (both direct and transitive)."
+	@ApiOperation(
+		value = "Retrieve children of a single branch", 
+		notes = "Returns the children of a single SNOMED CT branch (both direct and transitive)."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class),
-//		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class),
+		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+	})
 	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)
 	public DeferredResult<Branches> getChildren(@PathVariable("path") String branchPath) {
 		return DeferredResults.wrap(
@@ -146,14 +150,14 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.then(Branch::getChildren));
 	}
 	
-	@Operation(
-		summary = "Retrieve a single branch", 
-		description = "Returns a SNOMED CT branch."
+	@ApiOperation(
+		value = "Retrieve a single branch", 
+		notes = "Returns a SNOMED CT branch."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK"),
-//		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+	})
 	@GetMapping("/{path:**}")
 	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
 		return DeferredResults.wrap(
@@ -164,18 +168,18 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.execute(bus));
 	}
 	
-	@Operation(
-		summary = "Delete a branch", 
-		description = "Deletes a branch and all its children."
+	@ApiOperation(
+		value = "Delete a branch", 
+		notes = "Deletes a branch and all its children."
 				+ "<p>"
 				+ "Note that deleted branch are still available and will be listed in <b>GET /branches</b> but with the flag <b>deleted</b> set to <i>true</i>. "
 				+ "The API will return <strong>HTTP 400</strong> responses, if clients send requests to <strong>deleted</strong> branches."
 				+ "</p>"
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK"),
-//		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+	})
 	@DeleteMapping("/{path:**}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
@@ -188,16 +192,16 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 				Responses.noContent().build());
 	}
 	
-	@Operation(
-		summary = "Update a branch", 
-		description = "Updates a branch"
+	@ApiOperation(
+		value = "Update a branch", 
+		notes = "Updates a branch"
 				+ "<p>"
 				+ "The endpoint allows clients to update any metadata properties, other properties are immutable."
 				+ "</p>")
-//	@ApiResponses({
-//		@ApiResponse(code = 204, message = "No Content"),
-//		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "No Content"),
+		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+	})
 	@PutMapping(value="/{path:**}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> updateBranch(

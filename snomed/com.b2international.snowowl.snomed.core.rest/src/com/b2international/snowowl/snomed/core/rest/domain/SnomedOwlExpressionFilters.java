@@ -17,20 +17,20 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import java.util.List;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 
 /**
  * @since 6.16
  */
 public final class SnomedOwlExpressionFilters {
 
-	@Parameter(description = "Special filter to match concept IDs in an owlExpression")
+	@ApiParam(value = "Special filter to match concept IDs in an owlExpression")
 	private List<String> conceptId;
-	@Parameter(description = "Special filter to match destination IDs in an owlExpression")
+	@ApiParam(value = "Special filter to match destination IDs in an owlExpression")
 	private List<String> destinationId;
-	@Parameter(description = "Special filter to match type IDs in an owlExpression")
+	@ApiParam(value = "Special filter to match type IDs in an owlExpression")
 	private List<String> typeId;
-	@Parameter(description = "Special filter to match GCI/non-GCI axioms")
+	@ApiParam(value = "Special filter to match GCI/non-GCI axioms")
 	private Boolean gci;
 	
 	public List<String> getConceptId() {

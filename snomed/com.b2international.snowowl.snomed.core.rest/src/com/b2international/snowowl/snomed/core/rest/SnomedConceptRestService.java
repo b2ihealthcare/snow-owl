@@ -35,10 +35,12 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
@@ -54,14 +56,16 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Tag(name = "concepts", description="Concepts")
+@Api(value = "Concepts", description="Concepts", tags = "concepts")
 @Controller
 @RequestMapping(value = "/{path:**}/concepts")
 public class SnomedConceptRestService extends AbstractSnomedRestService {
@@ -73,29 +77,29 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 				.build());
 	}
 	
-	@Operation(
-		summary="Retrieve Concepts from a branch", 
-		description="Returns a list with all/filtered Concepts from a branch."
+	@ApiOperation(
+		value="Retrieve Concepts from a branch", 
+		notes="Returns a list with all/filtered Concepts from a branch."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
 				+ "&bull; fsn() &ndash; the description representing the concept's fully specified name in the given locale<br>"
 				+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>"
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
-//		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
-//		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<SnomedConcepts> searchByGet(
-			@Parameter(description="The branch path", required = true)
+			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
 			final SnomedConceptRestSearch params,
 			
-			@Parameter(description="Accepted language tags, in order of preference")
+			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -141,65 +145,66 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.execute(bus));
 	}
 	
-	@Operation(
-		summary="Retrieve Concepts from a branch", 
-		description="Returns a list with all/filtered Concepts from a branch."
+	@ApiOperation(
+		value="Retrieve Concepts from a branch", 
+		notes="Returns a list with all/filtered Concepts from a branch."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
 				+ "&bull; fsn() &ndash; the description representing the concept's fully specified name in the given locale<br>"
 				+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>"
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
-//		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
-//		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
-//	})
-	@PostMapping(value="/{path:**}/concepts/search")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+	})
+	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<SnomedConcepts> searchByPost(
-			@Parameter(description="The branch path", required = true)
+			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
 			@RequestBody(required = false)
 			final SnomedConceptRestSearch body,
 			
-			@Parameter(description="Accepted language tags, in order of preference")
+			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
 		return searchByGet(branch, body, acceptLanguage);
 	}
 
-	@Operation(
-			summary="Retrieve Concept properties",
-			description="Returns all properties of the specified Concept, including a summary of inactivation indicator and association members."
-					+ "<p>The following properties can be expanded:"
-					+ "<p>"
-					+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
-					+ "&bull; fsn() &ndash; the description representing the concept's fully specified name in the given locale<br>"
-					+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>"
-					+ "&bull; ancestors(offset:0,limit:50,direct:true,expand(pt(),...)) &ndash; the list of concept ancestors (parameter 'direct' is required)<br>"
-					+ "&bull; descendants(offset:0,limit:50,direct:true,expand(pt(),...)) &ndash; the list of concept descendants (parameter 'direct' is required)<br>")
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK", response = Void.class),
-//		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
-//	})
+	@ApiOperation(
+		value="Retrieve Concept properties",
+		notes="Returns all properties of the specified Concept, including a summary of inactivation indicator and association members."
+				+ "<p>The following properties can be expanded:"
+				+ "<p>"
+				+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
+				+ "&bull; fsn() &ndash; the description representing the concept's fully specified name in the given locale<br>"
+				+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>"
+				+ "&bull; ancestors(offset:0,limit:50,direct:true,expand(pt(),...)) &ndash; the list of concept ancestors (parameter 'direct' is required)<br>"
+				+ "&bull; descendants(offset:0,limit:50,direct:true,expand(pt(),...)) &ndash; the list of concept descendants (parameter 'direct' is required)<br>"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = Void.class),
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
+	})
 	@GetMapping(value = "/{conceptId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<SnomedConcept> read(
-			@Parameter(description="The branch path")
+			@ApiParam(value = "The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
 
-			@Parameter(description="The Concept identifier")
+			@ApiParam(value = "The Concept identifier")
 			@PathVariable(value="conceptId")
 			final String conceptId,
 			
-			@Parameter(description="Expansion parameters")
+			@ApiParam(value = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
 			
-			@Parameter(description="Accepted language tags, in order of preference")
+			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
@@ -214,22 +219,22 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.execute(bus));
 	}
 
-	@Operation(
-		summary="Create Concept", 
-		description="Creates a new Concept directly on a branch."
+	@ApiOperation(
+		value="Create Concept", 
+		notes="Creates a new Concept directly on a branch."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 201, message = "Concept created on task"),
-//		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 201, message = "Concept created on task"),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@Parameter(description="The branch path")
+			@ApiParam(value = "The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
 
-			@Parameter(description="Concept parameters")
+			@ApiParam(value = "Concept parameters")
 			@RequestBody 
 			final ChangeRequest<SnomedConceptRestInput> body,
 
@@ -250,36 +255,37 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		return Responses.created(getConceptLocationURI(branchPath, createdConceptId)).build();
 	}
 
-	@Operation(
-			summary="Update Concept",
-			description="Updates properties of the specified Concept, also managing inactivation indicator and association reference set "
-					+ "membership in case of inactivation."
-					+ "<p>The following properties are allowed to change:"
-					+ "<p>"
-					+ "&bull; module identifier<br>"
-					+ "&bull; subclass definition status<br>"
-					+ "&bull; definition status<br>"
-					+ "&bull; associated Concepts<br>"
-					+ ""
-					+ "<p>The following properties, when changed, will trigger inactivation:"
-					+ "<p>"
-					+ "&bull; inactivation indicator<br>")
-//	@ApiResponses({
-//		@ApiResponse(code = 204, message = "Update successful"),
-//		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
-//	})
+	@ApiOperation(
+		value="Update Concept",
+		notes="Updates properties of the specified Concept, also managing inactivation indicator and association reference set "
+				+ "membership in case of inactivation."
+				+ "<p>The following properties are allowed to change:"
+				+ "<p>"
+				+ "&bull; module identifier<br>"
+				+ "&bull; subclass definition status<br>"
+				+ "&bull; definition status<br>"
+				+ "&bull; associated Concepts<br>"
+				+ ""
+				+ "<p>The following properties, when changed, will trigger inactivation:"
+				+ "<p>"
+				+ "&bull; inactivation indicator<br>"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "Update successful"),
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
+	})
 	@PostMapping(value = "/{conceptId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
-			@Parameter(description="The branch path")
+			@ApiParam(value = "The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
 
-			@Parameter(description="The Concept identifier")
+			@ApiParam(value = "The Concept identifier")
 			@PathVariable(value="conceptId")
 			final String conceptId,
 			
-			@Parameter(description="Updated Concept parameters")
+			@ApiParam(value = "Updated Concept parameters")
 			@RequestBody 
 			final ChangeRequest<SnomedConceptRestUpdate> body,
 
@@ -296,32 +302,32 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 
-	@Operation(
-		summary="Delete Concept",
-		description="Permanently removes the specified unreleased Concept and related components.<p>If any participating "
+	@ApiOperation(
+		value="Delete Concept",
+		notes="Permanently removes the specified unreleased Concept and related components.<p>If any participating "
 				+ "component has already been released the Concept can not be removed and a <code>409</code> "
 				+ "status will be returned."
 				+ "<p>The force flag enables the deletion of a released Concept. "
 				+ "Deleting published components is against the RF2 history policy so"
 				+ " this should only be used to remove a new component from a release before the release is published.</p>"
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 204, message = "Deletion successful"),
-//		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class),
-//		@ApiResponse(code = 409, message = "Cannot be deleted if released", response = RestApiError.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "Deletion successful"),
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class),
+		@ApiResponse(code = 409, message = "Cannot be deleted if released", response = RestApiError.class)
+	})
 	@DeleteMapping(value = "/{conceptId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
-			@Parameter(description="The branch path")
+			@ApiParam(value = "The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
 
-			@Parameter(description="The Concept identifier")
+			@ApiParam(value = "The Concept identifier")
 			@PathVariable(value="conceptId")
 			final String conceptId,
 
-			@Parameter(description="Force deletion flag")
+			@ApiParam(value = "Force deletion flag")
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 

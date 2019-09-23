@@ -29,7 +29,7 @@ import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
-import io.swagger.v3.oas.models.security.SecurityScheme.In;
+import io.swagger.models.auth.In;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.service.ApiInfo;

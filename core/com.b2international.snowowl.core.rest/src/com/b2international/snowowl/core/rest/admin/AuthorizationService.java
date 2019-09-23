@@ -28,13 +28,11 @@ import com.b2international.snowowl.identity.request.UserRequests;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.2
  */
 @Api(value = "Authorization", description = "Authorization", tags = "authorization")
-@Tag(name = "authorization", description = "Authorization")
 @RestController
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class AuthorizationService extends AbstractRestService {

@@ -19,19 +19,19 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 
 /**
  * @since 4.2
  */
 public class CreateReviewRequest {
 
-	@Parameter(required = true)
+	@ApiParam(required = true)
 	@JsonProperty
 	@NotEmpty
 	private String source;
 
-	@Parameter(required = true)
+	@ApiParam(required = true)
 	@JsonProperty
 	@NotEmpty
 	private String target;

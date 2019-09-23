@@ -20,74 +20,74 @@ import java.util.Set;
 
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 
 /**
  * @since 6.16
  */
 public final class SnomedDescriptionRestSearch {
 
-	@Parameter(description = "The Description identifier(s) to match")
+	@ApiParam(value = "The Description identifier(s) to match")
 	private Set<String> id;
 
-	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
+	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@Parameter(description = "The status to match")
+	@ApiParam(value = "The status to match")
 	private Boolean active;
 
-	@Parameter(description = "The module identifier to match")
+	@ApiParam(value = "The module identifier to match")
 	private String module;
 
-	@Parameter(description = "The namespace to match")
+	@ApiParam(value = "The namespace to match")
 	private String namespace;
 
-	@Parameter(description = "The term to match")
+	@ApiParam(value = "The term to match")
 	private String term;
 
-	@Parameter(description = "The concept ECL expression to match")
+	@ApiParam(value = "The concept ECL expression to match")
 	private String concept;
 
-	@Parameter(description = "The language code to match")
+	@ApiParam(value = "The language code to match")
 	private String[] languageCode;
 
-	@Parameter(description = "The type ECL expression to match")
+	@ApiParam(value = "The type ECL expression to match")
 	private String type;
 
-	@Parameter(description = "The case significance ECL expression to match")
+	@ApiParam(value = "The case significance ECL expression to match")
 	private String caseSignificance;
 
-	@Parameter(description = "Semantic tag(s) to match")
+	@ApiParam(value = "Semantic tag(s) to match")
 	private String[] semanticTag;
 
-	@Parameter(description = "The acceptability to match. DEPRECATED! Use acceptableIn or preferredIn!")
+	@ApiParam(value = "The acceptability to match. DEPRECATED! Use acceptableIn or preferredIn!")
 	private Acceptability acceptability;
 
-	@Parameter(description = "Acceptable membership to match in these language refsets")
+	@ApiParam(value = "Acceptable membership to match in these language refsets")
 	private String[] acceptableIn;
 
-	@Parameter(description = "Preferred membership to match in these language refsets")
+	@ApiParam(value = "Preferred membership to match in these language refsets")
 	private String[] preferredIn;
 
-	@Parameter(description = "Any membership to match in these language refsets")
+	@ApiParam(value = "Any membership to match in these language refsets")
 	private String[] languageRefSet;
 
-	@Parameter(description = "The scrollKeepAlive to start a scroll using this query")
+	@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
 	private String scrollKeepAlive;
 
-	@Parameter(description = "A scrollId to continue scrolling a previous query")
+	@ApiParam(value = "A scrollId to continue scrolling a previous query")
 	private String scrollId;
 
-	@Parameter(description = "The search key to use for retrieving the next page of results")
+	@ApiParam(value = "The search key to use for retrieving the next page of results")
 	private String searchAfter;
 
-	@Parameter(description = "The maximum number of items to return")
+	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
 	private int limit = 50;
 
-	@Parameter(description = "Expansion parameters")
+	@ApiParam(value = "Expansion parameters")
 	private String expand;
 
-	@Parameter(description = "Sort keys")
+	@ApiParam(value = "Sort keys")
 	private List<String> sort;
 
 	public Set<String> getId() {

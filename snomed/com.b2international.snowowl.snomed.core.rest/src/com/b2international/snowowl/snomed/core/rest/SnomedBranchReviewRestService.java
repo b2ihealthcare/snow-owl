@@ -34,6 +34,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -41,15 +42,17 @@ import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.snomed.core.rest.domain.CreateReviewRequest;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Provides REST endpoints for computing Reviewerences between branches.
  * 
  * @since 4.2
  */
-@Tag(name = "branches", description="Branches")
+@Api(value = "Branches", description = "Branches", tags = "branches")
 @RestController
 @RequestMapping(value="/reviews", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
@@ -58,9 +61,9 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 		super(Review.Fields.ALL);
 	}
 	
-	@Operation(
-		summary = "Create new review", 
-		description = "Creates a new terminology review for the SNOMED CT repository."
+	@ApiOperation(
+		value = "Create new review", 
+		notes = "Creates a new terminology review for the SNOMED CT repository."
 	)
 //	@ApiResponses({
 //		@ApiResponse(code = 201, message = "Created"),
@@ -88,14 +91,14 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 		return result;
 	}
 
-	@Operation(
-		summary = "Retrieve single review", 
-		description = "Retrieves an existing terminology review with the specified identifier, if it exists."
+	@ApiOperation(
+		value = "Retrieve single review", 
+		notes = "Retrieves an existing terminology review with the specified identifier, if it exists."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK"),
-//		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
+	})
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public DeferredResult<Review> getReview(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(RepositoryRequests
@@ -105,14 +108,14 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 			.execute(bus));
 	}
 
-	@Operation(
-		summary = "Retrieve change set for review", 
-		description = "Retrieves the set of created, changed and detached concepts for an existing review with the specified identifier, if it exists."
+	@ApiOperation(
+		value = "Retrieve change set for review", 
+		notes = "Retrieves the set of created, changed and detached concepts for an existing review with the specified identifier, if it exists."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK"),
-//		@ApiResponse(code = 404, message = "Review not found or changes are not yet available", response=RestApiError.class),
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Review not found or changes are not yet available", response=RestApiError.class),
+	})
 	@RequestMapping(value="/{id}/concept-changes", method=RequestMethod.GET)
 	public DeferredResult<ConceptChanges> getConceptChanges(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(
@@ -123,14 +126,14 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 					.execute(bus));
 	}
 
-	@Operation(
-		summary = "Delete single review", 
-		description = "Deletes a review run along with its computed change set, if any of them exist."
+	@ApiOperation(
+		value = "Delete single review", 
+		notes = "Deletes a review run along with its computed change set, if any of them exist."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK"),
-//		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
+	})
 	@RequestMapping(value="/{id}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteReview(@PathVariable("id") final String reviewId) {

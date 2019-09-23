@@ -27,18 +27,21 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 7.0
  */
-@Tag(name = "commits", description="Commits")
+@Api(value = "Commits", description = "Commits", tags = "commits")
 @RestController
 @RequestMapping(value="/commits")
 public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
@@ -47,56 +50,56 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 		super(Commit.Fields.ALL);
 	}
 	
-	@Operation(
-		summary = "Retrieve commit entries",
-		description = "Returns all SNOMED CT commits"
+	@ApiOperation(
+		value = "Retrieve commit entries",
+		notes = "Returns all SNOMED CT commits"
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
+	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<CommitInfos> search(
-			@Parameter(description="The author of the commit to match")
+			@ApiParam(value = "The author of the commit to match")
 			@RequestParam(value="author", required=false)
 			final String author,
 			
-			@Parameter(description="Affected component identifier to match")
+			@ApiParam(value = "Affected component identifier to match")
 			@RequestParam(value="affectedComponentId", required=false)
 			final String affectedComponentId,
 			
-			@Parameter(description="Commit comment term to match")
+			@ApiParam(value = "Commit comment term to match")
 			@RequestParam(value="comment", required=false)
 			final String comment,
 			
-			@Parameter(description="One or more branch paths to match")
+			@ApiParam(value = "One or more branch paths to match")
 			@RequestParam(value="branch", required=false)
 			final List<String> branch,
 			
-			@Parameter(description="Commit timestamp to match")
+			@ApiParam(value = "Commit timestamp to match")
 			@RequestParam(value="timestamp", required=false)
 			final Long timestamp,
 			
-			@Parameter(description="Expansion parameters")
+			@ApiParam(value = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
 			
-			@Parameter(description = "The scrollKeepAlive to start a scroll using this query")
+			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
 			@RequestParam(value="scrollKeepAlive", required=false)
 			final String scrollKeepAlive,
 			
-			@Parameter(description = "A scrollId to continue scrolling a previous query")
+			@ApiParam(value = "A scrollId to continue scrolling a previous query")
 			@RequestParam(value="scrollId", required=false)
 			final String scrollId,
 			
-			@Parameter(description = "The search key to use for retrieving the next page of results")
+			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
 			
-			@Parameter(description="Sort keys")
+			@ApiParam(value = "Sort keys")
 			@RequestParam(value="sort", required=false)
 			final List<String> sort,
 			
-			@Parameter(description="The maximum number of items to return")
+			@ApiParam(value = "The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		return DeferredResults.wrap(
@@ -118,20 +121,20 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 					.execute(bus));
 	}
 	
-	@Operation(
-		summary = "Retrieve a commit",
-		description = "Returns a single commit entry from SNOMED CT commits"
+	@ApiOperation(
+		value = "Retrieve a commit",
+		notes = "Returns a single commit entry from SNOMED CT commits"
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
+	})
 	@GetMapping(value = "/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<CommitInfo> get(
-			@Parameter(description="Commit ID to match")
+			@ApiParam(value = "Commit ID to match")
 			@PathVariable(value="commitId")
 			final String commitId, 
 			
-			@Parameter(description="Expansion parameters")
+			@ApiParam(value = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand) {
 		return DeferredResults.wrap(

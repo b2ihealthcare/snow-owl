@@ -27,18 +27,21 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.compare.CompareResult;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedCompareRestRequest;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 7.0
  */
-@Tag(name = "compare", description = "Compare")
+@Api(value = "Compare", description = "Compare", tags = "compare")
 @RestController
 @RequestMapping(value = "/compare")
 public class SnomedCompareRestService extends AbstractSnomedRestService {
@@ -47,13 +50,14 @@ public class SnomedCompareRestService extends AbstractSnomedRestService {
 		super(Collections.emptySet());
 	}
 	
-	@Operation(
-		summary = "Compare two branches", 
-		description = "Returns the new, changed and deleted components of two branches")
-//	@ApiResponses({
-//		@ApiResponse(code = 200, message = "OK"),
-//		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
-//	})
+	@ApiOperation(
+		value = "Compare two branches", 
+		notes = "Returns the new, changed and deleted components of two branches"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
+	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.OK)
 	public DeferredResult<CompareResult> compareBranches(@RequestBody SnomedCompareRestRequest request) {
