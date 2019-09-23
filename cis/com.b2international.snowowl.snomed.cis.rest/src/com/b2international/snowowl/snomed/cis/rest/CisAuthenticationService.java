@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.exceptions.UnauthorizedException;
-import com.b2international.snowowl.snomed.cis.client.Credentials;
-import com.b2international.snowowl.snomed.cis.client.Token;
+import com.b2international.snowowl.identity.Credentials;
+import com.b2international.snowowl.identity.Token;
 import com.b2international.snowowl.snomed.cis.rest.model.CisError;
 import com.b2international.snowowl.snomed.cis.rest.model.EmptyJsonResponse;
 import com.b2international.snowowl.snomed.cis.rest.model.UserData;

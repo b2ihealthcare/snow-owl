@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.authorization;
 
+import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.commons.exceptions.ForbiddenException;
@@ -25,7 +26,9 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.identity.request.UserLoginRequest;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 7.2
@@ -47,14 +50,21 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 		final String authorizationToken = headers.get(AUTHORIZATION_HEADER);
 
 		final IdentityProvider identityProvider = context.service(IdentityProvider.class);
+		final Collection<Request<?, ?>> requests = getNestedRequests();
+		
 		final User user;
 		// if there is no authentication configured
 		if (IdentityProvider.NOOP == identityProvider) {
 			// allow execution as SYSTEM user
 			user = User.SYSTEM;
 		} else if (Strings.isNullOrEmpty(authorizationToken)) {
-			// if there is authentication configured, but no authorization token found prevent execution and throw UnauthorizedException
-			throw new UnauthorizedException("Missing authorization token");
+			// allow login requests in
+			if (requests.size() == 1 && Iterables.getOnlyElement(requests) instanceof UserLoginRequest) {
+				user = User.SYSTEM;
+			} else {
+				// if there is authentication configured, but no authorization token found prevent execution and throw UnauthorizedException
+				throw new UnauthorizedException("Missing authorization token");
+			}
 		} else {
 			// authenticate security token
 			user = identityProvider.auth(authorizationToken);
@@ -63,7 +73,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 			}
 			
 			// authorize user whether it is permitted to execute the operation or not
-			getNestedRequests()
+			requests
 				.stream()
 				.filter(AccessControl.class::isInstance)
 				.map(AccessControl.class::cast)

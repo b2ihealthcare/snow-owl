@@ -27,10 +27,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.snowowl.identity.Credentials;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.JWTGenerator;
 import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.snomed.cis.client.Credentials;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 

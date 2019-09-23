@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.cis.client;
+package com.b2international.snowowl.identity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 6.18
+ * Bean to represent credentials.
+ * 
+ * @since 4.5
  */
-public final class Token {
+public final class Credentials {
 
-	private final String token;
+	private final String username;
+	private final String password;
 
 	@JsonCreator
-	public Token(@JsonProperty("token") String token) {
-		this.token = token;
+	public Credentials(
+			@JsonProperty("username") final String username, 
+			@JsonProperty("password") final String password) {
+		this.username = username;
+		this.password = password;
 	}
-	
-	public String getToken() {
-		return token;
+
+	public String getUsername() {
+		return username;
 	}
-	
+
+	public String getPassword() {
+		return password;
+	}
+
 }
