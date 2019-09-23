@@ -49,6 +49,7 @@ import com.google.common.collect.Maps;
  */
 public class Rf2GlobalValidator {
 
+	private static final int RAW_QUERY_PAGE_SIZE = 500_000;
 	private final Logger log;
 
 	public Rf2GlobalValidator(Logger log) {
@@ -161,7 +162,7 @@ public class Rf2GlobalValidator {
 				});
 			}
 			
-			log.info("Fetch existing description IDs...");
+			log.trace("Fetch existing description IDs...");
 			
 			final Set<String> missingDescriptionIds = fetchComponentIds(context, descriptionIds, SnomedDescriptionIndexEntry.class);
 
@@ -171,7 +172,7 @@ public class Rf2GlobalValidator {
 				});
 			}
 			
-			log.info("Fetch existing relationship IDs...");
+			log.trace("Fetch existing relationship IDs...");
 
 			final Set<String> missingRelationshipIds = fetchComponentIds(context, relationshipIds, SnomedRelationshipIndexEntry.class);
 
@@ -193,20 +194,28 @@ public class Rf2GlobalValidator {
 		
 		if (!componentIdsToFetch.isEmpty()) {
 			
-			try {
+			Set<String> existingComponentIds = newHashSet();
+			
+			for (List<String> ids : Iterables.partition(componentIdsToFetch, RAW_QUERY_PAGE_SIZE)) {
 				
-				Query<String> query = Query.select(String.class)
-					.from(clazz)
-					.fields(RevisionDocument.Fields.ID)
-					.where(RevisionDocument.Expressions.ids(componentIdsToFetch))
-					.limit(componentIdsToFetch.size())
-					.build();
+				try {
+					
+					Query<String> query = Query.select(String.class)
+							.from(clazz)
+							.fields(RevisionDocument.Fields.ID)
+							.where(RevisionDocument.Expressions.ids(ids))
+							.limit(ids.size())
+							.build();
+					
+					existingComponentIds.addAll(context.service(RevisionSearcher.class).search(query).getHits());
+					
+				} catch (IOException e) {
+					throw new SnowowlRuntimeException(e);
+				}
 				
-				componentIdsToFetch.removeAll(context.service(RevisionSearcher.class).search(query).getHits());
-				
-			} catch (IOException e) {
-				throw new SnowowlRuntimeException(e);
 			}
+			
+			componentIdsToFetch.removeAll(existingComponentIds);
 			
 		}
 		
