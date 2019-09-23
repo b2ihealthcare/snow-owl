@@ -358,6 +358,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	private ComponentCategory getComponentCategory(short terminologyComponentId) {
 		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER == terminologyComponentId) {
 			return CONCEPT;
+		} else if (SnomedTerminologyComponentConstants.REFSET_NUMBER == terminologyComponentId) {
+				return CONCEPT;
 		} else if (SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == terminologyComponentId) {
 			return DESCRIPTION;
 		} else if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {
