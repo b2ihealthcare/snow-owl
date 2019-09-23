@@ -44,11 +44,15 @@ public class Services {
 	
 	public static IEventBus bus() {
 		if (bus == null) {
-			final String userPass = String.join(":", RestExtensions.USER, RestExtensions.PASS);
-			final String authorizationToken = new String(Base64.getEncoder().encode(userPass.getBytes()), Charsets.UTF_8);
-			bus = new AuthorizedEventBus(ApplicationContext.getServiceForClass(IEventBus.class), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, "Basic " + authorizationToken));
+			bus = new AuthorizedEventBus(ApplicationContext.getServiceForClass(IEventBus.class), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, getAuthorizationToken()));
 		}
 		return bus;
+	}
+
+	public static String getAuthorizationToken() {
+		final String userPass = String.join(":", RestExtensions.USER, RestExtensions.PASS);
+		final String authorizationToken = new String(Base64.getEncoder().encode(userPass.getBytes()), Charsets.UTF_8);
+		return "Basic " + authorizationToken;
 	}
 
 }

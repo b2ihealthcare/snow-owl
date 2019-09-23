@@ -113,7 +113,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			env.services().registerService(MrcmExporter.class, RpcUtil.createProxy(env.container(), MrcmExporter.class));
 		}
 		if (env.isServer() || env.isEmbedded()) {
-			env.services().registerService(MrcmExporter.class, new MrcmExporterImpl());
+			env.services().registerService(MrcmExporter.class, new MrcmExporterImpl(env.provider(IEventBus.class)));
 			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmExporter.class, MrcmExporterImpl.class.getClassLoader());
 			env.services().registerService(MrcmImporter.class, new MrcmJsonImporter(env.provider(IEventBus.class)));
 			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmImporter.class, MrcmJsonImporter.class.getClassLoader());

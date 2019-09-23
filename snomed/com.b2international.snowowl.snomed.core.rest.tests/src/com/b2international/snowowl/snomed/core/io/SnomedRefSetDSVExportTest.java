@@ -183,7 +183,7 @@ public class SnomedRefSetDSVExportTest {
 
 	private Iterable<SnomedConstraint> getConstraints(String branchPath, SnomedConcepts concepts) {
 		return SnomedRequests
-				.prepareGetApplicablePredicates(branchPath, 
+				.prepareGetApplicablePredicates(bus, branchPath, 
 						idsOf(concepts), 
 						ancestorsOf(concepts), 
 						Collections.emptySet(), 

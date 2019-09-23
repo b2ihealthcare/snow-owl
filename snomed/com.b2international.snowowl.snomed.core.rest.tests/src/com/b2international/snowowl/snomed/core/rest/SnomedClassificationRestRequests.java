@@ -96,7 +96,9 @@ public abstract class SnomedClassificationRestRequests {
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.put("/classifications/{id}", classificationId)
-				.then();
+				.then()
+				.assertThat()
+				.statusCode(204);
 	}
 
 	public static ValidatableResponse waitForClassificationSaveJob(IBranchPath branchPath, String classificationId) throws InterruptedException {

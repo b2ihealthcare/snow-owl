@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
@@ -32,8 +31,8 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.Identifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -83,6 +82,9 @@ import com.google.common.collect.Iterables;
  * 
  * //Obtain the eventbus required to execution of the request
  * IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
+ * // AuthorizedEventBus instance could be required in scenarios where an authentication token is required to execute the request
+ * bus = new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", authorizationToken));
+ * // the token can be `Basic Base64.encode("user:pass") or a JWT APIkey provdided by the server`
  * 
  * //Search for concepts matching the an ECL expression (DescendantsOrSelfOf: 'Clinical finding')
  * SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
@@ -443,7 +445,8 @@ public abstract class SnomedRequests {
 	}
 
 	/**
-	 * Returns all applicable predicates for the given selfIds, ruleParentIds (+fetched ancestorIds), refSetIds. 
+	 * Returns all applicable predicates for the given selfIds, ruleParentIds (+fetched ancestorIds), refSetIds.
+	 * @param bus - the bus to use when sending the requests 
 	 * @param branch - the branch to query for the constraints
 	 * @param selfIds - set of SNOMED CT identifiers to use for getting self rules
 	 * @param ruleParentIds - set of parent IDs to use for getting the descendant rules, also fetches and applies all ancestors of these
@@ -451,13 +454,12 @@ public abstract class SnomedRequests {
 	 * @param relationshipKeys - relationship keys (in "type=value" format) to match
 	 * @return
 	 */
-	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final String branch, 
+	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final IEventBus bus, final String branch, 
 			final Set<String> selfIds, 
 			final Set<String> ruleParentIds, 
 			final Set<String> refSetIds,
 			final Set<String> relationshipKeys) {
 		// query constraint domains three times, on for each concept domain set
-		final IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		return SnomedRequests.prepareSearchConcept()
 			.all()
 			.filterByIds(ruleParentIds)
