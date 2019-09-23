@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#
+set -euo pipefail
 # Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,8 +36,11 @@ SOURCE_FOLDER=""
 # Global variables / constants, advanced parameters
 #
 
-# Base URL of the Snow Owl server
-SNOW_OWL_BASE_URL="http://localhost:8080"
+#Space separated list of base urls of the Snow Owl servers to import to
+SNOW_OWL_BASE_URLS="http://localhost:8080"
+
+#Snow Owl server base url from the target servers currently undergoing import
+SNOW_OWL_BASE_URL=""
 
 # URL for Snow Owl's REST API
 SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
@@ -69,11 +72,9 @@ NAME:
     -p
         Define the password for the above user
     -b
-        Snow Owl base URL, defaults to 'http://localhost:8080'
+        Space separarated list of Snow Owl base URLs, defaults to 'http://localhost:8080'
     -f
         Source folder where the exported content can be found
-    -s
-        Branch from Snow Owl to initiate the import on
     -a
         REST API URL of the Snow Owl server, defaults to '/snowowl/snomed-ct/v3'
 	-z
@@ -81,7 +82,7 @@ NAME:
 	-U
 		Defines the bugzilla user
 	-P
-		Defines the bugzilla pasword for the above user
+		Defines the bugzilla password for the above user
 
 NOTES:
 
@@ -110,41 +111,49 @@ check_if_empty() {
 	fi
 }
 
+check_file_validity() {
+	if [ -f "$1" ]; then
+		echo "Valid export file, $1 found."
+	else
+    	echo_date "$2"
+		exit 1
+	fi
+}
+
 validate_variables() {
 	check_if_empty "${SNOW_OWL_USER}" "Snow Owl username must be specified"
 	check_if_empty "${SNOW_OWL_USER_PASSWORD}" "User password must be specified"
 	check_if_empty "${SOURCE_FOLDER}" "Source folder must be specified"
-	SOURCE_FILE=$(ls -t snow_owl_DELTA_export* | head -1)
+	SOURCE_FILE=$(ls -t snow_owl_DELTA_export* | head -n1)
 	check_if_empty "${SOURCE_FILE}" "Source folder must contain a valid delta export file"
+	check_file_validity "${SOURCE_FILE}" "Source file must be a valid file"
 	check_if_empty "${BUGZILLA_URL}" "Bugzilla url must be specified"
 	check_if_empty "${BUGZILLA_USERNAME}" "Bugzilla username must be specified"
-	check_if_empty "${BUGZILLA_PASSWORD}" "Bugzilla pasword must be specified"
+	check_if_empty "${BUGZILLA_PASSWORD}" "Bugzilla password must be specified"
 }
 
 bugzilla_login() {
 	BUGZILLA_LOGIN_ENDPOINT="${BUGZILLA_URL}/rest/login?login=${BUGZILLA_USERNAME}&password=${BUGZILLA_PASSWORD}"
 	BUGZILLA_TOKEN=$(curl --request GET \
-		--include --silent --show-error \
+		--silent --show-error --fail \
 		"${BUGZILLA_LOGIN_ENDPOINT}" | awk -F'"' '{print $6}')
 }
 
 bugzilla_lougout() {
 	BUGZILLA_LOGOUT_ENDPOINT="${BUGZILLA_URL}/rest/logout?token=${BUGZILLA_TOKEN}"
-	BUGZILLA_LOGOUT_ENDPOINT="$(echo -e "${BUGZILLA_LOGOUT_ENDPOINT}" | tr -d '[:space:]')"
 
 	LOGOUT_RESPONSE=$(curl --request GET \
-		--include --silent --show-error \
+		--include --silent --show-error --fail \
 		"${BUGZILLA_LOGOUT_ENDPOINT}")
 }
 
 create_bug() {
 	CREATE_BUG_ENDPOINT="${BUGZILLA_URL}/rest/bug?token=${BUGZILLA_TOKEN}"
-	CREATE_BUG_ENDPOINT="$(echo -e "${CREATE_BUG_ENDPOINT}" | tr -d '[:space:]')"
 	CREATE_BUG_POST_INPUT='{"product": "com.b2international.snowowl.terminology.snomed", "component": "SNOMEDCT", "version": "unspecified", "op_sys": "All", "platform": "All", "summary" : "Delta import task"}'
 	BUG_ID=$(curl --request POST \
 		--header "Content-type: application/json" \
 		--data "${CREATE_BUG_POST_INPUT}" \
-		--include --silent --show-error \
+		--include --silent --show-error --fail \
 		"${CREATE_BUG_ENDPOINT}" | awk -F'{|}' '{print $2}')
 	
 	BUG_ID=${BUG_ID##*:}
@@ -159,7 +168,7 @@ create_branch() {
 		--request POST \
 		--header "Content-type: ${MEDIA_TYPE}" \
 		--data "${CREATE_BRANCH_POST_INPUT}" \
-		--include --silent --show-error \
+		--include --silent --show-error --fail \
 		"${CREATE_BRANCH_ENDPOINT}" | grep -Fi Location)
 }
 
@@ -173,7 +182,7 @@ initiate_import() {
 		--request POST \
 		--header "Content-type: ${MEDIA_TYPE}" \
 		--data "${IMPORT_CONFIG_POST_INPUT}" \
-		--include --silent --show-error \
+		--include --silent --show-error --fail \
 		"${IMPORTS_ENDPOINT}" | grep -Fi Location)
 
 	ID=${RESPONSE##*/}
@@ -183,9 +192,9 @@ initiate_import() {
 	IMPORTS_ARCHIVE_POST_ENDPOINT="${SNOW_OWL_BASE_URL}${SNOW_OWL_API_URL}/imports/${IMPORT_UUID}/archive"
 	RESPONSE=$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
 		--request POST \
-		-F "file=@${SOURCE_FOLDER}" \
-		--include --silent --show-error \
-		"${IMPORTS_ARCHIVE_POST_ENDPOINT}" | grep -Fi Location)
+		-F "file=@${SOURCE_FILE}" \
+		--include --silent --show-error --fail \
+		"${IMPORTS_ARCHIVE_POST_ENDPOINT}")
 }
 
 execute() {
@@ -195,7 +204,6 @@ execute() {
 	create_branch
 	initiate_import
 	bugzilla_lougout
-	exit 0
 }
 
 while getopts ":hu:p:f:b:a:z:U:P:" option; do
@@ -214,7 +222,7 @@ while getopts ":hu:p:f:b:a:z:U:P:" option; do
 		SOURCE_FOLDER=${OPTARG}
 		;;
 	b)
-		SNOW_OWL_BASE_URL=${OPTARG}
+		SNOW_OWL_BASE_URLS=${OPTARG}
 		;;
 	a)
 		SNOW_OWL_API_URL=${OPTARG}
@@ -241,4 +249,9 @@ while getopts ":hu:p:f:b:a:z:U:P:" option; do
 	esac
 done
 
-execute
+IFS=$' '
+for SNOW_OWL_BASE_URL in $SNOW_OWL_BASE_URLS; do
+    echo "Initiating Snow Owl import on $SNOW_OWL_BASE_URL."
+	execute
+done
+exit 0
