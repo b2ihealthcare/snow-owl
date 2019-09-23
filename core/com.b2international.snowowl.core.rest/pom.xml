@@ -56,11 +56,6 @@
 			<version>${spring.hateoas.version}</version>
 			<scope>provided</scope>
 		</dependency>
-<!-- 		<dependency> -->
-<!--       		<groupId>org.springdoc</groupId> -->
-<!--       		<artifactId>springdoc-openapi-ui</artifactId> -->
-<!--       		<version>1.1.39</version> -->
-<!--    		</dependency> -->
 	</dependencies>
 	
 	<build>
@@ -122,11 +117,6 @@
 								springfox-spring-web,
 								springfox-swagger-common,
 								springfox-swagger2,
-<!-- 								springdoc-openapi-common, -->
-<!-- 								springdoc-openapi-core, -->
-<!-- 								springdoc-openapi-ui, -->
-<!-- 								spring-boot-actuator, -->
-<!-- 								spring-boot-autoconfigure -->
 							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
 						</configuration>
