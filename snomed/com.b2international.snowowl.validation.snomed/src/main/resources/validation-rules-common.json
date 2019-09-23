@@ -2,7 +2,7 @@
   {
   	"id": "snomed-common-1",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Relationships must not have inactive source, destination or type concepts",
+    "messageTemplate": "Relationships must not have inactive source, destination or type concepts.",
     "severity": "ERROR",
     "checkType": "FAST",
     "type": "script-groovy",
@@ -29,11 +29,20 @@
   {
   	"id": "snomed-common-4",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Concept should not carry more than one PT or preferred FSN per language reference set",
+    "messageTemplate": "Concept should not carry more than one PT or preferred FSN per language reference set.",
     "severity": "WARNING",
     "checkType": "NORMAL",
     "type": "script-groovy",
     "implementation": "scripts/ruleSnomedCommon4.groovy"
+  },
+  {
+  	"id": "rule_description_text_length",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Description term should not exceed the maximum amount of character length allowed in the Description format reference set.",
+    "severity": "WARNING",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule_description_text_length.groovy"
   },
   {
   	"id": "rule_mrcm_constraint",
