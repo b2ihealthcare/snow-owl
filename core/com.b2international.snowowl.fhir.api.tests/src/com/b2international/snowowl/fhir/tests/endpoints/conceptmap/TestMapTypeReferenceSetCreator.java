@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
@@ -119,7 +117,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Map Type Refset Member")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getEventBus())
 			.getSync();
 		
 	}
@@ -142,7 +140,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Complex Map Type Refset Member")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getEventBus())
 			.getSync();
 		
 	}
@@ -166,7 +164,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Extended Map Type Refset Member")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getEventBus())
 			.getSync();
 		
 	}
@@ -179,7 +177,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.one()
 			.filterByExactTerm(refsetName)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getEventBus())
 			.getSync()
 			.first();
 		
@@ -188,7 +186,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 				.filterByTerm(refsetName)
 				.all()
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(getEventBus())
 				.getSync()
 				.first();
 		

@@ -23,9 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
@@ -52,9 +50,7 @@ import com.google.common.collect.Maps;
  */
 public class TestReferenceSetCreator extends TestArtifactCreator {
 	
-	
 	/**
-	 * 
 	 * @param branchPath
 	 * @param refsetName
 	 * @param version
@@ -92,7 +88,7 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setReferenceSetId(refsetId)
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Type Refset Member")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getEventBus())
 			.getSync();
 	}
 
@@ -123,7 +119,7 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 					.one()
 					.filterByRefSet(refsetId)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.execute(getEventBus())
 					.getSync()
 					.stream()
 					.findFirst()
@@ -138,7 +134,7 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 				.filterByTerm(refsetName)
 				.all()
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(getEventBus())
 				.getSync()
 				.first();
 		return refsetConcept;

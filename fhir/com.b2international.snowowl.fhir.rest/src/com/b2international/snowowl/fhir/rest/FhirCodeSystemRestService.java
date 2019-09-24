@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		//all code systems
 		} else {
-			for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders(bus, locales)) {
+			for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders(getBus(), locales)) {
 				Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
 				total = total + applySearchParameters(builder, uri, codeSystems,requestParameters);
 			}
@@ -261,7 +261,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 				.version(version)
 				.build();
 		
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(bus, locales, req.getSystem());
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, req.getSystem());
 		final SubsumptionResult result = codeSystemProvider.subsumes(req);
 		
 		return toResponse(result);
@@ -295,7 +295,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			.version(version)
 			.build();
 		
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(bus, locales, req.getSystem());
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, req.getSystem());
 		final SubsumptionResult result = codeSystemProvider.subsumes(req);
 		
 		return toResponse(result);
@@ -319,7 +319,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		validateSubsumptionRequest(request);
 		
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(bus, locales, request.getSystem());
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, request.getSystem());
 		SubsumptionResult result = codeSystemProvider.subsumes(request);
 		return toResponse(result);
 	}
@@ -342,7 +342,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		validateSubsumptionRequest(request);
 		
-		SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(bus, locales, request.getSystem()).subsumes(request);
+		SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, request.getSystem()).subsumes(request);
 		return toResponse(result);
 	}
 	
@@ -357,7 +357,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	
 	private CodeSystem getCodeSystemById(String codeSystemId) {
 		LogicalId logicalId = LogicalId.fromIdString(codeSystemId);
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(bus, locales, logicalId);
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, logicalId);
 		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(logicalId);
 		return codeSystem;
 	}
@@ -366,7 +366,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
 	private LookupResult lookup(LookupRequest lookupRequest) {
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(bus, locales, lookupRequest.getSystem());
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, lookupRequest.getSystem());
 		return codeSystemProvider.lookup(lookupRequest);
 	}
 	

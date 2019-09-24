@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 			.addLink(uri);
 		
 		int total = 0;
-		for (IConceptMapApiProvider fhirProvider : IConceptMapApiProvider.Registry.getProviders()) {
+		for (IConceptMapApiProvider fhirProvider : IConceptMapApiProvider.Registry.getProviders(getBus(), locales)) {
 			Collection<ConceptMap> conceptMaps = fhirProvider.getConceptMaps();
 			for (ConceptMap conceptMap : conceptMaps) {
 				applyResponseContentFilter(conceptMap, requestParameters);
@@ -137,7 +137,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		
 		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
 		ConceptMap conceptMap = IConceptMapApiProvider.Registry
-			.getConceptMapProvider(logicalId) 
+			.getConceptMapProvider(getBus(), locales, logicalId) 
 			.getConceptMap(logicalId);
 
 		return applyResponseContentFilter(conceptMap, requestParameters);
@@ -304,7 +304,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	private TranslateResult doTranslate(String conceptMapId, TranslateRequest translateRequest) {
 		
 		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
-		IConceptMapApiProvider conceptMapApiProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(logicalId);
+		IConceptMapApiProvider conceptMapApiProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(getBus(), locales, logicalId);
 		TranslateResult translateResult = conceptMapApiProvider.translate(logicalId, translateRequest);
 		return translateResult;
 	}
@@ -318,7 +318,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		
 		int totalMatch = 0;
 		
-		Collection<IConceptMapApiProvider> providers = IConceptMapApiProvider.Registry.getProviders();
+		Collection<IConceptMapApiProvider> providers = IConceptMapApiProvider.Registry.getProviders(getBus(), locales);
 		
 		for (IConceptMapApiProvider provider : providers) {
 			Collection<Match> matches = provider.translate(translateRequest);

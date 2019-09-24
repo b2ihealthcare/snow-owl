@@ -19,7 +19,7 @@ import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.springframework.http.converter.json.MappingJacksonValue;
 
-import com.b2international.snowowl.fhir.api.FhirApiConfig;
+import com.b2international.snowowl.core.rest.SnowOwlApiConfig;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
@@ -39,7 +39,7 @@ public class FhirTest {
 	
 	protected static final String TEST_DATE_STRING = "2018-03-23T07:49:40+0000"; //$NON-NLS-N$
 	
-	protected static final ObjectMapper objectMapper = new FhirApiConfig().objectMapper();
+	protected static final ObjectMapper objectMapper = new SnowOwlApiConfig().objectMapper();
 	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();

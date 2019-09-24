@@ -21,7 +21,6 @@ import static org.hamcrest.CoreMatchers.hasItem;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.service.BaseFhirResourceRestService;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
@@ -108,7 +107,7 @@ public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+			.contentType(APPLICATION_FHIR_JSON)
 			.body(jsonBody)
 			.when().post("/CodeSystem/$lookup")
 			.then()
@@ -139,7 +138,7 @@ public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+			.contentType(APPLICATION_FHIR_JSON)
 			.body(jsonBody)
 			.when().post("/CodeSystem/$lookup")
 			.then()

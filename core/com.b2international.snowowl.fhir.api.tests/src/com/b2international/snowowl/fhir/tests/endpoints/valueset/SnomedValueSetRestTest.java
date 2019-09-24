@@ -47,6 +47,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get("/ValueSet")
 			.then()
+			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
 			.body("total", notNullValue())
@@ -65,8 +66,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("filter.size()", equalTo(1))
 			.body("filter[0].property", equalTo("expression"))
 			.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
-			.body("filter[0].op", equalTo("="))
-			.statusCode(200);
+			.body("filter[0].op", equalTo("="));
 	}
 	
 	@Test
@@ -76,6 +76,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.param("_summary", true)
 			.when().get("/ValueSet")
 			.then()
+			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
 			.body("total", notNullValue())
@@ -91,9 +92,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("resource.status", equalTo("active"))
 			
 			//subsetted
-			.body("resource.meta.tag[0].code", equalTo("SUBSETTED"))
-			
-			.statusCode(200);
+			.body("resource.meta.tag[0].code", equalTo("SUBSETTED"));
 	}
 	
 	//'Virtual' value set
@@ -126,6 +125,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 		 	.pathParam("id", "snomedStore:MAIN/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + ":" + simpleTypeRefSetId) 
 			.when().get("/ValueSet/{id}")
 			.then()
+			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
 			.body("id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION" + ":" + simpleTypeRefSetId))
 			.body("language", equalTo("en-us"))
@@ -142,8 +142,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("system", equalTo("http://snomed.info/sct"))
 			.body("filter[0].property", equalTo("expression"))
 			.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
-			.body("filter[0].op", equalTo("="))
-			.statusCode(200);
+			.body("filter[0].op", equalTo("="));
 	}
 
 }

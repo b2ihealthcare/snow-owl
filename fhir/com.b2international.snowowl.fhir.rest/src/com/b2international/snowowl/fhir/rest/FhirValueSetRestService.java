@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.addLink(uri);
 		
 		int total = 0;
-		for (IValueSetApiProvider fhirProvider : IValueSetApiProvider.Registry.getProviders()) {
+		for (IValueSetApiProvider fhirProvider : IValueSetApiProvider.Registry.getProviders(getBus(), locales)) {
 			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
 			for (ValueSet valueSet : valueSets) {
 				applyResponseContentFilter(valueSet, requestParameters);
@@ -135,7 +135,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
 		ValueSet valueSet = IValueSetApiProvider.Registry
-			.getValueSetProvider(logicalId) 
+			.getValueSetProvider(getBus(), locales, logicalId) 
 			.getValueSet(logicalId);
 
 		return applyResponseContentFilter(valueSet, requestParameters);
@@ -160,7 +160,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
 		
-		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(logicalId);
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(getBus(), locales, logicalId);
 		ValueSet valueSet = valueSetProvider.expandValueSet(logicalId);
 		
 		applyEmptyContentFilter(valueSet);
@@ -184,7 +184,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	public ValueSet expandByURL(
 			@ApiParam(value="Canonical URL of the value set") @RequestParam(value="url") final String url) {
 		
-		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(url);
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(getBus(), locales, url);
 		ValueSet valueSet = valueSetProvider.expandValueSet(url);
 		
 		applyEmptyContentFilter(valueSet);
@@ -226,7 +226,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			throw new BadRequestException("URL and ValueSet.URL parameters are different.", "ExpandValueSetRequest");
 		}
 		
-		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(request.getUrl().getUriValue());
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(getBus(), locales, request.getUrl().getUriValue());
 		ValueSet valueSet = valueSetProvider.expandValueSet(request);
 		
 		applyEmptyContentFilter(valueSet);
@@ -268,7 +268,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.systemVersion(systemVersion)
 			.build();
 		
-		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(logicalId);
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(getBus(), locales, logicalId);
 		ValidateCodeResult validateCodeResult = valueSetProvider.validateCode(validateCodeRequest, logicalId);
 		return toResponse(validateCodeResult);
 	}
@@ -299,7 +299,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
 			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
 		
-		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(url);
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(getBus(), locales, url);
 		
 		
 		ValidateCodeRequest validateCodeRequest = ValidateCodeRequest.builder()

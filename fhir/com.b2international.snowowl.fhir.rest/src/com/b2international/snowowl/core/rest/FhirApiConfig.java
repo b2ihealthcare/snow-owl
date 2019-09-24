@@ -41,12 +41,12 @@ public class FhirApiConfig extends BaseApiConfig {
 			getApiBaseUrl(), 
 			"fhir", 
 			"1.0", 
-			"Snow Owl® <a href=\"http://hl7.org/fhir/\">FHIR®</a> API", 
+			"Snow Owl® FHIR API", 
 			"https://b2i.sg/", 
 			"support@b2i.sg", 
 			"API License", 
 			"https://b2i.sg/", 
-			"This describes the resources that make up the official Snow Owl® FHIR API.\r\n" + 
+			"This describes the resources that make up the official Snow Owl® Snow Owl® <a href=\\\"http://hl7.org/fhir/\\\">FHIR®</a> API.\r\n" + 
 			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/fhir)."
 		);
 

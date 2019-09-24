@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.service.BaseFhirResourceRestService;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
@@ -59,6 +58,11 @@ public class LookupSnomedRestTest extends FhirRestTest {
 			.param("property", "designation", "sufficientlyDefined", "inactive", "effectiveTime")
 			.param("_format", "json")
 			.when().get("/CodeSystem/$lookup")
+			.then()
+			.assertThat()
+			.statusCode(200)
+			.extract()
+			.body()
 			.asString();
 		
 		System.out.println("Response string: " + responseString);
@@ -116,6 +120,11 @@ public class LookupSnomedRestTest extends FhirRestTest {
 			.param("property", "http://snomed.info/id/260686004") //method
 			.param("_format", "json")
 			.when().get("/CodeSystem/$lookup")
+			.then()
+			.assertThat()
+			.statusCode(200)
+			.extract()
+			.body()
 			.asString();
 		
 		System.out.println(responseString);
@@ -168,6 +177,11 @@ public class LookupSnomedRestTest extends FhirRestTest {
 			.param("code", "64572001") //Disease
 			.param("property", "version")
 			.when().get("/CodeSystem/$lookup")
+			.then()
+			.assertThat()
+			.statusCode(200)
+			.extract()
+			.body()
 			.asString();
 		
 		System.out.println(responseString);
@@ -195,17 +209,17 @@ public class LookupSnomedRestTest extends FhirRestTest {
 //		printPrettyJson(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+			.contentType(APPLICATION_FHIR_JSON)
 			.body(jsonBody)
 			.when().post("/CodeSystem/$lookup")
 			.then()
-		.body("resourceType", equalTo("Parameters"))
-		.body("parameter.size()", is(2))
-		.body("parameter[0].name", equalTo("name"))
-		.body("parameter[0].valueString", equalTo("SNOMED CT"))
-		.body("parameter[1].name", equalTo("display"))
-		.body("parameter[1].valueString", equalTo("Disease"))
-		.statusCode(200);
+			.statusCode(200)
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter.size()", is(2))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("SNOMED CT"))
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("Disease"));
 	}
 	
 	@Test

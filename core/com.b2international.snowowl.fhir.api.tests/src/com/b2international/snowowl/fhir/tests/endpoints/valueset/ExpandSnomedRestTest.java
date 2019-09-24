@@ -43,6 +43,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.param("url", "http://snomed.info/sct?fhir_vs=refset/" + simpleTypeRefSetId) 
 			.when().get("/ValueSet/$expand")
 			.then()
+			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
 			.body("id", startsWith("snomedStore:MAIN/"))
 			.body("id", endsWith(simpleTypeRefSetId))
@@ -53,8 +54,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.body("expansion.timestamp", notNullValue())
 			.body("expansion.contains.code", hasItem(FhirTestConcepts.MICROORGANISM))
 			.body("expansion.contains.display", hasItem("Microorganism"))
-			.body("expansion.parameter.name", hasItem("version"))
-			.statusCode(200);
+			.body("expansion.parameter.name", hasItem("version"));
 	}
 	
 	//all simple type reference sets
@@ -123,6 +123,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.pathParam("id", "snomedStore:MAIN/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + ":" + simpleTypeRefSetId) 
 			.when().get("/ValueSet/{id}/$expand")
 			.then()
+			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
 			.body("id", equalTo("snomedStore:MAIN/" + FHIR_SIMPLE_TYPE_REFSET_VERSION+ ":" + simpleTypeRefSetId))
 			.body("language", equalTo("en-us"))
@@ -130,8 +131,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.body("status", equalTo("active"))
 			.body("expansion.total", notNullValue())
 			.body("expansion.timestamp", notNullValue())
-			.body("expansion.contains.code", hasItem(FhirTestConcepts.BACTERIA))
-			.statusCode(200);
+			.body("expansion.contains.code", hasItem(FhirTestConcepts.BACTERIA));
 	}
 	
 	//Expand Query type reference set member into a 'virtual' code system
@@ -147,6 +147,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.pathParam("id", "snomedStore:MAIN/" + FHIR_QUERY_TYPE_REFSET_VERSION + ":" + refsetLogicalId) 
 			.when().get("/ValueSet/{id}/$expand")
 			.then()
+			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
 			.body("id", StringStartsWith.startsWith("snomedStore:MAIN/FHIR_QUERY_TYPE_REFSET_VERSION"))
 			.body("version", equalTo(FHIR_QUERY_TYPE_REFSET_VERSION))
@@ -155,8 +156,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.root("expansion.contains.find { it.code =='410607006'}")
 			.body("system", equalTo("http://snomed.info/sct"))
 			.body("code", equalTo("410607006"))
-			.body("display", equalTo("Organism"))
-			.statusCode(200);
+			.body("display", equalTo("Organism"));
 	}
 	
 }

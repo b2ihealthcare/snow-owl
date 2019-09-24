@@ -69,6 +69,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get("/ConceptMap")
 			.then()
+			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
 			.body("total", notNullValue())
@@ -97,8 +98,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.appendRoot("element.find { it.code == '409822003' }")
 			.body("display", equalTo("Bacteria"))
 			.body("target[0].code", equalTo("Bacteria Target"))
-			.body("target[0].equivalence", equalTo("equivalent"))
-			.statusCode(200);
+			.body("target[0].equivalence", equalTo("equivalent"));
 	}
 	
 	@Test
