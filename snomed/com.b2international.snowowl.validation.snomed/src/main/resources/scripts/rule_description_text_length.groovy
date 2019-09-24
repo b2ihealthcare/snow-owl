@@ -62,7 +62,7 @@ for (Integer length : descriptionTypesByMaxLength.keySet()) {
     final ExpressionBuilder activeDescriptionFilter = Expressions.builder()
             .filter(SnomedDescriptionIndexEntry.Expressions.active())
             .filter(SnomedDescriptionIndexEntry.Expressions.types(descriptionTypes))
-            .filter(Expressions.scriptQuery("descriptionLength", ImmutableMap.of("length", length)))
+            .filter(Expressions.scriptQuery("doc['term.original'].value.length() > params.length", ImmutableMap.of("length", length)))
 
     if (params.isUnpublishedOnly) {
         activeDescriptionFilter.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))

@@ -68,7 +68,6 @@ import com.google.common.collect.Maps;
 @Doc
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
 @Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
-@Script(name="descriptionLength", script="doc['term.original'].value.length() > params.length")
 @RevisionHash({ 
 	SnomedDocument.Fields.ACTIVE, 
 	SnomedDocument.Fields.EFFECTIVE_TIME, 
