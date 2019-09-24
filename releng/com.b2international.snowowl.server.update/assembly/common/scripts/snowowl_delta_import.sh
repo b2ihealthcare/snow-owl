@@ -36,11 +36,14 @@ SOURCE_FOLDER=""
 # Global variables / constants, advanced parameters
 #
 
-#Space separated list of base urls of the Snow Owl servers to import to
+#List of base urls of the Snow Owl servers to import to
 SNOW_OWL_BASE_URLS=()
 
+#Default Snow Owl base url to use if none are specified
+DEFAULT_SNOW_OWL_BASE_URL="http://localhost:8080"
+
 #Snow Owl server base url from the target servers currently undergoing import
-SNOW_OWL_BASE_URL="http://localhost:8080"
+SNOW_OWL_BASE_URL=""
 
 # URL for Snow Owl's REST API
 SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
@@ -250,7 +253,7 @@ while getopts ":hu:p:f:b:a:z:U:P:" option; do
 done
 
 if [ ${#SNOW_OWL_BASE_URLS[@]} -eq 0 ]; then
-    SNOW_OWL_BASE_URLS=($SNOW_OWL_BASE_URL)
+    SNOW_OWL_BASE_URLS=($DEFAULT_SNOW_OWL_BASE_URL)
 fi
 
 for SNOW_OWL_BASE_URL in "${SNOW_OWL_BASE_URLS[@]}"; do
