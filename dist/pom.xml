@@ -231,7 +231,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.fhir.api.tests</artifactId>
+			<artifactId>com.b2international.snowowl.fhir.rest.tests</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
