@@ -32,31 +32,28 @@ SNOW_OWL_USER_PASSWORD=""
 # The source folder with the exported RF2 content
 SOURCE_FOLDER=""
 
+#List of base urls of the Snow Owl servers to import to
+SNOW_OWL_BASE_URLS=()
+
+# If set then a centralized Bugzilla instance will be used, otherwise falls back to the pattern: 'http://snowowl.server.url/bugzilla'
+DEFAULT_BUGZILLA_URL=""
+
+#Login credentials to bugzilla
+BUGZILLA_USERNAME=""
+BUGZILLA_PASSWORD=""
+
 #
 # Global variables / constants, advanced parameters
 #
 
-#List of base urls of the Snow Owl servers to import to
-SNOW_OWL_BASE_URLS=()
-
 #Default Snow Owl base url to use if none are specified
 DEFAULT_SNOW_OWL_BASE_URL="http://localhost:8080"
-
-#Snow Owl server base url from the target servers currently undergoing import
-SNOW_OWL_BASE_URL=""
 
 # URL for Snow Owl's REST API
 SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
 
 # Media type to use for REST requests
 MEDIA_TYPE="application/vnd.com.b2international.snowowl+json"
-
-# The url of the bugzilla repository, e.g.: http://localhost:9090/bugzilla
-BUGZILLA_URL=""
-
-#Login credentials to bugzilla
-BUGZILLA_USERNAME=""
-BUGZILLA_PASSWORD=""
 
 usage() {
 
@@ -74,18 +71,18 @@ NAME:
         Define a username with privileges to the Snow Owl REST API
     -p
         Define the password for the above user
-    -b
-        Space separarated list of Snow Owl base URLs, defaults to 'http://localhost:8080'
     -f
-        Source folder where the exported content can be found
+        Path to folder where the exported content can be found
+    -b
+        Snow Owl base URLs (more than one can be defined), defaults to 'http://localhost:8080'
     -a
         REST API URL of the Snow Owl server, defaults to '/snowowl/snomed-ct/v3'
-	-z
-		Bugzilla URL
-	-U
-		Defines the bugzilla user
-	-P
-		Defines the bugzilla password for the above user
+    -z
+        Centralized Bugzilla URL, if set all requests will be made against that instance
+    -U
+        Defines the Bugzilla user
+    -P
+        Defines the Bugzilla password for the above user
 
 NOTES:
 
@@ -95,9 +92,22 @@ NOTES:
         - SNOW OWL user that is able to authenticate through the REST API
         - Password for the above user
         - Source folder with the delta export files
-		- Bugzilla URL
-		- Bugzilla user
-		- Bugzilla password for the above user
+        - Bugzilla user
+        - Bugzilla password for the above user
+
+EXAMPLES:
+
+    Run against a single Snow Owl server instance, Bugzilla is expected to be under 'http://snowowl.server.url/bugzilla':
+
+        $0 -u snowowl-user -p snowowl-user-pass -f /path/to/export/archives -b http://snowowl.server.url -U bugzilla-user -P bugzilla-user-pass
+
+    Run against multiple Snow Owl server instances, Bugzilla is expected to be under 'http://snowowl.server.url/bugzilla':
+
+        $0 -u snowowl-user -p snowowl-user-pass -f /path/to/export/archives -b http://snowowl.server.url -b http://snowowl.server.url2 -U bugzilla-user -P bugzilla-user-pass
+
+    Run against multiple Snow Owl server instances, the same centralized Bugzilla instance is used for each import:
+
+        $0 -u snowowl-user -p snowowl-user-pass -f /path/to/export/archives -b http://snowowl.server.url -b http://snowowl.server.url2 -z http://bugzilla.url -U bugzilla-user -P bugzilla-user-pass
 
 EOF
 
@@ -118,21 +128,28 @@ check_file_validity() {
 	if [ -f "$1" ]; then
 		echo "Valid export file, $1 found."
 	else
-    	echo_date "$2"
+		echo_date "$2"
 		exit 1
 	fi
 }
 
 validate_variables() {
+
 	check_if_empty "${SNOW_OWL_USER}" "Snow Owl username must be specified"
 	check_if_empty "${SNOW_OWL_USER_PASSWORD}" "User password must be specified"
 	check_if_empty "${SOURCE_FOLDER}" "Source folder must be specified"
-	SOURCE_FILE=$(ls -t snow_owl_DELTA_export* | head -n1)
+	SOURCE_FILE=$(ls ${SOURCE_FOLDER}/snow_owl_DELTA_export* -t | head -n1)
 	check_if_empty "${SOURCE_FILE}" "Source folder must contain a valid delta export file"
 	check_file_validity "${SOURCE_FILE}" "Source file must be a valid file"
-	check_if_empty "${BUGZILLA_URL}" "Bugzilla url must be specified"
 	check_if_empty "${BUGZILLA_USERNAME}" "Bugzilla username must be specified"
 	check_if_empty "${BUGZILLA_PASSWORD}" "Bugzilla password must be specified"
+
+	if [ ! -z "${DEFAULT_BUGZILLA_URL}" ]; then
+		BUGZILLA_URL="${DEFAULT_BUGZILLA_URL}"
+	else
+		BUGZILLA_URL="${SNOW_OWL_BASE_URL}/bugzilla"
+	fi
+
 }
 
 bugzilla_login() {
@@ -190,7 +207,6 @@ initiate_import() {
 
 	ID=${RESPONSE##*/}
 	IMPORT_UUID=${ID%$'\r'}
-	echo "import uuid: ${IMPORT_UUID}"
 
 	IMPORTS_ARCHIVE_POST_ENDPOINT="${SNOW_OWL_BASE_URL}${SNOW_OWL_API_URL}/imports/${IMPORT_UUID}/archive"
 	RESPONSE=$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
@@ -231,7 +247,7 @@ while getopts ":hu:p:f:b:a:z:U:P:" option; do
 		SNOW_OWL_API_URL=${OPTARG}
 		;;
 	z)
-		BUGZILLA_URL=${OPTARG}
+		DEFAULT_BUGZILLA_URL=${OPTARG}
 		;;
 	U)
 		BUGZILLA_USERNAME=${OPTARG}
@@ -253,11 +269,12 @@ while getopts ":hu:p:f:b:a:z:U:P:" option; do
 done
 
 if [ ${#SNOW_OWL_BASE_URLS[@]} -eq 0 ]; then
-    SNOW_OWL_BASE_URLS=($DEFAULT_SNOW_OWL_BASE_URL)
+	SNOW_OWL_BASE_URLS=($DEFAULT_SNOW_OWL_BASE_URL)
 fi
 
 for SNOW_OWL_BASE_URL in "${SNOW_OWL_BASE_URLS[@]}"; do
-    echo "Initiating Snow Owl import on $SNOW_OWL_BASE_URL."
+	echo "Initiating Snow Owl import on $SNOW_OWL_BASE_URL."
 	execute
 done
+
 exit 0
