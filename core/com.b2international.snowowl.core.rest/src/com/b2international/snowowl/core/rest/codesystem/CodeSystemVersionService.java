@@ -99,7 +99,7 @@ public class CodeSystemVersionService {
 	 * Retrieves a single released code system version for the specified code system short name and version identifier, if it exists.
 	 * 
 	 * @param shortName the code system short name to look for, eg. "{@code SNOMEDCT}" (may not be {@code null})
-	 * @param version   the code system version identifier to look for, eg. "{@code 2014-07-31}" (may not be {@code null})
+	 * @param versionId   the code system version identifier to look for, eg. "{@code 2014-07-31}" (may not be {@code null})
 	 * 
 	 * @return the requested code system version
 	 * 
