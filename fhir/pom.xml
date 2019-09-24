@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>fhir-parent</artifactId>
+	<packaging>pom</packaging>
+	
+	<parent>
+		<groupId>com.b2international.snowowl</groupId>
+		<artifactId>snowowl-parent</artifactId>
+		<version>7.2.0-SNAPSHOT</version>
+	</parent>
+	
+	<modules>
+		
+		<!-- FHIR modules -->
+		<module>com.b2international.snowowl.fhir.core</module>
+		<module>com.b2international.snowowl.fhir.rest</module>
+		<module>com.b2international.snowowl.fhir.api.tests</module>
+		<module>com.b2international.snowowl.fhir.api.feature</module>
+		
+	</modules>
+	
+</project>

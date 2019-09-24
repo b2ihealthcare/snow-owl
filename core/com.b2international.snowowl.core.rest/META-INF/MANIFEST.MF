@@ -49,3 +49,13 @@ Import-Package: javax.servlet;version="3.1.0",
  org.osgi.framework;version="1.9.0",
  org.slf4j;version="1.7.25"
 Web-ContextPath: /snowowl
+Export-Package: com.b2international.snowowl.core.rest,
+ com.b2international.snowowl.core.rest.admin,
+ com.b2international.snowowl.core.rest.auth,
+ com.b2international.snowowl.core.rest.codesystem,
+ com.b2international.snowowl.core.rest.job,
+ com.b2international.snowowl.core.rest.util,
+ com.b2international.snowowl.core.rest.validation,
+ org.springframework.http.converter.json,
+ org.springframework.util,
+ org.springframework.web.util
