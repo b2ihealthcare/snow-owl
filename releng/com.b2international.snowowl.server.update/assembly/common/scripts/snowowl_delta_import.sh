@@ -37,10 +37,10 @@ SOURCE_FOLDER=""
 #
 
 #Space separated list of base urls of the Snow Owl servers to import to
-SNOW_OWL_BASE_URLS="http://localhost:8080"
+SNOW_OWL_BASE_URLS=()
 
 #Snow Owl server base url from the target servers currently undergoing import
-SNOW_OWL_BASE_URL=""
+SNOW_OWL_BASE_URL="http://localhost:8080"
 
 # URL for Snow Owl's REST API
 SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
@@ -222,7 +222,7 @@ while getopts ":hu:p:f:b:a:z:U:P:" option; do
 		SOURCE_FOLDER=${OPTARG}
 		;;
 	b)
-		SNOW_OWL_BASE_URLS=${OPTARG}
+		SNOW_OWL_BASE_URLS+=(${OPTARG})
 		;;
 	a)
 		SNOW_OWL_API_URL=${OPTARG}
@@ -249,8 +249,11 @@ while getopts ":hu:p:f:b:a:z:U:P:" option; do
 	esac
 done
 
-IFS=$' '
-for SNOW_OWL_BASE_URL in $SNOW_OWL_BASE_URLS; do
+if [ ${#SNOW_OWL_BASE_URLS[@]} -eq 0 ]; then
+    SNOW_OWL_BASE_URLS=($SNOW_OWL_BASE_URL)
+fi
+
+for SNOW_OWL_BASE_URL in "${SNOW_OWL_BASE_URLS[@]}"; do
     echo "Initiating Snow Owl import on $SNOW_OWL_BASE_URL."
 	execute
 done
