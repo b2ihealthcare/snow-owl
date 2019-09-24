@@ -36,9 +36,9 @@
     "implementation": "scripts/ruleSnomedCommon4.groovy"
   },
   {
-  	"id": "rule_description_text_length",
+  	"id": "snomed-common-5",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Description term should not exceed the maximum amount of character length allowed in the Description format reference set.",
+    "messageTemplate": "Description terms should not exceed the maximum amount of character length allowed in the Description format reference set.",
     "severity": "WARNING",
     "checkType": "EXPENSIVE",
     "type": "script-groovy",
