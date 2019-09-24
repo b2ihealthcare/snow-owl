@@ -98,7 +98,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.fhir.api</artifactId>
+			<artifactId>com.b2international.snowowl.fhir.rest</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
