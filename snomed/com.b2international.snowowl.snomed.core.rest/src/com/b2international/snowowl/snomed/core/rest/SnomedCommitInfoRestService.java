@@ -118,7 +118,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 					.setLimit(limit)
 					.sortBy(extractSortFields(sort))
 					.build(repositoryId)
-					.execute(bus));
+					.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -143,6 +143,6 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 					.prepareGetCommitInfo(commitId)
 					.setExpand(expand)
 					.build(repositoryId)
-					.execute(bus));
+					.execute(getBus()));
 	}
 }

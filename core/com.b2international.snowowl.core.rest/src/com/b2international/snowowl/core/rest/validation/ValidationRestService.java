@@ -95,7 +95,7 @@ public class ValidationRestService extends AbstractRestService {
 		return DeferredResults.wrap(JobRequests.prepareSearch()
 			.all()
 			.buildAsync()
-			.execute(bus)
+			.execute(getBus())
 			.then(jobs -> {
 				final List<RemoteJobEntry> validationJobs = jobs.stream()
 						.filter(ValidationRequests::isValidationJob)
@@ -137,7 +137,7 @@ public class ValidationRestService extends AbstractRestService {
 		final RemoteJobEntry remoteJobEntry = JobRequests.prepareSearch()
 				.filterById(uniqueJobId)
 				.buildAsync()
-				.execute(bus)
+				.execute(getBus())
 				.getSync().stream()
 				.sorted(Comparator.comparing(RemoteJobEntry::getStartDate, Comparator.nullsLast(Comparator.reverseOrder())))
 				.findFirst()
@@ -147,7 +147,7 @@ public class ValidationRestService extends AbstractRestService {
 			if (remoteJobEntry.isDone() || remoteJobEntry.isCancelled() || remoteJobEntry.isDeleted()) {
 				deleteValidationJobPromise = JobRequests.prepareDelete(uniqueJobId)
 					.buildAsync()
-					.execute(bus);
+					.execute(getBus());
 			} else {
 				return DeferredResults.wrap(Promise.immediate(Responses.status(HttpStatus.CONFLICT).build(null)));
 			}
@@ -173,7 +173,7 @@ public class ValidationRestService extends AbstractRestService {
 					.setDescription(String.format("Validating SNOMED CT on branch '%s'", validationInput.branchPath()))
 					.setId(uniqueJobId)
 					.buildAsync()
-					.execute(bus);
+					.execute(getBus());
 			})
 			.then(success -> {
 				final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
@@ -251,7 +251,7 @@ public class ValidationRestService extends AbstractRestService {
 						.filterByBranchPath(branchPath)
 						.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
 						.buildAsync()
-						.execute(bus)
+						.execute(getBus())
 						.then(issues -> {
 							final Set<String> rulesToFetch = issues.stream()
 									.map(ValidationIssue::getRuleId)
@@ -260,7 +260,7 @@ public class ValidationRestService extends AbstractRestService {
 									.all()
 									.filterByIds(rulesToFetch)
 									.buildAsync()
-									.execute(bus)
+									.execute(getBus())
 									.getSync()
 									.stream()
 									.collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
@@ -285,7 +285,7 @@ public class ValidationRestService extends AbstractRestService {
 						.setSearchAfter(searchAfter)
 						.filterByBranchPath(branchPath)
 						.buildAsync()
-						.execute(bus)
+						.execute(getBus())
 						.then(issues -> {
 							return issues.getItems().stream().collect(Collectors.toList());
 						}));
@@ -303,7 +303,7 @@ public class ValidationRestService extends AbstractRestService {
 		for (String repoId : repositoryIds) {
 			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
 				.build(repoId)
-				.execute(bus)
+				.execute(getBus())
 				.getSync();
 			
 			if (codeSystemEntry != null) {
@@ -319,7 +319,7 @@ public class ValidationRestService extends AbstractRestService {
 		return RepositoryRequests.prepareSearch()
 					.all()
 					.buildAsync()
-					.execute(bus)
+					.execute(getBus())
 					.getSync().stream()
 					.map(RepositoryInfo::id)
 					.collect(Collectors.toSet());
@@ -329,7 +329,7 @@ public class ValidationRestService extends AbstractRestService {
 		return JobRequests.prepareSearch()
 			.all()
 			.buildAsync()
-			.execute(bus)
+			.execute(getBus())
 			.getSync()
 			.stream()
 			.filter(ValidationRequests::isValidationJob)

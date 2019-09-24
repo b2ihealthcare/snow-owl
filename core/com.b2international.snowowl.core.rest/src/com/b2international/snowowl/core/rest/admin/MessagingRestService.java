@@ -57,7 +57,7 @@ public class MessagingRestService extends AbstractRestService {
 		
 		MessagingRequests.prepareSendMessage(message)
 			.buildAsync()
-			.execute(bus)
+			.execute(getBus())
 			.getSync();
 	}
 }

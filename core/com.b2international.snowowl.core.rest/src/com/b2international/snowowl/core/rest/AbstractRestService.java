@@ -37,6 +37,7 @@ import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.inject.Provider;
 
 /**
  * @since 1.0
@@ -79,12 +80,16 @@ public abstract class AbstractRestService {
 	public static final String X_AUTHOR = "X-Author";
 	
 	@Autowired
-	protected IEventBus bus;
+	private Provider<IEventBus> bus;
 
 	private final Pattern sortKeyPattern;
 	
 	public AbstractRestService() {
 		this(Collections.emptySet());
+	}
+	
+	protected final IEventBus getBus() {
+		return bus.get();
 	}
 	
 	public AbstractRestService(Set<String> sortFields) {

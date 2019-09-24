@@ -53,6 +53,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.inject.Provider;
 
 /**
  * {@link ISnomedRf2ImportService SNOMED&nbsp;CT RF2 import service} implementation.
@@ -71,7 +72,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	private final Map<UUID, ISnomedImportConfiguration> configurationMapping = synchronizedMap(Maps.<UUID, ISnomedImportConfiguration>newHashMap());
 	
 	@Autowired
-	private IEventBus bus;
+	private Provider<IEventBus> bus;
 	
 	@Autowired
 	private AttachmentRegistry fileRegistry;
@@ -115,7 +116,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		}
 		
 		final Rf2ReleaseType releaseType = configuration.getRf2ReleaseType();
-		final boolean contentAvailable = ContentAvailabilityInfoManager.INSTANCE.isAvailable(bus, REPOSITORY_UUID);
+		final boolean contentAvailable = ContentAvailabilityInfoManager.INSTANCE.isAvailable(bus.get(), REPOSITORY_UUID);
 		final boolean isMain = Branch.MAIN_PATH.equals(configuration.getBranchPath());
 		
 		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType) && isMain) {
@@ -140,7 +141,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		}
 		
 		final String branchPath = configuration.getBranchPath();
-		if (!isMain && !BranchPathUtils.exists(bus, REPOSITORY_UUID, branchPath)) {
+		if (!isMain && !BranchPathUtils.exists(bus.get(), REPOSITORY_UUID, branchPath)) {
 			throw new BadRequestException("Importing a release of SNOMED CT from an "
 					+ "archive to other than MAIN branch is prohibited when the given "
 					+ "branch does not exist. Please perform a branch creation first.");
@@ -165,7 +166,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			.setCodeSystemShortName(configuration.getCodeSystemShortName())
 			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
-			.execute(bus)
+			.execute(bus.get())
 			.then(result -> {
 				((SnomedImportConfiguration) configuration).setStatus(result.getStatus());
 				return null;
@@ -187,7 +188,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		try {
 			return CodeSystemRequests.prepareGetCodeSystem(shortName)
 					.build(REPOSITORY_UUID)
-					.execute(bus)
+					.execute(bus.get())
 					.getSync();
 		} catch (NotFoundException e) {
 			return null;
@@ -203,7 +204,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		// FULL AND SNAPSHOT can be import into empty databases
 		if (Rf2ReleaseType.DELTA == configuration.getRf2ReleaseType()) {
 			// will throw exception internally if the branch is not found
-			RepositoryRequests.branching().prepareGet(configuration.getBranchPath()).build(REPOSITORY_UUID).execute(bus).getSync(1, TimeUnit.MINUTES);
+			RepositoryRequests.branching().prepareGet(configuration.getBranchPath()).build(REPOSITORY_UUID).execute(bus.get()).getSync(1, TimeUnit.MINUTES);
 		}
 		
 		final UUID importId = randomUUID();

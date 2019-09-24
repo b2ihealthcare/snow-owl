@@ -97,7 +97,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 			.setDescription(String.format("Merging branches %s to %s", sourcePath, targetPath))
 			.setRequest(mergeRequest)
 			.buildAsync()
-			.execute(bus);
+			.execute(getBus());
 		
 		final URI linkUri = linkTo(SnomedBranchMergingRestService.class).slash("merges").slash(jobId).toUri();
 		return Responses.accepted(linkUri).build();
@@ -120,7 +120,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 		return DeferredResults.wrap(RepositoryRequests.merging()
 					.prepareGet(id)
 					.build(repositoryId)
-					.execute(bus));	
+					.execute(getBus()));	
 	}
 	
 	@ApiOperation(
@@ -149,7 +149,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 					.filterByTarget(target)
 					.filterByStatus(status != null ? status.name() : null)
 					.build(repositoryId)
-					.execute(bus));
+					.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -169,7 +169,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 				RepositoryRequests.merging()
 					.prepareDelete(id)
 					.build(repositoryId)
-					.execute(bus),
+					.execute(getBus()),
 				Responses.noContent().build());
 	}
 	

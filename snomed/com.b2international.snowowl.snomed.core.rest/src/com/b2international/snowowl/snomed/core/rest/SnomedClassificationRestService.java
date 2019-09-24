@@ -114,7 +114,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			.setSearchAfter(searchAfter)
 			.setLimit(limit)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-			.execute(bus));
+			.execute(getBus()));
 	}
 
 	@ApiOperation(
@@ -146,7 +146,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.setReasonerId(request.getReasonerId())
 				.setUserId(author)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
-				.execute(bus)
+				.execute(getBus())
 				.then(id -> {
 					final URI resourceUri = linkBuilder.slash(id).toUri();
 					return Responses.created(resourceUri).build();
@@ -168,7 +168,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 
 		return DeferredResults.wrap(ClassificationRequests.prepareGetClassification(classificationId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus));
+				.execute(getBus()));
 	}
 
 	@ApiOperation(
@@ -216,7 +216,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus));
+				.execute(getBus()));
 	}
 
 	@ApiOperation(
@@ -271,7 +271,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus));
+				.execute(getBus()));
 	}
 	
 //	@Operation(
@@ -302,7 +302,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //		final ClassificationTask classificationTask = ClassificationRequests.prepareGetClassification(classificationId)
 //			.setExpand(String.format("relationshipChanges(sourceId:\"%s\",expand(relationship()))", conceptId))
 //			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-//			.execute(bus)
+//			.execute(getBus())
 //			.getSync();
 //		
 //		final String branchPath = classificationTask.getBranch();
@@ -334,7 +334,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //
 //					final SnomedConcept targetConcept = SnomedRequests.prepareGetConcept(relationship.getDestinationId())
 //							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-//							.execute(bus)
+//							.execute(getBus())
 //							.getSync();
 //					final ISnomedBrowserRelationshipTarget relationshipTarget = browserService.getSnomedBrowserRelationshipTarget(
 //							targetConcept, branchPath, extendedLocales);
@@ -388,7 +388,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 					.setClassificationId(classificationId)
 					.setUserId(author)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.execute(bus)
+					.execute(getBus())
 					.getSync();
 		}
 	}
@@ -410,7 +410,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		
 		ClassificationRequests.prepareDeleteClassification(classificationId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-			.execute(bus)
+			.execute(getBus())
 			.getSync();
 	}
 

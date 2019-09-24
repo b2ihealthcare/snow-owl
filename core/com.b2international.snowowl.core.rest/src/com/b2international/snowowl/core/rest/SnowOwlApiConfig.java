@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +31,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -38,11 +43,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.condition.RequestCondition;
@@ -59,8 +64,6 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchMixin;
-import com.b2international.snowowl.core.rest.auth.AuthorizationTokenInterceptor;
-import com.b2international.snowowl.core.rest.auth.AuthorizationTokenThreadLocal;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
@@ -73,8 +76,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import springfox.documentation.schema.property.bean.AccessorsProvider;
@@ -97,52 +100,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 
 	@Autowired
 	private org.springframework.context.ApplicationContext ctx;
-	
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(new AuthorizationTokenInterceptor());
-	}
-	
-//	@Bean
-//	public OpenApiResource openApiResource(
-//			@Autowired OpenAPIBuilder openApiBuilder,
-//			@Autowired AbstractRequestBuilder requestBuilder,
-//			@Autowired AbstractResponseBuilder responseBuilder,
-//			@Autowired OperationBuilder operationParser,
-//			@Autowired GeneralInfoBuilder infoBuilder,
-//			@Autowired RequestBodyBuilder requestBodyBuilder,
-//			@Autowired RequestMappingHandlerMapping requestMappingHandlerMapping
-//			) {
-//		return new OpenApiResource(
-//			openApiBuilder, 
-//			requestBuilder, 
-//			responseBuilder, 
-//			operationParser, 
-//			infoBuilder, 
-//			requestBodyBuilder, 
-//			requestMappingHandlerMapping
-//		);
-//	}
-	
-//	@Bean
-//	public OpenAPI openAPI(@Autowired IdentityProvider identityProvider) {
-//		OpenAPI api = new OpenAPI();
-//		if (IdentityProvider.NOOP != identityProvider) {
-//			api.components(
-//				new Components()
-//					.addSecuritySchemes("basic", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic").in(In.HEADER))
-//					.addSecuritySchemes("bearer", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("jwt").in(In.HEADER))
-//			)
-//			.addSecurityItem(new SecurityRequirement().addList("basic").addList("bearer"));
-//		}
-//		return api.info(new Info()
-//					.title(apiTitle)
-//					.version(apiVersion)
-//					.description(readApiDescription())
-//					.termsOfService(apiTermsOfServiceUrl)
-//					.contact(new Contact().email(apiContact))
-//					.license(new License().name(apiLicense).url(apiLicenseUrl)));
-//	}
 	
 	@Bean
 	public ObjectMapper objectMapper() {
@@ -178,8 +135,10 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	}
 	
 	@Bean
-	public IEventBus eventBus() {
-		return new AuthorizedEventBus(ApplicationContext.getInstance().getServiceChecked(IEventBus.class), () -> ImmutableMap.of(HttpHeaders.AUTHORIZATION, Strings.nullToEmpty(AuthorizationTokenThreadLocal.get())));
+	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
+	public Provider<IEventBus> eventBus(@Autowired HttpServletRequest request) {
+		final String authorization = request.getHeader("Authorization");
+		return () -> new AuthorizedEventBus(ApplicationContext.getInstance().getServiceChecked(IEventBus.class), ImmutableMap.of(HttpHeaders.AUTHORIZATION, authorization));
 	}
 	
 	@Bean

@@ -138,7 +138,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 				.one()
 				.filterById(configuration.getCodeSystemShortName())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus)
+				.execute(getBus())
 				.getSync().getTotal();
 			
 			if (hitSize == 0) {
@@ -169,7 +169,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		Branch branch = RepositoryRequests.branching()
 				.prepareGet(configuration.getBranchPath())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus)
+				.execute(getBus())
 				.getSync();
 		
 		if (branch == null) {
@@ -258,7 +258,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.setRefSetExportLayout(refSetExportLayout)
 			.setReferenceBranch(export.getBranchPath())
 			.build(this.repositoryId)
-			.execute(bus)
+			.execute(getBus())
 			.getSync();
 		
 		final File file = ((InternalAttachmentRegistry) fileRegistry).getAttachment(exportedFile.getRegistryId());

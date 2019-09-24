@@ -106,7 +106,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.setLocales(extendedLocales)
 					.sortBy(extractSortFields(params.getSort()))
 					.build(repositoryId, branch)
-					.execute(bus));
+					.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -166,7 +166,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		
 		final String createdRelationshipId = change.toRequestBuilder()
 				.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
-				.execute(bus)
+				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
 				
@@ -194,7 +194,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		return DeferredResults.wrap(
 				SnomedRequests.prepareGetRelationship(relationshipId)
 					.build(repositoryId, branchPath)
-					.execute(bus));
+					.execute(getBus()));
 	}
 
 	@ApiOperation(
@@ -238,7 +238,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.setTypeId(update.getTypeId())
 			.setDestinationId(update.getDestinationId())
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
-			.execute(bus)
+			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 
@@ -277,7 +277,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		SnomedRequests.prepareDeleteRelationship(relationshipId)
 			.force(force)
 			.build(repositoryId, branchPath, author, String.format("Deleted Relationship '%s' from store.", relationshipId))
-			.execute(bus)
+			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 

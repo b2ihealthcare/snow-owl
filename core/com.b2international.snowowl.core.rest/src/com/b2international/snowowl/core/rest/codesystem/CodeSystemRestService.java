@@ -119,7 +119,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setAuthor(author)
 				.setCommitComment(commitComment)
 				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
-				.execute(bus)
+				.execute(getBus())
 				.getSync().getResultAs(String.class);
 		
 		return Responses
@@ -160,7 +160,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setLanguage(codeSystem.getPrimaryLanguage())
 				.setLink(codeSystem.getOrganizationLink())
 				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, author, commitComment)
-				.execute(bus)
+				.execute(getBus())
 				.getSync();
 	}
 

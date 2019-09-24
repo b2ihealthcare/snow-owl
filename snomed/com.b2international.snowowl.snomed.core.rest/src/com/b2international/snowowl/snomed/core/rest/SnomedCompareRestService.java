@@ -67,7 +67,7 @@ public class SnomedCompareRestService extends AbstractSnomedRestService {
 			.setCompare(request.getCompareBranch())
 			.setLimit(request.getLimit())
 			.build(repositoryId)
-			.execute(bus));
+			.execute(getBus()));
 		
 	}
 }

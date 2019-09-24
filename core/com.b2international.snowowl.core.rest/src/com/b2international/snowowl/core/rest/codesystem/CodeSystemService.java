@@ -36,6 +36,7 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import com.google.inject.Provider;
 
 /**
  * @since 7.1
@@ -46,7 +47,7 @@ public final class CodeSystemService {
 	private static final Ordering<CodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystem::getShortName);
 
 	@Autowired
-	private IEventBus bus;
+	private Provider<IEventBus> bus;
 	
 	/**
 	 * Lists all registered code systems.
@@ -56,7 +57,7 @@ public final class CodeSystemService {
 	public List<CodeSystem> getCodeSystems() {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
-			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(bus));
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(bus.get()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(results -> {
@@ -86,7 +87,7 @@ public final class CodeSystemService {
 					.all()
 					.filterById(shortNameOrOid)
 					.build(repositoryId)
-					.execute(bus));
+					.execute(bus.get()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(results -> {
@@ -104,7 +105,7 @@ public final class CodeSystemService {
 		return RepositoryRequests.prepareSearch()
 				.all()
 				.buildAsync()
-				.execute(bus)
+				.execute(bus.get())
 				.then(repos -> repos.stream().map(RepositoryInfo::id).collect(Collectors.toList()))
 				.getSync();
 	}

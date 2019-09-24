@@ -48,6 +48,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+import com.google.inject.Provider;
 
 /**
  * @since 7.1
@@ -77,7 +78,7 @@ public class CodeSystemVersionService {
 	private CodeSystemService codeSystems;
 	
 	@Autowired
-	private IEventBus bus;
+	private Provider<IEventBus> bus;
 
 	/**
 	 * Lists all released code system versions for a single code system with the specified short name, if it exists.
@@ -117,7 +118,7 @@ public class CodeSystemVersionService {
 				.filterByCodeSystemShortName(shortName)
 				.filterByVersionId(versionId)
 				.build(codeSystem.getRepositoryUuid())
-				.execute(bus)
+				.execute(bus.get())
 				.getSync();
 		
 		final CodeSystemVersionEntry version = Iterables.getOnlyElement(versions, null);
@@ -150,7 +151,7 @@ public class CodeSystemVersionService {
 				.setUser(User.SYSTEM.getUsername())
 				.setRequest(req)
 				.buildAsync()
-				.execute(bus)
+				.execute(bus.get())
 				.getSync();
 		
 		RemoteJobEntry job = null;
@@ -163,7 +164,7 @@ public class CodeSystemVersionService {
 			
 			job = JobRequests.prepareGet(jobId)
 					.buildAsync()
-					.execute(bus)
+					.execute(bus.get())
 					.getSync();
 		} while (job == null || !job.isDone());
 		
@@ -183,7 +184,7 @@ public class CodeSystemVersionService {
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.build(repositoryId)
-				.execute(bus)
+				.execute(bus.get())
 				.getSync()
 				.getItems();
 	}

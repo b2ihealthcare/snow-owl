@@ -45,7 +45,7 @@ public class AuthorizationService extends AbstractRestService {
 				.setUsername(credentials.getUsername())
 				.setPassword(credentials.getPassword())
 				.buildAsync()
-				.execute(bus)
+				.execute(getBus())
 				.getSync();
 	}
 	

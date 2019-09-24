@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -63,6 +64,10 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				user = User.SYSTEM;
 			} else {
 				// if there is authentication configured, but no authorization token found prevent execution and throw UnauthorizedException
+				if (PlatformUtil.isDevVersion()) {
+					Request<?, ?> request = Iterables.getFirst(requests, null);
+					System.err.println(request);
+				}
 				throw new UnauthorizedException("Missing authorization token");
 			}
 		} else {

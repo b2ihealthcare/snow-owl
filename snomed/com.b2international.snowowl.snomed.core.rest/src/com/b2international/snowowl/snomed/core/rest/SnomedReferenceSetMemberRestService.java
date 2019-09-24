@@ -109,7 +109,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			req.filterByProps(propFilters);
 		}
 		
-		return DeferredResults.wrap(req.build(repositoryId, branchPath).execute(bus));
+		return DeferredResults.wrap(req.build(repositoryId, branchPath).execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -171,7 +171,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setExpand(expand)
 				.setLocales(getExtendedLocales(acceptLanguage))
 				.build(repositoryId, branchPath)
-				.execute(bus));
+				.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -204,7 +204,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		
 		final String createdRefSetMemberId = change.toRequestBuilder()
 				.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
-				.execute(bus)
+				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
 		
@@ -242,7 +242,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		SnomedRequests.prepareDeleteMember(memberId)
 			.force(force)
 			.build(repositoryId, branchPath, author, String.format("Deleted reference set member '%s' from store.", memberId))
-			.execute(bus)
+			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 	
@@ -289,7 +289,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.setSource(update.getSource())
 			.force(force)
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
-			.execute(bus)
+			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 	
@@ -339,7 +339,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setBody(change.resolve(resolver))
 				.setCommitComment(commitComment)
 				.build(repositoryId, branchPath)
-				.execute(bus)
+				.execute(getBus())
 				.getSync();
 	}
 	

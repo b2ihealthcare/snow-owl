@@ -95,7 +95,7 @@ public class JobRestService extends AbstractRestService {
 				.setLimit(limit)
 				.sortBy(extractSortFields(sort))
 				.buildAsync()
-				.execute(bus));
+				.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -113,7 +113,7 @@ public class JobRestService extends AbstractRestService {
 			final String id) {
 		return DeferredResults.wrap(JobRequests.prepareGet(id)
 				.buildAsync()
-				.execute(bus));
+				.execute(getBus()));
 	}
 	
 }

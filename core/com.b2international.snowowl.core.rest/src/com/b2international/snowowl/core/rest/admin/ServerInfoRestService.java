@@ -45,6 +45,6 @@ public class ServerInfoRestService extends AbstractRestService {
 	public @ResponseBody DeferredResult<ServerInfo> info() {
 		return DeferredResults.wrap(RepositoryRequests.prepareGetServerInfo()
 				.buildAsync()
-				.execute(bus));
+				.execute(getBus()));
 	}
 }

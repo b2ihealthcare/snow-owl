@@ -114,7 +114,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.setLimit(limit)
 				.sortBy(extractSortFields(sortKeys))
 				.build(repositoryId, branchPath)
-				.execute(bus));
+				.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -153,7 +153,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.setExpand(expand)
 				.setLocales(extendedLocales)
 				.build(repositoryId, branchPath)
-				.execute(bus));
+				.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -186,7 +186,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		
 		final String createdRefSetId = change.toRequestBuilder() 
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
-			.execute(bus)
+			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
 		
@@ -236,7 +236,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setCommitComment(commitComment)
 			.setAuthor(author)
 			.build(repositoryId, branchPath)
-			.execute(bus)
+			.execute(getBus())
 			.getSync();
 	}
 	
@@ -288,7 +288,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setAuthor(author)
 			.setCommitComment(commitComment)
 			.build(repositoryId, branchPath)
-			.execute(bus)
+			.execute(getBus())
 			.getSync();
 	}
 	
@@ -320,7 +320,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		
 		SnomedRequests.prepareDeleteReferenceSet(referenceSetId, force)
 				.build(repositoryId, branchPath, author, String.format("Deleted Reference Set '%s' from store.", referenceSetId))
-				.execute(bus)
+				.execute(getBus())
 				.getSync();
 	}
 	

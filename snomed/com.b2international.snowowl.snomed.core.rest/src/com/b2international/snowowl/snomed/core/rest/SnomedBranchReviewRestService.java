@@ -81,7 +81,7 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 			.setSource(request.getSource())
 			.setTarget(request.getTarget())
 			.build(repositoryId)
-			.execute(bus)
+			.execute(getBus())
 			.then(new Procedure<Review>() { @Override protected void doApply(final Review review) {
 				result.setResult(Responses.created(getLocationHeader(linkTo, review)).build());
 			}})
@@ -105,7 +105,7 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 			.reviews()
 			.prepareGet(reviewId)
 			.build(repositoryId)
-			.execute(bus));
+			.execute(getBus()));
 	}
 
 	@ApiOperation(
@@ -123,7 +123,7 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 					.reviews()
 					.prepareGetConceptChanges(reviewId)
 					.build(repositoryId)
-					.execute(bus));
+					.execute(getBus()));
 	}
 
 	@ApiOperation(
@@ -142,7 +142,7 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 					.reviews()
 					.prepareDelete(reviewId)
 					.build(repositoryId)
-					.execute(bus),
+					.execute(getBus()),
 				Responses.noContent().build());
 	}
 

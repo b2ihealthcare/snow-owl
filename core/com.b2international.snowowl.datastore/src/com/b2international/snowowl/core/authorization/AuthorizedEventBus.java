@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
 
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -33,19 +32,15 @@ import com.google.common.collect.ImmutableMap;
 public class AuthorizedEventBus implements IEventBus {
 
 	private final IEventBus bus;
-	private final Supplier<Map<String, String>> headers;
+	private final Map<String, String> headers;
 
 	public AuthorizedEventBus(IEventBus bus, Map<String, String> headers) {
-		this(bus, () -> headers);
-	}
-	
-	public AuthorizedEventBus(IEventBus bus, Supplier<Map<String, String>> headers) {
 		this.bus = checkNotNull(bus);
 		this.headers = headers;
 	}
 	
 	private Map<String, String> merged(Map<String, String> headers) {
-		return ImmutableMap.<String, String>builder().putAll(this.headers.get()).putAll(headers).build();
+		return ImmutableMap.<String, String>builder().putAll(this.headers).putAll(headers).build();
 	}
 	
 	@Override

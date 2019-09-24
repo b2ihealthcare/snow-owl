@@ -77,7 +77,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.setName(request.getName())
 					.setMetadata(request.metadata())
 					.build(repositoryId)
-					.execute(bus), 
+					.execute(getBus()), 
 				Responses.created(getBranchLocationHeader(request.path())).build());
 	}
 	
@@ -127,7 +127,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.setScroll(scrollKeepAlive)
 					.setLimit(limit)
 					.build(repositoryId)
-					.execute(bus));
+					.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -146,7 +146,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.prepareGet(branchPath)
 					.setExpand(Branch.Expand.CHILDREN + "()")
 					.build(repositoryId)
-					.execute(bus)
+					.execute(getBus())
 					.then(Branch::getChildren));
 	}
 	
@@ -165,7 +165,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.branching()
 					.prepareGet(branchPath)
 					.build(repositoryId)
-					.execute(bus));
+					.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -188,7 +188,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.branching()
 					.prepareDelete(branchPath)
 					.build(repositoryId)
-					.execute(bus), 
+					.execute(getBus()), 
 				Responses.noContent().build());
 	}
 	
@@ -213,7 +213,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.prepareUpdate(branchPath)
 					.setMetadata(request.getMetadata())
 					.build(repositoryId)
-					.execute(bus),
+					.execute(getBus()),
 				Responses.noContent().build());
 	}
 	

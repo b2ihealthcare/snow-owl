@@ -76,7 +76,7 @@ public class RepositoryRestService extends AbstractRestService {
 				.all()
 				.filterByIds(idFilter == null ? null : Collections3.toImmutableSet(idFilter))
 				.buildAsync()
-				.execute(bus));
+				.execute(getBus()));
 	}
 	
 	@ApiOperation(
@@ -92,7 +92,7 @@ public class RepositoryRestService extends AbstractRestService {
 			@ApiParam("The repository identifier")
 			@PathVariable("id")
 			String id) {
-		return DeferredResults.wrap(RepositoryRequests.prepareGet(id).buildAsync().execute(bus));
+		return DeferredResults.wrap(RepositoryRequests.prepareGet(id).buildAsync().execute(getBus()));
 	}
 	
 	@ApiOperation(
