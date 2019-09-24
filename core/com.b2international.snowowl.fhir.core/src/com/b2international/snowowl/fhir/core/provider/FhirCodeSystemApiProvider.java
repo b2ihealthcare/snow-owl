@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.provider;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,8 +28,11 @@ import org.osgi.framework.wiring.BundleWiring;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.extension.Component;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirCoreActivator;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
@@ -52,13 +56,21 @@ import com.google.common.collect.Sets;
  * 
  * @since 6.4
  */
-public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
+public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 
+	@Component
+	public static final class Factory implements ICodeSystemApiProvider.Factory {
+		@Override
+		public ICodeSystemApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
+			return new FhirCodeSystemApiProvider(bus, locales);
+		}
+	}
+	
 	/*
 	 * No repository associated with the internal hard-coded FHIR terminologies
 	 */
-	public FhirCodeSystemApiProvider() {
-		super(null);
+	public FhirCodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
+		super(bus, locales, null);
 	}
 	
 	@Override

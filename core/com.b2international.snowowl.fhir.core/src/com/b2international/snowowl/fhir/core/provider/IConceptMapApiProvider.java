@@ -16,9 +16,13 @@
 package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.extension.Extensions;
+import com.b2international.commons.extension.ClassPathScanner;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
@@ -30,7 +34,6 @@ import com.google.common.collect.ImmutableList;
 /**
  * Extension point interface for concept map specific FHIR API support. 
  * 
- * @see 'com.b2international.snowowl.fhir.core.conceptMapProvider' for the extension point definition
  * @since 6.9
  */
 public interface IConceptMapApiProvider extends IFhirApiProvider {
@@ -44,26 +47,26 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 		
 		INSTANCE;
 		
-		private final static String FHIR_EXTENSION_POINT = "com.b2international.snowowl.fhir.core.conceptMapProvider"; //$NON-NLS-N$
-		private final Collection<IConceptMapApiProvider> providers;
+		private final Collection<IConceptMapApiProvider.Factory> providers;
 		
 		private Registry() {
-			Collection<IConceptMapApiProvider> extensions = Extensions.getExtensions(FHIR_EXTENSION_POINT, IConceptMapApiProvider.class);
-			this.providers = ImmutableList.copyOf(extensions);
+			this.providers = ImmutableList.copyOf(ClassPathScanner.INSTANCE.getComponentsByInterface(IConceptMapApiProvider.Factory.class));
 		}
 		
-		public static Collection<IConceptMapApiProvider> getProviders() {
-			return INSTANCE.providers;
+		public static Collection<IConceptMapApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
+			return INSTANCE.providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
 		}
 		
 		/**
 		 * Returns the matching {@link IConceptMapApiProvider} for the given path (repository:branchPath).
+		 * @param bus
+		 * @param locales
 		 * @param logical code system path (e.g.icd10Store:20140101)
 		 * @return FHIR concept map provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static IConceptMapApiProvider getConceptMapProvider(LogicalId logicalId) {
-			return getProviders().stream()
+		public static IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(logicalId))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
@@ -71,15 +74,24 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 		
 		/**
 		 * Returns the matching {@link IConceptMapApiProvider} for the given URI.
+		 * @param bus
+		 * @param locales
 		 * @param uriValue
-		 * @return FHIR value setprovider
+		 * @return FHIR value set provider
 		 */
-		public static IConceptMapApiProvider getConceptMapProvider(String uriValue) {
-			return getProviders().stream()
+		public static IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
+			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(uriValue))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
 		}
+	}
+	
+	/**
+	 * @since 7.2
+	 */
+	interface Factory {
+		IConceptMapApiProvider create(IEventBus bus, List<ExtendedLocale> locales);
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
 package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import com.b2international.commons.extension.Extensions;
+import com.b2international.commons.extension.ClassPathScanner;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -26,13 +30,11 @@ import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Extension point interface for code system specific FHIR API support. 
  * 
  * @see <a href="https://www.hl7.org/fhir/2016May/terminologies.html#system">FHIR:Terminologies:System</a> to determine whether a code system is supported
- * @see 'com.b2international.snowowl.fhir.core.codeSystemProvider' for the extension point definition
  * @since 7.0
  */
 public interface ICodeSystemApiProvider extends IFhirApiProvider {
@@ -46,25 +48,26 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		
 		INSTANCE;
 		
-		private final static String FHIR_EXTENSION_POINT = "com.b2international.snowowl.fhir.core.codeSystemProvider"; //$NON-NLS-N$
-		private final Collection<ICodeSystemApiProvider> providers;
+		private final Collection<ICodeSystemApiProvider.Factory> providers;
 		
 		private Registry() {
-			this.providers = ImmutableList.copyOf(Extensions.getExtensions(FHIR_EXTENSION_POINT, ICodeSystemApiProvider.class));
+			this.providers = ClassPathScanner.INSTANCE.getComponentsByInterface(ICodeSystemApiProvider.Factory.class);
 		}
 		
-		public static Collection<ICodeSystemApiProvider> getProviders() {
-			return INSTANCE.providers;
+		public static Collection<ICodeSystemApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
+			return INSTANCE.providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
 		}
 		
 		/**
 		 * Returns the matching {@link ICodeSystemApiProvider} for the given logical id (repository:branchPath).
+		 * @param bus
+		 * @param locales
 		 * @param logicalId - the logical id (e.g. icd10Store:20140101)
 		 * @return FHIR code system provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static ICodeSystemApiProvider getCodeSystemProvider(LogicalId logicalId) {
-			return getProviders().stream()
+		public static ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(logicalId))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
@@ -72,16 +75,25 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		
 		/**
 		 * Returns the matching {@link ICodeSystemApiProvider} for the given URI.
+		 * @param bus
+		 * @param locales
 		 * @param uriValue
 		 * @return FHIR code system provider
 		 */
-		public static ICodeSystemApiProvider getCodeSystemProvider(String uriValue) {
-			return getProviders().stream()
+		public static ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
+			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(uriValue))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
 		}
 		
+	}
+	
+	/**
+	 * @since 7.2
+	 */
+	interface Factory {
+		ICodeSystemApiProvider create(IEventBus bus, List<ExtendedLocale> locales);
 	}
 	
 	/**

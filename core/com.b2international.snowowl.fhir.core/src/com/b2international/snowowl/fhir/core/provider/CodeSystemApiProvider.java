@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.provider;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,8 +25,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -32,6 +36,7 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.CodeSystems;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
@@ -50,7 +55,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * FHIR provider base class.
@@ -61,12 +65,11 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	
 	private final String repositoryId;
 	
-	private final Collection<IConceptProperty> supportedProperties = Sets.newHashSet();
+	private Collection<IConceptProperty> supportedProperties;
 
-	public CodeSystemApiProvider(String repositoryId) {
+	public CodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales, String repositoryId) {
+		super(bus, locales);
 		this.repositoryId = repositoryId;
-		supportedProperties.addAll(Sets.newHashSet(SupportedCodeSystemRequestProperties.values()));
-		supportedProperties.addAll(getSupportedConceptProperties());
 	}
 	
 	@Override
@@ -346,6 +349,11 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return the supported properties
 	 */
 	protected Collection<IConceptProperty> getSupportedProperties() {
+		if (supportedProperties == null) {
+			supportedProperties = newHashSet();
+			Stream.of(SupportedCodeSystemRequestProperties.values()).forEach(supportedProperties::add);
+			supportedProperties.addAll(getSupportedConceptProperties());
+		}
 		return supportedProperties;
 	}
 	
