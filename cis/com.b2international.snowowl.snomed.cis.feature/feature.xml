@@ -32,17 +32,18 @@
    </requires>
 
    <plugin
-         id="com.b2international.snowowl.snomed.cis.rest"
+         id="com.b2international.snowowl.snomed.cis"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="com.b2international.snowowl.snomed.cis"
+         id="com.b2international.snowowl.snomed.cis.rest"
          download-size="0"
          install-size="0"
          version="0.0.0"
+         fragment="true"
          unpack="false"/>
 
 </feature>
