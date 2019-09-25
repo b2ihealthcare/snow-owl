@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// after commit child branch becomes FORWARD
 		assertState(child, MAIN, BranchState.FORWARD);
 		// do the merge
-		branching().prepareMerge(child, MAIN);
+		branching().prepareMerge(child, MAIN).merge();
 		// after fast-forward merge
 		// 1. MAIN should be in UP_TO_DATE state compared to the child
 		assertState(MAIN, child, BranchState.UP_TO_DATE);
@@ -263,7 +263,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	@Test
 	public void rebaseBehindChildOnRebasedForwardParent() throws Exception {
 		rebaseDivergedWithBehindChild();
-		branching().prepareMerge("MAIN/a", "MAIN/a/b)").merge();
+		branching().prepareMerge("MAIN/a", "MAIN/a/b").merge();
 		assertState("MAIN/a/b", "MAIN/a", BranchState.UP_TO_DATE);
 	}
 	

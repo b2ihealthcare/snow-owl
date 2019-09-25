@@ -282,8 +282,8 @@ public abstract class BaseRevisionBranching {
 			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", target));
 		}
 
-		RevisionBranch to = getBranch(target);
 		RevisionBranch from = getBranch(source);
+		RevisionBranch to = getBranch(target);
 		
 		BranchState changesFromState = from.state(to);
 
