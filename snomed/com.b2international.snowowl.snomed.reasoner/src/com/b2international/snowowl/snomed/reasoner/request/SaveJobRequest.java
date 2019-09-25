@@ -46,6 +46,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
@@ -76,6 +77,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
@@ -96,7 +98,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 	@NotEmpty
 	private String classificationId;
 
-	@NotEmpty
 	private String userId;
 
 	@NotNull
@@ -155,7 +156,9 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
-		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext, branch)) {
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		
+		try (Locks locks = new Locks(context, user, DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext, branch)) {
 			return persistChanges(context, monitor);
 		} catch (final OperationLockException e) {
 			tracker.classificationFailed(classificationId);
@@ -208,7 +211,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			.setBody(bulkRequestBuilder)
 			.setCommitComment(commitComment)
 			.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
-			.setUserId(userId)
+			.setAuthor(userId)
 			.build();
 
 		final CommitResult commitResult = new IdRequest<>(commitRequest)  

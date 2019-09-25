@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
-import com.b2international.snowowl.identity.domain.PermissionIdConstant;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
@@ -97,7 +97,7 @@ public final class SnomedCommand extends Command {
 			
 			final User user = out.authenticate();
 			
-			if (user == null || !user.hasPermission(PermissionIdConstant.IMPORT)) {
+			if (user == null || !user.hasPermission(new Permission(Permission.IMPORT, SnomedDatastoreActivator.REPOSITORY_UUID, ""))) {
 				out.println("User is unauthorized to import SNOMED CT content.");
 				return;
 			}

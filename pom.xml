@@ -14,8 +14,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		
 		<!-- Maven Dependency Versions -->
-		<jackson.version>2.9.9</jackson.version>
-		<jackson.databind.version>2.9.9.3</jackson.databind.version>
+		<jackson.version>2.9.10</jackson.version>
+		<jackson.databind.version>2.9.10</jackson.databind.version>
 		<netty.version>4.1.16.Final</netty.version>
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
@@ -56,6 +56,7 @@
 	<modules>
 		<module>commons</module>
 		<module>core</module>
+		<module>fhir</module>
 		<module>net4j</module>
 		<module>snomed</module>
 		<module>cis</module>
@@ -480,13 +481,13 @@
     	<dependency>
     		<groupId>io.swagger</groupId>
     		<artifactId>swagger-annotations</artifactId>
-    		<version>1.5.14</version>
+    		<version>1.5.23</version>
     		<scope>provided</scope>
     	</dependency>
     	<dependency>
     		<groupId>io.swagger</groupId>
     		<artifactId>swagger-models</artifactId>
-    		<version>1.5.14</version>
+    		<version>1.5.23</version>
     		<scope>provided</scope>
     	</dependency>
 		<dependency>
@@ -600,12 +601,6 @@
           			<artifactId>guice-multibindings</artifactId>
         		</exclusion>
 			</exclusions>
-		</dependency>
-    	<dependency>
-		    <groupId>com.fasterxml.woodstox</groupId>
-		    <artifactId>woodstox-core</artifactId>
-		    <version>5.0.3</version>
-		    <scope>provided</scope>
 		</dependency>
 	</dependencies>
 

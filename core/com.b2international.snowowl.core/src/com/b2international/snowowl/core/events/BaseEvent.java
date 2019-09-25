@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.events;
+
+import java.util.Collections;
+import java.util.Map;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -32,14 +35,18 @@ public abstract class BaseEvent implements Event {
 
 	@Override
 	public final void publish(IEventBus bus) {
-		bus.publish(getAddress(), this, tag());
+		bus.publish(getAddress(), this, tag(), headers());
 	}
 	
 	@Override
 	public final void send(IEventBus bus, IHandler<IMessage> replyHandler) {
-		bus.send(getAddress(), this, tag(), replyHandler);
+		bus.send(getAddress(), this, tag(), headers(), replyHandler);
 	}
 
+	protected Map<String, String> headers() {
+		return Collections.emptyMap();
+	}
+	
 	/**
 	 * Returns the tag of this {@link Event}. Never null.
 	 * 

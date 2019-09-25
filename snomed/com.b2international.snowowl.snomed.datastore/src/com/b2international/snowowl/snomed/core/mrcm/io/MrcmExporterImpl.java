@@ -17,6 +17,12 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
 
 import java.io.OutputStream;
 
+import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
+import com.b2international.snowowl.core.authorization.AuthorizedRequest;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.Provider;
+
 /**
  * MRCM Exporter to delegate the export based on the export format.
  * 
@@ -25,12 +31,19 @@ import java.io.OutputStream;
  */
 public class MrcmExporterImpl implements MrcmExporter {
 
+	private final Provider<IEventBus> bus;
+
+	public MrcmExporterImpl(Provider<IEventBus> bus) {
+		this.bus = bus;
+	}
+	
 	@Override
-	public void doExport(String user, OutputStream content, MrcmExportFormat exportFormat) {
+	public void doExport(String authorizationToken, OutputStream content, MrcmExportFormat exportFormat) {
+		final AuthorizedEventBus bus = new AuthorizedEventBus(this.bus.get(), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken));
 		if (exportFormat == MrcmExportFormat.JSON) {
-			new JsonMrcmExporter().doExport(user, content);
+			new JsonMrcmExporter().doExport(bus, content);
 		} else if (exportFormat == MrcmExportFormat.CSV) {
-			new CsvMrcmExporter().doExport(user, content);
+			new CsvMrcmExporter().doExport(bus, content);
 		} else {
 			throw new UnsupportedOperationException("No exporter is registered for " + exportFormat);
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.internal.eventbus;
 
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
 import org.databene.contiperf.PerfTest;
@@ -40,7 +41,7 @@ public class EventBusSendPerformanceTest extends AbstractEventBusTest {
 		// use the current thread name + the latch hash for the unique address, so the bus will have 1000 handler
 		final String address = Thread.currentThread().getName() + Integer.toHexString(latch.hashCode());
 		registerHandlersWithLatch(1, address, latch);
-		bus.send(address, SEND_MESSAGE);
+		bus.send(address, SEND_MESSAGE, Collections.emptyMap());
 		wait(latch);
 	}
 

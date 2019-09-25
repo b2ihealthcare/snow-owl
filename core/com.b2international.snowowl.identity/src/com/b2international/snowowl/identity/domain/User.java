@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,15 +71,24 @@ public final class User implements Serializable {
 		return getRoles().contains(Role.ADMINISTRATOR);
 	}
 	
-	public boolean hasPermission(String permission) {
+	/**
+	 * Returns <code>true</code> if the user has the necessary permission to allow performing an operation on the given resource.
+	 *  
+	 * @param permissionRequirement
+	 * @return
+	 */
+	public boolean hasPermission(Permission permissionRequirement) {
 		return getRoles().stream()
 			.map(Role::getPermissions)
 			.flatMap(Collection::stream)
-			.map(Permission::getId)
-			.collect(Collectors.toSet())
-			.contains(permission);
+			.anyMatch(permission -> permission.implies(permissionRequirement));
 	}
 
+	/**
+	 * @param userId
+	 * @return <code>true</code> if this User is the System user.
+	 * @see #SYSTEM
+	 */
 	public static boolean isSystem(String userId) {
 		return SYSTEM.getUsername().equals(userId);
 	}

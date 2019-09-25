@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.identity.ldap;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,12 +110,16 @@ final class LdapIdentityProvider implements IdentityProvider {
 	}
 	
 	@Override
-	public boolean auth(String username, String token) {
+	public User auth(String username, String token) {
 		InitialLdapContext systemContext = null;
 		try {
 			systemContext = createLdapContext();
 			final String userDN = findUserDN(systemContext, username);
-			return !Strings.isNullOrEmpty(userDN) && authenticateUser(userDN, token);
+			if (!Strings.isNullOrEmpty(userDN) && authenticateUser(userDN, token)) {
+				return searchUsers(Collections.singleton(username), 1).getSync().first().get();
+			} else {
+				return null;
+			}
 		} catch (final NamingException e) {
 			throw new SnowowlRuntimeException("Cannot bind to LDAP server.", e);
 		} finally {
@@ -226,7 +231,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 					
 					// process permissions
 					for (final Object permission : ImmutableList.copyOf(Iterators.forEnumeration(permissionEnumeration))) {
-						permissions.add(new Permission((String) permission));
+						permissions.add(Permission.valueOf((String) permission));
 					}
 					
 					// process members

@@ -207,7 +207,7 @@ public class Rf2GlobalValidator {
 							.limit(ids.size())
 							.build();
 					
-					existingComponentIds.addAll(newHashSet(context.service(RevisionSearcher.class).search(query)));
+					existingComponentIds.addAll(context.service(RevisionSearcher.class).search(query).getHits());
 					
 				} catch (IOException e) {
 					throw new SnowowlRuntimeException(e);

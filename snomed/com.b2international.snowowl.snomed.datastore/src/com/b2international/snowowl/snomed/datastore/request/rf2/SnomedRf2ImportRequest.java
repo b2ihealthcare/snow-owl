@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -80,7 +81,6 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 	@NotEmpty
 	private String codeSystemShortName;
 
-	@NotEmpty
 	private String userId;
 	
 	private boolean createVersions = true;
@@ -115,7 +115,8 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 		
 		try {
 			features.enable(feature);
-			return doImport(rf2Archive, new Rf2ImportConfiguration(userId, createVersions, codeSystemShortName, type), context);
+			final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+			return doImport(rf2Archive, new Rf2ImportConfiguration(user, createVersions, codeSystemShortName, type), context);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;

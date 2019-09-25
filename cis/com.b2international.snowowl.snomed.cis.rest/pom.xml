@@ -16,17 +16,10 @@
 		<spring.security.version>4.2.11.RELEASE</spring.security.version>
 		<spring.hateoas.version>0.25.1.RELEASE</spring.hateoas.version>
 		<springfox.version>2.8.0</springfox.version>
-		<java.jwt.version>3.8.1</java.jwt.version>
 	</properties>
 	
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
 	<dependencies>
-		<dependency>
-    		<groupId>com.auth0</groupId>
-    		<artifactId>java-jwt</artifactId>
-    		<version>${java.jwt.version}</version>
-    		<scope>provided</scope>
-		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>

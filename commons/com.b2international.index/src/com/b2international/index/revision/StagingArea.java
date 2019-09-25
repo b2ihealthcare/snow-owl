@@ -83,7 +83,8 @@ public final class StagingArea {
 	private RevisionBranchRef mergeFromBranchRef;
 	private boolean squashMerge;
 	private Multimap<Class<?>, String> revisionsToReviseOnMergeSource;
-	
+	private Object context;
+
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
 		this.branchPath = branchPath;
@@ -97,6 +98,22 @@ public final class StagingArea {
 	
 	public String getBranchPath() {
 		return branchPath;
+	}
+
+	/**
+	 * @param context - the context to set
+	 * @return this class for method chaining
+	 */
+	public StagingArea withContext(Object context) {
+		this.context = context;
+		return this;
+	}
+	
+	/**
+	 * @return a context object passed during {@link RevisionIndex#prepareCommit(String, Object)}
+	 */
+	public Object getContext() {
+		return context;
 	}
 	
 	/**

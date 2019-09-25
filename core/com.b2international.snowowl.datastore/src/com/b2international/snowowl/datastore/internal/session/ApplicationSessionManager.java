@@ -245,8 +245,8 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	public void authenticate(final String username, final String password) throws LoginException {
 		LogUtils.logUserAccess(LOG, username, "Authenticating: " + username);
 		
-		final boolean success = identityProvider.auth(username, password);
-		if (!success) {
+		final User user = identityProvider.auth(username, password);
+		if (user == null) {
 			throw new LoginException("Incorrect user name or password.");
 		}
 		

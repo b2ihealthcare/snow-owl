@@ -32,17 +32,17 @@ public class EventBusSendTest extends AbstractEventBusTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void test_Send_Null_Null() {
-		bus.send(null, null);
+		bus.send(null, null, null);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void test_Send_NonNull_Null() {
-		bus.send(ADDRESS, null);
+		bus.send(ADDRESS, null, null);
 	}
 	
 	@Test
 	public void test_Send_No_Handler() {
-		final IEventBus actual = bus.send(ADDRESS, SEND_MESSAGE);
+		final IEventBus actual = bus.send(ADDRESS, SEND_MESSAGE, null);
 		assertEquals(bus, actual);
 	}
 	
@@ -50,7 +50,7 @@ public class EventBusSendTest extends AbstractEventBusTest {
 	public void test_Send_WithHandler() {
 		final CountDownLatch latch = new CountDownLatch(1);
 		registerHandlersWithLatch(1, ADDRESS, latch);
-		bus.send(ADDRESS, SEND_MESSAGE);
+		bus.send(ADDRESS, SEND_MESSAGE, null);
 		wait(latch);
 	}
 	
@@ -58,22 +58,22 @@ public class EventBusSendTest extends AbstractEventBusTest {
 	public void test_Send_WithMultipleHandlers() throws InterruptedException {
 		final CountDownLatch latch = new CountDownLatch(1);
 		registerHandlersWithLatch(5, ADDRESS, latch);
-		bus.send(ADDRESS, SEND_MESSAGE);
+		bus.send(ADDRESS, SEND_MESSAGE, null);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void test_Publish_Null_Null() throws InterruptedException {
-		bus.publish(null, null);
+		bus.publish(null, null, null);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void test_Publish_NonNull_Null() throws InterruptedException {
-		bus.publish(ADDRESS, null);
+		bus.publish(ADDRESS, null, null);
 	}
 	
 	@Test
 	public void test_Publish_NoHandlers() throws InterruptedException {
-		final IEventBus actual = bus.publish(ADDRESS, SEND_MESSAGE);
+		final IEventBus actual = bus.publish(ADDRESS, SEND_MESSAGE, null);
 		assertEquals(bus, actual);
 	}
 	
@@ -82,7 +82,7 @@ public class EventBusSendTest extends AbstractEventBusTest {
 		final int numberOfHandlers = 5;
 		final CountDownLatch latch = new CountDownLatch(numberOfHandlers);
 		registerHandlersWithLatch(numberOfHandlers, ADDRESS, latch);
-		bus.publish(ADDRESS, SEND_MESSAGE);
+		bus.publish(ADDRESS, SEND_MESSAGE, null);
 		wait(latch);
 	}
 	
@@ -99,7 +99,7 @@ public class EventBusSendTest extends AbstractEventBusTest {
 				latch.countDown();
 			}
 		});
-		bus.send(ADDRESS, SEND_MESSAGE, new IHandler<IMessage>() {
+		bus.send(ADDRESS, SEND_MESSAGE, null, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				assertEquals(REPLY_MESSAGE, message.body(String.class));

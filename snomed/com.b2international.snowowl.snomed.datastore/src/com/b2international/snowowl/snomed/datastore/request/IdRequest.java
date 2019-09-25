@@ -167,7 +167,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 			collectComponentCreateRequests(((TransactionalRequest) request).getNext(), resultBuilder);
 		} else if (request instanceof BaseSnomedComponentCreateRequest) {
 			final BaseSnomedComponentCreateRequest createRequest = (BaseSnomedComponentCreateRequest) request;
-			for (SnomedCoreComponentCreateRequest nestedRequest : createRequest.getNestedRequests()) {
+			for (SnomedCoreComponentCreateRequest nestedRequest : Iterables.filter(createRequest.getNestedRequests(), SnomedCoreComponentCreateRequest.class)) {
 				ComponentCategory category = getComponentCategory(nestedRequest);
 				resultBuilder.put(category, (BaseSnomedComponentCreateRequest) nestedRequest);
 				// XXX: we could recurse here, but only concept creation requests have actual nested requests at the moment

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.eventbus;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -32,7 +33,7 @@ public interface IEventBus {
 	 * @param message
 	 * @return this {@link IEventBus} for chaining
 	 */
-	IEventBus send(String address, Object message);
+	IEventBus send(String address, Object message, Map<String, String> headers);
 
 	/**
 	 * Sends the message over the event bus to the specified address.
@@ -42,7 +43,7 @@ public interface IEventBus {
 	 * @param replyHandler
 	 * @return this {@link IEventBus} for chaining
 	 */
-	IEventBus send(String address, Object message, IHandler<IMessage> replyHandler);
+	IEventBus send(String address, Object message, Map<String, String> headers, IHandler<IMessage> replyHandler);
 	
 	/**
 	 * Sends the message over the event bus to the specified address with a tag.
@@ -52,7 +53,7 @@ public interface IEventBus {
 	 * @param tag
 	 * @return this {@link IEventBus} for chaining
 	 */
-	IEventBus send(String address, Object message, String tag);
+	IEventBus send(String address, Object message, String tag, Map<String, String> headers);
 	
 	/**
 	 * Sends the message over the event bus to the specified address with a tag.
@@ -63,7 +64,7 @@ public interface IEventBus {
 	 * @param tag
 	 * @return this {@link IEventBus} for chaining
 	 */
-	IEventBus send(String address, Object message, String tag, IHandler<IMessage> replyHandler);
+	IEventBus send(String address, Object message, String tag, Map<String, String> headers, IHandler<IMessage> replyHandler);
 
 	/**
 	 * Sends the message over the event bus to all available handlers on the
@@ -73,7 +74,7 @@ public interface IEventBus {
 	 * @param message
 	 * @return
 	 */
-	IEventBus publish(String address, Object message);
+	IEventBus publish(String address, Object message, Map<String, String> headers);
 	
 	/**
 	 * Sends the message with a tag over the event bus to all available handlers on the
@@ -84,7 +85,7 @@ public interface IEventBus {
 	 * @param tag
 	 * @return
 	 */
-	IEventBus publish(String address, Object message, String tag);
+	IEventBus publish(String address, Object message, String tag, Map<String, String> headers);
 
 	/**
 	 * Receives the messages directly on this event bus bypassing all remote

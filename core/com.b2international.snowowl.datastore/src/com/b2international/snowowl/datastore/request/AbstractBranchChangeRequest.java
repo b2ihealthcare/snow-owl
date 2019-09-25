@@ -48,7 +48,9 @@ import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -67,8 +69,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	protected final String targetPath;
 	
 	@JsonProperty
-	@NotEmpty
-	protected final String userId;
+	private final String userId;
 	
 	@JsonProperty
 	@NotEmpty
@@ -129,6 +130,10 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 		} catch (NotFoundException e) {
 			throw e.toBadRequestException();
 		}
+	}
+	
+	protected final String userId(RepositoryContext context) {
+		return !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 	}
 
 	protected abstract void applyChanges(RepositoryContext context, Branch source, Branch target);

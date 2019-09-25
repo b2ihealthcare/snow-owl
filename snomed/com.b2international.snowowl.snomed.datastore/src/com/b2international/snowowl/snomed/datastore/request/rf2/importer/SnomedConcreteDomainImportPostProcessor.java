@@ -140,7 +140,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				
 				SnomedRequests.prepareCommit()
 					.setBody(bulkRequest)
-					.setUserId(userId)
+					.setAuthor(userId)
 					.setCommitComment("Import post processor created concrete domain reference sets")
 					.setParentContextDescription(DatastoreLockContextDescriptions.IMPORT)
 					.build()

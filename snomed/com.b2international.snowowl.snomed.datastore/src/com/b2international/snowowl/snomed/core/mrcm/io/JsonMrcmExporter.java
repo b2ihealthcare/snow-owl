@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -34,11 +33,11 @@ import com.fasterxml.jackson.databind.SequenceWriter;
  */
 final class JsonMrcmExporter {
 
-	public void doExport(String user, OutputStream stream) {
+	public void doExport(IEventBus bus, OutputStream stream) {
 		SnomedConstraints constraints = SnomedRequests.prepareSearchConstraint()
 			.all()
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(bus)
 			.getSync();
 		
 		ObjectMapper mapper = new ObjectMapper();

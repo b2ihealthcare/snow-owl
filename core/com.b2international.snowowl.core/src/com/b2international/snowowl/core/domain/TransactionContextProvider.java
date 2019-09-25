@@ -20,6 +20,6 @@ package com.b2international.snowowl.core.domain;
  */
 public interface TransactionContextProvider {
 
-	TransactionContext get(BranchContext context, String userId, String commitComment, String parentContextDescription);
+	TransactionContext get(BranchContext context, String author, String commitComment, String parentContextDescription);
 	
 }

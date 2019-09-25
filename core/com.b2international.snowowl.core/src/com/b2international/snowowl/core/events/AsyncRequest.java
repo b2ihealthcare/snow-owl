@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.core.events;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -30,11 +30,11 @@ import com.b2international.snowowl.eventbus.IMessage;
 public final class AsyncRequest<R> {
 
 	private final Request<ServiceProvider, R> request;
-
+	
 	public AsyncRequest(Request<ServiceProvider, R> request) {
 		this.request = request;
 	}
-	
+
 	/**
 	 * Executes the asynchronous request using the event bus passed in.
 	 * @param bus
@@ -44,7 +44,7 @@ public final class AsyncRequest<R> {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = request.getReturnType();
 		final ClassLoader classLoader = request.getClassLoader();
-		bus.send(Request.ADDRESS, request, Request.TAG, new IHandler<IMessage>() {
+		bus.send(Request.ADDRESS, request, Request.TAG, Collections.emptyMap(), new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
@@ -61,6 +61,9 @@ public final class AsyncRequest<R> {
 		return promise;
 	}
 	
+	/**
+	 * @return the underlying request to be sent asynchronously.
+	 */
 	public Request<ServiceProvider, R> getRequest() {
 		return request;
 	}
@@ -69,8 +72,8 @@ public final class AsyncRequest<R> {
 	 * Execute the request and synchronously wait until it responds.
 	 * @return the response
 	 */
-	public R get() {
-		return execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync();
+	public R get(ServiceProvider context) {
+		return execute(context.service(IEventBus.class)).getSync();
 	}
 	
 	/**
@@ -78,8 +81,8 @@ public final class AsyncRequest<R> {
 	 * @param timeout - timeout value in milliseconds
 	 * @return the response
 	 */
-	public R get(long timeout) {
-		return get(timeout, TimeUnit.MILLISECONDS);
+	public R get(ServiceProvider context, long timeout) {
+		return get(context, timeout, TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -88,8 +91,8 @@ public final class AsyncRequest<R> {
 	 * @param unit - the unit for the timeout value
 	 * @return the response
 	 */
-	private R get(long timeout, TimeUnit unit) {
-		return execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync(timeout, unit);
+	private R get(ServiceProvider context, long timeout, TimeUnit unit) {
+		return execute(context.service(IEventBus.class)).getSync(timeout, unit);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,11 @@
 package com.b2international.snowowl.snomed.fhir;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
@@ -42,7 +45,8 @@ public abstract class SnomedFhirApiProvider extends FhirApiProvider {
 	
 	protected String repositoryId;
 	
-	public SnomedFhirApiProvider() {
+	public SnomedFhirApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
+		super(bus, locales);
 		this.repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.extension.Component;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -71,7 +73,19 @@ import com.google.common.collect.Multimap;
  * @see IConceptMapApiProvider
  * @see FhirApiProvider
  */
-public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implements IConceptMapApiProvider {
+public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implements IConceptMapApiProvider {
+
+	@Component
+	public static final class Factory implements IConceptMapApiProvider.Factory {
+		@Override
+		public IConceptMapApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
+			return new SnomedConceptMapApiProvider(bus, locales);
+		}		
+	}
+	
+	public SnomedConceptMapApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
+		super(bus, locales);
+	}
 
 	@Override
 	public Collection<ConceptMap> getConceptMaps() {
@@ -86,17 +100,15 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 						.all()
 						.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
 						.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
-						.setLocales(locales)
+						.setLocales(getLocales())
 						.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 						.build(repositoryId, csve.getPath())
 						.execute(getBus())
-						.then(refsets -> {
-							return refsets.stream()
-								.map(r -> buildConceptMap(r, csve, locales))
-								.map(ConceptMap.Builder::build)
-								.collect(Collectors.toList());
-						})
-						.getSync();
+						.getSync()
+						.stream()
+						.map(r -> buildConceptMap(r, csve, getLocales()))
+						.map(ConceptMap.Builder::build)
+						.collect(Collectors.toList());
 				})
 				.flatMap(List::stream)
 				.collect(Collectors.toList()); //List<List<?> -> List<?>
@@ -114,7 +126,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			.filterById(logicalId.getComponentId())
 			.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:" + Integer.MAX_VALUE +")")
-			.setLocales(locales)
+			.setLocales(getLocales())
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 			.build(repositoryId,logicalId.getBranchPath())
 			.execute(getBus())
@@ -123,7 +135,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			.findFirst()
 			.orElseThrow(() -> new NotFoundException("Could not find map type refset '%s'.", logicalId.toString()));
 		
-		ConceptMap.Builder conceptMapBuilder = buildConceptMap(snomedReferenceSet, codeSystemVersion, locales);
+		ConceptMap.Builder conceptMapBuilder = buildConceptMap(snomedReferenceSet, codeSystemVersion, getLocales());
 		
 		return conceptMapBuilder.build();
 	}
@@ -194,7 +206,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 				.setExpand("referencedComponent(expand(pt()))")
 				.filterByRefSet(logicalId.getComponentId())
 				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-				.setLocales(locales)
+				.setLocales(getLocales())
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
 				
 
@@ -209,12 +221,10 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		
 		Set<Match> matches = memberSearchRequestBuilder.build(repositoryId, codeSystemVersion.getPath())
 				.execute(getBus())
-				.then(members -> {
-					return members.stream()
-						.map(member -> createMatch(snomedUri, member))
-						.collect(Collectors.toSet());
-				})
-				.getSync();
+				.getSync()
+				.stream()
+				.map(member -> createMatch(snomedUri, member))
+				.collect(Collectors.toSet());
 		
 		builder.addMatches(matches);
 		return builder.build();
@@ -260,12 +270,10 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 			.build(repositoryId, codeSystemVersion.getPath())
 			.execute(getBus())
-			.then(refsets -> {
-				return refsets.stream()
-					.map(r -> r.getId())
-					.collect(Collectors.toSet());
-			})
-			.getSync();
+			.getSync()
+			.stream()
+			.map(r -> r.getId())
+			.collect(Collectors.toSet());
 		
 		SnomedRefSetMemberSearchRequestBuilder memberSearchRequestBuilder = SnomedRequests.prepareSearchMember()
 				.all()
@@ -273,7 +281,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 				.setExpand("referencedComponent(expand(pt()))")
 				.filterByRefSet(refsetIds)
 				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-				.setLocales(locales)
+				.setLocales(getLocales())
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
 				
 

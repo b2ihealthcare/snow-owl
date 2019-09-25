@@ -17,6 +17,9 @@ package com.b2international.snowowl.identity;
 
 import java.util.List;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
@@ -54,6 +57,13 @@ public final class IdentityPlugin extends Plugin {
 		}
 		IdentityProvider.LOG.info("Configured identity providers [{}]", identityProvider.getInfo());
 		env.services().registerService(IdentityProvider.class, identityProvider);
+		
+		// configure JWT token generation and verification
+		final Algorithm algorithm = Algorithm.HMAC512(conf.getSecret());
+		env.services().registerService(JWTGenerator.class, new JWTGenerator(algorithm, conf.getIssuer()));
+		env.services().registerService(JWTVerifier.class, JWT.require(algorithm)
+				.withIssuer(conf.getIssuer())
+				.build());
 	}
 	
 }
