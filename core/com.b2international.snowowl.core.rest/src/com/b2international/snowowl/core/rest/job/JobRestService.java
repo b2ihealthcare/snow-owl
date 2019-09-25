@@ -79,7 +79,7 @@ public class JobRestService extends AbstractRestService {
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
 			
-			@ApiParam(value="The maximum number of items to return")
+			@ApiParam(value="The maximum number of items to return", defaultValue = "50")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit,
 			

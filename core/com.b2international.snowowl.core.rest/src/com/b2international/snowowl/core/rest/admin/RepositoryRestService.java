@@ -108,8 +108,8 @@ public class RepositoryRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PostMapping("/lock")
 	public void lockGlobal(
+			@ApiParam(value="lock timeout in milliseconds", defaultValue = "5000")
 			@RequestParam(value="timeoutMillis", defaultValue="5000", required=false) 
-			@ApiParam(value="lock timeout in milliseconds")
 			final int timeoutMillis) {
 
 		checkValidTimeout(timeoutMillis);
@@ -154,8 +154,8 @@ public class RepositoryRestService extends AbstractRestService {
 			@ApiParam(value="The repository id")
 			final String id, 
 
+			@ApiParam(value="lock timeout in milliseconds", defaultValue = "5000")
 			@RequestParam(value="timeoutMillis", defaultValue="5000", required=false)
-			@ApiParam(value="lock timeout in milliseconds")
 			final int timeoutMillis) {
 		checkValidRepositoryUuid(id);
 		checkValidTimeout(timeoutMillis);

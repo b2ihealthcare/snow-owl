@@ -117,7 +117,7 @@ public class ValidationRestService extends AbstractRestService {
 	})
 	@PostMapping(consumes={ AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<URI>> beginValidation(
+	public ResponseEntity<Void> beginValidation(
 			@ApiParam(value="Validation parameters")
 			@RequestBody 
 			final ValidationRestInput validationInput) {
@@ -149,7 +149,7 @@ public class ValidationRestService extends AbstractRestService {
 					.buildAsync()
 					.execute(getBus());
 			} else {
-				return DeferredResults.wrap(Promise.immediate(Responses.status(HttpStatus.CONFLICT).build(null)));
+				return Responses.status(HttpStatus.CONFLICT).build();
 			}
 		} else {
 			deleteValidationJobPromise = Promise.immediate(Boolean.TRUE);
@@ -157,33 +157,28 @@ public class ValidationRestService extends AbstractRestService {
 		
 		final ControllerLinkBuilder linkBuilder = linkTo(ValidationRestService.class)
 				.slash("validations");
-		return DeferredResults.wrap(deleteValidationJobPromise
-			.<String>thenWith(success -> {
-				final ValidateRequestBuilder validateRequestBuilder = ValidationRequests
-						.prepareValidate()
-						.setRuleParameters(ruleParams)
-						.setRuleIds(validationInput.ruleIds());
-				
-				final Request<ServiceProvider, ValidationResult> request = validateRequestBuilder
-						.build(codeSystem.getRepositoryUuid(), validationInput.branchPath())
-						.getRequest();
-					
-				return JobRequests.prepareSchedule()
-					.setRequest(request)
-					.setDescription(String.format("Validating SNOMED CT on branch '%s'", validationInput.branchPath()))
-					.setId(uniqueJobId)
-					.buildAsync()
-					.execute(getBus());
-			})
-			.then(success -> {
-				final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
-				
-				final URI responseURI = linkBuilder.slash(encodedId).toUri();
-				return Responses.created(responseURI).build(responseURI);
-			})
-			.fail(e -> {
-				return Responses.status(HttpStatus.BAD_REQUEST).build(null);
-			}));
+		
+		deleteValidationJobPromise.getSync();
+		
+		final ValidateRequestBuilder validateRequestBuilder = ValidationRequests
+				.prepareValidate()
+				.setRuleParameters(ruleParams)
+				.setRuleIds(validationInput.ruleIds());
+		
+		final Request<ServiceProvider, ValidationResult> request = validateRequestBuilder
+				.build(codeSystem.getRepositoryUuid(), validationInput.branchPath())
+				.getRequest();
+		
+		JobRequests.prepareSchedule()
+			.setRequest(request)
+			.setDescription(String.format("Validating SNOMED CT on branch '%s'", validationInput.branchPath()))
+			.setId(uniqueJobId)
+			.buildAsync()
+			.execute(getBus())
+			.getSync();
+		final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
+		final URI responseURI = linkBuilder.slash(encodedId).toUri();
+		return Responses.created(responseURI).build();
 	}
 	
 	@ApiOperation(
@@ -231,7 +226,7 @@ public class ValidationRestService extends AbstractRestService {
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
 			
-			@ApiParam(value="The maximum number of items to return")
+			@ApiParam(value="The maximum number of items to return", defaultValue = "50")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit,
 			

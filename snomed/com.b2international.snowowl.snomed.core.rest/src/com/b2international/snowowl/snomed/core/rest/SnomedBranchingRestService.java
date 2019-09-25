@@ -112,7 +112,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 			@RequestParam(value="sort", required=false)
 			final List<String> sort,
 			
-			@ApiParam(value = "The maximum number of items to return")
+			@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		return DeferredResults.wrap(
