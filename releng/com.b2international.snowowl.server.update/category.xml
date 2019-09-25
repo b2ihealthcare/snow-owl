@@ -18,7 +18,7 @@
    <feature url="features/com.b2international.snowowl.core.rest.feature_7.2.0.qualifier.jar" id="com.b2international.snowowl.core.rest.feature" version="7.2.0.qualifier">
       <category name="server-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.fhir.api.feature_7.2.0.qualifier.jar" id="com.b2international.snowowl.fhir.api.feature" version="7.2.0.qualifier">
+   <feature url="features/com.b2international.snowowl.fhir.rest.feature_7.2.0.qualifier.jar" id="com.b2international.snowowl.fhir.rest.feature" version="7.2.0.qualifier">
       <category name="server-core"/>
    </feature>
    <category-def name="server-core" label="Snow Owl Server Common"/>
