@@ -61,7 +61,7 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 		 * Returns the matching {@link IConceptMapApiProvider} for the given path (repository:branchPath).
 		 * @param bus
 		 * @param locales
-		 * @param logical code system path (e.g.icd10Store:20140101)
+		 * @param logicalId code system path (e.g.icd10Store:20140101)
 		 * @return FHIR concept map provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
@@ -110,9 +110,9 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 
 	/**
 	 * Returns a the collection of mapping matches as a translate result from a given Concept Map
-	 * @param {@link TranslateRequest}
-	 * @param logicalId logical if of the {@link ConceptMap}
-	 * @return {@link TranslateResult}
+	 * @param logicalId - logical if of the {@link ConceptMap}
+	 * @param translateRequest - {@link TranslateRequest}
+	 * @return a {@link TranslateResult} instance
 	 */
 	TranslateResult translate(LogicalId logicalId, TranslateRequest translateRequest);
 
@@ -120,8 +120,8 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 	 * Returns a collection of mapping matches for the given translate request
 	 * These mappings can be fetched from any concept map in the system.
 	 * 
-	 * @param {@link TranslateRequest}
-	 * @return collection of translate matches
+	 * @param translateRequest {@link TranslateRequest}
+	 * @return collection of translate {@link Match} objects
 	 */
 	Collection<Match> translate(TranslateRequest translateRequest);
 	
