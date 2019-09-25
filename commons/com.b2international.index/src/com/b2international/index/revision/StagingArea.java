@@ -285,11 +285,14 @@ public final class StagingArea {
 				if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
 					changedComponentsByContainer.put(containerId, objectId);
 				}
-				revisionDiff.diff().forEach(node -> {
-					if (node instanceof ObjectNode) {
-						revisionsByChange.put((ObjectNode) node, objectId);
-					}
-				});
+				
+				if (revisionDiff.diff() != null) {
+					revisionDiff.diff().forEach(node -> {
+						if (node instanceof ObjectNode) {
+							revisionsByChange.put((ObjectNode) node, objectId);
+						}
+					});
+				}
 			}
 		}
 		
