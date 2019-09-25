@@ -59,6 +59,10 @@ public class RestApiError implements ApiError {
 	public Integer getStatus() {
 		return status;
 	}
+	
+	public Integer getStatusCode() {
+		return getStatus();
+	}
 
 	/**
 	 * Custom application specific error code associated with the response.
@@ -68,6 +72,10 @@ public class RestApiError implements ApiError {
 	@Override
 	public Integer getCode() {
 		return code;
+	}
+	
+	public Integer getErrorCode() {
+		return getCode();
 	}
 
 	/**

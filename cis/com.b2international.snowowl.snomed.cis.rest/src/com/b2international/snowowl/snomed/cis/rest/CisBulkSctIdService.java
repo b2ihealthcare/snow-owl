@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.cis.rest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
@@ -43,9 +45,7 @@ import com.b2international.snowowl.snomed.cis.model.BulkReleaseData;
 import com.b2international.snowowl.snomed.cis.model.BulkReservationData;
 import com.b2international.snowowl.snomed.cis.model.Record;
 import com.b2international.snowowl.snomed.cis.rest.model.BulkJob;
-import com.b2international.snowowl.snomed.cis.rest.model.CisError;
 import com.b2international.snowowl.snomed.cis.rest.model.SctIdsList;
-import com.b2international.snowowl.snomed.cis.rest.util.DeferredResults;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -61,11 +61,8 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "SCTIDS - Bulk Operations", description = "SCTIDS", tags = {"SCTIDS - Bulk Operations"})
 @RestController
 @RequestMapping(value = "/sct/bulk", produces = MediaType.APPLICATION_JSON_VALUE)
-public class CisBulkSctIdService {
+public class CisBulkSctIdService extends AbstractRestService {
 
-	@Autowired
-	private IEventBus bus;
-	
 	private Identifiers identifiers = new Identifiers();
 	
 	@ApiOperation(
@@ -73,8 +70,8 @@ public class CisBulkSctIdService {
 		notes = "Returns the required SCTID Records. Bulk SCTID operations do not currently include AdditionalIds"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@GetMapping(value = "/ids")
 	public DeferredResult<List<SctId>> getSctIdsViaGet(
@@ -92,8 +89,8 @@ public class CisBulkSctIdService {
 		notes = "Returns the required SCTID Records. Bulk SCTID operations do not currently include AdditionalIds"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/ids")
 	public DeferredResult<List<SctId>> getSctIdsViaPost(
@@ -112,7 +109,7 @@ public class CisBulkSctIdService {
 				.prepareGet()
 				.setComponentIds(ImmutableSet.copyOf(sctIdValues))
 				.buildAsync()
-				.execute(bus)
+				.execute(getBus())
 				.then(ids -> ids.getItems()));
 	}
 	
@@ -229,6 +226,7 @@ public class CisBulkSctIdService {
 	}
 	
 	private DeferredResult<BulkJob> runInJob(String jobDescription, AsyncRequest<?> request) {
+		final IEventBus bus = getBus();
 		return DeferredResults.wrap(JobRequests.prepareSchedule()
 				.setDescription(jobDescription)
 				.setRequest(request)

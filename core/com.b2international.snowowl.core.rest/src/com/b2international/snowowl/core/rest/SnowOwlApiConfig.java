@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -55,6 +54,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConfiguration;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
 import com.b2international.commons.options.MetadataHolderMixin;
@@ -76,6 +76,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
 
@@ -137,10 +138,21 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Bean
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
 	public Provider<IEventBus> eventBus(@Autowired HttpServletRequest request) {
-		final String authorization = request.getHeader("Authorization");
+		final String authorization = extractAuthorizationToken(request);
 		return () -> new AuthorizedEventBus(ApplicationContext.getInstance().getServiceChecked(IEventBus.class), ImmutableMap.of(HttpHeaders.AUTHORIZATION, authorization));
 	}
 	
+	/*
+	 * Prefer Authorization header content, but allow token query parameter as well.
+	 */
+	private String extractAuthorizationToken(HttpServletRequest request) {
+		String authorizationToken = request.getHeader("Authorization");
+		if (Strings.isNullOrEmpty(authorizationToken)) {
+			authorizationToken = request.getParameter("token");
+		}
+		return Strings.nullToEmpty(authorizationToken);
+	}
+
 	@Bean
 	public AttachmentRegistry fileRegistry() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(AttachmentRegistry.class);
@@ -149,6 +161,11 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Bean
 	public MeterRegistry registry() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(MeterRegistry.class);
+	}
+	
+	@Bean
+	public JWTVerifier jwtVerifier() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(JWTVerifier.class);
 	}
 	
 	@Override

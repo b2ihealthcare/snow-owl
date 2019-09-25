@@ -30,13 +30,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.cis.rest.model.BulkJob;
-import com.b2international.snowowl.snomed.cis.rest.model.CisError;
-import com.b2international.snowowl.snomed.cis.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
+import com.b2international.snowowl.snomed.cis.rest.model.BulkJob;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 
@@ -52,7 +52,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Bulk Jobs", description = "Bulk Jobs", tags = {"Bulk Jobs"})
 @RestController
 @RequestMapping(value = "/bulk/jobs", produces = MediaType.APPLICATION_JSON_VALUE)
-public class CisBulkJobService {
+public class CisBulkJobService extends AbstractRestService {
 
 	private static final Set<String> JOB_TYPES = ImmutableSet.of(
 		"SnomedIdentifierGenerateRequest",
@@ -67,12 +67,9 @@ public class CisBulkJobService {
 	@Value("${repositoryId}")
 	private String repositoryId;
 	
-	@Autowired
-	private IEventBus bus;
-	
 	@ApiOperation(value = "Returns all jobs.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
 	})
 	@GetMapping
 	public DeferredResult<List<BulkJob>> getBulkJobs(
@@ -83,13 +80,13 @@ public class CisBulkJobService {
 				.all()
 				.filterByParameter("type", JOB_TYPES)
 				.buildAsync()
-				.execute(bus)
+				.execute(getBus())
 				.then(jobs -> jobs.stream().map(BulkJob::fromRemoteJob).collect(Collectors.toList())));
 	}
 	
 	@ApiOperation(value = "Returns a job identified by the id.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
 	})
 	@GetMapping("/{jobId}")
 	public DeferredResult<BulkJob> getBulkJobById(
@@ -101,7 +98,7 @@ public class CisBulkJobService {
 			String jobId) {
 		return DeferredResults.wrap(JobRequests.prepareGet(jobId)
 				.buildAsync()
-				.execute(bus)
+				.execute(getBus())
 				.then(BulkJob::fromRemoteJob));
 	}
 	
@@ -110,7 +107,7 @@ public class CisBulkJobService {
 		notes = "Returns the id records created or updated by a job identified by the id."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
 	})
 	@GetMapping("/{jobId}/records")
 	public DeferredResult<List<SctId>> getBulkJobRecords(
@@ -122,7 +119,7 @@ public class CisBulkJobService {
 			String jobId) {
 		return DeferredResults.wrap(JobRequests.prepareGet(jobId)
 				.buildAsync()
-				.execute(bus)
+				.execute(getBus())
 				.then(job -> {
 					return job.getResultAs(ApplicationContext.getServiceForClass(ObjectMapper.class), SctIds.class).getItems();
 				}));
