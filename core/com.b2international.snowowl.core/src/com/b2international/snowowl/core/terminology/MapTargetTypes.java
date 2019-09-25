@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,18 @@
  */
 package com.b2international.snowowl.core.terminology;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import com.b2international.index.revision.Revision;
-
 /**
- * @since 7.0
+ * @since 7.2
  */
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface TerminologyComponent {
-
-	String id();
+public final class MapTargetTypes {
 	
-	short shortId();
+	private MapTargetTypes() {
+		// Prevent instantiation
+	}
 	
-	String name();
-	
-	ComponentCategory componentCategory();
-	
-	Class<? extends Revision> docType();
-	
-	String[] supportedRefSetTypes() default {};
-	
-	String[] supportedMapTargetTypes() default {};
+	public static final String SIMPLE_MAP = "SIMPLE_MAP";
+	public static final String SIMPLE_MAP_WITH_DESCRIPTION = "SIMPLE_MAP_WITH_DESCRIPTION";
+	public static final String COMPLEX_MAP = "COMPLEX_MAP";
+	public static final String EXTENDED_MAP = "EXTENDED_MAP";
 	
 }
