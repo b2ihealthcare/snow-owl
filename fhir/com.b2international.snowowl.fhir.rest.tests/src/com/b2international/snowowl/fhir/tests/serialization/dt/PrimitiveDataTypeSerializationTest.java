@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
@@ -88,8 +89,7 @@ public class PrimitiveDataTypeSerializationTest extends FhirTest {
 	
 	@Test
 	public void instantTest() throws Exception {
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-		Date date = df.parse(TEST_DATE_STRING);
+		Date date = Dates.parse(TEST_DATE_STRING, FhirConstants.DATE_TIME_FORMAT);
 		Instant instant = Instant.builder().instant(date).build();
 		assertEquals("\"2018-03-23T07:49:40Z\"", objectMapper.writeValueAsString(instant));
 	}

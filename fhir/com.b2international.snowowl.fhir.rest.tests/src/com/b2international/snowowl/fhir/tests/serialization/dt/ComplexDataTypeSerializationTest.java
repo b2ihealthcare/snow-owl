@@ -220,8 +220,8 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Period period = new Period(startDate, cal.getTime());
 		
-		String expected = "{\"start\":\"2018-03-23T07:49:40+0000\"," + 
-				"\"end\":\"2018-03-24T07:49:40+0000\"}";
+		String expected = "{\"start\":\"2018-03-23T07:49:40.000+0000\"," + 
+				"\"end\":\"2018-03-24T07:49:40.000+0000\"}";
 		
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(period));
 	}
@@ -360,8 +360,8 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		assertThat(jsonPath.getString("type.coding[0].code"), equalTo("codingCode"));
 		assertThat(jsonPath.getString("type.coding[0].display"), equalTo("codingDisplay"));
 
-		assertThat(jsonPath.getString("period.start"), equalTo("2018-03-23T07:49:40+0000"));
-		assertThat(jsonPath.getString("period.end"), equalTo("2018-03-24T07:49:40+0000"));
+		assertThat(jsonPath.getString("period.start"), equalTo("2018-03-23T07:49:40.000+0000"));
+		assertThat(jsonPath.getString("period.end"), equalTo("2018-03-24T07:49:40.000+0000"));
 		assertThat(jsonPath.getString("assigner.reference"), equalTo("reference url"));
 		assertThat(jsonPath.getString("assigner.display"), equalTo("displayString"));
 		assertThat(jsonPath.getString("assigner.identifier.system"), equalTo("system"));

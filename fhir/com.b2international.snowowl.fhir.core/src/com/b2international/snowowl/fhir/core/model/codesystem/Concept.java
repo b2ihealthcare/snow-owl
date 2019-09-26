@@ -24,6 +24,8 @@ import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
@@ -46,14 +48,17 @@ public class Concept {
 	
 	@Valid
 	@JsonProperty("designation")
+	@JsonInclude(Include.NON_EMPTY)
 	private final Collection<Designation> designations;
 	
 	@Valid
 	@JsonProperty("property")
+	@JsonInclude(Include.NON_EMPTY)
 	private final Collection<ConceptProperty<?>> properties;
 	
 	@Valid
 	@JsonProperty("concept")
+	@JsonInclude(Include.NON_EMPTY)
 	private final Collection<Concept> children;
 	
 	Concept(Code code, String display, String definition, Collection<Designation> designations, Collection<ConceptProperty<?>> properties, Collection<Concept> children) {

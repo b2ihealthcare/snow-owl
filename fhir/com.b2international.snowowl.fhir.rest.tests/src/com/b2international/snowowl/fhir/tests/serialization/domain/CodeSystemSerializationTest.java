@@ -25,6 +25,7 @@ import java.util.Date;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.*;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
@@ -121,14 +122,14 @@ public class CodeSystemSerializationTest extends FhirTest {
 	@Test
 	public void returnedDateTimeConceptPropertyTest() throws Exception {
 		
-		Date date = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse("2018-03-23T08:49:40+0100");
+		Date date = Dates.parse("2018-03-23T08:49:40.000+0100", FhirConstants.DATE_TIME_FORMAT);
 		
 		DateTimeConceptProperty conceptProperty = DateTimeConceptProperty.builder()
 			.code("childConcept")
 			.value(date)
 			.build();
 		
-		String expected = "{\"code\":\"childConcept\",\"valueDateTime\":\"2018-03-23T07:49:40+0000\"}";
+		String expected = "{\"code\":\"childConcept\",\"valueDateTime\":\"2018-03-23T07:49:40.000+0000\"}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
 	
@@ -258,7 +259,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
 			.description("Code system description")
-			.date("2018-03-09T19:50:21+0000")
+			.date("2018-03-09T19:50:21.000+0000")
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.identifier(identifier)
 			.language("en")

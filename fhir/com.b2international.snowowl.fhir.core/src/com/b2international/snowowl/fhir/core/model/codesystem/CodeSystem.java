@@ -38,7 +38,9 @@ import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -111,6 +113,7 @@ public class CodeSystem extends MetadataResource {
 	@Summary
 	@Valid
 	@JsonProperty("filter")
+	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Filter> filters;
 
 	/*
@@ -119,6 +122,7 @@ public class CodeSystem extends MetadataResource {
 	@Summary
 	@Valid
 	@JsonProperty("property")
+	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<SupportedConceptProperty> properties;
 
 	/*
@@ -126,6 +130,7 @@ public class CodeSystem extends MetadataResource {
 	 */
 	@Valid
 	@JsonProperty("concept")
+	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Concept> concepts;
 
 	@SuppressWarnings("rawtypes")

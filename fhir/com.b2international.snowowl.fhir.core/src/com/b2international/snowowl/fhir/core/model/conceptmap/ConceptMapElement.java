@@ -22,7 +22,9 @@ import javax.validation.Valid;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.Sets;
 
 /**
@@ -42,6 +44,7 @@ public class ConceptMapElement {
 	
 	@Valid
 	@JsonProperty("target")
+	@JsonInclude(Include.NON_EMPTY)
 	private final Collection<Target> targets;
 
 	ConceptMapElement(Code code, String display, Collection<Target> targets) {

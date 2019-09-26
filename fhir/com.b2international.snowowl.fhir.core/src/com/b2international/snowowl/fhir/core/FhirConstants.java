@@ -26,7 +26,7 @@ public class FhirConstants {
 	 * If hours and minutes are specified, a time zone SHALL be populated. Seconds must be provided due to schema type constraints but may be zero-filled and may be ignored. 
 	 * Dates SHALL be valid dates. The time "24:00" is not allowed
 	 */
-	public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+	public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
 	/**
 	 * A date, or partial date (e.g. just year or year + month) as used in human communication. 

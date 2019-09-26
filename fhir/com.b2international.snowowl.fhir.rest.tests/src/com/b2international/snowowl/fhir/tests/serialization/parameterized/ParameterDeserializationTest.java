@@ -21,13 +21,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Optional;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
@@ -182,7 +181,7 @@ public class ParameterDeserializationTest extends FhirTest {
 				+ "\"parameter\":["
 					+ "{\"name\":\"code\",\"valueCode\":\"1234\"},"
 					+ "{\"name\":\"system\",\"valueUri\":\"http://snomed.info/sct/version/20180131\"},"
-					+ "{\"name\":\"date\",\"valueDateTime\":\"2018-03-09T20:50:21+0100\"},"
+					+ "{\"name\":\"date\",\"valueDateTime\":\"2018-03-09T20:50:21.000+0100\"},"
 					+ "{\"name\":\"displayLanguage\",\"valueCode\":\"us-en\"},"
 					+ "{\"name\":\"property\",\"valueCode\":\"prop1\"},"
 					+ "{\"name\":\"property\",\"valueCode\":\"prop2\"},"
@@ -199,8 +198,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals("1234", lookupRequest.getCode());
 		assertEquals("http://snomed.info/sct/version/20180131", lookupRequest.getSystem());
 		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-		assertEquals(df.parse("2018-03-09T20:50:21+0100"), lookupRequest.getDate());
+		assertEquals(Dates.parse("2018-03-09T20:50:21.000+0100", FhirConstants.DATE_TIME_FORMAT), lookupRequest.getDate());
 		
 		assertEquals("us-en", lookupRequest.getDisplayLanguage().getCodeValue());
 		

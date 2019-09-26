@@ -84,7 +84,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		TestClass testObject = new TestClass();
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
-		assertThat(jsonPath.getString("valueDate"), equalTo("2018-03-23T00:00:00+0000"));
+		assertThat(jsonPath.getString("valueDate"), equalTo("2018-03-23T00:00:00.000+0000"));
 		
 	}
 	

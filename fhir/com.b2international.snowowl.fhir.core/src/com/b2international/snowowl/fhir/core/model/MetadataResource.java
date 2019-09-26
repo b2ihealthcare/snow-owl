@@ -37,6 +37,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -86,6 +88,7 @@ public abstract class MetadataResource extends DomainResource {
 	
 	@Summary
 	@JsonProperty("contact")
+	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<ContactDetail> contacts;
 
 	@JsonProperty
@@ -94,11 +97,13 @@ public abstract class MetadataResource extends DomainResource {
 	@Summary
 	@JsonProperty("useContext")
 	@SuppressWarnings("rawtypes")
+	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<UsageContext> usageContexts;
 	
 	@Valid
 	@Summary
 	@JsonProperty("jurisdiction")
+	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<CodeableConcept> jurisdictions;
 	
 	@JsonProperty
