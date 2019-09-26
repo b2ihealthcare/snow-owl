@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Snow Owl SNOMED CT RESTful API Tests
+Bundle-Name: Snow Owl SNOMED CT REST API Tests
 Bundle-SymbolicName: com.b2international.snowowl.snomed.core.rest.tests
 Bundle-Version: 7.2.0.qualifier
 Bundle-Vendor: B2i Healthcare
@@ -10,6 +10,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.reasoner,
  com.b2international.snowowl.core.rest,
- org.semanticweb.elk,
+ org.semanticweb.elk;bundle-version="0.4.3",
  org.junit;bundle-version="4.12.0",
  org.assertj.core;bundle-version="1.7.1"

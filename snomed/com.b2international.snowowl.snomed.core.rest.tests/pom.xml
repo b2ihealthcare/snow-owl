@@ -55,6 +55,11 @@
 								<id>org.semanticweb.elk</id>
 								<versionRange>[0.4.3,0.4.4)</versionRange>
 							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.snowowl.snomed.core.rest</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
 						</extraRequirements>
 					</dependency-resolution>
 				</configuration>
