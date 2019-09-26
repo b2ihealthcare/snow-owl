@@ -27,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -39,8 +38,6 @@ import com.b2international.snowowl.core.internal.validation.ValidationConfigurat
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.ValidationResult;
@@ -87,9 +84,9 @@ public class ValidationRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK")
 	})
 	@GetMapping
-	public @ResponseBody DeferredResult<RemoteJobs> getAllValidationRuns() {
+	public @ResponseBody Promise<RemoteJobs> getAllValidationRuns() {
 		
-		return DeferredResults.wrap(JobRequests.prepareSearch()
+		return JobRequests.prepareSearch()
 			.all()
 			.buildAsync()
 			.execute(getBus())
@@ -99,7 +96,7 @@ public class ValidationRestService extends AbstractRestService {
 						.map(entry -> RemoteJobEntry.from(entry).id(getHash(entry.getId())).build())
 						.collect(Collectors.toList());
 				return new RemoteJobs(validationJobs, null, null, jobs.getLimit(), validationJobs.size());
-			}));
+			});
 	}
 	
 	@ApiOperation(
@@ -146,7 +143,7 @@ public class ValidationRestService extends AbstractRestService {
 					.buildAsync()
 					.execute(getBus());
 			} else {
-				return Responses.status(HttpStatus.CONFLICT).build();
+				return ResponseEntity.status(HttpStatus.CONFLICT).build();
 			}
 		} else {
 			deleteValidationJobPromise = Promise.immediate(Boolean.TRUE);
@@ -172,7 +169,7 @@ public class ValidationRestService extends AbstractRestService {
 			.getSync();
 		final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
 		
-		return Responses.created(MvcUriComponentsBuilder.fromController(ValidationRestService.class).pathSegment(encodedId).build().toUri()).build();
+		return ResponseEntity.created(MvcUriComponentsBuilder.fromController(ValidationRestService.class).pathSegment(encodedId).build().toUri()).build();
 	}
 	
 	@ApiOperation(
@@ -182,7 +179,7 @@ public class ValidationRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Validation not found", response=RestApiError.class)
 	})
 	@GetMapping(value="/{validationId}")
-	public @ResponseBody DeferredResult<RemoteJobEntry> getValidationRun(
+	public @ResponseBody Promise<RemoteJobEntry> getValidationRun(
 			@ApiParam(value="The validation identifier")
 			@PathVariable(value="validationId") 
 			final String validationId) {
@@ -190,7 +187,7 @@ public class ValidationRestService extends AbstractRestService {
 			final RemoteJobEntry validationJob = getValidationJobById(validationId);
 		
 			if (validationJob != null) {
-				return DeferredResults.wrap(Promise.immediate(validationJob));
+				return Promise.immediate(validationJob);
 			} else {
 				throw new NotFoundException("Validation job", validationId);
 			}
@@ -203,7 +200,7 @@ public class ValidationRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={ AbstractRestService.JSON_MEDIA_TYPE, AbstractRestService.CSV_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<Collection<Object>> getValidationResults(
+	public @ResponseBody Promise<Collection<Object>> getValidationResults(
 			@ApiParam(value="The unique validation identifier.")
 			@PathVariable(value="validationId")
 			final String validationId,
@@ -234,7 +231,7 @@ public class ValidationRestService extends AbstractRestService {
 			if (AbstractRestService.CSV_MEDIA_TYPE.equals(contentType)) {
 				final String branchPath = getBranchFromJob(validationJob);
 
-				return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+				return ValidationRequests.issues().prepareSearch()
 						.isWhitelisted(false)
 						.all()
 						.filterByBranchPath(branchPath)
@@ -262,11 +259,11 @@ public class ValidationRestService extends AbstractRestService {
 							}).collect(Collectors.toList());
 
 							return reports;
-						}));
+						});
 			} else {
 				final String branchPath = getBranchFromJob(validationJob);
 
-				return DeferredResults.wrap(ValidationRequests.issues().prepareSearch()
+				return ValidationRequests.issues().prepareSearch()
 						.isWhitelisted(false)
 						.setLimit(limit)
 						.setScrollId(scrollId)
@@ -277,7 +274,7 @@ public class ValidationRestService extends AbstractRestService {
 						.execute(getBus())
 						.then(issues -> {
 							return issues.getItems().stream().collect(Collectors.toList());
-						}));
+						});
 
 			}
 		} else {

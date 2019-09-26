@@ -19,11 +19,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.ServerInfo;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 import io.swagger.annotations.Api;
@@ -42,9 +41,9 @@ public class ServerInfoRestService extends AbstractRestService {
 		notes="Retrieves information about the running server, including version, available repositories, etc."
 	)
 	@RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<ServerInfo> info() {
-		return DeferredResults.wrap(RepositoryRequests.prepareGetServerInfo()
+	public @ResponseBody Promise<ServerInfo> info() {
+		return RepositoryRequests.prepareGetServerInfo()
 				.buildAsync()
-				.execute(getBus()));
+				.execute(getBus());
 	}
 }

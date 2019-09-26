@@ -22,15 +22,13 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
@@ -72,7 +70,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<SnomedRelationships> searchByGet(
+	public Promise<SnomedRelationships> searchByGet(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -83,8 +81,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
-		return DeferredResults.wrap(
-				SnomedRequests
+		return SnomedRequests
 					.prepareSearchRelationship()
 					.filterByIds(params.getId())
 					.filterByActive(params.getActive())
@@ -105,7 +102,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.setLocales(extendedLocales)
 					.sortBy(extractSortFields(params.getSort()))
 					.build(repositoryId, branch)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -123,7 +120,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<SnomedRelationships> searchByPost(
+	public Promise<SnomedRelationships> searchByPost(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -169,7 +166,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
 				
-		return Responses.created(getRelationshipLocation(branchPath, createdRelationshipId)).build();
+		return ResponseEntity.created(getRelationshipLocation(branchPath, createdRelationshipId)).build();
 	}
 
 	@ApiOperation(
@@ -181,7 +178,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{relationshipId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<SnomedRelationship> read(
+	public Promise<SnomedRelationship> read(
 			@ApiParam(value = "The branch path")
 			@PathVariable("path") 
 			final String branchPath,
@@ -190,10 +187,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@PathVariable("relationshipId") 
 			final String relationshipId) {
 
-		return DeferredResults.wrap(
-				SnomedRequests.prepareGetRelationship(relationshipId)
+		return SnomedRequests.prepareGetRelationship(relationshipId)
 					.build(repositoryId, branchPath)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 
 	@ApiOperation(

@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.collections.Collections3;
@@ -33,10 +32,9 @@ import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -76,7 +74,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
-	public @ResponseBody DeferredResult<SnomedReferenceSets> search(
+	public @ResponseBody Promise<SnomedReferenceSets> search(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branchPath,
@@ -105,7 +103,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestParam(value="sort", required=false)
 			final List<String> sortKeys) {
 		
-		return DeferredResults.wrap(SnomedRequests.prepareSearchRefSet()
+		return SnomedRequests.prepareSearchRefSet()
 				.filterByTypes(Collections3.toImmutableSet(refSetTypes).stream().map(SnomedRefSetType::valueOf).collect(Collectors.toSet()))
 				.setScroll(scrollKeepAlive)
 				.setScrollId(scrollId)
@@ -113,7 +111,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.setLimit(limit)
 				.sortBy(extractSortFields(sortKeys))
 				.build(repositoryId, branchPath)
-				.execute(getBus()));
+				.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -128,7 +126,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Reference set not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<SnomedReferenceSet> get(
+	public @ResponseBody Promise<SnomedReferenceSet> get(
 			@ApiParam(value = "The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -147,12 +145,12 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		
-		return DeferredResults.wrap(SnomedRequests
+		return SnomedRequests
 				.prepareGetReferenceSet(referenceSetId)
 				.setExpand(expand)
 				.setLocales(extendedLocales)
 				.build(repositoryId, branchPath)
-				.execute(getBus()));
+				.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -189,7 +187,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
 		
-		return Responses.created(getRefSetLocationURI(branchPath, createdRefSetId)).build();
+		return ResponseEntity.created(getRefSetLocationURI(branchPath, createdRefSetId)).build();
 	}
 	
 	@ApiOperation(

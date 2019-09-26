@@ -23,17 +23,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
@@ -75,7 +73,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
-	public @ResponseBody DeferredResult<SnomedReferenceSetMembers> searchByGet(
+	public @ResponseBody Promise<SnomedReferenceSetMembers> searchByGet(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branchPath,
@@ -108,7 +106,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			req.filterByProps(propFilters);
 		}
 		
-		return DeferredResults.wrap(req.build(repositoryId, branchPath).execute(getBus()));
+		return req.build(repositoryId, branchPath).execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -123,7 +121,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping("/search")
-	public @ResponseBody DeferredResult<SnomedReferenceSetMembers> searchByPost(
+	public @ResponseBody Promise<SnomedReferenceSetMembers> searchByPost(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -149,7 +147,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch or reference set member not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<SnomedReferenceSetMember> get(
+	public @ResponseBody Promise<SnomedReferenceSetMember> get(
 			@ApiParam(value = "The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -165,12 +163,12 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		return DeferredResults.wrap(SnomedRequests
+		return SnomedRequests
 				.prepareGetMember(memberId)
 				.setExpand(expand)
 				.setLocales(getExtendedLocales(acceptLanguage))
 				.build(repositoryId, branchPath)
-				.execute(getBus()));
+				.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -207,7 +205,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
 		
-		return Responses.created(getRefSetMemberLocationURI(branchPath, createdRefSetMemberId)).build();
+		return ResponseEntity.created(getRefSetMemberLocationURI(branchPath, createdRefSetMemberId)).build();
 	}
 	
 	@ApiOperation(

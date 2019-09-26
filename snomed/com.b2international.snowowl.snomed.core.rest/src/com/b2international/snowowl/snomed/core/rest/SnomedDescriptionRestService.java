@@ -25,18 +25,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -77,7 +75,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<SnomedDescriptions> searchByGet(
+	public Promise<SnomedDescriptions> searchByGet(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -132,8 +130,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			}
 		}
 		
-		return DeferredResults.wrap(
-				req
+		return req
 					.setLocales(extendedLocales)
 					.setLimit(params.getLimit())
 					.setScroll(params.getScrollKeepAlive())
@@ -142,7 +139,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 					.setExpand(params.getExpand())
 					.sortBy(sorts)
 					.build(repositoryId, branch)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -155,7 +152,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<SnomedDescriptions> searchByPost(
+	public Promise<SnomedDescriptions> searchByPost(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -202,7 +199,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
 		
-		return Responses.created(getDescriptionLocation(branchPath, createdDescriptionId)).build();
+		return ResponseEntity.created(getDescriptionLocation(branchPath, createdDescriptionId)).build();
 	}
 
 	@ApiOperation(
@@ -214,7 +211,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{descriptionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<SnomedDescription> read(
+	public Promise<SnomedDescription> read(
 			@ApiParam(value = "The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -227,11 +224,10 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestParam(value="expand", required=false)
 			final String expand) {
 		
-		return DeferredResults.wrap(
-				SnomedRequests.prepareGetDescription(descriptionId)
+		return SnomedRequests.prepareGetDescription(descriptionId)
 					.setExpand(expand)
 					.build(repositoryId, branchPath)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 
 	@ApiOperation(

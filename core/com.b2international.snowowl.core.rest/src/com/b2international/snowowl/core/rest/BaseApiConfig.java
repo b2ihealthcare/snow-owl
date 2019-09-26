@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import static springfox.documentation.schema.AlternateTypeRules.*;
+
 import java.security.Principal;
 import java.util.Collections;
 import java.util.UUID;
@@ -32,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.models.auth.In;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.schema.AlternateTypeRule;
+import springfox.documentation.schema.WildcardType;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.ApiKey;
 import springfox.documentation.service.AuthorizationScope;
@@ -96,8 +99,13 @@ public abstract class BaseApiConfig {
 				))
 				.useDefaultResponseMessages(false)
 				.ignoredParameterTypes(Principal.class)
-				.genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
-				.alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
+//				.genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
+				.alternateTypeRules(
+					newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
+					newRule(resolver.resolve(DeferredResult.class,
+			                resolver.resolve(ResponseEntity.class, WildcardType.class)),
+			                resolver.resolve(WildcardType.class))
+				)
 				.groupName(apiGroup)
 	            .select().paths(paths).build()
 	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));

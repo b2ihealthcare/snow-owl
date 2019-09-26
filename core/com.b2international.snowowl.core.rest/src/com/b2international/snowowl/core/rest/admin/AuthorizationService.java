@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.identity.Credentials;
 import com.b2international.snowowl.identity.Token;
@@ -38,15 +39,14 @@ import io.swagger.annotations.ApiParam;
 public class AuthorizationService extends AbstractRestService {
 
 	@PostMapping("/login")
-	public Token login(
+	public Promise<Token> login(
 			@ApiParam(value = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
 		return UserRequests.prepareLogin()
 				.setUsername(credentials.getUsername())
 				.setPassword(credentials.getPassword())
 				.buildAsync()
-				.execute(getBus())
-				.getSync();
+				.execute(getBus());
 	}
 	
 }

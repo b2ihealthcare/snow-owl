@@ -196,7 +196,7 @@ public class SnomedBranchRequestTest {
 			.setUser(User.SYSTEM.getUsername())
 			.buildAsync()
 			.execute(bus)
-			.get();
+			.getSync();
 		
 		boolean isDone = false;
 		do {
@@ -210,7 +210,7 @@ public class SnomedBranchRequestTest {
 		final Merge merge = JobRequests.prepareGet(mergeJobId)
 			.buildAsync()
 			.execute(bus)
-			.get()
+			.getSync()
 			.getResultAs(JsonSupport.getDefaultObjectMapper(), Merge.class);
 		
 		assertEquals(true, merge.getConflicts().isEmpty());

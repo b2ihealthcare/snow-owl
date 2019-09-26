@@ -20,12 +20,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 
@@ -40,7 +37,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Reasoners", description="Reasoners", tags = "reasoners")
 @Controller
 @RequestMapping(value="/reasoners", produces={ AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedReasonerRestService {
+public class SnomedReasonerRestService extends AbstractRestService {
 	
 	@ApiOperation(
 		value="Retrieve reasoner id-s from the running Snow Owl instance.", 
@@ -49,10 +46,10 @@ public class SnomedReasonerRestService {
 		@ApiResponse(code = 200, message = "OK"),
 	})
 	@GetMapping
-	public @ResponseBody DeferredResult<ReasonerExtensions> getReasoners() {
-		return DeferredResults.wrap(ClassificationRequests.prepareSearchReasonerExtensions()
+	public @ResponseBody Promise<ReasonerExtensions> getReasoners() {
+		return ClassificationRequests.prepareSearchReasonerExtensions()
 			.buildAsync()
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class)));
+			.execute(getBus());
 	}
 
 }

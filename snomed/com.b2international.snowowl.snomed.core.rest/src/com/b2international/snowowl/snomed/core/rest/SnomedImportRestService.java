@@ -39,7 +39,6 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedImportDetails;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedImportRestConfiguration;
@@ -86,7 +85,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 			final SnomedImportRestConfiguration importConfiguration) {
 
 		final UUID importId = delegate.create(importConfiguration.toConfig());
-		return Responses.created(MvcUriComponentsBuilder.fromMethodName(SnomedImportRestService.class, "getImportDetails", importId).pathSegment(importId.toString()).build().toUri()).build();
+		return ResponseEntity.created(MvcUriComponentsBuilder.fromMethodName(SnomedImportRestService.class, "getImportDetails", importId).pathSegment(importId.toString()).build().toUri()).build();
 	}
 
 	@ApiOperation(

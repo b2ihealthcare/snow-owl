@@ -33,7 +33,6 @@ import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.CodeSystemVersion;
 
 import io.swagger.annotations.Api;
@@ -109,7 +108,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 			@RequestBody final VersionInput input) {
 		ApiValidation.checkInput(input);
 		final CodeSystemVersion version = codeSystemVersionService.createVersion(shortName, input);
-		return Responses.created(getVersionURI(shortName, version.getVersion())).build();
+		return ResponseEntity.created(getVersionURI(shortName, version.getVersion())).build();
 	}
 
 	private URI getVersionURI(String shortName, String version) {

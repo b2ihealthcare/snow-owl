@@ -30,10 +30,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.validation.ApiValidation;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
@@ -62,10 +61,10 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 		value = "Create new review", 
 		notes = "Creates a new terminology review for the SNOMED CT repository."
 	)
-//	@ApiResponses({
-//		@ApiResponse(code = 201, message = "Created"),
-//		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
-//	})
+	@ApiResponses({
+		@ApiResponse(code = 201, message = "Created"),
+		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
+	})
 	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
 	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
@@ -80,7 +79,7 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 			.build(repositoryId)
 			.execute(getBus())
 			.then(new Procedure<Review>() { @Override protected void doApply(final Review review) {
-				result.setResult(Responses.created(linkTo.pathSegment(review.id()).build().toUri()).build());
+				result.setResult(ResponseEntity.created(linkTo.pathSegment(review.id()).build().toUri()).build());
 			}})
 			.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
 				result.setErrorResult(t);
@@ -97,12 +96,12 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
 	})
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
-	public DeferredResult<Review> getReview(@PathVariable("id") final String reviewId) {
-		return DeferredResults.wrap(RepositoryRequests
+	public Promise<Review> getReview(@PathVariable("id") final String reviewId) {
+		return RepositoryRequests
 			.reviews()
 			.prepareGet(reviewId)
 			.build(repositoryId)
-			.execute(getBus()));
+			.execute(getBus());
 	}
 
 	@ApiOperation(
@@ -114,13 +113,12 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Review not found or changes are not yet available", response=RestApiError.class),
 	})
 	@RequestMapping(value="/{id}/concept-changes", method=RequestMethod.GET)
-	public DeferredResult<ConceptChanges> getConceptChanges(@PathVariable("id") final String reviewId) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+	public Promise<ConceptChanges> getConceptChanges(@PathVariable("id") final String reviewId) {
+		return RepositoryRequests
 					.reviews()
 					.prepareGetConceptChanges(reviewId)
 					.build(repositoryId)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 
 	@ApiOperation(
@@ -133,14 +131,13 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 	})
 	@RequestMapping(value="/{id}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public DeferredResult<ResponseEntity<Void>> deleteReview(@PathVariable("id") final String reviewId) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+	public Promise<ResponseEntity<Void>> deleteReview(@PathVariable("id") final String reviewId) {
+		return RepositoryRequests
 					.reviews()
 					.prepareDelete(reviewId)
 					.build(repositoryId)
-					.execute(getBus()),
-				Responses.noContent().build());
+					.execute(getBus())
+					.then(success -> ResponseEntity.noContent().build());
 	}
 
 }

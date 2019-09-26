@@ -22,17 +22,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.core.rest.domain.BranchUpdateRestRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.CreateBranchRestRequest;
@@ -66,18 +64,18 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 	})
 	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRestRequest request) {
+	public Promise<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRestRequest request) {
 		ApiValidation.checkInput(request);
-		return DeferredResults.wrap(
-				RepositoryRequests
+		final URI location = getBranchLocationHeader(request.path());
+		return RepositoryRequests
 					.branching()
 					.prepareCreate()
 					.setParent(request.getParent())
 					.setName(request.getName())
 					.setMetadata(request.metadata())
 					.build(repositoryId)
-					.execute(getBus()), 
-				Responses.created(getBranchLocationHeader(request.path())).build());
+					.execute(getBus())
+					.then(success -> ResponseEntity.created(location).build()); 
 	}
 	
 	@ApiOperation(
@@ -88,7 +86,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
 	@RequestMapping(method=RequestMethod.GET)
-	public DeferredResult<Branches> searchBranches(
+	public Promise<Branches> searchBranches(
 			@RequestParam(value="parent", required=false)
 			final String[] parents,
 			
@@ -114,8 +112,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+		return RepositoryRequests
 					.branching()
 					.prepareSearch()
 					.filterByParent(parents == null ? null : ImmutableList.copyOf(parents))
@@ -126,7 +123,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.setScroll(scrollKeepAlive)
 					.setLimit(limit)
 					.build(repositoryId)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -138,15 +135,14 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
 	})
 	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)
-	public DeferredResult<Branches> getChildren(@PathVariable("path") String branchPath) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+	public Promise<Branches> getChildren(@PathVariable("path") String branchPath) {
+		return RepositoryRequests
 					.branching()
 					.prepareGet(branchPath)
 					.setExpand(Branch.Expand.CHILDREN + "()")
 					.build(repositoryId)
 					.execute(getBus())
-					.then(Branch::getChildren));
+					.then(Branch::getChildren);
 	}
 	
 	@ApiOperation(
@@ -158,13 +154,12 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
 	})
 	@GetMapping("/{path:**}")
-	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+	public Promise<Branch> getBranch(@PathVariable("path") String branchPath) {
+		return RepositoryRequests
 					.branching()
 					.prepareGet(branchPath)
 					.build(repositoryId)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -181,14 +176,13 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 	})
 	@DeleteMapping("/{path:**}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+	public Promise<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
+		return RepositoryRequests
 					.branching()
 					.prepareDelete(branchPath)
 					.build(repositoryId)
-					.execute(getBus()), 
-				Responses.noContent().build());
+					.execute(getBus())
+					.then(success -> ResponseEntity.noContent().build());
 	}
 	
 	@ApiOperation(
@@ -203,17 +197,16 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 	})
 	@PutMapping(value="/{path:**}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public DeferredResult<ResponseEntity<Void>> updateBranch(
+	public Promise<ResponseEntity<Void>> updateBranch(
 			@PathVariable("path") String branchPath,
 			@RequestBody BranchUpdateRestRequest request) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+		return RepositoryRequests
 					.branching()
 					.prepareUpdate(branchPath)
 					.setMetadata(request.getMetadata())
 					.build(repositoryId)
-					.execute(getBus()),
-				Responses.noContent().build());
+					.execute(getBus())
+					.then(success -> ResponseEntity.noContent().build());
 	}
 	
 	private URI getBranchLocationHeader(String branchPath) {

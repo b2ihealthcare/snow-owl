@@ -44,6 +44,7 @@ import org.springframework.util.StringValueResolver;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.HandlerTypePredicate;
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -67,6 +68,7 @@ import com.b2international.snowowl.core.branch.BranchMixin;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
+import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandler;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewMixin;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -115,6 +117,11 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		objectMapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
 		objectMapper.addMixIn(Review.class, ReviewMixin.class);
 		return objectMapper;
+	}
+	
+	@Override
+	protected void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
+		returnValueHandlers.add(new PromiseMethodReturnValueHandler());
 	}
 	
 	@Bean

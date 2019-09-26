@@ -23,10 +23,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
@@ -58,7 +57,7 @@ public class JobRestService extends AbstractRestService {
 		@ApiResponse(code = 400, message = "Bad Request")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<RemoteJobs> searchJobs(
+	public Promise<RemoteJobs> searchJobs(
 			@ApiParam(value = "The Job identifier(s) to match")
 			@RequestParam(value = "id", required = false) 
 			final Set<String> ids,
@@ -86,7 +85,7 @@ public class JobRestService extends AbstractRestService {
 			@ApiParam(value="Sort keys")
 			@RequestParam(value="sort", required=false)
 			final List<String> sort) {
-		return DeferredResults.wrap(JobRequests.prepareSearch()
+		return JobRequests.prepareSearch()
 				.filterByIds(ids)
 				.filterByUser(user)
 				.setScroll(scrollKeepAlive)
@@ -95,7 +94,7 @@ public class JobRestService extends AbstractRestService {
 				.setLimit(limit)
 				.sortBy(extractSortFields(sort))
 				.buildAsync()
-				.execute(getBus()));
+				.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -107,13 +106,13 @@ public class JobRestService extends AbstractRestService {
 		@ApiResponse(code = 400, message = "Bad Request")
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<RemoteJobEntry> getJob(
+	public Promise<RemoteJobEntry> getJob(
 			@ApiParam(value = "Job identifier", required = true)
 			@PathVariable(value = "id", required = true) 
 			final String id) {
-		return DeferredResults.wrap(JobRequests.prepareGet(id)
+		return JobRequests.prepareGet(id)
 				.buildAsync()
-				.execute(getBus()));
+				.execute(getBus());
 	}
 	
 }

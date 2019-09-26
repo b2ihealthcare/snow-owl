@@ -22,14 +22,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 import io.swagger.annotations.Api;
@@ -58,7 +57,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<CommitInfos> search(
+	public Promise<CommitInfos> search(
 			@ApiParam(value = "The author of the commit to match")
 			@RequestParam(value="author", required=false)
 			final String author,
@@ -102,8 +101,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+		return RepositoryRequests
 					.commitInfos()
 					.prepareSearchCommitInfo()
 					.filterByAuthor(author)
@@ -118,7 +116,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 					.setLimit(limit)
 					.sortBy(extractSortFields(sort))
 					.build(repositoryId)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -129,7 +127,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
 	@GetMapping(value = "/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public DeferredResult<CommitInfo> get(
+	public Promise<CommitInfo> get(
 			@ApiParam(value = "Commit ID to match")
 			@PathVariable(value="commitId")
 			final String commitId, 
@@ -137,12 +135,11 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand) {
-		return DeferredResults.wrap(
-				RepositoryRequests
+		return RepositoryRequests
 					.commitInfos()
 					.prepareGetCommitInfo(commitId)
 					.setExpand(expand)
 					.build(repositoryId)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 }

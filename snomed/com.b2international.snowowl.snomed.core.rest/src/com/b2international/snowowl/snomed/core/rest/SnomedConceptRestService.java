@@ -28,20 +28,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -91,7 +89,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<SnomedConcepts> searchByGet(
+	public @ResponseBody Promise<SnomedConcepts> searchByGet(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -113,8 +111,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			sorts = Collections.singletonList(sortField);
 		}
 		
-		return DeferredResults.wrap(
-				SnomedRequests
+		return SnomedRequests
 					.prepareSearchConcept()
 					.setLimit(params.getLimit())
 					.setScroll(params.getScrollKeepAlive())
@@ -141,7 +138,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.setLocales(extendedLocales)
 					.sortBy(sorts)
 					.build(repositoryId, branch)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -159,7 +156,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<SnomedConcepts> searchByPost(
+	public @ResponseBody Promise<SnomedConcepts> searchByPost(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -190,7 +187,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{conceptId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<SnomedConcept> read(
+	public @ResponseBody Promise<SnomedConcept> read(
 			@ApiParam(value = "The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -209,13 +206,12 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		
-		return DeferredResults.wrap(
-				SnomedRequests
+		return SnomedRequests
 					.prepareGetConcept(conceptId)
 					.setExpand(expand)
 					.setLocales(extendedLocales)
 					.build(repositoryId, branchPath)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 
 	@ApiOperation(
@@ -251,7 +247,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.getResultAs(String.class);
 		
 		
-		return Responses.created(getConceptLocationURI(branchPath, createdConceptId)).build();
+		return ResponseEntity.created(getConceptLocationURI(branchPath, createdConceptId)).build();
 	}
 
 	@ApiOperation(

@@ -40,7 +40,6 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.rest.codesystem.CodeSystemVersionRestService;
-import com.b2international.snowowl.core.rest.util.Responses;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -109,7 +108,7 @@ public class ExchangeRestService {
 	public ResponseEntity<Void> importContent(String shortName, String version, @RequestParam("file") MultipartFile file) {
 		
 		//TODO: Implement exchange format import
-		return Responses.created(getVersionURI(shortName, version)).build();
+		return ResponseEntity.created(getVersionURI(shortName, version)).build();
 	}
 	
 	private URI getVersionURI(String shortName, String version) {

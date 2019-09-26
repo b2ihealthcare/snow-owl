@@ -26,12 +26,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
@@ -74,7 +73,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@GetMapping(value = "/ids")
-	public DeferredResult<List<SctId>> getSctIdsViaGet(
+	public Promise<List<SctId>> getSctIdsViaGet(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
@@ -93,7 +92,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/ids")
-	public DeferredResult<List<SctId>> getSctIdsViaPost(
+	public Promise<List<SctId>> getSctIdsViaPost(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
@@ -103,14 +102,14 @@ public class CisBulkSctIdService extends AbstractRestService {
 		return getSctIds(sctIds.getSctids());
 	}
 	
-	private DeferredResult<List<SctId>> getSctIds(String sctIds) {
+	private Promise<List<SctId>> getSctIds(String sctIds) {
 		String[] sctIdValues = Strings.isNullOrEmpty(sctIds) ? new String[0] : sctIds.split(",");
-		return DeferredResults.wrap(identifiers
+		return identifiers
 				.prepareGet()
 				.setComponentIds(ImmutableSet.copyOf(sctIdValues))
 				.buildAsync()
 				.execute(getBus())
-				.then(ids -> ids.getItems()));
+				.then(ids -> ids.getItems());
 	}
 	
 	@ApiOperation(
@@ -118,7 +117,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		notes = "Generates new SCTIDs, based on the metadata passed in the GenerationData parameter. The first available SCTIDs will be assigned. Returns an array of SCTIDs Record with status 'Assigned'"
 	)
 	@PostMapping(value = "/generate")
-	public DeferredResult<BulkJob> generateBulk(
+	public Promise<BulkJob> generateBulk(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
@@ -138,7 +137,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		notes = "Registers SCTIDs already in use in an external system, based on the metadata passed in the RegistrationData parameter. Returns an array of SCTID Records with status 'Assigned'."
 	)
 	@PostMapping(value = "/register")
-	public DeferredResult<BulkJob> registerBulk(
+	public Promise<BulkJob> registerBulk(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
@@ -156,7 +155,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		notes = "Reserves SCTIDs for use in an external system, based on the metadata passed in the ReservationData parameter. The first available SCTIDs will be reserved. Returns an array of SCTID Records with status 'Reserved'."
 	)
 	@PostMapping(value = "/reserve")
-	public DeferredResult<BulkJob> reserveBulk(
+	public Promise<BulkJob> reserveBulk(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
@@ -176,7 +175,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		notes = "Deprecates SCTIDs, so they will not be assigned to any component, based on the metadata passed in the DeprecationData parameter. Returns an array of SCTID Records with status 'Deprecated'."
 	)
 	@PutMapping(value = "/deprecate")
-	public DeferredResult<BulkJob> deprecateBulk(
+	public Promise<BulkJob> deprecateBulk(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
@@ -194,7 +193,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		notes = "Releases SCTIDs, so they will be available to be assigned again, based on the metadata passed in the DeprecationData parameter. Returns an array SCTID Records with status 'Available'."
 	)
 	@PutMapping(value = "/release")
-	public DeferredResult<BulkJob> releaseBulk(
+	public Promise<BulkJob> releaseBulk(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
@@ -212,7 +211,7 @@ public class CisBulkSctIdService extends AbstractRestService {
 		notes = "Sets the SCTIDs as published, based on the metadata passed in the DeprecationData parameter. Returns an array SCTID Records with status 'Published'."
 	)
 	@PutMapping(value = "/publish")
-	public DeferredResult<BulkJob> publishBulk(
+	public Promise<BulkJob> publishBulk(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
@@ -225,16 +224,16 @@ public class CisBulkSctIdService extends AbstractRestService {
 				.buildAsync());
 	}
 	
-	private DeferredResult<BulkJob> runInJob(String jobDescription, AsyncRequest<?> request) {
+	private Promise<BulkJob> runInJob(String jobDescription, AsyncRequest<?> request) {
 		final IEventBus bus = getBus();
-		return DeferredResults.wrap(JobRequests.prepareSchedule()
+		return JobRequests.prepareSchedule()
 				.setDescription(jobDescription)
 				.setRequest(request)
 				.setUser(User.SYSTEM.getUsername())
 				.buildAsync()
 				.execute(bus)
 				.thenWith(id -> JobRequests.prepareGet(id).buildAsync().execute(bus))
-				.then(BulkJob::fromRemoteJob));
+				.then(BulkJob::fromRemoteJob);
 	}
 	
 }

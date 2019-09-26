@@ -52,7 +52,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
@@ -115,7 +114,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		
 		exports.put(run.getId(), run);
 		
-		return Responses.created(getExportRunURI(run.getId())).build();
+		return ResponseEntity.created(getExportRunURI(run.getId())).build();
 	}
 	
 	private void validate(SnomedExportRestConfiguration configuration) {

@@ -22,16 +22,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.validation.ApiValidation;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRunRestUpdate;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -70,7 +68,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<ClassificationTasks> getAllClassificationRuns(
+	public @ResponseBody Promise<ClassificationTasks> getAllClassificationRuns(
 			@ApiParam(value ="The branch path")
 			@RequestParam(value="branch", required=false) 
 			final String branch,
@@ -103,7 +101,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="limit", required=false) 
 			final int limit) {
 
-		return DeferredResults.wrap(ClassificationRequests.prepareSearchClassification()
+		return ClassificationRequests.prepareSearchClassification()
 			.filterByBranch(branch)
 			.filterByUserId(userId)
 			.filterByStatus(status)
@@ -113,7 +111,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			.setSearchAfter(searchAfter)
 			.setLimit(limit)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-			.execute(getBus()));
+			.execute(getBus());
 	}
 
 	@ApiOperation(
@@ -128,7 +126,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<?>> beginClassification(
+	public Promise<ResponseEntity<?>> beginClassification(
 			@ApiParam(value ="Classification parameters")
 			@RequestBody 
 			final ClassificationRestInput request,
@@ -140,15 +138,15 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		
 		final UriComponentsBuilder linkTo = MvcUriComponentsBuilder.fromController(SnomedClassificationRestService.class);
 		
-		return DeferredResults.wrap(ClassificationRequests.prepareCreateClassification()
+		return ClassificationRequests.prepareCreateClassification()
 				.setReasonerId(request.getReasonerId())
 				.setUserId(author)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
 				.execute(getBus())
 				.then(id -> {
 					final URI resourceUri = linkTo.pathSegment(id).build().toUri();
-					return Responses.created(resourceUri).build();
-				}));
+					return ResponseEntity.created(resourceUri).build();
+				});
 	}
 
 	@ApiOperation(
@@ -159,14 +157,14 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@GetMapping(value = "/{classificationId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<ClassificationTask> getClassificationRun(
+	public @ResponseBody Promise<ClassificationTask> getClassificationRun(
 			@ApiParam(value ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId) {
 
-		return DeferredResults.wrap(ClassificationRequests.prepareGetClassification(classificationId)
+		return ClassificationRequests.prepareGetClassification(classificationId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(getBus()));
+				.execute(getBus());
 	}
 
 	@ApiOperation(
@@ -179,7 +177,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@GetMapping(value = "/{classificationId}/equivalent-concepts", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<EquivalentConceptSets> getEquivalentConceptSets(
+	public @ResponseBody Promise<EquivalentConceptSets> getEquivalentConceptSets(
 			@ApiParam(value ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
@@ -205,7 +203,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			final String acceptLanguage) {
 
 		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
-		return DeferredResults.wrap(ClassificationRequests.prepareSearchEquivalentConceptSet()
+		return ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.filterByClassificationId(classificationId)
 				.setExpand("equivalentConcepts(expand(pt()))")
 				.setLocales(extendedLocales)
@@ -214,7 +212,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(getBus()));
+				.execute(getBus());
 	}
 
 	@ApiOperation(
@@ -229,7 +227,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 	@GetMapping(
 			value = "/{classificationId}/relationship-changes", 
 			produces = { AbstractRestService.JSON_MEDIA_TYPE, AbstractRestService.CSV_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<RelationshipChanges> getRelationshipChanges(
+	public @ResponseBody Promise<RelationshipChanges> getRelationshipChanges(
 			@ApiParam(value ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
@@ -261,7 +259,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			expandWithRelationship = String.format("relationship(expand(%s))", expand);
 		}
 		
-		return DeferredResults.wrap(ClassificationRequests.prepareSearchRelationshipChange()
+		return ClassificationRequests.prepareSearchRelationshipChange()
 				.filterByClassificationId(classificationId)
 				.setExpand(expandWithRelationship)
 				.setScroll(scrollKeepAlive)
@@ -269,7 +267,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(getBus()));
+				.execute(getBus());
 	}
 	
 //	@Operation(

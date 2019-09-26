@@ -49,7 +49,7 @@ public final class AsyncRequest<R> {
 			public void handle(IMessage message) {
 				try {
 					if (message.isSucceeded()) {
-						promise.resolve(message.body(responseType, classLoader));
+						promise.resolve(message.body(responseType, classLoader), message.headers());
 					} else {
 						promise.reject(message.body(Throwable.class, AsyncRequest.class.getClassLoader()));
 					}

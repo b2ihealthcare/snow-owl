@@ -22,18 +22,16 @@ import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.snomed.core.rest.domain.MergeRestRequest;
@@ -99,7 +97,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 			.execute(getBus());
 		
 		final URI linkUri = MvcUriComponentsBuilder.fromController(SnomedBranchMergingRestService.class).pathSegment(jobId).build().toUri();
-		return Responses.accepted(linkUri).build();
+		return ResponseEntity.accepted().location(linkUri).build();
 	}
 	
 	@ApiOperation(
@@ -112,14 +110,14 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
 	})
 	@RequestMapping(method = RequestMethod.GET, value="/{id}")
-	public DeferredResult<Merge> getMerge(
+	public Promise<Merge> getMerge(
 			@ApiParam(value = "Merge identifier", required = true)
 			@PathVariable("id") 
 			final String id) {
-		return DeferredResults.wrap(RepositoryRequests.merging()
+		return RepositoryRequests.merging()
 					.prepareGet(id)
 					.build(repositoryId)
-					.execute(getBus()));	
+					.execute(getBus());	
 	}
 	
 	@ApiOperation(
@@ -130,7 +128,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class)
 	})
 	@GetMapping
-	public DeferredResult<MergeCollection> searchMerge(			
+	public Promise<MergeCollection> searchMerge(			
 			@ApiParam(value = "The source branch path to match")
 			@RequestParam(value="source", required = false) 
 			final String source,
@@ -142,13 +140,13 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "The current status of the request")
 			@RequestParam(value="status", required = false) 
 			final Merge.Status status) {
-		return DeferredResults.wrap(RepositoryRequests.merging()
+		return RepositoryRequests.merging()
 				.prepareSearch()
 					.filterBySource(source)
 					.filterByTarget(target)
 					.filterByStatus(status != null ? status.name() : null)
 					.build(repositoryId)
-					.execute(getBus()));
+					.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -160,16 +158,15 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
 	})
 	@DeleteMapping(value="/{id}")
-	public DeferredResult<ResponseEntity<Void>> deleteMerge(
+	public Promise<ResponseEntity<Void>> deleteMerge(
 			@ApiParam(value = "Merge identifier", required = true)
 			@PathVariable("id") 
 			final String id) {
-		return DeferredResults.wrap(
-				RepositoryRequests.merging()
+		return RepositoryRequests.merging()
 					.prepareDelete(id)
 					.build(repositoryId)
-					.execute(getBus()),
-				Responses.noContent().build());
+					.execute(getBus())
+					.then(success -> ResponseEntity.noContent().build());
 	}
 	
 }

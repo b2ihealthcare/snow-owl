@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -37,9 +36,9 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.DeferredResults;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
@@ -68,15 +67,15 @@ public class RepositoryRestService extends AbstractRestService {
 			value="Retrieve all repositories",
 			notes="Retrieves all repositories that store terminology content.")
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<Repositories> getRepositories(
+	public @ResponseBody Promise<Repositories> getRepositories(
 			@ApiParam
 			@RequestParam(value="id", required=false)
 			String[] idFilter) {
-		return DeferredResults.wrap(RepositoryRequests.prepareSearch()
+		return RepositoryRequests.prepareSearch()
 				.all()
 				.filterByIds(idFilter == null ? null : Collections3.toImmutableSet(idFilter))
 				.buildAsync()
-				.execute(getBus()));
+				.execute(getBus());
 	}
 	
 	@ApiOperation(
@@ -88,11 +87,11 @@ public class RepositoryRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody DeferredResult<RepositoryInfo> getRepository(
+	public @ResponseBody Promise<RepositoryInfo> getRepository(
 			@ApiParam("The repository identifier")
 			@PathVariable("id")
 			String id) {
-		return DeferredResults.wrap(RepositoryRequests.prepareGet(id).buildAsync().execute(getBus()));
+		return RepositoryRequests.prepareGet(id).buildAsync().execute(getBus());
 	}
 	
 	@ApiOperation(

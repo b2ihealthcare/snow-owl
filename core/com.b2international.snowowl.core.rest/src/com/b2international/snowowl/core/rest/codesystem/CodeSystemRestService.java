@@ -36,7 +36,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.util.Responses;
 import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
@@ -121,7 +120,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.execute(getBus())
 				.getSync().getResultAs(String.class);
 		
-		return Responses.created(MvcUriComponentsBuilder.fromController(CodeSystemRestService.class).pathSegment(shortName).build().toUri()).build();
+		return ResponseEntity.created(MvcUriComponentsBuilder.fromController(CodeSystemRestService.class).pathSegment(shortName).build().toUri()).build();
 	}
 	
 	@ApiOperation(
