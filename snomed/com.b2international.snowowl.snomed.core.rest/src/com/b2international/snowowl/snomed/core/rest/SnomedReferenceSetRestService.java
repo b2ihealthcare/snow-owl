@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.ExtendedLocale;
@@ -325,6 +324,6 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	}
 	
 	private URI getRefSetLocationURI(String branchPath, String refSetId) {
-		return linkTo(SnomedReferenceSetRestService.class, branchPath).slash(refSetId).toUri();
+		return MvcUriComponentsBuilder.fromController(SnomedReferenceSetRestService.class).pathSegment(branchPath, refSetId).build().toUri();
 	}
 }

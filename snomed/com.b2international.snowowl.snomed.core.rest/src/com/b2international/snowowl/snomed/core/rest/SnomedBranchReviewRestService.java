@@ -15,11 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
-import java.net.URI;
-
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.validation.ApiValidation;
@@ -74,7 +71,7 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
 		ApiValidation.checkInput(request);
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewRestService.class);
+		final UriComponentsBuilder linkTo = MvcUriComponentsBuilder.fromController(SnomedBranchReviewRestService.class);
 		RepositoryRequests
 			.reviews()
 			.prepareCreate()
@@ -83,7 +80,7 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 			.build(repositoryId)
 			.execute(getBus())
 			.then(new Procedure<Review>() { @Override protected void doApply(final Review review) {
-				result.setResult(Responses.created(getLocationHeader(linkTo, review)).build());
+				result.setResult(Responses.created(linkTo.pathSegment(review.id()).build().toUri()).build());
 			}})
 			.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
 				result.setErrorResult(t);
@@ -146,7 +143,4 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 				Responses.noContent().build());
 	}
 
-	private URI getLocationHeader(ControllerLinkBuilder linkBuilder, final Review review) {
-		return linkBuilder.slash(review.id()).toUri();
-	}
 }

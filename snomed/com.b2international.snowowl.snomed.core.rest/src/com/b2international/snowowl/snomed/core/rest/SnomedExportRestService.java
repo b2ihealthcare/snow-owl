@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.validation.ApiValidation;
@@ -281,7 +280,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	}
 
 	private URI getExportRunURI(UUID exportId) {
-		return linkTo(methodOn(SnomedExportRestService.class).getExport(exportId)).toUri();
+		return MvcUriComponentsBuilder.fromMethodName(SnomedExportRestService.class, "getExport", exportId).pathSegment(exportId.toString()).build().toUri();
 	}
 	
 	/**

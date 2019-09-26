@@ -22,7 +22,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import java.util.Collection;
 import java.util.UUID;
 
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
@@ -87,8 +87,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
-		ControllerLinkBuilder linkBuilder = ControllerLinkBuilder.linkTo(FhirValueSetRestService.class);
-		String uri = linkBuilder.toUri().toString();
+		String uri = MvcUriComponentsBuilder.fromController(FhirValueSetRestService.class).build().toString();
 		
 		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
 			.type(BundleType.SEARCHSET)

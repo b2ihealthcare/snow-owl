@@ -14,7 +14,6 @@
 	<properties>
 		<spring.version>5.1.9.RELEASE</spring.version>
 		<spring.security.version>5.1.6.RELEASE</spring.security.version>
-		<spring.hateoas.version>0.25.2.RELEASE</spring.hateoas.version>
 		<springfox.version>2.9.2</springfox.version>
 	</properties>
 
@@ -48,12 +47,6 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-web</artifactId>
 			<version>${spring.security.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
-			<version>${spring.hateoas.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -103,7 +96,6 @@
 								spring-context,
 								spring-core,
 								spring-expression,
-								spring-hateoas,
 								spring-plugin-core,
 								spring-plugin-metadata,
 								spring-security-config,

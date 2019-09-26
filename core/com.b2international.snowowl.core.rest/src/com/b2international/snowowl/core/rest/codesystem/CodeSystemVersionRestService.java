@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
-
 import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -115,6 +113,6 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 	}
 
 	private URI getVersionURI(String shortName, String version) {
-		return linkTo(methodOn(CodeSystemVersionRestService.class).getCodeSystemVersionByShortNameAndVersionId(shortName, version)).toUri();
+		return MvcUriComponentsBuilder.fromMethodName(CodeSystemVersionRestService.class, "getCodeSystemVersionByShortNameAndVersionId", shortName, version).build().toUri();
 	}
 }

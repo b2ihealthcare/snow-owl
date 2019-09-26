@@ -15,17 +15,16 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
 import java.net.URI;
 import java.util.List;
 
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.validation.ApiValidation;
@@ -139,8 +138,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		
 		ApiValidation.checkInput(request);
 		
-		final ControllerLinkBuilder linkBuilder = linkTo(SnomedClassificationRestService.class)
-				.slash("classifications");
+		final UriComponentsBuilder linkTo = MvcUriComponentsBuilder.fromController(SnomedClassificationRestService.class);
 		
 		return DeferredResults.wrap(ClassificationRequests.prepareCreateClassification()
 				.setReasonerId(request.getReasonerId())
@@ -148,7 +146,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
 				.execute(getBus())
 				.then(id -> {
-					final URI resourceUri = linkBuilder.slash(id).toUri();
+					final URI resourceUri = linkTo.pathSegment(id).build().toUri();
 					return Responses.created(resourceUri).build();
 				}));
 	}

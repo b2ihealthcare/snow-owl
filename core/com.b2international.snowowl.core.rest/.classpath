@@ -14,7 +14,6 @@
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-context-5.1.9.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-core-5.1.9.RELEASE.jar" sourcepath="C:/Users/mark/.sourceattacher/spring-core-5.1.9.RELEASE-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-expression-5.1.9.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-hateoas-0.25.2.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-plugin-core-1.2.0.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-plugin-metadata-1.2.0.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-config-5.1.6.RELEASE.jar"/>

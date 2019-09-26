@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.core.rest.validation;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
-import java.net.URI;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -26,12 +23,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.RepositoryInfo;
@@ -155,9 +152,6 @@ public class ValidationRestService extends AbstractRestService {
 			deleteValidationJobPromise = Promise.immediate(Boolean.TRUE);
 		}
 		
-		final ControllerLinkBuilder linkBuilder = linkTo(ValidationRestService.class)
-				.slash("validations");
-		
 		deleteValidationJobPromise.getSync();
 		
 		final ValidateRequestBuilder validateRequestBuilder = ValidationRequests
@@ -177,8 +171,8 @@ public class ValidationRestService extends AbstractRestService {
 			.execute(getBus())
 			.getSync();
 		final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
-		final URI responseURI = linkBuilder.slash(encodedId).toUri();
-		return Responses.created(responseURI).build();
+		
+		return Responses.created(MvcUriComponentsBuilder.fromController(ValidationRestService.class).pathSegment(encodedId).build().toUri()).build();
 	}
 	
 	@ApiOperation(

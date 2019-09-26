@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
 import java.net.URI;
 import java.util.Collections;
 import java.util.UUID;
@@ -25,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -99,7 +98,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 			.buildAsync()
 			.execute(getBus());
 		
-		final URI linkUri = linkTo(SnomedBranchMergingRestService.class).slash("merges").slash(jobId).toUri();
+		final URI linkUri = MvcUriComponentsBuilder.fromController(SnomedBranchMergingRestService.class).pathSegment(jobId).build().toUri();
 		return Responses.accepted(linkUri).build();
 	}
 	

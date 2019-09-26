@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
 import java.net.URI;
 import java.util.List;
 
@@ -25,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.branch.Branch;
@@ -218,7 +217,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 	}
 	
 	private URI getBranchLocationHeader(String branchPath) {
-		return linkTo(SnomedBranchingRestService.class).slash(branchPath).toUri();
+		return MvcUriComponentsBuilder.fromController(SnomedBranchingRestService.class).pathSegment(branchPath).build().toUri();
 	}
 	
 }

@@ -16,8 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
@@ -87,7 +86,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 			final SnomedImportRestConfiguration importConfiguration) {
 
 		final UUID importId = delegate.create(importConfiguration.toConfig());
-		return Responses.created(linkTo(methodOn(SnomedImportRestService.class).getImportDetails(importId)).toUri()).build();
+		return Responses.created(MvcUriComponentsBuilder.fromMethodName(SnomedImportRestService.class, "getImportDetails", importId).pathSegment(importId.toString()).build().toUri()).build();
 	}
 
 	@ApiOperation(
