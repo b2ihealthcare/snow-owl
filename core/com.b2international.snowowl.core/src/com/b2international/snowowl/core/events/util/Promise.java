@@ -281,7 +281,10 @@ public final class Promise<T> extends Observable<T> {
 	 */
 	@Beta
 	public static Promise<List<Object>> all(final Collection<? extends Promise<?>> promises) {
-		return Promise.wrap(Futures.allAsList(promises.stream().map(p -> p.delegate).collect(Collectors.toList())));
+		return Promise.wrap(Futures.allAsList(promises.stream().map(p -> p.delegate).collect(Collectors.toList())))
+				.then(responses -> {
+					return responses.stream().map(Response::getBody).collect(Collectors.toList());
+				});
 	}
 	
 	/**
@@ -291,7 +294,10 @@ public final class Promise<T> extends Observable<T> {
 	 */
 	@Beta
 	public static Promise<List<Object>> all(final Promise<?>...promises) {
-		return Promise.wrap(Futures.allAsList(Stream.of(promises).map(p -> p.delegate).collect(Collectors.toList())));
+		return Promise.wrap(Futures.allAsList(Stream.of(promises).map(p -> p.delegate).collect(Collectors.toList())))
+				.then(responses -> {
+					return responses.stream().map(Response::getBody).collect(Collectors.toList());
+				});
 	}
 	
 	/**
