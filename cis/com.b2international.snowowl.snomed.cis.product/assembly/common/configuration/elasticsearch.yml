@@ -1,2 +1,2 @@
-# Configure the embedded Elasticsearch instance here
-# reindex.remote.whitelist: <remove_snowowl_instances>
+# Configure the embedded Snow Owl Elasticsearch instances here, in the form of <host>:9200
+# reindex.remote.whitelist: <snowowl_instances_come_here>
