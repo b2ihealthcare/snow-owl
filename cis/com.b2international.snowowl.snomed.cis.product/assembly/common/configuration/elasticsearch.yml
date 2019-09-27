@@ -1,0 +1,2 @@
+# Configure the embedded Elasticsearch instance here
+# reindex.remote.whitelist: <remove_snowowl_instances>
