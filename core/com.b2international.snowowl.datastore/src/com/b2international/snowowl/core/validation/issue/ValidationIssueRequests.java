@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.Set;
+
 /**
  * @since 6.0
  */
@@ -28,6 +30,10 @@ public enum ValidationIssueRequests {
 	
 	public ValidationIssueSearchRequestBuilder prepareSearch() {
 		return new ValidationIssueSearchRequestBuilder();
+	}
+	
+	public ValidationIssueDeleteRequestBuilder prepareDelete(Set<String> issueIds) {
+		return new ValidationIssueDeleteRequestBuilder(issueIds);
 	}
 	
 }
