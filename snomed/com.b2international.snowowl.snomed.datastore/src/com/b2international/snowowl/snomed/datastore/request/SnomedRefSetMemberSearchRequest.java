@@ -179,6 +179,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_GROUPED)) {
 				queryBuilder.filter(grouped(propsFilter.getBoolean(SnomedRf2Headers.FIELD_MRCM_GROUPED)));
 			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
+				queryBuilder.filter(Expressions.exactMatch(SnomedRf2Headers.FIELD_OWL_EXPRESSION, propsFilter.getString(SnomedRf2Headers.FIELD_OWL_EXPRESSION)));
+			}
 			if (propKeys.remove(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID)) {
 				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRefSetMemberSearchRequestBuilder.OWL_EXPRESSION_CONCEPTID, String.class), SnomedRefSetMemberIndexEntry.Expressions::owlExpressionConcept);
 			}
