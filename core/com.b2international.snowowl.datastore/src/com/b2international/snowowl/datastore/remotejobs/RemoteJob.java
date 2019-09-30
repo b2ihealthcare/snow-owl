@@ -104,7 +104,7 @@ public final class RemoteJob extends Job {
 			status = Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
 			return status;
 		} finally {
-			final int statusCode = status.getCode();
+			final int statusCode = status.getSeverity();
 			// XXX: Don't delete remote jobs with errors
 			if (autoClean && IStatus.ERROR != statusCode) {
 				cleanUp(context);
