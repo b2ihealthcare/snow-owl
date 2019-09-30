@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,21 +45,25 @@ public final class RemoteJob extends Job {
 	private final String id;
 	private final ServiceProvider context;
 	private final Request<ServiceProvider, ?> request;
+	private final boolean autoClean;
 	
 	private String response;
 	private String user;
+	private IStatus status;
 
 	public RemoteJob(
 			final String id, 
 			final String description, 
 			final String user, 
 			final ServiceProvider context, 
-			final Request<ServiceProvider, ?> request) {
+			final Request<ServiceProvider, ?> request,
+			final boolean autoClean) {
 		super(description);
 		this.id = id;
 		this.user = user;
 		this.context = context;
 		this.request = request;
+		this.autoClean = autoClean;
 	}
 	
 	@Override
@@ -80,16 +85,30 @@ public final class RemoteJob extends Job {
 					this.response = toJson(mapper, response);
 				}
 			}
+			final IStatus requestStatus = (IStatus) getProperty(REQUEST_STATUS);
+			if (requestStatus == null) {
+				status = Statuses.ok();
+			} else {
+				status = requestStatus;
+			}
 			
-			IStatus status = (IStatus) getProperty(REQUEST_STATUS);
-			return (status != null) ? status : Statuses.ok();
+			return status;
 		} catch (OperationCanceledException e) {
-			return Statuses.cancel();
+			status = Statuses.cancel();
+			return status;
 		} catch (Throwable e) {
 			if (e instanceof ApiException) {
 				this.response = toJson(mapper, ((ApiException) e).toApiError());
 			}
-			return Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
+			
+			status = Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
+			return status;
+		} finally {
+			final int statusCode = status.getCode();
+			// XXX: Don't delete remote jobs with errors
+			if (autoClean && IStatus.ERROR != statusCode) {
+				cleanUp(context);
+			}
 		}
 	}
 
@@ -99,6 +118,10 @@ public final class RemoteJob extends Job {
 		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
 		}
+	}
+	
+	private void cleanUp(ServiceProvider context) {
+		context.service(RemoteJobTracker.class).requestDeletes(Collections.singleton(id));
 	}
 
 	@Override
