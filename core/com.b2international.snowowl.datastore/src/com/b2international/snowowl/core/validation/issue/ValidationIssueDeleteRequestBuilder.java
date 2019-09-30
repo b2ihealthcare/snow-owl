@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
-import java.util.Set;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -29,15 +27,24 @@ public final class ValidationIssueDeleteRequestBuilder
 	extends BaseRequestBuilder<ValidationIssueDeleteRequestBuilder, ServiceProvider, Boolean>
 	implements SystemRequestBuilder<Boolean> {
 	
-	private final Set<String> issueIds;
+	private String branch;
+	private String toolingId;
 	
-	ValidationIssueDeleteRequestBuilder(Set<String> issueIds) {
-		this.issueIds = issueIds;
+	ValidationIssueDeleteRequestBuilder() {}
+	
+	public ValidationIssueDeleteRequestBuilder setBranch(String branch) {
+		this.branch = branch;
+		return getSelf();
+	}
+	
+	public ValidationIssueDeleteRequestBuilder setToolingId(String toolingId) {
+		this.toolingId = toolingId;
+		return getSelf();
 	}
 	
 	@Override
 	protected Request<ServiceProvider, Boolean> doBuild() {
-		return new DeleteIssuesRequest(issueIds);
+		return new ValidationIssueDeleteRequest(branch, toolingId);
 	}
 	
 }

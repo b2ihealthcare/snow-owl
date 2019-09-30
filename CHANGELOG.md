@@ -1,6 +1,29 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.20.0
+
+### API
+- Expose special member property based filtering over REST API (5fde911)
+
+### CIS
+- Add data synchronization script and migration guide to CIS product (d645ce1, 5f01750)
+
+### Scripts
+- New auto RF2 import script to automatically import RF2 files via REST API (#398)
+
+### Validation
+- Supporting deletion of validation issues by tooling and branch (db9b492)
+- Add published/unpublished filtering to validation issues (#391) 
+- Properly filter unpublished members in rule `snomed-common-4` (#394)
+- Add new description character length validation rule (#400)
+- Handle reference sets properly in validation issue detail expansion (#402)
+
+### Bugs/Improvements
+- Revert fix `[api] inactivate all language members when inactivating a SNOMED CT Description`
+- Allow duplicate relationships in DSV export (#393)
+- Handle descriptions during equivalent concept merging during classification (#392)
+
 ## 6.19.0
 
 ### Bugs/Improvements
