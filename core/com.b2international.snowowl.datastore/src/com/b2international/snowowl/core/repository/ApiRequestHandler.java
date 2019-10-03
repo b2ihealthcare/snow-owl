@@ -21,10 +21,12 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.RequestHeaders;
+import com.b2international.snowowl.core.events.util.ResponseHeaders;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
+import com.b2international.snowowl.core.rate.RateLimitingRequest;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
-import com.b2international.snowowl.identity.IdentityProvider;
 
 /**
  * Generic Request handler class that handles all requests by executing them immediately.
@@ -46,15 +48,25 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 		try {
 			final Request<ServiceProvider, ?> req = message.body(Request.class, classLoader);
 			
-			message.reply(
-				// monitor each request execution
-				new MonitoredRequest<>(
-					// authorize each request execution
-					new AuthorizedRequest<>(message.headers(),
-						// additional middlewares go here
+			final ResponseHeaders responseHeaders = new ResponseHeaders();
+			final ServiceProvider executionContext = context.inject()
+					.bind(RequestHeaders.class, new RequestHeaders(message.headers()))
+					.bind(ResponseHeaders.class, responseHeaders)
+					.build();
+			
+			// monitor each request execution
+			final Object body = new MonitoredRequest<>(
+				// authorize each request execution
+				new AuthorizedRequest<>(
+					// rate limit all requests
+					new RateLimitingRequest<>(
+						// actual request
 						req
 					)
-				).execute(context));
+				)
+			).execute(executionContext);
+					
+			message.reply(body, responseHeaders.headers());
 		} catch (WrappedException e) {
 			message.fail(e.getCause());
 		} catch (ApiException e) {

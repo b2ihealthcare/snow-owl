@@ -95,6 +95,14 @@ public interface IMessage {
 	 * @param message
 	 */
 	void reply(Object message);
+	
+	/**
+	 * Replies with the given message and sets the given headers as response headers
+	 *
+	 * @param message
+	 * @param headers
+	 */
+	void reply(Object message, Map<String, String> headers);
 
 	/**
 	 * Returns a failure message to the replyAddress.

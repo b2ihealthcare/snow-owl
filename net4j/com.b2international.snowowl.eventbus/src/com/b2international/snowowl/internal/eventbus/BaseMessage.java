@@ -133,8 +133,13 @@ import com.google.common.collect.ImmutableMap;
 
 	@Override
 	public void reply(Object message) {
+		reply(message, Collections.emptyMap());
+	}
+	
+	@Override
+	public void reply(Object message, Map<String, String> headers) {
 		if (message != null) {
-			sendReply(new BaseMessage(replyAddress, message, IMessage.REPLY_TAG, Collections.emptyMap()));
+			sendReply(new BaseMessage(replyAddress, message, IMessage.REPLY_TAG, headers));
 		}
 	}
 

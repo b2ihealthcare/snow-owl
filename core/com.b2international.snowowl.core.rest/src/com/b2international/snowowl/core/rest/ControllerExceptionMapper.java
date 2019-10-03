@@ -25,15 +25,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.b2international.commons.exceptions.ApiError;
-import com.b2international.commons.exceptions.ApiErrorException;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.ConflictException;
-import com.b2international.commons.exceptions.ForbiddenException;
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.exceptions.NotImplementedException;
-import com.b2international.commons.exceptions.RequestTimeoutException;
-import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.commons.exceptions.*;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
@@ -155,6 +147,14 @@ public class ControllerExceptionMapper {
 			LOG.info("Conflict with cause", ex);
 		}
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.CONFLICT.value());
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+	public @ResponseBody ResponseEntity<RestApiError> handle(final TooManyRequestsException ex) {
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+				.header("X-Rate-Limit-Retry-After-Seconds", Long.toString(ex.getSecondsToWait()))
+				.body(RestApiError.of(ex.toApiError()).build(HttpStatus.TOO_MANY_REQUESTS.value()));
 	}
 	
 }

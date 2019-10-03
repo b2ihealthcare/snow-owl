@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.authorization;
 
 import java.util.Collection;
-import java.util.Map;
 
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.UnauthorizedException;
@@ -24,6 +23,7 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.User;
@@ -39,16 +39,14 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 
 	public static final String AUTHORIZATION_HEADER = "Authorization";
 	
-	private final Map<String, String> headers;
-
-	public AuthorizedRequest(final Map<String, String> headers, Request<ServiceProvider, R> next) {
+	public AuthorizedRequest(Request<ServiceProvider, R> next) {
 		super(next);
-		this.headers = headers;
 	}
 
 	@Override
 	public R execute(ServiceProvider context) {
-		final String authorizationToken = headers.get(AUTHORIZATION_HEADER);
+		final RequestHeaders requestHeaders = context.service(RequestHeaders.class);
+		final String authorizationToken = requestHeaders.header(AUTHORIZATION_HEADER);
 
 		final IdentityProvider identityProvider = context.service(IdentityProvider.class);
 		final Collection<Request<?, ?>> requests = getNestedRequests();
@@ -93,7 +91,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 		// inject the User for later access
 		return next(context.inject()
 				.bind(User.class, user)
-				.bind(IEventBus.class, new AuthorizedEventBus(context.service(IEventBus.class), headers))
+				.bind(IEventBus.class, new AuthorizedEventBus(context.service(IEventBus.class), requestHeaders.headers()))
 				.build());
 	}
 	
