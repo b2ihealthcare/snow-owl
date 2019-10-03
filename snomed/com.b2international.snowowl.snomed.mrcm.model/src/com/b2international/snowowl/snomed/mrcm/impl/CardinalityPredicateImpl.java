@@ -62,6 +62,7 @@ public class CardinalityPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public int getMinCardinality() {
 		return (Integer)eGet(MrcmPackage.Literals.CARDINALITY_PREDICATE__MIN_CARDINALITY, true);
 	}
@@ -71,6 +72,7 @@ public class CardinalityPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMinCardinality(int newMinCardinality) {
 		eSet(MrcmPackage.Literals.CARDINALITY_PREDICATE__MIN_CARDINALITY, newMinCardinality);
 	}
@@ -80,6 +82,7 @@ public class CardinalityPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public int getMaxCardinality() {
 		return (Integer)eGet(MrcmPackage.Literals.CARDINALITY_PREDICATE__MAX_CARDINALITY, true);
 	}
@@ -89,6 +92,7 @@ public class CardinalityPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setMaxCardinality(int newMaxCardinality) {
 		eSet(MrcmPackage.Literals.CARDINALITY_PREDICATE__MAX_CARDINALITY, newMaxCardinality);
 	}
@@ -98,6 +102,7 @@ public class CardinalityPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public GroupRule getGroupRule() {
 		return (GroupRule)eGet(MrcmPackage.Literals.CARDINALITY_PREDICATE__GROUP_RULE, true);
 	}
@@ -107,6 +112,7 @@ public class CardinalityPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setGroupRule(GroupRule newGroupRule) {
 		eSet(MrcmPackage.Literals.CARDINALITY_PREDICATE__GROUP_RULE, newGroupRule);
 	}
@@ -116,6 +122,7 @@ public class CardinalityPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConceptModelPredicate getPredicate() {
 		return (ConceptModelPredicate)eGet(MrcmPackage.Literals.CARDINALITY_PREDICATE__PREDICATE, true);
 	}
@@ -125,6 +132,7 @@ public class CardinalityPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setPredicate(ConceptModelPredicate newPredicate) {
 		eSet(MrcmPackage.Literals.CARDINALITY_PREDICATE__PREDICATE, newPredicate);
 	}

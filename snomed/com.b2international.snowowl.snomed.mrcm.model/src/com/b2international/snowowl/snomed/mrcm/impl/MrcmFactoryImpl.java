@@ -86,6 +86,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 			case MrcmPackage.REFERENCE_SET_CONCEPT_SET_DEFINITION: return (EObject)createReferenceSetConceptSetDefinition();
 			case MrcmPackage.RELATIONSHIP_CONCEPT_SET_DEFINITION: return (EObject)createRelationshipConceptSetDefinition();
 			case MrcmPackage.ATTRIBUTE_CONSTRAINT: return (EObject)createAttributeConstraint();
+			case MrcmPackage.SINGLETON_CONCEPT_SET_DEFINITION: return (EObject)createSingletonConceptSetDefinition();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -146,6 +147,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConceptModel createConceptModel() {
 		ConceptModelImpl conceptModel = new ConceptModelImpl();
 		return conceptModel;
@@ -156,6 +158,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConceptModelComponent createConceptModelComponent() {
 		ConceptModelComponentImpl conceptModelComponent = new ConceptModelComponentImpl();
 		return conceptModelComponent;
@@ -166,6 +169,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public CardinalityPredicate createCardinalityPredicate() {
 		CardinalityPredicateImpl cardinalityPredicate = new CardinalityPredicateImpl();
 		return cardinalityPredicate;
@@ -176,6 +180,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConcreteDomainElementPredicate createConcreteDomainElementPredicate() {
 		ConcreteDomainElementPredicateImpl concreteDomainElementPredicate = new ConcreteDomainElementPredicateImpl();
 		return concreteDomainElementPredicate;
@@ -186,6 +191,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public DependencyPredicate createDependencyPredicate() {
 		DependencyPredicateImpl dependencyPredicate = new DependencyPredicateImpl();
 		return dependencyPredicate;
@@ -196,6 +202,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public DescriptionPredicate createDescriptionPredicate() {
 		DescriptionPredicateImpl descriptionPredicate = new DescriptionPredicateImpl();
 		return descriptionPredicate;
@@ -206,6 +213,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public RelationshipPredicate createRelationshipPredicate() {
 		RelationshipPredicateImpl relationshipPredicate = new RelationshipPredicateImpl();
 		return relationshipPredicate;
@@ -216,6 +224,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public CompositeConceptSetDefinition createCompositeConceptSetDefinition() {
 		CompositeConceptSetDefinitionImpl compositeConceptSetDefinition = new CompositeConceptSetDefinitionImpl();
 		return compositeConceptSetDefinition;
@@ -226,6 +235,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EnumeratedConceptSetDefinition createEnumeratedConceptSetDefinition() {
 		EnumeratedConceptSetDefinitionImpl enumeratedConceptSetDefinition = new EnumeratedConceptSetDefinitionImpl();
 		return enumeratedConceptSetDefinition;
@@ -236,6 +246,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public HierarchyConceptSetDefinition createHierarchyConceptSetDefinition() {
 		HierarchyConceptSetDefinitionImpl hierarchyConceptSetDefinition = new HierarchyConceptSetDefinitionImpl();
 		return hierarchyConceptSetDefinition;
@@ -246,6 +257,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ReferenceSetConceptSetDefinition createReferenceSetConceptSetDefinition() {
 		ReferenceSetConceptSetDefinitionImpl referenceSetConceptSetDefinition = new ReferenceSetConceptSetDefinitionImpl();
 		return referenceSetConceptSetDefinition;
@@ -256,6 +268,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public RelationshipConceptSetDefinition createRelationshipConceptSetDefinition() {
 		RelationshipConceptSetDefinitionImpl relationshipConceptSetDefinition = new RelationshipConceptSetDefinitionImpl();
 		return relationshipConceptSetDefinition;
@@ -266,9 +279,21 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public AttributeConstraint createAttributeConstraint() {
 		AttributeConstraintImpl attributeConstraint = new AttributeConstraintImpl();
 		return attributeConstraint;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public SingletonConceptSetDefinition createSingletonConceptSetDefinition() {
+		SingletonConceptSetDefinitionImpl singletonConceptSetDefinition = new SingletonConceptSetDefinitionImpl();
+		return singletonConceptSetDefinition;
 	}
 
 	/**
@@ -394,6 +419,7 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public MrcmPackage getMrcmPackage() {
 		return (MrcmPackage)getEPackage();
 	}

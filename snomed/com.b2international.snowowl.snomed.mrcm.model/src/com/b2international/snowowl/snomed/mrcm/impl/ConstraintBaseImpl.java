@@ -60,6 +60,7 @@ public abstract class ConstraintBaseImpl extends ConceptModelComponentImpl imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConstraintStrength getStrength() {
 		return (ConstraintStrength)eGet(MrcmPackage.Literals.CONSTRAINT_BASE__STRENGTH, true);
 	}
@@ -69,6 +70,7 @@ public abstract class ConstraintBaseImpl extends ConceptModelComponentImpl imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setStrength(ConstraintStrength newStrength) {
 		eSet(MrcmPackage.Literals.CONSTRAINT_BASE__STRENGTH, newStrength);
 	}
@@ -78,6 +80,7 @@ public abstract class ConstraintBaseImpl extends ConceptModelComponentImpl imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getValidationMessage() {
 		return (String)eGet(MrcmPackage.Literals.CONSTRAINT_BASE__VALIDATION_MESSAGE, true);
 	}
@@ -87,6 +90,7 @@ public abstract class ConstraintBaseImpl extends ConceptModelComponentImpl imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setValidationMessage(String newValidationMessage) {
 		eSet(MrcmPackage.Literals.CONSTRAINT_BASE__VALIDATION_MESSAGE, newValidationMessage);
 	}
@@ -96,6 +100,7 @@ public abstract class ConstraintBaseImpl extends ConceptModelComponentImpl imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getDescription() {
 		return (String)eGet(MrcmPackage.Literals.CONSTRAINT_BASE__DESCRIPTION, true);
 	}
@@ -105,6 +110,7 @@ public abstract class ConstraintBaseImpl extends ConceptModelComponentImpl imple
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDescription(String newDescription) {
 		eSet(MrcmPackage.Literals.CONSTRAINT_BASE__DESCRIPTION, newDescription);
 	}

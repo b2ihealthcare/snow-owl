@@ -73,6 +73,7 @@ public class ConceptModelImpl extends CDOObjectImpl implements ConceptModel {
 	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public EList<ConstraintBase> getConstraints() {
 		return (EList<ConstraintBase>)eGet(MrcmPackage.Literals.CONCEPT_MODEL__CONSTRAINTS, true);
 	}

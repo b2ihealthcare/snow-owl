@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,31 @@
  */
 package com.b2international.snowowl.snomed.mrcm.impl;
 
-import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
-
-import org.eclipse.emf.common.util.EList;
+import com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition;
 
 import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Enumerated Concept Set Definition</b></em>'.
+ * An implementation of the model object '<em><b>Singleton Concept Set Definition</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.mrcm.impl.EnumeratedConceptSetDefinitionImpl#getConceptIds <em>Concept Ids</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.mrcm.impl.SingletonConceptSetDefinitionImpl#getConceptId <em>Concept Id</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class EnumeratedConceptSetDefinitionImpl extends ConceptSetDefinitionImpl implements EnumeratedConceptSetDefinition {
+public class SingletonConceptSetDefinitionImpl extends ConceptSetDefinitionImpl implements SingletonConceptSetDefinition {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	protected EnumeratedConceptSetDefinitionImpl() {
+	protected SingletonConceptSetDefinitionImpl() {
 		super();
 	}
 
@@ -51,7 +49,7 @@ public class EnumeratedConceptSetDefinitionImpl extends ConceptSetDefinitionImpl
 	 */
 	@Override
 	protected EClass eStaticClass() {
-		return MrcmPackage.Literals.ENUMERATED_CONCEPT_SET_DEFINITION;
+		return MrcmPackage.Literals.SINGLETON_CONCEPT_SET_DEFINITION;
 	}
 
 	/**
@@ -59,10 +57,19 @@ public class EnumeratedConceptSetDefinitionImpl extends ConceptSetDefinitionImpl
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public EList<String> getConceptIds() {
-		return (EList<String>)eGet(MrcmPackage.Literals.ENUMERATED_CONCEPT_SET_DEFINITION__CONCEPT_IDS, true);
+	public String getConceptId() {
+		return (String)eGet(MrcmPackage.Literals.SINGLETON_CONCEPT_SET_DEFINITION__CONCEPT_ID, true);
 	}
 
-} //EnumeratedConceptSetDefinitionImpl
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public void setConceptId(String newConceptId) {
+		eSet(MrcmPackage.Literals.SINGLETON_CONCEPT_SET_DEFINITION__CONCEPT_ID, newConceptId);
+	}
+
+} //SingletonConceptSetDefinitionImpl

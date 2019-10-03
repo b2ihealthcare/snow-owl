@@ -296,4 +296,11 @@
     </eLiterals>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="DataType" instanceClassName="com.b2international.snowowl.snomed.snomedrefset.DataType"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SingletonConceptSetDefinition" eSuperTypes="#//ConceptSetDefinition">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Concept set definition for a single concept."/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="conceptId" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
 </ecore:EPackage>

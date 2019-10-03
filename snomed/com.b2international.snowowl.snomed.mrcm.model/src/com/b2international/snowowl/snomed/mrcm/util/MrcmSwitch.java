@@ -199,6 +199,14 @@ public class MrcmSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case MrcmPackage.SINGLETON_CONCEPT_SET_DEFINITION: {
+				SingletonConceptSetDefinition singletonConceptSetDefinition = (SingletonConceptSetDefinition)theEObject;
+				T result = caseSingletonConceptSetDefinition(singletonConceptSetDefinition);
+				if (result == null) result = caseConceptSetDefinition(singletonConceptSetDefinition);
+				if (result == null) result = caseConceptModelComponent(singletonConceptSetDefinition);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			default: return defaultCase(theEObject);
 		}
 	}
@@ -440,6 +448,21 @@ public class MrcmSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseAttributeConstraint(AttributeConstraint object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Singleton Concept Set Definition</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Singleton Concept Set Definition</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSingletonConceptSetDefinition(SingletonConceptSetDefinition object) {
 		return null;
 	}
 

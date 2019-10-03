@@ -144,6 +144,10 @@ public class MrcmAdapterFactory extends AdapterFactoryImpl {
 				return createAttributeConstraintAdapter();
 			}
 			@Override
+			public Adapter caseSingletonConceptSetDefinition(SingletonConceptSetDefinition object) {
+				return createSingletonConceptSetDefinitionAdapter();
+			}
+			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -384,6 +388,20 @@ public class MrcmAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createAttributeConstraintAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition <em>Singleton Concept Set Definition</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition
+	 * @generated
+	 */
+	public Adapter createSingletonConceptSetDefinitionAdapter() {
 		return null;
 	}
 

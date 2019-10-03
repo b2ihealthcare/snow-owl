@@ -62,6 +62,7 @@ public class AttributeConstraintImpl extends ConstraintBaseImpl implements Attri
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConstraintForm getForm() {
 		return (ConstraintForm)eGet(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT__FORM, true);
 	}
@@ -71,6 +72,7 @@ public class AttributeConstraintImpl extends ConstraintBaseImpl implements Attri
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setForm(ConstraintForm newForm) {
 		eSet(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT__FORM, newForm);
 	}
@@ -80,6 +82,7 @@ public class AttributeConstraintImpl extends ConstraintBaseImpl implements Attri
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConceptSetDefinition getDomain() {
 		return (ConceptSetDefinition)eGet(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT__DOMAIN, true);
 	}
@@ -89,6 +92,7 @@ public class AttributeConstraintImpl extends ConstraintBaseImpl implements Attri
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDomain(ConceptSetDefinition newDomain) {
 		eSet(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT__DOMAIN, newDomain);
 	}
@@ -98,6 +102,7 @@ public class AttributeConstraintImpl extends ConstraintBaseImpl implements Attri
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConceptModelPredicate getPredicate() {
 		return (ConceptModelPredicate)eGet(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT__PREDICATE, true);
 	}
@@ -107,6 +112,7 @@ public class AttributeConstraintImpl extends ConstraintBaseImpl implements Attri
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setPredicate(ConceptModelPredicate newPredicate) {
 		eSet(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT__PREDICATE, newPredicate);
 	}

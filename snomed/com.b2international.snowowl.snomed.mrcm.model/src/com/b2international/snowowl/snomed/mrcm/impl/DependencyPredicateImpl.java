@@ -65,6 +65,7 @@ public class DependencyPredicateImpl extends ConceptModelPredicateImpl implement
 	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public EList<ConceptModelPredicate> getChildren() {
 		return (EList<ConceptModelPredicate>)eGet(MrcmPackage.Literals.DEPENDENCY_PREDICATE__CHILDREN, true);
 	}
@@ -74,6 +75,7 @@ public class DependencyPredicateImpl extends ConceptModelPredicateImpl implement
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public DependencyOperator getOperator() {
 		return (DependencyOperator)eGet(MrcmPackage.Literals.DEPENDENCY_PREDICATE__OPERATOR, true);
 	}
@@ -83,6 +85,7 @@ public class DependencyPredicateImpl extends ConceptModelPredicateImpl implement
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setOperator(DependencyOperator newOperator) {
 		eSet(MrcmPackage.Literals.DEPENDENCY_PREDICATE__OPERATOR, newOperator);
 	}
@@ -92,6 +95,7 @@ public class DependencyPredicateImpl extends ConceptModelPredicateImpl implement
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public GroupRule getGroupRule() {
 		return (GroupRule)eGet(MrcmPackage.Literals.DEPENDENCY_PREDICATE__GROUP_RULE, true);
 	}
@@ -101,6 +105,7 @@ public class DependencyPredicateImpl extends ConceptModelPredicateImpl implement
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setGroupRule(GroupRule newGroupRule) {
 		eSet(MrcmPackage.Literals.DEPENDENCY_PREDICATE__GROUP_RULE, newGroupRule);
 	}

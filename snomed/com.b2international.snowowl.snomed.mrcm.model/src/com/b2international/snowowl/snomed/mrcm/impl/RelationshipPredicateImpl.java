@@ -60,6 +60,7 @@ public class RelationshipPredicateImpl extends ConceptModelPredicateImpl impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConceptSetDefinition getAttribute() {
 		return (ConceptSetDefinition)eGet(MrcmPackage.Literals.RELATIONSHIP_PREDICATE__ATTRIBUTE, true);
 	}
@@ -69,6 +70,7 @@ public class RelationshipPredicateImpl extends ConceptModelPredicateImpl impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setAttribute(ConceptSetDefinition newAttribute) {
 		eSet(MrcmPackage.Literals.RELATIONSHIP_PREDICATE__ATTRIBUTE, newAttribute);
 	}
@@ -78,6 +80,7 @@ public class RelationshipPredicateImpl extends ConceptModelPredicateImpl impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConceptSetDefinition getRange() {
 		return (ConceptSetDefinition)eGet(MrcmPackage.Literals.RELATIONSHIP_PREDICATE__RANGE, true);
 	}
@@ -87,6 +90,7 @@ public class RelationshipPredicateImpl extends ConceptModelPredicateImpl impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setRange(ConceptSetDefinition newRange) {
 		eSet(MrcmPackage.Literals.RELATIONSHIP_PREDICATE__RANGE, newRange);
 	}
@@ -96,6 +100,7 @@ public class RelationshipPredicateImpl extends ConceptModelPredicateImpl impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getCharacteristicTypeConceptId() {
 		return (String)eGet(MrcmPackage.Literals.RELATIONSHIP_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID, true);
 	}
@@ -105,6 +110,7 @@ public class RelationshipPredicateImpl extends ConceptModelPredicateImpl impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setCharacteristicTypeConceptId(String newCharacteristicTypeConceptId) {
 		eSet(MrcmPackage.Literals.RELATIONSHIP_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID, newCharacteristicTypeConceptId);
 	}

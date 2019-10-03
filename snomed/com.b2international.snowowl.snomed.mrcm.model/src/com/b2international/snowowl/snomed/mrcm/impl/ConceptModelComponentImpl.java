@@ -74,6 +74,7 @@ public class ConceptModelComponentImpl extends CDOObjectImpl implements ConceptM
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getUuid() {
 		return (String)eGet(MrcmPackage.Literals.CONCEPT_MODEL_COMPONENT__UUID, true);
 	}
@@ -83,6 +84,7 @@ public class ConceptModelComponentImpl extends CDOObjectImpl implements ConceptM
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setUuid(String newUuid) {
 		eSet(MrcmPackage.Literals.CONCEPT_MODEL_COMPONENT__UUID, newUuid);
 	}
@@ -92,6 +94,7 @@ public class ConceptModelComponentImpl extends CDOObjectImpl implements ConceptM
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean isActive() {
 		return (Boolean)eGet(MrcmPackage.Literals.CONCEPT_MODEL_COMPONENT__ACTIVE, true);
 	}
@@ -101,6 +104,7 @@ public class ConceptModelComponentImpl extends CDOObjectImpl implements ConceptM
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setActive(boolean newActive) {
 		eSet(MrcmPackage.Literals.CONCEPT_MODEL_COMPONENT__ACTIVE, newActive);
 	}
@@ -110,6 +114,7 @@ public class ConceptModelComponentImpl extends CDOObjectImpl implements ConceptM
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public Date getEffectiveTime() {
 		return (Date)eGet(MrcmPackage.Literals.CONCEPT_MODEL_COMPONENT__EFFECTIVE_TIME, true);
 	}
@@ -119,6 +124,7 @@ public class ConceptModelComponentImpl extends CDOObjectImpl implements ConceptM
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setEffectiveTime(Date newEffectiveTime) {
 		eSet(MrcmPackage.Literals.CONCEPT_MODEL_COMPONENT__EFFECTIVE_TIME, newEffectiveTime);
 	}
@@ -128,6 +134,7 @@ public class ConceptModelComponentImpl extends CDOObjectImpl implements ConceptM
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getAuthor() {
 		return (String)eGet(MrcmPackage.Literals.CONCEPT_MODEL_COMPONENT__AUTHOR, true);
 	}
@@ -137,6 +144,7 @@ public class ConceptModelComponentImpl extends CDOObjectImpl implements ConceptM
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setAuthor(String newAuthor) {
 		eSet(MrcmPackage.Literals.CONCEPT_MODEL_COMPONENT__AUTHOR, newAuthor);
 	}
