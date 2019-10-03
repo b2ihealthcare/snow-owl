@@ -15,6 +15,7 @@
  */
 package com.b2international.commons.exceptions;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -22,18 +23,30 @@ import java.util.Map;
  */
 public final class TooManyRequestsException extends ApiException {
 	
+	public final static long NO_SECONDS_TO_WAIT_AVAILABLE = -1L;
+	private final long secondsToWait;
+	
 	public TooManyRequestsException() {
+		this(-1L);
+	}
+	
+	public TooManyRequestsException(long secondsToWait) {
 		super("Too many requests");
+		this.secondsToWait = secondsToWait;
 	}
 
 	@Override
 	protected Integer getStatus() {
 		return 429;
 	}
-
-	@Override
-	protected Map<String, Object> getAdditionalInfo() {
-		return super.getAdditionalInfo();
+	
+	public long getSecondsToWait() {
+		return secondsToWait;
 	}
 	
+	@Override
+	protected Map<String, Object> getAdditionalInfo() {
+		return Collections.singletonMap("secondsToWait", getSecondsToWait());
+	}
+
 }

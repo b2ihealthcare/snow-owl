@@ -15,11 +15,33 @@
  */
 package com.b2international.snowowl.core.rate;
 
+import javax.validation.constraints.Min;
+
 /**
  * @since 7.2
  */
 public class ApiConfiguration {
 
-	private String rateLimit;
+	@Min(0)
+	private long overdraft = 0L;
+	
+	@Min(1)
+	private long refillRate = 1L;
+
+	public long getOverdraft() {
+		return overdraft;
+	}
+	
+	public void setOverdraft(long overdraft) {
+		this.overdraft = overdraft;
+	}
+	
+	public long getRefillRate() {
+		return refillRate;
+	}
+	
+	public void setRefillRate(long refillRate) {
+		this.refillRate = refillRate;
+	}
 	
 }

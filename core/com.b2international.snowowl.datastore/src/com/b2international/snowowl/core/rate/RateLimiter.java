@@ -15,52 +15,25 @@
  */
 package com.b2international.snowowl.core.rate;
 
-import java.time.Duration;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-
-import com.google.common.collect.MapMaker;
-
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
-import io.github.bucket4j.ConsumptionProbe;
-import io.github.bucket4j.Refill;
-
 /**
  * @since 7.2
  */
-public final class RateLimiter {
+@FunctionalInterface
+public interface RateLimiter {
 
-	private final ApiConfiguration configuration;
-	private final ConcurrentMap<String, Bucket> bucketByUser = new MapMaker().makeMap();
-
-	public RateLimiter(ApiConfiguration configuration) {
-		this.configuration = configuration;
-	}
+	RateLimitConsumption INF = new RateLimitConsumption(true, Integer.MAX_VALUE, 0);
+	
+	/**
+	 * No-operation rate limiter to always consume the incoming requests without rejecting any of them.
+	 */
+	RateLimiter NOOP = username -> INF;
 
 	/**
-	 * Consume 1 request
+	 * Consume 1 request from the pool of available requests associated for the user.
 	 * 
 	 * @param username
 	 * @return {@link RateLimitConsumption} state after the consumption
 	 */
-	public RateLimitConsumption consume(String username) {
-		Bucket bucket = bucketByUser.get(username);
-		if (bucket == null) {
-			bucket = createNewBucket();
-			bucketByUser.put(username, bucket);
-		}
-		
-		final ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
-		return new RateLimitConsumption(probe.isConsumed(), probe.getRemainingTokens(), TimeUnit.NANOSECONDS.toSeconds(probe.getNanosToWaitForRefill()));
-	}
-
-	private Bucket createNewBucket() {
-		long overdraft = 50;
-		Refill refill = Refill.greedy(10, Duration.ofSeconds(1));
-		Bandwidth limit = Bandwidth.classic(overdraft, refill);
-		return Bucket4j.builder().addLimit(limit).build();
-	}
-
+	RateLimitConsumption consume(String username);
+	
 }

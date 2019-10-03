@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.core.rate;
 
+import com.b2international.commons.exceptions.TooManyRequestsException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.ResponseHeaders;
 import com.b2international.snowowl.identity.domain.User;
 
 /**
@@ -36,11 +38,12 @@ public final class RateLimitingRequest<R> extends DelegatingRequest<ServiceProvi
 		if (user != User.SYSTEM) {
 			// rate limit only non-system user requests
 			final String username = user.getUsername();
-			RateLimitConsumption consumption = context.service(RateLimiter.class).consume(username);
+			final RateLimitConsumption consumption = context.service(RateLimiter.class).consume(username);
 			if (consumption.isConsumed()) {
-				// TODO set remaining header
+				context.service(ResponseHeaders.class)
+					.set("X-Rate-Limit-Remaining", Long.toString(consumption.getRemainingTokens()));
 			} else {
-				// TODO throw error and set wait time header
+				throw new TooManyRequestsException(consumption.getSecondsToWait());
 			}
 		}
 		
