@@ -29,7 +29,7 @@ public final class ResponseHeaders {
 	private Supplier<Map<String, String>> headers = Suppliers.memoize(() -> Maps.newHashMap());
 	
 	public ResponseHeaders set(String name, String value) {
-		this.headers.get().put(name, value);
+		this.headers().put(name, value);
 		return this;
 	}
 	
