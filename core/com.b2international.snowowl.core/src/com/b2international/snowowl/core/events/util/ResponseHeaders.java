@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.events.util;
 
 import java.util.Map;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 
 /**
@@ -24,21 +26,15 @@ import com.google.common.collect.Maps;
  */
 public final class ResponseHeaders {
 
-	private Map<String, String> headers;
+	private Supplier<Map<String, String>> headers = Suppliers.memoize(() -> Maps.newHashMap());
 	
 	public ResponseHeaders set(String name, String value) {
-		if (this.headers == null) {
-			this.headers = Maps.newHashMap();
-		}
-		this.headers.put(name, value);
+		this.headers.get().put(name, value);
 		return this;
 	}
 	
 	public Map<String, String> headers() {
-		if (headers == null) {
-			headers = Maps.newHashMap();
-		}
-		return headers;
+		return headers.get();
 	}
 	
 }
