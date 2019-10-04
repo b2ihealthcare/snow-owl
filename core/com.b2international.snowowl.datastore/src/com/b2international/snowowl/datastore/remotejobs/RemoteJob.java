@@ -45,12 +45,11 @@ public final class RemoteJob extends Job {
 	private final String id;
 	private final ServiceProvider context;
 	private final Request<ServiceProvider, ?> request;
-	private final boolean autoClean;
 	
 	private String response;
 	private String user;
-	private IStatus status;
-
+	private boolean autoClean;
+	
 	public RemoteJob(
 			final String id, 
 			final String description, 
@@ -85,28 +84,22 @@ public final class RemoteJob extends Job {
 					this.response = toJson(mapper, response);
 				}
 			}
-			final IStatus requestStatus = (IStatus) getProperty(REQUEST_STATUS);
-			if (requestStatus == null) {
-				status = Statuses.ok();
-			} else {
-				status = requestStatus;
-			}
 			
-			return status;
+			final IStatus status = (IStatus) getProperty(REQUEST_STATUS);
+			return (status != null) ? status : Statuses.ok();
 		} catch (OperationCanceledException e) {
-			status = Statuses.cancel();
-			return status;
+			return Statuses.cancel();
 		} catch (Throwable e) {
 			if (e instanceof ApiException) {
 				this.response = toJson(mapper, ((ApiException) e).toApiError());
 			}
 			
-			status = Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
-			return status;
-		} finally {
-			final int statusCode = status.getSeverity();
 			// XXX: Don't delete remote jobs with errors
-			if (autoClean && IStatus.ERROR != statusCode) {
+			autoClean = false;
+			
+			return Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
+		} finally {
+			if (autoClean) {
 				cleanUp(context);
 			}
 		}
