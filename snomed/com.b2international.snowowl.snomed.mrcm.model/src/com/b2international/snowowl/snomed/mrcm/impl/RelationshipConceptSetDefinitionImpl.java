@@ -58,6 +58,7 @@ public class RelationshipConceptSetDefinitionImpl extends ConceptSetDefinitionIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getTypeConceptId() {
 		return (String)eGet(MrcmPackage.Literals.RELATIONSHIP_CONCEPT_SET_DEFINITION__TYPE_CONCEPT_ID, true);
 	}
@@ -67,6 +68,7 @@ public class RelationshipConceptSetDefinitionImpl extends ConceptSetDefinitionIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setTypeConceptId(String newTypeConceptId) {
 		eSet(MrcmPackage.Literals.RELATIONSHIP_CONCEPT_SET_DEFINITION__TYPE_CONCEPT_ID, newTypeConceptId);
 	}
@@ -76,6 +78,7 @@ public class RelationshipConceptSetDefinitionImpl extends ConceptSetDefinitionIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getDestinationConceptId() {
 		return (String)eGet(MrcmPackage.Literals.RELATIONSHIP_CONCEPT_SET_DEFINITION__DESTINATION_CONCEPT_ID, true);
 	}
@@ -85,6 +88,7 @@ public class RelationshipConceptSetDefinitionImpl extends ConceptSetDefinitionIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDestinationConceptId(String newDestinationConceptId) {
 		eSet(MrcmPackage.Literals.RELATIONSHIP_CONCEPT_SET_DEFINITION__DESTINATION_CONCEPT_ID, newDestinationConceptId);
 	}

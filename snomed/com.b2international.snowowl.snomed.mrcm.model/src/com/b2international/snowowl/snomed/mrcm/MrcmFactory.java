@@ -151,6 +151,15 @@ public interface MrcmFactory extends EFactory {
 	AttributeConstraint createAttributeConstraint();
 
 	/**
+	 * Returns a new object of class '<em>Singleton Concept Set Definition</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Singleton Concept Set Definition</em>'.
+	 * @generated
+	 */
+	SingletonConceptSetDefinition createSingletonConceptSetDefinition();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

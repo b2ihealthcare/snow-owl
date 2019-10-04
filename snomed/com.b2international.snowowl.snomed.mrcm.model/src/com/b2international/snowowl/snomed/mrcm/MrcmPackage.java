@@ -1193,6 +1193,70 @@ public interface MrcmPackage extends EPackage {
 	int ATTRIBUTE_CONSTRAINT_FEATURE_COUNT = CONSTRAINT_BASE_FEATURE_COUNT + 3;
 
 	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.impl.SingletonConceptSetDefinitionImpl <em>Singleton Concept Set Definition</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.mrcm.impl.SingletonConceptSetDefinitionImpl
+	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getSingletonConceptSetDefinition()
+	 * @generated
+	 */
+	int SINGLETON_CONCEPT_SET_DEFINITION = 16;
+
+	/**
+	 * The feature id for the '<em><b>Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SINGLETON_CONCEPT_SET_DEFINITION__UUID = CONCEPT_SET_DEFINITION__UUID;
+
+	/**
+	 * The feature id for the '<em><b>Active</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SINGLETON_CONCEPT_SET_DEFINITION__ACTIVE = CONCEPT_SET_DEFINITION__ACTIVE;
+
+	/**
+	 * The feature id for the '<em><b>Effective Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SINGLETON_CONCEPT_SET_DEFINITION__EFFECTIVE_TIME = CONCEPT_SET_DEFINITION__EFFECTIVE_TIME;
+
+	/**
+	 * The feature id for the '<em><b>Author</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SINGLETON_CONCEPT_SET_DEFINITION__AUTHOR = CONCEPT_SET_DEFINITION__AUTHOR;
+
+	/**
+	 * The feature id for the '<em><b>Concept Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SINGLETON_CONCEPT_SET_DEFINITION__CONCEPT_ID = CONCEPT_SET_DEFINITION_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Singleton Concept Set Definition</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SINGLETON_CONCEPT_SET_DEFINITION_FEATURE_COUNT = CONCEPT_SET_DEFINITION_FEATURE_COUNT + 1;
+
+	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.GroupRule <em>Group Rule</em>}' enum.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1200,7 +1264,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getGroupRule()
 	 * @generated
 	 */
-	int GROUP_RULE = 16;
+	int GROUP_RULE = 17;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.DependencyOperator <em>Dependency Operator</em>}' enum.
@@ -1210,7 +1274,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDependencyOperator()
 	 * @generated
 	 */
-	int DEPENDENCY_OPERATOR = 17;
+	int DEPENDENCY_OPERATOR = 18;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType <em>Hierarchy Inclusion Type</em>}' enum.
@@ -1220,7 +1284,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getHierarchyInclusionType()
 	 * @generated
 	 */
-	int HIERARCHY_INCLUSION_TYPE = 18;
+	int HIERARCHY_INCLUSION_TYPE = 19;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.ConstraintStrength <em>Constraint Strength</em>}' enum.
@@ -1230,7 +1294,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getConstraintStrength()
 	 * @generated
 	 */
-	int CONSTRAINT_STRENGTH = 19;
+	int CONSTRAINT_STRENGTH = 20;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.ConstraintForm <em>Constraint Form</em>}' enum.
@@ -1240,7 +1304,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getConstraintForm()
 	 * @generated
 	 */
-	int CONSTRAINT_FORM = 20;
+	int CONSTRAINT_FORM = 21;
 
 	/**
 	 * The meta object id for the '<em>Data Type</em>' data type.
@@ -1250,7 +1314,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDataType()
 	 * @generated
 	 */
-	int DATA_TYPE = 21;
+	int DATA_TYPE = 22;
 
 
 	/**
@@ -1766,6 +1830,27 @@ public interface MrcmPackage extends EPackage {
 	EReference getAttributeConstraint_Predicate();
 
 	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition <em>Singleton Concept Set Definition</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Singleton Concept Set Definition</em>'.
+	 * @see com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition
+	 * @generated
+	 */
+	EClass getSingletonConceptSetDefinition();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition#getConceptId <em>Concept Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Concept Id</em>'.
+	 * @see com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition#getConceptId()
+	 * @see #getSingletonConceptSetDefinition()
+	 * @generated
+	 */
+	EAttribute getSingletonConceptSetDefinition_ConceptId();
+
+	/**
 	 * Returns the meta object for enum '{@link com.b2international.snowowl.snomed.mrcm.GroupRule <em>Group Rule</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2263,6 +2348,24 @@ public interface MrcmPackage extends EPackage {
 		 * @generated
 		 */
 		EReference ATTRIBUTE_CONSTRAINT__PREDICATE = eINSTANCE.getAttributeConstraint_Predicate();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.mrcm.impl.SingletonConceptSetDefinitionImpl <em>Singleton Concept Set Definition</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.mrcm.impl.SingletonConceptSetDefinitionImpl
+		 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getSingletonConceptSetDefinition()
+		 * @generated
+		 */
+		EClass SINGLETON_CONCEPT_SET_DEFINITION = eINSTANCE.getSingletonConceptSetDefinition();
+
+		/**
+		 * The meta object literal for the '<em><b>Concept Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SINGLETON_CONCEPT_SET_DEFINITION__CONCEPT_ID = eINSTANCE.getSingletonConceptSetDefinition_ConceptId();
 
 		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.mrcm.GroupRule <em>Group Rule</em>}' enum.

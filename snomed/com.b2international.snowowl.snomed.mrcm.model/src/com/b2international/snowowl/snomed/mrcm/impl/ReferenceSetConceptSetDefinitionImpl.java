@@ -57,6 +57,7 @@ public class ReferenceSetConceptSetDefinitionImpl extends ConceptSetDefinitionIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getRefSetIdentifierConceptId() {
 		return (String)eGet(MrcmPackage.Literals.REFERENCE_SET_CONCEPT_SET_DEFINITION__REF_SET_IDENTIFIER_CONCEPT_ID, true);
 	}
@@ -66,6 +67,7 @@ public class ReferenceSetConceptSetDefinitionImpl extends ConceptSetDefinitionIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setRefSetIdentifierConceptId(String newRefSetIdentifierConceptId) {
 		eSet(MrcmPackage.Literals.REFERENCE_SET_CONCEPT_SET_DEFINITION__REF_SET_IDENTIFIER_CONCEPT_ID, newRefSetIdentifierConceptId);
 	}

@@ -113,5 +113,8 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference mrcm.ecore#//AttributeConstraint/domain"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference mrcm.ecore#//AttributeConstraint/predicate"/>
     </genClasses>
+    <genClasses ecoreClass="mrcm.ecore#//SingletonConceptSetDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute mrcm.ecore#//SingletonConceptSetDefinition/conceptId"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

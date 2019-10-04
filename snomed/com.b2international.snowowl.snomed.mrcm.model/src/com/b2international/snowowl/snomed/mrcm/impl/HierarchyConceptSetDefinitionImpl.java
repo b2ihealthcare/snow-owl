@@ -59,6 +59,7 @@ public class HierarchyConceptSetDefinitionImpl extends ConceptSetDefinitionImpl 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getConceptId() {
 		return (String)eGet(MrcmPackage.Literals.HIERARCHY_CONCEPT_SET_DEFINITION__CONCEPT_ID, true);
 	}
@@ -68,6 +69,7 @@ public class HierarchyConceptSetDefinitionImpl extends ConceptSetDefinitionImpl 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setConceptId(String newConceptId) {
 		eSet(MrcmPackage.Literals.HIERARCHY_CONCEPT_SET_DEFINITION__CONCEPT_ID, newConceptId);
 	}
@@ -77,6 +79,7 @@ public class HierarchyConceptSetDefinitionImpl extends ConceptSetDefinitionImpl 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public HierarchyInclusionType getInclusionType() {
 		return (HierarchyInclusionType)eGet(MrcmPackage.Literals.HIERARCHY_CONCEPT_SET_DEFINITION__INCLUSION_TYPE, true);
 	}
@@ -86,6 +89,7 @@ public class HierarchyConceptSetDefinitionImpl extends ConceptSetDefinitionImpl 
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setInclusionType(HierarchyInclusionType newInclusionType) {
 		eSet(MrcmPackage.Literals.HIERARCHY_CONCEPT_SET_DEFINITION__INCLUSION_TYPE, newInclusionType);
 	}
