@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -47,18 +48,21 @@ public final class RemoteJob extends Job {
 	
 	private String response;
 	private String user;
-
+	private boolean autoClean;
+	
 	public RemoteJob(
 			final String id, 
 			final String description, 
 			final String user, 
 			final ServiceProvider context, 
-			final Request<ServiceProvider, ?> request) {
+			final Request<ServiceProvider, ?> request,
+			final boolean autoClean) {
 		super(description);
 		this.id = id;
 		this.user = user;
 		this.context = context;
 		this.request = request;
+		this.autoClean = autoClean;
 	}
 	
 	@Override
@@ -81,7 +85,7 @@ public final class RemoteJob extends Job {
 				}
 			}
 			
-			IStatus status = (IStatus) getProperty(REQUEST_STATUS);
+			final IStatus status = (IStatus) getProperty(REQUEST_STATUS);
 			return (status != null) ? status : Statuses.ok();
 		} catch (OperationCanceledException e) {
 			return Statuses.cancel();
@@ -89,7 +93,15 @@ public final class RemoteJob extends Job {
 			if (e instanceof ApiException) {
 				this.response = toJson(mapper, ((ApiException) e).toApiError());
 			}
+			
+			// XXX: Don't delete remote jobs with errors
+			autoClean = false;
+			
 			return Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
+		} finally {
+			if (autoClean) {
+				cleanUp(context);
+			}
 		}
 	}
 
@@ -99,6 +111,10 @@ public final class RemoteJob extends Job {
 		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
 		}
+	}
+	
+	private void cleanUp(ServiceProvider context) {
+		context.service(RemoteJobTracker.class).requestDeletes(Collections.singleton(id));
 	}
 
 	@Override

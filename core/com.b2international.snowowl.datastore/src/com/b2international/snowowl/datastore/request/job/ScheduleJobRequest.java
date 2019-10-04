@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,13 +52,16 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	
 	@NotNull
 	private final Request<ServiceProvider, ?> request;
+	
+	private final boolean autoClean;
 
 	private SerializableSchedulingRule schedulingRule;
 
-	ScheduleJobRequest(String id, String user, Request<ServiceProvider, ?> request, String description, SerializableSchedulingRule schedulingRule) {
+	ScheduleJobRequest(String id, String user, Request<ServiceProvider, ?> request, boolean autoClean, String description, SerializableSchedulingRule schedulingRule) {
 		this.id = id;
 		this.user = user;
 		this.request = request;
+		this.autoClean = autoClean;
 		this.description = description;
 		this.schedulingRule = schedulingRule;
 	}
@@ -73,7 +76,7 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 			if (remoteJobsWithId.length > 0) {
 				throw new BadRequestException("Multiple remote jobs scheduled with identifier '%s'.", id);
 			} else {
-				RemoteJob job = new RemoteJob(id, description, user, context, request);
+				RemoteJob job = new RemoteJob(id, description, user, context, request, autoClean);
 				job.setSystem(true);
 				if (schedulingRule != null) {
 					job.setRule(schedulingRule);
