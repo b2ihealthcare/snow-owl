@@ -63,6 +63,7 @@
 							<appendAssemblyId>false</appendAssemblyId>
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
 							<descriptor>${basedir}/assembly/oss.xml</descriptor>
+							<classifier>base</classifier>
 						</configuration>
 					</execution>
 				</executions>
@@ -279,7 +280,7 @@
 							<snapshotExpand>true</snapshotExpand>
 							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
 							<verbose>true</verbose>
-							<classifier>all</classifier>
+							<classifier>deb</classifier>
 							<signPackage>false</signPackage>
 							<skipPOMs>false</skipPOMs>
 							<dataSet>
