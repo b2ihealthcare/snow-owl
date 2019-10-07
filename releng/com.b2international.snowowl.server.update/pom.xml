@@ -12,7 +12,6 @@
 	</parent>
 	
 	<properties>
-		<assemblyId>oss</assemblyId>
 		<packageFiles>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</packageFiles>
 		<product.rootFolder>snow-owl-oss-${build.version}</product.rootFolder>
 		<products.directory>${project.build.directory}/products</products.directory>
@@ -56,33 +55,11 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-repository-plugin</artifactId>
 				<configuration>
-					<finalName>${project.build.finalName}-site</finalName>
+					<!-- Manually archive the repository via assembly -->
+					<skipArchive>true</skipArchive>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>3.0.0</version>
-				<executions>
-					<execution>
-            			<id>attach-site</id>
-            			<phase>verify</phase>
-            			<goals>
-              				<goal>attach-artifact</goal>
-            			</goals>
-            			<configuration>
-							<artifacts>
-								<artifact>
-									<file>${project.build.outputDirectory}/${project.build.finalName}-site.zip</file>
-									<classifier>site</classifier>
-									<type>zip</type>
-								</artifact>
-							</artifacts>
-            			</configuration>
-          			</execution>
-				</executions>
-			</plugin>
-			<!-- create zip, tar.gz and RPM/Deb base folder -->
+			<!-- create site and server zip, tar.gz and RPM/Deb base folder -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
@@ -94,8 +71,19 @@
 						</goals>
 						<configuration>
 							<appendAssemblyId>false</appendAssemblyId>
-							<workDirectory>${project.build.directory}/assembly/${assemblyId}</workDirectory>
-							<descriptor>${basedir}/assembly/${assemblyId}.xml</descriptor>
+							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
+							<descriptor>${basedir}/assembly/oss.xml</descriptor>
+						</configuration>
+					</execution>
+					<execution>
+						<id>package-site</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<workDirectory>${project.build.directory}/assembly/site</workDirectory>
+							<descriptor>${basedir}/assembly/site.xml</descriptor>
 						</configuration>
 					</execution>
 				</executions>
