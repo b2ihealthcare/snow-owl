@@ -63,15 +63,24 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>3.0.0</version>
-				<configuration>
-					<artifacts>
-						<artifact>
-							<file>${project.build.outputDirectory}/${project.build.finalName}-site.zip</file>
-							<classifier>site</classifier>
-							<type>zip</type>
-						</artifact>
-					</artifacts>
-				</configuration>
+				<executions>
+					<execution>
+            			<id>attach-site</id>
+            			<phase>verify</phase>
+            			<goals>
+              				<goal>attach-artifact</goal>
+            			</goals>
+            			<configuration>
+							<artifacts>
+								<artifact>
+									<file>${project.build.outputDirectory}/${project.build.finalName}-site.zip</file>
+									<classifier>site</classifier>
+									<type>zip</type>
+								</artifact>
+							</artifacts>
+            			</configuration>
+          			</execution>
+				</executions>
 			</plugin>
 			<!-- create zip, tar.gz and RPM/Deb base folder -->
 			<plugin>
