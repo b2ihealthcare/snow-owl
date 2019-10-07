@@ -12,6 +12,7 @@
 	</parent>
 	
 	<properties>
+		<assemblyId>oss</assemblyId>
 		<packageFiles>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</packageFiles>
 		<product.rootFolder>snow-owl-oss-${build.version}</product.rootFolder>
 		<products.directory>${project.build.directory}/products</products.directory>
@@ -19,7 +20,15 @@
 		<so.products.directory>${products.directory}/${product.id}</so.products.directory>
 		<linux.product.path>${so.products.directory}/linux/gtk/x86_64/${product.rootFolder}</linux.product.path>
 	</properties>
-	
+
+	<dependencies>
+		<dependency>
+			<groupId>org.semanticweb.elk</groupId>
+			<artifactId>elk-protege</artifactId>
+			<version>${elk.version}</version>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<finalName>snow-owl-oss-${build.version}</finalName>
 		<plugins>
@@ -51,6 +60,21 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<artifacts>
+						<artifact>
+							<file>${project.build.outputDirectory}/${project.build.finalName}-site.zip</file>
+							<classifier>site</classifier>
+							<type>zip</type>
+						</artifact>
+					</artifacts>
+				</configuration>
+			</plugin>
+			<!-- create zip, tar.gz and RPM/Deb base folder -->
+			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
@@ -61,9 +85,8 @@
 						</goals>
 						<configuration>
 							<appendAssemblyId>false</appendAssemblyId>
-							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
-							<descriptor>${basedir}/assembly/oss.xml</descriptor>
-							<classifier>base</classifier>
+							<workDirectory>${project.build.directory}/assembly/${assemblyId}</workDirectory>
+							<descriptor>${basedir}/assembly/${assemblyId}.xml</descriptor>
 						</configuration>
 					</execution>
 				</executions>

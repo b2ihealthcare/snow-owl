@@ -840,6 +840,7 @@
 					<artifactId>tycho-compiler-plugin</artifactId>
 					<version>${tycho.version}</version>
 					<configuration>
+						<useProjectSettings>false</useProjectSettings>
 						<source>11</source>
 						<target>11</target>
 						<excludeResources>
