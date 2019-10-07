@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.authorization;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +41,9 @@ public class AuthorizedEventBus implements IEventBus {
 	}
 	
 	private Map<String, String> merged(Map<String, String> headers) {
-		return ImmutableMap.<String, String>builder().putAll(this.headers).putAll(headers).build();
+		final Map<String, String> mergedHeaders = newHashMap(this.headers);
+		mergedHeaders.putAll(headers);
+		return ImmutableMap.copyOf(mergedHeaders);
 	}
 	
 	@Override
