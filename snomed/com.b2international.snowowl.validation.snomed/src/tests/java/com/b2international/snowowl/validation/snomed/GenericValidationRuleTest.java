@@ -57,8 +57,8 @@ import com.google.common.collect.ImmutableSet;
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test
-	public void ruleSnomedCommon1() throws Exception {
-		final String ruleId = "snomed-common-1";
+	public void rule663() throws Exception {
+		final String ruleId = "663";
 		indexRule(ruleId);
 		
 		SnomedConceptDocument inactiveDestinationConcept = concept(generateConceptId()).active(false).build();
@@ -97,8 +97,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void ruleSnomedCommon2() throws Exception {
-		final String ruleId = "snomed-common-2";
+	public void rule664() throws Exception {
+		final String ruleId = "664";
 		indexRule(ruleId);
 
 		// index three concepts
@@ -130,8 +130,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void ruleSnomedCommon3() throws Exception {
-		final String ruleId = "snomed-common-3";
+	public void rule665() throws Exception {
+		final String ruleId = "665";
 		indexRule(ruleId);
 
 		// Relationships with deprecated characteristic types
@@ -177,8 +177,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void ruleSnomedCommon4() throws Exception {
-		final String ruleId = "snomed-common-4";
+	public void rule666() throws Exception {
+		final String ruleId = "666";
 		indexRule(ruleId);
 		
 		SnomedReferenceSet refset = new SnomedReferenceSet();
@@ -299,8 +299,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void rule_description_text_length() throws Exception {
-		final String ruleId = "rule_description_text_length";
+	public void rule667() throws Exception {
+		final String ruleId = "667";
 		indexRule(ruleId);
 		
 		final SnomedDescriptionIndexEntry correctSynonym = description(generateDescriptionId(), Concepts.SYNONYM, "correct synonym length").build();
