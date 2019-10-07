@@ -94,13 +94,13 @@ public final class Permission implements Serializable {
 	 */
 	public boolean implies(Permission permissionRequirement) {
 		checkArgument(!ALL.equals(permissionRequirement.getOperation()), "Explicit operation is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
-		checkArgument(!ALL.equals(permissionRequirement.getResource()), "Explicit resource is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
+		// checkArgument(!ALL.equals(permissionRequirement.getResource()), "Explicit resource is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
 		
 		// rules
 		// *:* allows all incoming permission requirements
 		final boolean allowedOperation = ALL.equals(getOperation()) || getOperation().equals(permissionRequirement.getOperation());
-		// TODO branching access
 		final boolean allowedResource = ALL.equals(getResource()) || getResource().equals(permissionRequirement.getResource());
+		// TODO: need to check resource name as well (eg. for restricting access to branches)
 		
 		return allowedOperation && allowedResource;
 	}
