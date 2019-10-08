@@ -17,6 +17,13 @@ Visit us at http://b2i.sg
    <requires>
       <import feature="com.b2international.snowowl.core.rest.feature" version="7.2.0.qualifier"/>
    </requires>
+   
+   <plugin
+         id="com.b2international.snowowl.snomed.fhir"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
    <plugin
          id="com.b2international.snowowl.snomed.core.rest"
