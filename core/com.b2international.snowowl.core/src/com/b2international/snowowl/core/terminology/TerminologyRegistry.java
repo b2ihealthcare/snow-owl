@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -66,6 +67,10 @@ public enum TerminologyRegistry {
 			}
 		});
 		register(createUnspecifiedTerminologyComponent());
+	}
+	
+	public Set<String> getTerminologies() {
+		return ImmutableSet.copyOf(terminologies.keySet());
 	}
 	
 	public void registerTerminology(Terminology terminology) {
@@ -167,5 +172,5 @@ public enum TerminologyRegistry {
 			}
 		};
 	}
-	
+
 }
