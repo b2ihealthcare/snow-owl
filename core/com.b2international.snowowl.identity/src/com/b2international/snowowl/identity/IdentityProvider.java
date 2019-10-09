@@ -163,7 +163,7 @@ public interface IdentityProvider {
 	 * @return
 	 * @throws UnauthorizedException
 	 */
-	default User authJWT(final String token) {
+	static User authJWT(final String token) {
 		try {
 			final DecodedJWT jwt = ApplicationContext.getServiceForClass(JWTVerifier.class).verify(token);
 			return JWTGenerator.toUser(jwt);
