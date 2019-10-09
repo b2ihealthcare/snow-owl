@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.config;
+package com.b2international.snowowl.core.client;
 
 import org.osgi.service.prefs.PreferencesService;
 
-import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.api.IClientPreferencesCallback;
 import com.b2international.snowowl.core.api.preferences.PreferenceBase;
 
 /**
  * Configuration class for clients with information about the CDO server connection.
  * 
  */
-public class ClientPreferences extends PreferenceBase implements IClientPreferencesCallback {
+public class ClientPreferences extends PreferenceBase {
 	
 	private static final String EMPTY_STRING = "";
 
@@ -33,9 +31,6 @@ public class ClientPreferences extends PreferenceBase implements IClientPreferen
 	
 	public static final String KEY_CDO_URL = "cdo.url";
 	public static final String KEY_CDO_URL_HISTORY = "cdo.url.history";
-	
-	public static final String KEY_LAST_ACTIVE_TASK_ID = "last.active.task.id";
-	public static final String DEFAULT_LAST_ACTIVE_TASK_ID = "com.b2international.snowowl.no.active.task.id";
 	
 	/**
 	 * Creates a new {@link ClientPreferences} instance using the specified {@link PreferencesService}. Preference
@@ -78,33 +73,10 @@ public class ClientPreferences extends PreferenceBase implements IClientPreferen
 		return getCDOUrl() == null;
 	}
 	
-	/**
-	 * @return the key of the task which was last activated in Snow Owl, or {@value #DEFAULT_LAST_ACTIVE_TASK_ID} if no
-	 * task was recorded to be active, or the value was not set for some other reason.
-	 */
-	public String getLastActiveTaskId() {
-		return preferences.get(KEY_LAST_ACTIVE_TASK_ID, DEFAULT_LAST_ACTIVE_TASK_ID);
-	}
-	
-	public void setLastActiveTaskId(final String taskId) {
-		preferences.put(KEY_LAST_ACTIVE_TASK_ID, taskId);
-	}
-	
-	public void clearLastActiveTaskId() {
-		setLastActiveTaskId(DEFAULT_LAST_ACTIVE_TASK_ID);
-	}
-	
-	public boolean hasLastActiveTaskId() {
-		final String lastActiveTaskId = getLastActiveTaskId(); 
-		return !StringUtils.isEmpty(lastActiveTaskId) && !ClientPreferences.DEFAULT_LAST_ACTIVE_TASK_ID.equals(lastActiveTaskId);
-	}
-
-	@Override
 	public void setUrlHistory(final String urlHistory) {
 		setCDOUrlHistory(urlHistory);
 	}
 
-	@Override
 	public void setUrl(final String url) {
 		setCDOUrl(url);
 	}

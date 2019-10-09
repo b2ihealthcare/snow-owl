@@ -38,38 +38,38 @@ public interface IApplicationSessionManager {
 	String KEY_SERVER_PRIVATE_KEY = "serverPrivateKey";
 	String KEY_SESSION_ID = "sessionId";
 
-	/**
-	 * Asks the server for a one-time access token, which includes:
-	 * <ul>
-	 * <li>an encrypted random sequence of bytes which can be decrypted with the <b>private pair</b> of the specified client public key;
-	 * <li>the server's public key, which can be used to encode the answer (the decrypted random sequence concatenated with the user's password).
-	 * </ul>  
-	 * 
-	 * @param userId
-	 * @param clientPublicKey
-	 * @return
-	 */
-	AccessToken requestToken(final String userId, final PublicKey clientPublicKey);
+//	/**
+//	 * Asks the server for a one-time access token, which includes:
+//	 * <ul>
+//	 * <li>an encrypted random sequence of bytes which can be decrypted with the <b>private pair</b> of the specified client public key;
+//	 * <li>the server's public key, which can be used to encode the answer (the decrypted random sequence concatenated with the user's password).
+//	 * </ul>  
+//	 * 
+//	 * @param userId
+//	 * @param clientPublicKey
+//	 * @return
+//	 */
+//	AccessToken requestToken(final String userId, final PublicKey clientPublicKey);
 			
-	/**
-	 * Sends the server an encrypted response to provide identification for the user. The sequence to send contains the last random sequence
-	 * received via {@link #requestToken(String, PublicKey)}, concatenated with the user's password characters. The resulting byte sequence
-	 * is encrypted with the server's <i>public key</i>, also received with a previous {@link AccessToken}.
-	 * <p>
-	 * If the server does not accept the sequence, a new access token will need to be requested and a SecurityException runtime exception will be thrown.
-	 * 
-	 * @param response
-	 * @return the logged in users identity
-	 */
-	User loginWithResponse(final byte[] response) throws SecurityException;
+//	/**
+//	 * Sends the server an encrypted response to provide identification for the user. The sequence to send contains the last random sequence
+//	 * received via {@link #requestToken(String, PublicKey)}, concatenated with the user's password characters. The resulting byte sequence
+//	 * is encrypted with the server's <i>public key</i>, also received with a previous {@link AccessToken}.
+//	 * <p>
+//	 * If the server does not accept the sequence, a new access token will need to be requested and a SecurityException runtime exception will be thrown.
+//	 * 
+//	 * @param response
+//	 * @return the logged in users identity
+//	 */
+//	User loginWithResponse(final byte[] response) throws SecurityException;
 	
-	/**
-	 * @param userId the user identifier (may not be {@code null}) 
-	 * @param password the user's password (may not be {@code null})
-	 * @return the object representing the logged in user
-	 * @throws LoginException if the user identifier and/or the password was given incorrectly
-	 */
-	void authenticate(String userId, String password) throws LoginException;
+//	/**
+//	 * @param userId the user identifier (may not be {@code null}) 
+//	 * @param password the user's password (may not be {@code null})
+//	 * @return the object representing the logged in user
+//	 * @throws LoginException if the user identifier and/or the password was given incorrectly
+//	 */
+//	void authenticate(String userId, String password) throws LoginException;
 
 	/**Returns with a map of all connected users, keyed by session ID.*/
 	Map<Long, String> getConnectedSessionInfo();

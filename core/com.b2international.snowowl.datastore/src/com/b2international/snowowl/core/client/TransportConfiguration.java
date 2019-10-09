@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.connection;
+package com.b2international.snowowl.core.client;
 
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @since 3.4
  */
-public class RepositoryConnectionConfiguration {
+public class TransportConfiguration {
 
 	/*
 	 * XXX (apeteri): 15 minutes for a single signal exchange might seem a bit too much, but this is what we had set for
