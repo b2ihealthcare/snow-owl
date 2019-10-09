@@ -351,6 +351,7 @@ public final class SnowOwl {
 	 * 
 	 * @since 3.3
 	 */
+	@FunctionalInterface
 	public static interface PreRunRunnable {
 
 		public void run() throws Exception;

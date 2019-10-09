@@ -24,6 +24,7 @@ import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.JWTGenerator;
 import com.b2international.snowowl.identity.Token;
 import com.b2international.snowowl.identity.domain.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.2
@@ -31,7 +32,9 @@ import com.b2international.snowowl.identity.domain.User;
 public final class UserLoginRequest implements Request<ServiceProvider, Token> {
 
 	@NotEmpty
+	@JsonProperty
 	private String username;
+	
 	@NotEmpty
 	private String password;
 
