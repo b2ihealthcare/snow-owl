@@ -56,7 +56,6 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.net.HostAndPort;
 
 /**
  * @since 
@@ -79,7 +78,6 @@ public final class TransportClient {
 	private final TransportConfiguration transportConfiguration;
 	
 	private IConnector connector;
-	private HostAndPort address;
 	private AtomicBoolean embedded;
 	
 	public TransportClient(Environment env) {
@@ -87,10 +85,6 @@ public final class TransportClient {
 		this.bus = env.service(IEventBus.class);
 		this.preferences = env.service(ClientPreferences.class);
 		this.transportConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(TransportConfiguration.class);
-	}
-	
-	public HostAndPort getAddress() {
-		return address;
 	}
 	
 	public boolean isEmbedded() {
@@ -109,7 +103,7 @@ public final class TransportClient {
 			} else {
 				TCPUtil.prepareContainer(IPluginContainer.INSTANCE);
 				Net4jUtil.prepareContainer(IPluginContainer.INSTANCE);
-				connector = Net4jUtil.getConnector(IPluginContainer.INSTANCE, "tcp://" + getAddress());
+				connector = Net4jUtil.getConnector(IPluginContainer.INSTANCE, preferences.getServerUrl());
 				connector.waitForConnection(transportConfiguration.getConnectionTimeout());
 				
 				final HeartBeatProtocol watchdog = new HeartBeatProtocol(connector);

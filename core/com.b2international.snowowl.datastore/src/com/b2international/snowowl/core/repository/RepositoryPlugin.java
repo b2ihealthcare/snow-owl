@@ -203,7 +203,7 @@ public final class RepositoryPlugin extends Plugin {
 			LOG.debug("Initialized repository plugin.");
 		} else {
 			LOG.debug("Snow Owl application is running in remote mode.");
-			LOG.info("Connecting to Snow Owl Terminology Server at {}", env.service(ClientPreferences.class).getCDOUrl());
+			LOG.info("Connecting to Snow Owl Terminology Server at {}", env.service(ClientPreferences.class).getServerUrl());
 		}
 		
 		if (configuration.isSystemUserNeeded() || env.isServer()) {
