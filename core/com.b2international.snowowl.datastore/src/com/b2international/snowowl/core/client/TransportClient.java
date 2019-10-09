@@ -79,6 +79,8 @@ public final class TransportClient {
 	
 	private IConnector connector;
 	private AtomicBoolean embedded;
+	private String user;
+	private String password;
 	
 	public TransportClient(Environment env) {
 		this.env = env;
@@ -89,6 +91,18 @@ public final class TransportClient {
 	
 	public boolean isEmbedded() {
 		return embedded.get();
+	}
+	
+	public String getAddress() {
+		return preferences.getServerUrl();
+	}
+	
+	public String getUser() {
+		return user;
+	}
+	
+	public String getPassword() {
+		return password;
 	}
 
 	private synchronized void initConnection() throws SnowowlServiceException {
@@ -103,7 +117,7 @@ public final class TransportClient {
 			} else {
 				TCPUtil.prepareContainer(IPluginContainer.INSTANCE);
 				Net4jUtil.prepareContainer(IPluginContainer.INSTANCE);
-				connector = Net4jUtil.getConnector(IPluginContainer.INSTANCE, preferences.getServerUrl());
+				connector = Net4jUtil.getConnector(IPluginContainer.INSTANCE, getAddress());
 				connector.waitForConnection(transportConfiguration.getConnectionTimeout());
 				
 				final HeartBeatProtocol watchdog = new HeartBeatProtocol(connector);
@@ -137,6 +151,8 @@ public final class TransportClient {
 	
 	public void connect(final String username, final String password) throws SnowowlServiceException {
 		try {
+			this.user = username;
+			this.password = password;
 			// initialize connectors first
 			embedded = new AtomicBoolean();
 			embedded.set(preferences.isClientEmbedded() || User.isSystem(username));
@@ -156,6 +172,7 @@ public final class TransportClient {
 			
 			// if successfully logged in replace the event bus with an authorized one
 			env.services().registerService(IEventBus.class, new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", token.getToken())));
+			env.services().registerService(TransportClient.class, this);
 		} catch (UnauthorizedException e) {
 			throw new SnowowlServiceException(e.getMessage());
 		} catch (final Throwable t) {
