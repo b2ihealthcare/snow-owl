@@ -484,7 +484,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			case CONCRETE_DATA_TYPE:
 				builder = SnomedComponents.newConcreteDomainReferenceSetMember()
 						.withCharacteristicType(CharacteristicType.getByConceptId((String) properties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)))
-						.withGroup((Integer) properties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP))
+						.withGroup(Integer.parseInt((String) properties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)))
 						.withTypeId((String) properties.get(SnomedRf2Headers.FIELD_TYPE_ID))
 						.withSerializedValue((String) properties.get(SnomedRf2Headers.FIELD_VALUE));
 				break;
