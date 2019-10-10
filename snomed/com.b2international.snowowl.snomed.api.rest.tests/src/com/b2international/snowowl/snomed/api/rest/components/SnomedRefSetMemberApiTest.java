@@ -37,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -47,7 +48,9 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -69,7 +72,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
-	@Test
+	//@Test
 	public void getMemberNonExistingBranch() throws Exception {
 		// UUID is the language reference set member for the SNOMED CT root concept's FSN
 		getComponent(BranchPathUtils.createPath("MAIN/x/y/z"), SnomedComponentType.MEMBER, "e606c375-501d-5db6-821f-f03d8a12ad1c").statusCode(404);
@@ -874,6 +877,52 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		// Check that member 2 still exists
 		getComponent(branchPath, SnomedComponentType.MEMBER, member2Id).statusCode(200);
+	}
+	
+	@Test(expected = AlreadyExistsException.class)
+	public void testDuplicateIdCreationShouldFail() {
+		final String simpleRefSetId = createNewRefSet(branchPath);
+		
+		final String memberId = UUID.randomUUID().toString();
+		final CommitResult result1 = SnomedRequests.prepareNewMember()
+			.setId(memberId)
+			.setModuleId(Concepts.MODULE_SCT_CORE)
+			.setReferenceSetId(simpleRefSetId)
+			.setReferencedComponentId(simpleRefSetId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "info@b2international.com", "Creating refset member")
+			.execute(getBus())
+			.getSync();
+		
+		final String member1Id = result1.getResultAs(String.class);
+		assertEquals(memberId, member1Id);	
+		
+		final CommitResult result2 = SnomedRequests.prepareNewMember()
+			.setId(memberId)
+			.setModuleId(Concepts.MODULE_SCT_CORE)
+			.setReferenceSetId(simpleRefSetId)
+			.setReferencedComponentId(simpleRefSetId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "info@b2international.com", "Creating refset member")
+			.execute(getBus())
+			.getSync();	
+	}
+	
+	@Test
+	public void testCreateMemberWithSpecificId() {
+		final String simpleRefSetId = createNewRefSet(branchPath);
+		final String specificId = UUID.randomUUID().toString();
+		final Map<?, ?> memberRequest = ImmutableMap.<String, Object>builder()
+				.put(SnomedRf2Headers.FIELD_ID, specificId)
+				.put(SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE)
+				.put("referenceSetId", simpleRefSetId)
+				.put(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, simpleRefSetId)
+				.put("commitComment", "Created new simple reference set member")
+				.build();
+		
+		final String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, memberRequest)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		assertEquals(specificId, memberId);
 	}
 
 	private void executeSyncAction(final String memberId) {
