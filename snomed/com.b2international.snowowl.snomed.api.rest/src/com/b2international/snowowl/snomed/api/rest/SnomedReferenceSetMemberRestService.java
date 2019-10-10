@@ -20,6 +20,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
@@ -198,6 +199,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 		final String userId = principal.getName();
 		
 		final SnomedRefSetMemberRestInput change = body.getChange();
+		
+		final String id = change.getId();
+		UUID.fromString(id);
+		
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId();
 		
