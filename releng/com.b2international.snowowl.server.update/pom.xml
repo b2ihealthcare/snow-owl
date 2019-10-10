@@ -92,7 +92,7 @@
 			<plugin>
 				<groupId>de.dentrassi.maven</groupId>
 				<artifactId>rpm</artifactId>
-				<version>1.1.0</version>
+				<version>1.3.0</version>
 				<executions>
 					<execution>
 						<id>generate-rpm</id>
@@ -107,7 +107,7 @@
 					<packageName>snow-owl-oss</packageName>
 					<group>Application/Internet</group>
 					<packager>B2i Healthcare</packager>
-					<license>ASL 2.0</license>
+					<license>Apache-2.0</license>
 					<architecture>x86_64</architecture>
 					<skipSigning>true</skipSigning>
 					<prefixes>
@@ -199,6 +199,7 @@
 								<excludes>
 									<exclude>serviceability/**</exclude>
 									<exclude>resources/**</exclude>
+									<exclude>configuration/**</exclude>
 									<exclude>.gitignore</exclude>
 								</excludes>
 							</collect>
@@ -206,12 +207,23 @@
 						<!-- Configuration directory -->
 						<entry>
 							<name>/etc/snowowl</name>
-							<ruleset>config</ruleset>
 							<user>snowowl</user>
 							<group>snowowl</group>
+							<mode>0755</mode>
+							<directory>true</directory>
+						</entry>
+						<entry>
+							<name>/etc/snowowl</name>
+							<ruleset>config</ruleset>
 							<collect>
 								<from>${packageFiles}/configuration</from>
 							</collect>
+						</entry>
+						<entry>
+							<name>/usr/share/snowowl/configuration</name>
+							<user>snowowl</user>
+							<group>snowowl</group>
+							<linkTo>/etc/snowowl</linkTo>
 						</entry>
 						<!-- Data directory -->
 						<entry>
