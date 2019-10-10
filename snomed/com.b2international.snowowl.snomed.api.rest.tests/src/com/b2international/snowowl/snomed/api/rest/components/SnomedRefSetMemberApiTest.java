@@ -72,7 +72,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
-	//@Test
+	@Test
 	public void getMemberNonExistingBranch() throws Exception {
 		// UUID is the language reference set member for the SNOMED CT root concept's FSN
 		getComponent(BranchPathUtils.createPath("MAIN/x/y/z"), SnomedComponentType.MEMBER, "e606c375-501d-5db6-821f-f03d8a12ad1c").statusCode(404);

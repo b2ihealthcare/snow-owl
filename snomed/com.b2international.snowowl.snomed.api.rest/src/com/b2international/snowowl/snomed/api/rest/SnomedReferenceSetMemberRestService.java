@@ -201,6 +201,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 		final SnomedRefSetMemberRestInput change = body.getChange();
 		
 		final String id = change.getId();
+		// Check for correct UUID format in id input
 		UUID.fromString(id);
 		
 		final String commitComment = body.getCommitComment();

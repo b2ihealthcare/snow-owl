@@ -114,9 +114,9 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 								.toSet();
 						
 						final Set<String> refsetMemberIds = FluentIterable.from(categoryRequests)
-							.filter(SnomedRefSetMemberCreateRequest.class)
-							.transform(request -> request.getId())
-							.toSet();
+								.filter(SnomedRefSetMemberCreateRequest.class)
+								.transform(request -> request.getId())
+								.toSet();
 						
 						final Set<String> userRequestedIds = Sets.newHashSet(Iterables.concat(coreComponentIds, refsetMemberIds));
 						
@@ -125,7 +125,9 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 							// TODO: Report all existing identifiers
 							throw new AlreadyExistsException(category.getDisplayName(), Iterables.getFirst(existingIds, null));
 						} else {
-							recorder.register(coreComponentIds);
+							if (!coreComponentIds.isEmpty()) {
+								recorder.register(coreComponentIds);
+							}
 						}
 						
 						final Multimap<String, BaseSnomedComponentCreateRequest> requestsByNamespace = FluentIterable.from(categoryRequests)
