@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,11 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.reasoner.converter.ClassificationTaskConverter;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTasks;
@@ -37,7 +40,8 @@ import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocum
  * @since 7.0
  */
 final class ClassificationSearchRequest 
-		extends SearchIndexResourceRequest<RepositoryContext, ClassificationTasks, ClassificationTaskDocument> {
+		extends SearchIndexResourceRequest<RepositoryContext, ClassificationTasks, ClassificationTaskDocument> 
+		implements AccessControl {
 
 	public enum OptionKey {
 		BRANCH, 
@@ -104,5 +108,10 @@ final class ClassificationSearchRequest
 	@Override
 	protected ClassificationTasks createEmptyResult(final int limit) {
 		return new ClassificationTasks(limit, 0);
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 }

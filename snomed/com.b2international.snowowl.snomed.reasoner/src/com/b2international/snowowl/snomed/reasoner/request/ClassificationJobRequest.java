@@ -31,6 +31,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasonerRuntimeException;
 import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
 
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -38,10 +39,12 @@ import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.request.Locks;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomyBuilder;
@@ -59,7 +62,7 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFact
  * 
  * @since 5.7
  */
-final class ClassificationJobRequest implements Request<BranchContext, Boolean> {
+final class ClassificationJobRequest implements Request<BranchContext, Boolean>, AccessControl {
 
 	@NotEmpty
 	private String reasonerId;
@@ -188,4 +191,10 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		
 		return taxonomyBuilder.build();
 	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	}
+	
 }

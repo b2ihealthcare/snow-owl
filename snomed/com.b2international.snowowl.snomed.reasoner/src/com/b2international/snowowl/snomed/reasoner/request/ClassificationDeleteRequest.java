@@ -17,8 +17,11 @@ package com.b2international.snowowl.snomed.reasoner.request;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 
 /**
@@ -27,7 +30,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.Classification
  * 
  * @since 7.0
  */
-final class ClassificationDeleteRequest implements Request<RepositoryContext, Boolean> {
+final class ClassificationDeleteRequest implements Request<RepositoryContext, Boolean>, AccessControl {
 
 	@NotEmpty
 	private final String classificationId;
@@ -42,4 +45,10 @@ final class ClassificationDeleteRequest implements Request<RepositoryContext, Bo
 		tracker.classificationDeleted(classificationId);
 		return Boolean.TRUE;
 	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	}
+	
 }

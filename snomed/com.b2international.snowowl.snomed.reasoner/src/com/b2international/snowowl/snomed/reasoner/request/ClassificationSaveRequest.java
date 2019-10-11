@@ -23,6 +23,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
@@ -30,7 +31,9 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,7 +47,7 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @since 5.7
  */
-final class ClassificationSaveRequest implements Request<RepositoryContext, String> {
+final class ClassificationSaveRequest implements Request<RepositoryContext, String>, AccessControl {
 
 	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 	
@@ -156,5 +159,10 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.setDescription(String.format("Saving classification changes on %s", branch.path()))
 				.buildAsync()
 				.get(context, SCHEDULE_TIMEOUT_MILLIS);
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID, "");
 	}
 }
