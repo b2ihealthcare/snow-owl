@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,17 @@
  */
 package com.b2international.snowowl.core.commit;
 
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 5.7
  */
-final class CommitInfoGetRequest extends GetResourceRequest<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfo> {
+final class CommitInfoGetRequest 
+		extends GetResourceRequest<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfo>
+		implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -32,6 +36,11 @@ final class CommitInfoGetRequest extends GetResourceRequest<CommitInfoSearchRequ
 	@Override
 	protected CommitInfoSearchRequestBuilder createSearchRequestBuilder() {
 		return new CommitInfoSearchRequestBuilder();
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 
 }

@@ -39,8 +39,11 @@ import org.semanticweb.owlapi.model.SetOntologyID;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomyBuilder;
@@ -51,7 +54,7 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFact
 /**
  * @since 7.0
  */
-final class OntologyExportRequest implements Request<BranchContext, String> {
+final class OntologyExportRequest implements Request<BranchContext, String>, AccessControl {
 
 	private static final int PIPE_SIZE = 8192;
 
@@ -156,5 +159,10 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 			case XML: return new RDFXMLDocumentFormat();
 			default: throw new IllegalStateException("Unexpected export type '" + exportType + "'.");
 		}
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EXPORT, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 }
