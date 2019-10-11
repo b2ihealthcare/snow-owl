@@ -26,15 +26,19 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
  * @since 6.1
  */
-final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<ServiceProvider, ValidationWhiteLists, ValidationWhiteList>{
+final class ValidationWhiteListSearchRequest 
+		extends SearchIndexResourceRequest<ServiceProvider, ValidationWhiteLists, ValidationWhiteList>
+		implements AccessControl {
 
 	enum OptionKey {
 
@@ -143,6 +147,11 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 	@Override
 	protected ValidationWhiteLists createEmptyResult(int limit) {
 		return new ValidationWhiteLists(limit, 0);
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 
 }

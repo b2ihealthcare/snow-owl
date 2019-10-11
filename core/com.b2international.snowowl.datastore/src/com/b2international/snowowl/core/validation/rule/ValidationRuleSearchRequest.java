@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,19 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 6.0
  */
-final class ValidationRuleSearchRequest extends SearchIndexResourceRequest<ServiceProvider, ValidationRules, ValidationRule> {
+final class ValidationRuleSearchRequest 
+		extends SearchIndexResourceRequest<ServiceProvider, ValidationRules, ValidationRule>
+		implements AccessControl {
 
 	enum OptionKey {
 		/**
@@ -83,6 +88,11 @@ final class ValidationRuleSearchRequest extends SearchIndexResourceRequest<Servi
 	@Override
 	protected ValidationRules createEmptyResult(int limit) {
 		return new ValidationRules(limit, 0);
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 
 }
