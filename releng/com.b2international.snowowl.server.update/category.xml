@@ -24,6 +24,9 @@
    <feature url="features/com.b2international.snowowl.api.rest.feature_6.21.0.qualifier.jar" id="com.b2international.snowowl.api.rest.feature" version="6.21.0.qualifier">
       <category name="server-core"/>
    </feature>
+   <feature url="features/com.b2international.snowowl.snomed.cis.feature_6.21.0.qualifier.jar" id="com.b2international.snowowl.snomed.cis.feature" version="6.21.0.qualifier">
+      <category name="snomed-core"/>
+   </feature>
    <category-def name="server-core" label="Snow Owl Server Common"/>
    <category-def name="scripting" label="Snow Owl Scripting"/>
    <category-def name="snomed-core" label="Snow Owl SNOMED CT extension"/>
