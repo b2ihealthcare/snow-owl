@@ -20,19 +20,21 @@ import java.util.Map;
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 
 /**
  * @since 7.1
  */
-public class GetMergeRequest implements Request<RepositoryContext, Merge> {
+public class GetMergeRequest implements Request<RepositoryContext, Merge>, AccessControl {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -65,6 +67,11 @@ public class GetMergeRequest implements Request<RepositoryContext, Merge> {
 		
 		// failed job result is ApiError
 		return MergeImpl.builder(source, target).build().failed(job.getResultAs(mapper, ApiError.class));
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 
 }

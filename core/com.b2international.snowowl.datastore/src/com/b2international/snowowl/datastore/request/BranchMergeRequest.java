@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.base.Strings;
 
 /**
@@ -63,6 +64,11 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 		} catch (InterruptedException e) {
 			throw new ConflictException("Lock obtaining process was interrupted while merging source '%s' into target '%s'.", source.path(), target.path());
 		}
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 	
 }

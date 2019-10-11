@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,16 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.identity.domain.Permission;
 
 
 /**
  * @since 4.1
  */
-public final class CreateBranchRequest extends BranchRequest<String> {
+public final class CreateBranchRequest extends BranchRequest<String> implements AccessControl {
 
 	private final String parent;
 	private final String name;
@@ -67,6 +69,11 @@ public final class CreateBranchRequest extends BranchRequest<String> {
 			// if parent not found, convert it to BadRequestException
 			throw e.toBadRequestException();
 		}
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 	
 }

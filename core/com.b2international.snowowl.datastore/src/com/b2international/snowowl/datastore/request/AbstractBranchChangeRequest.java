@@ -35,6 +35,7 @@ import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -42,9 +43,9 @@ import com.b2international.snowowl.core.merge.ConflictingAttribute;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.core.merge.MergeImpl;
-import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -58,7 +59,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 4.6
  */
-public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge> {
+public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge>, AccessControl {
 
 	@JsonProperty
 	@NotEmpty
@@ -145,7 +146,6 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	}
 	
 	private MergeConflict toMergeConflict(ObjectId objectId, Collection<Conflict> conflicts) {
-		
 		final MergeConflictImpl.Builder conflict = MergeConflictImpl.builder()
 			.componentId(objectId.id())
 			.componentType(objectId.type())
@@ -208,5 +208,5 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 			.value(diff.getNewValue())
 			.build();
 	}
-
+	
 }

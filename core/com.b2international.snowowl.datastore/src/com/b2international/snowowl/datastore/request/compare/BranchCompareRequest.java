@@ -25,17 +25,19 @@ import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.9
  */
-final class BranchCompareRequest implements Request<RepositoryContext, CompareResult> {
+final class BranchCompareRequest implements Request<RepositoryContext, CompareResult>, AccessControl {
 
 	@JsonProperty
 	private String base;
@@ -109,6 +111,11 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 		}
 		
 		return result.build();
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 
 }

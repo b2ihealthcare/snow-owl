@@ -48,6 +48,10 @@ public final class Permission implements Serializable {
 	private final String resource;
 	private final String name;
 	private final String permission;
+	
+	public Permission(final String operation, final String resource) {
+		this(operation, resource, "");
+	}
 
 	public Permission(final String operation, final String resource, final String name) {
 		this.operation = checkNotNull(operation, "Operation must be specified");

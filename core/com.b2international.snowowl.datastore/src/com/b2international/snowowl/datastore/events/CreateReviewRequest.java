@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 package com.b2international.snowowl.datastore.events;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * An event encapsulating a request to review differences between the specified source and target branch, identified by
@@ -29,7 +31,7 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
  * 
  * @since 4.2
  */
-public final class CreateReviewRequest implements Request<RepositoryContext, Review> {
+public final class CreateReviewRequest implements Request<RepositoryContext, Review>, AccessControl {
 
 	private final String sourcePath;
 	private final String targetPath;
@@ -52,6 +54,11 @@ public final class CreateReviewRequest implements Request<RepositoryContext, Rev
 			// Non-existent branches are reported as Bad Requests for reviews
 			throw e.toBadRequestException();
 		}
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 	
 }
