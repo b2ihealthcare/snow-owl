@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import com.b2international.snowowl.core.authorization.AccessControl;
+
 /**
  * @since 6.5
  */
-public interface SnomedComponentCreateRequest extends SnomedComponentRequest<String> {
+public interface SnomedComponentCreateRequest extends SnomedComponentRequest<String>, AccessControl {
 
 	String getModuleId();
 

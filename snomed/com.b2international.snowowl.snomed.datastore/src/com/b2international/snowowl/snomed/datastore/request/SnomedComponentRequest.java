@@ -17,13 +17,14 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Set;
 
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 6.5
  */
-public interface SnomedComponentRequest<R> extends Request<TransactionContext, R> {
+public interface SnomedComponentRequest<R> extends Request<TransactionContext, R>, AccessControl {
 
 	Set<String> getRequiredComponentIds(TransactionContext context);
 	

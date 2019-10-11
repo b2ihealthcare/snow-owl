@@ -22,11 +22,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -113,6 +115,11 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseComponentMem
 				.withReferencedComponent(componentToUpdate.getId())
 				.addTo(context);
 		}
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
 }

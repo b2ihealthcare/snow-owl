@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,17 @@ import java.util.Collection;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluations;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -35,7 +38,7 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluations> {
+public final class EvaluateQueryRefSetRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluations> implements AccessControl {
 
 	@NotNull
 	@JsonProperty
@@ -76,6 +79,11 @@ public final class EvaluateQueryRefSetRequest extends ResourceRequest<BranchCont
 				.build()
 				.execute(context)
 				.getItems();
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
 }

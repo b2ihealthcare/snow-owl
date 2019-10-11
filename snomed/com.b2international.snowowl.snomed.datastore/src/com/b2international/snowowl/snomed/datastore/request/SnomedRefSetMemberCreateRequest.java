@@ -30,9 +30,11 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
@@ -221,5 +223,10 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 			default: 
 				throw new IllegalStateException("Unexpected reference set type '" + referenceSetType + "'.");
 		}
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID, "");
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,23 @@ import java.util.stream.Collectors;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean> {
+public final class QueryRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean>, AccessControl {
 
 	@NotEmpty
 	private final String memberId;
@@ -88,6 +91,11 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 			}
 		}
 		return Boolean.TRUE;
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 
 }

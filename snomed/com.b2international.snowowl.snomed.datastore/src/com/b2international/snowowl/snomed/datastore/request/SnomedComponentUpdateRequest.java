@@ -16,7 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
@@ -89,6 +92,11 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 		if (component.isReleased()) {
 			throw new BadRequestException("Cannot update '%s' to '%s' on released %s '%s'", field, value, component.getClass().getSimpleName(), component.getId());
 		}
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID, "");
 	}
 	
 }

@@ -27,10 +27,12 @@ import java.util.Set;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -40,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.MemberChangeImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluationImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -48,7 +51,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluation> {
+public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluation> implements AccessControl {
 
 	@NotEmpty
 	private String memberId;
@@ -167,6 +170,11 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 //			changes.add(new Diff(MemberChangeKind.ACTIVATE, id, conceptsToActivate.get(id)));
 //		}
 		return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, changes);
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 
 }

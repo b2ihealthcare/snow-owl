@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,11 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.reasoner.converter.RelationshipChangeConverter;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
@@ -35,7 +38,8 @@ import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocum
  * @since 7.0
  */
 class RelationshipChangeSearchRequest 
-		extends SearchIndexResourceRequest<RepositoryContext, RelationshipChanges, RelationshipChangeDocument> {
+		extends SearchIndexResourceRequest<RepositoryContext, RelationshipChanges, RelationshipChangeDocument>
+		implements AccessControl {
 
 	public enum OptionKey {
 		CLASSIFICATION_ID, 
@@ -90,5 +94,10 @@ class RelationshipChangeSearchRequest
 	@Override
 	protected RelationshipChanges createEmptyResult(final int limit) {
 		return new RelationshipChanges(limit, 0);
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 }

@@ -29,8 +29,10 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 
@@ -212,6 +214,11 @@ final class SnomedRefSetMemberUpdateRequest implements SnomedComponentRequest<Bo
 
 	private boolean isEffectiveTimeUpdate() {
 		return force && hasProperty(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID, "");
 	}
 
 }

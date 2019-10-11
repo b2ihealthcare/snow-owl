@@ -33,6 +33,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -321,6 +323,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		}
 		
 		return conceptMap;
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 
 }

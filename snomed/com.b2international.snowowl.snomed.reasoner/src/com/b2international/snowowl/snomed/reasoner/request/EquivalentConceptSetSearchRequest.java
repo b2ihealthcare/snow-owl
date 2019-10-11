@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,11 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.reasoner.converter.EquivalentConceptSetConverter;
 import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
 import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
@@ -34,7 +37,8 @@ import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDoc
  * @since 7.0
  */
 class EquivalentConceptSetSearchRequest 
-		extends SearchIndexResourceRequest<RepositoryContext, EquivalentConceptSets, EquivalentConceptSetDocument> {
+		extends SearchIndexResourceRequest<RepositoryContext, EquivalentConceptSets, EquivalentConceptSetDocument>
+		implements AccessControl {
 
 	public enum OptionKey {
 		CLASSIFICATION_ID, 
@@ -80,5 +84,10 @@ class EquivalentConceptSetSearchRequest
 	@Override
 	protected EquivalentConceptSets createEmptyResult(final int limit) {
 		return new EquivalentConceptSets(limit, 0);
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 }

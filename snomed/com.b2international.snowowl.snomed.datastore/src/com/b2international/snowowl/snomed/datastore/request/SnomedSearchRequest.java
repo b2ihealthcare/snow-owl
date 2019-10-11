@@ -20,6 +20,7 @@ import java.util.Collections;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
@@ -38,7 +39,9 @@ import com.google.common.collect.Iterables;
  * @param R - the return type of this request
  * @param D - the document type to search for
  */
-public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends SearchIndexResourceRequest<BranchContext, R, D> {
+public abstract class SnomedSearchRequest<R, D extends SnomedDocument> 
+		extends SearchIndexResourceRequest<BranchContext, R, D>
+		implements AccessControl {
 
 	enum OptionKey {
 		
