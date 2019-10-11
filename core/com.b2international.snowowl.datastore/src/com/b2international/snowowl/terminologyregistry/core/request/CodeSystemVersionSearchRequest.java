@@ -23,15 +23,21 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
+
+import sun.java2d.pipe.hw.AccelGraphicsConfig;
 
 /**
  * @since 4.7
  */
-final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> {
+final class CodeSystemVersionSearchRequest 
+	extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> 
+	implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -119,6 +125,11 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 	@Override
 	protected CodeSystemVersions createEmptyResult(int limit) {
 		return new CodeSystemVersions(Collections.emptyList(), null, null, limit, 0);
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 	
 

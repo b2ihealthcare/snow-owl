@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,17 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, CodeSystemEntry> {
+final class CodeSystemSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, CodeSystemEntry> implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -59,6 +61,11 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 	@Override
 	protected CodeSystems createEmptyResult(int limit) {
 		return new CodeSystems(Collections.emptyList(), null, null, limit, 0);
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 
 }

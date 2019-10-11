@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,17 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.base.Strings;
 
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest implements Request<TransactionContext, String> {
+final class CodeSystemCreateRequest implements Request<TransactionContext, String>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -135,6 +137,11 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.repositoryUuid(repositoryUuid)
 				.extensionOf(extensionOf)
 				.build();
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, repositoryUuid);
 	}
 
 }

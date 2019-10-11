@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
@@ -61,6 +62,7 @@ import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.datastore.version.VersioningConfiguration;
 import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
@@ -69,7 +71,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 5.7
  */
-final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, Boolean> {
+final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	private static final int TASK_WORK_STEP = 4;
@@ -244,6 +246,12 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.execute(context.service(IEventBus.class))
 			.getSync();
 		monitor.worked(1);
+	}
+	
+	@Override
+	public Permission getPermission() {
+		// XXX - is all repositories correct?
+		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 
 }
