@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,16 @@
 package com.b2international.snowowl.datastore.request.job;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.7
  */
-final class CancelJobRequest implements Request<ServiceProvider, Boolean> {
+final class CancelJobRequest implements Request<ServiceProvider, Boolean>, AccessControl {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -38,6 +40,11 @@ final class CancelJobRequest implements Request<ServiceProvider, Boolean> {
 	public Boolean execute(ServiceProvider context) {
 		context.service(RemoteJobTracker.class).requestCancel(id);
 		return Boolean.TRUE;
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 
 }

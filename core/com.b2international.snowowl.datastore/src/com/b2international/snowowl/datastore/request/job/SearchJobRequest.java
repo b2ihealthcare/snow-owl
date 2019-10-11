@@ -26,15 +26,19 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 5.7
  */
-final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider, RemoteJobs, RemoteJobEntry> {
+final class SearchJobRequest 
+		extends SearchIndexResourceRequest<ServiceProvider, RemoteJobs, RemoteJobEntry>
+		implements AccessControl {
 
 	SearchJobRequest() {
 	}
@@ -74,6 +78,11 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 	@Override
 	protected RemoteJobs createEmptyResult(int limit) {
 		return new RemoteJobs(Collections.emptyList(), null, null, limit, 0);
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 	
 }

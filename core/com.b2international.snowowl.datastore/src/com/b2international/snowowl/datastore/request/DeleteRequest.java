@@ -17,15 +17,17 @@ package com.b2international.snowowl.datastore.request;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
  */
-public final class DeleteRequest implements Request<TransactionContext, Boolean> {
+public final class DeleteRequest implements Request<TransactionContext, Boolean>, AccessControl {
 
 	@JsonProperty
 	@NotNull
@@ -51,6 +53,11 @@ public final class DeleteRequest implements Request<TransactionContext, Boolean>
 
 	public String getComponentId() {
 		return componentId;
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 	
 }
