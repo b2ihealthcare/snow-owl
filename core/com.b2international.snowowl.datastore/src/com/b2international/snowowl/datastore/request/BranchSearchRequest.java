@@ -37,8 +37,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.collect.ImmutableList;
 
-import sun.java2d.pipe.hw.AccelGraphicsConfig;
-
 /**
  * @since 4.1
  */

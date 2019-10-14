@@ -30,8 +30,6 @@ import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.identity.domain.Permission;
 
-import sun.java2d.pipe.hw.AccelGraphicsConfig;
-
 /**
  * @since 4.7
  */
