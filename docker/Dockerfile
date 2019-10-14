@@ -18,7 +18,7 @@ ENV JAVA_HOME /etc/alternatives/jre
 WORKDIR /usr/share
 COPY ${SNOWOWL_RPM_PACKAGE} ${SNOWOWL_RPM_PACKAGE}
 RUN rpm --install ${SNOWOWL_RPM_PACKAGE} && rm -f ${SNOWOWL_RPM_PACKAGE}
-COPY docker/config/snowowl.yml /etc/snowowl/snowowl.yml
+COPY config/snowowl.yml /etc/snowowl/snowowl.yml
 RUN chown snowowl:snowowl /etc/snowowl/snowowl.yml
 
 # Openshift overrides USER and uses ones with randomly uid>1024 and gid=0
