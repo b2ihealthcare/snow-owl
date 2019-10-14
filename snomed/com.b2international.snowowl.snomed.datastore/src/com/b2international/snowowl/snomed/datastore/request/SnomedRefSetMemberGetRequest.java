@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 5.7
  */
 final class SnomedRefSetMemberGetRequest
-		extends GetResourceRequest<SnomedRefSetMemberSearchRequestBuilder, BranchContext, SnomedReferenceSetMember> {
+		extends GetResourceRequest<SnomedRefSetMemberSearchRequestBuilder, BranchContext, SnomedReferenceSetMember>
+		implements AccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -34,6 +37,11 @@ final class SnomedRefSetMemberGetRequest
 	@Override
 	protected SnomedRefSetMemberSearchRequestBuilder createSearchRequestBuilder() {
 		return new SnomedRefSetMemberSearchRequestBuilder();
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 
 }

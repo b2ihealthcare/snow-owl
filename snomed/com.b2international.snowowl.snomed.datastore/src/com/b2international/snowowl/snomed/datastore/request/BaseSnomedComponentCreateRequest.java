@@ -103,6 +103,6 @@ public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComp
 	
 	@Override
 	public Permission getPermission() {
-		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID, "");
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 }

@@ -19,7 +19,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
@@ -40,5 +42,5 @@ final class SnomedIdentifierGetRequest implements Request<ServiceProvider, SctId
 		final Map<String, SctId> sctIds = context.service(ISnomedIdentifierService.class).getSctIds(componentIds);
 		return new SctIds(sctIds.values());
 	}
-
+	
 }

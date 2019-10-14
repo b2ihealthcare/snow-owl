@@ -30,11 +30,14 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.MatchNone;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -64,7 +67,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 6.12
  */
-final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promise<Expression>> {
+final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promise<Expression>>, AccessControl {
 
 	private static final long serialVersionUID = 8932162693072727864L;
 
@@ -305,6 +308,11 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 							.mustNot(right)
 							.build();
 				});
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
 }
