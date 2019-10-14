@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 6.1
  */
-final class ValidationWhiteListDeleteRequest implements Request<ValidationRepositoryContext, Boolean> {
+final class ValidationWhiteListDeleteRequest implements Request<ValidationRepositoryContext, Boolean>, AccessControl {
 
 	private final String id;
 
@@ -33,6 +35,11 @@ final class ValidationWhiteListDeleteRequest implements Request<ValidationReposi
 	public Boolean execute(ValidationRepositoryContext context) {
 		context.delete(ValidationWhiteList.class, id);
 		return Boolean.TRUE;
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 
 }

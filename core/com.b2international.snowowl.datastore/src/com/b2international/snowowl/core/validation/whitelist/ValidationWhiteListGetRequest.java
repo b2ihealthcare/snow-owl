@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 6.1
  */
 final class ValidationWhiteListGetRequest 
-	extends GetResourceRequest<ValidationWhiteListSearchRequestBuilder, ServiceProvider, ValidationWhiteList>{
+		extends GetResourceRequest<ValidationWhiteListSearchRequestBuilder, ServiceProvider, ValidationWhiteList> 
+		implements AccessControl {
 
 	protected ValidationWhiteListGetRequest(String id) {
 		super(id);
@@ -31,6 +34,11 @@ final class ValidationWhiteListGetRequest
 	@Override
 	protected ValidationWhiteListSearchRequestBuilder createSearchRequestBuilder() {
 		return new ValidationWhiteListSearchRequestBuilder();
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 	
 }
