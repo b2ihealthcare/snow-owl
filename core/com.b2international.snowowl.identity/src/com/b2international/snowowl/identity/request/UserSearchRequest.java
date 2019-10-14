@@ -18,14 +18,11 @@ package com.b2international.snowowl.identity.request;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.Users;
-
-import sun.java2d.pipe.hw.AccelGraphicsConfig;
 
 /**
  * @since 5.11
