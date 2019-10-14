@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,18 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.ReviewManager;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * Sent when a user requests to read change set of a terminology review with the specified identifier.
  * 
  * @since 4.2
  */
-public final class ReadConceptChangesRequest extends ReviewRequest<ConceptChanges> {
+public final class ReadConceptChangesRequest extends ReviewRequest<ConceptChanges> implements AccessControl {
 
 	public ReadConceptChangesRequest(final String reviewId) {
 		super(reviewId);
@@ -33,6 +35,11 @@ public final class ReadConceptChangesRequest extends ReviewRequest<ConceptChange
 	@Override
 	public ConceptChanges execute(RepositoryContext context) {
 		return context.service(ReviewManager.class).getConceptChanges(getReviewId());
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 
 }
