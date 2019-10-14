@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
@@ -34,7 +36,7 @@ import com.google.common.base.Strings;
 /**
  * @since 5.7
  */
-final class ScheduleJobRequest implements Request<ServiceProvider, String> {
+final class ScheduleJobRequest implements Request<ServiceProvider, String>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -92,6 +94,11 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 		} finally {
 			SCHEDULE_LOCK.release();
 		}
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 
 }

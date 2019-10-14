@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
@@ -29,13 +30,14 @@ import com.b2international.snowowl.core.merge.MergeCollection;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
 /**
  * @since 7.1
  */
-public class SearchMergeRequest implements Request<RepositoryContext, MergeCollection> {
+public class SearchMergeRequest implements Request<RepositoryContext, MergeCollection>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -71,6 +73,11 @@ public class SearchMergeRequest implements Request<RepositoryContext, MergeColle
 		final RemoteJobs jobs = context.service(RemoteJobTracker.class).search(expressionBuilder.build(), Integer.MAX_VALUE);
 		final ObjectMapper mapper = context.service(ObjectMapper.class);
 		return new MergeCollection(jobs.stream().filter(RemoteJobEntry::isDone).map(job -> job.getResultAs(mapper, Merge.class)).collect(Collectors.toList()));
+	}
+	
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.BROWSE, Permission.ALL);
 	}
 	
 

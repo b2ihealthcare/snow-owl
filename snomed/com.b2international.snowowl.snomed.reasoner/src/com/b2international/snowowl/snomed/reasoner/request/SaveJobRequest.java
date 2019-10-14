@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.extension.Extensions;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -46,6 +47,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -54,6 +56,7 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
@@ -88,7 +91,7 @@ import com.google.common.collect.Multimap;
  *
  * @since 7.0
  */
-final class SaveJobRequest implements Request<BranchContext, Boolean> {
+final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessControl {
 
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
@@ -816,5 +819,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 						.build());
 
 		bulkRequestBuilder.add(updateRequest);		
+	}
+
+	@Override
+	public Permission getPermission() {
+		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 }
