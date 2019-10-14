@@ -28,7 +28,7 @@ ES_PORT=9200
 
 execute() {
 
-  for i in ${!SNOW_OWL_HOSTS[@]}; do
+  for i in "${SNOW_OWL_HOSTS[@]}"; do
     DATA=$(cat <<EOF
 {
   "source": {
@@ -48,7 +48,7 @@ execute() {
 }
 EOF
 )
-
+    echo "Synchronizing ${i}..."
     curl -XPOST -H "Content-Type: application/json" \
       --silent --show-error \
       http://localhost:${ES_PORT}/_reindex?wait_for_completion=true -d "${DATA}"
