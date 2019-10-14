@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.internal.validation.ValidationRepository
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 6.0
