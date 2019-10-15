@@ -4,6 +4,8 @@ node('docker') {
 	def currentVersion
 	def revision
 	def tag
+	
+	def startDate = new Date()
 
 	try {
 
@@ -23,9 +25,11 @@ node('docker') {
 			}
 
 			revision = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
+			
 		}
 
 		stage('Build') {
+			
 			if (!custom_maven_settings.isEmpty()) {
 				withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher()],  publisherStrategy: 'EXPLICIT') {
 					sh "mvn clean verify -Dmaven.test.skip=${skipTests}"
@@ -35,6 +39,7 @@ node('docker') {
 					sh "mvn clean verify -Dmaven.test.skip=${skipTests}"
 				}
 			}
+			
 		}
 
 		if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
@@ -50,12 +55,15 @@ node('docker') {
 						sh "mvn deploy -Dmaven.test.skip=true -Dmaven.install.skip=true"
 					}
 				}
+				
 			}
 
 			stage('Find artifact') {
+				
 				def rpmArtifact = findFiles(glob: "releng/com.b2international.snowowl.server.update/target/snow-owl-oss*.rpm")[0]
 				sh '\\cp -f -t ${WORKSPACE}/docker '+rpmArtifact.path+''
 				serverArtifact = rpmArtifact.name
+				
 			}
 
 			if (!custom_docker_registry.isEmpty()) {
@@ -75,8 +83,11 @@ node('docker') {
 						if (!currentVersion.contains("SNAPSHOT")) {
 							image.push("latest")
 						}
+						
 					}
+					
 				}
+				
 			}
 
 			stage('Build docker image for docker-hub') {
@@ -88,20 +99,24 @@ node('docker') {
 
 				docker.withRegistry('', 'docker-hub-credentials') {
 
-					def image = docker.build("b2ihealthcare/snow-owl:${tag}", "${buildArgs}")
+					def image = docker.build("b2ihealthcare/snow-owl-oss:${tag}", "${buildArgs}")
 					image.push()
 
 					if (!currentVersion.contains("SNAPSHOT")) {
 						image.push("latest")
 					}
+					
 				}
+				
 			}
 
 			stage('Clean up') {
 				sh 'rm -fv docker/*.rpm'
 				sh 'docker system prune -f'
 			}
+			
 		}
+		
 	} catch (e) {
 		currentBuild.result = "FAILURE"
 		throw e
@@ -116,17 +131,23 @@ def notifyBuild(String buildStatus = 'STARTED') {
 	buildStatus =  buildStatus ?: 'SUCCESS'
 
 	// Default values
-	def colorCode = '#FF0000'
-	def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
-	def summary = "${subject} (${env.BUILD_URL})"
-
-	// Override default values based on build status
-	if (buildStatus == 'STARTED') {
-		colorCode = '#FFFF00'
-	} else if (buildStatus == 'SUCCESS') {
-		colorCode = '#00FF00'
+	def colorCode = '#A30200'
+	def summary
+	
+	if (buildStatus == 'SUCCESS') {
+		def duration = groovy.time.TimeCategory.minus(new Date(), startDate).toString()
+		summary = "${env.JOB_NAME} - ${env.BUILD_DISPLAY_NAME} - ${buildStatus} after ${duration} (<${env.BUILD_URL}|Open>)"
 	} else {
-		colorCode = '#FF0000'
+		summary = "${env.JOB_NAME} - ${env.BUILD_DISPLAY_NAME} - ${buildStatus} (<${env.BUILD_URL}|Open>)"
+	}
+	
+	// Override default values based on build status
+	if (buildStatus == 'STARTED' || buildStatus == 'SUCCESS') {
+		colorCode = '#2EB886'
+	} else if (buildStatus == 'UNSTABLE') {
+		colorCode = '#DAA038'
+	} else {
+		colorCode = '#A30200'
 	}
 
 	// Send notifications
