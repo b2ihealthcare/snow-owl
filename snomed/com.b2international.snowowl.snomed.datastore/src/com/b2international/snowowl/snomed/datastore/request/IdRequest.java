@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,10 @@ import com.b2international.snowowl.snomed.cis.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -68,17 +69,18 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final Map<ComponentCategory, Class<? extends SnomedComponentDocument>> CATEGORY_TO_DOCUMENT_CLASS_MAP;
+	private static final Map<ComponentCategory, Class<? extends SnomedDocument>> CATEGORY_TO_DOCUMENT_CLASS_MAP;
 	
 	static {
-		CATEGORY_TO_DOCUMENT_CLASS_MAP = ImmutableMap.<ComponentCategory, Class<? extends SnomedComponentDocument>>builder()
+		CATEGORY_TO_DOCUMENT_CLASS_MAP = ImmutableMap.<ComponentCategory, Class<? extends SnomedDocument>>builder()
 				.put(ComponentCategory.CONCEPT, SnomedConceptDocument.class)
 				.put(ComponentCategory.RELATIONSHIP, SnomedRelationshipIndexEntry.class)
 				.put(ComponentCategory.DESCRIPTION, SnomedDescriptionIndexEntry.class)
+				.put(ComponentCategory.SET_MEMBER, SnomedRefSetMemberIndexEntry.class)
 				.build();
 	}
 
-	private static Class<? extends SnomedComponentDocument> getDocumentClass(final ComponentCategory category) {
+	private static Class<? extends SnomedDocument> getDocumentClass(final ComponentCategory category) {
 		return CATEGORY_TO_DOCUMENT_CLASS_MAP.get(category);
 	}
 
@@ -102,21 +104,30 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 					idGenerationTimer.start();
 
 					for (final ComponentCategory category : componentCreateRequests.keySet()) {
-						final Class<? extends SnomedComponentDocument> documentClass = getDocumentClass(category);
+						final Class<? extends SnomedDocument> documentClass = getDocumentClass(category);
 						final Collection<SnomedComponentCreateRequest> categoryRequests = componentCreateRequests.get(category);
 						
-						final Set<String> userSuppliedIds = FluentIterable.from(categoryRequests)
+						final Set<String> coreComponentIds = FluentIterable.from(categoryRequests)
 								.filter(SnomedCoreComponentCreateRequest.class)
 								.filter(request -> request.getIdGenerationStrategy() instanceof ConstantIdStrategy)
 								.transform(request -> ((ConstantIdStrategy) request.getIdGenerationStrategy()).getId())
 								.toSet();
 						
-						final Set<String> existingIds = getExistingIds(context, userSuppliedIds, documentClass);
+						final Set<String> refsetMemberIds = FluentIterable.from(categoryRequests)
+								.filter(SnomedRefSetMemberCreateRequest.class)
+								.transform(request -> request.getId())
+								.toSet();
+						
+						final Set<String> userRequestedIds = Sets.newHashSet(Iterables.concat(coreComponentIds, refsetMemberIds));
+						
+						final Set<String> existingIds = getExistingIds(context, userRequestedIds, documentClass);
 						if (!existingIds.isEmpty()) {
 							// TODO: Report all existing identifiers
 							throw new AlreadyExistsException(category.getDisplayName(), Iterables.getFirst(existingIds, null));
 						} else {
-							recorder.register(userSuppliedIds);
+							if (!coreComponentIds.isEmpty()) {
+								recorder.register(coreComponentIds);
+							}
 						}
 						
 						final Multimap<String, BaseSnomedComponentCreateRequest> requestsByNamespace = FluentIterable.from(categoryRequests)
@@ -174,6 +185,11 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 				resultBuilder.put(category, (BaseSnomedComponentCreateRequest) nestedRequest);
 				// XXX: we could recurse here, but only concept creation requests have actual nested requests at the moment
 			}
+		} else if (request instanceof SnomedRefSetMemberCreateRequest) {
+			final SnomedRefSetMemberCreateRequest createRequest = (SnomedRefSetMemberCreateRequest) request;
+			final ComponentCategory category = getComponentCategory(createRequest);
+			
+			resultBuilder.put(category, createRequest);
 		} else if (request instanceof BulkRequest) {
 			final BulkRequest<?> bulkRequest = (BulkRequest<?>) request;
 			for (Request<?, ?> bulkRequestItem : bulkRequest.getRequests()) {
@@ -189,6 +205,8 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 			return ComponentCategory.DESCRIPTION;
 		} else if (request instanceof SnomedRelationshipCreateRequest) {
 			return ComponentCategory.RELATIONSHIP;
+		} else if (request instanceof SnomedRefSetMemberCreateRequest) {
+			return ComponentCategory.SET_MEMBER;
 		} else {
 			throw new NotImplementedException("Unknown create request type: %s", request.getClass().getName());
 		}
@@ -196,7 +214,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 
 	private Set<String> getUniqueIds(final BranchContext context, final IdActionRecorder recorder, 
 			final ComponentCategory category, 
-			final Class<? extends SnomedComponentDocument> documentClass, 
+			final Class<? extends SnomedDocument> documentClass, 
 			final int quantity, 
 			final String namespace) {
 		
@@ -218,7 +236,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 		}
 	}
 
-	private Set<String> getExistingIds(final BranchContext context, final Set<String> ids, final Class<? extends SnomedComponentDocument> documentClass) {
+	private Set<String> getExistingIds(final BranchContext context, final Set<String> ids, final Class<? extends SnomedDocument> documentClass) {
 		
 		try {
 			
