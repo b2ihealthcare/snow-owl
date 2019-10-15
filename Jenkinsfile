@@ -9,7 +9,7 @@ node('docker') {
 
 	try {
 
-		notifyBuild('STARTED')
+		notifyBuild('STARTED', startDate)
 
 		stage('Checkout repository') {
 
@@ -121,11 +121,11 @@ node('docker') {
 		currentBuild.result = "FAILURE"
 		throw e
 	} finally {
-		notifyBuild(currentBuild.result)
+		notifyBuild(currentBuild.result, startDate)
 	}
 }
 
-def notifyBuild(String buildStatus = 'STARTED') {
+def notifyBuild(String buildStatus = 'STARTED', Date startDate) {
 
 	// build status of null means successful
 	buildStatus =  buildStatus ?: 'SUCCESS'
