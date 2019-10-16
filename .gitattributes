@@ -1,2 +1,3 @@
 # Normalize file endings for all text files detected by Git
-*	text=auto
+*		text=auto
+*.sh	text eol=lf
