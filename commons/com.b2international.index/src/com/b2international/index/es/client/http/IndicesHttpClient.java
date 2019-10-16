@@ -39,16 +39,19 @@ import com.b2international.index.es.client.IndicesClient;
  */
 public final class IndicesHttpClient implements IndicesClient {
 
-	private final RestHighLevelClient client;
+	private final EsHttpClient client;
+	private final RestHighLevelClient esClient;
 
-	public IndicesHttpClient(RestHighLevelClient client) {
+	public IndicesHttpClient(EsHttpClient client) {
 		this.client = client;
+		this.esClient = client.client();
 	}
 	
 	@Override
 	public CreateIndexResponse create(CreateIndexRequest req) {
+		client.checkAvailable();
 		try {
-			return client.indices().create(req, RequestOptions.DEFAULT);
+			return esClient.indices().create(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Failed to create index '%s' for type '%s'", req.index(), req.mappings().entrySet().iterator().next().getKey()), e);
 		}
@@ -56,8 +59,9 @@ public final class IndicesHttpClient implements IndicesClient {
 	
 	@Override
 	public boolean exists(String... indices) {
+		client.checkAvailable();
 		try {
-			return client.indices().exists(new GetIndexRequest().indices(indices), RequestOptions.DEFAULT);
+			return esClient.indices().exists(new GetIndexRequest().indices(indices), RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException("Couldn't check the existence of ES indices " + Arrays.toString(indices), e);
 		}
@@ -65,8 +69,9 @@ public final class IndicesHttpClient implements IndicesClient {
 
 	@Override
 	public AcknowledgedResponse delete(DeleteIndexRequest req) {
+		client.checkAvailable();
 		try {
-			return client.indices().delete(req, RequestOptions.DEFAULT);
+			return esClient.indices().delete(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Failed to delete all ES indices for '%s'.", Arrays.toString(req.indices())), e);
 		}
@@ -74,8 +79,9 @@ public final class IndicesHttpClient implements IndicesClient {
 
 	@Override
 	public RefreshResponse refresh(RefreshRequest req) {
+		client.checkHealthy(req.indices());
 		try {
-			return client.indices().refresh(req, RequestOptions.DEFAULT);
+			return esClient.indices().refresh(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(req.indices())), e);
 		}
@@ -83,8 +89,9 @@ public final class IndicesHttpClient implements IndicesClient {
 	
 	@Override
 	public GetMappingsResponse getMapping(GetMappingsRequest req) {
+		client.checkHealthy(req.indices());
 		try {
-			return client.indices().getMapping(req, RequestOptions.DEFAULT);
+			return esClient.indices().getMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Failed to get mapping '%s' of types %s.", Arrays.toString(req.indices()), Arrays.toString(req.types())), e);
 		}
@@ -92,8 +99,9 @@ public final class IndicesHttpClient implements IndicesClient {
 	
 	@Override
 	public AcknowledgedResponse updateMapping(PutMappingRequest req) throws IOException {
+		client.checkHealthy(req.indices());
 		try {
-			return client.indices().putMapping(req, RequestOptions.DEFAULT);
+			return esClient.indices().putMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Failed to put mapping '%s' of types %s.", Arrays.toString(req.indices()), req.type()), e);
 		}

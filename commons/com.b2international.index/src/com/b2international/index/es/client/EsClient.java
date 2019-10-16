@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 public interface EsClient extends AutoCloseable {
 
 	Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
+	
+	EsClusterStatus status();
 	
 	IndicesClient indices();
 	
@@ -127,7 +129,7 @@ public interface EsClient extends AutoCloseable {
 				        .put("cluster.name", configuration.getClusterName())
 				        .build();
 				return new EsTcpClient(new PreBuiltTransportClient(settings)
-						.addTransportAddress(new TransportAddress(new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort()))));
+						.addTransportAddress(new TransportAddress(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()))));
 			}
 		}
 		
