@@ -105,7 +105,7 @@ public final class EsHttpClient implements EsClient {
 				if (e instanceof ElasticsearchStatusException && ((ElasticsearchStatusException) e).status() == RestStatus.UNAUTHORIZED) {
 					EsClient.LOG.error("Unable to authenticate with remote cluster '{}' using the given credentials", host.toURI());
 				}
-				close();
+				client.close();
 				throw e;
 			}
 			
