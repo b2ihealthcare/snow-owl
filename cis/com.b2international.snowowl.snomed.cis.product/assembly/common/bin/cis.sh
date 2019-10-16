@@ -57,6 +57,7 @@ SO_JAVA_OPTS="-Xms2g \
                 -Declipse.application.launchDefault=false \
                 -Dosgi.classloader.type=nonparallel \
                 -XX:+AlwaysLockClassLoader \
+                -Djetty.port=9090 \
                 -Djetty.home=$KERNEL_HOME/configuration \
                 -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml \
                 -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog \
@@ -65,6 +66,7 @@ SO_JAVA_OPTS="-Xms2g \
                 -XX:+UseCMSInitiatingOccupancyOnly \
                 -XX:+HeapDumpOnOutOfMemoryError \
                 -Djdk.security.defaultKeySize=DSA:1024 \
+                -Dlogback.configurationFile=$KERNEL_HOME/configuration/serviceability.xml \
                 $SO_JAVA_OPTS"
 
 pushd "$KERNEL_HOME"
@@ -73,6 +75,6 @@ exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
   -Dosgi.configuration.area="$CONFIG_AREA" \
-  -jar plugins/org.eclipse.equinox.launcher_1.3.0.v20130327-1440.jar
+  -jar plugins/org.eclipse.equinox.launcher_1.3.0.v20130327-1440.jar -console 2501
   
 popd

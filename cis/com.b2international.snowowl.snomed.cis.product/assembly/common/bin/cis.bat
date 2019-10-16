@@ -4,10 +4,10 @@ rem Snow Owl CIS Startup Script
 if "%OS%" == "Windows_NT" setlocal
 
 rem Derive full path for script (includes trailing backslash)
-  set SCRIPT_DIR=%~dp0
+set SCRIPT_DIR=%~dp0
 
 rem Derive KERNEL_HOME full path from script's parent (no backslash)
-  for %%I in ("%SCRIPT_DIR%..") do set KERNEL_HOME=%%~fsI 
+for %%I in ("%SCRIPT_DIR%..") do set KERNEL_HOME="%%~fsI"
 
 REM Heap settings
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Xms2g
@@ -29,7 +29,7 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+AlwaysLockClassLoader
 
 REM Jetty configuration 
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.port=9090
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.home=%KERNEL_HOME%/configuration
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.home="%KERNEL_HOME%/configuration"
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog
 
@@ -39,8 +39,9 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:CMSInitiatingOccupancyFraction=75
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+UseCMSInitiatingOccupancyOnly
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dlogback.configurationFile="%KERNEL_HOME%/configuration/serviceability.xml"
 
 REM Run Snow Owl
 PUSHD %KERNEL_HOME%
-"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.3.0.v20130327-1440.jar 
+"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.3.0.v20130327-1440.jar -console 2501
 POPD
