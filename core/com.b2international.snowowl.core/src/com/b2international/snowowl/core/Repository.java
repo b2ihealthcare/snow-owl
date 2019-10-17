@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,26 @@ package com.b2international.snowowl.core;
 import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.reactivex.Observable;
 
 /**
  * @since 4.5
  */
-public interface Repository extends ServiceProvider, IDisposableService, RepositoryInfo {
+public interface Repository extends ServiceProvider, IDisposableService {
 
+	/**
+	 * @return the ID of the repository
+	 */
+	@JsonProperty
+	String id();
+	
+	/**
+	 * @return the repository status information
+	 */
+	RepositoryInfo status();
+	
 	/**
 	 * Returns the global singleton {@link IEventBus} to send events to it.
 	 * 

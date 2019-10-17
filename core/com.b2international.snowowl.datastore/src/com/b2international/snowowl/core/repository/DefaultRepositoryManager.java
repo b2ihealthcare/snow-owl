@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.google.common.collect.ImmutableList;
@@ -53,7 +52,7 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 	@Override
 	public RepositoryContext getContext(String repositoryId) {
 		final Repository repository = get(repositoryId);
-		return new DefaultRepositoryContext(repository, RepositoryInfo.of(repository));
+		return new DefaultRepositoryContext(repository, repository.status());
 	}
 
 	@Override
@@ -68,8 +67,8 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 		repositories.put(repositoryId, repository);
 	}
 	
-	public RepositoryBuilder prepareCreate(String repositoryId, String toolingId) {
-		return new RepositoryBuilder(this, repositoryId, toolingId);
+	public RepositoryBuilder prepareCreate(String repositoryId) {
+		return new RepositoryBuilder(this, repositoryId);
 	}
 	
 	@Override

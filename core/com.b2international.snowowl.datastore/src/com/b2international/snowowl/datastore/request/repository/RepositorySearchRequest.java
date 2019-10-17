@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.Repositories;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -45,7 +46,7 @@ class RepositorySearchRequest extends SearchResourceRequest<ServiceProvider, Rep
 				.repositories()
 				.stream()
 				.filter(repository -> ids == null ? true : ids.contains(repository.id()))
-				.map(RepositoryInfo::of)
+				.map(Repository::status)
 				.collect(Collectors.toList());
 		return new Repositories(ImmutableList.copyOf(repositories));
 	}
