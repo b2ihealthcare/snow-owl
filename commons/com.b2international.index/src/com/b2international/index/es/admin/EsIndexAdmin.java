@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public boolean exists() {
 		try {
-			return client().indices().exists(getAllIndexes());
+			return client().indices().exists(indices());
 		} catch (Exception e) {
 			throw new IndexException("Couldn't check the existence of all ES indices.", e);
 		}
@@ -227,16 +227,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 		}
 		// wait until the cluster processes each index create request
-		waitForYellowHealth(getAllIndexes());
+		waitForYellowHealth(indices());
 		log.info("'{}' indexes are ready.", name);
-	}
-
-	private String[] getAllIndexes() {
-		return mappings.getMappings()
-				.stream()
-				.map(this::getTypeIndex)
-				.distinct()
-				.toArray(String[]::new);
 	}
 
 	private Map<String, Object> createIndexSettings() throws IOException {
@@ -497,6 +489,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 //		waitForYellowHealth();
 	}
 	
+	@Override
 	public String getTypeIndex(DocumentMapping mapping) {
 		if (mapping.getParent() != null) {
 			return String.format("%s%s-%s", prefix, name, mapping.getParent().typeAsString());
@@ -505,6 +498,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 	}
 	
+	@Override
 	public EsClient client() {
 		return client;
 	}
