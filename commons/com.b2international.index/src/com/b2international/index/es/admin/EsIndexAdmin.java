@@ -18,8 +18,8 @@ package com.b2international.index.es.admin;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,16 +61,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
-import com.b2international.index.Analyzers;
-import com.b2international.index.BulkDelete;
-import com.b2international.index.BulkOperation;
-import com.b2international.index.BulkUpdate;
-import com.b2international.index.Doc;
-import com.b2international.index.IP;
-import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexException;
-import com.b2international.index.Keyword;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
@@ -84,7 +75,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Primitives;
@@ -525,7 +515,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 						.indices()
 						.refresh(refreshRequest);
 				if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
-					log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), refreshResponse.getStatus());
+					log.error("Index refresh request of '{}' returned with status {}", Arrays.toString(indicesToRefresh), refreshResponse.getStatus());
 				}
 				
 			} catch (Exception e) {

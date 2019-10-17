@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ import org.elasticsearch.rest.RestStatus;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Sets;
 
 /**
  * @since 7.2
@@ -62,7 +64,18 @@ public abstract class EsClientBase implements EsClient {
 	public final void checkHealthy(String...indices) {
 		checkAvailable();
 		final boolean checkAll = indices == null || indices.length == 0;
-		final boolean healthy = checkAll ? status().isHealthy() : status().isHealthy(indices);
+		EsClusterStatus latestStatus = status();
+		boolean healthy = checkAll ? latestStatus.isHealthy() : latestStatus.isHealthy(indices);
+		// check status again, if an index is not present in the list of indices in the cluster status
+		if (!healthy) {
+			Set<String> indicesSet = Sets.newHashSet(indices);
+			// if not all
+			if (!latestStatus.getHealthByIndex().keySet().containsAll(indicesSet)) {
+				latestStatus = checkStatus();
+				healthy = checkAll ? latestStatus.isHealthy() : latestStatus.isHealthy(indices);
+			}
+		}
+		
 		if (!healthy) {
 			throw new BadRequestException("Indices '%s' are not healthy.", checkAll ? "*" : Arrays.toString(indices), host.toURI());
 		}
@@ -71,10 +84,13 @@ public abstract class EsClientBase implements EsClient {
 	private EsClusterStatus checkStatus() {
 		// first ping the server
 		boolean available = false;
-		String diagnosis = String.format("The cluster at '%s' is not available.", host.toURI());
+		String diagnosis = "";
 		Map<String, ClusterHealthStatus> healthByIndex = Collections.emptyMap();
 		try {
 			available = ping();
+			if (!available) {
+				diagnosis = String.format("The cluster at '%s' is not available.", host.toURI());
+			}
 		} catch (Exception e) {
 			if (e instanceof ElasticsearchStatusException && ((ElasticsearchStatusException) e).status() == RestStatus.UNAUTHORIZED) {
 				diagnosis = String.format("Unable to authenticate with cluster '%s' using the given credentials", host.toURI());

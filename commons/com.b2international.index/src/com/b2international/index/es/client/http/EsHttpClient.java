@@ -149,7 +149,7 @@ public final class EsHttpClient extends EsClientBase {
 	
 	@Override
 	public final ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
-		checkHealthy();
+		checkAvailable();
 		return clientExt.clearScroll(req, RequestOptions.DEFAULT);
 	}
 	
