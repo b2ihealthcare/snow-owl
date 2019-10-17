@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,10 +99,8 @@ public abstract class BaseRevisionBranching {
 					lock.unlock();
 				}
 			} else {
-				throw new RequestTimeoutException();
+				throw new RequestTimeoutException("Couldn't lock path '%s' in 1 minute.", lockPath);
 			}
-		} catch (RequestTimeoutException e) {
-			throw e;
 		} catch (ApiException e) {
 			throw e;
 		} catch (Exception e) {

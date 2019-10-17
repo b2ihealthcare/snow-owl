@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -126,7 +126,7 @@ public final class RepositoryBuilder {
 		manager.put(repositoryId, repository);
 		
 		// execute initialization steps
-		repository.waitForHealth(Health.GREEN, 3, TimeUnit.MINUTES);
+		repository.waitForHealth(Health.GREEN, 3 * 60L /*wait 3 minutes for GREEN repository status*/);
 		new IndexReadRequest<Void>((context) -> {
 			initializer.initialize(context);
 			return null;

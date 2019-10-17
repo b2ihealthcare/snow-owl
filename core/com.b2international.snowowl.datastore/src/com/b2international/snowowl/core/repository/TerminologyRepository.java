@@ -17,12 +17,14 @@ package com.b2international.snowowl.core.repository;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
+import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
@@ -52,6 +54,9 @@ import com.b2international.snowowl.datastore.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapMaker;
+
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 
 /**
  * @since 4.1
@@ -156,8 +161,16 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		return RepositoryInfo.of(id(), health, diagnosis);
 	}
 
-	public void waitForHealth(RepositoryInfo.Health health, long timeout, TimeUnit unit) {
-		// TODO implement
+	public void waitForHealth(RepositoryInfo.Health desiredHealth, long seconds) {
+		final RetryPolicy<Health> retryPolicy = new RetryPolicy<Health>()
+				.handleResult(Health.RED)
+				.withMaxAttempts(-1)
+				.withMaxDuration(Duration.of(seconds, ChronoUnit.SECONDS))
+				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS);
+		final Health finalHealth = Failsafe.with(retryPolicy).get(() -> status().health());
+		if (finalHealth != desiredHealth) {
+			throw new RequestTimeoutException("Repository health status couldn't reach '%s' in '%' seconds.", desiredHealth, seconds);
+		}
 	}
 	
 }
