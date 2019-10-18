@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core;
 
 import java.io.Serializable;
 
+import com.b2international.index.es.client.EsClusterStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -44,6 +45,9 @@ public interface RepositoryInfo {
 		return null;
 	}
 	
+	@JsonProperty
+	EsClusterStatus cluster();
+	
 	/**
 	 * @since 5.8 
 	 */
@@ -61,11 +65,13 @@ public interface RepositoryInfo {
 		private final String id;
 		private final Health health;
 		private final String diagnosis;
+		private final EsClusterStatus cluster;
 
-		private Default(String id, Health health, String diagnosis) {
+		private Default(String id, Health health, String diagnosis, EsClusterStatus cluster) {
 			this.id = id;
 			this.health = health;
 			this.diagnosis = diagnosis;
+			this.cluster = cluster;
 		}
 		
 		@Override
@@ -83,14 +89,19 @@ public interface RepositoryInfo {
 			return diagnosis;
 		}
 		
+		@Override
+		public EsClusterStatus cluster() {
+			return cluster;
+		}
+		
 	}
 	
-	static RepositoryInfo of(String id, Health health, String diagnosis) {
-		return new Default(id, health, diagnosis);
+	static RepositoryInfo of(String id, Health health, String diagnosis, EsClusterStatus cluster) {
+		return new Default(id, health, diagnosis, cluster);
 	}
 	
 	static RepositoryInfo of(RepositoryInfo info) {
-		return of(info.id(), info.health(), info.diagnosis());
+		return of(info.id(), info.health(), info.diagnosis(), info.cluster());
 	}
 	
 }

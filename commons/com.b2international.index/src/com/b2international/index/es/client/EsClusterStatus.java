@@ -15,10 +15,13 @@
  */
 package com.b2international.index.es.client;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.elasticsearch.cluster.health.ClusterHealthStatus;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -28,9 +31,9 @@ public final class EsClusterStatus {
 
 	private final boolean available;
 	private final String diagnosis;
-	private final Map<String, ClusterHealthStatus> healthByIndex;
+	private final Map<String, EsIndexStatus> healthByIndex;
 	
-	public EsClusterStatus(final boolean available, final String diagnosis, final Map<String, ClusterHealthStatus> healthByIndex) {
+	public EsClusterStatus(final boolean available, final String diagnosis, final Map<String, EsIndexStatus> healthByIndex) {
 		this.available = available;
 		this.diagnosis = diagnosis;
 		this.healthByIndex = healthByIndex;
@@ -47,7 +50,7 @@ public final class EsClusterStatus {
 	 * @return <code>true</code> if all indices report back GREEN healthy state, <code>false</code> if at least one index reports back non-GREEN status.
 	 */
 	public boolean isHealthy() {
-		return false;
+		return isHealthy(healthByIndex.keySet().toArray(new String[]{}));
 	}
 	
 	/**
@@ -61,17 +64,19 @@ public final class EsClusterStatus {
 	 * @return all index health states
 	 */
 	@JsonProperty("indices")
-	public Map<String, ClusterHealthStatus> getHealthByIndex() {
-		return healthByIndex;
+	public List<EsIndexStatus> getIndices() {
+		return healthByIndex.values().stream().sorted().collect(Collectors.toUnmodifiableList());
 	}
 	
 	/**
 	 * @param indices
 	 * @return <code>true</code> if all of the given indices are healthy, <code>false</code> otherwise.
 	 */
+	@JsonIgnore
 	public boolean isHealthy(String...indices) {
+		checkArgument(indices != null && indices.length > 0, "At least one index must be specified");
 		for (String index : indices) {
-			if (ClusterHealthStatus.GREEN != healthByIndex.get(index)) {
+			if (!healthByIndex.containsKey(index) || !healthByIndex.get(index).isHealthy()) {
 				return false;
 			}
 		}

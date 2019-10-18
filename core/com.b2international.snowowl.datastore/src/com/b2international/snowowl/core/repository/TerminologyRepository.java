@@ -147,18 +147,18 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		// by default assume it is in GREEN status with no diagnosis
 		Health health = Health.GREEN;
 		String diagnosis = "";
-		final EsClusterStatus status = service(IndexClient.class).client().status();
 		final String[] indices = service(Index.class).admin().indices();
+		final EsClusterStatus status = service(IndexClient.class).client().status(indices);
 		if (!status.isAvailable()) {
 			// check if cluster is available or not, and report RED state if not along with index diagnosis
 			health = Health.RED;
 			diagnosis = status.getDiagnosis();
-		} else if (status.isHealthy()) {
+		} else if (!status.isHealthy(indices)) {
 			// check if index is healthy and report RED if not along with diagnosis
 			health = Health.RED;
 			diagnosis = String.format("Repository indices '%s' are not healthy.", Arrays.toString(indices));
 		}
-		return RepositoryInfo.of(id(), health, diagnosis);
+		return RepositoryInfo.of(id(), health, diagnosis, status);
 	}
 
 	public void waitForHealth(RepositoryInfo.Health desiredHealth, long seconds) {
@@ -169,7 +169,7 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS);
 		final Health finalHealth = Failsafe.with(retryPolicy).get(() -> status().health());
 		if (finalHealth != desiredHealth) {
-			throw new RequestTimeoutException("Repository health status couldn't reach '%s' in '%' seconds.", desiredHealth, seconds);
+			throw new RequestTimeoutException("Repository health status couldn't reach '%s' in '%s' seconds.", desiredHealth, seconds);
 		}
 	}
 	

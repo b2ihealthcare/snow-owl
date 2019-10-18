@@ -55,7 +55,7 @@ public interface EsClient extends AutoCloseable {
 
 	Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
 	
-	EsClusterStatus status();
+	EsClusterStatus status(String...indices);
 	
 	IndicesClient indices();
 	
