@@ -97,9 +97,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 
 		// add all matching first
 		for (SnomedConcept matchedConcept : matchingConcepts.getItems()) {
-			if (matchedConcept.isActive()) {
-				conceptsToAdd.put(matchedConcept.getId(), matchedConcept);
-			}
+			conceptsToAdd.put(matchedConcept.getId(), matchedConcept);
 		}
 		
 		// then re-evaluate all current members of the target simple type reference set
