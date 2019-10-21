@@ -57,5 +57,10 @@ public final class EsIndexStatus implements Comparable<EsIndexStatus> {
 	public int compareTo(EsIndexStatus other) {
 		return COMPARATOR.compare(this, other);
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s[status: '%s', diagnosis: '%s']", index, status, diagnosis);
+	}
 
 }

@@ -24,24 +24,25 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.apache.http.HttpHost;
-import org.apache.logging.log4j.core.util.Throwables;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
+import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.index.IndexException;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
@@ -52,25 +53,14 @@ import net.jodah.failsafe.function.CheckedSupplier;
  */
 public abstract class EsClientBase implements EsClient {
 
+	private static final String READ_ONLY_SETTING = "index.blocks.read_only_allow_delete";
+	
 	private final HttpHost host;
 	private final Logger log;
-	private final Supplier<String> clusterAvailable = Suppliers.memoizeWithExpiration(this::checkClusterAvailable, 5, TimeUnit.MINUTES);
-	private final LoadingCache<String, EsIndexStatus> healthByIndex = CacheBuilder.newBuilder()
-			.expireAfterWrite(5, TimeUnit.MINUTES)
-			.build(new CacheLoader<String, EsIndexStatus>() {
-				@Override
-				public EsIndexStatus load(String index) throws Exception {
-					try {
-						return waitFor(1 * 60L /*seconds*/, result -> !result.isHealthy(), () -> {
-							log.trace("Retrieving '{}' index health from '{}'...", index, host.toURI());
-							return new EsIndexStatus(index, cluster().health(new ClusterHealthRequest(index)).getIndices().get(index).getStatus(), "");
-						});
-					} catch (Exception e) {
-						final Throwable cause = Throwables.getRootCause(e);
-						return new EsIndexStatus(index, ClusterHealthStatus.RED, String.format("Health check for index '%s' reported an error: %s", index, cause.getMessage())); 
-					}
-				}
-			});
+	
+	private final ExpiringMemoizingSupplier<String> clusterAvailable = memoizeWithExpiration(this::checkClusterAvailable, 5, TimeUnit.MINUTES);
+	private final ExpiringMemoizingSupplier<ClusterHealthResponse> clusterHealth = memoizeWithExpiration(this::checkClusterHealth, 5, TimeUnit.MINUTES);
+	private final ExpiringMemoizingSupplier<GetSettingsResponse> clusterSettings = memoizeWithExpiration(this::checkClusterSettings, 5, TimeUnit.MINUTES);
 	
 	public EsClientBase(String clusterUrl) {
 		this.host = HttpHost.create(clusterUrl);
@@ -88,14 +78,21 @@ public abstract class EsClientBase implements EsClient {
 		if (available && indices != null && indices.length > 0) {
 			final Map<String, EsIndexStatus> healthByIndex = newHashMap();
 			for (String index : indices) {
-				healthByIndex.put(index, this.healthByIndex.getUnchecked(index));
+				ClusterHealthStatus indexHealth = getIndexHealth(index);
+				String diagnosis = null;
+				// if not in red health state, check the read only flag
+				if (indexHealth != ClusterHealthStatus.RED && isIndexReadOnly(index)) {
+					indexHealth = ClusterHealthStatus.RED;
+					diagnosis = String.format("Index is read-only. Check/Fix source of the error (eg. run out of disk space), then run `curl -XPUT \"%s/%s/_settings\" -d '{ \"index.blocks.read_only_allow_delete\": null }'` to remove read-only flag.", host.toURI(), index);
+				}
+				healthByIndex.put(index, new EsIndexStatus(index, indexHealth, diagnosis));
 			}
 			return new EsClusterStatus(available, clusterDiagnosis, healthByIndex);
 		} else {
 			return new EsClusterStatus(available, clusterDiagnosis, Collections.emptyMap());
 		}
 	}
-	
+
 	public final void checkAvailable() {
 		if (!Strings.isNullOrEmpty(clusterAvailable.get())) {
 			throw new BadRequestException("Cluster at '%s' is not available.", host.toURI());
@@ -109,23 +106,15 @@ public abstract class EsClientBase implements EsClient {
 		}
 	}
 	
-	private final <T> T waitFor(long seconds, Predicate<T> handleIf, CheckedSupplier<T> onCheck) {
-		final RetryPolicy<T> retryPolicy = new RetryPolicy<T>()
-				.handleResultIf(handleIf)
-				.withMaxAttempts(-1)
-				.withMaxDuration(Duration.of(seconds, ChronoUnit.SECONDS))
-				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS);
-		return Failsafe.with(retryPolicy).get(onCheck);
-	}
-	
-	private String checkClusterAvailable() {
+	private String checkClusterAvailable(String previousAvailability) {
 		try {
+			log.trace("Pinging cluster at '{}'...", host.toURI());
 			boolean available = waitFor(1 * 60L /*seconds*/, result -> !result /*keep waiting until ping returns true*/, () -> {
-				log.info("Pinging cluster at '{}'...", host.toURI());
 				return ping();
 			});
 			if (!available) {
-				return String.format("The cluster at '%s' is not available.", host.toURI());
+				log.warn("Cluster at '{}' is not available.", host.toURI());
+				return String.format("Cluster at '%s' is not available.", host.toURI());
 			} else {
 				return "";
 			}
@@ -138,11 +127,102 @@ public abstract class EsClientBase implements EsClient {
 		}
 	}
 	
+	private ClusterHealthResponse checkClusterHealth(ClusterHealthResponse previousHealth) {
+		try {
+			log.trace("Checking cluster health at '{}'...", host.toURI());
+			return cluster().health(new ClusterHealthRequest());
+		} catch (IOException e) {
+			throw new IndexException("Failed to get cluster health", e);
+		}
+	}
+	
+	private GetSettingsResponse checkClusterSettings(GetSettingsResponse previousSettings) {
+		try {
+			log.trace("Checking cluster settings at '{}'...", host.toURI());
+			return indices().settings(new GetSettingsRequest());
+		} catch (IOException e) {
+			throw new IndexException("Failed to get cluster settings", e);
+		}
+	}
+	
+	private ClusterHealthStatus getIndexHealth(String index) {
+		return this.clusterHealth.waitUntilValue(result -> result.getIndices().containsKey(index), 1 * 60L /*seconds*/).getIndices().get(index).getStatus();
+	}
+	
+	private boolean isIndexReadOnly(String index) {
+		final String readOnly = this.clusterSettings.waitUntilValue(result -> result.getIndexToSettings().containsKey(index), 1 * 60L /*seconds*/).getSetting(index, READ_ONLY_SETTING);
+		return !Strings.isNullOrEmpty(readOnly) && !Boolean.valueOf(readOnly);
+	}
+	
 	/**
 	 * Ping the Elasticsearch cluster.
 	 * @return <code>true</code> if the cluster is available, up and running, <code>false</code> otherwise.
 	 * @throws IOException 
 	 */
 	protected abstract boolean ping() throws IOException;
+
+	private static final <T> T waitFor(long seconds, Predicate<T> handleIf, CheckedSupplier<T> onCheck) {
+		final RetryPolicy<T> retryPolicy = new RetryPolicy<T>()
+				.handleResultIf(handleIf)
+				.withMaxAttempts(-1)
+				.withMaxDuration(Duration.of(seconds, ChronoUnit.SECONDS))
+				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS);
+		return Failsafe.with(retryPolicy).get(onCheck);
+	}
+	
+	private static <T> ExpiringMemoizingSupplier<T> memoizeWithExpiration(Function<T, T> delegate, long duration, TimeUnit unit) {
+		return new ExpiringMemoizingSupplier<>(delegate, duration, unit);
+	}
+	
+	private static final class ExpiringMemoizingSupplier<T> implements Supplier<T> {
+
+		final Function<T, T> delegate;
+		final long durationNanos;
+		transient volatile T value;
+		// The special value 0 means "not yet initialized".
+		transient volatile long expirationNanos;
+
+		ExpiringMemoizingSupplier(Function<T, T> delegate, long duration, TimeUnit unit) {
+			this.delegate = Preconditions.checkNotNull(delegate);
+			this.durationNanos = unit.toNanos(duration);
+			Preconditions.checkArgument(duration > 0);
+		}
+
+		@Override
+		public T get() {
+			// Another variant of Double Checked Locking.
+			//
+			// We use two volatile reads. We could reduce this to one by
+			// putting our fields into a holder class, but (at least on x86)
+			// the extra memory consumption and indirection are more
+			// expensive than the extra volatile reads.
+			long nanos = expirationNanos;
+			long now = System.nanoTime();
+			if (nanos == 0 || now - nanos >= 0) {
+				synchronized (this) {
+					if (nanos == expirationNanos) { // recheck for lost race
+						T t = delegate.apply(value);
+						value = t;
+						nanos = now + durationNanos;
+						// In the very unlikely event that nanos is 0, set it to 1;
+						// no one will notice 1 ns of tardiness.
+						expirationNanos = (nanos == 0) ? 1 : nanos;
+						return t;
+					}
+				}
+			}
+			return value;
+		}
+		
+		public T waitUntilValue(Predicate<T> test, long seconds) {
+			return waitFor(seconds, result -> !test.test(result), () -> {
+				synchronized (this) {
+					expirationNanos = 0L; // reset
+					return get();
+				}
+			});
+		}
+		
+	}
 	
 }

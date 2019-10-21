@@ -27,6 +27,8 @@ import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
+import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -104,6 +106,16 @@ public final class IndicesHttpClient implements IndicesClient {
 			return esClient.indices().putMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Failed to put mapping '%s' of types %s.", Arrays.toString(req.indices()), req.type()), e);
+		}
+	}
+	
+	@Override
+	public GetSettingsResponse settings(GetSettingsRequest req) throws IOException {
+		client.checkAvailable();
+		try {
+			return esClient.indices().getSettings(req, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			throw new IndexException(String.format("Failed to get settings for index '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 	
