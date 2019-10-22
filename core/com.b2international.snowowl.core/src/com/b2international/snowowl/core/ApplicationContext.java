@@ -166,27 +166,34 @@ public class ApplicationContext {
 		Preconditions.checkNotNull(service, "Service for " + serviceInterface.getSimpleName() + " service cannot be null.");
 		return service;
 	}
-	
-	
+
+	/**
+	 * Registers a service for the given serviceInterface. Fires all {@link IServiceChangeListener}s attached to this application context. If the same
+	 * instance is already registered to the serviceInterface then this method does nothing.
+	 * 
+	 * @param <T>
+	 * @param serviceInterface
+	 * @param implementation
+	 */
 	public <T> void registerService(final Class<T> serviceInterface, final T implementation) {
-		
 		Preconditions.checkNotNull(implementation, "Registering service for " + serviceInterface.getSimpleName() + " is prohibited with unspecified implementation.");
 		
 		final ServiceRegistryEntry<T> entry = getServiceEntry(serviceInterface);
 		final T oldImplementation = entry.implementation;
-		entry.implementation = implementation;
-		// notify listeners
-		for (final Iterator<IServiceChangeListener<T>> ir = new CopyOnWriteArrayList<IServiceChangeListener<T>>(entry.listeners).iterator(); ir.hasNext(); /**/) {
-			final IServiceChangeListener<T> listener = ir.next();
-			listener.serviceChanged(oldImplementation, implementation);
+		if (oldImplementation != implementation) {
+			entry.implementation = implementation;
+			// notify listeners
+			for (final Iterator<IServiceChangeListener<T>> ir = new CopyOnWriteArrayList<IServiceChangeListener<T>>(entry.listeners).iterator(); ir.hasNext(); /**/) {
+				final IServiceChangeListener<T> listener = ir.next();
+				listener.serviceChanged(oldImplementation, implementation);
+			}
+			
+			// dispose old registered implementation
+			if (oldImplementation instanceof IDisposableService && !((IDisposableService) oldImplementation).isDisposed()) {
+				((IDisposableService)oldImplementation).dispose();
+			}
+			LOGGER.debug(MessageFormat.format("Registered service {0} for interface {1}.", implementation.getClass().getName(), serviceInterface.getName()));
 		}
-		
-		// dispose old registered implementation
-		if (oldImplementation instanceof IDisposableService && !((IDisposableService) oldImplementation).isDisposed()) {
-			((IDisposableService)oldImplementation).dispose();
-		}
-		
-		LOGGER.debug(MessageFormat.format("Registered service {0} for interface {1}.", implementation.getClass().getName(), serviceInterface.getName()));
 	}
 	
 	/**
