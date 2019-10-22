@@ -108,14 +108,17 @@ public abstract class EsClientBase implements EsClient {
 	
 	private String checkClusterAvailable(String previousAvailability) {
 		try {
-			log.trace("Pinging cluster at '{}'...", host.toURI());
 			boolean available = waitFor(1 * 60L /*seconds*/, result -> !result /*keep waiting until ping returns true*/, () -> {
+				log.trace("Pinging cluster at '{}'...", host.toURI());
 				return ping();
 			});
 			if (!available) {
 				log.warn("Cluster at '{}' is not available.", host.toURI());
 				return String.format("Cluster at '%s' is not available.", host.toURI());
 			} else {
+				if (!Strings.isNullOrEmpty(previousAvailability)) {
+					log.info("Cluster at '{}' became available.", host.toURI());
+				}
 				return "";
 			}
 		} catch (Exception e) {
