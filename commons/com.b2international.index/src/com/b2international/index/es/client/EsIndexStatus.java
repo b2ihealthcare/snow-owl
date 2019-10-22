@@ -19,6 +19,8 @@ import java.util.Comparator;
 
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @since 7.2
  */
@@ -49,6 +51,7 @@ public final class EsIndexStatus implements Comparable<EsIndexStatus> {
 		return diagnosis;
 	}
 
+	@JsonIgnore
 	public boolean isHealthy() {
 		return ClusterHealthStatus.GREEN == status;
 	}

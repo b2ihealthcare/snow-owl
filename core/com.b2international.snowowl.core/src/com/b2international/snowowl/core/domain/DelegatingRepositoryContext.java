@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 
-import com.b2international.index.es.client.EsClusterStatus;
+import com.b2international.index.es.client.EsIndexStatus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 
 /**
@@ -50,8 +52,8 @@ public class DelegatingRepositoryContext extends DelegatingContext implements Re
 	}
 	
 	@Override
-	public EsClusterStatus cluster() {
-		return getDelegate().cluster();
+	public List<EsIndexStatus> indices() {
+		return getDelegate().indices();
 	}
 	
 	@Override

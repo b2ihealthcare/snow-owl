@@ -16,8 +16,9 @@
 package com.b2international.snowowl.core;
 
 import java.io.Serializable;
+import java.util.List;
 
-import com.b2international.index.es.client.EsClusterStatus;
+import com.b2international.index.es.client.EsIndexStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -46,7 +47,7 @@ public interface RepositoryInfo {
 	}
 	
 	@JsonProperty
-	EsClusterStatus cluster();
+	List<EsIndexStatus> indices();
 	
 	/**
 	 * @since 5.8 
@@ -65,13 +66,13 @@ public interface RepositoryInfo {
 		private final String id;
 		private final Health health;
 		private final String diagnosis;
-		private final EsClusterStatus cluster;
+		private final List<EsIndexStatus> indices;
 
-		private Default(String id, Health health, String diagnosis, EsClusterStatus cluster) {
+		private Default(String id, Health health, String diagnosis, List<EsIndexStatus> indices) {
 			this.id = id;
 			this.health = health;
 			this.diagnosis = diagnosis;
-			this.cluster = cluster;
+			this.indices = indices;
 		}
 		
 		@Override
@@ -90,18 +91,18 @@ public interface RepositoryInfo {
 		}
 		
 		@Override
-		public EsClusterStatus cluster() {
-			return cluster;
+		public List<EsIndexStatus> indices() {
+			return indices;
 		}
 		
 	}
 	
-	static RepositoryInfo of(String id, Health health, String diagnosis, EsClusterStatus cluster) {
-		return new Default(id, health, diagnosis, cluster);
+	static RepositoryInfo of(String id, Health health, String diagnosis, List<EsIndexStatus> indices) {
+		return new Default(id, health, diagnosis, indices);
 	}
 	
 	static RepositoryInfo of(RepositoryInfo info) {
-		return of(info.id(), info.health(), info.diagnosis(), info.cluster());
+		return of(info.id(), info.health(), info.diagnosis(), info.indices());
 	}
 	
 }

@@ -15,14 +15,14 @@
  */
 package com.b2international.index.es.client;
 
-import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -75,9 +75,9 @@ public abstract class EsClientBase implements EsClient {
 	public final EsClusterStatus status(String...indices) {
 		final String clusterDiagnosis = clusterAvailable.get();
 		final boolean available = Strings.isNullOrEmpty(clusterDiagnosis);
-		if (available && indices != null && indices.length > 0) {
-			final Map<String, EsIndexStatus> healthByIndex = newHashMap();
-			for (String index : indices) {
+		if (available) {
+			final List<EsIndexStatus> indexStatuses = newArrayList();
+			for (String index : indices == null || indices.length == 0 ? clusterHealth.get().getIndices().keySet() : Arrays.asList(indices)) {
 				ClusterHealthStatus indexHealth = getIndexHealth(index);
 				String diagnosis = null;
 				// if not in red health state, check the read only flag
@@ -85,11 +85,11 @@ public abstract class EsClientBase implements EsClient {
 					indexHealth = ClusterHealthStatus.RED;
 					diagnosis = String.format("Index is read-only. Check/Fix source of the error (eg. run out of disk space), then run `curl -XPUT \"%s/%s/_settings\" -d '{ \"index.blocks.read_only_allow_delete\": null }'` to remove read-only flag.", host.toURI(), index);
 				}
-				healthByIndex.put(index, new EsIndexStatus(index, indexHealth, diagnosis));
+				indexStatuses.add(new EsIndexStatus(index, indexHealth, diagnosis));
 			}
-			return new EsClusterStatus(available, clusterDiagnosis, healthByIndex);
+			return new EsClusterStatus(available, clusterDiagnosis, indexStatuses);
 		} else {
-			return new EsClusterStatus(available, clusterDiagnosis, Collections.emptyMap());
+			return new EsClusterStatus(available, clusterDiagnosis, Collections.emptyList());
 		}
 	}
 

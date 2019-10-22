@@ -15,14 +15,14 @@
  */
 package com.b2international.index.es.client;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.2
@@ -31,12 +31,12 @@ public final class EsClusterStatus {
 
 	private final boolean available;
 	private final String diagnosis;
-	private final Map<String, EsIndexStatus> healthByIndex;
+	private final List<EsIndexStatus> indices;
 	
-	public EsClusterStatus(final boolean available, final String diagnosis, final Map<String, EsIndexStatus> healthByIndex) {
+	public EsClusterStatus(final boolean available, final String diagnosis, final List<EsIndexStatus> indices) {
 		this.available = available;
 		this.diagnosis = diagnosis;
-		this.healthByIndex = healthByIndex;
+		this.indices = Collections3.toImmutableList(indices);
 	}
 	
 	/**
@@ -50,7 +50,7 @@ public final class EsClusterStatus {
 	 * @return <code>true</code> if all indices report back GREEN healthy state, <code>false</code> if at least one index reports back non-GREEN status.
 	 */
 	public boolean isHealthy() {
-		return isHealthy(healthByIndex.keySet().toArray(new String[]{}));
+		return isHealthy((String[]) null);
 	}
 	
 	/**
@@ -65,22 +65,24 @@ public final class EsClusterStatus {
 	 */
 	@JsonProperty("indices")
 	public List<EsIndexStatus> getIndices() {
-		return healthByIndex.values().stream().sorted().collect(Collectors.toUnmodifiableList());
+		return indices;
 	}
 	
 	/**
 	 * @param indices
-	 * @return <code>true</code> if all of the given indices are healthy, <code>false</code> otherwise.
+	 * @return <code>true</code> if all of the given indices are healthy (accepts null and empty arrays, returns status from all indices in this case), <code>false</code> otherwise.
 	 */
 	@JsonIgnore
 	public boolean isHealthy(String...indices) {
-		checkArgument(indices != null && indices.length > 0, "At least one index must be specified");
-		for (String index : indices) {
-			if (!healthByIndex.containsKey(index) || !healthByIndex.get(index).isHealthy()) {
-				return false;
-			}
+		final Stream<EsIndexStatus> stream;
+		if (indices != null) {
+			final Set<String> requestedIndices = ImmutableSet.copyOf(indices);
+			stream = this.indices.stream()
+					.filter(index -> requestedIndices.contains(index.getIndex()));
+		} else {
+			stream = this.indices.stream();
 		}
-		return true;
+		return stream.allMatch(EsIndexStatus::isHealthy);
 	}
 
 }

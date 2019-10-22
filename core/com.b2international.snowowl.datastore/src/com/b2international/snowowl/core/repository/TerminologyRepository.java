@@ -30,6 +30,7 @@ import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
+import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.client.EsClusterStatus;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -124,10 +125,14 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		revisionIndex.branching().addBranchChangeListener(path -> {
 			sendNotification(new BranchChangedEvent(repositoryId, path));
 		});
-		// register index and revision index access, the underlying index is the same
+		// register IndexClient per terminology
 		bind(IndexClient.class, indexClient);
+		// but register EsClient globally
+		getDelegate().services().registerService(EsClient.class, indexClient.client());
+		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);
+		// register branching services
 		bind(BaseRevisionBranching.class, revisionIndex.branching());
 		return revisionIndex;
 	}
@@ -158,7 +163,7 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 			health = Health.RED;
 			diagnosis = String.format("Repository indices '%s' are not healthy.", Arrays.toString(indices));
 		}
-		return RepositoryInfo.of(id(), health, diagnosis, status);
+		return RepositoryInfo.of(id(), health, diagnosis, status.getIndices());
 	}
 
 	public void waitForHealth(RepositoryInfo.Health desiredHealth, long seconds) {
