@@ -1,6 +1,25 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.21.0
+
+### API
+- Support filtering refset members by OWL expression (#407)
+
+### MRCM
+- Add new concept set definition type (#408)
+
+### Jobs
+- Improve job filtering API (#411)
+- Add auto cleanup option to job schedule (#406)
+
+### Validation
+- Rename common validation rules (#410)
+
+### Bugs/improvements
+- Fix refset member duplication issue (#412)
+- Allow adding inactive query refset members (#414)
+
 ## 6.20.0
 
 ### API
