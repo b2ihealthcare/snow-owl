@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.core.authorization;
 
+import com.b2international.snowowl.core.ServiceProvider;
+
 /**
  * @since 7.2
  */
 public interface BranchAccessControl extends RepositoryAccessControl {
 
 	@Override
-	default String getResource() {
+	default String getResource(ServiceProvider context) {
 		return "${repository}/${branch}";
 	}
 	

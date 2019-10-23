@@ -91,15 +91,18 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	@JsonProperty
 	String codeSystemShortName;
 	
-	// lock props
+	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
+	private transient Map<String, CodeSystemEntry> codeSystemsByShortName;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String user = job.getUser();
 		
-		final Map<String, CodeSystemEntry> codeSystemsByShortName = fetchAllCodeSystems(context);
+		if (codeSystemsByShortName == null) {
+			codeSystemsByShortName = fetchAllCodeSystems(context);
+		}
 		
 		final CodeSystemEntry codeSystem = codeSystemsByShortName.get(codeSystemShortName);
 		if (codeSystem == null) {
@@ -246,6 +249,15 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.execute(context.service(IEventBus.class))
 			.getSync();
 		monitor.worked(1);
+	}
+	
+	@Override
+	public String getResource(ServiceProvider context) {
+		if (codeSystemsByShortName == null) {
+			codeSystemsByShortName = fetchAllCodeSystems(context);
+		}
+		// TODO support multi repository version authorization
+		return codeSystemsByShortName.get(codeSystemShortName).getRepositoryUuid();
 	}
 	
 	@Override

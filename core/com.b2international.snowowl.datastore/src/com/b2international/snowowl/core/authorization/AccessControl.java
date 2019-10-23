@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.authorization;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.identity.domain.Permission;
 
 /**
@@ -27,11 +28,11 @@ public interface AccessControl {
 	/**
 	 * @return the {@link Permission} required to access/execute/etc. this object.
 	 */
-	default Permission getPermission() {
-		return new Permission(getOperation(), getResource());
+	default Permission getPermission(ServiceProvider context) {
+		return new Permission(getOperation(), getResource(context));
 	}
 
-	String getResource();
+	String getResource(ServiceProvider context);
 
 	String getOperation();
 
