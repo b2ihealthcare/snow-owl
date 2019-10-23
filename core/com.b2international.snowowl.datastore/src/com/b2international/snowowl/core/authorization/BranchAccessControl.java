@@ -22,9 +22,11 @@ import com.b2international.snowowl.core.ServiceProvider;
  */
 public interface BranchAccessControl extends RepositoryAccessControl {
 
+	String BRANCH_TEMPLATE = "${branch}";
+
 	@Override
 	default String getResource(ServiceProvider context) {
-		return "${repository}/${branch}";
+		return String.format("%s/%s", REPOSITORY_TEMPLATE, BRANCH_TEMPLATE);
 	}
 	
 }

@@ -22,9 +22,11 @@ import com.b2international.snowowl.core.ServiceProvider;
  */
 public interface RepositoryAccessControl extends AccessControl {
 
+	String REPOSITORY_TEMPLATE = "${repository}";
+
 	@Override
 	default String getResource(ServiceProvider context) {
-		return "${repository}";
+		return REPOSITORY_TEMPLATE;
 	}
 	
 }
