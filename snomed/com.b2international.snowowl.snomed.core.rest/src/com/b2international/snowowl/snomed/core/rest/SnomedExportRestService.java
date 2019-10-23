@@ -279,7 +279,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	}
 
 	private URI getExportRunURI(UUID exportId) {
-		return MvcUriComponentsBuilder.fromMethodName(SnomedExportRestService.class, "getExport", exportId).pathSegment(exportId.toString()).build().toUri();
+		return MvcUriComponentsBuilder.fromMethodName(SnomedExportRestService.class, "getExport", exportId).build().toUri();
 	}
 	
 	/**

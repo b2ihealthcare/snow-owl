@@ -85,7 +85,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 			final SnomedImportRestConfiguration importConfiguration) {
 
 		final UUID importId = delegate.create(importConfiguration.toConfig());
-		return ResponseEntity.created(MvcUriComponentsBuilder.fromMethodName(SnomedImportRestService.class, "getImportDetails", importId).pathSegment(importId.toString()).build().toUri()).build();
+		return ResponseEntity.created(MvcUriComponentsBuilder.fromMethodName(SnomedImportRestService.class, "getImportDetails", importId).build().toUri()).build();
 	}
 
 	@ApiOperation(
