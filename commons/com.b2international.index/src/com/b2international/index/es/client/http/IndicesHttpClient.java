@@ -91,7 +91,7 @@ public final class IndicesHttpClient implements IndicesClient {
 	
 	@Override
 	public GetMappingsResponse getMapping(GetMappingsRequest req) {
-		client.checkHealthy(req.indices());
+		client.checkAvailable();
 		try {
 			return esClient.indices().getMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
