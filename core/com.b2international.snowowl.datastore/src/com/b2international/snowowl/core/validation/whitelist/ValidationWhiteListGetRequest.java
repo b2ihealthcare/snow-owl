@@ -16,16 +16,13 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 6.1
  */
 final class ValidationWhiteListGetRequest 
-		extends GetResourceRequest<ValidationWhiteListSearchRequestBuilder, ServiceProvider, ValidationWhiteList> 
-		implements AccessControl {
+		extends GetResourceRequest<ValidationWhiteListSearchRequestBuilder, ServiceProvider, ValidationWhiteList> {
 
 	protected ValidationWhiteListGetRequest(String id) {
 		super(id);
@@ -34,11 +31,6 @@ final class ValidationWhiteListGetRequest
 	@Override
 	protected ValidationWhiteListSearchRequestBuilder createSearchRequestBuilder() {
 		return new ValidationWhiteListSearchRequestBuilder();
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.BROWSE;
 	}
 	
 }

@@ -20,17 +20,15 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 6.0
  */
-final class ValidationRuleCreateRequest implements Request<ServiceProvider, String>, AccessControl {
+final class ValidationRuleCreateRequest implements Request<ServiceProvider, String> {
 
 	private String id;
 	
@@ -86,11 +84,6 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	public String execute(ServiceProvider context) {
 		context.service(ValidationRepository.class).save(id, new ValidationRule(id, toolingId, messageTemplate, severity, checkType,  type, implementation));
 		return id;
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.EDIT;
 	}
 
 }

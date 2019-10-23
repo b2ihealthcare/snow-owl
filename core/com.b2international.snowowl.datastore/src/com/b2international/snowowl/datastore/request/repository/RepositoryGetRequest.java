@@ -17,16 +17,12 @@ package com.b2international.snowowl.datastore.request.repository;
 
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 5.8
  */
-class RepositoryGetRequest 
-		extends GetResourceRequest<RepositorySearchRequestBuilder, ServiceProvider, RepositoryInfo>
-		implements AccessControl {
+class RepositoryGetRequest extends GetResourceRequest<RepositorySearchRequestBuilder, ServiceProvider, RepositoryInfo> {
 
 	RepositoryGetRequest(String id) {
 		super(id);
@@ -37,9 +33,4 @@ class RepositoryGetRequest
 		return new RepositorySearchRequestBuilder();
 	}
 
-	@Override
-	public String getOperation() {
-		return Permission.BROWSE;
-	}
-	
 }

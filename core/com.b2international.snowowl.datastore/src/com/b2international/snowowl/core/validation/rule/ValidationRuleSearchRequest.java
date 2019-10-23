@@ -25,18 +25,14 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 6.0
  */
-final class ValidationRuleSearchRequest 
-		extends SearchIndexResourceRequest<ServiceProvider, ValidationRules, ValidationRule>
-		implements AccessControl {
+final class ValidationRuleSearchRequest extends SearchIndexResourceRequest<ServiceProvider, ValidationRules, ValidationRule> {
 
 	enum OptionKey {
 		/**
@@ -87,11 +83,6 @@ final class ValidationRuleSearchRequest
 	@Override
 	protected ValidationRules createEmptyResult(int limit) {
 		return new ValidationRules(limit, 0);
-	}
-
-	@Override
-	public String getOperation() {
-		return Permission.BROWSE;
 	}
 
 }

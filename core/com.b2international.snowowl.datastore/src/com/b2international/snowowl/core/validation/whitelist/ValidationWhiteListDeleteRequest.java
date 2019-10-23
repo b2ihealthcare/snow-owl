@@ -15,15 +15,13 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 6.1
  */
-final class ValidationWhiteListDeleteRequest implements Request<ValidationRepositoryContext, Boolean>, AccessControl {
+final class ValidationWhiteListDeleteRequest implements Request<ValidationRepositoryContext, Boolean> {
 
 	private final String id;
 
@@ -37,9 +35,4 @@ final class ValidationWhiteListDeleteRequest implements Request<ValidationReposi
 		return Boolean.TRUE;
 	}
 	
-	@Override
-	public String getOperation() {
-		return Permission.EDIT;
-	}
-
 }

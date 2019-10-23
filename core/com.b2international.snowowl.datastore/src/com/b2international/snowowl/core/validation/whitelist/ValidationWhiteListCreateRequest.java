@@ -23,15 +23,13 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 6.1
  */
-final class ValidationWhiteListCreateRequest implements Request<ValidationRepositoryContext, String>, AccessControl {
+final class ValidationWhiteListCreateRequest implements Request<ValidationRepositoryContext, String> {
 
 	@NotEmpty String ruleId;
 	@NotNull ComponentIdentifier componentIdentifier;
@@ -66,9 +64,4 @@ final class ValidationWhiteListCreateRequest implements Request<ValidationReposi
 		this.createdAt = createdAt;
 	}
 	
-	@Override
-	public String getOperation() {
-		return Permission.EDIT;
-	}
-
 }

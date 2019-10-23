@@ -30,20 +30,17 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.0
  */
 final class ValidationIssueSearchRequest 
-		extends SearchIndexResourceRequest<ServiceProvider, ValidationIssues, ValidationIssue>
-		implements AccessControl {
+		extends SearchIndexResourceRequest<ServiceProvider, ValidationIssues, ValidationIssue> {
 
 	public enum OptionKey {
 		/**
@@ -203,9 +200,4 @@ final class ValidationIssueSearchRequest
 		return new ValidationIssues(limit, 0);
 	}
 	
-	@Override
-	public String getOperation() {
-		return Permission.BROWSE;
-	}
-
 }

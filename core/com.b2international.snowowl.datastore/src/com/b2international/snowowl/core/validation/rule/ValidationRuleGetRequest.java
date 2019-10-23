@@ -16,16 +16,12 @@
 package com.b2international.snowowl.core.validation.rule;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 6.0
  */
-final class ValidationRuleGetRequest
-		extends GetResourceRequest<ValidationRuleSearchRequestBuilder, ServiceProvider, ValidationRule>
-		implements AccessControl {
+final class ValidationRuleGetRequest extends GetResourceRequest<ValidationRuleSearchRequestBuilder, ServiceProvider, ValidationRule> {
 
 	ValidationRuleGetRequest(String ruleId) {
 		super(ruleId);
@@ -34,11 +30,6 @@ final class ValidationRuleGetRequest
 	@Override
 	protected ValidationRuleSearchRequestBuilder createSearchRequestBuilder() {
 		return new ValidationRuleSearchRequestBuilder();
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.BROWSE;
 	}
 	
 }

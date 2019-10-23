@@ -23,15 +23,13 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 5.8
  */
-class RepositorySearchRequest extends SearchResourceRequest<ServiceProvider, Repositories> implements AccessControl {
+class RepositorySearchRequest extends SearchResourceRequest<ServiceProvider, Repositories> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -50,11 +48,6 @@ class RepositorySearchRequest extends SearchResourceRequest<ServiceProvider, Rep
 				.map(RepositoryInfo::of)
 				.collect(Collectors.toList());
 		return new Repositories(ImmutableList.copyOf(repositories));
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.BROWSE;
 	}
 	
 }
