@@ -17,18 +17,17 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetUpdateRequest implements Request<TransactionContext, Boolean>, AccessControl {
+public final class QueryRefSetUpdateRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
 
 	@NotEmpty
 	private final String referenceSetId;
@@ -54,8 +53,8 @@ public final class QueryRefSetUpdateRequest implements Request<TransactionContex
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 
 }

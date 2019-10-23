@@ -35,10 +35,10 @@ final class ValidationIssueGetRequest
 	protected ValidationIssueSearchRequestBuilder createSearchRequestBuilder() {
 		return new ValidationIssueSearchRequestBuilder();
 	}
-	
-	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
-	}
 
+	@Override
+	public String getOperation() {
+		return Permission.BROWSE;
+	}
+	
 }

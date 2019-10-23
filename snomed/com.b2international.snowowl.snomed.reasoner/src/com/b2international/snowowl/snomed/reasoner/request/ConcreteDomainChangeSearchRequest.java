@@ -24,11 +24,10 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.reasoner.converter.ConcreteDomainChangeConverter;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
 import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
@@ -38,7 +37,7 @@ import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDoc
  */
 class ConcreteDomainChangeSearchRequest 
 		extends SearchIndexResourceRequest<RepositoryContext, ConcreteDomainChanges, ConcreteDomainChangeDocument>
-		implements AccessControl {
+		implements RepositoryAccessControl {
 
 	public enum OptionKey {
 		CLASSIFICATION_ID, 
@@ -87,7 +86,8 @@ class ConcreteDomainChangeSearchRequest
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.CLASSIFY;
 	}
+
 }

@@ -42,7 +42,7 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -75,7 +75,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
@@ -101,7 +100,7 @@ import com.google.common.collect.Ordering;
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2ExportResult>, AccessControl {
+final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2ExportResult>, BranchAccessControl {
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
@@ -1074,8 +1073,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EXPORT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.EXPORT;
 	}
 
 }

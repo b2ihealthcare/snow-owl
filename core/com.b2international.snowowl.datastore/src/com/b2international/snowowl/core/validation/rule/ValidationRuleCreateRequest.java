@@ -89,8 +89,8 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 
 }

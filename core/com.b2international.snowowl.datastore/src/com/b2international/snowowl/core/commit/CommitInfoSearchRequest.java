@@ -30,7 +30,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Commit;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 5.2
  */
-final class CommitInfoSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CommitInfos, Commit> implements AccessControl {
+final class CommitInfoSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CommitInfos, Commit> implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -134,8 +134,8 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 
 }

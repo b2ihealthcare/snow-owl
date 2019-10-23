@@ -41,10 +41,10 @@ final class CancelJobRequest implements Request<ServiceProvider, Boolean>, Acces
 		context.service(RemoteJobTracker.class).requestCancel(id);
 		return Boolean.TRUE;
 	}
-	
+
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 
 }

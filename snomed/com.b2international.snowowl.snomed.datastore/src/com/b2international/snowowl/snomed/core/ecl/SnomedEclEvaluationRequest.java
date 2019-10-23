@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
+import static com.b2international.index.revision.Revision.Fields.ID;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Fields.ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.google.common.collect.Sets.newHashSet;
@@ -39,33 +39,15 @@ import com.b2international.index.query.MatchNone;
 import com.b2international.index.query.Predicate;
 import com.b2international.index.query.StringPredicate;
 import com.b2international.index.query.StringSetPredicate;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.tree.Trees;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.ecl.Ecl;
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.Any;
-import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
-import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
-import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
-import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -79,7 +61,7 @@ import com.google.common.collect.FluentIterable;
  * 
  * @since 5.4
  */
-final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise<Expression>>, AccessControl {
+final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise<Expression>> {
 
 	private static final long serialVersionUID = 5891665196136989183L;
 	
@@ -455,9 +437,4 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		return ids -> ids.isEmpty() ? Expressions.matchNone() : ids(ids);
 	}
 	
-	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
-	}
-
 }

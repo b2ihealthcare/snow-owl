@@ -15,19 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 6.5
  */
 final class SnomedConstraintGetRequest 
 		extends GetResourceRequest<SnomedConstraintSearchRequestBuilder, BranchContext, SnomedConstraint>
-		implements AccessControl {
+		implements BranchAccessControl {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -41,8 +40,8 @@ final class SnomedConstraintGetRequest
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 	
 }

@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.revision.BaseRevisionBranching;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.events.BranchRequest;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.0
  */
-public final class BranchUpdateRequest extends BranchRequest<Boolean> implements AccessControl {
+public final class BranchUpdateRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
 
 	@JsonProperty
 	private Metadata metadata;
@@ -49,8 +49,8 @@ public final class BranchUpdateRequest extends BranchRequest<Boolean> implements
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 
 }

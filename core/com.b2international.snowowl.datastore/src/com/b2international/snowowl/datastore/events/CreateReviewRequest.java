@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.events;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -31,7 +31,7 @@ import com.b2international.snowowl.identity.domain.Permission;
  * 
  * @since 4.2
  */
-public final class CreateReviewRequest implements Request<RepositoryContext, Review>, AccessControl {
+public final class CreateReviewRequest implements Request<RepositoryContext, Review>, RepositoryAccessControl {
 
 	private final String sourcePath;
 	private final String targetPath;
@@ -57,8 +57,8 @@ public final class CreateReviewRequest implements Request<RepositoryContext, Rev
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 	
 }

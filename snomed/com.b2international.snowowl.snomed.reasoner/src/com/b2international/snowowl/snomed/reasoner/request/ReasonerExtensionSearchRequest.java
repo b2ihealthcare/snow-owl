@@ -28,16 +28,14 @@ import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtension;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
 
 /**
  * @since 7.0
  */
-final class ReasonerExtensionSearchRequest implements Request<ServiceProvider, ReasonerExtensions>, AccessControl {
+final class ReasonerExtensionSearchRequest implements Request<ServiceProvider, ReasonerExtensions> {
 
 	private static final String EXTENSION_POINT_ID = "org.protege.editor.owl.inference_reasonerfactory";
 	private static final String NAME_ELEMENT = "name";
@@ -74,8 +72,4 @@ final class ReasonerExtensionSearchRequest implements Request<ServiceProvider, R
 		return new ReasonerExtensions(reasonerExtensions, null, null, reasonerExtensions.size(), reasonerExtensions.size());
 	}
 	
-	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
-	}
 }

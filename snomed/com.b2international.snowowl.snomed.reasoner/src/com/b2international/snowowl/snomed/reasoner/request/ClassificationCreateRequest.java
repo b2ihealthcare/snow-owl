@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
@@ -31,7 +31,6 @@ import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSchedulingRule;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
@@ -43,7 +42,7 @@ import com.google.common.base.Strings;
  * 
  * @since 7.0
  */
-final class ClassificationCreateRequest implements Request<BranchContext, String>, AccessControl {
+final class ClassificationCreateRequest implements Request<BranchContext, String>, BranchAccessControl {
 
 	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 
@@ -116,7 +115,8 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.CLASSIFY;
 	}
+
 }

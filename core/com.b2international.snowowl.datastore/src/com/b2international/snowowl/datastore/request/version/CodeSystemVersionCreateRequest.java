@@ -249,9 +249,8 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	@Override
-	public Permission getPermission() {
-		// XXX - is all repositories correct?
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.VERSION;
 	}
-
+	
 }

@@ -16,7 +16,7 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.request.UpdateRequest;
@@ -27,7 +27,7 @@ import com.b2international.snowowl.identity.domain.Permission;
 /**
  * @since 4.7
  */
-final class CodeSystemUpdateRequest extends UpdateRequest implements AccessControl {
+final class CodeSystemUpdateRequest extends UpdateRequest implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -105,8 +105,8 @@ final class CodeSystemUpdateRequest extends UpdateRequest implements AccessContr
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 
 }

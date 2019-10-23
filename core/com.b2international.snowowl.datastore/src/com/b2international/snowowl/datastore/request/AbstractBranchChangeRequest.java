@@ -35,7 +35,7 @@ import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -49,6 +49,7 @@ import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
@@ -59,7 +60,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 4.6
  */
-public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge>, AccessControl {
+public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge>, RepositoryAccessControl {
 
 	@JsonProperty
 	@NotEmpty
@@ -207,6 +208,11 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 			.oldValue(diff.getOldValue())
 			.value(diff.getNewValue())
 			.build();
+	}
+	
+	@Override
+	public final String getOperation() {
+		return Permission.EDIT;
 	}
 	
 }

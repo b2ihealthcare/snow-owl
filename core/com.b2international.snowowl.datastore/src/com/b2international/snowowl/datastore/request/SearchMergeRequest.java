@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
@@ -37,7 +37,7 @@ import com.google.common.base.Strings;
 /**
  * @since 7.1
  */
-public class SearchMergeRequest implements Request<RepositoryContext, MergeCollection>, AccessControl {
+public class SearchMergeRequest implements Request<RepositoryContext, MergeCollection>, RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -76,9 +76,8 @@ public class SearchMergeRequest implements Request<RepositoryContext, MergeColle
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
-	
 
 }

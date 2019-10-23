@@ -27,13 +27,12 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
@@ -45,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.11
  */
-final class SnomedDSVExportRequest implements Request<BranchContext, UUID>, AccessControl {
+final class SnomedDSVExportRequest implements Request<BranchContext, UUID>, BranchAccessControl {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedDSVExportRequest.class);
 	private static final long serialVersionUID = 1L;
@@ -162,8 +161,8 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID>, Acce
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EXPORT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.EXPORT;
 	}
 	
 }

@@ -20,10 +20,11 @@ import java.util.Collections;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
@@ -41,7 +42,7 @@ import com.google.common.collect.Iterables;
  */
 public abstract class SnomedSearchRequest<R, D extends SnomedDocument> 
 		extends SearchIndexResourceRequest<BranchContext, R, D>
-		implements AccessControl {
+		implements BranchAccessControl {
 
 	enum OptionKey {
 		
@@ -141,6 +142,11 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 	
 	protected final String eclExpressionForm() {
 		return containsKey(OptionKey.ECL_EXPRESSION_FORM) ? getString(OptionKey.ECL_EXPRESSION_FORM) : Trees.INFERRED_FORM;
+	}
+	
+	@Override
+	public final String getOperation() {
+		return Permission.BROWSE;
 	}
 	
 }

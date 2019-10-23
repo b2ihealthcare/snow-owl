@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -37,7 +37,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.9
  */
-final class BranchCompareRequest implements Request<RepositoryContext, CompareResult>, AccessControl {
+final class BranchCompareRequest implements Request<RepositoryContext, CompareResult>, RepositoryAccessControl {
 
 	@JsonProperty
 	private String base;
@@ -114,8 +114,8 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
-
+	
 }

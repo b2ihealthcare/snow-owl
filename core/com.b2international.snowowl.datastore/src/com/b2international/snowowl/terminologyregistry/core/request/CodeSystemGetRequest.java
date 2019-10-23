@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -26,7 +26,7 @@ import com.b2international.snowowl.identity.domain.Permission;
  */
 final class CodeSystemGetRequest 
 		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystemEntry>
-		implements AccessControl {
+		implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -40,8 +40,8 @@ final class CodeSystemGetRequest
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 
 }

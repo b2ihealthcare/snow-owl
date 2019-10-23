@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
@@ -38,7 +38,7 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
  * 
  * @since 7.0
  */
-public class VersioningRequest implements Request<TransactionContext, Boolean>, AccessControl {
+public class VersioningRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
 
 	private static final long serialVersionUID = 1L;
 	private final VersioningConfiguration config;
@@ -107,8 +107,8 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
-
+	
 }

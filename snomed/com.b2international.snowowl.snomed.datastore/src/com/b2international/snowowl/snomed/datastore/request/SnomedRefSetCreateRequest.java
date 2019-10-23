@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -31,7 +31,6 @@ import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -39,7 +38,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 4.5
  */
-final class SnomedRefSetCreateRequest implements Request<TransactionContext, String>, AccessControl {
+final class SnomedRefSetCreateRequest implements Request<TransactionContext, String>, BranchAccessControl {
 
 	public static final Set<String> STRUCTURAL_ATTRIBUTE_VALUE_SETS = ImmutableSet.of(
 			Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
@@ -102,8 +101,8 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 
 }

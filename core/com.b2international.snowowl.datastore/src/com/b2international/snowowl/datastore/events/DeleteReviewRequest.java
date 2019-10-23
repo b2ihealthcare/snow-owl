@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -25,7 +25,7 @@ import com.b2international.snowowl.identity.domain.Permission;
  * 
  * @since 4.2
  */
-public final class DeleteReviewRequest extends ReviewRequest<Boolean> implements AccessControl {
+public final class DeleteReviewRequest extends ReviewRequest<Boolean> implements RepositoryAccessControl {
 
 	public DeleteReviewRequest(final String reviewId) {
 		super(reviewId);
@@ -38,8 +38,8 @@ public final class DeleteReviewRequest extends ReviewRequest<Boolean> implements
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 	
 }

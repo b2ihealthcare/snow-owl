@@ -18,7 +18,7 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -28,7 +28,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest implements Request<TransactionContext, String>, AccessControl {
+final class CodeSystemCreateRequest implements Request<TransactionContext, String>, RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -140,8 +140,8 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, repositoryUuid);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
-
+	
 }

@@ -43,6 +43,7 @@ public final class Permission implements Serializable {
 	public static final String EXPORT = "export";
 	public static final String VERSION = "version";
 	public static final String PROMOTE = "promote";
+	public static final String CLASSIFY = "classify";
 	
 	private final String operation;
 	private final String resource;

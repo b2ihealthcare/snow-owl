@@ -117,9 +117,4 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseComponentMem
 		}
 	}
 	
-	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
-	}
-	
 }

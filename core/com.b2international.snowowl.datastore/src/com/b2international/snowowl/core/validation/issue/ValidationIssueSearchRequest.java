@@ -202,10 +202,10 @@ final class ValidationIssueSearchRequest
 	protected ValidationIssues createEmptyResult(int limit) {
 		return new ValidationIssues(limit, 0);
 	}
-
+	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 
 }

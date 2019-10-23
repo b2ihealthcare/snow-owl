@@ -38,8 +38,8 @@ final class ValidationWhiteListDeleteRequest implements Request<ValidationReposi
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 
 }

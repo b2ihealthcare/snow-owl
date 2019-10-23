@@ -19,7 +19,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.revision.BaseRevisionBranching;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -28,7 +28,7 @@ import com.b2international.snowowl.identity.domain.Permission;
 /**
  * @since 4.1
  */
-public final class CreateBranchRequest extends BranchRequest<String> implements AccessControl {
+public final class CreateBranchRequest extends BranchRequest<String> implements RepositoryAccessControl {
 
 	private final String parent;
 	private final String name;
@@ -72,8 +72,8 @@ public final class CreateBranchRequest extends BranchRequest<String> implements 
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 	
 }

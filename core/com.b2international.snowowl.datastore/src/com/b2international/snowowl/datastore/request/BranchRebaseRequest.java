@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.base.Strings;
 
 /**
@@ -75,11 +74,6 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 		} catch (InterruptedException e) {
 			throw new ConflictException("Lock obtaining process was interrupted while rebasing target '%s' on source '%s'.", target.path(), source.path());
 		}
-	}
-	
-	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
 	}
 	
 }

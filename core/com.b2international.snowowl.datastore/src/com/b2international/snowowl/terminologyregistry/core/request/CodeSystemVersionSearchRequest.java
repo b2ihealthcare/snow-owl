@@ -23,7 +23,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
@@ -35,7 +35,7 @@ import com.b2international.snowowl.identity.domain.Permission;
  */
 final class CodeSystemVersionSearchRequest 
 	extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> 
-	implements AccessControl {
+	implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -126,9 +126,8 @@ final class CodeSystemVersionSearchRequest
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
-	
 
 }

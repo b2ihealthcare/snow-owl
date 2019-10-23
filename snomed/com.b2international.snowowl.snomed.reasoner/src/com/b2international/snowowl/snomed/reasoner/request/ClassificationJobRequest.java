@@ -31,7 +31,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasonerRuntimeException;
 import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
 
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -44,7 +44,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomyBuilder;
@@ -62,7 +61,7 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFact
  * 
  * @since 5.7
  */
-final class ClassificationJobRequest implements Request<BranchContext, Boolean>, AccessControl {
+final class ClassificationJobRequest implements Request<BranchContext, Boolean>, BranchAccessControl {
 
 	@NotEmpty
 	private String reasonerId;
@@ -193,8 +192,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.CLASSIFY;
 	}
 	
 }

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
@@ -26,7 +26,7 @@ import com.b2international.snowowl.identity.domain.Permission;
  */
 final class BranchGetRequest 
 		extends GetResourceRequest<BranchSearchRequestBuilder, RepositoryContext, Branch>
-		implements AccessControl {
+		implements RepositoryAccessControl {
 
 	BranchGetRequest(final String branchPath) {
 		super(branchPath);
@@ -38,8 +38,8 @@ final class BranchGetRequest
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 	
 }

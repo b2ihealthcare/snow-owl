@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -30,7 +29,7 @@ import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.Module
 /**
  * @since 7.1
  */
-abstract class BaseComponentMemberUpdateRequest implements Request<TransactionContext, Void>, AccessControl {
+abstract class BaseComponentMemberUpdateRequest implements Request<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BaseComponentMemberUpdateRequest.class);
 	private final SnomedComponentDocument componentToUpdate;

@@ -18,14 +18,14 @@ package com.b2international.snowowl.datastore.events;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 4.1
  */
-public final class ReopenBranchRequest extends BranchRequest<Boolean> implements AccessControl {
+public final class ReopenBranchRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
 	
 	public ReopenBranchRequest(final String path) {
 		super(path);
@@ -47,8 +47,8 @@ public final class ReopenBranchRequest extends BranchRequest<Boolean> implements
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
-
+	
 }

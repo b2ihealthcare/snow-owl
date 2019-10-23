@@ -38,7 +38,7 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -68,7 +68,7 @@ import com.google.common.base.Strings;
 /**
  * @since 6.0.0
  */
-public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, AccessControl {
+public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, BranchAccessControl {
 
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 	
@@ -273,8 +273,8 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.IMPORT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.IMPORT;
 	}
 
 }

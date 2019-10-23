@@ -20,16 +20,13 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import java.util.Collection;
 
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 
 /**
  * @since 5.3
  */
-public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentDocument> 
-		extends SnomedSearchRequest<R, D>
-		implements AccessControl {
+public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentDocument> extends SnomedSearchRequest<R, D> {
 	
 	enum OptionKey {
 		
@@ -71,5 +68,5 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 			queryBuilder.filter(namespaces(getCollection(OptionKey.NAMESPACE, String.class)));
 		}
 	}
-
+	
 }

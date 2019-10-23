@@ -17,18 +17,17 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 
 /**
  * @since 6.5
  */
-public final class SnomedConstraintUpdateRequest implements Request<TransactionContext, Boolean>, AccessControl {
+public final class SnomedConstraintUpdateRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
 
 	@NotNull
 	private SnomedConstraint constraint;
@@ -50,8 +49,8 @@ public final class SnomedConstraintUpdateRequest implements Request<TransactionC
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 	
 }

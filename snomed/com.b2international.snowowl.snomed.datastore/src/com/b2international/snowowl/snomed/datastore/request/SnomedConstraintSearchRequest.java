@@ -15,32 +15,32 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.*;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.childIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.descendantIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.predicateTypes;
 import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.refSetIds;
 import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.relationshipKeys;
 import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.selfIds;
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.predicateTypes;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 
 /**
  * @since 4.7
  */
 final class SnomedConstraintSearchRequest 
 		extends SearchIndexResourceRequest<BranchContext, SnomedConstraints, SnomedConstraintDocument>
-		implements AccessControl {
+		implements BranchAccessControl {
 
 	public enum OptionKey {
 
@@ -124,8 +124,8 @@ final class SnomedConstraintSearchRequest
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 
 }

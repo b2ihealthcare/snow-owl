@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request.repository;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -24,7 +24,7 @@ import com.b2international.snowowl.identity.domain.Permission;
  * Request to clear a repository. Mostly used during the import process as an option.
  * @since 5.12
  */
-public class RepositoryClearRequest implements Request<TransactionContext, Boolean>, AccessControl {
+public class RepositoryClearRequest implements Request<TransactionContext, Boolean>, RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,9 +37,10 @@ public class RepositoryClearRequest implements Request<TransactionContext, Boole
 	public static RepositoryClearRequestBuilder builder() {
 		return new RepositoryClearRequestBuilder();
 	}
-	
+
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
+	
 }

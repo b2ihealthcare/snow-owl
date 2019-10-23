@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.request.repository;
 
 import com.b2international.index.revision.Purge;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -25,7 +25,7 @@ import com.b2international.snowowl.identity.domain.Permission;
 /**
  * @since 5.0
  */
-public final class PurgeRequest implements Request<RepositoryContext, Boolean>, AccessControl {
+public final class PurgeRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
 
 	private String branchPath;
 	private Purge purge;
@@ -49,10 +49,10 @@ public final class PurgeRequest implements Request<RepositoryContext, Boolean>, 
 	public static PurgeRequestBuilder builder() {
 		return new PurgeRequestBuilder();
 	}
-	
+
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 
 }

@@ -20,7 +20,7 @@ import java.util.Collection;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequest;
@@ -30,7 +30,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEv
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -38,7 +37,7 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluations> implements AccessControl {
+public final class EvaluateQueryRefSetRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluations> implements BranchAccessControl {
 
 	@NotNull
 	@JsonProperty
@@ -82,8 +81,8 @@ public final class EvaluateQueryRefSetRequest extends ResourceRequest<BranchCont
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, SnomedDatastoreActivator.REPOSITORY_UUID);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 	
 }

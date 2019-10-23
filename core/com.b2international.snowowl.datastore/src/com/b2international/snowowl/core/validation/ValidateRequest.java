@@ -36,7 +36,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -63,7 +63,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 6.0
  */
-final class ValidateRequest implements Request<BranchContext, ValidationResult>, AccessControl {
+final class ValidateRequest implements Request<BranchContext, ValidationResult>, BranchAccessControl {
 	
 	private static final long serialVersionUID = -2254266211853070728L;
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
@@ -277,8 +277,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.BROWSE, Permission.ALL);
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 	
 }

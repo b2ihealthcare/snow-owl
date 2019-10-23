@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.request.repository;
 
 import com.b2international.index.Index;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -24,7 +24,7 @@ import com.b2international.snowowl.identity.domain.Permission;
 /**
  * @since 4.7
  */
-public final class OptimizeRequest implements Request<RepositoryContext, Boolean>, AccessControl {
+public final class OptimizeRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
 
 	private int maxSegments;
 	
@@ -43,10 +43,10 @@ public final class OptimizeRequest implements Request<RepositoryContext, Boolean
 	public static OptimizeRequestBuilder builder() {
 		return new OptimizeRequestBuilder();
 	}
-	
+
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 
 }

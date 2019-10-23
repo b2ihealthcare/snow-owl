@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -26,7 +26,7 @@ import com.b2international.snowowl.identity.domain.Permission;
  * 
  * @since 4.2
  */
-public final class ReadReviewRequest extends ReviewRequest<Review> implements AccessControl {
+public final class ReadReviewRequest extends ReviewRequest<Review> implements RepositoryAccessControl {
 
 	public ReadReviewRequest(final String reviewId) {
 		super(reviewId);
@@ -38,8 +38,8 @@ public final class ReadReviewRequest extends ReviewRequest<Review> implements Ac
 	}
 	
 	@Override
-	public Permission getPermission() {
-		return new Permission(Permission.EDIT, Permission.ALL);
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 	
 }
