@@ -18,16 +18,14 @@ package com.b2international.snowowl.datastore.request.job;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.7
  */
-final class DeleteJobRequest implements Request<ServiceProvider, Boolean>, AccessControl {
+final class DeleteJobRequest implements Request<ServiceProvider, Boolean> {
 
 	@JsonProperty
 	private final Collection<String> jobIds;
@@ -40,11 +38,6 @@ final class DeleteJobRequest implements Request<ServiceProvider, Boolean>, Acces
 	public Boolean execute(ServiceProvider context) {
 		context.service(RemoteJobTracker.class).requestDeletes(jobIds);
 		return Boolean.TRUE;
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.EDIT;
 	}
 	
 }

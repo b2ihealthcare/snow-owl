@@ -23,12 +23,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
@@ -36,7 +34,7 @@ import com.google.common.base.Strings;
 /**
  * @since 5.7
  */
-final class ScheduleJobRequest implements Request<ServiceProvider, String>, AccessControl {
+final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -94,11 +92,6 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String>, Acce
 		} finally {
 			SCHEDULE_LOCK.release();
 		}
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.EDIT;
 	}
 	
 }

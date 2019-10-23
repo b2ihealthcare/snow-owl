@@ -17,18 +17,16 @@ package com.b2international.snowowl.datastore.request.job;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Iterables;
 
 /**
  * @since 5.7
  */
-final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry>, AccessControl {
+final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry> {
 
 	@JsonProperty
 	private final String id;
@@ -45,11 +43,6 @@ final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry>, A
 		} else {
 			return entry;
 		}
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.BROWSE;
 	}
 	
 }
