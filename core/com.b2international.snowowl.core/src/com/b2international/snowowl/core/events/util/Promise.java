@@ -85,7 +85,7 @@ public final class Promise<T> extends Observable<T> {
 		try {
 			return delegate.get(timeout, unit).getBody();
 		} catch (final TimeoutException e) {
-			throw new RequestTimeoutException(e);
+			throw new RequestTimeoutException("Request timeout", e);
 		} catch (final InterruptedException e) {
 			throw new SnowowlRuntimeException(e);
 		} catch (final ExecutionException e) {

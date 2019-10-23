@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
@@ -40,22 +41,28 @@ import org.elasticsearch.script.Script;
 
 import com.b2international.index.IndexException;
 import com.b2international.index.es.client.ClusterClient;
-import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.client.EsClientBase;
 import com.b2international.index.es.client.IndicesClient;
 
 /**
  * @since 6.11
  */
-public final class EsTcpClient implements EsClient {
+public final class EsTcpClient extends EsClientBase {
 
 	private Client client;
 	private IndicesClient indicesClient;
 	private ClusterClient clusterClient;
 
 	public EsTcpClient(Client client) {
+		super(client instanceof TransportClient ? ((TransportClient) client).transportAddresses().stream().findFirst().get().address().toString() : "localhost:9300");
 		this.client = client;
 		this.indicesClient = new IndicesTcpClient(client.admin().indices());
 		this.clusterClient = new ClusterTcpClient(client.admin().cluster());
+	}
+	
+	@Override
+	protected boolean ping() throws IOException {
+		return true; // always returns true
 	}
 	
 	@Override

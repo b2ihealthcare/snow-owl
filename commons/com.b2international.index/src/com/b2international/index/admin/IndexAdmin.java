@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
+import com.b2international.index.es.client.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 
@@ -101,4 +102,20 @@ public interface IndexAdmin {
 	 *            - max number of segments to force on the index
 	 */
 	void optimize(int maxSegments);
+	
+	/**
+	 * @return the Elasticsearch client used by this {@link IndexAdmin}.
+	 */
+	EsClient client();
+
+	/**
+	 * @return the indices maintained by this {@link IndexAdmin}
+	 */
+	default String[] indices() {
+		return mappings().getMappings()
+				.stream()
+				.map(this::getTypeIndex)
+				.distinct()
+				.toArray(String[]::new);
+	}
 }

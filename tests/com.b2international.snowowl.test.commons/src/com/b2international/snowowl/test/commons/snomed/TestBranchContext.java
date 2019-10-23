@@ -17,6 +17,8 @@ package com.b2international.snowowl.test.commons.snomed;
 
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.emf.common.util.WrappedException;
@@ -25,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
-import com.b2international.commons.exceptions.ApiException;
+import com.b2international.index.es.client.EsIndexStatus;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -88,6 +90,11 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 	@Override
 	public Health health() {
 		return Health.GREEN;
+	}
+	
+	@Override
+	public List<EsIndexStatus> indices() {
+		return Collections.emptyList();
 	}
 	
 	public static TestBranchContext.Builder on(String branch) {

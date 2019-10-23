@@ -15,24 +15,31 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.slf4j.Logger;
 
+import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
+import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.client.EsClusterStatus;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.events.RepositoryEvent;
@@ -47,27 +54,23 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
+
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 
 /**
  * @since 4.1
  */
-public final class TerminologyRepository extends DelegatingContext implements InternalRepository {
+public final class TerminologyRepository extends DelegatingContext implements Repository {
 
-	private final String toolingId;
 	private final String repositoryId;
 	private final Mappings mappings;
 	private final Logger log;
-	
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	
-	private Health health = Health.RED;
-	private String diagnosis;
-	
-	TerminologyRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env, Mappings mappings, Logger log) {
+	TerminologyRepository(String repositoryId, int mergeMaxResults, Environment env, Mappings mappings, Logger log) {
 		super(env);
-		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
 		this.mappings = mappings;
 		this.log = log;
@@ -83,13 +86,6 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		bind(ClassLoader.class, getDelegate().plugins().getCompositeClassLoader());
 		// initialize the index
 		index.admin().create();
-		checkHealth();
-	}
-
-	@Override
-	public void checkHealth() {
-		// TODO support health services
-		setHealth(Health.GREEN, null);
 	}
 
 	@Override
@@ -129,9 +125,14 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		revisionIndex.branching().addBranchChangeListener(path -> {
 			sendNotification(new BranchChangedEvent(repositoryId, path));
 		});
+		// register IndexClient per terminology
+		bind(IndexClient.class, indexClient);
+		// but register EsClient globally
+		getDelegate().services().registerService(EsClient.class, indexClient.client());
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);
+		// register branching services
 		bind(BaseRevisionBranching.class, revisionIndex.branching());
 		return revisionIndex;
 	}
@@ -145,24 +146,36 @@ public final class TerminologyRepository extends DelegatingContext implements In
 	protected Environment getDelegate() {
 		return (Environment) super.getDelegate();
 	}
-	
+
 	@Override
-	public void setHealth(Health health, String diagnosis) {
-		this.health = health;
-		if (Health.GREEN != health) {
-			checkState(!Strings.isNullOrEmpty(diagnosis), "Diagnosis required for health status %s", health);
+	public RepositoryInfo status() {
+		// by default assume it is in GREEN status with no diagnosis
+		Health health = Health.GREEN;
+		String diagnosis = "";
+		final String[] indices = service(Index.class).admin().indices();
+		final EsClusterStatus status = service(IndexClient.class).client().status(indices);
+		if (!status.isAvailable()) {
+			// check if cluster is available or not, and report RED state if not along with index diagnosis
+			health = Health.RED;
+			diagnosis = status.getDiagnosis();
+		} else if (!status.isHealthy(indices)) {
+			// check if index is healthy and report RED if not along with diagnosis
+			health = Health.RED;
+			diagnosis = String.format("Repository indices '%s' are not healthy.", Arrays.toString(indices));
 		}
-		this.diagnosis = diagnosis;
+		return RepositoryInfo.of(id(), health, diagnosis, status.getIndices());
 	}
-	
-	@Override
-	public Health health() {
-		return health;
-	}
-	
-	@Override
-	public String diagnosis() {
-		return diagnosis;
+
+	public void waitForHealth(RepositoryInfo.Health desiredHealth, long seconds) {
+		final RetryPolicy<Health> retryPolicy = new RetryPolicy<Health>()
+				.handleResult(Health.RED)
+				.withMaxAttempts(-1)
+				.withMaxDuration(Duration.of(seconds, ChronoUnit.SECONDS))
+				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS);
+		final Health finalHealth = Failsafe.with(retryPolicy).get(() -> status().health());
+		if (finalHealth != desiredHealth) {
+			throw new RequestTimeoutException("Repository health status couldn't reach '%s' in '%s' seconds.", desiredHealth, seconds);
+		}
 	}
 	
 }

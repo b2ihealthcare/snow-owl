@@ -25,6 +25,8 @@ import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
+import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 
 /**
@@ -43,5 +45,7 @@ public interface IndicesClient {
 	GetMappingsResponse getMapping(GetMappingsRequest req) throws IOException;
 	
 	AcknowledgedResponse updateMapping(PutMappingRequest req) throws IOException;
+	
+	GetSettingsResponse settings(GetSettingsRequest req) throws IOException;
 	
 }

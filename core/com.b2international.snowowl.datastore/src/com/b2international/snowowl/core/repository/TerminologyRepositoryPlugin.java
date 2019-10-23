@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.Hooks;
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -53,7 +54,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		if (env.isEmbedded() || env.isServer()) {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 			final RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
-			final Repository repo = repositories.prepareCreate(getRepositoryId(), getId())
+			final Repository repo = repositories.prepareCreate(getRepositoryId())
 					.withInitializer(getTerminologyRepositoryInitializer())
 					.withPreCommitHook(getTerminologyRepositoryPreCommitHook())
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
@@ -63,10 +64,11 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.withVersioningRequestBuilder(getVersioningRequestBuilder())
 					.withComponentRevisionConflictProcessor(getComponentRevisionConflictProcessor())
 					.build(env);
-			if (repo.health() == Health.GREEN) {
-				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
+			RepositoryInfo status = repo.status();
+			if (status.health() == Health.GREEN) {
+				LOG.info("Started repository '{}' with status '{}'", repo.id(), status.health());
 			} else {
-				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", repo.id(), repo.health(), repo.diagnosis());
+				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", status.id(), status.health(), status.diagnosis());
 			}
 		}
 		afterRun(configuration, env);

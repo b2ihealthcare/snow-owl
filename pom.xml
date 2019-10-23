@@ -42,6 +42,7 @@
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<snomed.owl.toolkit.version>2.6.0</snomed.owl.toolkit.version>
+		<failsafe.version>2.3.1</failsafe.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.4.0</tycho.version>
 		<tycho-extras.version>1.4.0</tycho-extras.version>
@@ -601,6 +602,12 @@
           			<artifactId>guice-multibindings</artifactId>
         		</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>failsafe</artifactId>
+			<version>${failsafe.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 
+import com.b2international.index.es.client.EsIndexStatus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 
 /**
@@ -46,6 +49,11 @@ public class DelegatingRepositoryContext extends DelegatingContext implements Re
 	@Override
 	public String diagnosis() {
 		return getDelegate().diagnosis();
+	}
+	
+	@Override
+	public List<EsIndexStatus> indices() {
+		return getDelegate().indices();
 	}
 	
 	@Override
