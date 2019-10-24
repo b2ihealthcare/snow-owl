@@ -17,6 +17,9 @@ package com.b2international.snowowl.datastore;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+
 /**
  * Base properties of a code system version.
  * 
@@ -43,6 +46,7 @@ public interface CodeSystemVersionProperties {
 	 *  
 	 * @return the effective date of this code system version (can be {@code null})
 	 */
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
 	Date getEffectiveDate();
 	
 }

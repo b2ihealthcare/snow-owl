@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class IdentityConfiguration {
 
 	private boolean adminParty = false;
+	private String secret = "secret";
+	private String issuer = "Snow Owl";
 	
 	private List<IdentityProviderConfig> providerConfigurations = Collections.emptyList();
 	
@@ -46,6 +48,22 @@ public class IdentityConfiguration {
 	
 	public void setProviderConfigurations(List<IdentityProviderConfig> providerConfigurations) {
 		this.providerConfigurations = providerConfigurations;
+	}
+	
+	public String getSecret() {
+		return secret;
+	}
+	
+	public void setSecret(String secret) {
+		this.secret = secret;
+	}
+	
+	public String getIssuer() {
+		return issuer;
+	}
+	
+	public void setIssuer(String issuer) {
+		this.issuer = issuer;
 	}
 	
 }

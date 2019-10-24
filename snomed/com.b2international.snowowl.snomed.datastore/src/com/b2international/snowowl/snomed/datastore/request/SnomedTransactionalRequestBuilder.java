@@ -32,18 +32,22 @@ public interface SnomedTransactionalRequestBuilder<R> extends TransactionalReque
 		
 		return build(repositoryId, branch, userId, commitComment, null);
 	}
+	
+	@Override
+	default SnomedRepositoryCommitRequestBuilder commit() {
+		return (SnomedRepositoryCommitRequestBuilder) new SnomedRepositoryCommitRequestBuilder().setBody(build());
+	}
 
 	default AsyncRequest<CommitResult> build(String repositoryId, 
 			String branch, 
-			String userId,
+			String author,
 			String commitComment,
 			String defaultModuleId) {
 		
-		return new SnomedRepositoryCommitRequestBuilder()
+		return commit()
 				.setDefaultModuleId(defaultModuleId)
-				.setUserId(userId)
+				.setAuthor(author)
 				.setCommitComment(commitComment)
-				.setBody(build())
 				.build(repositoryId, branch);
 	}
 }

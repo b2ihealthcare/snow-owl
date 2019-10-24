@@ -15,13 +15,17 @@
  */
 package com.b2international.snowowl.core.events.util;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.RequestTimeoutException;
@@ -43,9 +47,9 @@ import io.reactivex.Observer;
  * @param <T>
  *            - the type of the return value
  */
-public final class Promise<T> extends Observable<T> implements ListenableFuture<T> {
+public final class Promise<T> extends Observable<T> {
 
-	private final SettableFuture<T> delegate = SettableFuture.create();
+	final SettableFuture<Response<T>> delegate = SettableFuture.create();
 	
 	/**
 	 * @return
@@ -54,7 +58,7 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	@Beta
 	public T getSync() {
 		try {
-			return get();
+			return delegate.get().getBody();
 		} catch (final InterruptedException e) {
 			throw new SnowowlRuntimeException(e);
 		} catch (final ExecutionException e) {
@@ -66,7 +70,7 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 				throw (RuntimeException) cause;
 			} else {
 				throw new SnowowlRuntimeException(cause);
-			} 
+			}
 		}
 	}
 	
@@ -79,9 +83,9 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	@Beta
 	public T getSync(final long timeout, final TimeUnit unit) {
 		try {
-			return get(timeout, unit);
+			return delegate.get(timeout, unit).getBody();
 		} catch (final TimeoutException e) {
-			throw new RequestTimeoutException(e);
+			throw new RequestTimeoutException("Request timeout", e);
 		} catch (final InterruptedException e) {
 			throw new SnowowlRuntimeException(e);
 		} catch (final ExecutionException e) {
@@ -89,7 +93,11 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 			if (cause instanceof ApiException) {
 				throw (ApiException) cause;
 			}
-			throw new SnowowlRuntimeException(cause);
+			if (cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			} else {
+				throw new SnowowlRuntimeException(cause);
+			}
 		}
 	}
 	
@@ -101,11 +109,11 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	 */
 	public final Promise<T> fail(final Function<Throwable, T> fail) {
 		final Promise<T> promise = new Promise<>();
-		Futures.addCallback(this, new FutureCallback<T>() {
+		Futures.addCallback(delegate, new FutureCallback<Response<T>>() {
 
 			@Override
-			public void onSuccess(final T result) {
-				promise.resolve(result);
+			public void onSuccess(final Response<T> result) {
+				promise.resolve(result.getBody());
 			}
 
 			@Override
@@ -128,11 +136,11 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	 */
 	public final Promise<T> failWith(final Function<Throwable, Promise<T>> fail) {
 		final Promise<T> promise = new Promise<>();
-		Futures.addCallback(this, new FutureCallback<T>() {
+		Futures.addCallback(delegate, new FutureCallback<Response<T>>() {
 
 			@Override
-			public void onSuccess(final T result) {
-				promise.resolve(result);
+			public void onSuccess(final Response<T> result) {
+				promise.resolve(result.getBody());
 			}
 
 			@Override
@@ -159,11 +167,11 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	 */
 	public final <U> Promise<U> then(final Function<T, U> then) {
 		final Promise<U> transformed = new Promise<>();
-		Futures.addCallback(this, new FutureCallback<T>() {
+		Futures.addCallback(delegate, new FutureCallback<Response<T>>() {
 			@Override
-			public void onSuccess(final T result) {
+			public void onSuccess(final Response<T> result) {
 				try {
-					transformed.resolve(then.apply(result));
+					transformed.resolve(then.apply(result.getBody()));
 				} catch (final Throwable t) {
 					onFailure(t);
 				}
@@ -188,11 +196,11 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	 */
 	public final <U> Promise<U> thenWith(final Function<T, Promise<U>> then) {
 		final Promise<U> transformed = new Promise<>();
-		Futures.addCallback(this, new FutureCallback<T>() {
+		Futures.addCallback(delegate, new FutureCallback<Response<T>>() {
 			@Override
-			public void onSuccess(final T result) {
+			public void onSuccess(final Response<T> result) {
 				try {
-					transformed.resolveWith(then.apply(result));
+					transformed.resolveWith(then.apply(result.getBody()));
 				} catch (final Throwable t) {
 					onFailure(t);
 				}
@@ -213,7 +221,18 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	 *            - the resolution of this promise
 	 */
 	public final void resolve(T result) {
-		delegate.set(result);
+		resolve(result, Collections.emptyMap());
+	}
+	
+	/**
+	 * Resolves the promise by sending the given result object to all then listeners along with a set of headers.
+	 * 
+	 * @param result
+	 *            - the resolution of this promise
+	 * @param headers
+	 */
+	public final void resolve(T result, final Map<String, String> headers) {
+		delegate.set(new Response<>(result, headers));
 	}
 	
 	final void resolveWith(final Promise<T> t) {
@@ -261,8 +280,11 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	 * @since 4.6
 	 */
 	@Beta
-	public static Promise<List<Object>> all(final Iterable<? extends Promise<?>> promises) {
-		return Promise.wrap(Futures.allAsList(promises));
+	public static Promise<List<Object>> all(final Collection<? extends Promise<?>> promises) {
+		return Promise.wrap(Futures.allAsList(promises.stream().map(p -> p.delegate).collect(Collectors.toList())))
+				.then(responses -> {
+					return responses.stream().map(Response::getBody).collect(Collectors.toList());
+				});
 	}
 	
 	/**
@@ -272,7 +294,10 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 	 */
 	@Beta
 	public static Promise<List<Object>> all(final Promise<?>...promises) {
-		return Promise.wrap(Futures.allAsList(promises));
+		return Promise.wrap(Futures.allAsList(Stream.of(promises).map(p -> p.delegate).collect(Collectors.toList())))
+				.then(responses -> {
+					return responses.stream().map(Response::getBody).collect(Collectors.toList());
+				});
 	}
 	
 	/**
@@ -334,33 +359,12 @@ public final class Promise<T> extends Observable<T> implements ListenableFuture<
 		});
 	}
 
-	@Override
-	public boolean cancel(final boolean mayInterruptIfRunning) {
-		return delegate.cancel(mayInterruptIfRunning);
-	}
-
-	@Override
-	public boolean isCancelled() {
-		return delegate.isCancelled();
-	}
-
-	@Override
 	public boolean isDone() {
 		return delegate.isDone();
 	}
 
-	@Override
-	public T get() throws InterruptedException, ExecutionException {
-		return delegate.get();
+	public boolean isCancelled() {
+		return delegate.isCancelled();
 	}
-
-	@Override
-	public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-		return delegate.get(timeout, unit);
-	}
-
-	@Override
-	public void addListener(final Runnable listener, final Executor exec) {
-		delegate.addListener(listener, exec);
-	}
+	
 }

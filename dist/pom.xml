@@ -74,7 +74,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.api.rest</artifactId>
+			<artifactId>com.b2international.snowowl.core.rest</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -98,7 +98,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.fhir.api</artifactId>
+			<artifactId>com.b2international.snowowl.fhir.rest</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -134,19 +134,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.snomed.api</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.snomed.api.impl</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.snomed.api.rest</artifactId>
+			<artifactId>com.b2international.snowowl.snomed.core.rest</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -219,7 +207,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.api.rest.tests</artifactId>
+			<artifactId>com.b2international.snowowl.core.rest.tests</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -243,7 +231,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.fhir.api.tests</artifactId>
+			<artifactId>com.b2international.snowowl.fhir.rest.tests</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -255,7 +243,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.snomed.api.rest.tests</artifactId>
+			<artifactId>com.b2international.snowowl.snomed.core.rest.tests</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,16 +68,18 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 	}
 
 	@Override
-	public boolean auth(String username, String token) {
-		if (verifiedTokens.containsKey(username)) {
-			return Objects.equals(token, verifiedTokens.get(username));
+	public User auth(String username, String token) {
+		if (verifiedTokens.containsKey(username) && Objects.equals(token, verifiedTokens.get(username))) {
+			return new User(username, ImmutableList.of(Role.ADMINISTRATOR));
 		} else {
 			final FileUser user = getFileUser(username);
 			boolean success = user != null && BCrypt.checkpw(token, user.getHashedPassword());
 			if (success) {
 				verifiedTokens.put(username, token);
+				return new User(username, ImmutableList.of(Role.ADMINISTRATOR));
+			} else {
+				return null;
 			}
-			return success;
 		}
 	}
 

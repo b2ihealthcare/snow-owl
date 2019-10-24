@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.cis.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,9 +24,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.cis.Identifiers;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.model.DeprecationData;
@@ -36,8 +36,6 @@ import com.b2international.snowowl.snomed.cis.model.PublicationData;
 import com.b2international.snowowl.snomed.cis.model.RegistrationData;
 import com.b2international.snowowl.snomed.cis.model.ReleaseData;
 import com.b2international.snowowl.snomed.cis.model.ReservationData;
-import com.b2international.snowowl.snomed.cis.rest.model.CisError;
-import com.b2international.snowowl.snomed.cis.rest.util.DeferredResults;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -51,32 +49,29 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "SCTIDS", description = "SCTIDS", tags = {"SCTIDS"})
 @RestController
 @RequestMapping(value = "/sct", produces = MediaType.APPLICATION_JSON_VALUE)
-public class CisSctIdService {
+public class CisSctIdService extends AbstractRestService {
 
-	@Autowired
-	private IEventBus bus;
-	
 	private Identifiers identifiers = new Identifiers();
 	
 	@ApiOperation(value = "Returns the SCTIDs Record.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@GetMapping(value = "/ids/{sctid}")
-	public DeferredResult<SctId> getIds(
+	public Promise<SctId> getIds(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token, 
 			@ApiParam(value = "The required id.", required = true)
 			@PathVariable(value = "sctid")
 			String sctid) {
-		return DeferredResults.wrap(identifiers
+		return identifiers
 				.prepareGet()
 				.setComponentId(sctid)
 				.buildAsync()
-				.execute(bus)
-				.then(ids -> ids.first().get()));
+				.execute(getBus())
+				.then(ids -> ids.first().get());
 	}
 	
 	@ApiOperation(
@@ -84,23 +79,23 @@ public class CisSctIdService {
 		notes = "Generates a new SCTID, based on the metadata passed in the GenerationData parameter. The first available SCTID will be assigned. Returns a SCTID Record with status 'Assigned'"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public DeferredResult<SctId> generate(
+	public Promise<SctId> generate(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody GenerationData generationData) {
-		return DeferredResults.wrap(identifiers
+		return identifiers
 				.prepareGenerate()
 				.setNamespace(generationData.getNamespaceAsString())
 				.setCategory(generationData.getComponentCategory())
 				.buildAsync()
-				.execute(bus)
-				.then(ids -> ids.first().get()));
+				.execute(getBus())
+				.then(ids -> ids.first().get());
 	}
 	
 	@ApiOperation(
@@ -108,24 +103,24 @@ public class CisSctIdService {
 		notes = "Reserves a SCTID for use in an external system, based on the metadata passed in the ReservationData parameter. The first available SCTID will be reserved. Returns a SCTID Record with status 'Reserved'."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/reserve", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public DeferredResult<SctId> reserve(
+	public Promise<SctId> reserve(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			ReservationData reservationData) {
-		return DeferredResults.wrap(identifiers
+		return identifiers
 				.prepareReserve()
 				.setCategory(reservationData.getComponentCategory())
 				.setNamespace(reservationData.getNamespaceAsString())
 				.buildAsync()
-				.execute(bus)
-				.then(ids -> ids.first().get()));
+				.execute(getBus())
+				.then(ids -> ids.first().get());
 	}
 	
 	@ApiOperation(
@@ -133,23 +128,23 @@ public class CisSctIdService {
 		notes = "Registers a SCTID already in use in an external system, based on the metadata passed in the RegistrationData parameter. Returns a SCTID Record with status 'Assigned'. If the SCTID is already assigned it will return an error."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = CisError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public DeferredResult<SctId> register(
+	public Promise<SctId> register(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			RegistrationData registrationData) {
-		return DeferredResults.wrap(identifiers
+		return identifiers
 				.prepareRegister()
 				.setComponentId(registrationData.getSctId())
 				.buildAsync()
-				.execute(bus)
-				.then(ids -> ids.first().get()));
+				.execute(getBus())
+				.then(ids -> ids.first().get());
 	}
 	
 	@ApiOperation(
@@ -157,19 +152,19 @@ public class CisSctIdService {
 		notes = "Deprecates a SCTID, so it will not be assigned to any component, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Deprecated'."
 	)
 	@PutMapping(value = "/deprecate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public DeferredResult<SctId> deprecate(
+	public Promise<SctId> deprecate(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody 
 			DeprecationData deprecationData) {
-		return DeferredResults.wrap(identifiers
+		return identifiers
 				.prepareDeprecate()
 				.setComponentId(deprecationData.getSctId())
 				.buildAsync()
-				.execute(bus)
-				.then(ids -> ids.first().get()));
+				.execute(getBus())
+				.then(ids -> ids.first().get());
 	}
 
 	@ApiOperation(
@@ -177,19 +172,19 @@ public class CisSctIdService {
 		notes = "Releases a SCTID, so it will available to be assigned again, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Available'."
 	)
 	@PutMapping(value = "/release", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public DeferredResult<SctId> release(
+	public Promise<SctId> release(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody
 			ReleaseData releaseData) {
-		return DeferredResults.wrap(identifiers
+		return identifiers
 				.prepareRelease()
 				.setComponentId(releaseData.getSctId())
 				.buildAsync()
-				.execute(bus)
-				.then(ids -> ids.first().get()));
+				.execute(getBus())
+				.then(ids -> ids.first().get());
 	}
 
 	@ApiOperation(
@@ -197,19 +192,19 @@ public class CisSctIdService {
 		notes = "Sets the SCTID as published, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Published'."
 	)
 	@PutMapping(value = "/publish", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public DeferredResult<SctId> publish(
+	public Promise<SctId> publish(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
 			@ApiParam(value = "The requested operation.", required = true)
 			@RequestBody
 			PublicationData publicationData) {
-		return DeferredResults.wrap(identifiers
+		return identifiers
 				.preparePublish()
 				.setComponentId(publicationData.getSctId())
 				.buildAsync()
-				.execute(bus)
-				.then(ids -> ids.first().get()));
+				.execute(getBus())
+				.then(ids -> ids.first().get());
 	}
 	
 }

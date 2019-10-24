@@ -23,6 +23,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
@@ -30,9 +31,12 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -42,7 +46,7 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @since 5.7
  */
-final class ClassificationSaveRequest implements Request<RepositoryContext, String> {
+final class ClassificationSaveRequest implements Request<RepositoryContext, String>, RepositoryAccessControl {
 
 	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 	
@@ -56,7 +60,6 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 	private String classificationId;
 
 	@JsonProperty
-	@NotEmpty
 	private String userId;
 	
 	@NotNull
@@ -135,10 +138,12 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 					classification.getTimestamp(),
 					branch.headTimestamp());
 		}
+		
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 
 		final AsyncRequest<?> saveRequest = new SaveJobRequestBuilder()
 				.setClassificationId(classificationId)
-				.setUserId(userId)
+				.setUserId(user)
 				.setParentLockContext(parentLockContext)
 				.setCommitComment(commitComment)
 				.setModuleId(moduleId)
@@ -152,6 +157,11 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.setRequest(saveRequest)
 				.setDescription(String.format("Saving classification changes on %s", branch.path()))
 				.buildAsync()
-				.get(SCHEDULE_TIMEOUT_MILLIS);
+				.get(context, SCHEDULE_TIMEOUT_MILLIS);
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.CLASSIFY;
 	}
 }

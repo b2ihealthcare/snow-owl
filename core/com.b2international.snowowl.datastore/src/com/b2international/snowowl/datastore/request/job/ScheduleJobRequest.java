@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.7
@@ -43,7 +45,6 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	private final String id;
 	
 	@JsonProperty
-	@NotEmpty
 	private final String user;
 	
 	@JsonProperty
@@ -73,7 +74,13 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 			if (remoteJobsWithId.length > 0) {
 				throw new BadRequestException("Multiple remote jobs scheduled with identifier '%s'.", id);
 			} else {
-				RemoteJob job = new RemoteJob(id, description, user, context, request);
+				final String userId;
+				if (Strings.isNullOrEmpty(user)) {
+					userId = context.service(User.class).getUsername();
+				} else {
+					userId = user;
+				}
+				RemoteJob job = new RemoteJob(id, description, userId, context, request);
 				job.setSystem(true);
 				if (schedulingRule != null) {
 					job.setRule(schedulingRule);
@@ -86,5 +93,5 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 			SCHEDULE_LOCK.release();
 		}
 	}
-
+	
 }

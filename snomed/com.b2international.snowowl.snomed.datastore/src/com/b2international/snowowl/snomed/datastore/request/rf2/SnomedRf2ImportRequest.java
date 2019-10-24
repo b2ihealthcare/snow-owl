@@ -38,11 +38,14 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -65,7 +68,7 @@ import com.google.common.base.Strings;
 /**
  * @since 6.0.0
  */
-public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse> {
+public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, BranchAccessControl {
 
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 	
@@ -80,7 +83,6 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 	@NotEmpty
 	private String codeSystemShortName;
 
-	@NotEmpty
 	private String userId;
 	
 	private boolean createVersions = true;
@@ -115,7 +117,8 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 		
 		try {
 			features.enable(feature);
-			return doImport(rf2Archive, new Rf2ImportConfiguration(userId, createVersions, codeSystemShortName, type), context);
+			final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+			return doImport(rf2Archive, new Rf2ImportConfiguration(user, createVersions, codeSystemShortName, type), context);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
@@ -267,6 +270,11 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Couldn't create temporary db", e);
 		}
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.IMPORT;
 	}
 
 }

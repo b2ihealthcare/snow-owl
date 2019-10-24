@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Arrays;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
 
 import com.b2international.index.IndexException;
 import com.b2international.index.es.client.ClusterClient;
@@ -31,16 +30,16 @@ import com.b2international.index.es.client.ClusterClient;
  */
 public class ClusterHttpClient implements ClusterClient {
 
-	private final RestHighLevelClient client;
+	private final EsHttpClient client;
 
-	public ClusterHttpClient(RestHighLevelClient client) {
+	public ClusterHttpClient(EsHttpClient client) {
 		this.client = client;
 	}
 	
 	@Override
 	public ClusterHealthResponse health(ClusterHealthRequest req) {
 		try {
-			return client.cluster().health(req, RequestOptions.DEFAULT);
+			return client.client().cluster().health(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException("Couldn't retrieve cluster health for index(es) " + Arrays.toString(req.indices()), e);
 		}

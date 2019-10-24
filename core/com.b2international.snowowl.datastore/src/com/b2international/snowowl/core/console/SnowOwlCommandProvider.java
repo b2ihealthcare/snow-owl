@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,13 @@ import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
+import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.JWTGenerator;
+import com.b2international.snowowl.identity.domain.User;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
@@ -76,11 +81,14 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 				return;
 			}
 			// we should get an executable Snow Owl Command, so execute it
-			((BaseCommand) cli.getCommand()).run(out);
+			BaseCommand cmd = (BaseCommand) cli.getCommand();
+			final String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(User.SYSTEM);
+			cmd.setBus(new AuthorizedEventBus(ApplicationContext.getServiceForClass(IEventBus.class), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken)));
+			cmd.run(out);
 		} catch (Exception e) {
 			interpreter.println("Unknown error occured");
 			interpreter.printStackTrace(e);
-		} 
+		}
 	}
 	
 	private String getHelp(CommandLine cmd) {

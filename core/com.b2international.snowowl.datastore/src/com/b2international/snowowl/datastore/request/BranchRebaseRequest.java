@@ -58,8 +58,15 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 			throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
 		}
 		
-		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
-			context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, context.service(ComponentRevisionConflictProcessor.class));
+		final String author = userId(context);
+		try (Locks locks = new Locks(context, author, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
+			context.service(BaseRevisionBranching.class)
+				.prepareMerge(source.path(), target.path())
+				.author(author)
+				.commitMessage(commitMessage)
+				.conflictProcessor(context.service(ComponentRevisionConflictProcessor.class))
+				.context(context)
+				.merge();
 		} catch (BranchMergeException e) {
 			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);
 		} catch (OperationLockException e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +42,6 @@ import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
  */
 public final class RepositoryBuilder {
 	
-	private final String toolingId;
 	private final String repositoryId;
 	private final DefaultRepositoryManager manager;
 	
@@ -60,10 +60,9 @@ public final class RepositoryBuilder {
 	);
 	private ComponentRevisionConflictProcessor componentRevisionConflictProcessor;
 
-	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId, String toolingId) {
+	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId) {
 		this.manager = defaultRepositoryManager;
 		this.repositoryId = repositoryId;
-		this.toolingId = toolingId;
 	}
 
 	public RepositoryBuilder setMergeMaxResults(int mergeMaxResults) {
@@ -118,7 +117,7 @@ public final class RepositoryBuilder {
 				configurer.getAdditionalMappings().forEach(mappings::putMapping);
 			});
 		
-		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings, log);
+		final TerminologyRepository repository = new TerminologyRepository(repositoryId, mergeMaxResults, env, mappings, log);
 		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
 		repository.bind(ComponentDeletionPolicy.class, deletionPolicy);
 		repository.bind(ComponentRevisionConflictProcessor.class, componentRevisionConflictProcessor);
@@ -127,12 +126,11 @@ public final class RepositoryBuilder {
 		manager.put(repositoryId, repository);
 		
 		// execute initialization steps
-		if (repository.health() == Health.GREEN) {
-			new IndexReadRequest<Void>((context) -> {
-				initializer.initialize(context);
-				return null;
-			}).execute(manager.getContext(repositoryId));
-		}
+		repository.waitForHealth(Health.GREEN, 3 * 60L /*wait 3 minutes for GREEN repository status*/);
+		new IndexReadRequest<Void>((context) -> {
+			initializer.initialize(context);
+			return null;
+		}).execute(manager.getContext(repositoryId));
 		
 		return repository;
 	}

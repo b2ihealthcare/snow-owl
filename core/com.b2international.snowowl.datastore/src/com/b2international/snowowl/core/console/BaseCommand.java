@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,23 @@ package com.b2international.snowowl.core.console;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.b2international.snowowl.eventbus.IEventBus;
+
 /**
  * @since 7.0
  */
 public abstract class BaseCommand {
+	
+	private IEventBus bus;
+	
+	void setBus(IEventBus bus) {
+		this.bus = bus;
+	}
 
+	protected final IEventBus getBus() {
+		return bus;
+	}
+	
 	public abstract void run(CommandLineStream out);
 	
 	final String getCommand() {

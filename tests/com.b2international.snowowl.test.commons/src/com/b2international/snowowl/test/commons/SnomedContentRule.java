@@ -74,7 +74,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setCreateVersions(true)
 			.setCodeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, codeSystemBranchPath)
-			.execute(getBus())
+			.execute(Services.bus())
 			.getSync();
 	}
 	
@@ -85,14 +85,14 @@ public class SnomedContentRule extends ExternalResource {
 				.setParent(csPath.getParentPath())
 				.setName(csPath.lastSegment())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(getBus())
+				.execute(Services.bus())
 				.getSync();
 		}
 	}
 
 	private void createCodeSystemIfNotExist() {
 		if (!SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystemShortName)) {
-			final IEventBus eventBus = getBus();
+			final IEventBus eventBus = Services.bus();
 			
 			CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 					.setLimit(0)
@@ -121,7 +121,4 @@ public class SnomedContentRule extends ExternalResource {
 		}
 	}
 	
-	private static IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
 }

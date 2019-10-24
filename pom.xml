@@ -14,8 +14,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		
 		<!-- Maven Dependency Versions -->
-		<jackson.version>2.8.11</jackson.version>
-		<jackson.databind.version>2.8.11.4</jackson.databind.version>
+		<jackson.version>2.9.10</jackson.version>
+		<jackson.databind.version>2.9.10</jackson.databind.version>
 		<netty.version>4.1.16.Final</netty.version>
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
@@ -27,7 +27,7 @@
 		<groovy.version>2.4.17</groovy.version>
 		<commons.collections.version>3.2.2</commons.collections.version>
 		<commons.collections.versionRange>[3.2.2,3.3.0)</commons.collections.versionRange>
-		<kotlin.version>1.2.51</kotlin.version>
+		<kotlin.version>1.2.71</kotlin.version>
 		<protege.version>5.0.4-b2i</protege.version>
 		<owlapi.version>4.5.10</owlapi.version>
 		<elk.version>0.4.3</elk.version>
@@ -42,6 +42,7 @@
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<snomed.owl.toolkit.version>2.6.0</snomed.owl.toolkit.version>
+		<failsafe.version>2.3.1</failsafe.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.4.0</tycho.version>
 		<tycho-extras.version>1.4.0</tycho-extras.version>
@@ -56,6 +57,7 @@
 	<modules>
 		<module>commons</module>
 		<module>core</module>
+		<module>fhir</module>
 		<module>net4j</module>
 		<module>snomed</module>
 		<module>cis</module>
@@ -174,7 +176,7 @@
 		<dependency>
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
-			<version>1.17</version>
+			<version>1.25</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -480,13 +482,13 @@
     	<dependency>
     		<groupId>io.swagger</groupId>
     		<artifactId>swagger-annotations</artifactId>
-    		<version>1.5.14</version>
+    		<version>1.5.23</version>
     		<scope>provided</scope>
     	</dependency>
     	<dependency>
     		<groupId>io.swagger</groupId>
     		<artifactId>swagger-models</artifactId>
-    		<version>1.5.14</version>
+    		<version>1.5.23</version>
     		<scope>provided</scope>
     	</dependency>
 		<dependency>
@@ -600,7 +602,13 @@
           			<artifactId>guice-multibindings</artifactId>
         		</exclusion>
 			</exclusions>
-    	</dependency>
+		</dependency>
+		<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>failsafe</artifactId>
+			<version>${failsafe.version}</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -839,6 +847,7 @@
 					<artifactId>tycho-compiler-plugin</artifactId>
 					<version>${tycho.version}</version>
 					<configuration>
+						<useProjectSettings>false</useProjectSettings>
 						<source>11</source>
 						<target>11</target>
 						<excludeResources>

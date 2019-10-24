@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
-import com.b2international.snowowl.core.config.ClientPreferences;
+import com.b2international.snowowl.core.client.ClientPreferences;
 import com.google.inject.Provider;
 
 /**

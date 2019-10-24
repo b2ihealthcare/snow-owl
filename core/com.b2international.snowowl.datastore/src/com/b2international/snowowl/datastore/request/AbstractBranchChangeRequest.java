@@ -35,6 +35,7 @@ import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -42,13 +43,16 @@ import com.b2international.snowowl.core.merge.ConflictingAttribute;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.core.merge.MergeImpl;
-import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -56,7 +60,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 4.6
  */
-public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge> {
+public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge>, RepositoryAccessControl {
 
 	@JsonProperty
 	@NotEmpty
@@ -67,8 +71,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	protected final String targetPath;
 	
 	@JsonProperty
-	@NotEmpty
-	protected final String userId;
+	private final String userId;
 	
 	@JsonProperty
 	@NotEmpty
@@ -130,6 +133,10 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 			throw e.toBadRequestException();
 		}
 	}
+	
+	protected final String userId(RepositoryContext context) {
+		return !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+	}
 
 	protected abstract void applyChanges(RepositoryContext context, Branch source, Branch target);
 	
@@ -140,7 +147,6 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	}
 	
 	private MergeConflict toMergeConflict(ObjectId objectId, Collection<Conflict> conflicts) {
-		
 		final MergeConflictImpl.Builder conflict = MergeConflictImpl.builder()
 			.componentId(objectId.id())
 			.componentType(objectId.type())
@@ -203,5 +209,10 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 			.value(diff.getNewValue())
 			.build();
 	}
-
+	
+	@Override
+	public final String getOperation() {
+		return Permission.EDIT;
+	}
+	
 }

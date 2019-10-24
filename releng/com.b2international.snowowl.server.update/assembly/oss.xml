@@ -54,6 +54,7 @@
 	<!-- Copy extra dependencies --> 
 	<dependencySets>
 		<dependencySet>
+			<useStrictFiltering>true</useStrictFiltering>
 			<includes>
 				<include>org.semanticweb.elk:elk-protege</include>
 			</includes>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ package com.b2international.snowowl.core.events;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 import net.jodah.typetools.TypeResolver;
 
@@ -91,6 +93,15 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 		final Class<?>[] types = TypeResolver.resolveRawArguments(Request.class, getClass());
 		checkState(TypeResolver.Unknown.class != types[1], "Couldn't resolve return type parameter for class %s", getClass().getSimpleName());
 		return (Class<R>) types[1];
+	}
+	
+	/**
+	 * @return all nested {@link Request}s (including this {@link Request}) as a {@link Collection} 
+	 * @since 7.2
+	 */
+	@JsonIgnore
+	default Collection<Request<?, ?>> getNestedRequests() {
+		return ImmutableList.of(this);
 	}
 
 }

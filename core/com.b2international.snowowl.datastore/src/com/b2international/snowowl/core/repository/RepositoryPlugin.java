@@ -42,24 +42,23 @@ import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.config.ClientPreferences;
+import com.b2international.snowowl.core.client.ClientPreferences;
+import com.b2international.snowowl.core.client.TransportClient;
+import com.b2international.snowowl.core.client.TransportConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
-import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.internal.RpcServerServiceLookup;
 import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.LogListener;
-import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
@@ -91,7 +90,7 @@ public final class RepositoryPlugin extends Plugin {
 		registry.add("reviewManager", ReviewConfiguration.class);
 		registry.add("repository", RepositoryConfiguration.class);
 		registry.add("rpc", RpcConfiguration.class);
-		registry.add("connection", RepositoryConnectionConfiguration.class);
+		registry.add("transport", TransportConfiguration.class);
 	}
 	
 	@Override
@@ -192,7 +191,7 @@ public final class RepositoryPlugin extends Plugin {
 				LOG.info("Listening on {} for connections", hostAndPort);
 			}
 
-			JVMUtil.getAcceptor(container,	Net4jUtils.NET_4_J_CONNECTOR_NAME); // Starts the JVM transport
+			JVMUtil.getAcceptor(container,	TransportClient.NET_4_J_CONNECTOR_NAME); // Starts the JVM transport
 			
 			final RepositoryManager repositoryManager = new DefaultRepositoryManager();
 			env.services().registerService(RepositoryManager.class, repositoryManager);
@@ -204,7 +203,7 @@ public final class RepositoryPlugin extends Plugin {
 			LOG.debug("Initialized repository plugin.");
 		} else {
 			LOG.debug("Snow Owl application is running in remote mode.");
-			LOG.info("Connecting to Snow Owl Terminology Server at {}", env.service(ClientPreferences.class).getCDOUrl());
+			LOG.info("Connecting to Snow Owl Terminology Server at {}", env.service(ClientPreferences.class).getServerUrl());
 		}
 		
 		if (configuration.isSystemUserNeeded() || env.isServer()) {
@@ -285,7 +284,7 @@ public final class RepositoryPlugin extends Plugin {
 
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
 		// Normally this is done for us by CDOConnectionFactory
-		final IJVMConnector connector = JVMUtil.getConnector(container, Net4jUtils.NET_4_J_CONNECTOR_NAME);
+		final IJVMConnector connector = JVMUtil.getConnector(container, TransportClient.NET_4_J_CONNECTOR_NAME);
 		final RpcProtocol clientProtocol = RpcUtil.getRpcClientProtocol(container);
 		clientProtocol.open(connector);
 

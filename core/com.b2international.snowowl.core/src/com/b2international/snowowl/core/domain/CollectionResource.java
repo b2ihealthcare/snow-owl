@@ -25,7 +25,9 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -35,6 +37,7 @@ import com.google.common.collect.Iterables;
  * 
  * @since 4.0
  */
+@JsonInclude(Include.NON_NULL)
 public class CollectionResource<T> implements Serializable, Iterable<T> {
 
 	private static final long serialVersionUID = -840552452105348114L;

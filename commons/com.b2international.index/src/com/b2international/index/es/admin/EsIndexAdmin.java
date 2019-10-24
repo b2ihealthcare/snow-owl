@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.b2international.index.es.admin;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,16 +61,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
-import com.b2international.index.Analyzers;
-import com.b2international.index.BulkDelete;
-import com.b2international.index.BulkOperation;
-import com.b2international.index.BulkUpdate;
-import com.b2international.index.Doc;
-import com.b2international.index.IP;
-import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexException;
-import com.b2international.index.Keyword;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
@@ -84,7 +75,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Primitives;
@@ -133,7 +123,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public boolean exists() {
 		try {
-			return client().indices().exists(getAllIndexes());
+			return client().indices().exists(indices());
 		} catch (Exception e) {
 			throw new IndexException("Couldn't check the existence of all ES indices.", e);
 		}
@@ -227,16 +217,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 		}
 		// wait until the cluster processes each index create request
-		waitForYellowHealth(getAllIndexes());
+		waitForYellowHealth(indices());
 		log.info("'{}' indexes are ready.", name);
-	}
-
-	private String[] getAllIndexes() {
-		return mappings.getMappings()
-				.stream()
-				.map(this::getTypeIndex)
-				.distinct()
-				.toArray(String[]::new);
 	}
 
 	private Map<String, Object> createIndexSettings() throws IOException {
@@ -497,6 +479,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 //		waitForYellowHealth();
 	}
 	
+	@Override
 	public String getTypeIndex(DocumentMapping mapping) {
 		if (mapping.getParent() != null) {
 			return String.format("%s%s-%s", prefix, name, mapping.getParent().typeAsString());
@@ -505,6 +488,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 	}
 	
+	@Override
 	public EsClient client() {
 		return client;
 	}
@@ -531,7 +515,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 						.indices()
 						.refresh(refreshRequest);
 				if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
-					log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), refreshResponse.getStatus());
+					log.error("Index refresh request of '{}' returned with status {}", Arrays.toString(indicesToRefresh), refreshResponse.getStatus());
 				}
 				
 			} catch (Exception e) {

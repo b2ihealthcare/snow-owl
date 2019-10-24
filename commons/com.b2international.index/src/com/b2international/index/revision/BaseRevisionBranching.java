@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -98,10 +99,8 @@ public abstract class BaseRevisionBranching {
 					lock.unlock();
 				}
 			} else {
-				throw new RequestTimeoutException();
+				throw new RequestTimeoutException("Couldn't lock path '%s' in 1 minute.", lockPath);
 			}
-		} catch (RequestTimeoutException e) {
-			throw e;
 		} catch (ApiException e) {
 			throw e;
 		} catch (Exception e) {
@@ -263,30 +262,26 @@ public abstract class BaseRevisionBranching {
 		}
 	}
 
-	public Commit merge(String fromPath, String toPath, String commitMessage) {
-		return merge(fromPath, toPath, commitMessage, new RevisionConflictProcessor.Default());
-	}
-	
-	public Commit merge(String fromPath, String toPath, String commitMessage, RevisionConflictProcessor conflictProcessor) {
-		return merge(fromPath, toPath, commitMessage, conflictProcessor, false);
-	}
-	
 	/**
-	 * Merges changes to the toPath branch by squashing the change set of the specified fromPath into a single commit.
+	 * Prepares a merge operation with the given fromPath and toPath arguments.
 	 * 
 	 * @param fromPath - the branch to take changes from 
 	 * @param toPath - the branch to push the changes to
-	 * @param commitMessage
-	 *            - the commit message
-	 * @param squash 
-	 * @return the commit object representing the merge commit or <code>null</code> if there is nothing to merge
+	 * @return {@link BranchMergeOperation} to actually perform the merge or configure it even further
 	 */
-	public Commit merge(String fromPath, String toPath, String commitMessage, RevisionConflictProcessor conflictProcessor, boolean squash) {
-		if (toPath.equals(fromPath)) {
-			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", toPath));
+	public BranchMergeOperation prepareMerge(String fromPath, String toPath) {
+		return new BranchMergeOperation(this, fromPath, toPath);
+	}
+	
+	Commit doMerge(BranchMergeOperation operation) {
+		String source = operation.fromPath;
+		String target = operation.toPath;
+		if (target.equals(source)) {
+			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", target));
 		}
-		RevisionBranch to = getBranch(toPath);
-		RevisionBranch from = getBranch(fromPath);
+
+		RevisionBranch from = getBranch(source);
+		RevisionBranch to = getBranch(target);
 		
 		BranchState changesFromState = from.state(to);
 
@@ -296,16 +291,17 @@ public abstract class BaseRevisionBranching {
 		}
 		
 		final InternalRevisionIndex index = revisionIndex();
-		final StagingArea staging = index.prepareCommit(to.getPath());
+		final StagingArea staging = index.prepareCommit(to.getPath()).withContext(operation.context);
 		
 		// TODO add conflict processing
-		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), squash, conflictProcessor);
+		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor);
 		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
 		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
 			fastForwardCommitTimestamp = -1L;
 		}
-		final boolean isFastForwardMerge = fastForwardCommitTimestamp != -1L && !squash;
-		return staging.commit(isFastForwardMerge ? fastForwardCommitTimestamp : currentTime(), "TODO", commitMessage);
+		final boolean isFastForwardMerge = fastForwardCommitTimestamp != -1L && !operation.squash;
+		final String commitMessage = !Strings.isNullOrEmpty(operation.commitMessage) ? operation.commitMessage : String.format("Merge %s into %s", source, target);
+		return staging.commit(isFastForwardMerge ? fastForwardCommitTimestamp : currentTime(), operation.author, commitMessage);
 	}
 	
 	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {

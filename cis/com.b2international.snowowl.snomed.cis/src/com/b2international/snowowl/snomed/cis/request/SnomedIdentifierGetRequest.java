@@ -40,5 +40,5 @@ final class SnomedIdentifierGetRequest implements Request<ServiceProvider, SctId
 		final Map<String, SctId> sctIds = context.service(ISnomedIdentifierService.class).getSctIds(componentIds);
 		return new SctIds(sctIds.values());
 	}
-
+	
 }

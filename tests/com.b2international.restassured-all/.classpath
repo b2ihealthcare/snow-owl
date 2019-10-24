@@ -10,5 +10,5 @@
 	<classpathentry exported="true" kind="lib" path="lib/rest-assured-3.2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/rest-assured-common-3.2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xml-path-3.2.0.jar"/>
-	<classpathentry kind="output" path="target/classes"/>
+	<classpathentry kind="output" path="target/classes/"/>
 </classpath>

@@ -35,6 +35,7 @@ import org.eclipse.xtext.util.Tuples;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -258,8 +259,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 	
 	@Override
-	public Collection<SnomedCoreComponentCreateRequest> getNestedRequests() {
-		return ImmutableList.<SnomedCoreComponentCreateRequest>builder()
+	public Collection<Request<?, ?>> getNestedRequests() {
+		return ImmutableList.<Request<?, ?>>builder()
 			.add(this)
 			.addAll(descriptions)
 			.addAll(relationships)

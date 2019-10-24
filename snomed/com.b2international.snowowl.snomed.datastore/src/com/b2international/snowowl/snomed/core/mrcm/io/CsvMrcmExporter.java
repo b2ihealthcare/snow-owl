@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
@@ -42,22 +37,18 @@ import com.google.common.base.Joiner;
  */
 class CsvMrcmExporter {
 
-	private static final Logger LOG = LoggerFactory.getLogger(CsvMrcmExporter.class);
-
 	private static final Joiner TAB_JOINER = Joiner.on('\t').useForNull("");
 
-	public void doExport(String user, OutputStream stream) {
+	public void doExport(IEventBus bus, OutputStream stream) {
 		final String branch = Branch.MAIN_PATH;
 		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer(branch);
 
 		final SnomedConstraints constraints = SnomedRequests.prepareSearchConstraint()
 			.all()
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(bus)
 			.getSync();
 
-		LogUtils.logExportActivity(LOG, user, branch, "Exporting MRCM rules to CSV...");
-		
 		try (PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, Charsets.UTF_8)))) {
 			writer.println(
 					TAB_JOINER.join("uuid", "effectiveTime", "author", "strength", "description", "validationMessage", "form", "domain", "predicate"));
@@ -73,8 +64,6 @@ class CsvMrcmExporter {
 				writer.println();
 			}
 		}
-		
-		LogUtils.logExportActivity(LOG, user, branch, "MRCM rule export to CSV successfully finished.");
 	}
 
 }

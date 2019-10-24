@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -67,6 +67,14 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
+	@Component
+	public static final class Factory implements ICodeSystemApiProvider.Factory {
+		@Override
+		public ICodeSystemApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
+			return new SnomedCodeSystemApiProvider(bus, locales);
+		}
+	}
+	
 	private static final String URI_BASE = "http://snomed.info";
 	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
@@ -75,8 +83,8 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		SnomedUri.SNOMED_BASE_URI_STRING
 	);
 	
-	public SnomedCodeSystemApiProvider() {
-		super(SnomedDatastoreActivator.REPOSITORY_UUID);
+	public SnomedCodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
+		super(bus, locales, SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
 	@Override
@@ -103,10 +111,11 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
 			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
 		
-		return req.build(getRepositoryId(), branchPath)
+		SnomedConcept concept = req.build(getRepositoryId(), branchPath)
 			.execute(getBus())
-			.then(concept -> mapToLookupResult(concept, lookup, versionString))
 			.getSync();
+		
+		return mapToLookupResult(concept, lookup, versionString);
 	}
 	
 	@Override
@@ -133,7 +142,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			.setExpand("pt()")
 			.setLocales(locales)
 			.build(getRepositoryId(), Branch.MAIN_PATH)
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getBus())
 			.getSync()
 			.stream()
 			.map(type -> {
@@ -304,17 +313,14 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				.filterByType(relationshipTypeIds)
 				.build(getRepositoryId(), branchPath)
 				.execute(getBus())
-				.then(rels -> {
-					rels.forEach(r -> {
-						Property property = Property.builder()
-							.code(r.getTypeId())
-							.valueCode(r.getDestinationId())
-							.build();
-						resultBuilder.addProperty(property);
-					});
-					return null;
-				})
-				.getSync();
+				.getSync()
+				.forEach(r -> {
+					Property property = Property.builder()
+						.code(r.getTypeId())
+						.valueCode(r.getDestinationId())
+						.build();
+					resultBuilder.addProperty(property);
+				});
 		}
 		
 		return resultBuilder.build();

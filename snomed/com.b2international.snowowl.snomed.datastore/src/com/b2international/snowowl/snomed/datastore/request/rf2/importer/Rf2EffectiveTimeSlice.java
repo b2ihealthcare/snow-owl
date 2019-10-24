@@ -76,7 +76,7 @@ public final class Rf2EffectiveTimeSlice {
 	private final Date effectiveDate;
 	private final String effectiveTime;
 	
-	private final LongKeyMap<Set<String>> membersByContainer;
+	private final LongKeyMap<Set<String>> membersByReferencedComponent;
 	private final LongKeyMap<LongSet> dependenciesByComponent;
 	
 	// tmp map to quickly collect batch of items before flushing it to disk
@@ -96,7 +96,7 @@ public final class Rf2EffectiveTimeSlice {
 		this.componentsById = db.hashMap(effectiveTime, Serializer.STRING, Serializer.ELSA).create();
 		this.tmpComponentsById = newHashMapWithExpectedSize(BATCH_SIZE);
 		this.dependenciesByComponent = PrimitiveMaps.newLongKeyOpenHashMap();
-		this.membersByContainer = PrimitiveMaps.newLongKeyOpenHashMap();
+		this.membersByReferencedComponent = PrimitiveMaps.newLongKeyOpenHashMap();
 		this.loadOnDemand = loadOnDemand;
 	}
 	
@@ -134,12 +134,13 @@ public final class Rf2EffectiveTimeSlice {
 
 		final String componentId = values[0];
 		final long containerIdL = Long.parseLong(containerId);
-		// track refset members via membersByContainer map
+
+		// track refset members via membersByReferencedComponent map
 		if (Rf2RefSetContentType.class.isAssignableFrom(type.getClass())) {
-			if (!membersByContainer.containsKey(containerIdL)) {
-				membersByContainer.put(containerIdL, newHashSet());
+			if (!membersByReferencedComponent.containsKey(containerIdL)) {
+				membersByReferencedComponent.put(containerIdL, newHashSet());
 			}
-			membersByContainer.get(containerIdL).add(componentId);
+			membersByReferencedComponent.get(containerIdL).add(componentId);
 		} else {
 			// register other non-concept components in the dependency graph to force strongly connected subgraphs
 			if (!IComponent.ROOT_ID.equals(containerId)) {
@@ -165,6 +166,10 @@ public final class Rf2EffectiveTimeSlice {
 	
 	public LongKeyMap<LongSet> getDependenciesByComponent() {
 		return dependenciesByComponent;
+	}
+	
+	public LongKeyMap<Set<String>> getMembersByReferencedComponent() {
+		return membersByReferencedComponent;
 	}
 
 	public void flush() {
@@ -200,7 +205,7 @@ public final class Rf2EffectiveTimeSlice {
 						componentsToImport.add(component);
 					}
 					// add all members of this component to this batch as well
-					final Set<String> containerComponents = membersByContainer.remove(componentToImportL);
+					final Set<String> containerComponents = membersByReferencedComponent.remove(componentToImportL);
 					if (containerComponents != null) {
 						for (String containedComponentId : containerComponents) {
 							SnomedReferenceSetMember containedComponent = getComponent(containedComponentId);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,23 @@ import org.slf4j.Logger;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
- * {@link VersioningRequest} that will create a 
+ * {@link VersioningRequest} that will create a {@link CodeSystemVersionEntry} without modifying any of the available terminology components. 
+ * {@link TerminologyRepositoryPlugin}s may extend the versioning functionality via the {@link TerminologyRepositoryPlugin#getVersioningRequestBuilder} method.
  * 
  * @since 7.0
  */
-public class VersioningRequest implements Request<TransactionContext, Boolean> {
+public class VersioningRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
 
+	private static final long serialVersionUID = 1L;
 	private final VersioningConfiguration config;
 
 	public VersioningRequest(VersioningConfiguration config) {
@@ -100,5 +105,10 @@ public class VersioningRequest implements Request<TransactionContext, Boolean> {
 			.repositoryUuid(context.id())
 			.build();
 	}
-
+	
+	@Override
+	public String getOperation() {
+		return Permission.EDIT;
+	}
+	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.net4j.util.CheckUtil;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -27,16 +29,17 @@ import org.eclipse.net4j.util.io.ExtendedIOUtil;
 
 import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 3.1
  */
 public class MessageFactory {
 
-	public static final BaseMessage createMessage(String address, Object message, String tag) {
+	public static final BaseMessage createMessage(String address, Object message, String tag, final Map<String, String> headers) {
 		checkAddress(address);
 		CheckUtil.checkArg(message, "Message should be specified, null messages are not allowed");
-		return new BaseMessage(address, message, tag);
+		return new BaseMessage(address, message, tag, headers);
 	}
 	
 	public static final void checkAddress(String address) {
@@ -60,6 +63,12 @@ public class MessageFactory {
 		ExtendedIOUtil.writeObject(wrap, message.body());
 		ExtendedIOUtil.writeByteArray(out, stream.toByteArray());
 		out.writeString(message.tag());
+		// write headers, first the size to know how many key-value pairs will follow
+		out.writeInt(message.headers().size());
+		for (Entry<String, String> entry : message.headers().entrySet()) {
+			out.writeString(entry.getKey());
+			out.writeString(entry.getValue());
+		}
 	}
 	
 	public static IMessage readMessage(ExtendedDataInputStream in, IEventBusProtocol protocol) throws IOException {
@@ -69,7 +78,12 @@ public class MessageFactory {
 		final boolean succeeded = in.readBoolean();
 		final byte[] body = ExtendedIOUtil.readByteArray(in);
 		final String tag = in.readString();
-		final BaseMessage message = createMessage(address, ExtendedDataInputStream.wrap(new ByteArrayInputStream(body)), tag);
+		final ImmutableMap.Builder<String, String> headers = ImmutableMap.builder();
+		final int numberOfHeaders = in.readInt();
+		for (int i = 0; i < numberOfHeaders; i++) {
+			headers.put(in.readString(), in.readString());
+		}
+		final BaseMessage message = createMessage(address, ExtendedDataInputStream.wrap(new ByteArrayInputStream(body)), tag, headers.build());
 		message.replyAddress = isNullOrEmpty(replyAddress) ? null : replyAddress;
 		message.replyProtocol = protocol;
 		message.send = send;

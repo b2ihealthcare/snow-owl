@@ -34,7 +34,8 @@ import com.google.common.collect.Lists;
 /**
  * @since 6.1
  */
-final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<ServiceProvider, ValidationWhiteLists, ValidationWhiteList>{
+final class ValidationWhiteListSearchRequest 
+		extends SearchIndexResourceRequest<ServiceProvider, ValidationWhiteLists, ValidationWhiteList> {
 
 	enum OptionKey {
 

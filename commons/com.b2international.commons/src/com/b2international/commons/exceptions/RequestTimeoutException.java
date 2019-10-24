@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,15 @@ package com.b2international.commons.exceptions;
 /**
  * @since 4.1
  */
-public class RequestTimeoutException extends RuntimeException {
+public final class RequestTimeoutException extends ApiException {
 
-	private static final long serialVersionUID = 966604124125943660L;
+	public RequestTimeoutException(String message, Object...args) {
+		super(message, args);
+	}
 
-	public RequestTimeoutException() {
-		super();
+	@Override
+	protected Integer getStatus() {
+		return 408;
 	}
 	
-	public RequestTimeoutException(Throwable cause) {
-		super(cause);
-	}
-
 }

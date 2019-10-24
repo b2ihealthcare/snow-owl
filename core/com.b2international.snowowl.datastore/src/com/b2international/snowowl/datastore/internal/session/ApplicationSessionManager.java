@@ -55,7 +55,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.encoding.RSAUtils;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
-import com.b2international.snowowl.datastore.net4j.Net4jUtils;
+import com.b2international.snowowl.core.client.TransportClient;
 import com.b2international.snowowl.datastore.session.AccessToken;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.identity.IdentityProvider;
@@ -137,7 +137,6 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		this.identityProvider = identityProvider;
 	}
 	
-	@Override
 	public AccessToken requestToken(final String userId, final PublicKey clientPublicKey) {
 
 		final byte[] randomBytes = generateRandomBytes(RANDOM_BYTES_LENGTH);
@@ -193,7 +192,6 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		return connectedSessionInfo;
 	}
 
-	@Override
 	public User loginWithResponse(final byte[] response) throws SecurityException {
 
 		final RpcSession currentSession = RpcThreadLocal.getSession();
@@ -241,12 +239,11 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		}
 	}
 
-	@Override
 	public void authenticate(final String username, final String password) throws LoginException {
 		LogUtils.logUserAccess(LOG, username, "Authenticating: " + username);
 		
-		final boolean success = identityProvider.auth(username, password);
-		if (!success) {
+		final User user = identityProvider.auth(username, password);
+		if (user == null) {
 			throw new LoginException("Incorrect user name or password.");
 		}
 		
@@ -259,7 +256,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		final RpcSession currentSession = RpcThreadLocal.getSession();
 		final IChannelMultiplexer currentMultiplexer = currentSession.getProtocol().getChannel().getMultiplexer();
 
-		final IJVMAcceptor jvmAcceptor = JVMUtil.getAcceptor(IPluginContainer.INSTANCE, Net4jUtils.NET_4_J_CONNECTOR_NAME);
+		final IJVMAcceptor jvmAcceptor = JVMUtil.getAcceptor(IPluginContainer.INSTANCE, TransportClient.NET_4_J_CONNECTOR_NAME);
 		final Set<IConnector> jvmAcceptedConnectors = ImmutableSet.copyOf(jvmAcceptor.getAcceptedConnectors());
 
 		if (jvmAcceptedConnectors.size() > 1) {

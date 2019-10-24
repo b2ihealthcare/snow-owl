@@ -30,41 +30,24 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.MatchNone;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
-import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
-import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
-import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Disjunction;
-import com.b2international.snowowl.snomed.ql.ql.Domain;
-import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
-import com.b2international.snowowl.snomed.ql.ql.Exclusion;
-import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
-import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
-import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
-import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
-import com.b2international.snowowl.snomed.ql.ql.NestedQuery;
-import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
-import com.b2international.snowowl.snomed.ql.ql.Query;
-import com.b2international.snowowl.snomed.ql.ql.QueryConjunction;
-import com.b2international.snowowl.snomed.ql.ql.QueryDisjunction;
-import com.b2international.snowowl.snomed.ql.ql.QueryExclusion;
-import com.b2international.snowowl.snomed.ql.ql.TermFilter;
-import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
+import com.b2international.snowowl.snomed.ql.ql.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 6.12
  */
-final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promise<Expression>> {
+final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promise<Expression>>, BranchAccessControl {
 
 	private static final long serialVersionUID = 8932162693072727864L;
 
@@ -305,6 +288,11 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 							.mustNot(right)
 							.build();
 				});
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 	
 }

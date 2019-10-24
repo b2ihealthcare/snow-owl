@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,8 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.0
  */
-final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<ServiceProvider, ValidationIssues, ValidationIssue> {
+final class ValidationIssueSearchRequest 
+		extends SearchIndexResourceRequest<ServiceProvider, ValidationIssues, ValidationIssue> {
 
 	public enum OptionKey {
 		/**
@@ -198,5 +199,5 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 	protected ValidationIssues createEmptyResult(int limit) {
 		return new ValidationIssues(limit, 0);
 	}
-
+	
 }

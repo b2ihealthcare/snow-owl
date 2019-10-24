@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.core.login.LoginConfiguration;
 import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
@@ -58,9 +57,6 @@ public final class SnowOwlPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
 		final PreferencesService preferences = env.preferences(); 
-		
-		final LoginConfiguration loginConfiguration = new LoginConfiguration(preferences);
-		env.services().registerService(LoginConfiguration.class, loginConfiguration);
 		
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
 		

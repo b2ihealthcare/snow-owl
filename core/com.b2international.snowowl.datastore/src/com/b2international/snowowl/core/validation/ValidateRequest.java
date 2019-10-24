@@ -36,6 +36,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -49,6 +50,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -61,7 +63,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 6.0
  */
-final class ValidateRequest implements Request<BranchContext, ValidationResult> {
+final class ValidateRequest implements Request<BranchContext, ValidationResult>, BranchAccessControl {
 	
 	private static final long serialVersionUID = -2254266211853070728L;
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
@@ -80,7 +82,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
 		final String branchPath = context.branchPath();
-
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 
 		if (!CompareUtils.isEmpty(ruleIds)) {
@@ -273,6 +274,11 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			}
 		}
 		
+	}
+
+	@Override
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	
 	@Test(expected = BadRequestException.class)
 	public void mergeMain() throws Exception {
-		branching().merge(MAIN, MAIN, "Message");
+		branching().prepareMerge(MAIN, MAIN).merge();
 	}
 	
 	@Test
@@ -59,7 +59,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	public void mergeEmptyUpToDateBranch() throws Exception {
 		String child = createBranch(MAIN, "a");
 		assertState(child, MAIN, BranchState.UP_TO_DATE);
-		branching().merge(child, MAIN, "Rebase");
+		branching().prepareMerge(child, MAIN).merge();
 		assertState(child, MAIN, BranchState.UP_TO_DATE);
 	}
 	
@@ -67,7 +67,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	public void rebaseUpToDateEmptyBranch() throws Exception {
 		final String a = createBranch(MAIN, "a");
 		assertState(a, MAIN, BranchState.UP_TO_DATE);
-		branching().merge(MAIN, a, "Rebase A");
+		branching().prepareMerge(MAIN, a).merge();
 		assertState(a, MAIN, BranchState.UP_TO_DATE);
 	}
 	
@@ -77,7 +77,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(a, MAIN, BranchState.UP_TO_DATE);
 		indexRevision(MAIN, NEW_DATA);
 		assertState(a, MAIN, BranchState.BEHIND);
-		branching().merge(a, MAIN, "Merge A to MAIN");
+		branching().prepareMerge(a, MAIN).merge();
 		assertState(a, MAIN, BranchState.BEHIND);
 	}
 	
@@ -89,7 +89,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// after commit child branch becomes FORWARD
 		assertState(child, MAIN, BranchState.FORWARD);
 		// do the merge
-		branching().merge(child, MAIN, "Merge");
+		branching().prepareMerge(child, MAIN).merge();
 		// after fast-forward merge
 		// 1. MAIN should be in UP_TO_DATE state compared to the child
 		assertState(MAIN, child, BranchState.UP_TO_DATE);
@@ -106,7 +106,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		indexRevision(a, NEW_DATA);
 		// after commit child branch becomes FORWARD
 		assertState(a, MAIN, BranchState.FORWARD);
-		branching().merge(MAIN, a, "Rebase A");
+		branching().prepareMerge(MAIN, a).merge();
 		assertState(a, MAIN, BranchState.FORWARD);
 	}
 	
@@ -118,7 +118,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		indexRevision(a, NEW_DATA2);
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY2));
 		assertState(a, MAIN, BranchState.DIVERGED);
-		branching().merge(a, MAIN, "Merge A to MAIN", new RevisionConflictProcessor.Default(), true);
+		branching().prepareMerge(a, MAIN).squash(true).merge();
 		// after merge both revisions are visible from MAIN
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
@@ -136,7 +136,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// after commit on parent child state becomes BEHIND
 		assertState(a, MAIN, BranchState.BEHIND);
 		// do merge
-		branching().merge(MAIN, a, "Rebase");
+		branching().prepareMerge(MAIN, a).merge();
 		// after rebase revision should be visible from child branch
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY1));
 		// and state should be UP_TO_DATE
@@ -149,7 +149,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		String child = createBranch(MAIN, "a");
 		// create a revision on child branch
 		indexChange(child, NEW_DATA, CHANGED_DATA);
-		branching().merge(child, MAIN, "Merge");
+		branching().prepareMerge(child, MAIN).merge();
 		// after merge revision should be visible from MAIN branch
 		RevisionData afterMerge = getRevision(MAIN, RevisionData.class, STORAGE_KEY1);
 		assertDocEquals(CHANGED_DATA, afterMerge);
@@ -161,7 +161,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		String child = createBranch(MAIN, "a");
 		// create a revision on child branch
 		indexChange(MAIN, NEW_DATA, CHANGED_DATA);
-		branching().merge(MAIN, child, "Rebase");
+		branching().prepareMerge(MAIN, child).merge();
 		// after merge revision should be visible from MAIN branch
 		RevisionData afterRebase = getRevision(child, RevisionData.class, STORAGE_KEY1);
 		assertDocEquals(CHANGED_DATA, afterRebase);
@@ -174,7 +174,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		String child = createBranch(MAIN, "a");
 		indexRemove(child, NEW_DATA);
 		
-		branching().merge(child, MAIN, "Merge");
+		branching().prepareMerge(child, MAIN).merge();
 		
 		assertNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 	}
@@ -186,7 +186,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		String child = createBranch(MAIN, "a");
 		indexRemove(MAIN, NEW_DATA);
 		
-		branching().merge(MAIN, child, "Rebase");
+		branching().prepareMerge(MAIN, child).merge();
 		
 		assertNull(getRevision(child, RevisionData.class, STORAGE_KEY1));
 	}
@@ -199,7 +199,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(a, MAIN, BranchState.DIVERGED);
 		assertState(MAIN, a, BranchState.DIVERGED);
 		// do the rebase
-		branching().merge(MAIN, a, "Rebase A");
+		branching().prepareMerge(MAIN, a).merge();
 		// both revisions are visible
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY1));
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY2));
@@ -220,7 +220,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(a, MAIN, BranchState.DIVERGED);
 		assertState(b, a, BranchState.BEHIND);
 		
-		branching().merge(MAIN, a, "Rebase A");
+		branching().prepareMerge(MAIN, a).merge();
 		
 		assertState(a, MAIN, BranchState.FORWARD);
 		assertState(b, a, BranchState.BEHIND);
@@ -237,7 +237,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(a, MAIN, BranchState.BEHIND);
 		assertState(b, a, BranchState.FORWARD);
 		
-		branching().merge(MAIN, a, "Rebase A");
+		branching().prepareMerge(MAIN, a).merge();
 		
 		assertState(a, MAIN, BranchState.UP_TO_DATE);
 		assertState(b, a, BranchState.DIVERGED);
@@ -253,7 +253,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		
 		final String c = createBranch(a, "c");
 		
-		branching().merge(MAIN, a, "Rebase A");
+		branching().prepareMerge(MAIN, a).merge();
 		
 		assertState(a, MAIN, BranchState.FORWARD);
 		assertState(b, a, BranchState.BEHIND);
@@ -263,7 +263,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	@Test
 	public void rebaseBehindChildOnRebasedForwardParent() throws Exception {
 		rebaseDivergedWithBehindChild();
-		branching().merge("MAIN/a", "MAIN/a/b", "Rebase A/B");
+		branching().prepareMerge("MAIN/a", "MAIN/a/b").merge();
 		assertState("MAIN/a/b", "MAIN/a", BranchState.UP_TO_DATE);
 	}
 	

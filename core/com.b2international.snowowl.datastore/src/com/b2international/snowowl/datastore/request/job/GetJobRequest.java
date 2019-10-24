@@ -44,5 +44,5 @@ final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry> {
 			return entry;
 		}
 	}
-
+	
 }

@@ -19,7 +19,15 @@
 		<so.products.directory>${products.directory}/${product.id}</so.products.directory>
 		<linux.product.path>${so.products.directory}/linux/gtk/x86_64/${product.rootFolder}</linux.product.path>
 	</properties>
-	
+
+	<dependencies>
+		<dependency>
+			<groupId>org.semanticweb.elk</groupId>
+			<artifactId>elk-protege</artifactId>
+			<version>${elk.version}</version>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<finalName>snow-owl-oss-${build.version}</finalName>
 		<plugins>
@@ -47,9 +55,11 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-repository-plugin</artifactId>
 				<configuration>
-					<finalName>${project.build.finalName}-site</finalName>
+					<!-- Manually archive the repository via assembly -->
+					<skipArchive>true</skipArchive>
 				</configuration>
 			</plugin>
+			<!-- create site and server zip, tar.gz and RPM/Deb base folder -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
@@ -65,13 +75,24 @@
 							<descriptor>${basedir}/assembly/oss.xml</descriptor>
 						</configuration>
 					</execution>
+					<execution>
+						<id>package-site</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<workDirectory>${project.build.directory}/assembly/site</workDirectory>
+							<descriptor>${basedir}/assembly/site.xml</descriptor>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<!-- create RPM -->
 			<plugin>
 				<groupId>de.dentrassi.maven</groupId>
 				<artifactId>rpm</artifactId>
-				<version>1.1.0</version>
+				<version>1.3.0</version>
 				<executions>
 					<execution>
 						<id>generate-rpm</id>
@@ -86,7 +107,7 @@
 					<packageName>snow-owl-oss</packageName>
 					<group>Application/Internet</group>
 					<packager>B2i Healthcare</packager>
-					<license>ASL 2.0</license>
+					<license>Apache-2.0</license>
 					<architecture>x86_64</architecture>
 					<skipSigning>true</skipSigning>
 					<prefixes>
@@ -178,6 +199,7 @@
 								<excludes>
 									<exclude>serviceability/**</exclude>
 									<exclude>resources/**</exclude>
+									<exclude>configuration/**</exclude>
 									<exclude>.gitignore</exclude>
 								</excludes>
 							</collect>
@@ -185,12 +207,23 @@
 						<!-- Configuration directory -->
 						<entry>
 							<name>/etc/snowowl</name>
-							<ruleset>config</ruleset>
 							<user>snowowl</user>
 							<group>snowowl</group>
+							<mode>0755</mode>
+							<directory>true</directory>
+						</entry>
+						<entry>
+							<name>/etc/snowowl</name>
+							<ruleset>config</ruleset>
 							<collect>
 								<from>${packageFiles}/configuration</from>
 							</collect>
+						</entry>
+						<entry>
+							<name>/usr/share/snowowl/configuration</name>
+							<user>snowowl</user>
+							<group>snowowl</group>
+							<linkTo>/etc/snowowl</linkTo>
 						</entry>
 						<!-- Data directory -->
 						<entry>
@@ -279,7 +312,7 @@
 							<snapshotExpand>true</snapshotExpand>
 							<snapshotEnv>BUILD_NUMBER</snapshotEnv>
 							<verbose>true</verbose>
-							<classifier>all</classifier>
+							<classifier>deb</classifier>
 							<signPackage>false</signPackage>
 							<skipPOMs>false</skipPOMs>
 							<dataSet>

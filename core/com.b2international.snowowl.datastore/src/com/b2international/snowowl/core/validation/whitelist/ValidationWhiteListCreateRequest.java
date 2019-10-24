@@ -63,5 +63,5 @@ final class ValidationWhiteListCreateRequest implements Request<ValidationReposi
 	void setCreatedAt(long createdAt) {
 		this.createdAt = createdAt;
 	}
-
+	
 }

@@ -58,7 +58,9 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
 /**
@@ -66,7 +68,7 @@ import com.google.common.base.Throwables;
  */
 public final class RepositoryTransactionContext extends DelegatingBranchContext implements TransactionContext {
 
-	private final String userId;
+	private final String author;
 	private final String commitComment;
 	private final String parentContextDescription;
 	
@@ -78,12 +80,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	@JsonIgnore
 	private transient final StagingArea staging;
 
-	RepositoryTransactionContext(BranchContext context, String userId, String commitComment, String parentContextDescription) {
+	RepositoryTransactionContext(BranchContext context, String author, String commitComment, String parentContextDescription) {
 		super(context);
-		this.userId = userId;
+		this.author = author;
 		this.commitComment = commitComment;
 		this.parentContextDescription = parentContextDescription;
-		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath());
+		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath()).withContext(this);
 		bind(StagingArea.class, this.staging);
 	}
 	
@@ -93,12 +95,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public long commit() {
-		return commit(userId(), commitComment, parentContextDescription);
+		return commit(author(), commitComment, parentContextDescription);
 	}
 	
 	@Override
-	public String userId() {
-		return userId;
+	public String author() {
+		return !Strings.isNullOrEmpty(author) ? author : service(User.class).getUsername();
 	}
 	
 	@Override

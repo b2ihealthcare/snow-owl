@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.eventbus;
 
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,7 +64,7 @@ public class EventBusUtil {
 	public static IMessage sendWithResult(IEventBus bus, String address, Object message, String tag, long timeout) {
 		final AtomicReference<IMessage> result = new AtomicReference<IMessage>();
 		final CountDownLatch latch = new CountDownLatch(1);
-		bus.send(address, message, tag, new IHandler<IMessage>() {
+		bus.send(address, message, tag, Collections.emptyMap(), new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				result.set(message);

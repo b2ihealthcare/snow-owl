@@ -22,15 +22,19 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSchedulingRule;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
+import com.google.common.base.Strings;
 
 /**
  * Signals the classification tracker that a classification run is about to
@@ -38,7 +42,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.Classification
  * 
  * @since 7.0
  */
-final class ClassificationCreateRequest implements Request<BranchContext, String> {
+final class ClassificationCreateRequest implements Request<BranchContext, String>, BranchAccessControl {
 
 	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 
@@ -48,7 +52,6 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 	@NotEmpty
 	private String reasonerId;
 
-	@NotEmpty
 	private String userId;
 
 	@NotNull
@@ -86,7 +89,9 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 
-		tracker.classificationScheduled(classificationId, reasonerId, userId, branch.path());
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		
+		tracker.classificationScheduled(classificationId, reasonerId, user, branch.path());
 
 		final AsyncRequest<Boolean> jobRequest = new ClassificationJobRequestBuilder()
 				.setReasonerId(reasonerId)
@@ -101,11 +106,17 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 
 		return JobRequests.prepareSchedule()
 				.setId(classificationId)
-				.setUser(userId)
+				.setUser(user)
 				.setRequest(jobRequest)
 				.setDescription(String.format("Classifying the ontology on %s", branch.path()))
 				.setSchedulingRule(rule)
 				.buildAsync()
-				.get(SCHEDULE_TIMEOUT_MILLIS);
+				.get(context, SCHEDULE_TIMEOUT_MILLIS);
 	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.CLASSIFY;
+	}
+
 }

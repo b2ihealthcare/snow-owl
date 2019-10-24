@@ -91,33 +91,33 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 
 	@Override
-	public IEventBus send(String address, Object message) {
-		return send(address, message, IMessage.DEFAULT_TAG);
+	public IEventBus send(String address, Object message, Map<String, String> headers) {
+		return send(address, message, IMessage.DEFAULT_TAG, headers);
 	}
 	
 	@Override
-	public IEventBus send(String address, Object message, String tag) {
-		return send(address, message, tag, null);
+	public IEventBus send(String address, Object message, String tag, Map<String, String> headers) {
+		return send(address, message, tag, headers, null);
 	}
 	
 	@Override
-	public IEventBus send(String address, Object message, IHandler<IMessage> handler) {
-		return send(address, message, IMessage.DEFAULT_TAG, handler);
+	public IEventBus send(String address, Object message, Map<String, String> headers, IHandler<IMessage> handler) {
+		return send(address, message, IMessage.DEFAULT_TAG, headers, handler);
 	}
 
 	@Override
-	public IEventBus send(String address, Object message, String tag, IHandler<IMessage> replyHandler) {
-		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag), true, replyHandler);
+	public IEventBus send(String address, Object message, String tag, Map<String, String> headers, IHandler<IMessage> replyHandler) {
+		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag, headers), true, replyHandler);
 	}
 	
 	@Override
-	public IEventBus publish(String address, Object message) {
-		return publish(address, message, IMessage.DEFAULT_TAG);
+	public IEventBus publish(String address, Object message, Map<String, String> headers) {
+		return publish(address, message, IMessage.DEFAULT_TAG, headers);
 	}
 	
 	@Override
-	public IEventBus publish(String address, Object message, String tag) {
-		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag), false, null);
+	public IEventBus publish(String address, Object message, String tag, Map<String, String> headers) {
+		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag, headers), false, null);
 	}
 	
 	@Override

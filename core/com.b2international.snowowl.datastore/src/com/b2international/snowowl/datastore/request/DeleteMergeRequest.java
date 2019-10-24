@@ -17,15 +17,17 @@ package com.b2international.snowowl.datastore.request;
 
 import java.util.Collections;
 
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.6
  */
-final class DeleteMergeRequest implements Request<RepositoryContext, Boolean> {
+final class DeleteMergeRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
 
 	@JsonProperty
 	private final String id;
@@ -39,5 +41,10 @@ final class DeleteMergeRequest implements Request<RepositoryContext, Boolean> {
 		context.service(RemoteJobTracker.class).requestDeletes(Collections.singleton(id));
 		return Boolean.TRUE;
 	}
-
+	
+	@Override
+	public String getOperation() {
+		return Permission.EDIT;
+	}
+	
 }

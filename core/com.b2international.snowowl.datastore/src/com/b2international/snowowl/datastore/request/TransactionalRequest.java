@@ -37,7 +37,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	private final String commitComment;
 	
 	@JsonProperty
-	private final String userId;
+	private final String author;
 	
 	private final Request<TransactionContext, ?> next;
 
@@ -45,9 +45,9 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	
 	private final String parentContextDescription;
 
-	public TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentContextDescription) {
+	public TransactionalRequest(String author, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentContextDescription) {
 		this.next = checkNotNull(next, "next");
-		this.userId = userId;
+		this.author = author;
 		this.commitComment = commitComment;
 		this.preRequestPreparationTime = preRequestPreparationTime;
 		this.parentContextDescription = parentContextDescription;
@@ -57,7 +57,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	public CommitResult execute(BranchContext context) {
 //		final Metrics metrics = context.service(Metrics.class);
 //		metrics.setExternalValue("preRequest", preRequestPreparationTime);
-		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, userId, commitComment, parentContextDescription)) {
+		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, author, commitComment, parentContextDescription)) {
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);
 		} catch (ApiException e) {
@@ -72,7 +72,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		 * FIXME: at this point, the component identifier might have changed even though the input 
 		 * required an exact ID to be assigned. What to do?
 		 */
-		final long commitTimestamp = context.commit(userId, commitComment, parentContextDescription);
+		final long commitTimestamp = context.commit(context.author(), commitComment, parentContextDescription);
 		return new CommitResult(commitTimestamp, body);
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,9 @@ import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineAuthenticator;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.identity.domain.PermissionIdConstant;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 import picocli.CommandLine;
 import picocli.CommandLine.HelpCommand;
@@ -75,7 +76,7 @@ public final class MrcmCommand extends Command {
 		public void run(CommandLineStream out) {
 			final User user = out.authenticate();
 			
-			if (!user.hasPermission(PermissionIdConstant.IMPORT)) {
+			if (!user.hasPermission(new Permission(Permission.IMPORT, SnomedDatastoreActivator.REPOSITORY_UUID, ""))) {
 				out.println("User is unauthorized to import MRCM rules.");
 				return;
 			}
@@ -112,7 +113,7 @@ public final class MrcmCommand extends Command {
 			}
 			
 			final User user = authenticator.getUser();
-			if (!user.hasPermission(PermissionIdConstant.EXPORT)) {
+			if (!user.hasPermission(new Permission(Permission.EXPORT, SnomedDatastoreActivator.REPOSITORY_UUID, ""))) {
 				out.println("User is unauthorized to export MRCM rules.");
 				return;
 			}

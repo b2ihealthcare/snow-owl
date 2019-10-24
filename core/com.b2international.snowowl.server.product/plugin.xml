@@ -5,7 +5,7 @@
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
-            application=""
+            application="com.b2international.snowowl.server.product.app"
             description="OSGi based Snow Owl server runtime"
             name="Snow Owl Server">
          <property
@@ -17,5 +17,17 @@
                value="true">
          </property>
       </product>
+   </extension>
+   <extension
+         id="app"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="com.b2international.snowowl.server.product.SnowOwlServerApplication">
+         </run>
+      </application>
    </extension>
 </plugin>

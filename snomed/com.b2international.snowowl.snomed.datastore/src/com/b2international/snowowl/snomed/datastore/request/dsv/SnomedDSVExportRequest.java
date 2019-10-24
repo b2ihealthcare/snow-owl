@@ -27,8 +27,10 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -42,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.11
  */
-final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
+final class SnomedDSVExportRequest implements Request<BranchContext, UUID>, BranchAccessControl {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedDSVExportRequest.class);
 	private static final long serialVersionUID = 1L;
@@ -156,6 +158,11 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
 			throw new BadRequestException("Unsupported reference set '%s' with type '%s' in DSV export", refSetId, refSet.getType());
 		}
 		return exporter;
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.EXPORT;
 	}
 	
 }

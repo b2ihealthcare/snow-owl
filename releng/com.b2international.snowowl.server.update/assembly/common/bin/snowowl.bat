@@ -20,11 +20,9 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Xss1m
 REM Equinox Config 
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -server
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djava.awt.headless=true
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Declipse.ignoreApp=true
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.noShutdown=true
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Declipse.application.launchDefault=false
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.configuration.area="%CONFIG_AREA%"
-set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.console.port=2501
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.console=2501
 
 REM Parallel classloader configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dosgi.classloader.type=nonparallel

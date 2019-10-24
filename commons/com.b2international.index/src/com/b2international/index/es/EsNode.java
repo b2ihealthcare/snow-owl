@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 
 import org.elasticsearch.analysis.common.CommonAnalysisPlugin;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.rankeval.RankEvalPlugin;
 import org.elasticsearch.index.reindex.ReindexPlugin;
@@ -38,6 +40,9 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.index.Activator;
 import com.google.common.collect.ImmutableList;
+
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 
 /**
  * @since 5.10
@@ -64,7 +69,7 @@ public final class EsNode extends Node {
 							final EsNode node = new EsNode(esSettings, dataPath, persistent);
 							node.start();
 							
-							AwaitPendingTasks.await(node.client(), LOG);
+							waitForPendingTasks(node.client());
 							INSTANCE = node;
 							LOG.info("Embedded elasticsearch is up and running.");
 						} catch (Exception e) {
@@ -86,7 +91,7 @@ public final class EsNode extends Node {
 		Activator.withTccl(() -> {
 			try {
 				
-				AwaitPendingTasks.await(INSTANCE.client(), LOG);
+				waitForPendingTasks(INSTANCE.client());
 				INSTANCE.close();
 				
 				if (!INSTANCE.persistent) {
@@ -156,6 +161,23 @@ public final class EsNode extends Node {
 	
 	@Override
 	protected void registerDerivedNodeNameWithLogger(String nodeName) {
+	}
+
+	private static void waitForPendingTasks(Client client) {
+		RetryPolicy<Integer> retryPolicy = new RetryPolicy<Integer>();
+		retryPolicy
+			.handleResultIf(pendingTasks -> pendingTasks > 0)
+			.withMaxAttempts(-1)
+			.withBackoff(50, 1000, ChronoUnit.MILLIS);
+		Failsafe.with(retryPolicy).get(() -> {
+			LOG.info("Waiting for pending cluster tasks to finish.");
+			return client.admin()
+					.cluster()
+					.preparePendingClusterTasks()
+					.get()
+					.getPendingTasks()
+					.size();
+		});
 	}
 	
 }

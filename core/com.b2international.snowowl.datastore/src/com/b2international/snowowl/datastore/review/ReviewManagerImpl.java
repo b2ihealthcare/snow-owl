@@ -47,8 +47,8 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.repository.InternalRepository;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableMap;
@@ -169,11 +169,11 @@ public class ReviewManagerImpl implements ReviewManager {
 		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);
 	}
 
-	public ReviewManagerImpl(final InternalRepository repository) {
+	public ReviewManagerImpl(final Repository repository) {
 		this(repository, new ReviewConfiguration());
 	}
 
-	public ReviewManagerImpl(final InternalRepository repository, final ReviewConfiguration config) {
+	public ReviewManagerImpl(final Repository repository, final ReviewConfiguration config) {
 		this.store = repository.provider(Index.class);
 		this.revisionIndex = repository.provider(RevisionIndex.class);
 

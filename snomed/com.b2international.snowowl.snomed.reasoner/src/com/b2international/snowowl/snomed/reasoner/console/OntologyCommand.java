@@ -18,8 +18,10 @@ package com.b2international.snowowl.snomed.reasoner.console;
 import java.io.PrintStream;
 
 import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 
@@ -57,7 +59,7 @@ public final class OntologyCommand extends Command {
 		public void run(CommandLineStream out) {
 			final ReasonerExtensions reasonerExtensions = ClassificationRequests.prepareSearchReasonerExtensions()
 				.buildAsync()
-				.get();
+				.get(ApplicationContext.getServiceForClass(Environment.class));
 			
 			out.println("extensionId\tname\tversion");
 			out.println("-----------\t----\t-------");

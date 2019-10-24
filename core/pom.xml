@@ -14,10 +14,10 @@
 	
 	<modules>
 		
-		<!-- Admininstration REST API modules -->
-		<module>com.b2international.snowowl.api.rest</module>
-		<module>com.b2international.snowowl.api.rest.tests</module>
-		<module>com.b2international.snowowl.api.rest.feature</module>
+		<!-- Core REST API modules -->
+		<module>com.b2international.snowowl.core.rest</module>
+		<module>com.b2international.snowowl.core.rest.feature</module>
+		<module>com.b2international.snowowl.core.rest.tests</module>
 		
 		<!-- Identity modules -->
 		<module>com.b2international.snowowl.identity</module>
@@ -33,18 +33,11 @@
 		
 		<!-- Product modules -->
 		<module>com.b2international.snowowl.server.product</module>
-		<module>com.b2international.snowowl.logback.config</module>
 		
 		<!-- Core Features -->
 		<module>com.b2international.snowowl.server.core.feature</module>
 		<module>com.b2international.snowowl.server.dependencies.feature</module>
 		<module>com.b2international.snowowl.server.product.feature</module>
-		
-		<!-- FHIR modules -->
-		<module>com.b2international.snowowl.fhir.core</module>
-		<module>com.b2international.snowowl.fhir.api</module>
-		<module>com.b2international.snowowl.fhir.api.tests</module>
-		<module>com.b2international.snowowl.fhir.api.feature</module>
 		
 	</modules>
 	

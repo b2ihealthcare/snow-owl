@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.MapMaker;
 import com.google.inject.Provider;
 
@@ -91,7 +92,12 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 	
 	@Override
 	public final Map<Class<?>, Object> getBindings() {
-		return bindings;
+		ImmutableMap.Builder<Class<?>, Object> aggregatedBindings = ImmutableMap.<Class<?>, Object>builder()
+			.putAll(bindings);
+		if (delegate instanceof Bindable) {
+			aggregatedBindings.putAll(((Bindable) delegate).getBindings());
+		}
+		return aggregatedBindings.build();
 	}
 
 	@Override

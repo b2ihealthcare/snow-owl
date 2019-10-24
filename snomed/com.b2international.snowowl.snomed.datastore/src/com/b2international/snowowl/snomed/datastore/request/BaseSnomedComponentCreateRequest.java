@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -77,11 +76,6 @@ public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComp
 		this.members = ImmutableList.copyOf(members);
 	}
 	
-	@JsonIgnore
-	public Collection<SnomedCoreComponentCreateRequest> getNestedRequests() {
-		return ImmutableList.of(this);
-	}
-
 	@Override
 	public Set<String> getRequiredComponentIds(final TransactionContext context) {
 		return ImmutableSet.<String>builder()
@@ -104,4 +98,5 @@ public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComp
 			memberRequest.execute(context);
 		}
 	}
+	
 }

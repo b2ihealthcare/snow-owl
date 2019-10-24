@@ -28,10 +28,11 @@ import javax.validation.UnexpectedTypeException;
 
 import org.slf4j.Logger;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -84,7 +85,8 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 			return;
 		}
 		
-		final List<String> branchesForPreviousVersion = getAvailableVersionPaths(staging.getBranchPath());
+		final IEventBus bus = ClassUtils.checkAndCast(staging.getContext(), ServiceProvider.class).service(IEventBus.class);
+		final List<String> branchesForPreviousVersion = getAvailableVersionPaths(bus, staging.getBranchPath());
 		if (branchesForPreviousVersion.isEmpty()) {
 			return;
 		}
@@ -166,12 +168,11 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		}
 	}
 	
-	private List<String> getAvailableVersionPaths(String branchPath) {
-		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+	private List<String> getAvailableVersionPaths(IEventBus bus, String branchPath) {
 		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(eventBus)
+				.execute(bus)
 				.getSync();
 
 		final Map<String, CodeSystemEntry> codeSystemsByMainBranch = Maps.uniqueIndex(codeSystems, CodeSystemEntry::getBranchPath);
@@ -205,7 +206,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		
 		final Optional<CodeSystemVersionEntry> workingCodeSystemVersion = versionSearch
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(eventBus)
+				.execute(bus)
 				.getSync()
 				.first();
 
@@ -223,7 +224,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 						.all()
 						.filterByCodeSystemShortName(codeSystem.getShortName())
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-						.execute(eventBus)
+						.execute(bus)
 						.getSync()
 						.stream()
 						.collect(Collectors.toMap(version -> version.getPath(), v -> v));

@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
@@ -61,6 +62,7 @@ import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.datastore.version.VersioningConfiguration;
 import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
@@ -69,7 +71,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 5.7
  */
-final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, Boolean> {
+final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	private static final int TASK_WORK_STEP = 4;
@@ -89,15 +91,18 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	@JsonProperty
 	String codeSystemShortName;
 	
-	// lock props
+	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
+	private transient Map<String, CodeSystemEntry> codeSystemsByShortName;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String user = job.getUser();
 		
-		final Map<String, CodeSystemEntry> codeSystemsByShortName = fetchAllCodeSystems(context);
+		if (codeSystemsByShortName == null) {
+			codeSystemsByShortName = fetchAllCodeSystems(context);
+		}
 		
 		final CodeSystemEntry codeSystem = codeSystemsByShortName.get(codeSystemShortName);
 		if (codeSystem == null) {
@@ -245,5 +250,19 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.getSync();
 		monitor.worked(1);
 	}
-
+	
+	@Override
+	public String getResource(ServiceProvider context) {
+		if (codeSystemsByShortName == null) {
+			codeSystemsByShortName = fetchAllCodeSystems(context);
+		}
+		// TODO support multi repository version authorization
+		return codeSystemsByShortName.get(codeSystemShortName).getRepositoryUuid();
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.VERSION;
+	}
+	
 }
