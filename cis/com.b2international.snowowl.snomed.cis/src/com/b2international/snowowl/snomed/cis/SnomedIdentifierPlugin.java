@@ -49,7 +49,7 @@ import com.google.common.base.Charsets;
  * @since 4.5
  */
 @Component
-public class SnomedIdentifierBootstrap extends Plugin {
+public final class SnomedIdentifierPlugin extends Plugin {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("snomedids");
 	private static final String SNOMED_IDS_INDEX = "snomedids";

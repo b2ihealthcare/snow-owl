@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import com.google.common.collect.ImmutableList;
  * @since 7.0
  */
 @Component
-public final class SnomedReasonerBootstrap extends Plugin implements TerminologyRepositoryConfigurer {
+public final class SnomedReasonerPlugin extends Plugin implements TerminologyRepositoryConfigurer {
 
 	@Override
 	public void run(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
