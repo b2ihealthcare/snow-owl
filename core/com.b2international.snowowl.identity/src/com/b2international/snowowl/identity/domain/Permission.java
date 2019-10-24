@@ -35,6 +35,7 @@ public final class Permission implements Serializable {
 	private static final long serialVersionUID = 8938726616446337680L;
 	
 	public static final String SEPARATOR = ":";
+	public static final String RESOURCE_SEPARATOR = "/";
 	
 	public static final String ALL = "*";
 	public static final String BROWSE = "browse";
@@ -154,10 +155,14 @@ public final class Permission implements Serializable {
 			@JsonProperty("name") final String name) {
 		checkArgument(!CompareUtils.isEmpty(permission), "Permission argument is required");
 		final String[] parts = permission.split(SEPARATOR);
-		checkArgument(parts.length == 2, "A permission should consist of two String values separated by a ':' character.");
+		checkArgument(parts.length == 2, "A permission should consist of two String values separated by a ':' character. Got: %s", permission);
 		final String operation = parts[0];
 		final String resourceReference = parts[1];
 		return new Permission(operation, resourceReference, name);
 	}
 	
+	public static String asResource(String...resources) {
+		return String.join(RESOURCE_SEPARATOR, resources);
+	}
+
 }
