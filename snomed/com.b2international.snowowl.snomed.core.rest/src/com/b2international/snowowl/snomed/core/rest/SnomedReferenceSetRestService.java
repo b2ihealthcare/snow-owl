@@ -28,7 +28,6 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -70,7 +69,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		notes="Returns a list with all reference sets from a branch."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = CollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedReferenceSets.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	

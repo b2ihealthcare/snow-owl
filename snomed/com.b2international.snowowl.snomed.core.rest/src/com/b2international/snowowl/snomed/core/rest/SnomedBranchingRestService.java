@@ -83,7 +83,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 		notes = "Returns all SNOMED CT branches from the repository."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
+		@ApiResponse(code = 200, message = "OK", response=Branches.class)
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Promise<Branches> searchBranches(
@@ -131,7 +131,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 		notes = "Returns the children of a single SNOMED CT branch (both direct and transitive)."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response=Branches.class),
 		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
 	})
 	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)

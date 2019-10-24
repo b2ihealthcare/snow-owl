@@ -44,8 +44,8 @@
 		<snomed.owl.toolkit.version>2.6.0</snomed.owl.toolkit.version>
 		<failsafe.version>2.3.1</failsafe.version>
 		<!-- Build tool/compiler versions -->
-		<tycho.version>1.4.0</tycho.version>
-		<tycho-extras.version>1.4.0</tycho-extras.version>
+		<tycho.version>1.5.0</tycho.version>
+		<tycho-extras.version>1.5.0</tycho-extras.version>
 		<xtend.compiler.version>2.18.0</xtend.compiler.version>
 		<jacoco.version>0.8.4</jacoco.version>
 		

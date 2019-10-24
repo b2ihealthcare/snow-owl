@@ -33,7 +33,6 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
@@ -84,7 +83,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 				+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedConcepts.class),
 		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
@@ -151,7 +150,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 				+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedConcepts.class),
 		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})

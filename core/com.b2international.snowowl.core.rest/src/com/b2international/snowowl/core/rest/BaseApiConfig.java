@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import static springfox.documentation.schema.AlternateTypeRules.*;
+import static springfox.documentation.schema.AlternateTypeRules.newRule;
 
 import java.security.Principal;
 import java.util.Collections;
@@ -25,15 +25,14 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.snowowl.core.events.util.Promise;
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import io.swagger.models.auth.In;
 import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.schema.WildcardType;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.ApiKey;
@@ -99,12 +98,16 @@ public abstract class BaseApiConfig {
 				))
 				.useDefaultResponseMessages(false)
 				.ignoredParameterTypes(Principal.class)
-//				.genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
 				.alternateTypeRules(
 					newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
-					newRule(resolver.resolve(DeferredResult.class,
-			                resolver.resolve(ResponseEntity.class, WildcardType.class)),
-			                resolver.resolve(WildcardType.class))
+					newRule(
+						resolver.resolve(Promise.class, WildcardType.class),
+			            resolver.resolve(WildcardType.class)
+			        ),
+					newRule(
+						resolver.resolve(Promise.class, resolver.resolve(ResponseEntity.class, WildcardType.class)),
+			            resolver.resolve(WildcardType.class)
+			        )
 				)
 				.groupName(apiGroup)
 	            .select().paths(paths).build()

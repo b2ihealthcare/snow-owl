@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
@@ -65,7 +64,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 				+ "&bull; destination() &ndash; the relationship's destination concept<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedRelationships.class),
 		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
@@ -115,7 +114,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 				+ "&bull; destination() &ndash; the relationship's destination concept<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedRelationships.class),
 		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})

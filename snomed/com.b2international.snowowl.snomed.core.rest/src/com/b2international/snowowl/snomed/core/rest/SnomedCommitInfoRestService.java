@@ -54,7 +54,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 		notes = "Returns all SNOMED CT commits"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
+		@ApiResponse(code = 200, message = "OK", response=CommitInfos.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CommitInfos> search(
@@ -124,7 +124,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 		notes = "Returns a single commit entry from SNOMED CT commits"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
+		@ApiResponse(code = 200, message = "OK")
 	})
 	@GetMapping(value = "/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CommitInfo> get(

@@ -24,11 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -67,24 +65,19 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 	})
 	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
+	public Promise<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
 		ApiValidation.checkInput(request);
-		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		final UriComponentsBuilder linkTo = MvcUriComponentsBuilder.fromController(SnomedBranchReviewRestService.class);
-		RepositoryRequests
+		return RepositoryRequests
 			.reviews()
 			.prepareCreate()
 			.setSource(request.getSource())
 			.setTarget(request.getTarget())
 			.build(repositoryId)
 			.execute(getBus())
-			.then(new Procedure<Review>() { @Override protected void doApply(final Review review) {
-				result.setResult(ResponseEntity.created(linkTo.pathSegment(review.id()).build().toUri()).build());
-			}})
-			.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
-				result.setErrorResult(t);
-			}});
-		return result;
+			.then(review -> {
+				return ResponseEntity.created(linkTo.pathSegment(review.id()).build().toUri()).build();
+			});
 	}
 
 	@ApiOperation(
