@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 
 /**
@@ -26,7 +28,8 @@ import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
  * @since 7.0
  */
 final class ClassificationGetRequest 
-		extends GetResourceRequest<ClassificationSearchRequestBuilder, RepositoryContext, ClassificationTask> {
+		extends GetResourceRequest<ClassificationSearchRequestBuilder, RepositoryContext, ClassificationTask>
+		implements RepositoryAccessControl {
 
 	ClassificationGetRequest(final String classificationId) {
 		super(classificationId);
@@ -36,4 +39,10 @@ final class ClassificationGetRequest
 	protected ClassificationSearchRequestBuilder createSearchRequestBuilder() {
 		return new ClassificationSearchRequestBuilder();
 	}
+
+	@Override
+	public String getOperation() {
+		return Permission.CLASSIFY;
+	}
+	
 }

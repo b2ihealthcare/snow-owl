@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,17 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 
 /**
  * @since 6.5
  */
-public final class SnomedConstraintCreateRequest implements Request<TransactionContext, String> {
+public final class SnomedConstraintCreateRequest implements Request<TransactionContext, String>, BranchAccessControl {
 
 	@NotNull
 	private SnomedConstraint constraint;
@@ -54,4 +56,10 @@ public final class SnomedConstraintCreateRequest implements Request<TransactionC
 		context.add(model);
 		return model.getId();
 	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.EDIT;
+	}
+
 }

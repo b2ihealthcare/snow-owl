@@ -50,5 +50,5 @@ class RepositorySearchRequest extends SearchResourceRequest<ServiceProvider, Rep
 				.collect(Collectors.toList());
 		return new Repositories(ImmutableList.copyOf(repositories));
 	}
-
+	
 }

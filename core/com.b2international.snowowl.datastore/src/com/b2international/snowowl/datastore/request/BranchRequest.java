@@ -28,7 +28,6 @@ import com.b2international.snowowl.core.domain.BranchContextProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -36,12 +35,15 @@ import com.google.common.collect.ImmutableList;
  */
 public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext, BranchContext, B> {
 
-	@JsonProperty
 	private final String branchPath;
 	
 	public BranchRequest(String branchPath, Request<BranchContext, B> next) {
 		super(next);
 		this.branchPath = checkNotNull(branchPath, "branchPath");
+	}
+	
+	public String getBranchPath() {
+		return branchPath;
 	}
 	
 	@Override

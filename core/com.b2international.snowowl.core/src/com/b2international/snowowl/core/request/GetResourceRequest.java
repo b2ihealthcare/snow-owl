@@ -61,5 +61,5 @@ public abstract class GetResourceRequest<SB extends SearchResourceRequestBuilder
 			.first()
 			.orElseThrow(() -> new NotFoundException(StringUtils.splitCamelCaseAndCapitalize(getReturnType().getSimpleName()), id));
 	}
-
+	
 }

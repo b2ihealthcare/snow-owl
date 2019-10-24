@@ -43,15 +43,26 @@ public final class Permission implements Serializable {
 	public static final String EXPORT = "export";
 	public static final String VERSION = "version";
 	public static final String PROMOTE = "promote";
+	public static final String CLASSIFY = "classify";
 	
 	private final String operation;
 	private final String resource;
 	private final String name;
 	private final String permission;
+	private final boolean wildcard;
+	private final String rawResource;
+	
+	public Permission(final String operation, final String resource) {
+		this(operation, resource, "");
+	}
 
 	public Permission(final String operation, final String resource, final String name) {
 		this.operation = checkNotNull(operation, "Operation must be specified");
 		this.resource = checkNotNull(resource, "Resource must be specified");
+		final int wildcardPosition = this.resource.indexOf(ALL);
+		checkArgument(wildcardPosition == -1 /*no wildcard*/ || wildcardPosition == resource.length() - 1 /*at the end*/, "Wildcard character must be at the end of the resource. Got: %s", resource);
+		this.wildcard = wildcardPosition != -1;
+		this.rawResource = wildcard ? resource.substring(0, wildcardPosition) : resource;
 		this.permission = String.join(SEPARATOR, operation, resource);
 		this.name = name;
 	}
@@ -94,15 +105,24 @@ public final class Permission implements Serializable {
 	 */
 	public boolean implies(Permission permissionRequirement) {
 		checkArgument(!ALL.equals(permissionRequirement.getOperation()), "Explicit operation is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
-		// checkArgument(!ALL.equals(permissionRequirement.getResource()), "Explicit resource is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
+		checkArgument(!ALL.equals(permissionRequirement.getResource()), "Explicit resource is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
 		
 		// rules
-		// *:* allows all incoming permission requirements
-		final boolean allowedOperation = ALL.equals(getOperation()) || getOperation().equals(permissionRequirement.getOperation());
-		final boolean allowedResource = ALL.equals(getResource()) || getResource().equals(permissionRequirement.getResource());
-		// TODO: need to check resource name as well (eg. for restricting access to branches)
+		// * allows all incoming permission requirements (both operation and resource)
+		// if not *, then the operation in this permission should match the same operation from the requirement (equals)
+		final boolean allowedOperation = ALL.equals(operation) || operation.equals(permissionRequirement.getOperation());
+		if (!allowedOperation) {
+			return false;
+		}
 		
-		return allowedOperation && allowedResource;
+		// if operation matches, then proceed based on whether the resource part has a wildcard or not
+		if (wildcard) {
+			// in case of a wildcard, this permission's resource part should match the beginning of the requirement's resource part
+			return permissionRequirement.getResource().startsWith(rawResource);
+		} else {
+			// otherwise permission resource parts should match
+			return permissionRequirement.getResource().equals(resource);
+		}
 	}
 
 	@Override
@@ -139,5 +159,5 @@ public final class Permission implements Serializable {
 		final String resourceReference = parts[1];
 		return new Permission(operation, resourceReference, name);
 	}
-
+	
 }

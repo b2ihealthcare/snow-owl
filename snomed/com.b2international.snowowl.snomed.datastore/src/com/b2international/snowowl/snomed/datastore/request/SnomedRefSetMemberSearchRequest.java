@@ -261,5 +261,5 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	protected SnomedReferenceSetMembers createEmptyResult(int limit) {
 		return new SnomedReferenceSetMembers(limit, 0);
 	}
-
+	
 }

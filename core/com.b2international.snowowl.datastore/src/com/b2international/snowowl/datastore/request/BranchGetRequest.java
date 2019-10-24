@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,18 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 4.1
  */
-final class BranchGetRequest extends GetResourceRequest<BranchSearchRequestBuilder, RepositoryContext, Branch> {
+final class BranchGetRequest 
+		extends GetResourceRequest<BranchSearchRequestBuilder, RepositoryContext, Branch>
+		implements RepositoryAccessControl {
 
 	BranchGetRequest(final String branchPath) {
 		super(branchPath);
@@ -31,6 +35,11 @@ final class BranchGetRequest extends GetResourceRequest<BranchSearchRequestBuild
 	@Override
 	protected BranchSearchRequestBuilder createSearchRequestBuilder() {
 		return new BranchSearchRequestBuilder();
+	}
+
+	@Override
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 	
 }

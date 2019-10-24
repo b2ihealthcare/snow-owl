@@ -16,24 +16,17 @@
 package com.b2international.snowowl.core.authorization;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
- * Represents an authorization context where a permission is required to get access.
- * 
  * @since 7.2
  */
-public interface AccessControl {
+public interface BranchAccessControl extends RepositoryAccessControl {
 
-	/**
-	 * @return the {@link Permission} required to access/execute/etc. this object.
-	 */
-	default Permission getPermission(ServiceProvider context) {
-		return new Permission(getOperation(), getResource(context));
+	String BRANCH_TEMPLATE = "${branch}";
+
+	@Override
+	default String getResource(ServiceProvider context) {
+		return String.format("%s/%s", REPOSITORY_TEMPLATE, BRANCH_TEMPLATE);
 	}
-
-	String getResource(ServiceProvider context);
-
-	String getOperation();
-
+	
 }
