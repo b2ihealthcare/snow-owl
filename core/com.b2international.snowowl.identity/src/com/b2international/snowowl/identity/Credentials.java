@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.identity;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @since 4.5
  */
-public final class Credentials {
+public final class Credentials implements Serializable {
 
 	private final String username;
 	private final String password;

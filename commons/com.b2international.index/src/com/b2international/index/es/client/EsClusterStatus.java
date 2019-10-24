@@ -15,11 +15,14 @@
  */
 package com.b2international.index.es.client;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
@@ -27,7 +30,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 7.2
  */
-public final class EsClusterStatus {
+public final class EsClusterStatus implements Serializable {
 
 	private final boolean available;
 	private final String diagnosis;
@@ -36,7 +39,7 @@ public final class EsClusterStatus {
 	public EsClusterStatus(final boolean available, final String diagnosis, final List<EsIndexStatus> indices) {
 		this.available = available;
 		this.diagnosis = diagnosis;
-		this.indices = Collections3.toImmutableList(indices);
+		this.indices = Collections.unmodifiableList(newArrayList(indices));
 	}
 	
 	/**

@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.identity;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 6.18
  */
-public final class Token {
+public final class Token implements Serializable {
 
 	private final String token;
 

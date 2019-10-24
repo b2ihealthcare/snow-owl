@@ -15,6 +15,7 @@
  */
 package com.b2international.index.es.client;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
@@ -24,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * @since 7.2
  */
-public final class EsIndexStatus implements Comparable<EsIndexStatus> {
+public final class EsIndexStatus implements Comparable<EsIndexStatus>, Serializable {
 
 	// first by status then by name
 	private static final Comparator<EsIndexStatus> COMPARATOR = Comparator.comparing(EsIndexStatus::getStatus).thenComparing(Comparator.comparing(EsIndexStatus::getIndex));
