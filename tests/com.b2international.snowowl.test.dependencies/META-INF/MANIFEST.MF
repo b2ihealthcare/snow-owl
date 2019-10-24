@@ -6,8 +6,8 @@ Bundle-Version: 7.2.0.qualifier
 Bundle-Vendor: B2iHealthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .,
- contiperf-2.3.2.jar,
- system-rules-1.18.0.jar
+ lib/contiperf-2.3.2.jar,
+ lib/system-rules-1.18.0.jar
 Export-Package: org.databene.contiperf,
  org.databene.contiperf.clock,
  org.databene.contiperf.junit,
