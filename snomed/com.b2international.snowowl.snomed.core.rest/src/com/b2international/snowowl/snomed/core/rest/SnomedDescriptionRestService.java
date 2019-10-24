@@ -29,7 +29,6 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
@@ -70,7 +69,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		notes="Returns all Descriptions from a branch that match the specified query parameters."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedDescriptions.class),
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
@@ -147,7 +146,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		notes="Returns all Descriptions from a branch that match the specified query parameters."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedDescriptions.class),
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})

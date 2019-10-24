@@ -27,7 +27,6 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -69,7 +68,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				+ "<p>"
 				+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedReferenceSetMembers.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
@@ -117,7 +116,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
+		@ApiResponse(code = 200, message = "OK", response = SnomedReferenceSetMembers.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping("/search")
