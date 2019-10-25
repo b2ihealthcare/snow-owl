@@ -63,6 +63,7 @@ public final class IdentityPlugin extends Plugin {
 		env.services().registerService(JWTGenerator.class, new JWTGenerator(algorithm, conf.getIssuer()));
 		env.services().registerService(JWTVerifier.class, JWT.require(algorithm)
 				.withIssuer(conf.getIssuer())
+				.acceptLeeway(3L) // 3 seconds
 				.build());
 	}
 	
