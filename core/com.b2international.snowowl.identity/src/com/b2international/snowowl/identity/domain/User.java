@@ -67,8 +67,16 @@ public final class User implements Serializable {
 		return Objects.equals(username, other.username);
 	}
 
+	/**
+	 * @return <code>true</code> if this user has a permission that implies all other permissions, <code>false</code> otherwise.
+	 */
 	public boolean isAdministrator() {
-		return getRoles().contains(Role.ADMINISTRATOR);
+		return getPermissions().stream()
+				.filter(p -> {
+					return Permission.ALL.equals(p.getOperation()) && Permission.ALL.equals(p.getResource());
+				})
+				.findFirst()
+				.isPresent();
 	}
 	
 	/**
