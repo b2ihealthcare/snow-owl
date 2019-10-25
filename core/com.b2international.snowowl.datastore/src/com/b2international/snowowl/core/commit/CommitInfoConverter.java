@@ -56,7 +56,7 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 		
 		// expand details if requested
 		if (expand().containsKey(CommitInfo.Expand.DETAILS)) {
-			final String affectedComponentId = filters.containsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT) ? filters.getString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT.name()) : ""; 
+			final String affectedComponentId = filters.containsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT.name()) ? filters.getString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT.name()) : ""; 
 			final Collection<CommitDetail> changes = Strings.isNullOrEmpty(affectedComponentId) ? doc.getDetails() : doc.getDetailsByObject(affectedComponentId);
 			final List<CommitInfoDetail> details = changes.stream()
 					.flatMap(info -> toCommitInfoDetail(info))
