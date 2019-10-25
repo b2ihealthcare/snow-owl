@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
@@ -23,7 +24,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 7.0
  */
-public class Rf2ImportResponse {
+public final class Rf2ImportResponse implements Serializable {
 
 	private ImportStatus status = ImportStatus.COMPLETED;
 	

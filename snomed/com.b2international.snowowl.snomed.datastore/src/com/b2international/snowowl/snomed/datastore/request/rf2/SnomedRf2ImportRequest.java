@@ -68,7 +68,7 @@ import com.google.common.base.Strings;
 /**
  * @since 6.0.0
  */
-public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, BranchAccessControl {
+final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, BranchAccessControl {
 
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 	
