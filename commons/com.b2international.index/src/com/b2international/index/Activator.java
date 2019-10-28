@@ -16,8 +16,12 @@
 package com.b2international.index;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
+import java.util.stream.StreamSupport;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.codecs.Codec;
@@ -70,10 +74,10 @@ public class Activator implements BundleActivator {
 			 * the moment!
 			 */
 			final HttpAsyncResponseConsumerFactory consumerFactory = new HeapBufferedResponseConsumerFactory(LARGE_BUFFER_LIMIT);
-	        final Field defaultField = HttpAsyncResponseConsumerFactory.class.getDeclaredField("DEFAULT");
+			final Field defaultField = HttpAsyncResponseConsumerFactory.class.getDeclaredField("DEFAULT");
 	        defaultField.setAccessible(true);
-	        
-	        final Field modifiers = Field.class.getDeclaredField("modifiers");
+			
+	        final Field modifiers = getModifiersField();
 	        modifiers.setAccessible(true);
 	        modifiers.setInt(defaultField, defaultField.getModifiers() & ~Modifier.FINAL);
 	        
@@ -82,6 +86,39 @@ public class Activator implements BundleActivator {
 	        // Initialize Elasticsearch's XContent extensibility mechanism 
 			return JsonXContent.contentBuilder();
 		});
+	}
+
+	private Field getModifiersField() throws IllegalAccessException, NoSuchFieldException {
+		
+		try {
+			// Pre-JDK 12: retrieve "modifiers" field on Field directly
+			return Field.class.getDeclaredField("modifiers");
+		} catch (NoSuchFieldException e) {
+			try {
+
+				// JDK 12: gain access to private getDeclaredFields0 method that returns unfiltered results
+				Method getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
+				boolean accessibleBeforeSet = getDeclaredFields0.isAccessible();
+				
+				try {
+					getDeclaredFields0.setAccessible(true);
+					Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
+					return Arrays.stream(fields)
+							.filter(f -> "modifiers".equals(f.getName()))
+							.findFirst()
+							.orElseThrow(() -> e);
+				} finally {
+					getDeclaredFields0.setAccessible(accessibleBeforeSet);
+				}
+				
+			} catch (NoSuchMethodException ex) {
+				e.addSuppressed(ex);
+				throw e;
+			} catch (InvocationTargetException ex) {
+				e.addSuppressed(ex);
+				throw e;
+			}
+		}
 	}
 
 	public void stop(BundleContext context) throws Exception {
