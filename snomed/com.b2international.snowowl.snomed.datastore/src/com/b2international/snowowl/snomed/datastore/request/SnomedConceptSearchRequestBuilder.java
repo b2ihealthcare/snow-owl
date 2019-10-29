@@ -56,10 +56,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, true);
 	}
 
-	public final SnomedConceptSearchRequestBuilder withSearchProfile(final String userId) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.SEARCH_PROFILE, userId);
-	}
-
 	public final SnomedConceptSearchRequestBuilder withFuzzySearch() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_FUZZY, true);
 	}

@@ -41,7 +41,6 @@ import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -123,11 +122,6 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		USE_DOI,
 		
 		/**
-		 * Use search profile of the user
-		 */
-		SEARCH_PROFILE,
-		
-		/**
 		 * Use fuzzy query in the search
 		 */
 		USE_FUZZY
@@ -197,10 +191,6 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		}
 		
 		Expression searchProfileQuery = null;
-		if (containsKey(OptionKey.SEARCH_PROFILE)) {
-			final String userId = getString(OptionKey.SEARCH_PROFILE);
-			searchProfileQuery = SearchProfileQueryProvider.provideQuery(userId);
-		}
 		
 		final Expression queryExpression;
 		
