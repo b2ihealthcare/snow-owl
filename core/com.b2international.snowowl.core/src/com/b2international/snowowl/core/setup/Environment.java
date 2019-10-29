@@ -49,7 +49,6 @@ public final class Environment implements ServiceProvider {
 		final PreferencesService preferences = PlatformUtil.getPreferencesService(CoreActivator.getContext());
 		services().registerService(PreferencesService.class, preferences);
 		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(configPath));
-		services().registerService(Mode.class, Mode.SERVER); // by default assume Snow Owl is in server mode
 		services().registerService(Environment.class, this);
 	}
 	
@@ -121,6 +120,10 @@ public final class Environment implements ServiceProvider {
 	 * @return <code>true</code> if Snow Owl is running in {@link Mode#SERVER} mode, and <code>false</code> if it is running in {@link Mode#CLIENT} mode.
 	 */
 	public boolean isServer() {
+		final Mode mode = services().getService(Mode.class);
+		if (mode == null) {
+			throw new UnsupportedOperationException("This method will only return valid value after a successful bootstrap phase.");
+		}
 		return service(Mode.class) == Mode.SERVER;
 	}
 

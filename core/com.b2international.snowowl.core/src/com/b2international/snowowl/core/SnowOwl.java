@@ -218,6 +218,10 @@ public final class SnowOwl {
 		if (!isRunning()) {
 			log.info("Initializing...");
 			this.plugins.init(this.configuration, this.environment);
+			// after init set the mode to SERVER if not already set by something else
+			if (this.environment.services().getService(Mode.class) == null) {
+				this.environment.services().registerService(Mode.class, Mode.SERVER); // by default assume Snow Owl is in server mode
+			}
 		}
 		return this;
 	}

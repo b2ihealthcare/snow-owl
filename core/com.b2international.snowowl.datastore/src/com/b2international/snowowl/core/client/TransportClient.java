@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.client;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -38,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.snowowl.core.Mode;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -78,13 +78,14 @@ public final class TransportClient {
 	private final String address;
 	
 	private IConnector connector;
-	private AtomicBoolean embedded;
 	private String user;
 	private String password;
 	
 	public TransportClient(Environment env, String address) {
 		this.env = env;
 		this.address = address;
+		// override CLIENT/SERVER mode when connecting to a valid address
+		env.services().registerService(Mode.class, Strings.isNullOrEmpty(address) ? Mode.SERVER : Mode.CLIENT);
 		this.bus = env.service(IEventBus.class);
 		this.transportConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(TransportConfiguration.class);
 	}
@@ -108,7 +109,7 @@ public final class TransportClient {
 		
 		try {
 			
-			if (embedded.get()) {
+			if (Strings.isNullOrEmpty(address)) {
 				connector = JVMUtil.getConnector(IPluginContainer.INSTANCE, NET_4_J_CONNECTOR_NAME);
 			} else {
 				TCPUtil.prepareContainer(IPluginContainer.INSTANCE);
@@ -150,8 +151,6 @@ public final class TransportClient {
 			this.user = username;
 			this.password = password;
 			// initialize connectors first
-			embedded = new AtomicBoolean();
-			embedded.set(env.isServer());
 			initConnection();
 			
 			// try to log in with the specified username and password using the non-authorized bus instance
@@ -208,8 +207,7 @@ public final class TransportClient {
 		final RpcProtocol rpcProtocol = RpcUtil.getRpcClientProtocol(IPluginContainer.INSTANCE);
 		openProtocol(rpcProtocol);
 
-		// if this environment is running the server as well
-		if (env.isServer()) {
+		if (!env.isServer()) {
 			// ...the event bus, too.
 			final IEventBusProtocol eventBusProtocol = EventBusNet4jUtil.getClientProtocol(IPluginContainer.INSTANCE);
 			openProtocol(eventBusProtocol);
