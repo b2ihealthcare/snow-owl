@@ -44,7 +44,7 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 
 	@Override
 	public void run(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
-		if (env.isServer() || env.isEmbedded()) {
+		if (env.isServer()) {
 			final Index repositoryIndex = env.service(RepositoryManager.class).get(getRepositoryId()).service(Index.class);
 			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 			final int maximumReasonerRuns = snomedConfig.getMaxReasonerRuns();

@@ -67,7 +67,7 @@ public final class ValidationPlugin extends Plugin {
 	
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		if (env.isEmbedded() || env.isServer()) {
+		if (env.isServer()) {
 			final ObjectMapper mapper = env.service(ObjectMapper.class);
 			final Index validationIndex = Indexes.createIndex(
 				"validations", 

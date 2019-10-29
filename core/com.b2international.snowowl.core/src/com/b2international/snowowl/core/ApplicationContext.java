@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.status.Statuses;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -267,28 +265,6 @@ public class ApplicationContext {
 				}
 			}
 		}
-	}
-	
-	private static final String IS_SERVER_MODE_KEY = "serverMode";
-	private static final String VIRGO_KERNEL_HOME_KEY = "org.eclipse.virgo.kernel.home";
-	
-	private final Supplier<Boolean> serverFlagSupplier = Suppliers.memoize(new Supplier<Boolean>() {
-		@Override public Boolean get() {
-			if (null != Platform.getProduct()) {
-				// equinox based server
-				return Boolean.parseBoolean(Platform.getProduct().getProperty(IS_SERVER_MODE_KEY));
-			}
-			// when running junit plugin tests, the product is null, and no virgo kernel
-			return System.getProperty(VIRGO_KERNEL_HOME_KEY) != null; 
-		};
-	}); 
-
-	/**
-	 * Returns {@code true} if the application for the current application context is running in server mode. Otherwise, returns {@code false}.
-	 * @return {@code true} if the application is running in server mode, otherwise {@code false}.
-	 */
-	public boolean isServerMode() {
-		return serverFlagSupplier.get();
 	}
 	
 	/**

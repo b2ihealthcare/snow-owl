@@ -51,7 +51,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		registry
 			.registerTerminology(this);
 		
-		if (env.isEmbedded() || env.isServer()) {
+		if (env.isServer()) {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 			final RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 			final Repository repo = repositories.prepareCreate(getRepositoryId())

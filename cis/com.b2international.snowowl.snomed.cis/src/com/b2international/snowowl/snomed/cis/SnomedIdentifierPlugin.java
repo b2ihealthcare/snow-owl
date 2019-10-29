@@ -71,7 +71,7 @@ public final class SnomedIdentifierPlugin extends Plugin {
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		if (env.isServer() || env.isEmbedded()) {
+		if (env.isServer()) {
 			final ISnomedIdentifierReservationService reservationService = env.service(ISnomedIdentifierReservationService.class);
 			final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedIdentifierConfiguration.class);
 			registerSnomedIdentifierService(conf, env, reservationService);

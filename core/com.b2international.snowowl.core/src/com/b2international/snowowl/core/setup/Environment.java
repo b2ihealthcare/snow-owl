@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import org.osgi.service.prefs.PreferencesService;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreActivator;
+import com.b2international.snowowl.core.Mode;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
-import com.b2international.snowowl.core.client.ClientPreferences;
 import com.google.inject.Provider;
 
 /**
@@ -49,8 +49,7 @@ public final class Environment implements ServiceProvider {
 		final PreferencesService preferences = PlatformUtil.getPreferencesService(CoreActivator.getContext());
 		services().registerService(PreferencesService.class, preferences);
 		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(configPath));
-		final ClientPreferences cdoClientConfiguration = new ClientPreferences(preferences);
-		services().registerService(ClientPreferences.class, cdoClientConfiguration);
+		services().registerService(Mode.class, Mode.SERVER); // by default assume Snow Owl is in server mode
 		services().registerService(Environment.class, this);
 	}
 	
@@ -119,30 +118,10 @@ public final class Environment implements ServiceProvider {
 	}
 
 	/**
-	 * Returns if Snow Owl running in embedded mode or not.
-	 * 
-	 * @return
-	 */
-	public boolean isEmbedded() {
-		return service(ClientPreferences.class).isClientEmbedded();
-	}
-
-	/**
-	 * Returns <code>true</code> if Snow Owl is running on a client environment.
-	 * 
-	 * @return
-	 */
-	public boolean isClient() {
-		return !isServer();
-	}
-
-	/**
-	 * Returns <code>true</code> if Snow Owl is running on a server environment.
-	 * 
-	 * @return
+	 * @return <code>true</code> if Snow Owl is running in {@link Mode#SERVER} mode, and <code>false</code> if it is running in {@link Mode#CLIENT} mode.
 	 */
 	public boolean isServer() {
-		return services().isServerMode();
+		return service(Mode.class) == Mode.SERVER;
 	}
 
 }

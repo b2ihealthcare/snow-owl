@@ -435,13 +435,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="xstream"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.apache.el"
          download-size="0"
          install-size="0"

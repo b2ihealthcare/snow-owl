@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 import org.osgi.service.prefs.PreferencesService;
 
 import com.b2international.commons.extension.Component;
-import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
@@ -103,13 +101,6 @@ public final class SnowOwlPlugin extends Plugin {
 		return registry;
 	}
 
-	@Override
-	public void run(SnowOwlConfiguration configuration, Environment environment) {
-		if (!environment.isEmbedded() && environment.isClient()) {
-			PlatformUtil.enableSystemProxies(CoreActivator.getContext());
-		}
-	}
-	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
 		registry.add("monitoring", MonitoringConfiguration.class);

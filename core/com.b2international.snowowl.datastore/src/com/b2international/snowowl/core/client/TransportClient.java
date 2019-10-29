@@ -58,7 +58,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
- * @since 
+ * @since 7.2
  */
 public final class TransportClient {
 	
@@ -74,27 +74,23 @@ public final class TransportClient {
 
 	private final Environment env;
 	private final IEventBus bus;
-	private final ClientPreferences preferences;
 	private final TransportConfiguration transportConfiguration;
+	private final String address;
 	
 	private IConnector connector;
 	private AtomicBoolean embedded;
 	private String user;
 	private String password;
 	
-	public TransportClient(Environment env) {
+	public TransportClient(Environment env, String address) {
 		this.env = env;
+		this.address = address;
 		this.bus = env.service(IEventBus.class);
-		this.preferences = env.service(ClientPreferences.class);
 		this.transportConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(TransportConfiguration.class);
 	}
 	
-	public boolean isEmbedded() {
-		return embedded.get();
-	}
-	
 	public String getAddress() {
-		return preferences.getServerUrl();
+		return address;
 	}
 	
 	public String getUser() {
@@ -155,7 +151,7 @@ public final class TransportClient {
 			this.password = password;
 			// initialize connectors first
 			embedded = new AtomicBoolean();
-			embedded.set(preferences.isClientEmbedded() || User.isSystem(username));
+			embedded.set(env.isServer());
 			initConnection();
 			
 			// try to log in with the specified username and password using the non-authorized bus instance
@@ -212,7 +208,8 @@ public final class TransportClient {
 		final RpcProtocol rpcProtocol = RpcUtil.getRpcClientProtocol(IPluginContainer.INSTANCE);
 		openProtocol(rpcProtocol);
 
-		if (!isEmbedded()) {
+		// if this environment is running the server as well
+		if (env.isServer()) {
 			// ...the event bus, too.
 			final IEventBusProtocol eventBusProtocol = EventBusNet4jUtil.getClientProtocol(IPluginContainer.INSTANCE);
 			openProtocol(eventBusProtocol);

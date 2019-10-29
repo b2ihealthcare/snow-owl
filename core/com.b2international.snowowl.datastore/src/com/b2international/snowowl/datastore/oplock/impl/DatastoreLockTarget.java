@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.oplock.impl;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Objects;
 
@@ -25,7 +26,7 @@ import com.google.common.base.Strings;
 /**
  * A lock target referring to a single repository branch by the unique identifier of the repository and the branch path.
  */
-public class DatastoreLockTarget {
+public class DatastoreLockTarget implements Serializable {
 	
 	private static final String _ALL = "all";
 

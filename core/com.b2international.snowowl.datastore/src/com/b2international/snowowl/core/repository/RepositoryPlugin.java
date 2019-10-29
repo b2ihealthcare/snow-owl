@@ -42,7 +42,6 @@ import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.client.ClientPreferences;
 import com.b2international.snowowl.core.client.TransportClient;
 import com.b2international.snowowl.core.client.TransportConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -156,7 +155,7 @@ public final class RepositoryPlugin extends Plugin {
 
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) {
-		if (env.isServer() || env.isEmbedded()) {
+		if (env.isServer()) {
 			LOG.debug("Initializing repository plugin.");
 			final MeterRegistry registry = env.service(MeterRegistry.class);
 			final IEventBus eventBus = env.service(IEventBus.class);
@@ -203,7 +202,6 @@ public final class RepositoryPlugin extends Plugin {
 			LOG.debug("Initialized repository plugin.");
 		} else {
 			LOG.debug("Snow Owl application is running in remote mode.");
-			LOG.info("Connecting to Snow Owl Terminology Server at {}", env.service(ClientPreferences.class).getServerUrl());
 		}
 		
 		if (configuration.isSystemUserNeeded() || env.isServer()) {
@@ -254,7 +252,7 @@ public final class RepositoryPlugin extends Plugin {
 	
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		if (env.isEmbedded() || env.isServer()) {
+		if (env.isServer()) {
 			initializeJobSupport(env, configuration);
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public final class LockPlugin extends Plugin {
 
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		if (env.isServer() || env.isEmbedded()) {
+		if (env.isServer()) {
 			final Index locksIndex = Indexes.createIndex("locks", env.service(ObjectMapper.class), new Mappings(DatastoreLockIndexEntry.class), env.service(IndexSettings.class));
 			final DatastoreOperationLockManager lockManager = new DatastoreOperationLockManager(locksIndex);
 			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
@@ -60,9 +60,7 @@ public final class LockPlugin extends Plugin {
 			env.services().registerService(IOperationLockManager.class, lockManager);
 			final RpcSession session = RpcUtil.getInitialServerSession(env.container());
 			session.registerClassLoader(IOperationLockManager.class, DatastoreOperationLockManager.class.getClassLoader());
-		}
-		
-		if (!env.isEmbedded()) {
+		} else {
 			env.services().registerService(IOperationLockManager.class, RpcUtil.createProxy(env.container(), IOperationLockManager.class));
 		}
 	}
