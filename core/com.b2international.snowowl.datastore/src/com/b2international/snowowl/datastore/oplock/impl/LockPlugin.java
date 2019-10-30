@@ -19,16 +19,13 @@ import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.config.IndexSettings;
-import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.oplock.DatastoreLockIndexEntry;
 import com.b2international.snowowl.datastore.oplock.DatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
-import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,16 +44,6 @@ public final class LockPlugin extends Plugin {
 			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
 			lockManager.addLockTargetListener(new Slf4jOperationLockTargetListener());
 			lockManager.addLockTargetListener(remoteLockTargetListener);
-			
-			ApplicationContext.getInstance().addServiceListener(IApplicationSessionManager.class, (oldService, newService) -> {
-				if (oldService != null) {
-					((ApplicationSessionManager) oldService).removeListener(remoteLockTargetListener);
-				}
-				
-				if (newService != null) {
-					((ApplicationSessionManager) newService).addListener(remoteLockTargetListener);
-				}
-			});
 			env.services().registerService(IOperationLockManager.class, lockManager);
 			final RpcSession session = RpcUtil.getInitialServerSession(env.container());
 			session.registerClassLoader(IOperationLockManager.class, DatastoreOperationLockManager.class.getClassLoader());

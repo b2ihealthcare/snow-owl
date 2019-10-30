@@ -15,20 +15,15 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.jvm.IJVMConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
 import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
-import org.eclipse.spi.net4j.ServerProtocolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,17 +49,11 @@ import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
-import com.b2international.snowowl.datastore.internal.RpcServerServiceLookup;
-import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
-import com.b2international.snowowl.datastore.internal.session.InternalApplicationSessionManager;
-import com.b2international.snowowl.datastore.internal.session.LogListener;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
-import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
-import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
@@ -164,29 +153,18 @@ public final class RepositoryPlugin extends Plugin {
 			
 			final IManagedContainer container = env.container();
 			
-			RpcUtil.getInitialServerSession(container).registerServiceLookup(new RpcServerServiceLookup());
-			final ApplicationSessionManager manager = new ApplicationSessionManager(env.service(IdentityProvider.class));
-			manager.addListener(new LogListener());
-			
-			env.services().registerService(IApplicationSessionManager.class, manager);
-			env.services().registerService(InternalApplicationSessionManager.class, manager);
-			
-			final ClassLoader managerClassLoader = manager.getClass().getClassLoader();
-			RpcUtil.getInitialServerSession(container).registerClassLoader(IApplicationSessionManager.class, managerClassLoader);
-			RpcUtil.getInitialServerSession(container).registerClassLoader(InternalApplicationSessionManager.class, managerClassLoader);
+			RpcUtil.getInitialServerSession(container).registerServiceLookup(env::service);
 			
 			Net4jUtil.prepareContainer(container);
 			JVMUtil.prepareContainer(container);
 			TCPUtil.prepareContainer(container);
-			
-			registerCustomProtocols(container);
 			
 			LifecycleUtil.activate(container);
 			
 			final HostAndPort hostAndPort = configuration.getModuleConfig(RepositoryConfiguration.class).getHostAndPort();
 			// open port in server environments
 			if (hostAndPort.getPort() > 0) {
-				TCPUtil.getAcceptor(container, hostAndPort.toString()); // Starts the TCP transport
+				TCPUtil.getAcceptor(container, hostAndPort.toString()); // Starts the TCP transport 
 				LOG.info("Listening on {} for connections", hostAndPort);
 			}
 
@@ -237,19 +215,6 @@ public final class RepositoryPlugin extends Plugin {
 		
 	}
 	
-	private void registerCustomProtocols(IManagedContainer container) {
-		final String EXTENSION_POINT_ID = "com.b2international.snowowl.datastore.server.protocolFactory";
-		final String CLASS_ATTRIBUTE = "class";
-		final IConfigurationElement[] configurationElements = Platform.getExtensionRegistry().getConfigurationElementsFor(EXTENSION_POINT_ID);
-		Arrays.stream(configurationElements).forEach(input -> {
-			try {
-				container.registerFactory((ServerProtocolFactory) input.createExecutableExtension(CLASS_ATTRIBUTE));
-			} catch (final CoreException e) {
-				throw new RuntimeException("Error while creating executable extension from the passed in configuration element: " + input, e);
-			}
-		});
-	}
-	
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer()) {
@@ -271,7 +236,7 @@ public final class RepositoryPlugin extends Plugin {
 					defaultJobCleanUpInterval)
 			);
 	}
-	
+
 	private void initializeRequestSupport(Environment env, int numberOfWorkers) {
 		final IEventBus events = env.service(IEventBus.class);
 		final ClassLoader classLoader = env.plugins().getCompositeClassLoader();
@@ -281,11 +246,9 @@ public final class RepositoryPlugin extends Plugin {
 	}
 
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
-		// Normally this is done for us by CDOConnectionFactory
 		final IJVMConnector connector = JVMUtil.getConnector(container, TransportClient.NET_4_J_CONNECTOR_NAME);
+		JVMUtil.getAcceptor(container, TransportClient.NET_4_J_CONNECTOR_NAME);
 		final RpcProtocol clientProtocol = RpcUtil.getRpcClientProtocol(container);
 		clientProtocol.open(connector);
-
-		RpcUtil.getRpcClientProxy(InternalApplicationSessionManager.class).connectSystemUser();
 	}
 }
