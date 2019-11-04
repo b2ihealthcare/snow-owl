@@ -74,6 +74,12 @@
 										<exclude>.gitignore</exclude>
 									</excludes>
 								</fileset>
+								<fileset>
+									<directory>site</directory>
+									<excludes>
+										<exclude>.gitignore</exclude>
+									</excludes>
+								</fileset>
 							</filesets>
             			</configuration>
           			</execution>
@@ -218,6 +224,22 @@
 									</pluginExecutionFilter>
 									<action>
 										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>com.github.eirslett</groupId>
+        								<artifactId>frontend-maven-plugin</artifactId>
+        								<versionRange>[1.8.0,)</versionRange>
+        								<goals>
+											<goal>install-node-and-npm</goal>
+											<goal>npm</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute>
+											<runOnIncremental>false</runOnIncremental>
+										</execute>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
