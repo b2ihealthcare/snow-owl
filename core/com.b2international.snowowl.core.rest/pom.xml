@@ -15,6 +15,8 @@
 		<spring.version>5.1.9.RELEASE</spring.version>
 		<spring.security.version>5.1.6.RELEASE</spring.security.version>
 		<springfox.version>2.9.2</springfox.version>
+		<!-- Node.js version to use for building the API docs site -->
+		<node.version>v12.13.0</node.version>
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
@@ -152,9 +154,32 @@
     			<configuration>
     				<installDirectory>${project.build.directory}/node</installDirectory>
     				<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
-        			<nodeVersion>v12.13.0</nodeVersion>
+        			<nodeVersion>${node.version}</nodeVersion>
     			</configuration>
 		    </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+            			<id>copy-static-resources</id>
+            			<phase>generate-resources</phase>
+            			<goals>
+              				<goal>copy-resources</goal>
+            			</goals>
+            			<configuration>
+            				<outputDirectory>${basedir}/site</outputDirectory>
+            				<overwrite>true</overwrite>
+            				<resources>
+            					<resource>
+            						<directory>${basedir}/snow-owl-api-docs/build</directory>
+            					</resource>
+            				</resources>
+            			</configuration>
+          			</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		
 		<pluginManagement>
@@ -193,6 +218,21 @@
 									</pluginExecutionFilter>
 									<action>
 										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-resources-plugin</artifactId>
+										<versionRange>[3.1.0,)</versionRange>
+										<goals>
+											<goal>copy-resources</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute>
+											<runOnIncremental>false</runOnIncremental>
+										</execute>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

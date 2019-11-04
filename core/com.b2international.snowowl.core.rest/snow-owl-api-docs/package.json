@@ -2,6 +2,7 @@
   "name": "snow-owl-api-docs",
   "version": "7.2.0",
   "private": true,
+  "homepage": "./site",
   "dependencies": {
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
