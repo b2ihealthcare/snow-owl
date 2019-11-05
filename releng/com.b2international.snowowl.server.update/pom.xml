@@ -177,7 +177,7 @@
 									<when>
 										<type>directory</type>
 									</when>
-									<mode>0750</mode>
+									<mode>0775</mode>
 								</rule>
 							</rules>
 						</ruleset>
@@ -209,7 +209,7 @@
 							<name>/etc/snowowl</name>
 							<user>snowowl</user>
 							<group>snowowl</group>
-							<mode>0755</mode>
+							<mode>0775</mode>
 							<directory>true</directory>
 						</entry>
 						<entry>
@@ -223,6 +223,7 @@
 							<name>/usr/share/snowowl/configuration</name>
 							<user>snowowl</user>
 							<group>snowowl</group>
+							<mode>0775</mode>
 							<linkTo>/etc/snowowl</linkTo>
 						</entry>
 						<!-- Data directory -->
@@ -230,7 +231,7 @@
 							<name>/var/lib/snowowl</name>
 							<user>snowowl</user>
 							<group>snowowl</group>
-							<mode>0755</mode>
+							<mode>0775</mode>
 							<directory>true</directory>
 						</entry>	
 						<entry>
@@ -247,6 +248,7 @@
 							<name>/usr/share/snowowl/resources</name>
 							<user>snowowl</user>
 							<group>snowowl</group>
+							<mode>0775</mode>
 							<linkTo>/var/lib/snowowl</linkTo>
 						</entry>
 						<!-- Log directory -->
@@ -254,13 +256,14 @@
 							<name>/var/log/snowowl</name>
 							<user>snowowl</user>
 							<group>snowowl</group>
-							<mode>0755</mode>
+							<mode>0775</mode>
 							<directory>true</directory>
 						</entry>
 						<entry>
 							<name>/usr/share/snowowl/serviceability</name>
 							<user>snowowl</user>
 							<group>snowowl</group>
+							<mode>0775</mode>
 							<linkTo>/var/log/snowowl</linkTo>
 						</entry>
 						<!-- SysV configuration -->

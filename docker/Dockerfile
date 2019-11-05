@@ -14,22 +14,27 @@ RUN rpmkeys --import file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
 # Set JAVA_HOME environment variable
 ENV JAVA_HOME /etc/alternatives/jre
 
+RUN groupadd -g 1000 snowowl && \
+    adduser -u 1000 -g 1000 -G 0 -d /usr/share/snowowl snowowl && \
+    chmod 0775 /usr/share/snowowl && \
+    chgrp 0 /usr/share/snowowl
+
 # Install Snow Owl rpm package
-WORKDIR /usr/share
+WORKDIR /usr/share/snowowl
 COPY ${SNOWOWL_RPM_PACKAGE} ${SNOWOWL_RPM_PACKAGE}
 RUN rpm --install ${SNOWOWL_RPM_PACKAGE} && rm -f ${SNOWOWL_RPM_PACKAGE}
-COPY config/snowowl.yml /etc/snowowl/snowowl.yml
-RUN chown snowowl:snowowl /etc/snowowl/snowowl.yml
+
+COPY --chown=1000:0 config/snowowl.yml /usr/share/snowowl/configuration/snowowl.yml
+COPY --chown=1000:0 bin/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # Openshift overrides USER and uses ones with randomly uid>1024 and gid=0
-RUN chgrp 0 /usr/share/snowowl/bin/snowowl.sh && \
+# Allow ENTRYPOINT (and SO) to run even with a different user
+RUN chgrp 0 /usr/local/bin/docker-entrypoint.sh && \
     chmod g=u /etc/passwd && \
-    chmod 0775 /usr/share/snowowl/bin/snowowl.sh
+    chmod 0775 /usr/local/bin/docker-entrypoint.sh
 
 # Expose necessary ports used by Snow OWl
 EXPOSE 2036 8080
-
-USER snowowl
 
 LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
   org.label-schema.vcs-ref="${GIT_REVISION}" \
@@ -51,4 +56,6 @@ LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
   org.opencontainers.image.source="https://github.com/b2ihealthcare/snow-owl" \
   org.opencontainers.image.vendor="B2i Healthcare"
 
-ENTRYPOINT ["/usr/share/snowowl/bin/snowowl.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+# Dummy overridable parameter parsed by entrypoint
+CMD ["sowrapper"]
