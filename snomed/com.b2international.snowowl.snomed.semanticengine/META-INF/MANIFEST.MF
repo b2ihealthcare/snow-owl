@@ -13,4 +13,4 @@ Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.semanticengine.normalform,
  com.b2international.snowowl.semanticengine.subsumption,com.b2internat
  ional.snowowl.semanticengine.utils
-Import-Package: org.slf4j;version="1.7.2"
+Import-Package: org.slf4j;version="1.7.25"

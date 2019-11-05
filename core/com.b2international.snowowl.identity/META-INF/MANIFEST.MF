@@ -17,6 +17,6 @@ Export-Package: com.auth0.jwt,
  com.b2international.snowowl.identity,
  com.b2international.snowowl.identity.domain,
  com.b2international.snowowl.identity.request
-Import-Package: org.slf4j;version="1.7.2"
+Import-Package: org.slf4j;version="1.7.25"
 Bundle-ClassPath: .,
  lib/java-jwt-3.8.1.jar
