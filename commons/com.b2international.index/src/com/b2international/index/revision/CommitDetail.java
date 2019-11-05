@@ -18,7 +18,6 @@ package com.b2international.index.revision;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -257,32 +256,6 @@ public final class CommitDetail {
 	@JsonIgnore
 	public boolean isChange() {
 		return Operation.CHANGE == op; 
-	}
-	
-	CommitDetail extract(String objectId) {
-		if (isPropertyChange()) {
-			return changedProperty(prop, from, to, objectType, Collections.singleton(objectId));
-		} else {
-			// if prop is not present then this represents a hierarchical change
-			final Builder result = new Builder()
-					.op(op)
-					.objectType(objectType)
-					.componentType(componentType);
-			final int affectedObjectIdx = objects.indexOf(objectId);
-			// if the object is not present in the objects list, then it might be added/removed from a container, check the index in the children list
-			if (affectedObjectIdx == -1) {
-				for (int i = 0; i < this.components.size(); i++) {
-					Set<String> children = this.components.get(i);
-					if (children.contains(objectId)) {
-						result.putObjects(this.objects.get(i), Collections.singleton(objectId));
-						break;
-					}
-				}
-			} else {
-				result.putObjects(objectId, this.components.get(affectedObjectIdx));
-			}
-			return result.build();
-		}
 	}
 	
 	@JsonIgnore

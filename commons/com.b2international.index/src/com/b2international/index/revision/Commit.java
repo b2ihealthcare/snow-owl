@@ -20,12 +20,16 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
@@ -289,13 +293,139 @@ public final class Commit implements WithScore {
 			detailsByObject = ArrayListMultimap.create();
 		}
 		if (!detailsByObject.containsKey(objectId)) {
-			final List<CommitDetail> objectDetails = details.stream()
-				.map(detail -> detail.extract(objectId))
-				.filter(detail -> !detail.isEmpty())
-				.collect(Collectors.toList());
-			detailsByObject.putAll(objectId, objectDetails);
+			final List<CommitDetail> detailsForObject = newArrayList();
+			
+			final Set<ObjectId> visited = newHashSet();
+			final Deque<ObjectId> toCheck = new ArrayDeque<>(); 
+						
+			/* 
+			 * First pass: find non-property changes where objectId is an object or a component,
+			 * or property changes where objectId itself changed 
+			 */
+			for (final CommitDetail detail : details) {
+				if (detail.isPropertyChange() && detail.getObjects().contains(objectId)) {
+					// Register objectId as visited, but don't add it to the queue
+					visited.add(ObjectId.of(detail.getObjectType(), objectId));
+
+					detailsForObject.add(CommitDetail.changedProperty(detail.getProp(), 
+							detail.getFrom(), 
+							detail.getTo(), 
+							detail.getObjectType(), 
+							Collections.singleton(objectId)));
+					
+					continue; // jump to next CommitDetail
+				}
+				
+				// Is objectId a container?
+				int objectIdx = detail.getObjects().indexOf(objectId);
+				if (objectIdx >= 0) {
+					// Register objectId as visited, but don't add it to the queue
+					visited.add(ObjectId.of(detail.getObjectType(), objectId));
+					
+					final Set<String> componentIds = detail.getComponents().get(objectIdx);
+					for (final String componentId : componentIds) {
+						// Record child component as an item that needs to be checked for contained changes
+						ObjectId childId = ObjectId.of(detail.getComponentType(), componentId);
+						if (visited.add(childId)) {
+							toCheck.add(childId);
+						}
+					}
+					
+					final CommitDetail filteredDetail = new CommitDetail.Builder()
+							.op(detail.getOp())
+							.objectType(detail.getObjectType())
+							.componentType(detail.getComponentType())
+							.putObjects(objectId, componentIds)
+							.build();
+
+					detailsForObject.add(filteredDetail);
+					continue; // jump to next CommitDetail
+				}
+				
+				final List<Set<String>> components = detail.getComponents();
+				if (components == null) {
+					continue; // jump to next CommitDetail
+				}
+				
+				// Is objectId a contained object?
+				final int componentSize = components.size();
+				for (objectIdx = 0; objectIdx < componentSize; objectIdx++) {
+					final Set<String> componentIds = components.get(objectIdx);
+					
+					if (componentIds.contains(objectId)) {
+						String containerId = detail.getObjects().get(objectIdx);
+						
+						// Register objectId as visited, but don't add it to the queue
+						visited.add(ObjectId.of(detail.getComponentType(), objectId));
+						
+						final CommitDetail filteredDetail = new CommitDetail.Builder()
+								.op(detail.getOp())
+								.objectType(detail.getObjectType())
+								.componentType(detail.getComponentType())
+								.putObjects(containerId, Collections.singleton(objectId))
+								.build();
+
+						detailsForObject.add(filteredDetail);
+						break; // exit objectIdx loop
+					}
+				}
+			}
+			
+			// Second pass: follow containment chains and collect relevant object property changes as well
+			while (!toCheck.isEmpty()) {
+				final ObjectId childId = toCheck.removeFirst();
+				
+				for (final CommitDetail detail : details) {
+					if (detail.isPropertyChange()
+							&& detail.getObjectType().equals(childId.type())
+							&& detail.getObjects().contains(childId.id())) {
+						
+						detailsForObject.add(CommitDetail.changedProperty(detail.getProp(), 
+								detail.getFrom(), 
+								detail.getTo(), 
+								detail.getObjectType(), 
+								Collections.singleton(childId.id())));
+						
+						continue; // jump to next CommitDetail
+					}
+					
+					// Is childId a container?
+					if (!detail.getObjectType().equals(childId.type())) {
+						continue; // jump to next CommitDetail
+					}
+					
+					int childIdx = detail.getObjects().indexOf(childId.id());
+					if (childIdx >= 0) {
+						final Set<String> componentIds = detail.getComponents().get(childIdx);
+						for (final String componentId : componentIds) {
+							// Record child component as an item that needs to be checked for contained changes
+							ObjectId descendantId = ObjectId.of(detail.getComponentType(), componentId);
+							if (visited.add(descendantId)) {
+								toCheck.add(descendantId);
+							}
+						}
+						
+						final CommitDetail filteredDetail = new CommitDetail.Builder()
+								.op(detail.getOp())
+								.objectType(detail.getObjectType())
+								.componentType(detail.getComponentType())
+								.putObjects(childId.id(), componentIds)
+								.build();
+
+						detailsForObject.add(filteredDetail);
+						continue; // jump to next CommitDetail
+					}
+					
+					/* 
+					 * We don't check if childId is contained somewhere else in this pass,
+					 * as it would lead to duplicate detail objects 
+					 */
+				}
+			}
+			
+			detailsByObject.putAll(objectId, detailsForObject);
 		}
+		
 		return detailsByObject.get(objectId);
 	}
-
 }
