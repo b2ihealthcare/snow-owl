@@ -17,9 +17,8 @@ package com.b2international.snowowl.snomed.core.branch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
-import java.util.List;
 import java.util.SortedSet;
 import java.util.UUID;
 
@@ -27,6 +26,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSegment;
@@ -55,8 +55,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
-import com.google.common.base.Function;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -94,15 +92,25 @@ public class SnomedBranchRequestTest {
 		final String branchName = UUID.randomUUID().toString();
 		final Promise<String> first = branches.prepareCreate().setParent(branchPath).setName(branchName).build(REPOSITORY_ID).execute(bus);
 		final Promise<String> second = branches.prepareCreate().setParent(branchPath).setName(branchName).build(REPOSITORY_ID).execute(bus);
-		final String error = Promise.all(first, second)
+		final boolean sameBaseTimestamp = Promise.all(first, second)
 			.then(input -> {
 				final Branch first1 = branches.prepareGet((String) input.get(0)).build(REPOSITORY_ID).execute(bus).getSync();
 				final Branch second1 = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
-				return first1.baseTimestamp() == second1.baseTimestamp() ? null : "Two branches created with the same name but different baseTimestamp";
+				return first1.baseTimestamp() == second1.baseTimestamp(); 
 			})
-			.fail(input -> input.getMessage() != null ? input.getMessage() : Throwables.getRootCause(input).getClass().getSimpleName())
+			// if the API throws an error, then rethrow anything that is not an AlreadyExistsException, which indicates slow execution, but not failure
+			.fail(e -> {
+				if (e instanceof AlreadyExistsException) {
+					return true;
+				} else {
+					throw new RuntimeException(e);
+				}
+			})
 			.getSync();
-		assertNull(error, error);
+		// fail the test only when the API managed to create two branches with different base timestamp which should not happen
+		if (!sameBaseTimestamp) {
+			fail("Two branches created with the same name but different baseTimestamp");
+		}
 	}
 	
 	@Test
@@ -124,17 +132,14 @@ public class SnomedBranchRequestTest {
 				.build(REPOSITORY_ID)
 				.execute(bus);
 		
-		Promise.all(first, second).then(new Function<List<Object>, String>() {
-			@Override
-			public String apply(List<Object> input) {
-				
-				final Branch firstBranch = branches.prepareGet((String) input.get(0)).build(REPOSITORY_ID).execute(bus).getSync();
-				final Branch secondBranch = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
-				
-				assertBranchesCreated(branchA, branchB, firstBranch, secondBranch);
-				assertBranchSegmentsValid(branchPath, firstBranch.path(), secondBranch.path());
-				return null;
-			}
+		Promise.all(first, second).then(input -> {
+			
+			final Branch firstBranch = branches.prepareGet((String) input.get(0)).build(REPOSITORY_ID).execute(bus).getSync();
+			final Branch secondBranch = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
+			
+			assertBranchesCreated(branchA, branchB, firstBranch, secondBranch);
+			assertBranchSegmentsValid(branchPath, firstBranch.path(), secondBranch.path());
+			return null;
 		})
 		.getSync();
 	}
