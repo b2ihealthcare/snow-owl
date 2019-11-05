@@ -89,7 +89,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	
 	@Override
 	protected CommitInfos createEmptyResult(int limit) {
-		throw new UnsupportedOperationException("Missing repositoryId parameter at this point");
+		return new CommitInfos(limit, 0);
 	}
 	
 	private void addBranchClause(final ExpressionBuilder builder) {

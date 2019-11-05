@@ -29,9 +29,9 @@ import com.b2international.commons.options.Options;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.CommitDetail;
 import com.b2international.snowowl.core.commit.CommitInfo.Builder;
+import com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
-import com.google.common.base.Strings;
 
 /**
  * @since 5.2
@@ -56,15 +56,32 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 		
 		// expand details if requested
 		if (expand().containsKey(CommitInfo.Expand.DETAILS)) {
-			final String affectedComponentId = filters.containsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT.name()) ? filters.getString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT.name()) : ""; 
-			final Collection<CommitDetail> changes = Strings.isNullOrEmpty(affectedComponentId) ? doc.getDetails() : doc.getDetailsByObject(affectedComponentId);
-			final List<CommitInfoDetail> details = changes.stream()
+			final Collection<CommitDetail> commitDetails = getCommitDetails(doc);
+			final List<CommitInfoDetail> commitInfoDetails = commitDetails.stream()
 					.flatMap(info -> toCommitInfoDetail(info))
 					.collect(Collectors.toList());
-			builder.details(new CommitInfoDetails(details, null, null, details.size(), details.size()));
+			
+			builder.details(new CommitInfoDetails(commitInfoDetails, null, null, commitInfoDetails.size(), commitInfoDetails.size()));
 		}
 		
 		return builder.build();
+	}
+
+	private Collection<CommitDetail> getCommitDetails(final Commit commit) {
+		if (filterContainsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT)) {
+			final String affectedComponentId = filterGetString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT); 
+			return commit.getDetailsByObject(affectedComponentId);
+		}
+		
+		return commit.getDetails();
+	}
+
+	private boolean filterContainsKey(OptionKey key) {
+		return filters.containsKey(key.name());
+	}
+
+	private String filterGetString(OptionKey key) {
+		return filters.getString(key.name());
 	}
 
 	private Stream<CommitInfoDetail> toCommitInfoDetail(CommitDetail detail) {
