@@ -8,7 +8,7 @@ import { Layout, Tabs, Row, Col, BackTop } from 'antd';
 const { TabPane } = Tabs;
 const { Header, Content } = Layout;
 
-const soBaseUrl = process.env.SO_BASE_URL || 'http://localhost:8080/snowowl'
+const soBaseUrl = process.env.REACT_APP_SO_BASE_URL
 
 const App = () => (
   <>
