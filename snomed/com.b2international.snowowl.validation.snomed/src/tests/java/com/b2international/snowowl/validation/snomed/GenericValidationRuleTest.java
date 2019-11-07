@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 
 import java.util.UUID;
 
@@ -432,6 +432,27 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		assertAffectedComponents(issues, 
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship3.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()));
+	}
+	
+	@Test
+	public void rule_duplicate_members() throws Exception {
+		final String ruleId = "rule_duplicate_members";
+		indexRule(ruleId);
+		
+		final SnomedRefSetMemberIndexEntry duplicateMember1 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		indexRevision(MAIN, nextStorageKey(), duplicateMember1);
+		
+		final SnomedRefSetMemberIndexEntry duplicateMember2 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		indexRevision(MAIN, nextStorageKey(), duplicateMember2);
+		
+		final SnomedRefSetMemberIndexEntry correctMember = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		indexRevision(MAIN, nextStorageKey(), correctMember);
+		
+		final ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A));
 	}
 	
 }
