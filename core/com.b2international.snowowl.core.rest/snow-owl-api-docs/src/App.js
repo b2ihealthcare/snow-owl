@@ -37,7 +37,6 @@ class App extends React.Component {
             </div>
             <Menu
               onSelect = { this.onMenuSelect }
-              defaultOpenKeys={['sub1']}
               selectedKeys = { [ this.state.selectedKey ] }
               mode="inline"
               theme="dark"
