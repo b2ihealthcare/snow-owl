@@ -61,6 +61,12 @@
     <genClasses ecoreClass="Ecl.ecore#//DataTypeComparison"/>
     <genClasses ecoreClass="Ecl.ecore#//AttributeValueEquals"/>
     <genClasses ecoreClass="Ecl.ecore#//AttributeValueNotEquals"/>
+    <genClasses ecoreClass="Ecl.ecore#//BooleanValueEquals">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//BooleanValueEquals/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//BooleanValueNotEquals">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//BooleanValueNotEquals/value"/>
+    </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//StringValueEquals">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//StringValueEquals/value"/>
     </genClasses>

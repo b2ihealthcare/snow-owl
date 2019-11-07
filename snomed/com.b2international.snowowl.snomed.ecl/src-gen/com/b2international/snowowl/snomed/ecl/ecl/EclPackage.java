@@ -667,6 +667,62 @@ public interface EclPackage extends EPackage
   int ATTRIBUTE_VALUE_NOT_EQUALS_FEATURE_COUNT = ATTRIBUTE_COMPARISON_FEATURE_COUNT + 0;
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.BooleanValueEqualsImpl <em>Boolean Value Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.BooleanValueEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getBooleanValueEquals()
+   * @generated
+   */
+  int BOOLEAN_VALUE_EQUALS = 21;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int BOOLEAN_VALUE_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Boolean Value Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int BOOLEAN_VALUE_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.BooleanValueNotEqualsImpl <em>Boolean Value Not Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.BooleanValueNotEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getBooleanValueNotEquals()
+   * @generated
+   */
+  int BOOLEAN_VALUE_NOT_EQUALS = 22;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int BOOLEAN_VALUE_NOT_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Boolean Value Not Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int BOOLEAN_VALUE_NOT_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueEqualsImpl <em>String Value Equals</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -674,7 +730,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getStringValueEquals()
    * @generated
    */
-  int STRING_VALUE_EQUALS = 21;
+  int STRING_VALUE_EQUALS = 23;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -702,7 +758,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getStringValueNotEquals()
    * @generated
    */
-  int STRING_VALUE_NOT_EQUALS = 22;
+  int STRING_VALUE_NOT_EQUALS = 24;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -730,7 +786,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueEquals()
    * @generated
    */
-  int INTEGER_VALUE_EQUALS = 23;
+  int INTEGER_VALUE_EQUALS = 25;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -758,7 +814,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueNotEquals()
    * @generated
    */
-  int INTEGER_VALUE_NOT_EQUALS = 24;
+  int INTEGER_VALUE_NOT_EQUALS = 26;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -786,7 +842,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueGreaterThan()
    * @generated
    */
-  int INTEGER_VALUE_GREATER_THAN = 25;
+  int INTEGER_VALUE_GREATER_THAN = 27;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -814,7 +870,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueLessThan()
    * @generated
    */
-  int INTEGER_VALUE_LESS_THAN = 26;
+  int INTEGER_VALUE_LESS_THAN = 28;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -842,7 +898,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueGreaterThanEquals()
    * @generated
    */
-  int INTEGER_VALUE_GREATER_THAN_EQUALS = 27;
+  int INTEGER_VALUE_GREATER_THAN_EQUALS = 29;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -870,7 +926,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueLessThanEquals()
    * @generated
    */
-  int INTEGER_VALUE_LESS_THAN_EQUALS = 28;
+  int INTEGER_VALUE_LESS_THAN_EQUALS = 30;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -898,7 +954,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueEquals()
    * @generated
    */
-  int DECIMAL_VALUE_EQUALS = 29;
+  int DECIMAL_VALUE_EQUALS = 31;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -926,7 +982,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueNotEquals()
    * @generated
    */
-  int DECIMAL_VALUE_NOT_EQUALS = 30;
+  int DECIMAL_VALUE_NOT_EQUALS = 32;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -954,7 +1010,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueGreaterThan()
    * @generated
    */
-  int DECIMAL_VALUE_GREATER_THAN = 31;
+  int DECIMAL_VALUE_GREATER_THAN = 33;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -982,7 +1038,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueLessThan()
    * @generated
    */
-  int DECIMAL_VALUE_LESS_THAN = 32;
+  int DECIMAL_VALUE_LESS_THAN = 34;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -1010,7 +1066,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueGreaterThanEquals()
    * @generated
    */
-  int DECIMAL_VALUE_GREATER_THAN_EQUALS = 33;
+  int DECIMAL_VALUE_GREATER_THAN_EQUALS = 35;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -1038,7 +1094,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueLessThanEquals()
    * @generated
    */
-  int DECIMAL_VALUE_LESS_THAN_EQUALS = 34;
+  int DECIMAL_VALUE_LESS_THAN_EQUALS = 36;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -1066,7 +1122,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedExpression()
    * @generated
    */
-  int NESTED_EXPRESSION = 35;
+  int NESTED_EXPRESSION = 37;
 
   /**
    * The feature id for the '<em><b>Nested</b></em>' containment reference.
@@ -1094,7 +1150,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrExpressionConstraint()
    * @generated
    */
-  int OR_EXPRESSION_CONSTRAINT = 36;
+  int OR_EXPRESSION_CONSTRAINT = 38;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1131,7 +1187,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndExpressionConstraint()
    * @generated
    */
-  int AND_EXPRESSION_CONSTRAINT = 37;
+  int AND_EXPRESSION_CONSTRAINT = 39;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1168,7 +1224,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExclusionExpressionConstraint()
    * @generated
    */
-  int EXCLUSION_EXPRESSION_CONSTRAINT = 38;
+  int EXCLUSION_EXPRESSION_CONSTRAINT = 40;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1205,7 +1261,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinedExpressionConstraint()
    * @generated
    */
-  int REFINED_EXPRESSION_CONSTRAINT = 39;
+  int REFINED_EXPRESSION_CONSTRAINT = 41;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -1242,7 +1298,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDottedExpressionConstraint()
    * @generated
    */
-  int DOTTED_EXPRESSION_CONSTRAINT = 40;
+  int DOTTED_EXPRESSION_CONSTRAINT = 42;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -1279,7 +1335,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrRefinement()
    * @generated
    */
-  int OR_REFINEMENT = 41;
+  int OR_REFINEMENT = 43;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1316,7 +1372,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndRefinement()
    * @generated
    */
-  int AND_REFINEMENT = 42;
+  int AND_REFINEMENT = 44;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1775,6 +1831,48 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EClass getAttributeValueNotEquals();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals <em>Boolean Value Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Boolean Value Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals
+   * @generated
+   */
+  EClass getBooleanValueEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals#isValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals#isValue()
+   * @see #getBooleanValueEquals()
+   * @generated
+   */
+  EAttribute getBooleanValueEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals <em>Boolean Value Not Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Boolean Value Not Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals
+   * @generated
+   */
+  EClass getBooleanValueNotEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals#isValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals#isValue()
+   * @see #getBooleanValueNotEquals()
+   * @generated
+   */
+  EAttribute getBooleanValueNotEquals_Value();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals <em>String Value Equals</em>}'.
@@ -2707,6 +2805,42 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EClass ATTRIBUTE_VALUE_NOT_EQUALS = eINSTANCE.getAttributeValueNotEquals();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.BooleanValueEqualsImpl <em>Boolean Value Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.BooleanValueEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getBooleanValueEquals()
+     * @generated
+     */
+    EClass BOOLEAN_VALUE_EQUALS = eINSTANCE.getBooleanValueEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute BOOLEAN_VALUE_EQUALS__VALUE = eINSTANCE.getBooleanValueEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.BooleanValueNotEqualsImpl <em>Boolean Value Not Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.BooleanValueNotEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getBooleanValueNotEquals()
+     * @generated
+     */
+    EClass BOOLEAN_VALUE_NOT_EQUALS = eINSTANCE.getBooleanValueNotEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute BOOLEAN_VALUE_NOT_EQUALS__VALUE = eINSTANCE.getBooleanValueNotEquals_Value();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueEqualsImpl <em>String Value Equals</em>}' class.

@@ -24,6 +24,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
@@ -142,6 +144,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS:
 				sequence_AttributeValueNotEquals(context, (AttributeValueNotEquals) semanticObject); 
+				return; 
+			case EclPackage.BOOLEAN_VALUE_EQUALS:
+				sequence_BooleanValueEquals(context, (BooleanValueEquals) semanticObject); 
+				return; 
+			case EclPackage.BOOLEAN_VALUE_NOT_EQUALS:
+				sequence_BooleanValueNotEquals(context, (BooleanValueNotEquals) semanticObject); 
 				return; 
 			case EclPackage.CARDINALITY:
 				sequence_Cardinality(context, (Cardinality) semanticObject); 

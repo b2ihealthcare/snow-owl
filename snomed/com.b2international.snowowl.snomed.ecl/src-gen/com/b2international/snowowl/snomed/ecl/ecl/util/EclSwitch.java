@@ -250,6 +250,24 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.BOOLEAN_VALUE_EQUALS:
+      {
+        BooleanValueEquals booleanValueEquals = (BooleanValueEquals)theEObject;
+        T result = caseBooleanValueEquals(booleanValueEquals);
+        if (result == null) result = caseDataTypeComparison(booleanValueEquals);
+        if (result == null) result = caseComparison(booleanValueEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.BOOLEAN_VALUE_NOT_EQUALS:
+      {
+        BooleanValueNotEquals booleanValueNotEquals = (BooleanValueNotEquals)theEObject;
+        T result = caseBooleanValueNotEquals(booleanValueNotEquals);
+        if (result == null) result = caseDataTypeComparison(booleanValueNotEquals);
+        if (result == null) result = caseComparison(booleanValueNotEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.STRING_VALUE_EQUALS:
       {
         StringValueEquals stringValueEquals = (StringValueEquals)theEObject;
@@ -776,6 +794,38 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseAttributeValueNotEquals(AttributeValueNotEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Boolean Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Boolean Value Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseBooleanValueEquals(BooleanValueEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Boolean Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Boolean Value Not Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseBooleanValueNotEquals(BooleanValueNotEquals object)
   {
     return null;
   }

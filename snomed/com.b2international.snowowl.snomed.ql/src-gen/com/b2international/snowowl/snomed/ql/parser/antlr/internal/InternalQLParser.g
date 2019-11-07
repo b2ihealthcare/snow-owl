@@ -992,7 +992,7 @@ ruleActiveFilter returns [EObject current=null]
 						$current,
 						"active",
 						lv_active_4_0,
-						"com.b2international.snowowl.snomed.ql.QL.Boolean");
+						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1413,36 +1413,6 @@ ruleLanguageCodeFilter returns [EObject current=null]
 				}
 			)
 		)
-	)
-;
-
-// Entry rule entryRuleBoolean
-entryRuleBoolean returns [String current=null]:
-	{ newCompositeNode(grammarAccess.getBooleanRule()); }
-	iv_ruleBoolean=ruleBoolean
-	{ $current=$iv_ruleBoolean.current.getText(); }
-	EOF;
-
-// Rule Boolean
-ruleBoolean returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		kw=True
-		{
-			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.getBooleanAccess().getTrueKeyword_0());
-		}
-		    |
-		kw=False
-		{
-			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.getBooleanAccess().getFalseKeyword_1());
-		}
 	)
 ;
 
@@ -3247,11 +3217,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getStringValueEqualsParserRuleCall_0());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getBooleanValueEqualsParserRuleCall_0());
 		}
-		this_StringValueEquals_0=ruleStringValueEquals
+		this_BooleanValueEquals_0=ruleBooleanValueEquals
 		{
-			$current = $this_StringValueEquals_0.current;
+			$current = $this_BooleanValueEquals_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3259,11 +3229,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getStringValueNotEqualsParserRuleCall_1());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getBooleanValueNotEqualsParserRuleCall_1());
 		}
-		this_StringValueNotEquals_1=ruleStringValueNotEquals
+		this_BooleanValueNotEquals_1=ruleBooleanValueNotEquals
 		{
-			$current = $this_StringValueNotEquals_1.current;
+			$current = $this_BooleanValueNotEquals_1.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3271,11 +3241,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueEqualsParserRuleCall_2());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getStringValueEqualsParserRuleCall_2());
 		}
-		this_IntegerValueEquals_2=ruleIntegerValueEquals
+		this_StringValueEquals_2=ruleStringValueEquals
 		{
-			$current = $this_IntegerValueEquals_2.current;
+			$current = $this_StringValueEquals_2.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3283,11 +3253,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueNotEqualsParserRuleCall_3());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getStringValueNotEqualsParserRuleCall_3());
 		}
-		this_IntegerValueNotEquals_3=ruleIntegerValueNotEquals
+		this_StringValueNotEquals_3=ruleStringValueNotEquals
 		{
-			$current = $this_IntegerValueNotEquals_3.current;
+			$current = $this_StringValueNotEquals_3.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3295,11 +3265,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueGreaterThanParserRuleCall_4());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueEqualsParserRuleCall_4());
 		}
-		this_IntegerValueGreaterThan_4=ruleIntegerValueGreaterThan
+		this_IntegerValueEquals_4=ruleIntegerValueEquals
 		{
-			$current = $this_IntegerValueGreaterThan_4.current;
+			$current = $this_IntegerValueEquals_4.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3307,11 +3277,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueGreaterThanEqualsParserRuleCall_5());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueNotEqualsParserRuleCall_5());
 		}
-		this_IntegerValueGreaterThanEquals_5=ruleIntegerValueGreaterThanEquals
+		this_IntegerValueNotEquals_5=ruleIntegerValueNotEquals
 		{
-			$current = $this_IntegerValueGreaterThanEquals_5.current;
+			$current = $this_IntegerValueNotEquals_5.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3319,11 +3289,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueLessThanParserRuleCall_6());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueGreaterThanParserRuleCall_6());
 		}
-		this_IntegerValueLessThan_6=ruleIntegerValueLessThan
+		this_IntegerValueGreaterThan_6=ruleIntegerValueGreaterThan
 		{
-			$current = $this_IntegerValueLessThan_6.current;
+			$current = $this_IntegerValueGreaterThan_6.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3331,11 +3301,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueLessThanEqualsParserRuleCall_7());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueGreaterThanEqualsParserRuleCall_7());
 		}
-		this_IntegerValueLessThanEquals_7=ruleIntegerValueLessThanEquals
+		this_IntegerValueGreaterThanEquals_7=ruleIntegerValueGreaterThanEquals
 		{
-			$current = $this_IntegerValueLessThanEquals_7.current;
+			$current = $this_IntegerValueGreaterThanEquals_7.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3343,11 +3313,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueEqualsParserRuleCall_8());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueLessThanParserRuleCall_8());
 		}
-		this_DecimalValueEquals_8=ruleDecimalValueEquals
+		this_IntegerValueLessThan_8=ruleIntegerValueLessThan
 		{
-			$current = $this_DecimalValueEquals_8.current;
+			$current = $this_IntegerValueLessThan_8.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3355,11 +3325,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueNotEqualsParserRuleCall_9());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getIntegerValueLessThanEqualsParserRuleCall_9());
 		}
-		this_DecimalValueNotEquals_9=ruleDecimalValueNotEquals
+		this_IntegerValueLessThanEquals_9=ruleIntegerValueLessThanEquals
 		{
-			$current = $this_DecimalValueNotEquals_9.current;
+			$current = $this_IntegerValueLessThanEquals_9.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3367,11 +3337,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueGreaterThanParserRuleCall_10());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueEqualsParserRuleCall_10());
 		}
-		this_DecimalValueGreaterThan_10=ruleDecimalValueGreaterThan
+		this_DecimalValueEquals_10=ruleDecimalValueEquals
 		{
-			$current = $this_DecimalValueGreaterThan_10.current;
+			$current = $this_DecimalValueEquals_10.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3379,11 +3349,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueGreaterThanEqualsParserRuleCall_11());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueNotEqualsParserRuleCall_11());
 		}
-		this_DecimalValueGreaterThanEquals_11=ruleDecimalValueGreaterThanEquals
+		this_DecimalValueNotEquals_11=ruleDecimalValueNotEquals
 		{
-			$current = $this_DecimalValueGreaterThanEquals_11.current;
+			$current = $this_DecimalValueNotEquals_11.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3391,11 +3361,11 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueLessThanParserRuleCall_12());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueGreaterThanParserRuleCall_12());
 		}
-		this_DecimalValueLessThan_12=ruleDecimalValueLessThan
+		this_DecimalValueGreaterThan_12=ruleDecimalValueGreaterThan
 		{
-			$current = $this_DecimalValueLessThan_12.current;
+			$current = $this_DecimalValueGreaterThan_12.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -3403,11 +3373,35 @@ ruleDataTypeComparison returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueLessThanEqualsParserRuleCall_13());
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueGreaterThanEqualsParserRuleCall_13());
 		}
-		this_DecimalValueLessThanEquals_13=ruleDecimalValueLessThanEquals
+		this_DecimalValueGreaterThanEquals_13=ruleDecimalValueGreaterThanEquals
 		{
-			$current = $this_DecimalValueLessThanEquals_13.current;
+			$current = $this_DecimalValueGreaterThanEquals_13.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueLessThanParserRuleCall_14());
+		}
+		this_DecimalValueLessThan_14=ruleDecimalValueLessThan
+		{
+			$current = $this_DecimalValueLessThan_14.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getDecimalValueLessThanEqualsParserRuleCall_15());
+		}
+		this_DecimalValueLessThanEquals_15=ruleDecimalValueLessThanEquals
+		{
+			$current = $this_DecimalValueLessThanEquals_15.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
@@ -3490,6 +3484,90 @@ ruleAttributeValueNotEquals returns [EObject current=null]
 						"constraint",
 						lv_constraint_1_0,
 						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleBooleanValueEquals
+entryRuleBooleanValueEquals returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getBooleanValueEqualsRule()); }
+	iv_ruleBooleanValueEquals=ruleBooleanValueEquals
+	{ $current=$iv_ruleBooleanValueEquals.current; }
+	EOF;
+
+// Rule BooleanValueEquals
+ruleBooleanValueEquals returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_EQUAL_0=RULE_EQUAL
+		{
+			newLeafNode(this_EQUAL_0, grammarAccess.getBooleanValueEqualsAccess().getEQUALTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getBooleanValueEqualsAccess().getValueBooleanParserRuleCall_1_0());
+				}
+				lv_value_1_0=ruleBoolean
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getBooleanValueEqualsRule());
+					}
+					set(
+						$current,
+						"value",
+						lv_value_1_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleBooleanValueNotEquals
+entryRuleBooleanValueNotEquals returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getBooleanValueNotEqualsRule()); }
+	iv_ruleBooleanValueNotEquals=ruleBooleanValueNotEquals
+	{ $current=$iv_ruleBooleanValueNotEquals.current; }
+	EOF;
+
+// Rule BooleanValueNotEquals
+ruleBooleanValueNotEquals returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_NOT_EQUAL_0=RULE_NOT_EQUAL
+		{
+			newLeafNode(this_NOT_EQUAL_0, grammarAccess.getBooleanValueNotEqualsAccess().getNOT_EQUALTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getBooleanValueNotEqualsAccess().getValueBooleanParserRuleCall_1_0());
+				}
+				lv_value_1_0=ruleBoolean
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getBooleanValueNotEqualsRule());
+					}
+					set(
+						$current,
+						"value",
+						lv_value_1_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4571,6 +4649,45 @@ ruleNonNegativeDecimal returns [AntlrDatatypeRuleToken current=new AntlrDatatype
 				newLeafNode(this_ZERO_3, grammarAccess.getNonNegativeDecimalAccess().getZEROTerminalRuleCall_2_1());
 			}
 		)*
+	)
+;
+finally {
+	myHiddenTokenState.restore();
+}
+
+// Entry rule entryRuleBoolean
+entryRuleBoolean returns [String current=null]@init {
+	HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
+}:
+	{ newCompositeNode(grammarAccess.getBooleanRule()); }
+	iv_ruleBoolean=ruleBoolean
+	{ $current=$iv_ruleBoolean.current.getText(); }
+	EOF;
+finally {
+	myHiddenTokenState.restore();
+}
+
+// Rule Boolean
+ruleBoolean returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
+@init {
+	enterRule();
+	HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
+}
+@after {
+	leaveRule();
+}:
+	(
+		kw=True
+		{
+			$current.merge(kw);
+			newLeafNode(kw, grammarAccess.getBooleanAccess().getTrueKeyword_0());
+		}
+		    |
+		kw=False
+		{
+			$current.merge(kw);
+			newLeafNode(kw, grammarAccess.getBooleanAccess().getFalseKeyword_1());
+		}
 	)
 ;
 finally {
