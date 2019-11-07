@@ -22,8 +22,12 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+
+import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.rest.util.CORSFilter;
 
 /**
  * @since 7.0
@@ -46,6 +50,11 @@ public class SnowOwlSecurityConfig extends WebSecurityConfigurerAdapter {
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
 			.csrf().disable();
+		
+		// add dev time CORS filter
+		if (PlatformUtil.isDevVersion()) {
+			http.addFilterAfter(new CORSFilter(), BasicAuthenticationFilter.class);
+		}
 		
 		// authentication is handled internally in AuthorizedRequest
 		http.authorizeRequests()
