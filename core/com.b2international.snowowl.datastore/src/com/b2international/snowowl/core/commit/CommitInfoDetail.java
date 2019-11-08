@@ -35,11 +35,13 @@ public final class CommitInfoDetail implements Serializable {
 	public static class Builder {
 		
 		private ChangeKind changeKind;
+		private String objectType;
 		private String object;
 		private String property;
 		private String fromValue;
+		private String valueType;
 		private String value;
-
+		
 		Builder() {
 		}
 		
@@ -48,6 +50,11 @@ public final class CommitInfoDetail implements Serializable {
 			return this;
 		}
 
+		public Builder objectType(String objectType) {
+			this.objectType = objectType;
+			return this;
+		}
+		
 		public Builder object(String object) {
 			this.object = object;
 			return this;
@@ -63,33 +70,53 @@ public final class CommitInfoDetail implements Serializable {
 			return this;
 		}
 		
+		public Builder valueType(String valueType) {
+			this.valueType = valueType;
+			return this;
+		}
+		
 		public Builder value(String value) {
 			this.value = value;
 			return this;
 		}
 		
 		public CommitInfoDetail build() {
-			return new CommitInfoDetail(changeKind, object, property, fromValue, value);
+			return new CommitInfoDetail(changeKind, objectType, object, property, fromValue, valueType, value);
 		}
 		
 	}
 	
 	private final ChangeKind changeKind;
+	private final String objectType;
 	private final String object;
 	private final String property;
 	private final String fromValue;
+	private final String valueType;
 	private final String value;
 	
-	private CommitInfoDetail(ChangeKind changeKind, String object, String property, String fromValue, String value) {
+	private CommitInfoDetail(ChangeKind changeKind, 
+			String objectType, 
+			String object, 
+			String property, 
+			String fromValue,
+			String valueType, 
+			String value) {
+		
 		this.changeKind = changeKind;
+		this.objectType = objectType;
 		this.object = object;
 		this.property = property;
 		this.fromValue = fromValue;
+		this.valueType = valueType;
 		this.value = value;
 	}
 	
 	public ChangeKind getChangeKind() {
 		return changeKind;
+	}
+	
+	public String getObjectType() {
+		return objectType;
 	}
 	
 	public String getObject() {
@@ -104,8 +131,11 @@ public final class CommitInfoDetail implements Serializable {
 		return fromValue;
 	}
 	
+	public String getValueType() {
+		return valueType;
+	}
+	
 	public String getValue() {
 		return value;
 	}
-
 }
