@@ -70,7 +70,7 @@ import com.google.common.collect.ImmutableSet;
 @TerminologyComponent(
 	id = SnomedTerminologyComponentConstants.REFSET_MEMBER, 
 	shortId = SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER,
-	name = "SNOMED CT RefSet Member",
+	name = "SNOMED CT Reference Set Member",
 	componentCategory = ComponentCategory.SET_MEMBER,
 	docType = SnomedRefSetMemberIndexEntry.class
 )
