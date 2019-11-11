@@ -124,7 +124,7 @@ public enum TerminologyRegistry {
 	}
 	
 	public Collection<String> getTerminologyComponentIdsByTerminology(String terminologyId) {
-		checkArgument(!terminologyComponentIdsByTerminology.containsKey(terminologyId), "");
+		checkArgument(terminologyComponentIdsByTerminology.containsKey(terminologyId), "Missing terminology '%s'.", terminologyId);
 		return ImmutableSet.copyOf(terminologyComponentIdsByTerminology.get(terminologyId));
 	}
 	
