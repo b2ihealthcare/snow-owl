@@ -87,7 +87,7 @@ public enum TerminologyRegistry {
 		}
 	}
 
-	private void register(TerminologyComponent tcAnnotation) {
+	public void register(TerminologyComponent tcAnnotation) {
 		TerminologyComponent prevAnnotation = terminologyComponentsById.put(tcAnnotation.id(), tcAnnotation);
 		if (prevAnnotation != null) {
 			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", tcAnnotation.id()));	
