@@ -214,7 +214,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	public void delete(Object o, boolean force) {
 		RevisionDocument doc = ClassUtils.checkAndCast(o, RevisionDocument.class);
 		
-		if (service(ComponentDeletionPolicy.class).canDelete(doc) || force) {
+		if (force || service(ComponentDeletionPolicy.class).canDelete(doc)) {
 			staging.stageRemove(doc);
 		} else {
 			throw new ConflictException("'%s' '%s' cannot be deleted.", DocumentMapping.getType(doc.getClass()), doc.getId());
@@ -271,17 +271,17 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		return commit.getDetails().stream()
 			.filter(detail -> Operation.ADD == detail.getOp())
 			.flatMap(detail -> {
-				final short terminologyComponentId = TerminologyRegistry.INSTANCE.getTerminologyComponentByDocType(DocumentMapping.getClass(detail.getComponentType())).shortId();
+				final short terminologyComponentId = getTerminologyComponentId(detail.getComponentType());
 				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
 			})
 			.collect(Collectors.toSet());
 	}
-	
+
 	private Collection<ComponentIdentifier> getChangedObjects(Commit commit) {
 		return commit.getDetails().stream()
 			.filter(detail -> Operation.CHANGE == detail.getOp())
 			.flatMap(detail -> {
-				final short terminologyComponentId = TerminologyRegistry.INSTANCE.getTerminologyComponentByDocType(DocumentMapping.getClass(detail.getObjectType())).shortId();
+				final short terminologyComponentId = getTerminologyComponentId(detail.getObjectType());
 				return detail.getObjects().stream().map(id -> ComponentIdentifier.of(terminologyComponentId, id));
 			})
 			.collect(Collectors.toSet());
@@ -291,10 +291,19 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		return commit.getDetails().stream()
 			.filter(detail -> Operation.REMOVE == detail.getOp())
 			.flatMap(detail -> {
-				final short terminologyComponentId = TerminologyRegistry.INSTANCE.getTerminologyComponentByDocType(DocumentMapping.getClass(detail.getComponentType())).shortId();
+				final short terminologyComponentId = getTerminologyComponentId(detail.getComponentType());
 				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
 			})
 			.collect(Collectors.toSet());
+	}
+	
+	private short getTerminologyComponentId(String componentType) {
+		try {
+			return TerminologyRegistry.INSTANCE.getTerminologyComponentByDocType(DocumentMapping.getClass(componentType)).shortId();
+		} catch (IllegalArgumentException e) {
+			// return unspecified terminology component for each unknown components committed to the repo
+			return TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
+		}
 	}
 
 	private void clear() {

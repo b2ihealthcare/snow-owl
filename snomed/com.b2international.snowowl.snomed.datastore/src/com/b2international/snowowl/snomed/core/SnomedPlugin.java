@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
@@ -161,7 +162,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			SnomedConcept.class,
 			SnomedDescription.class,
 			SnomedRelationship.class,
-//			SnomedConstraint.class,
+			SnomedConstraint.class,
 			SnomedReferenceSet.class,
 			SnomedReferenceSetMember.class
 		);
