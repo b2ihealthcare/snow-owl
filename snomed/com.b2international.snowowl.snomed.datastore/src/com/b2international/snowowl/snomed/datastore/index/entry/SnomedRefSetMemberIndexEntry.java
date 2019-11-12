@@ -56,7 +56,23 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.*;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.util.SnomedRefSetSwitch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -422,6 +438,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression mapTargetDescriptions(Collection<String> mapTargetDescriptions) {
 			return matchAny(Fields.MAP_TARGET_DESCRIPTION, mapTargetDescriptions);
+		}
+		
+		public static Expression mapGroups(Collection<Integer> mapGroups) {
+			return matchAnyInt(Fields.MAP_GROUP, mapGroups);
 		}
 
 		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
