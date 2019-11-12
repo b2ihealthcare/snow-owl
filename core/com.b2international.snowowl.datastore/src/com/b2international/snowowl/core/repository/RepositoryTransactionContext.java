@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
@@ -37,16 +38,19 @@ import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Commit;
+import com.b2international.index.revision.Operation;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.TimestampProvider;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
@@ -255,12 +259,42 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 						commit.getTimestamp(),
 						commit.getAuthor(),
 						commit.getComment(),
-						Collections.emptyList(),
-						Collections.emptyList(),
-						Collections.emptyList()).publish(service(IEventBus.class));
+						getNewObjects(commit),
+						getChangedObjects(commit),
+						getRemovedObjects(commit)).publish(service(IEventBus.class));
 			}
 			clear();
 		}
+	}
+
+	private Collection<ComponentIdentifier> getNewObjects(Commit commit) {
+		return commit.getDetails().stream()
+			.filter(detail -> Operation.ADD == detail.getOp())
+			.flatMap(detail -> {
+				final short terminologyComponentId = TerminologyRegistry.INSTANCE.getTerminologyComponentByDocType(DocumentMapping.getClass(detail.getComponentType())).shortId();
+				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
+			})
+			.collect(Collectors.toSet());
+	}
+	
+	private Collection<ComponentIdentifier> getChangedObjects(Commit commit) {
+		return commit.getDetails().stream()
+			.filter(detail -> Operation.CHANGE == detail.getOp())
+			.flatMap(detail -> {
+				final short terminologyComponentId = TerminologyRegistry.INSTANCE.getTerminologyComponentByDocType(DocumentMapping.getClass(detail.getObjectType())).shortId();
+				return detail.getObjects().stream().map(id -> ComponentIdentifier.of(terminologyComponentId, id));
+			})
+			.collect(Collectors.toSet());
+	}
+	
+	private Collection<ComponentIdentifier> getRemovedObjects(Commit commit) {
+		return commit.getDetails().stream()
+			.filter(detail -> Operation.REMOVE == detail.getOp())
+			.flatMap(detail -> {
+				final short terminologyComponentId = TerminologyRegistry.INSTANCE.getTerminologyComponentByDocType(DocumentMapping.getClass(detail.getComponentType())).shortId();
+				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
+			})
+			.collect(Collectors.toSet());
 	}
 
 	private void clear() {
