@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
+
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +29,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
@@ -45,6 +48,7 @@ import com.b2international.snowowl.snomed.core.rest.request.RefSetRequestResolve
 import com.b2international.snowowl.snomed.core.rest.request.RequestResolver;
 import com.b2international.snowowl.snomed.core.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.Sets;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -79,7 +83,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final String branchPath,
 			
 			@ApiParam(value = "The reference set type to match")
-			@PathVariable(value="refSetTypes")
+			@RequestParam(value="refSetTypes", required=false)
 			final String[] refSetTypes,
 			
 			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
@@ -103,7 +107,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final List<String> sortKeys) {
 		
 		return SnomedRequests.prepareSearchRefSet()
-				.filterByTypes(Collections3.toImmutableSet(refSetTypes).stream().map(SnomedRefSetType::valueOf).collect(Collectors.toSet()))
+				.filterByTypes(getRefSetTypes(refSetTypes))
 				.setScroll(scrollKeepAlive)
 				.setScrollId(scrollId)
 				.setSearchAfter(searchAfter)
@@ -113,6 +117,32 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.execute(getBus());
 	}
 	
+	private Collection<SnomedRefSetType> getRefSetTypes(String[] refSetTypes) {
+		if (refSetTypes == null) {
+			return null;
+		}
+		
+		final Set<String> unresolvedRefSetTypes = Sets.newTreeSet();
+		final Set<SnomedRefSetType> resolvedRefSetTypes = newHashSetWithExpectedSize(refSetTypes.length);
+		
+		for (String refSetTypeString : refSetTypes) {
+			final SnomedRefSetType refSetType = SnomedRefSetType.get(refSetTypeString.toUpperCase());
+			if (refSetType != null) {
+				resolvedRefSetTypes.add(refSetType);
+			} else {
+				unresolvedRefSetTypes.add(refSetTypeString);
+			}
+		}
+		
+		if (!unresolvedRefSetTypes.isEmpty()) {
+			BadRequestException e = new BadRequestException("Unknown reference set types: %s", unresolvedRefSetTypes);
+			e.setDeveloperMessage("Available reference set types are: " + SnomedRefSetType.VALUES);
+			throw e;
+		}
+		
+		return resolvedRefSetTypes;
+	}
+
 	@ApiOperation(
 		value="Retrieve Reference Set",
 		notes="Returns all properties of the specified Reference set."
