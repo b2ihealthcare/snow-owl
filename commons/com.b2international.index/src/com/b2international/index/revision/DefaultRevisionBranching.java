@@ -17,10 +17,14 @@ package com.b2international.index.revision;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Metadata;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
@@ -30,7 +34,7 @@ import com.google.common.collect.ImmutableSortedSet;
  */
 public final class DefaultRevisionBranching extends BaseRevisionBranching {
 
-	private final AtomicInteger branchIds = new AtomicInteger(0);
+	private final AtomicLong branchIds = new AtomicLong(0L);
 	private final long mainBaseTimestamp;
 	private final long mainHeadTimestamp;
 	private final long mainBranchId;
@@ -45,6 +49,24 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 		return branchIds.getAndIncrement();
 	}
 	
+	@Override
+	protected void init() {
+		super.init();
+		branchIds.set(getMaxBranchId() + 1);
+	}
+	
+	private long getMaxBranchId() {
+		return search(Query.select(RevisionBranch.class)
+				.where(Expressions.matchAll())
+				.sortBy(SortBy.field(RevisionBranch.Fields.ID, Order.DESC))
+				.limit(1)
+				.build())
+				.stream()
+				.findFirst()
+				.map(RevisionBranch::getId)
+				.orElse(0L);
+	}
+
 	@Override
 	protected RevisionBranch doReopen(RevisionBranch parentBranch, String child, Metadata metadata) {
 		final long currentTime = currentTime();

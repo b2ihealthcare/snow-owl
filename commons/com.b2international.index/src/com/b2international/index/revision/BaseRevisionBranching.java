@@ -108,7 +108,7 @@ public abstract class BaseRevisionBranching {
 		}
 	}
 	
-	final void init() {
+	protected void init() {
 		RevisionBranch mainBranch = get(RevisionBranch.MAIN_PATH);
 		if (mainBranch == null) {
 			final long branchId = getMainBranchId();
