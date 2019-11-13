@@ -22,7 +22,9 @@ final String script = String.format("return %s + '_' + %s",
 					"doc.referenceSetId.value",
 					"doc.referencedComponentId.value")
 
-final ExpressionBuilder queryBuilder = Expressions.builder().filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(SnomedRefSetType.SIMPLE)))
+final ExpressionBuilder queryBuilder = Expressions.builder()
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(SnomedRefSetType.SIMPLE)))
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.active(true))
 
 if (params.isUnpublishedOnly) {
 	queryBuilder.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
