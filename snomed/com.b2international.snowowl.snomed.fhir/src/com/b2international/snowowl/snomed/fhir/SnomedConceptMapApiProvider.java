@@ -350,8 +350,9 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.execute(getBus())
 			.getSync();
 			
-		conceptMapBuilder.name(refsetConcept.getPt().getTerm())
-			.title(refsetConcept.getPt().getTerm())
+		String pt = getPreferredTermOrId(refsetConcept);
+		conceptMapBuilder.name(pt)
+			.title(pt)
 			.status(snomedReferenceSet.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
 			.language(locales.get(0).getLanguageTag())
@@ -417,7 +418,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			
 			ConceptMapElement.Builder elementBuilder = ConceptMapElement.builder();
 			elementBuilder.code(concept.getId());
-			elementBuilder.display(concept.getPt().getTerm());
+			elementBuilder.display(getPreferredTermOrId(concept));
 			
 			//Targets - potentially many
 			for (SnomedReferenceSetMember mappingSetMember : targetMembers) {

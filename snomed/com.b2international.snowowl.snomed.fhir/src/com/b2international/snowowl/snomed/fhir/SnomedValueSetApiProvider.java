@@ -318,7 +318,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			if (!validatedConceptOptional.isPresent()) {
 				return ValidateCodeResult.builder().valueSetMemberNotFoundResult(snomedUri.toString(), componentId, "<<SNOMED CT").build();
 			}
-			return ValidateCodeResult.builder().okResult(validatedConceptOptional.get().getPt().getTerm()).build();
+			return ValidateCodeResult.builder().okResult(getPreferredTermOrId(validatedConceptOptional.get())).build();
 		
 		//Single refset - Simple type only for now
 		case REFSET:
@@ -467,7 +467,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			
 			SnomedConcept concept = optionalConcept.get();
 			if (!concept.isActive()) {
-				return ValidateCodeResult.builder().result(false).message("Active members is pointing to an inactive concept.").display(concept.getPt().getTerm()).build();
+				return ValidateCodeResult.builder().result(false).message("Active members is pointing to an inactive concept.").display(getPreferredTermOrId(concept)).build();
 			}
 		}
 
@@ -520,7 +520,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		SnomedReferenceSetMember snomedReferenceSetMember = refsetMemberOptional.get();
 		SnomedConcept concept = (SnomedConcept) snomedReferenceSetMember.getReferencedComponent();
 		if (snomedReferenceSetMember.isActive() && !snomedReferenceSetMember.getReferencedComponent().isActive()) {
-			return ValidateCodeResult.builder().result(true).message("Active members is pointing to an inactive concept.").display(concept.getPt().getTerm()).build();
+			return ValidateCodeResult.builder().result(true).message("Active members is pointing to an inactive concept.").display(getPreferredTermOrId(concept)).build();
 		}
 		return ValidateCodeResult.builder().okResult(concept.getPt().getTerm()).build();
 	}
@@ -598,7 +598,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			Contains content = Contains.builder()
 				.system(SnomedUri.SNOMED_BASE_URI)
 				.code(concept.getId())
-				.display(concept.getPt().getTerm())
+				.display(getPreferredTermOrId(concept))
 				.build();
 			expansionBuilder.addContains(content);
 		}
@@ -662,7 +662,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			Contains content = Contains.builder()
 					.system(SnomedUri.SNOMED_BASE_URI)
 					.code(c.getId())
-					.display(c.getPt().getTerm())
+					.display(getPreferredTermOrId(c))
 					.build();
 			expansionBuilder.addContains(content);
 		});
@@ -715,14 +715,15 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			Contains content = Contains.builder()
 					.system(SnomedUri.SNOMED_BASE_URI)
 					.code(c.getId())
-					.display(c.getPt().getTerm())
+					.display(getPreferredTermOrId(c))
 					.build();
 			expansionBuilder.addContains(content);
 		});
 		
+		String pt = getPreferredTermOrId(referencedComponent);
 		return builder
-			.name(referencedComponent.getPt().getTerm())
-			.title(referencedComponent.getPt().getTerm())
+			.name(pt)
+			.title(pt)
 			.expansion(expansionBuilder.build());
 	}
 	
@@ -777,7 +778,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			Contains content = Contains.builder()
 					.system(SnomedUri.SNOMED_BASE_URI)
 					.code(concept.getId())
-					.display(concept.getPt().getTerm())
+					.display(getPreferredTermOrId(concept))
 					.build();
 			expansionBuilder.addContains(content);
 		}
@@ -900,9 +901,8 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.execute(getBus())
 			.getSync();
 		
-		//TODO: potential NPE if there is no pt in a given language refset
-		builder.name(refsetConcept.getPt().getTerm())
-			.title(refsetConcept.getPt().getTerm());
+		String pt = getPreferredTermOrId(refsetConcept);
+		builder.name(pt).title(pt);
 	}
 
 
@@ -932,9 +932,10 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.addInclude(include)
 			.build();
 		
+		String pt = getPreferredTermOrId(referencedComponent);
 		return builder
-			.name(referencedComponent.getPt().getTerm())
-			.title(referencedComponent.getPt().getTerm())
+			.name(pt)
+			.title(pt)
 			.addCompose(compose);
 		
 	}

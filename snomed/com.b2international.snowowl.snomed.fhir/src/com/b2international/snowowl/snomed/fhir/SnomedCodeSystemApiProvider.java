@@ -146,7 +146,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			.getSync()
 			.stream()
 			.map(type -> {
-				final String displayName = type.getPt() == null ? "N/A" : type.getPt().getTerm();
+				final String displayName = getPreferredTermOrId(type);
 				return IConceptProperty.Dynamic.valueCode(URI_BASE + "/id", displayName, type.getId());
 			})
 			.forEach(properties::add);
@@ -250,7 +250,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 					Coding coding = Coding.builder()
 						.system(SnomedUri.SNOMED_BASE_URI_STRING)
 						.code(description.getTypeId())
-						.display(description.getType().getPt().getTerm())
+						.display(getPreferredTermOrId(description.getType()))
 						.build();
 						
 					resultBuilder.addDesignation(Designation.builder()

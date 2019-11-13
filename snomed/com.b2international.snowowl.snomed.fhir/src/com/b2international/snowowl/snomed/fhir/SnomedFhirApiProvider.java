@@ -25,6 +25,7 @@ import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -84,6 +85,10 @@ public abstract class SnomedFhirApiProvider extends FhirApiProvider {
 	
 	protected Uri getFhirUri() {
 		return SnomedUri.SNOMED_BASE_URI;
+	}
+	
+	protected final String getPreferredTermOrId(SnomedConcept concept) {
+		return concept.getPt() != null ? concept.getPt().getTerm() : concept.getId();
 	}
 	
 }
