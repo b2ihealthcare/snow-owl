@@ -27,9 +27,12 @@ import java.util.Map;
 public abstract class ApiException extends FormattedRuntimeException {
 
 	private static final long serialVersionUID = 960919521211109447L;
+	
+	private String developerMessage;
 
 	public ApiException(String template, Object... args) {
 		super(template, args);
+		this.developerMessage = getMessage();
 	}
 
 	/**
@@ -63,12 +66,18 @@ public abstract class ApiException extends FormattedRuntimeException {
 	}
 
 	/**
-	 * Returns the developer message associated with this exception. Subclasses may override.
-	 * 
-	 * @return
+	 * @return the developer message associated with this exception.
 	 */
-	protected String getDeveloperMessage() {
-		return getMessage();
+	public final String getDeveloperMessage() {
+		return developerMessage;
+	}
+	
+	/**
+	 * Set the developer message associated with this exception.
+	 * @param developerMessage
+	 */
+	public final void setDeveloperMessage(String developerMessage) {
+		this.developerMessage = developerMessage;
 	}
 
 	/**
