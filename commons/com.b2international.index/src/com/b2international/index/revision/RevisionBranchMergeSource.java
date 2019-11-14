@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import java.io.Serializable;
 import java.util.SortedSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -23,8 +24,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.0
  */
-public final class RevisionBranchMergeSource {
+public final class RevisionBranchMergeSource implements Serializable {
 	
+	private static final long serialVersionUID = 7947353109442291306L;
 	private final long timestamp; 
 	private final SortedSet<RevisionBranchPoint> branchPoints;
 	private final boolean squash;

@@ -16,14 +16,18 @@
 package com.b2international.snowowl.core.branch;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.index.revision.RevisionBranchMergeSource;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -88,14 +92,15 @@ public final class Branch implements MetadataHolder, Serializable {
 	private final long headTimestamp;
 	private final BranchState state;
 	private final IBranchPath branchPath;
+	private final List<RevisionBranchMergeSource> mergeSources;
 	
 	private Branches children;
 	
-	public Branch(RevisionBranch branch, BranchState state, IBranchPath branchPath) {
-		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), branch.isDeleted(), branch.metadata(), state, branchPath);
+	public Branch(RevisionBranch branch, BranchState state, IBranchPath branchPath, List<RevisionBranchMergeSource> mergeSources) {
+		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), branch.isDeleted(), branch.metadata(), state, branchPath, mergeSources);
 	}
 	
-	private Branch(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean isDeleted, Metadata metadata, BranchState state, IBranchPath branchPath) {
+	private Branch(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean isDeleted, Metadata metadata, BranchState state, IBranchPath branchPath, List<RevisionBranchMergeSource> mergeSources) {
 		this.branchId = branchId;
 		this.name = name;
 		this.parentPath = parentPath;
@@ -105,6 +110,7 @@ public final class Branch implements MetadataHolder, Serializable {
 		this.isDeleted = isDeleted;
 		this.metadata = metadata;
 		this.branchPath = branchPath;
+		this.mergeSources = Collections3.toImmutableList(mergeSources);
 	}
 	
 	/**
@@ -117,10 +123,12 @@ public final class Branch implements MetadataHolder, Serializable {
 	/**
 	 * @return whether this branch is deleted or not
 	 */
+	@JsonProperty
 	public boolean isDeleted() {
 		return isDeleted;
 	}
 
+	@JsonProperty
 	@Override
 	public Metadata metadata() {
 		return metadata;
@@ -129,6 +137,7 @@ public final class Branch implements MetadataHolder, Serializable {
 	/**
 	 * @return the unique path of this {@link Branch}.
 	 */
+	@JsonProperty
 	public String path() {
 		return Strings.isNullOrEmpty(parentPath) ? name : parentPath + Branch.SEPARATOR + name;
 	}
@@ -136,6 +145,7 @@ public final class Branch implements MetadataHolder, Serializable {
 	/**
 	 * @return the unique path of the parent of this {@link Branch}.
 	 */
+	@JsonProperty
 	public String parentPath() {
 		return parentPath;
 	}
@@ -143,6 +153,7 @@ public final class Branch implements MetadataHolder, Serializable {
 	/**
 	 * @return the name of the {@link Branch}, which is often the same value as the last segment of the {@link #path()}.
 	 */
+	@JsonProperty
 	public String name() {
 		return name;
 	}
@@ -153,6 +164,7 @@ public final class Branch implements MetadataHolder, Serializable {
 	 * 
 	 * @return
 	 */
+	@JsonProperty
 	public long baseTimestamp() {
 		return baseTimestamp;
 	}
@@ -163,6 +175,7 @@ public final class Branch implements MetadataHolder, Serializable {
 	 * 
 	 * @return
 	 */
+	@JsonProperty
 	public long headTimestamp() {
 		return headTimestamp;
 	}
@@ -173,6 +186,7 @@ public final class Branch implements MetadataHolder, Serializable {
 	 * @return
 	 * @see #state(Branch)
 	 */
+	@JsonProperty
 	public BranchState state() {
 		return state;
 	}
@@ -195,6 +209,11 @@ public final class Branch implements MetadataHolder, Serializable {
 	
 	public void setChildren(Branches children) {
 		this.children = children;
+	}
+	
+	@JsonProperty
+	public List<RevisionBranchMergeSource> mergeSources() {
+		return mergeSources;
 	}
 	
 	/**

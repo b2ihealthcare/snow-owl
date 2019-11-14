@@ -109,7 +109,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 				}
 				state = doc.state(branchesById.get(parentPath));
 			}
-			branches.add(new Branch(doc, state, BranchPathUtils.createPath(doc.getPath())));
+			branches.add(new Branch(doc, state, BranchPathUtils.createPath(doc.getPath()), doc.getMergeSources()));
 		}
 		return branches.build();
 	}

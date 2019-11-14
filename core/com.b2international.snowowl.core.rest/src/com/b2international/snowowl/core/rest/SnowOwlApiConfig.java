@@ -63,8 +63,6 @@ import com.b2international.commons.options.MetadataMixin;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchMixin;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
@@ -112,7 +110,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		objectMapper.setDateFormat(dateFormat);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-		objectMapper.addMixIn(Branch.class, BranchMixin.class);
 		objectMapper.addMixIn(Metadata.class, MetadataMixin.class);
 		objectMapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
 		objectMapper.addMixIn(Review.class, ReviewMixin.class);
