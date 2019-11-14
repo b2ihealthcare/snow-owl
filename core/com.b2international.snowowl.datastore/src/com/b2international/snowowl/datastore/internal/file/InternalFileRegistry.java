@@ -33,6 +33,6 @@ public interface InternalFileRegistry extends FileRegistry {
 	 * @throws NotFoundException
 	 *             - if the file does not exist with the given identifier
 	 */
-	File getFile(UUID id);
+	File getFile(UUID id) throws NotFoundException;
 	
 }

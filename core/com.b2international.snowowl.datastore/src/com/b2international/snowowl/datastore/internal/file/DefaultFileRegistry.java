@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.google.common.io.ByteSink;
@@ -46,7 +47,7 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 	}
 	
 	@Override
-	public void upload(UUID id, InputStream in) {
+	public void upload(UUID id, InputStream in) throws AlreadyExistsException, BadRequestException {
 		final File file = toFile(id);
 		if (file.exists()) {
 			throw new AlreadyExistsException("Zip File", id.toString());
@@ -67,7 +68,7 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 	}
 
 	@Override
-	public void download(UUID id, OutputStream out) {
+	public void download(UUID id, OutputStream out) throws NotFoundException {
 		final File requestedFile = getFile(id);
 		
 		try {
