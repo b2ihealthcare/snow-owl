@@ -30,7 +30,6 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchData;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -110,7 +109,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 				}
 				state = doc.state(branchesById.get(parentPath));
 			}
-			branches.add(new BranchData(doc, state, BranchPathUtils.createPath(doc.getPath())));
+			branches.add(new Branch(doc, state, BranchPathUtils.createPath(doc.getPath())));
 		}
 		return branches.build();
 	}
@@ -122,7 +121,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 			final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
 			for (Branch branchHit : branchHits) {
 				final List<Branch> children = toBranchData(branching, branching.getChildren(branchHit.path()));
-				((BranchData) branchHit).setChildren(new Branches(children, null, null, children.size(), children.size()));
+				branchHit.setChildren(new Branches(children, null, null, children.size(), children.size()));
 			}
 		}
 	}

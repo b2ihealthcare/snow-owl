@@ -18,12 +18,14 @@ package com.b2international.snowowl.core.branch;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -32,12 +34,30 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @since 4.1
  */
-public interface Branch extends MetadataHolder, Serializable {
+public final class Branch implements MetadataHolder, Serializable {
+
+	private static final long serialVersionUID = 1305843991971921932L;
+
+	/**
+	 * The path of the main branch.
+	 */
+	public static final String MAIN_PATH = RevisionBranch.MAIN_PATH;
+	
+	/**
+	 * Segment separator in {@link Branch#path()} values.
+	 */
+	public static final String SEPARATOR = RevisionBranch.SEPARATOR;
+	
+	/**
+	 * A singleton {@link Joiner} that can be used to concatenate branch path segments into a fully usable branch path.
+	 * @see #get(String...)
+	 */
+	public static final Joiner BRANCH_PATH_JOINER = Joiner.on(SEPARATOR);
 	
 	/**
 	 * @since 6.16
 	 */
-	final class Fields {
+	public static final class Fields {
 		
 		public static final String PATH = "path";
 		public static final String PARENT_PATH = "parentPath";
@@ -51,56 +71,81 @@ public interface Branch extends MetadataHolder, Serializable {
 			NAME,
 			BASE_TIMESTAMP,
 			HEAD_TIMESTAMP,
-			STATE);
-			
-		}
-		
-		/**
-		 * The path of the main branch.
-		 */
-		static final String MAIN_PATH = RevisionBranch.MAIN_PATH;
-		
-		interface Expand {
-			static final String CHILDREN = "children";
-		}
-		
-		/**
-		 * Segment separator in {@link Branch#path()} values.
-		 */
-		String SEPARATOR = RevisionBranch.SEPARATOR;
+			STATE
+		);
+	}
+	
+	public static interface Expand {
+		public static final String CHILDREN = "children";
+	}
+	
+	private final long branchId;
+	private final boolean isDeleted;
+	private final Metadata metadata;
+	private final String name;
+	private final String parentPath;
+	private final long baseTimestamp;
+	private final long headTimestamp;
+	private final BranchState state;
+	private final IBranchPath branchPath;
+	
+	private Branches children;
+	
+	public Branch(RevisionBranch branch, BranchState state, IBranchPath branchPath) {
+		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), branch.isDeleted(), branch.metadata(), state, branchPath);
+	}
+	
+	private Branch(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean isDeleted, Metadata metadata, BranchState state, IBranchPath branchPath) {
+		this.branchId = branchId;
+		this.name = name;
+		this.parentPath = parentPath;
+		this.baseTimestamp = baseTimestamp;
+		this.headTimestamp = headTimestamp;
+		this.state = state;
+		this.isDeleted = isDeleted;
+		this.metadata = metadata;
+		this.branchPath = branchPath;
+	}
 	
 	/**
-	 * Returns the numeric identifier associated with this branch.
-	 * @return
+	 * @return the numeric identifier associated with this branch.
 	 */
-	long branchId();
-	
-	/**
-	 * A singleton {@link Joiner} that can be used to concatenate branch path segments into a fully usable branch path.
-	 * @see #get(String...)
-	 */
-	Joiner BRANCH_PATH_JOINER = Joiner.on(SEPARATOR);
+	public long branchId() {
+		return branchId;
+	}
 
 	/**
-	 * Returns the unique path of this {@link Branch}.
-	 * 
-	 * @return
+	 * @return whether this branch is deleted or not
 	 */
-	String path();
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	@Override
+	public Metadata metadata() {
+		return metadata;
+	}
 
 	/**
-	 * Returns the unique path of the parent of this {@link Branch}.
-	 * 
-	 * @return
+	 * @return the unique path of this {@link Branch}.
 	 */
-	String parentPath();
+	public String path() {
+		return Strings.isNullOrEmpty(parentPath) ? name : parentPath + Branch.SEPARATOR + name;
+	}
 
 	/**
-	 * Returns the name of the {@link Branch}, which is often the same value as the last segment of the {@link #path()}.
-	 * 
-	 * @return
+	 * @return the unique path of the parent of this {@link Branch}.
 	 */
-	String name();
+	public String parentPath() {
+		return parentPath;
+	}
+
+	/**
+	 * @return the name of the {@link Branch}, which is often the same value as the last segment of the {@link #path()}.
+	 */
+	public String name() {
+		return name;
+	}
 
 	/**
 	 * Returns the base timestamp value of this {@link Branch}. The base timestamp represents the time when this branch has been created, or branched
@@ -108,7 +153,9 @@ public interface Branch extends MetadataHolder, Serializable {
 	 * 
 	 * @return
 	 */
-	long baseTimestamp();
+	public long baseTimestamp() {
+		return baseTimestamp;
+	}
 
 	/**
 	 * Returns the head timestamp value for this {@link Branch}. The head timestamp represents the time when the last commit arrived on this
@@ -116,7 +163,9 @@ public interface Branch extends MetadataHolder, Serializable {
 	 * 
 	 * @return
 	 */
-	long headTimestamp();
+	public long headTimestamp() {
+		return headTimestamp;
+	}
 
 	/**
 	 * Returns the {@link BranchState} of this {@link Branch} compared to its {@link #parent()}. TODO document how BranchState calculation works
@@ -124,31 +173,36 @@ public interface Branch extends MetadataHolder, Serializable {
 	 * @return
 	 * @see #state(Branch)
 	 */
-	RevisionBranch.BranchState state();
-	
-	/**
-	 * @return whether this branch is deleted or not
-	 */
-	boolean isDeleted();
+	public BranchState state() {
+		return state;
+	}
 
 	/**
 	 * @return
-	 * @deprecated - use the new {@link Branch} interface instead
+	 * @deprecated - backward compatible API support, use {@link #path()} instead.
 	 */
-	IBranchPath branchPath();
-	
+	public IBranchPath branchPath() {
+		return branchPath;
+	}
+
 	/**
 	 * Returns all child branches of this branch (direct and indirect children both). If not expanded this method returns a <code>null</code> object.
 	 * @return
 	 */
-	Branches getChildren();
-
+	public Branches getChildren() {
+		return children;
+	}
+	
+	public void setChildren(Branches children) {
+		this.children = children;
+	}
+	
 	/**
 	 * @param segments - segments to join into a usable branch path string 
 	 * @return a full absolute branch path that can be used in {@link Request}s and other services  
 	 */
-	static String get(String...segments) {
+	public static final String get(String...segments) {
 		return BRANCH_PATH_JOINER.join(segments);
 	}
-	
+
 }
