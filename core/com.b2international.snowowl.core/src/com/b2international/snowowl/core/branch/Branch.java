@@ -211,7 +211,6 @@ public final class Branch implements MetadataHolder, Serializable {
 		this.children = children;
 	}
 	
-	@JsonProperty
 	public List<RevisionBranchMergeSource> mergeSources() {
 		return mergeSources;
 	}
