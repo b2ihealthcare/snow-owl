@@ -100,7 +100,7 @@ public final class Branch implements MetadataHolder, Serializable {
 		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), branch.isDeleted(), branch.metadata(), state, branchPath, mergeSources);
 	}
 	
-	private Branch(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean isDeleted, Metadata metadata, BranchState state, IBranchPath branchPath, List<RevisionBranchMergeSource> mergeSources) {
+	public Branch(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean isDeleted, Metadata metadata, BranchState state, IBranchPath branchPath, List<RevisionBranchMergeSource> mergeSources) {
 		this.branchId = branchId;
 		this.name = name;
 		this.parentPath = parentPath;

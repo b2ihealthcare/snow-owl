@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
 package com.b2international.snowowl.datastore.server.internal.review;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.commons.options.MetadataImpl;
+import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.repository.JsonSupport;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
@@ -41,15 +44,8 @@ public class ReviewSerializationTest {
 
 	@Before
 	public void setUp() {
-		final Branch source = mock(Branch.class);
-		when(source.path()).thenReturn("MAIN/a");
-		when(source.baseTimestamp()).thenReturn(1L);
-		when(source.headTimestamp()).thenReturn(10L);
-		
-		final Branch target = mock(Branch.class);
-		when(target.path()).thenReturn("MAIN/a/b");
-		when(target.baseTimestamp()).thenReturn(5L);
-		when(target.headTimestamp()).thenReturn(8L);
+		final Branch source = new Branch(0L, "a", Branch.MAIN_PATH, 1L, 10L, false, new MetadataImpl(), BranchState.FORWARD, BranchPathUtils.createPath("MAIN/a"), Collections.emptyList());
+		final Branch target = new Branch(0L, "b", "MAIN/a", 5L, 8L, false, new MetadataImpl(), BranchState.FORWARD, BranchPathUtils.createPath("MAIN/a/b"), Collections.emptyList());
 		
 		this.review = Review.builder("id", source, target).status(ReviewStatus.CURRENT).lastUpdated("2015-07-14T00:00:00Z").build();
 		this.conceptChanges = new ConceptChanges("id", ImmutableSet.of("new1", "new2"), ImmutableSet.of("changed1"), ImmutableSet.of("deleted1", "deleted2", "deleted3"));
