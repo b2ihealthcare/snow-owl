@@ -47,7 +47,7 @@ class App extends React.Component {
               <Menu.Item key="cis">CIS API</Menu.Item>
             </Menu>
           </Sider>
-          <Content>
+          <Content style={{ marginLeft: 200 }}>
             <SwaggerUI 
               url={`${process.env.REACT_APP_SO_BASE_URL}/api-docs?group=${this.state.selectedKey}`} 
               docExpansion = "list"
