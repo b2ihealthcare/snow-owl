@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.index.IP;
@@ -26,7 +27,7 @@ import com.google.common.collect.ComparisonChain;
  * @since 6.5
  */
 @IP
-public final class RevisionBranchPoint implements Comparable<RevisionBranchPoint> {
+public final class RevisionBranchPoint implements Comparable<RevisionBranchPoint>, Serializable {
 
 	private final long branchId;
 	private final long timestamp;
