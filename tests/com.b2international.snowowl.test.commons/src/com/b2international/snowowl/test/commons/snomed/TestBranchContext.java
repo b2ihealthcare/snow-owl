@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 package com.b2international.snowowl.test.commons.snomed;
 
-import static org.mockito.Mockito.when;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.emf.common.util.WrappedException;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.es.client.EsIndexStatus;
+import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
@@ -107,8 +108,8 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 		
 		Builder(String branch) {
 			final String repositoryId = UUID.randomUUID().toString();
-			final Branch mockBranch = Mockito.mock(Branch.class);
-			when(mockBranch.path()).thenReturn(branch);
+			IBranchPath branchPath = BranchPathUtils.createPath(branch);
+			final Branch mockBranch = new Branch(1L, branchPath.lastSegment(), branchPath.getParentPath(), 0L, 1L, false, new MetadataImpl(), BranchState.FORWARD, branchPath, Collections.emptyList());
 			context = new TestBranchContext(repositoryId, mockBranch);
 			final IEventBus bus = EventBusUtil.getDirectBus(repositoryId);
 			bus.registerHandler(Request.ADDRESS, message -> {
