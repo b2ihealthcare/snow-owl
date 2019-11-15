@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -33,6 +35,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 	private String citation;
 	private String branchPath;
 	private String iconPath;
+	private List<String> uris;
 
 	CodeSystemUpdateRequestBuilder(final String uniqueId) {
 		super();
@@ -68,6 +71,11 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		this.iconPath = iconPath;
 		return getSelf();
 	}
+	
+	public CodeSystemUpdateRequestBuilder setUris(List<String> uris) {
+		this.uris = uris;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<TransactionContext, Boolean> doBuild() {
@@ -78,6 +86,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setCitation(citation);
 		req.setBranchPath(branchPath);
 		req.setIconPath(iconPath);
+		req.setUris(uris);
 		return req;
 	}
 

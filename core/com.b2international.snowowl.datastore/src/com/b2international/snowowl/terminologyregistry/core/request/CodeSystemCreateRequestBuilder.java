@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -36,6 +38,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 	private String shortName;
 	private String terminologyId;
 	private String extensionOf;
+	private List<String> uris;
 
 	CodeSystemCreateRequestBuilder() {}
 
@@ -93,6 +96,11 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		this.extensionOf = extensionOf;
 		return getSelf();
 	}
+	
+	public CodeSystemCreateRequestBuilder setUris(List<String> uris) {
+		this.uris = uris;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<TransactionContext, String> doBuild() {
@@ -108,6 +116,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
 		req.setExtensionOf(extensionOf);
+		req.setUris(uris);
 		return req;
 	}
 

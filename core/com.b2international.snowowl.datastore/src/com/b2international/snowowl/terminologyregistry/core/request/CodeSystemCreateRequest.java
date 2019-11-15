@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import java.util.List;
+
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -43,6 +45,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private String shortName;
 	private String terminologyId;
 	private String extensionOf;
+	private List<String> uris;
 
 	CodeSystemCreateRequest() {
 	}
@@ -89,6 +92,10 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 
 	void setExtensionOf(final String extensionOf) {
 		this.extensionOf = extensionOf;
+	}
+	
+	void setUris(List<String> uris) {
+		this.uris = uris;
 	}
 	
 	@Override

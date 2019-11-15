@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import java.util.List;
+
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -37,6 +39,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest implements RepositoryA
 	private String citation;
 	private String branchPath;
 	private String iconPath;
+	private List<String> uris;
 
 	CodeSystemUpdateRequest(final String uniqueId) {
 		super(uniqueId);
@@ -65,6 +68,10 @@ final class CodeSystemUpdateRequest extends UpdateRequest implements RepositoryA
 	void setIconPath(final String iconPath) {
 		this.iconPath = iconPath;
 	}
+	
+	void setUris(List<String> uris) {
+		this.uris = uris;
+	}
 
 	@Override
 	public Boolean execute(final TransactionContext context) {
@@ -78,6 +85,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest implements RepositoryA
 		changed |= updateProperty(citation, codeSystem::getCitation, updated::citation);
 		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
 		changed |= updateBranchPath(context, updated, codeSystem.getBranchPath());
+		changed |= updateProperty(uris, codeSystem::getUris, updated::uris);
 		
 		if (changed) {
 			context.add(updated.build());
