@@ -54,9 +54,6 @@ public final class RevisionSegment implements Comparable<RevisionSegment> {
 	}
 	
 	public RevisionSegment difference(RevisionSegment other) {
-		if (branchId != other.branchId) {
-			System.err.println();
-		}
 		checkArgument(branchId == other.branchId, "Cannot compute difference for a segment from another branch");
 		RevisionSegment intersection = intersection(other);
 		if (end > intersection.end) {
