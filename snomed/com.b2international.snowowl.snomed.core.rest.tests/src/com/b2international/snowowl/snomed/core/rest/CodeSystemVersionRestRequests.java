@@ -77,7 +77,9 @@ public abstract class CodeSystemVersionRestRequests {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.and().contentType(ContentType.JSON)
 				.when().get("/codesystems/{shortName}/versions", shortName)
-				.then();
+				.then()
+				.assertThat()
+				.statusCode(200);
 	}
 
 	public static SortedSet<String> getEffectiveDates(String shortName) {

@@ -32,7 +32,6 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.CodeSystems;
@@ -116,7 +115,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			}
 			CodeSystemVersionEntry codeSystemVersionEntry = csve.get();
 
-			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemVersionEntry.getCodeSystemShortName())
+			com.b2international.snowowl.datastore.CodeSystem codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemVersionEntry.getCodeSystemShortName())
 					.build(repositoryId)
 					.execute(getBus())
 					.getSync();
@@ -177,15 +176,15 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @param codeSystemVersion 
 	 * @return
 	 */
-	protected abstract Uri getFhirUri(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion);
+	protected abstract Uri getFhirUri(com.b2international.snowowl.datastore.CodeSystem codeSystemEntry, CodeSystemVersionEntry codeSystemVersion);
 	
 	/**
-	 * Creates a FHIR {@link CodeSystem} from a {@link CodeSystemEntry}
+	 * Creates a FHIR {@link CodeSystem} from a {@link CodeSystem}
 	 * @param codeSystemEntry
 	 * @param codeSystemVersion
 	 * @return FHIR Code system
 	 */
-	protected final Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry, final CodeSystemVersionEntry codeSystemVersion) {
+	protected final Builder createCodeSystemBuilder(final com.b2international.snowowl.datastore.CodeSystem codeSystemEntry, final CodeSystemVersionEntry codeSystemVersion) {
 		
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
@@ -243,16 +242,16 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	/*
 	 * Returns the logical ID of the code system resource
 	 */
-	private String getId(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
+	private String getId(com.b2international.snowowl.datastore.CodeSystem codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
 		//in theory there should always be at least one version present
 		if (codeSystemVersion != null) {
 			return codeSystemVersion.getRepositoryUuid() + ":" + codeSystemVersion.getPath();
 		} else {
-			return codeSystemEntry.getRepositoryUuid() + ":" + codeSystemEntry.getBranchPath();
+			return codeSystemEntry.getRepositoryId() + ":" + codeSystemEntry.getBranchPath();
 		}
 	}
 
-	protected Collection<Concept> getConcepts(CodeSystemEntry codeSystemEntry) {
+	protected Collection<Concept> getConcepts(com.b2international.snowowl.datastore.CodeSystem codeSystemEntry) {
 		return Collections.emptySet();
 	}
 
@@ -418,7 +417,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return CodeSystemContentMode.NOT_PRESENT;
 	}
 
-	protected String getLanguage(CodeSystemEntry codeSystemEntry) {
+	protected String getLanguage(com.b2international.snowowl.datastore.CodeSystem codeSystemEntry) {
 		return getLanguageCode(codeSystemEntry.getLanguage());
 	}
 	

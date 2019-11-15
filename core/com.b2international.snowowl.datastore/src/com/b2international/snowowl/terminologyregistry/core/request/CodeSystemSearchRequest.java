@@ -23,7 +23,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -31,7 +31,7 @@ import com.b2international.snowowl.identity.domain.Permission;
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, CodeSystemEntry> implements RepositoryAccessControl {
+final class CodeSystemSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, CodeSystem> implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -39,22 +39,22 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 	}
 
 	@Override
-	protected Class<CodeSystemEntry> getDocumentType() {
-		return CodeSystemEntry.class;
+	protected Class<CodeSystem> getDocumentType() {
+		return CodeSystem.class;
 	}
 	
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addIdFilter(queryBuilder, ids -> Expressions.builder()
-				.should(CodeSystemEntry.Expressions.shortNames(ids))
-				.should(CodeSystemEntry.Expressions.oids(ids))
+				.should(CodeSystem.Expressions.shortNames(ids))
+				.should(CodeSystem.Expressions.oids(ids))
 				.build());
 		return queryBuilder.build();
 	}
 
 	@Override
-	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<CodeSystemEntry> hits) {
+	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<CodeSystem> hits) {
 		return new CodeSystems(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	

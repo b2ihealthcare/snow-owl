@@ -43,7 +43,7 @@ import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.ValidationResult;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -117,7 +117,7 @@ public class ValidationRestService extends AbstractRestService {
 			final ValidationRestInput validationInput) {
 
 		final String codeSystemShortName = validationInput.codeSystemShortName();
-		final CodeSystemEntry codeSystem = getCodeSystem(codeSystemShortName);
+		final CodeSystem codeSystem = getCodeSystem(codeSystemShortName);
 		
 		Preconditions.checkArgument(codeSystem.getBranchPath().equals(validationInput.branchPath()));
 		
@@ -157,7 +157,7 @@ public class ValidationRestService extends AbstractRestService {
 				.setRuleIds(validationInput.ruleIds());
 		
 		final Request<ServiceProvider, ValidationResult> request = validateRequestBuilder
-				.build(codeSystem.getRepositoryUuid(), validationInput.branchPath())
+				.build(codeSystem.getRepositoryId(), validationInput.branchPath())
 				.getRequest();
 		
 		JobRequests.prepareSchedule()
@@ -283,11 +283,11 @@ public class ValidationRestService extends AbstractRestService {
 			
 	}
 	
-	private CodeSystemEntry getCodeSystem(final String codeSystemShortName) {
+	private CodeSystem getCodeSystem(final String codeSystemShortName) {
 		final Set<String> repositoryIds = getRepositoryIds();
 		
 		for (String repoId : repositoryIds) {
-			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
+			CodeSystem codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
 				.build(repoId)
 				.execute(getBus())
 				.getSync();

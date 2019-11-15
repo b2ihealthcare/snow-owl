@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.request.UpdateRequest;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.identity.domain.Permission;
 
@@ -75,8 +75,8 @@ final class CodeSystemUpdateRequest extends UpdateRequest implements RepositoryA
 
 	@Override
 	public Boolean execute(final TransactionContext context) {
-		CodeSystemEntry codeSystem = context.lookup(componentId(), CodeSystemEntry.class);
-		final CodeSystemEntry.Builder updated = CodeSystemEntry.builder(codeSystem);
+		CodeSystem codeSystem = context.lookup(componentId(), CodeSystem.class);
+		final CodeSystem.Builder updated = CodeSystem.builder(codeSystem);
 
 		boolean changed = false;
 		changed |= updateProperty(name, codeSystem::getName, updated::name);
@@ -94,7 +94,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest implements RepositoryA
 		return changed;
 	}
 
-	private boolean updateBranchPath(final TransactionContext context, final CodeSystemEntry.Builder codeSystem, final String currentBranchPath) {
+	private boolean updateBranchPath(final TransactionContext context, final CodeSystem.Builder codeSystem, final String currentBranchPath) {
 		if (branchPath != null && !currentBranchPath.equals(branchPath)) {
 			final Branch branch = RepositoryRequests
 					.branching()

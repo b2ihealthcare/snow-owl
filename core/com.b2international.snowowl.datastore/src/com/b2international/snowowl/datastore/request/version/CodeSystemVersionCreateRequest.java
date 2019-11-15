@@ -44,8 +44,7 @@ import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -93,7 +92,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
-	private transient Map<String, CodeSystemEntry> codeSystemsByShortName;
+	private transient Map<String, CodeSystem> codeSystemsByShortName;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
@@ -104,14 +103,14 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			codeSystemsByShortName = fetchAllCodeSystems(context);
 		}
 		
-		final CodeSystemEntry codeSystem = codeSystemsByShortName.get(codeSystemShortName);
+		final CodeSystem codeSystem = codeSystemsByShortName.get(codeSystemShortName);
 		if (codeSystem == null) {
 			throw new CodeSystemNotFoundException(codeSystemShortName);
 		}
 		
 		// check that the new versionId does not conflict with any other currently available branch
 		final String newVersionPath = String.format("%s%s%s", codeSystem.getBranchPath(), Branch.SEPARATOR, versionId);
-		final String repositoryId = codeSystem.getRepositoryUuid();
+		final String repositoryId = codeSystem.getRepositoryId();
 		
 		// validate new path
 		RevisionBranch.BranchNameValidator.DEFAULT.checkName(versionId);
@@ -127,7 +126,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			// ignore
 		}
 		
-		final List<CodeSystemEntry> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
+		final List<CodeSystem> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
 			.stream()
 			.map(codeSystemsByShortName::get)
 			.collect(Collectors.toList());
@@ -144,7 +143,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 					new IndexReadRequest<>(
 						new BranchRequest<>(codeSystem.getBranchPath(),
 							new RevisionIndexReadRequest<CommitResult>(
-								context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryUuid())
+								context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 									.service(VersioningRequestBuilder.class)
 									.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
 							)
@@ -165,16 +164,16 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 	}
 	
-	private Map<String, CodeSystemEntry> fetchAllCodeSystems(ServiceProvider context) {
+	private Map<String, CodeSystem> fetchAllCodeSystems(ServiceProvider context) {
 		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
 		final Collection<Repository> repositories = repositoryManager.repositories();
 		return repositories.stream()
 			.map(repository -> fetchCodeSystem(context, repository.id()))
 			.flatMap(Collection::stream)
-			.collect(Collectors.toMap(CodeSystemEntry::getShortName, Function.identity()));
+			.collect(Collectors.toMap(CodeSystem::getShortName, Function.identity()));
 	}
 	
-	private List<CodeSystemEntry> fetchCodeSystem(ServiceProvider context, String repositoryId) {
+	private List<CodeSystem> fetchCodeSystem(ServiceProvider context, String repositoryId) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
 			.build(repositoryId)
@@ -183,8 +182,8 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.getItems();
 	}
 	
-	private void validateEffectiveTime(ServiceProvider context, CodeSystemEntry codeSystem) {
-		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyComponentId()).isEffectiveTimeSupported()) {
+	private void validateEffectiveTime(ServiceProvider context, CodeSystem codeSystem) {
+		if (!codeSystem.getTerminology().isEffectiveTimeSupported()) {
 			return;
 		}
 
@@ -195,11 +194,11 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 	}
 	
-	private Instant getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystemEntry codeSystem) {
+	private Instant getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.all()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
-			.build(codeSystem.getRepositoryUuid())
+			.build(codeSystem.getRepositoryId())
 			.execute(context.service(IEventBus.class))
 			.getSync()
 			.stream()
@@ -209,13 +208,13 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.orElse(Instant.EPOCH);
 	}
 	
-	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystemEntry> codeSystems) {
+	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {
 		try {
 			this.lockTargetsByContext = HashMultimap.create();
 			
 			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
-			for (CodeSystemEntry codeSystem : codeSystems) {
-				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryUuid(), codeSystem.getBranchPath());
+			for (CodeSystem codeSystem : codeSystems) {
+				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryId(), codeSystem.getBranchPath());
 				
 				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
 
@@ -239,13 +238,13 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 	}
 	
-	private void doTag(ServiceProvider context, CodeSystemEntry codeSystem, IProgressMonitor monitor) {
+	private void doTag(ServiceProvider context, CodeSystem codeSystem, IProgressMonitor monitor) {
 		RepositoryRequests
 			.branching()
 			.prepareCreate()
 			.setParent(codeSystem.getBranchPath())
 			.setName(versionId)
-			.build(codeSystem.getRepositoryUuid())
+			.build(codeSystem.getRepositoryId())
 			.execute(context.service(IEventBus.class))
 			.getSync();
 		monitor.worked(1);
@@ -257,7 +256,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			codeSystemsByShortName = fetchAllCodeSystems(context);
 		}
 		// TODO support multi repository version authorization
-		return codeSystemsByShortName.get(codeSystemShortName).getRepositoryUuid();
+		return codeSystemsByShortName.get(codeSystemShortName).getRepositoryId();
 	}
 	
 	@Override

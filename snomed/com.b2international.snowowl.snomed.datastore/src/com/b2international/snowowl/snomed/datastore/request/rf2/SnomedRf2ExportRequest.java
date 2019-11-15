@@ -54,7 +54,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
@@ -254,7 +254,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	public Rf2ExportResult execute(final RepositoryContext context) {
 
 		// Step 1: check if the export reference branch is a working branch path descendant
-		final CodeSystemEntry referenceCodeSystem = validateCodeSystem(context);
+		final CodeSystem referenceCodeSystem = validateCodeSystem(context);
 
 		// Step 2: retrieve code system versions that are visible from the reference branch
 		final TreeSet<CodeSystemVersionEntry> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
@@ -378,9 +378,9 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 		return branchToLanguageCodes;
 	}
 
-	private CodeSystemEntry validateCodeSystem(final RepositoryContext context) {
+	private CodeSystem validateCodeSystem(final RepositoryContext context) {
 		
-		final CodeSystemEntry referenceCodeSystem = getCodeSystem(context, codeSystem);
+		final CodeSystem referenceCodeSystem = getCodeSystem(context, codeSystem);
 		
 		if (null == referenceCodeSystem) {
 			throw new BadRequestException("Codesystem with shortname '%s' does not exist.", codeSystem);
@@ -558,13 +558,13 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 		return calendar.getTime();
 	}
 
-	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final RepositoryContext context, final CodeSystemEntry codeSystemEntry) {
+	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final RepositoryContext context, final CodeSystem codeSystemEntry) {
 		final TreeSet<CodeSystemVersionEntry> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
 		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
 		return visibleVersions;
 	}
 
-	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<CodeSystemVersionEntry> versionsToExport, final CodeSystemEntry codeSystemEntry,
+	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<CodeSystemVersionEntry> versionsToExport, final CodeSystem codeSystemEntry,
 			final String referenceBranch) {
 		
 		final Collection<CodeSystemVersionEntry> candidateVersions = newArrayList(getCodeSystemVersions(context, codeSystemEntry.getShortName()));
@@ -602,7 +602,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 		}
 
 		// Otherwise, collect applicable versions using this code system's working path
-		final CodeSystemEntry extensionEnty = getCodeSystem(context, codeSystemEntry.getExtensionOf());
+		final CodeSystem extensionEnty = getCodeSystem(context, codeSystemEntry.getExtensionOf());
 		collectExportableCodeSystemVersions(context, versionsToExport, extensionEnty, codeSystemEntry.getBranchPath());
 	}
 
@@ -1037,7 +1037,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 		}
 	}
 
-	private static CodeSystemEntry getCodeSystem(final RepositoryContext context, final String shortName) {
+	private static CodeSystem getCodeSystem(final RepositoryContext context, final String shortName) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.one()
 				.filterById(shortName)

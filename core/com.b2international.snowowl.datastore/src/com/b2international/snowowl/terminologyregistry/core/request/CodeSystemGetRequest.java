@@ -18,14 +18,14 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 5.7
  */
 final class CodeSystemGetRequest 
-		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystemEntry>
+		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystem>
 		implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;

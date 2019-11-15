@@ -23,7 +23,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.base.Strings;
 
@@ -32,8 +32,8 @@ import com.google.common.base.Strings;
  */
 final class CodeSystemCreateRequest implements Request<TransactionContext, String>, RepositoryAccessControl {
 
-	private static final long serialVersionUID = 1L;
-
+	private static final long serialVersionUID = 877145859397831938L;
+	
 	private String branchPath;
 	private String citation;
 	private String oid;
@@ -41,9 +41,9 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private String language;
 	private String link;
 	private String name;
-	private String repositoryUuid;
+	private String repositoryId;
 	private String shortName;
-	private String terminologyId;
+	private String toolingId;
 	private String extensionOf;
 	private List<String> uris;
 
@@ -78,16 +78,16 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		this.name = name;
 	}
 
-	void setRepositoryUuid(final String repositoryUuid) {
-		this.repositoryUuid = repositoryUuid;
+	void setRepositoryId(final String repositoryId) {
+		this.repositoryId = repositoryId;
 	}
 
 	void setShortName(final String shortName) {
 		this.shortName = shortName;
 	}
 
-	void setTerminologyId(final String terminologyId) {
-		this.terminologyId = terminologyId;
+	void setToolingId(final String toolingId) {
+		this.toolingId = toolingId;
 	}
 
 	void setExtensionOf(final String extensionOf) {
@@ -102,7 +102,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	public String execute(final TransactionContext context) {
 		checkCodeSystem(context);
 		
-		final CodeSystemEntry codeSystem = createCodeSystem(context);
+		final CodeSystem codeSystem = createCodeSystem(context);
 		context.add(codeSystem);
 
 		return codeSystem.getShortName();
@@ -122,7 +122,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 	
-	private CodeSystemEntry getCodeSystem(final String uniqeId, final TransactionContext context) {
+	private CodeSystem getCodeSystem(final String uniqeId, final TransactionContext context) {
 		try {
 			return CodeSystemRequests.prepareGetCodeSystem(uniqeId).build().execute(context);
 		} catch (NotFoundException e) {
@@ -130,8 +130,8 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 
-	private CodeSystemEntry createCodeSystem(final TransactionContext context) {
-		return CodeSystemEntry.builder()
+	private CodeSystem createCodeSystem(final TransactionContext context) {
+		return CodeSystem.builder()
 				.oid(oid)
 				.branchPath(branchPath)
 				.name(name)
@@ -140,9 +140,10 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.language(language)
 				.citation(citation)
 				.iconPath(iconPath)
-				.terminologyComponentId(terminologyId)
-				.repositoryUuid(repositoryUuid)
+				.toolingId(toolingId)
+				.repositoryId(repositoryId)
 				.extensionOf(extensionOf)
+				.uris(uris)
 				.build();
 	}
 	

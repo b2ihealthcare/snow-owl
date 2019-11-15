@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@ package com.b2international.snowowl.core.repository;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
@@ -42,7 +41,7 @@ public abstract class TerminologyRepositoryInitializer {
 	 * @param context - the repository context to use for the repository initialization 
 	 */
 	public void initialize(RepositoryContext context) {
-		CodeSystemEntry primaryCodeSystem = createPrimaryCodeSystem();
+		CodeSystem primaryCodeSystem = createPrimaryCodeSystem();
 	
 		if (primaryCodeSystem != null) {
 			CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
@@ -52,17 +51,7 @@ public abstract class TerminologyRepositoryInitializer {
 					.execute(context);
 			
 			if (codeSystems.getTotal() < 1) {
-				CodeSystemRequests.prepareNewCodeSystem()
-					.setName(primaryCodeSystem.getName())
-					.setOid(primaryCodeSystem.getOid())
-					.setLanguage(primaryCodeSystem.getLanguage())
-					.setLink(primaryCodeSystem.getOrgLink())
-					.setCitation(primaryCodeSystem.getCitation())
-					.setIconPath(primaryCodeSystem.getIconPath())
-					.setTerminologyId(primaryCodeSystem.getTerminologyComponentId())
-					.setShortName(primaryCodeSystem.getShortName())
-					.setRepositoryUuid(context.id())
-					.setBranchPath(Branch.MAIN_PATH)
+				primaryCodeSystem.toCreateRequest()
 					.build(context.id(), Branch.MAIN_PATH, User.SYSTEM.getUsername(), "Create primary code system for repository")
 					.getRequest()
 					.execute(context);
@@ -71,10 +60,10 @@ public abstract class TerminologyRepositoryInitializer {
 	}
 
 	/**
-	 * Prepare and return {@link CodeSystemEntry} that represents the primary codesystem for a given terminology.
+	 * Prepare and return {@link CodeSystem} that represents the primary codesystem for a given terminology.
 	 * @return
 	 */
-	protected CodeSystemEntry createPrimaryCodeSystem() {
+	protected CodeSystem createPrimaryCodeSystem() {
 		return null;
 	}
 }

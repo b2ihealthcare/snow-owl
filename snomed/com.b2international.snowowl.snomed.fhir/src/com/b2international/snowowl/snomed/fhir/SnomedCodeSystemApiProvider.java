@@ -25,7 +25,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
@@ -213,7 +213,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
+	protected Uri getFhirUri(CodeSystem codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
 		
 		//TODO: edition module should come here
 		Builder builder = SnomedUri.builder();

@@ -37,7 +37,7 @@ import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -148,7 +148,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		}
 		
 		final String codeSystemShortName = configuration.getCodeSystemShortName();
-		final CodeSystemEntry codeSystemEntry = getCodeSystem(codeSystemShortName);
+		final CodeSystem codeSystemEntry = getCodeSystem(codeSystemShortName);
 		if (codeSystemEntry == null && !SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystemShortName)) {
 			throw new BadRequestException("Importing a release of SNOMED CT from an archive is prohibited "
 					+ "when SNOMED CT extension with short name %s does not exist. Please create it before "
@@ -184,7 +184,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		return Iterables.any(configurationMapping.values(), configuration -> ImportStatus.RUNNING.equals(configuration.getStatus()));
 	}
 	
-	private CodeSystemEntry getCodeSystem(final String shortName) {
+	private CodeSystem getCodeSystem(final String shortName) {
 		try {
 			return CodeSystemRequests.prepareGetCodeSystem(shortName)
 					.build(REPOSITORY_UUID)

@@ -51,7 +51,7 @@ import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
@@ -151,8 +151,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 	
 	private String getObjectId(Object component) {
-		if (component instanceof CodeSystemEntry) {
-			return ((CodeSystemEntry) component).getShortName();
+		if (component instanceof CodeSystem) {
+			return ((CodeSystem) component).getShortName();
 		} else if (component instanceof Revision) {
 			return ((Revision) component).getId();
 		}
@@ -177,8 +177,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 
 	@Override
 	public void add(Object o) {
-		if (o instanceof CodeSystemEntry) {
-			final CodeSystemEntry cs = (CodeSystemEntry) o;
+		if (o instanceof CodeSystem) {
+			final CodeSystem cs = (CodeSystem) o;
 			staging.stageNew(cs.getShortName(), cs);
 			resolvedObjectsById.put(createComponentKey(cs.getShortName(), cs.getClass()), cs);
 		} else if (o instanceof CodeSystemVersionEntry) { 

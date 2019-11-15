@@ -17,15 +17,15 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemGetRequestBuilder 
-		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystemEntry>
-		implements RepositoryIndexRequestBuilder<CodeSystemEntry> {
+		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystem>
+		implements RepositoryIndexRequestBuilder<CodeSystem> {
 
 	CodeSystemGetRequestBuilder(String uniqueId) {
 		super(new CodeSystemGetRequest(uniqueId));

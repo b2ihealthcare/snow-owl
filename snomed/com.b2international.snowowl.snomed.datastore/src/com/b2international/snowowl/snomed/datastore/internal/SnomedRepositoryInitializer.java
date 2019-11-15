@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.internal;
 
+import java.util.Collections;
+
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * Repository initializer for the SNOMED CT tooling.
@@ -25,8 +28,8 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 public final class SnomedRepositoryInitializer extends TerminologyRepositoryInitializer {
 
 	@Override
-	protected CodeSystemEntry createPrimaryCodeSystem() {
-		return CodeSystemEntry.builder()
+	protected CodeSystem createPrimaryCodeSystem() {
+		return CodeSystem.builder()
 				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
 				.shortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
 				.citation(SnomedTerminologyComponentConstants.SNOMED_INT_CITATION)
@@ -34,7 +37,9 @@ public final class SnomedRepositoryInitializer extends TerminologyRepositoryInit
 				.language(SnomedTerminologyComponentConstants.SNOMED_INT_LANGUAGE)
 				.orgLink(SnomedTerminologyComponentConstants.SNOMED_INT_LINK)
 				.oid(SnomedTerminologyComponentConstants.SNOMED_INT_OID)
-				.terminologyComponentId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+				.toolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+				.repositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.uris(Collections.singletonList("http://snomed.info/sct"))
 				.build();
 	}
 

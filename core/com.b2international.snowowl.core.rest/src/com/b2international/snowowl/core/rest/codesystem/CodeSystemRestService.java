@@ -32,7 +32,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.validation.ApiValidation;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
@@ -100,23 +100,11 @@ public class CodeSystemRestService extends AbstractRestService {
 		
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
-		final String shortName = CodeSystemRequests
-				.prepareNewCodeSystem()
-				.setBranchPath(codeSystem.getBranchPath())
-				.setCitation(codeSystem.getCitation())
-				.setIconPath(codeSystem.getIconPath())
-				.setLanguage(codeSystem.getPrimaryLanguage())
-				.setLink(codeSystem.getOrganizationLink())
-				.setName(codeSystem.getName())
-				.setOid(codeSystem.getOid())
-				.setRepositoryUuid(codeSystem.getRepositoryUuid())
-				.setShortName(codeSystem.getShortName())
-				.setTerminologyId(codeSystem.getTerminologyId())
-				.setExtensionOf(codeSystem.getExtensionOf())
+		final String shortName = codeSystem.toCreateRequest()
 				.commit()
 				.setAuthor(author)
 				.setCommitComment(commitComment)
-				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
+				.build(codeSystem.getRepositoryId(), Branch.MAIN_PATH)
 				.execute(getBus())
 				.getSync().getResultAs(String.class);
 		
@@ -142,7 +130,7 @@ public class CodeSystemRestService extends AbstractRestService {
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryUuid());
+		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryId());
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
 		
 		CodeSystemRequests
@@ -151,9 +139,9 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setBranchPath(codeSystem.getBranchPath())
 				.setCitation(codeSystem.getCitation())
 				.setIconPath(codeSystem.getIconPath())
-				.setLanguage(codeSystem.getPrimaryLanguage())
-				.setLink(codeSystem.getOrganizationLink())
-				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, author, commitComment)
+				.setLanguage(codeSystem.getLanguage())
+				.setLink(codeSystem.getOrgLink())
+				.build(codeSystem.getRepositoryId(), Branch.MAIN_PATH, author, commitComment)
 				.execute(getBus())
 				.getSync();
 	}

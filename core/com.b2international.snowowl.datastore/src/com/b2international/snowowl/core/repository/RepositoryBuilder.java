@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
@@ -55,7 +55,7 @@ public final class RepositoryBuilder {
 	private final Mappings mappings = new Mappings(
 		Review.class, 
 		ConceptChanges.class, 
-		CodeSystemEntry.class, 
+		CodeSystem.class, 
 		CodeSystemVersionEntry.class
 	);
 	private ComponentRevisionConflictProcessor componentRevisionConflictProcessor;

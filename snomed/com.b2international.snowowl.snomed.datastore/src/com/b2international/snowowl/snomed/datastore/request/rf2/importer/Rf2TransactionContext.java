@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -165,7 +165,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			// XXX but use the resolvedObjects cache when we are looking up dependencies in #add method 
 			if (obj != null) {
 				return obj;
-			} else if (CodeSystemEntry.class.isAssignableFrom(type) || loadOnDemand) {
+			} else if (CodeSystem.class.isAssignableFrom(type) || loadOnDemand) {
 				// XXX allow lookup only for codesystems and when loadOnDemand is enabled, 
 				return getDelegate().lookup(componentId, type);
 			} else {
