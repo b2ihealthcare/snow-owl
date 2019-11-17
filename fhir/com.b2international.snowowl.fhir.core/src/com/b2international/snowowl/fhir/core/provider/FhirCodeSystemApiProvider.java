@@ -282,25 +282,14 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	protected Uri getFhirUri(com.b2international.snowowl.datastore.CodeSystem codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
-		//handled on the per Core terminology basis (like LCS) 
-		return null;
-	}
-
-	@Override
 	protected int getCount(CodeSystemVersionEntry codeSystemVersion) {
 		//handled on the per Core terminology basis (like LCS) 
 		return 0;
 	}
 
 	@Override
-	protected String getCodeSystemShortName() {
-		return null;
-	}
-
-	@Override
 	protected String getRepositoryId() {
-		return null;
+		throw new UnsupportedOperationException("Unsupported in default FHIR code systems");
 	}
 
 }

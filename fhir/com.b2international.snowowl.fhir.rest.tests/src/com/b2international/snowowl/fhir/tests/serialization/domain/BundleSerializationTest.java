@@ -54,7 +54,7 @@ public class BundleSerializationTest extends FhirTest {
 		
 		Entry entry = new Entry(new Uri("full Url"), codeSystem);
 		
-		Bundle bundle = Bundle.builder("bundle_Id?")
+		Bundle bundle = Bundle.builder()
 			.language("en")
 			.total(1)
 			.type(BundleType.SEARCHSET)
@@ -69,7 +69,7 @@ public class BundleSerializationTest extends FhirTest {
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(bundle));
 		
 		assertThat(jsonPath.getString("resourceType"), equalTo("Bundle"));
-		assertThat(jsonPath.getString("id"), equalTo("bundle_Id?"));
+		assertThat(jsonPath.getString("id"), equalTo(bundle.getId().toString()));
 		assertThat(jsonPath.getString("language"), equalTo("en"));
 		assertThat(jsonPath.getString("type"), equalTo("searchset"));
 		assertThat(jsonPath.getInt("total"), equalTo(1));

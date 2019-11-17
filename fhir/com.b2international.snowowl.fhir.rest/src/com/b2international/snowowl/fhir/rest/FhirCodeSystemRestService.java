@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -53,6 +54,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -94,40 +96,38 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
 	@GetMapping
-	public Bundle getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
-		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
-		
-		//TODO: replace this with something more general as described in
-		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
+	public Promise<Bundle> getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemRestService.class).build().toString();
+		return FhirRequests.prepareSearchCodeSystem()
+				.setUri(uri)
+				.setLocales(locales)
+				.buildAsync()
+				.execute(getBus());
 		
-		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
-			.type(BundleType.SEARCHSET)
-			.addLink(uri);
-		
-		int total = 0;
-		
-		//single code system
-		String id = requestParameters.getId();
-		if (id != null) {
-			CodeSystem codeSystem = getCodeSystemById(id);
-			applyResponseContentFilter(codeSystem, requestParameters);
-			String resourceUrl = String.format("%s/%s", uri, codeSystem.getId().getIdValue());
-			Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
-			builder.addEntry(entry);
-			total = 1;
-		
-		//all code systems
-		} else {
-			for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders(getBus(), locales)) {
-				Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
-				total = total + applySearchParameters(builder, uri, codeSystems,requestParameters);
-			}
-		}
-		return builder.total(total).build();
+//		Multimap<String, String> multiMap = HashMultimap.create();
+//		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
+//		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+//		
+//		int total = 0;
+//		
+//		//single code system
+//		String id = requestParameters.getId();
+//		if (id != null) {
+//			CodeSystem codeSystem = getCodeSystemById(id);
+//			applyResponseContentFilter(codeSystem, requestParameters);
+//			String resourceUrl = String.format("%s/%s", uri, codeSystem.getId().getIdValue());
+//			Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
+//			builder.addEntry(entry);
+//			total = 1;
+//		
+//		//all code systems
+//		} else {
+//			for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders(getBus(), locales)) {
+//				Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
+//				total = total + applySearchParameters(builder, uri, codeSystems,requestParameters);
+//			}
+//		}
+//		return builder.total(total).build();
 	}
 	
 	/**

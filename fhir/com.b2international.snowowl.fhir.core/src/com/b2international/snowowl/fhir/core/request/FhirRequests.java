@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.provider;
-
-import com.b2international.snowowl.fhir.core.LogicalId;
+package com.b2international.snowowl.fhir.core.request;
 
 /**
- * FHIR API provider interface with common functionality for all resource-based FHIR providers.
- *  
- * @since 6.7
+ * @since 7.2
  */
-public interface IFhirApiProvider {
+public class FhirRequests {
+
+	private FhirRequests() {}
 	
-	/**
-	 * @param logicalId - logical code system path (repositoryId:branchPath)
-	 * @return true if this provider supports the code system represented by the logical id
-	 */
-	boolean isSupported(LogicalId logicalId);
+	public static FhirCodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
+		return new FhirCodeSystemSearchRequestBuilder();
+	}
 	
 }

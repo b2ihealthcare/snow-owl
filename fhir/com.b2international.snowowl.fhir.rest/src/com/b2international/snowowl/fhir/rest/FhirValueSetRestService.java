@@ -20,7 +20,6 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.util.Collection;
-import java.util.UUID;
 
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
@@ -89,7 +88,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
 		String uri = MvcUriComponentsBuilder.fromController(FhirValueSetRestService.class).build().toString();
 		
-		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
+		Bundle.Builder builder = Bundle.builder()
 			.type(BundleType.SEARCHSET)
 			.addLink(uri);
 		

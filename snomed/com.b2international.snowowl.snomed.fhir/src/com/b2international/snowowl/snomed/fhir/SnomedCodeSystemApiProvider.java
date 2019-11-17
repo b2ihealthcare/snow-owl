@@ -88,6 +88,11 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
+	public String getToolingId() {
+		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	}
+	
+	@Override
 	public LookupResult lookup(LookupRequest lookup) {
 		
 		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem(), "CodeSystem$lookup.system");
@@ -160,23 +165,23 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
-	@Override
-	public final boolean isSupported(String uri) {
-		if (Strings.isNullOrEmpty(uri)) return false;
-		
-		//supported URI perfect match
-		boolean foundInList = getSupportedURIs().stream()
-			.filter(uri::equalsIgnoreCase)
-			.findAny()
-			.isPresent();
-		
-		//extension and version is part of the URI
-		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
-		
-		boolean logicalId = uri.startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
-		
-		return foundInList || extensionUri || logicalId;
-	}
+//	@Override
+//	public final boolean isSupported(String uri) {
+//		if (Strings.isNullOrEmpty(uri)) return false;
+//		
+//		//supported URI perfect match
+//		boolean foundInList = getSupportedURIs().stream()
+//			.filter(uri::equalsIgnoreCase)
+//			.findAny()
+//			.isPresent();
+//		
+//		//extension and version is part of the URI
+//		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
+//		
+//		boolean logicalId = uri.startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
+//		
+//		return foundInList || extensionUri || logicalId;
+//	}
 	
 	@Override
 	protected Set<String> fetchAncestors(String branchPath, String componentId) {
@@ -202,27 +207,22 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				Filters.REFSET_MEMBER_OF);
 	}
 	
-	@Override
-	public Collection<String> getSupportedURIs() {
-		return SUPPORTED_URIS;
-	}
+//	@Override
+//	public Collection<String> getSupportedURIs() {
+//		return SUPPORTED_URIS;
+//	}
 	
-	@Override
-	protected String getCodeSystemShortName() {
-		return SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
-	}
-	
-	@Override
-	protected Uri getFhirUri(CodeSystem codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
-		
-		//TODO: edition module should come here
-		Builder builder = SnomedUri.builder();
-		
-		if (codeSystemVersion != null) {
-			builder.version(codeSystemVersion.getEffectiveDate());
-		} 
-		return builder.build().toUri();
-	}
+//	@Override
+//	protected Uri getFhirUri(CodeSystem codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
+//		
+//		//TODO: edition module should come here
+//		Builder builder = SnomedUri.builder();
+//		
+//		if (codeSystemVersion != null) {
+//			builder.version(codeSystemVersion.getEffectiveDate());
+//		} 
+//		return builder.build().toUri();
+//	}
 	
 	/**
 	 * SNOMED versions are embedded in the system URI

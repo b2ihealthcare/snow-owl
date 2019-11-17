@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -85,8 +86,8 @@ public class Bundle extends FhirResource {
 		super(id, meta, impliciteRules, language);
 	}
 	
-	public static Builder builder(String bundleId) {
-		return new Builder(bundleId);
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	public static class Builder extends FhirResource.Builder<Builder, Bundle> {
@@ -103,8 +104,8 @@ public class Bundle extends FhirResource {
 		
 		private Signature signature;
 		
-		public Builder(String cdoId) {
-			super(cdoId);
+		public Builder() {
+			super(UUID.randomUUID().toString());
 		}
 
 		public Builder identifier(final Identifier identifer) {

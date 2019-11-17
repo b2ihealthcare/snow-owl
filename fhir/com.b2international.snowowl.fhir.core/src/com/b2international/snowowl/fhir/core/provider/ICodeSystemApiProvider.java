@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -57,6 +57,13 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		public static Collection<ICodeSystemApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
 			return INSTANCE.providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
 		}
+
+		public static ICodeSystemApiProvider getProvider(IEventBus bus, List<ExtendedLocale> locales, String toolingId) {
+			return getProviders(bus, locales).stream()
+					.filter(provider -> provider.getToolingId().equals(toolingId))
+					.findFirst()
+					.orElseThrow(() -> new BadRequestException("Did not find FHIR support for tooling: " + toolingId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + toolingId));
+		}
 		
 		/**
 		 * Returns the matching {@link ICodeSystemApiProvider} for the given logical id (repository:branchPath).
@@ -66,26 +73,26 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		 * @return FHIR code system provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
-			return getProviders(bus, locales).stream()
-				.filter(provider -> provider.isSupported(logicalId))
-				.findFirst()
-				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
-		}
+//		public static ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+//			return getProviders(bus, locales).stream()
+//				.filter(provider -> provider.isSupported(logicalId))
+//				.findFirst()
+//				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
+//		}
 		
-		/**
-		 * Returns the matching {@link ICodeSystemApiProvider} for the given URI.
-		 * @param bus
-		 * @param locales
-		 * @param uriValue
-		 * @return FHIR code system provider
-		 */
-		public static ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
-			return getProviders(bus, locales).stream()
-				.filter(provider -> provider.isSupported(uriValue))
-				.findFirst()
-				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
-		}
+//		/**
+//		 * Returns the matching {@link ICodeSystemApiProvider} for the given URI.
+//		 * @param bus
+//		 * @param locales
+//		 * @param uriValue
+//		 * @return FHIR code system provider
+//		 */
+//		public static ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
+//			return getProviders(bus, locales).stream()
+//				.filter(provider -> provider.isSupported(uriValue))
+//				.findFirst()
+//				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
+//		}
 		
 	}
 	
@@ -111,6 +118,11 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	LookupResult lookup(LookupRequest lookupRequest);
 	
 	/**
+	 * @return the terminology toolingId associated with this provider
+	 */
+	String getToolingId();
+
+	/**
 	 * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).
 	 * See <a href="http://hl7.org/fhir/codesystem-operations.html#subsumes">docs</a> for more details.  
 	 *  
@@ -120,27 +132,11 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	SubsumptionResult subsumes(SubsumptionRequest subsumption);
 
 	/**
-	 * Returns the code systems supported by this provider
-	 * @return collection of code systems supported
+	 * Creates a FHIR CodeSystem from an internal codesystem and version.
+	 * @param codeSystem
+	 * @param version
+	 * @return
 	 */
-	Collection<CodeSystem> getCodeSystems();
-
-	/**
-	 * Returns the code system for the passed in code system URI
-	 * @param codeSystemUri
-	 * @return {@link CodeSystem}
-	 * @throws BadRequestException if the code system is not supported by this provider
-	 * 
-	 * TODO: Is this used anywhere?  Should be probably as a filter.
-	 */
-	CodeSystem getCodeSystem(String codeSystemUri);
-
-	/**
-	 * Returns the code system for the passed in logical id @see {@link LogicalId}
-	 * @param codeSystemId
-	 * @return {@link CodeSystem}
-	 * @throws BadRequestException if the code system is not supported by this provider
-	 */
-	CodeSystem getCodeSystem(LogicalId codeSystemId);
+	CodeSystem createFhirCodeSystem(com.b2international.snowowl.datastore.CodeSystem codeSystem, CodeSystemVersionEntry version);
 
 }

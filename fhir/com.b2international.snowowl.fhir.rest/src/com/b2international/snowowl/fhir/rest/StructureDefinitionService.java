@@ -19,8 +19,6 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-import java.util.UUID;
-
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,7 +75,7 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 		
 		String uri = MvcUriComponentsBuilder.fromController(StructureDefinitionService.class).build().toString();
 		
-		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
+		Bundle.Builder builder = Bundle.builder()
 			.type(BundleType.SEARCHSET)
 			.addLink(uri);
 		

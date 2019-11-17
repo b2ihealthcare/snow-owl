@@ -166,12 +166,6 @@ public abstract class FhirApiProvider {
 	}
 	
 	/**
-	 * Returns the code system short name for the provider
-	 * @return
-	 */
-	protected abstract String getCodeSystemShortName();
-	
-	/**
 	 * Returns the repository id for the provider
 	 * @return
 	 */
