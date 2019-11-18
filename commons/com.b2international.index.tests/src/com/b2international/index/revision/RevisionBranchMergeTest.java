@@ -210,6 +210,25 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void rebaseFakeDivergedBranch() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String a = createBranch(MAIN, "a");
+		// Simulate a request that does not check if even a single property has been changed
+		indexChange(a, NEW_DATA, NEW_DATA.toBuilder().build());
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().build());
+		// ...which means there are no changes, but the branches are still considered diverged
+		assertState(a, MAIN, BranchState.DIVERGED);
+		assertState(MAIN, a, BranchState.DIVERGED);
+		// do the rebase
+		branching().prepareMerge(MAIN, a).merge();
+		// revision should be visible on both side
+		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY1));
+		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+		assertState(a, MAIN, BranchState.UP_TO_DATE);
+		assertState(MAIN, a, BranchState.UP_TO_DATE);
+	}
+	
+	@Test
 	public void rebaseDivergedWithBehindChild() throws Exception {
 		final String a = createBranch(MAIN, "a");
 		final String b = createBranch(a, "b");

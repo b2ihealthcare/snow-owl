@@ -39,6 +39,44 @@ public class RevisionFixtures {
 	@RevisionHash({ "field1", "field2" })
 	public static class RevisionData extends Revision {
 		
+		public static class Builder extends Revision.Builder<RevisionData.Builder, RevisionData> {
+
+			private String id;
+			private String field1;
+			private String field2;
+			
+			public Builder(RevisionData revisionData) {
+				this.id = revisionData.getId();
+				this.field1 = revisionData.field1;
+				this.field2 = revisionData.field2;
+			}
+
+			public Builder id(String id) {
+				this.id = field1;
+				return getSelf();
+			}
+			
+			public Builder field1(String field1) {
+				this.field1 = field1;
+				return getSelf();
+			}
+			
+			public Builder field2(String field2) {
+				this.field2 = field2;
+				return getSelf();
+			}
+			
+			@Override
+			protected Builder getSelf() {
+				return this;
+			}
+
+			@Override
+			public RevisionData build() {
+				return new RevisionData(id, field1, field2);
+			}
+		}
+		
 		@Text(analyzer=Analyzers.TOKENIZED)
 		private String field1;
 		private String field2;
@@ -67,6 +105,10 @@ public class RevisionFixtures {
 			return Objects.hash(field1, field2);
 		}
 		
+		@Override
+		protected Builder toBuilder() {
+			return new Builder(this);
+		}
 	}
 	
 	@Doc
