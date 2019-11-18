@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore;
 
-import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.*;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
@@ -103,12 +103,12 @@ public final class CodeSystemVersionEntry implements Serializable {
 
 	public static class Expressions {
 
-		public static Expression versionId(String versionId) {
-			return exactMatch(Fields.VERSION_ID, versionId);
+		public static Expression versionIds(Iterable<String> versionIds) {
+			return matchAny(Fields.VERSION_ID, versionIds);
 		}
 
-		public static Expression shortName(String shortName) {
-			return exactMatch(Fields.CODE_SYSTEM_SHORT_NAME, shortName);
+		public static Expression shortNames(Iterable<String> codeSystemShortNames) {
+			return matchAny(Fields.CODE_SYSTEM_SHORT_NAME, codeSystemShortNames);
 		}
 
 		public static Expression createdAt(long from, long to) {
@@ -119,8 +119,8 @@ public final class CodeSystemVersionEntry implements Serializable {
 			return exactMatch(Fields.EFFECTIVE_DATE, EffectiveTimes.getEffectiveTime(effectiveDate));
 		}
 
-		public static Expression parentBranchPath(String parentBranchPath) {
-			return exactMatch(Fields.PARENT_BRANCH_PATH, parentBranchPath);
+		public static Expression parentBranchPaths(Iterable<String> parentBranchPaths) {
+			return matchAny(Fields.PARENT_BRANCH_PATH, parentBranchPaths);
 		}
 		
 	}

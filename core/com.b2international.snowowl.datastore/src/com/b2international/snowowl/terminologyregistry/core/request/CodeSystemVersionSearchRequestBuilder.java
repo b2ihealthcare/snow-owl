@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -33,18 +31,26 @@ public final class CodeSystemVersionSearchRequestBuilder
 		extends SearchResourceRequestBuilder<CodeSystemVersionSearchRequestBuilder, RepositoryContext, CodeSystemVersions>
  		implements RepositoryIndexRequestBuilder<CodeSystemVersions> {
 
-	private String codeSystemShortName;
-	private String versionId;
-	private Date effectiveDate;
-	private String parentBranchPath;
-
 	CodeSystemVersionSearchRequestBuilder() {
 		super();
 	}
 
+	/**
+	 * Filter version by their associated code system short name (essentially by which code system has the version).
+	 * @param codeSystemShortName
+	 * @return
+	 */
 	public CodeSystemVersionSearchRequestBuilder filterByCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-		return getSelf();
+		return addOption(OptionKey.CODE_SYSTEM_SHORT_NAME, codeSystemShortName);
+	}
+	
+	/**
+	 * Filter version by their associated code system short name (essentially by which code system has the version).
+	 * @param codeSystemShortNames
+	 * @return
+	 */
+	public CodeSystemVersionSearchRequestBuilder filterByCodeSystemShortNames(Iterable<String> codeSystemShortNames) {
+		return addOption(OptionKey.CODE_SYSTEM_SHORT_NAME, codeSystemShortNames);
 	}
 	
 	/**
@@ -53,13 +59,25 @@ public final class CodeSystemVersionSearchRequestBuilder
 	 * @return
 	 */
 	public CodeSystemVersionSearchRequestBuilder filterByVersionId(String versionId) {
-		this.versionId = versionId;
-		return getSelf();
+		return addOption(OptionKey.VERSION_ID, versionId);
 	}
 	
+	/**
+	 * Filter versions by their version ID.
+	 * @param versionIds - the versionIds to look for.
+	 * @return
+	 */
+	public CodeSystemVersionSearchRequestBuilder filterByVersionIds(Iterable<String> versionIds) {
+		return addOption(OptionKey.VERSION_ID, versionIds);
+	}
+	
+	/**
+	 * Filter versions by their effective date property.
+	 * @param effectiveDate
+	 * @return
+	 */
 	public CodeSystemVersionSearchRequestBuilder filterByEffectiveDate(Date effectiveDate) {
-		this.effectiveDate = effectiveDate;
-		return getSelf();
+		return addOption(OptionKey.EFFECTIVE_DATE, effectiveDate);
 	}
 	
 	/**
@@ -67,25 +85,23 @@ public final class CodeSystemVersionSearchRequestBuilder
 	 * @param branchPath - branch path to filter by
 	 */
 	public CodeSystemVersionSearchRequestBuilder filterByBranchPath(String branchPath) {
-		
-		Path path = Paths.get(branchPath);
-		if (path.getNameCount() == 0) {
-			throw new IllegalArgumentException("Invalid branch path, only root element exists" + branchPath);
-		}
-		
-		parentBranchPath = path.subpath(0, path.getNameCount() - 1).toString();
-		versionId = path.getFileName().toString();
-		return getSelf();
+		return addOption(OptionKey.BRANCH_PATH, branchPath);
+	}
+	
+	/**
+	 * Returns the code system versions that have matching parent branch path.
+	 * @param parentBranchPath - parent branch path to filter by
+	 */
+	public CodeSystemVersionSearchRequestBuilder filterByParentBranchPath(String parentBranchPath) {
+		return addOption(OptionKey.PARENT_BRANCH_PATH, parentBranchPath);
 	}
 	
 	/**
 	 * Returns the code system versions that have matching parent branch paths
 	 * @param parentBranchPath - parent branch path to filter by
 	 */
-	public CodeSystemVersionSearchRequestBuilder filterByParentBranchPath(String parentBranchPath) {
-		this.parentBranchPath = parentBranchPath;
-		return getSelf();
-		
+	public CodeSystemVersionSearchRequestBuilder filterByParentBranchPaths(Iterable<String> parentBranchPaths) {
+		return addOption(OptionKey.PARENT_BRANCH_PATH, parentBranchPaths);
 	}
 
 	/**
@@ -109,12 +125,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystemVersions> createSearch() {
-		final CodeSystemVersionSearchRequest req = new CodeSystemVersionSearchRequest();
-		req.setCodeSystemShortName(codeSystemShortName);
-		req.setVersionId(versionId);
-		req.setEffectiveDate(effectiveDate);
-		req.setParentBranchPath(parentBranchPath);
-		return req;
+		return new CodeSystemVersionSearchRequest();
 	}
 
 }

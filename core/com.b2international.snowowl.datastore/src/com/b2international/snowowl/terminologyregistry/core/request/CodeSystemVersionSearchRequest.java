@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
 
-import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -37,18 +39,37 @@ final class CodeSystemVersionSearchRequest
 	extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> 
 	implements RepositoryAccessControl {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2143809359873750383L;
 
-	private String codeSystemShortName;
-	private String versionId;
-	private Date effectiveDate;
-	private String parentBranchPath;
-
-	
 	/**
 	 * @since 6.15
 	 */
 	public static enum OptionKey {
+		
+		/**
+		 * Match versions by their code system property.
+		 */
+		CODE_SYSTEM_SHORT_NAME,
+		
+		/**
+		 * Match versions by their version ID property.
+		 */
+		VERSION_ID,
+		
+		/**
+		 * Match versions by their effective date property.
+		 */
+		EFFECTIVE_DATE,
+		
+		/**
+		 * Combined filter option key for parent branch path and version ID.
+		 */
+		BRANCH_PATH,
+		
+		/**
+		 * Parent branch path property to match versions for.
+		 */
+		PARENT_BRANCH_PATH,
 		
 		/**
 		 * Filter versions by effective date starting from this value, inclusive.
@@ -58,49 +79,53 @@ final class CodeSystemVersionSearchRequest
 		/**
 		 * Filter versions by effective date ending with this value, inclusive.
 		 */
-		CREATED_AT_END
+		CREATED_AT_END, 
 		
 	}
 	
 	CodeSystemVersionSearchRequest() {
 	}
 
-	void setCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-	}
-	
-	void setVersionId(String versionId) {
-		this.versionId = versionId;
-	}
-	
-	void setEffectiveDate(Date effectiveDate) {
-		this.effectiveDate = effectiveDate;
-	}
-	
-	void setParentBranchPath(String parentBranchPath) {
-		this.parentBranchPath = parentBranchPath;
-	}
-	
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder query = Expressions.builder();
 
-		if (!StringUtils.isEmpty(codeSystemShortName)) {
-			query.filter(CodeSystemVersionEntry.Expressions.shortName(codeSystemShortName));
+		if (containsKey(OptionKey.CODE_SYSTEM_SHORT_NAME)) {
+			query.filter(CodeSystemVersionEntry.Expressions.shortNames(getCollection(OptionKey.CODE_SYSTEM_SHORT_NAME, String.class)));
 		}
 		
-		if (!StringUtils.isEmpty(versionId)) {
-			query.filter(CodeSystemVersionEntry.Expressions.versionId(versionId));
+		if (containsKey(OptionKey.BRANCH_PATH)) {
+			if (containsKey(OptionKey.VERSION_ID) || containsKey(OptionKey.PARENT_BRANCH_PATH)) {
+				throw new BadRequestException("Cannot filter by using both (versionId and/or parentBranchPath) and the special branchPath filter.");
+			}
+			
+			final String branchPath = getString(OptionKey.BRANCH_PATH);
+			final Path path = Paths.get(branchPath);
+			if (path.getNameCount() == 0) {
+				throw new BadRequestException("Invalid branch path, specify an exact version branch (eg. `MAIN/2002-01-31`). Got: '%s'.", branchPath);
+			}
+			
+			// apply version ID filter
+			final String versionId = path.getFileName().toString();
+			query.filter(CodeSystemVersionEntry.Expressions.versionIds(Collections.singleton(versionId)));
+			
+			// apply parent branch filter
+			final String parentBranch = path.subpath(0, path.getNameCount() - 1).toString();
+			query.filter(CodeSystemVersionEntry.Expressions.parentBranchPaths(Collections.singleton(parentBranch)));
 		}
 		
-		if (effectiveDate != null) {
-			query.filter(CodeSystemVersionEntry.Expressions.effectiveDate(effectiveDate));
+		if (containsKey(OptionKey.VERSION_ID)) {
+			query.filter(CodeSystemVersionEntry.Expressions.versionIds(getCollection(OptionKey.VERSION_ID, String.class)));
 		}
 		
-		if (!StringUtils.isEmpty(parentBranchPath)) {
-			query.filter(CodeSystemVersionEntry.Expressions.parentBranchPath(parentBranchPath));
+		if (containsKey(OptionKey.PARENT_BRANCH_PATH)) {
+			query.filter(CodeSystemVersionEntry.Expressions.parentBranchPaths(getCollection(OptionKey.PARENT_BRANCH_PATH, String.class)));
 		}
-
+		
+		if (containsKey(OptionKey.EFFECTIVE_DATE)) {
+			query.filter(CodeSystemVersionEntry.Expressions.effectiveDate(get(OptionKey.EFFECTIVE_DATE, Date.class)));
+		}
+		
 		if (containsKey(OptionKey.CREATED_AT_START) || containsKey(OptionKey.CREATED_AT_END)) {
 			final long from = containsKey(OptionKey.CREATED_AT_START) ? get(OptionKey.CREATED_AT_START, Long.class) : 0;
 			final long to = containsKey(OptionKey.CREATED_AT_END) ? get(OptionKey.CREATED_AT_END, Long.class) : Long.MAX_VALUE;
