@@ -54,6 +54,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.request.FhirCodeSystemSearchRequestBuilder;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.google.common.collect.HashMultimap;
@@ -97,37 +98,25 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	})
 	@GetMapping
 	public Promise<Bundle> getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
+		// TODO move th
+		Multimap<String, String> multiMap = HashMultimap.create();
+		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
+		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
+		
 		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemRestService.class).build().toString();
-		return FhirRequests.prepareSearchCodeSystem()
+		final FhirCodeSystemSearchRequestBuilder req = FhirRequests.prepareSearchCodeSystem();
+		
+		if (requestParameters.getId() != null) {
+			
+		}
+		
+		return req
 				.setUri(uri)
 				.setLocales(locales)
 				.buildAsync()
 				.execute(getBus());
-		
-//		Multimap<String, String> multiMap = HashMultimap.create();
-//		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-//		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
-//		
 //		int total = 0;
-//		
-//		//single code system
-//		String id = requestParameters.getId();
-//		if (id != null) {
-//			CodeSystem codeSystem = getCodeSystemById(id);
-//			applyResponseContentFilter(codeSystem, requestParameters);
-//			String resourceUrl = String.format("%s/%s", uri, codeSystem.getId().getIdValue());
-//			Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
-//			builder.addEntry(entry);
-//			total = 1;
-//		
-//		//all code systems
-//		} else {
-//			for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders(getBus(), locales)) {
-//				Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
-//				total = total + applySearchParameters(builder, uri, codeSystems,requestParameters);
-//			}
-//		}
-//		return builder.total(total).build();
+//		applyResponseContentFilter(codeSystem, requestParameters);
 	}
 	
 	/**
@@ -146,15 +135,18 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
-	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
+	public Promise<CodeSystem> getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+//		Multimap<String, String> multiMap = HashMultimap.create();
+//		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
+//		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
 		
-		CodeSystem codeSystem = getCodeSystemById(codeSystemId);
-		return applyResponseContentFilter(codeSystem, requestParameters);
+//		CodeSystem codeSystem = getCodeSystemById(codeSystemId);
+//		return applyResponseContentFilter(codeSystem, requestParameters);
+		return FhirRequests.prepareGetCodeSystem(codeSystemId)
+					.buildAsync()
+					.execute(getBus());
 	}
 	
 	/**
@@ -354,12 +346,12 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		return "Ping!";
 	}
 	
-	private CodeSystem getCodeSystemById(String codeSystemId) {
-		LogicalId logicalId = LogicalId.fromIdString(codeSystemId);
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, logicalId);
-		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(logicalId);
-		return codeSystem;
-	}
+//	private CodeSystem getCodeSystemById(String codeSystemId) {
+//		LogicalId logicalId = LogicalId.fromIdString(codeSystemId);
+//		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, logicalId);
+//		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(logicalId);
+//		return codeSystem;
+//	}
 	
 	/*
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.

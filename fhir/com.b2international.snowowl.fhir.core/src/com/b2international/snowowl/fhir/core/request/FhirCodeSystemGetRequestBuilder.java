@@ -16,30 +16,25 @@
 package com.b2international.snowowl.fhir.core.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 
 /**
  * @since 7.2
  */
-public final class FhirCodeSystemSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<FhirCodeSystemSearchRequestBuilder, ServiceProvider, Bundle>
-		implements SystemRequestBuilder<Bundle> {
+public final class FhirCodeSystemGetRequestBuilder extends BaseRequestBuilder<FhirCodeSystemGetRequestBuilder, ServiceProvider, CodeSystem> implements SystemRequestBuilder<CodeSystem> {
 
-	private String uri;
+	private final String logicalId;
 	
-	public FhirCodeSystemSearchRequestBuilder setUri(String uri) {
-		this.uri = uri;
-		return getSelf();
+	FhirCodeSystemGetRequestBuilder(String logicalId) {
+		this.logicalId = logicalId;
 	}
-
+	
 	@Override
-	protected SearchResourceRequest<ServiceProvider, Bundle> createSearch() {
-		final FhirCodeSystemSearchRequest req = new FhirCodeSystemSearchRequest();
-		req.setUri(uri);
-		return req;
+	protected Request<ServiceProvider, CodeSystem> doBuild() {
+		return new FhirCodeSystemGetRequest(logicalId);
 	}
 
 }

@@ -26,4 +26,8 @@ public class FhirRequests {
 		return new FhirCodeSystemSearchRequestBuilder();
 	}
 	
+	public static FhirCodeSystemGetRequestBuilder prepareGetCodeSystem(String logicalId) {
+		return new FhirCodeSystemGetRequestBuilder(logicalId);
+	}
+	
 }
