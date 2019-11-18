@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({ "resourceType", "id" })
 public abstract class FhirResource {
 	
+	@Mandatory
+	private final String resourceType;
+	
 	/**
 	 * Logical id of this artifact
 	 * Set the ID to -1 when submitting for creation.
@@ -72,11 +75,16 @@ public abstract class FhirResource {
 	 */
 	private final Code language;
 	
-	FhirResource(final Id id, final Meta meta, final Uri implicitRules, final Code language) {
+	FhirResource(final String resourceType, final Id id, final Meta meta, final Uri implicitRules, final Code language) {
+		this.resourceType = resourceType;
 		this.id = id;
 		this.meta = meta;
 		this.implicitRules = implicitRules;
 		this.language = language;
+	}
+	
+	public String getResourceType() {
+		return resourceType;
 	}
 	
 	public Id getId() {

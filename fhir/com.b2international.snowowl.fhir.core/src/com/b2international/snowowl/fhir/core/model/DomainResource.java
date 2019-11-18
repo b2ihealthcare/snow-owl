@@ -52,8 +52,8 @@ public abstract class DomainResource extends FhirResource {
 	@JsonProperty("extension")
 	private Collection<Extension<?>> extensions;
 
-	public DomainResource(final Id id, final Meta meta, final Uri impliciteRules, final Code language, final Narrative text) {
-		super(id, meta, impliciteRules, language);
+	public DomainResource(final String resourceType, final Id id, final Meta meta, final Uri impliciteRules, final Code language, final Narrative text) {
+		super(resourceType, id, meta, impliciteRules, language);
 		this.text = text;
 	}
 

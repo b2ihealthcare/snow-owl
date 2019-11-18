@@ -40,31 +40,22 @@ import com.google.common.collect.Lists;
  */
 public class Bundle extends FhirResource {
 	
-	//FHIR header "resourceType" : "Bundle",
-	@JsonProperty
-	private String resourceType = "Bundle";
-
 	@Summary
-	@JsonProperty
 	private Identifier identifier;
 	
 	@Summary
 	@Valid
 	@NotNull
-	@JsonProperty
 	private Code type;
 	
 	@Summary
 	@Min(value = 0, message = "Total must be equal to or larger than 0")
-	@JsonProperty
 	private int total;
 
 	@Summary
-	@JsonProperty("link")
 	private Collection<Link> links;
 	
 	@Summary
-	@JsonProperty("entry")
 	private Collection<Entry> entries;
 	
 	@Summary
@@ -72,18 +63,35 @@ public class Bundle extends FhirResource {
 	@JsonProperty
 	private Signature signature;
 	
-	public Bundle(Id id, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries, final Signature signature) {
-		super(id, meta, impliciteRules, language);
-		
+	private Bundle(Id id, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries, final Signature signature) {
+		super("Bundle", id, meta, impliciteRules, language);
 		this.identifier = identifier;
 		this.type = type;
 		this.total = total;
 		this.links = links;
 		this.entries = entries;
 	}
+
+	public Identifier getIdentifier() {
+		return identifier;
+	}
 	
-	public Bundle(final Id id, final Meta meta, final Uri impliciteRules, final Code language) {
-		super(id, meta, impliciteRules, language);
+	public Code getType() {
+		return type;
+	}
+	
+	public int getTotal() {
+		return total;
+	}
+	
+	@JsonProperty("link")
+	public Collection<Link> getLinks() {
+		return links;
+	}
+	
+	@JsonProperty("entry")
+	public Collection<Entry> getEntries() {
+		return entries;
 	}
 	
 	public static Builder builder() {

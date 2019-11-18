@@ -118,12 +118,12 @@ public abstract class MetadataResource extends DomainResource {
 	 * @param text
 	 */
 	@SuppressWarnings("rawtypes")
-	public MetadataResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
+	public MetadataResource(String resourceType, Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			Narrative text, Uri url, Identifier identifier, String version, 
 			String name, String title, Code status, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
 			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright) {
 		
-		super(id, meta, impliciteRules, language, text);
+		super(resourceType, id, meta, impliciteRules, language, text);
 		
 		this.url = url;
 		this.identifier = identifier;

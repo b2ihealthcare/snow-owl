@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import java.util.Collection;
-
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * FHIR Entry BackBone element in the Bundle domain object
@@ -28,18 +23,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Entry {
 	
-	@JsonProperty("link")
-	private Collection<String> links;
-	
-	@JsonProperty
-	private Uri fullUrl;
-	
-	@JsonProperty
-	private FhirResource resource;
+	private final Uri fullUrl;
+	private final FhirResource resource;
 	
 	public Entry(final Uri fullUrl, final FhirResource resource) {
 		this.fullUrl = fullUrl;
 		this.resource = resource;
+	}
+
+	public Uri getFullUrl() {
+		return fullUrl;
+	}
+	
+	public FhirResource getResource() {
+		return resource;
 	}
 
 }

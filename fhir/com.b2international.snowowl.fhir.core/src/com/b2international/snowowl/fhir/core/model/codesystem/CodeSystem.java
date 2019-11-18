@@ -67,11 +67,6 @@ import io.swagger.annotations.ApiModel;
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class CodeSystem extends MetadataResource {
 
-	// FHIR header "resourceType" : "CodeSystem",
-	@Mandatory
-	@JsonProperty
-	private String resourceType = "CodeSystem";
-
 	@Summary
 	@JsonProperty
 	private Boolean caseSensitive;
@@ -144,7 +139,7 @@ public class CodeSystem extends MetadataResource {
 			final Code content, final Uri supplements, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
+		super("CodeSystem", id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
 
 		this.caseSensitive = caseSensitive;

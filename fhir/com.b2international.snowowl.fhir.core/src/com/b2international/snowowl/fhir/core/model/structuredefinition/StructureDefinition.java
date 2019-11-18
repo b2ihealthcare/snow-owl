@@ -53,11 +53,6 @@ import io.swagger.annotations.ApiModel;
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class StructureDefinition extends MetadataResource {
 
-	// FHIR header "resourceType" : "StructureDefinition",
-	@Mandatory
-	@JsonProperty
-	private final String resourceType = "StructureDefinition";
-	
 	@Valid
 	@Summary
 	@JsonProperty("keyword")
@@ -144,7 +139,7 @@ public class StructureDefinition extends MetadataResource {
 			final StructureView snapshot,
 			final StructureView differential) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
+		super("StructureDefinition", id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
 				contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.keywords = keywords;

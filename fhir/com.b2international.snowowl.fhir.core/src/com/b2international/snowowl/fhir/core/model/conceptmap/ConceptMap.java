@@ -32,7 +32,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -59,11 +58,6 @@ import io.swagger.annotations.ApiModel;
 @ApiModel("ConceptMap")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class ConceptMap extends MetadataResource {
-
-	// FHIR header "resourceType" : "ConceptMap",
-	@Mandatory
-	@JsonProperty
-	private final String resourceType = "ConceptMap";
 
 	@Summary
 	@Valid
@@ -112,7 +106,7 @@ public class ConceptMap extends MetadataResource {
 			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, Uri sourceUri,
 			Uri sourceCanonical, Uri targetUri, Uri targetCanonical, Collection<Group> groups) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
+		super("ConceptMap", id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
 				contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.sourceUri = sourceUri;
