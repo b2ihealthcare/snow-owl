@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +24,9 @@ import java.util.stream.Stream;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -46,12 +45,23 @@ import com.google.common.collect.Maps;
 /**
  * @since 7.2
  */
-public final class FhirCodeSystemSearchRequest implements Request<ServiceProvider, Bundle> {
+public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<ServiceProvider, Bundle> {
 
+	/**
+	 * Most of these defined in the <a href="https://www.hl7.org/fhir/codesystem.html#search">official FHIR CodeSystem search docs</a>.
+	 * @since 7.2
+	 */
+	public enum OptionKey {
+		
+		/**
+		 * Filter codesystems by system URI.
+		 */
+		SYSTEM
+		
+	}
+	
 	@NotEmpty
 	private String uri;
-	
-	private List<ExtendedLocale> locales;
 	
 	FhirCodeSystemSearchRequest() {
 	}
@@ -60,12 +70,15 @@ public final class FhirCodeSystemSearchRequest implements Request<ServiceProvide
 		this.uri = uri;
 	}
 	
-	void setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
-	}
-	
 	@Override
-	public Bundle execute(ServiceProvider context) {
+	protected Bundle createEmptyResult(int limit) {
+		return Bundle.builder()
+				.total(limit)
+				.build();
+	}
+
+	@Override
+	protected Bundle doExecute(ServiceProvider context) throws IOException {
 		final Bundle.Builder bundle = Bundle.builder().type(BundleType.SEARCHSET);
 		// get all available code systems from our internal codesystem registry
 		Promise.all(fetchCodeSystems(context))
@@ -81,9 +94,10 @@ public final class FhirCodeSystemSearchRequest implements Request<ServiceProvide
 		
 		// append all default FHIR codesystems
 		
+		
 		return bundle.build();
 	}
-
+	
 	private Collection<Promise<List<CodeSystem>>> fetchCodeSystems(ServiceProvider context) {
 		final IEventBus bus = context.service(IEventBus.class);
 		return context.service(RepositoryManager.class)
@@ -106,6 +120,7 @@ public final class FhirCodeSystemSearchRequest implements Request<ServiceProvide
 		// fetch all the versions and generate FHIR CodeSystem for each code system and its versions (N * M FHIR codeSystem at the end)
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
+				.filterByCodeSystemShortNames(codeSystems.stream().map(com.b2international.snowowl.datastore.CodeSystem::getShortName).collect(Collectors.toSet()))
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build(repositoryId)
 				.execute(bus)
@@ -117,7 +132,7 @@ public final class FhirCodeSystemSearchRequest implements Request<ServiceProvide
 		final Map<String, com.b2international.snowowl.datastore.CodeSystem> codeSystemsById = Maps.uniqueIndex(codeSystems, com.b2international.snowowl.datastore.CodeSystem::getShortName);
 		return versions.stream().map(version -> {
 			final com.b2international.snowowl.datastore.CodeSystem codeSystem = codeSystemsById.get(version.getCodeSystemShortName());
-			return ICodeSystemApiProvider.Registry.getProvider(bus, locales, codeSystem.getToolingId()).createFhirCodeSystem(codeSystem, version);
+			return ICodeSystemApiProvider.Registry.getProvider(bus, locales(), codeSystem.getToolingId()).createFhirCodeSystem(codeSystem, version);
 		}).collect(Collectors.toList());
 	}
 
