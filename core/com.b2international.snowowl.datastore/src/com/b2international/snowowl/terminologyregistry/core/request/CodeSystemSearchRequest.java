@@ -35,6 +35,15 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 
 	private static final long serialVersionUID = 1L;
 
+	public enum OptionKey {
+		
+		/**
+		 * Filter code systems by their associated URIs.
+		 */
+		URI
+		
+	}
+	
 	CodeSystemSearchRequest() {
 	}
 
@@ -50,6 +59,11 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 				.should(CodeSystem.Expressions.shortNames(ids))
 				.should(CodeSystem.Expressions.oids(ids))
 				.build());
+		
+		if (containsKey(OptionKey.URI)) {
+			queryBuilder.filter(CodeSystem.Expressions.uris(getCollection(OptionKey.URI, String.class)));
+		}
+		
 		return queryBuilder.build();
 	}
 

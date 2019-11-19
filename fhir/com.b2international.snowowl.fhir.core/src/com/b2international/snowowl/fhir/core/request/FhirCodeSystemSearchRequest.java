@@ -86,6 +86,8 @@ public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Ser
 				.stream()
 				.map(List.class::cast)
 				.flatMap(list -> (Stream<CodeSystem>) list.stream())
+				// apply ID filter here
+				.filter(cs -> componentIds() == null /*no filter*/ || componentIds().contains(cs.getId().getIdValue()))
 				.forEach(cs -> {
 					String resourceUrl = String.format("%s/%s", uri, cs.getId().getIdValue());
 					Entry entry = new Entry(new Uri(resourceUrl), cs);
@@ -105,9 +107,9 @@ public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Ser
 				.stream()
 				.map(Repository::id)
 				.map(repositoryId -> {
-					// TODO filter/expand options
 					return CodeSystemRequests.prepareSearchCodeSystem()
 							.all()
+							.filterByUris(containsKey(OptionKey.SYSTEM) ? getCollection(OptionKey.SYSTEM, String.class) : null)
 							.build(repositoryId)
 							.execute(bus)
 							.thenWith(cs -> fetchVersions(context, repositoryId, cs));
