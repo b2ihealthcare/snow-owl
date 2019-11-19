@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.index.revision.RevisionFixtures.DerivedData;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 
@@ -40,7 +41,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(RevisionData.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class, DerivedData.class);
 	}
 	
 	@Test(expected = BadRequestException.class)
@@ -224,6 +225,37 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// revision should be visible on both side
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY1));
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+		assertState(a, MAIN, BranchState.UP_TO_DATE);
+		assertState(MAIN, a, BranchState.UP_TO_DATE);
+	}
+	
+	@Test
+	public void rebaseDerivedOnlyChanges() throws Exception {
+		final DerivedData newData = new DerivedData(STORAGE_KEY1, "field1", "field2", 5);
+		indexRevision(MAIN, newData);
+		final String a = createBranch(MAIN, "a");
+		// Change a derived property that is not part of hashed fields
+		indexChange(a, newData, newData.toBuilder().numberOfAncestors(15).build());
+		indexChange(MAIN, newData, newData.toBuilder().numberOfAncestors(7).build());
+		// ...which means there are no relevant changes, but the branches are still considered diverged
+		assertState(a, MAIN, BranchState.DIVERGED);
+		assertState(MAIN, a, BranchState.DIVERGED);
+		// do the rebase
+		branching().prepareMerge(MAIN, a).merge();
+
+		/* 
+		 * Revision should be visible on both side, we will side with the version on target
+		 * (ideally, a commit hook will adjust the derived property value based on "primary" properties, new
+		 * or deleted other documents, etc.)
+		 */
+		final DerivedData dataOnBranch = (DerivedData) getRevision(a, DerivedData.class, STORAGE_KEY1);
+		assertNotNull(dataOnBranch);
+		assertEquals(15, dataOnBranch.getNumberOfAncestors());
+		
+		final DerivedData dataOnMain = (DerivedData) getRevision(MAIN, DerivedData.class, STORAGE_KEY1);
+		assertNotNull(dataOnMain);
+		assertEquals(15, dataOnBranch.getNumberOfAncestors());
+		
 		assertState(a, MAIN, BranchState.UP_TO_DATE);
 		assertState(MAIN, a, BranchState.UP_TO_DATE);
 	}
