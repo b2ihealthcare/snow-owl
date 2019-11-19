@@ -35,6 +35,7 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
+import org.elasticsearch.cluster.metadata.MetaData;
 import org.elasticsearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public abstract class EsClientBase implements EsClient {
 	
 	private final ExpiringMemoizingSupplier<String> clusterAvailable = memoizeWithExpiration(this::checkClusterAvailable, 5, TimeUnit.MINUTES);
 	private final ExpiringMemoizingSupplier<ClusterHealthResponse> clusterHealth = memoizeWithExpiration(this::checkClusterHealth, 5, TimeUnit.MINUTES);
-	private final ExpiringMemoizingSupplier<GetSettingsResponse> clusterSettings = memoizeWithExpiration(this::checkClusterSettings, 5, TimeUnit.MINUTES);
+	private final ExpiringMemoizingSupplier<GetSettingsResponse> indicesSettings = memoizeWithExpiration(this::checkIndicesSettings, 5, TimeUnit.MINUTES);
 	
 	public EsClientBase(String clusterUrl) {
 		this.host = HttpHost.create(clusterUrl);
@@ -139,12 +140,12 @@ public abstract class EsClientBase implements EsClient {
 		}
 	}
 	
-	private GetSettingsResponse checkClusterSettings(GetSettingsResponse previousSettings) {
+	private GetSettingsResponse checkIndicesSettings(GetSettingsResponse previousSettings) {
 		try {
-			log.trace("Checking cluster settings at '{}'...", host.toURI());
-			return indices().settings(new GetSettingsRequest());
+			log.trace("Checking indices settings at '{}'...", host.toURI());
+			return indices().settings(new GetSettingsRequest().indices(MetaData.ALL));
 		} catch (IOException e) {
-			throw new IndexException("Failed to get cluster settings", e);
+			throw new IndexException("Failed to get indices settings", e);
 		}
 	}
 	
@@ -153,7 +154,7 @@ public abstract class EsClientBase implements EsClient {
 	}
 	
 	private boolean isIndexReadOnly(String index) {
-		final String readOnly = this.clusterSettings.waitUntilValue(result -> result.getIndexToSettings().containsKey(index), 1 * 60L /*seconds*/).getSetting(index, READ_ONLY_SETTING);
+		final String readOnly = this.indicesSettings.waitUntilValue(result -> result.getIndexToSettings().containsKey(index), 1 * 60L /*seconds*/).getSetting(index, READ_ONLY_SETTING);
 		return !Strings.isNullOrEmpty(readOnly) && !Boolean.valueOf(readOnly);
 	}
 	
