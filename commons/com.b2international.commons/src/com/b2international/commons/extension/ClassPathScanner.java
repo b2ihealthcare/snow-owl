@@ -85,6 +85,16 @@ public enum ClassPathScanner {
 	 * @param type
 	 * @return
 	 */
+	public Collection<Class<?>> getClassesByInterface(Class<?> type) {
+		final ClassInfoList namesOfClassesWithAnnotation = registry.getClassesImplementing(type.getName());
+		return getClasses(namesOfClassesWithAnnotation);
+	}
+	
+	/**
+	 * Returns classes that implement the given interface type.
+	 * @param type
+	 * @return
+	 */
 	public Collection<Class<?>> getComponentsClassesByInterface(Class<?> type) {
 		final ClassInfoList namesOfClassesWithAnnotation = registry.getClassesImplementing(type.getName());
 		return getComponentClasses(namesOfClassesWithAnnotation);
@@ -104,6 +114,11 @@ public enum ClassPathScanner {
 	private List<Class<?>> getComponentClasses(final ClassInfoList classes) {
 		return classes.stream().map(ClassInfo::loadClass)
 				.filter(type -> type.isAnnotationPresent(Component.class))
+				.collect(Collectors.toList());
+	}
+	
+	private List<Class<?>> getClasses(final ClassInfoList classes) {
+		return classes.stream().map(ClassInfo::loadClass)
 				.collect(Collectors.toList());
 	}
 	
