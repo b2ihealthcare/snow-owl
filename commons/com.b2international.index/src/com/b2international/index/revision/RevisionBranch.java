@@ -408,9 +408,78 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		return MAIN_PATH.equals(path);
 	}
     
-    /**
-	 * Returns the {@link BranchState} of this {@link RevisionBranch} compared to the given target {@link RevisionBranch}.
-	 * TODO document how BranchState calculation works
+	/**
+	 * Returns the {@link BranchState} of this {@link RevisionBranch} compared to
+	 * the given target {@link RevisionBranch}.
+	 * 
+	 * <ul>
+	 * <li>FORWARD: no commits on target branch since base timestamp, commits on
+	 * this branch since base timestamp
+	 * <pre>
+	 *              b    h
+	 * this         o----&#x25CF;
+	 * target ----&#x25CF;
+	 *            h
+	 * </pre>
+	 * </li>
+	 * <li>BEHIND: no commits on this branch since base timestamp, commits on target
+	 * branch since base timestamp
+	 * <pre>
+	 *             b = h
+	 * this         o&#x25CF;
+	 * target -------------&#x25CF;
+	 *                     h
+	 * </pre>
+	 * </li> 
+	 * <li>DIVERGED: commits on both branches since base timestamp
+	 * <pre>
+	 *              b    h
+	 * this         o----&#x25CF;
+	 * target -------------&#x25CF;
+	 *                     h
+	 * </pre>
+	 * </li> 
+	 * <li>UP_TO_DATE: no commits on either branch since base timestamp
+	 * <pre>
+	 *             b = h
+	 * this         o&#x25CF;
+	 * target ------&#x25CF;
+	 *              h
+	 * </pre>
+	 * </li>
+	 * </ul>
+	 * <p>
+	 * Branch base and head timestamps gathered from this branch are adjusted before
+	 * doing the comparison, according to the following rules:
+	 * <ul>
+	 * <li>If the target branch has been merged into this branch, the most recent of
+	 * such points is used as the base timestamp:
+	 * <pre>
+	 *              b   b'   h
+	 * this         o---o----&#x25CF;
+	 *                 /
+	 * target --------&#x25CF;------&#x25CF;
+	 *                ms     h
+	 * </pre>
+	 * </li>
+	 * <li>If this branch was merged into the target branch, the most recent of such
+	 * points is used as:
+	 * <ul>
+	 * <li>the base timestamp, if it is greater than the currently held base
+	 * timestamp (pictured)</li>
+	 * <li>the head timestamp, it it is greater than the currently held head
+	 * timestamp</li>
+	 * </ul>
+	 * <pre>
+	 *              b  ms = b' h
+	 * this         o---&#x25CF; o----&#x25CF;
+	 *                   \|
+	 * target ------------&#x25CF;----&#x25CF;
+	 *                         h
+	 * </pre>
+	 * </li>
+	 * </ul>
+	 * </p>
 	 * 
 	 * @param target
 	 * @return
