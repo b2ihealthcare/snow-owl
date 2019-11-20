@@ -108,7 +108,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterById(String id) {
-		return filterByIds(ImmutableSet.of(id));
+		return filterByIds(id == null ? null : ImmutableSet.of(id));
 	}
 	
 	/**
