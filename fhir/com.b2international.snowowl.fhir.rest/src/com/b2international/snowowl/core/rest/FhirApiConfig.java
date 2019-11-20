@@ -40,7 +40,7 @@ public class FhirApiConfig extends BaseApiConfig {
 		return docs(
 			getApiBaseUrl(), 
 			"fhir", 
-			"1.0", 
+			"4.0.1", 
 			"Snow Owl® FHIR API", 
 			"https://b2i.sg/", 
 			"support@b2i.sg", 
