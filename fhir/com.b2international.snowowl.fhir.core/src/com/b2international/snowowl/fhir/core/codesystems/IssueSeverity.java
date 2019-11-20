@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * FHIR Issue Severity Code system
  * 
  * @since 6.4
  */
-@ResourceNarrative("How the issue affects the success of the action.")
-public enum IssueSeverity implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/issue-severity",
+	resourceNarrative = "How the issue affects the success of the action."
+)
+public enum IssueSeverity implements FhirInternalCode {
 	
 	//The issue caused the action to fail, and no further checking could be performed.
 	FATAL,
@@ -38,20 +38,4 @@ public enum IssueSeverity implements FhirCodeSystem {
 	//The issue has no relation to the degree of success of the action.
 	INFORMATION;
 	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-severity";
-	
-	public String getDisplayName() {
-		return StringUtils.capitalizeFirstLetter(name().toLowerCase());
-	}
-	
-	@Override
-	public String getCodeValue() {
-		return name().toLowerCase();
-	}
-	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
 }

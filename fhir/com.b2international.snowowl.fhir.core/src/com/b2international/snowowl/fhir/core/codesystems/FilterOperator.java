@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-
 /**
  * FHIR Filter Operator Code system
  * 
  * @since 6.3
  */
-@ResourceNarrative("The kind of operation to perform as a part of a property based filter.")
-public enum FilterOperator implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/filter-operator",
+	resourceNarrative = "The kind of operation to perform as a part of a property based filter."
+)
+public enum FilterOperator implements FhirInternalCode {
 	
 	//The specified property of the code equals the provided value.
 	EQUALS("Equals"),
@@ -58,40 +57,24 @@ public enum FilterOperator implements FhirCodeSystem {
 	//if the specified value is false, then matches when the specified property of the code has no values)
 	EXISTS("Exists");
 	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/filter-operator";
 	private String displayName;
 	
 	private FilterOperator(String displayName) {
 		this.displayName = displayName;
 	}
 	
+	@Override
 	public String getDisplayName() {
 		return displayName;
 	}
 	
 	@Override
-	public Code getCode() {
-		return new Code(getCodeValue());
-	}
-	
-	@Override
 	public String getCodeValue() {
-		
-		if (EQUALS==this) {
+		if (EQUALS == this) {
 			return "=";
 		} else {
 			return name().toLowerCase().replaceAll("_", "-");
 		}
 	}
 	
-	@Override
-	public Uri getUri() {
-		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
-	}
-	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
 }

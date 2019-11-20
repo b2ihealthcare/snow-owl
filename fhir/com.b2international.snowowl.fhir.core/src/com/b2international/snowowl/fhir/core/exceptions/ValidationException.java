@@ -65,7 +65,8 @@ public final class ValidationException extends BadRequestException {
 		
 		for (ConstraintViolation<?> violation : violations) {
 				
-			String issueDetails = String.format(getOperationOutcomeCode().getDisplayName(), violation.getPropertyPath());
+			OperationOutcomeCode operationOutcomeCode = getOperationOutcomeCode();
+			String issueDetails = String.format(operationOutcomeCode.getDisplayName(), violation.getPropertyPath());
 			StringBuilder builder = new StringBuilder(issueDetails);
 			builder.append(" [");
 			builder.append(violation.getInvalidValue());
@@ -73,9 +74,9 @@ public final class ValidationException extends BadRequestException {
 			builder.append(violation.getMessage());
 			builder.append(".");
 			
-			Coding coding = Coding.builder().
-				code(getOperationOutcomeCode().getCodeValue())
-				.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+			Coding coding = Coding.builder()
+				.code(operationOutcomeCode.getCodeValue())
+				.system(operationOutcomeCode.getCodeSystem().uri())
 				.display(builder.toString())
 				.build();
 	

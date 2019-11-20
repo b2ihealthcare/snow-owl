@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * FHIR Publication status code system
  * 
  * @since 6.4
  */
-@ResourceNarrative("The lifecycle status of a Value Set or Concept Map.")
-public enum PublicationStatus implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/publication-status",
+	resourceNarrative = "The lifecycle status of a Value Set or Concept Map."
+)
+public enum PublicationStatus implements FhirInternalCode {
 	
 	//This resource is still under development and is not yet considered to be ready for normal use.
 	DRAFT,
@@ -39,21 +40,9 @@ public enum PublicationStatus implements FhirCodeSystem {
 	//it's just not known which one.
 	UNKNOWN;
 	
-	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/publication-status";
-
-	@Override
-	public String getCodeValue() {
-		return name().toLowerCase();
-	}
-	
 	@Override
 	public String getDisplayName() {
 		return getCodeValue();
 	}
 	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
 }

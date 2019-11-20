@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,20 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * FHIR Code system hierarchy meaning code system
  * @since 6.4
  */
-@ResourceNarrative("The meaning of the hierarchy of concepts in a code system.")
-public enum CodeSystemHierarchyMeaning implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/codesystem-hierarchy-meaning",
+	resourceNarrative = "The meaning of the hierarchy of concepts in a code system."
+)
+public enum CodeSystemHierarchyMeaning implements FhirInternalCode {
 	
 	GROUPED_BY("Grouped By"),
 	IS_A("Is-A"), 
 	PART_OF("Part Of"), 
 	CLASSIFIED_WITH("Classified With");
-	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/codesystem-hierarchy-meaning";
 	
 	private String displayName;
 
@@ -37,6 +36,7 @@ public enum CodeSystemHierarchyMeaning implements FhirCodeSystem {
 		this.displayName = displayName;
 	}
 	
+	@Override
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -46,9 +46,4 @@ public enum CodeSystemHierarchyMeaning implements FhirCodeSystem {
 		return name().toLowerCase().replace("_", "-");
 	}
 	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
 }

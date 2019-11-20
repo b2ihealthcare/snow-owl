@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * FHIR Operation outcome codesystem.
  * 
@@ -24,8 +22,11 @@ import com.b2international.snowowl.fhir.core.ResourceNarrative;
  *  
  * @since 6.4
  */
-@ResourceNarrative("Operation Outcome codes used by FHIR test servers (see Implementation file translations.xml).")
-public enum OperationOutcomeCode implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/operation-outcome",
+	resourceNarrative = "Operation Outcome codes used by FHIR test servers (see Implementation file translations.xml)."
+)
+public enum OperationOutcomeCode implements FhirInternalCode {
 	
 	MSG_AUTH_REQUIRED("You must authenticate before you can use this service"),
 	MSG_BAD_FORMAT("Bad Syntax: '%s' must be a '%s'"),
@@ -78,27 +79,15 @@ public enum OperationOutcomeCode implements FhirCodeSystem {
 	DELETE_MULTIPLE_MATCHES("Error: Multiple matches exist for the conditional delete"),	
 	SEARCH_NONE("Error: no processable search found for %s search parameters '%s'");
 	
-	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/operation-outcome";
-	
 	private String displayName;
 	
 	private OperationOutcomeCode(String displayName) {
 		this.displayName = displayName;
 	}
-	
-	@Override
-	public String getCodeValue() {
-		return name().toLowerCase();
-	}
 
-	
+	@Override
 	public String getDisplayName() {
 		return displayName;
-	}
-	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
 	}
 
 }

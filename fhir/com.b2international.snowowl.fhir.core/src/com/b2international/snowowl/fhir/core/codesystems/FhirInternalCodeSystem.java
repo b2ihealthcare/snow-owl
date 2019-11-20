@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,26 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 /**
- * FHIR discriminator type
- * https://www.hl7.org/fhir/codesystem-discriminator-type.html#DiscriminatorType
+ * Internal FHIR code system
  * 
- * @since 7.1
+ * @see <a href="http://hl7.org/fhir/terminologies-systems.html">FHIR:Terminology:Code Systems</a>
+ * @since 6.4
  */
-@FhirInternalCodeSystem(
-	uri = "http://hl7.org/fhir/discriminator-type",
-	resourceNarrative = "How an element value is interpreted when discrimination is evaluated."
-)
-public enum DiscriminatorType implements FhirInternalCode {
+public @interface FhirInternalCodeSystem {
 	
-	VALUE,
-	EXISTS, 
-	PATTERN,
-	TYPE,
-	PROFILE;
+	/**
+	 * @return the code system URI as a string of this code system
+	 */
+	String uri();
 	
+	/**
+	 * @return the resource narrative for this {@link FhirInternalCodeSystem}
+	 */
+	String resourceNarrative() default "";
+	
+	/**
+	 * @return the version tag of the code system
+	 */
+	String version() default "3.0.1";
+
 }

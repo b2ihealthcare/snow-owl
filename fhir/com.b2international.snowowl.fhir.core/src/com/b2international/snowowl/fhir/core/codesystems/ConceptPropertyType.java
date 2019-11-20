@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,15 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * FHIR Concept property type code system
  * @since 6.4
  */
-@ResourceNarrative("The type of a property value.")
-public enum ConceptPropertyType implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/concept-property-type",
+	resourceNarrative = "The type of a property value."
+)
+public enum ConceptPropertyType implements FhirInternalCode {
 	
 	CODE(PropertyType.CODE.getCodeValue(), "code (internal reference)"),
 	CODING(PropertyType.CODING.getCodeValue(), "Coding (external reference)"), 
@@ -30,8 +31,6 @@ public enum ConceptPropertyType implements FhirCodeSystem {
 	INTEGER(PropertyType.INTEGER.getCodeValue(), "integer"),
 	BOOLEAN(PropertyType.BOOLEAN.getCodeValue(), "boolean"),
 	DATETIME(PropertyType.DATETIME.getCodeValue(), "dateTime");
-	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/concept-property-type";
 	
 	private String code;
 	private String displayName;
@@ -50,9 +49,4 @@ public enum ConceptPropertyType implements FhirCodeSystem {
 		return code;
 	}
 	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
 }

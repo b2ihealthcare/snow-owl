@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * FHIR Aggregation Mode code system
  * https://www.hl7.org/fhir/codesystem-resource-aggregation-mode.html#AggregationMode
  * 
  * @since 7.1
  */
-@ResourceNarrative("How resource references can be aggregated.")
-public enum AggregationMode implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/resource-aggregation-mode", 
+	resourceNarrative = "How resource references can be aggregated."
+)
+public enum AggregationMode implements FhirInternalCode {
 	
 	//The reference is a local reference to a contained resource.
 	CONTAINED,
@@ -36,20 +36,4 @@ public enum AggregationMode implements FhirCodeSystem {
 	//The resource the reference points to will be found in the same bundle as the resource that includes the reference.
 	BUNDLED;
 	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/resource-aggregation-mode"; //$NON-NLS-N$
-	
-	public String getCodeValue() {
-		return name().toLowerCase();
-	}
-
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
-	@Override
-	public String getDisplayName() {
-		return StringUtils.capitalizeFirstLetter(name().toLowerCase());
-	}
-
 }

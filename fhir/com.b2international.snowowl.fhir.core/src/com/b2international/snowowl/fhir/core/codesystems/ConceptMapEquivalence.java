@@ -1,14 +1,31 @@
+/*
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Concept Map Equivalence code system
  * @since 7.1
  */
-@ResourceNarrative("The degree of equivalence between codes.")
-public enum ConceptMapEquivalence implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/concept-map-equivalence",
+	resourceNarrative = "The degree of equivalence between codes."
+)
+public enum ConceptMapEquivalence implements FhirInternalCode {
 	
 	//The concepts are related to each other, and have at least some overlap in meaning, but the exact relationship is not known
 	//@JsonProperty("forgot password")
@@ -45,22 +62,10 @@ public enum ConceptMapEquivalence implements FhirCodeSystem {
 	//This is an explicit assertion that there is no mapping between the source and target concept.
 	DISJOINT("Disjoint");
 
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/concept-map-equivalence"; //$NON-NLS-N$
-
 	private String displayName;
 	
 	private ConceptMapEquivalence(String displayName) {
 		this.displayName = displayName;
-	}
-	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
-	@Override
-	public String getCodeValue() {
-		return name().toLowerCase();
 	}
 
 	@Override

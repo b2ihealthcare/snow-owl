@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.google.common.collect.Lists;
 
 /**
@@ -27,8 +26,11 @@ import com.google.common.collect.Lists;
  * 
  * @since 6.4
  */
-@ResourceNarrative("How much of the content of the code system - the concepts and codes it defines - are represented in a code system resource.")
-public enum CodeSystemContentMode implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/codesystem-content-mode",
+	resourceNarrative = "How much of the content of the code system - the concepts and codes it defines - are represented in a code system resource."
+)
+public enum CodeSystemContentMode implements FhirInternalCode {
 	
 	//None of the concepts defined by the code system are included in the code system resource.
 	NOT_PRESENT,
@@ -42,8 +44,6 @@ public enum CodeSystemContentMode implements FhirCodeSystem {
 	//All the concepts defined by the code system are included in the code system resource
 	COMPLETE;
 	
-	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/codesystem-content-mode";
-
 	@Override
 	public String getCodeValue() {
 		return name().toLowerCase().replaceAll("_", "-");
@@ -51,7 +51,6 @@ public enum CodeSystemContentMode implements FhirCodeSystem {
 	
 	@Override
 	public String getDisplayName() {
-		
 		String name = name().toLowerCase();
 		if (StringUtils.isSingleWord(name)) {
 			return StringUtils.capitalizeFirstLetter(name);
@@ -62,9 +61,4 @@ public enum CodeSystemContentMode implements FhirCodeSystem {
 		}
 	}
 	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
 }

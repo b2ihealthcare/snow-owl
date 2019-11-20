@@ -56,11 +56,6 @@ public abstract class SnomedFhirApiProvider extends FhirApiProvider {
 		return repositoryId;
 	}
 	
-	@Override
-	protected String getCodeSystemShortName() {
-		return SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
-	}
-	
 	public Collection<String> getSupportedURIs() {
 		return SUPPORTED_URIS;
 	}

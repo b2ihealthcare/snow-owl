@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * FHIR Narrative status code system
  * 
  * @since 6.4
  */
-@ResourceNarrative("The status of a resource narrative.")
-public enum NarrativeStatus implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/narrative-status",
+	resourceNarrative = "The status of a resource narrative."
+)
+public enum NarrativeStatus implements FhirInternalCode {
 
 	//The contents of the narrative are entirely generated from the structured data in the content.
 	GENERATED,
@@ -39,8 +40,6 @@ public enum NarrativeStatus implements FhirCodeSystem {
 	//The contents of the narrative are some equivalent of "No human-readable text provided in this case"
 	EMPTY;
 
-	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/narrative-status";
-	
 	@Override
 	public String getCodeValue() {
 		return name().toLowerCase();
@@ -49,11 +48,6 @@ public enum NarrativeStatus implements FhirCodeSystem {
 	@Override
 	public String getDisplayName() {
 		return getCodeValue();
-	}
-	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
 	}
 	
 }

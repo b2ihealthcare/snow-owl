@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 
 /**
@@ -24,7 +23,9 @@ import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
  * 
  * @since 6.4
  */
-@ResourceNarrative("A set of common concept properties for use on coded systems through out the FHIR eco-system.")
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/concept-properties"
+)
 public enum CommonConceptProperties implements IConceptProperty {
 	
 	//True if the concept is not considered active - e.g. not a valid concept any more. Property type is boolean, default value is false
@@ -46,11 +47,8 @@ public enum CommonConceptProperties implements IConceptProperty {
 	//The property type will be 'code'. The meaning of 'child' is defined by the hierarchyMeaning attribute
 	CHILD("Child", ConceptPropertyType.CODE);
 		
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/concept-properties";
-	
-	private String displayName;
-	
-	private ConceptPropertyType type;
+	private final String displayName;
+	private final ConceptPropertyType type;
 
 	private CommonConceptProperties(String displayName, ConceptPropertyType type) {
 		this.displayName = displayName;
@@ -58,10 +56,6 @@ public enum CommonConceptProperties implements IConceptProperty {
 	}
 	
 	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-	
 	public String getDisplayName() {
 		return displayName;
 	}

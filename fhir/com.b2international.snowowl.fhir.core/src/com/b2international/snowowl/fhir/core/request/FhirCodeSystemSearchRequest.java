@@ -34,6 +34,7 @@ import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.codesystems.FhirInternalCodeSystemRegistry;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -95,6 +96,15 @@ public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Ser
 				});
 		
 		// append all default FHIR codesystems
+		FhirInternalCodeSystemRegistry.INSTANCE.getCodeSystems()
+			.stream()
+			// apply ID filter here
+			.filter(cs -> componentIds() == null /*no filter*/ || componentIds().contains(cs.getId().getIdValue()))
+			.forEach(cs -> {
+				String resourceUrl = String.format("%s/%s", uri, cs.getId().getIdValue());
+				Entry entry = new Entry(new Uri(resourceUrl), cs);
+				bundle.addEntry(entry);
+			});
 		
 		
 		return bundle.build();

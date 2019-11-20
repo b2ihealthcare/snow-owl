@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.fhir.core.codesystems;
-
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
 
 /**
  * FHIR Issue type codesystem
@@ -45,8 +43,11 @@ import com.b2international.snowowl.fhir.core.ResourceNarrative;
  * 
  * @since 6.4
  */
-@ResourceNarrative("A code that describes the type of issue.")
-public enum IssueType implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/issue-type",
+	resourceNarrative = "A code that describes the type of issue."
+)
+public enum IssueType implements FhirInternalCode {
 	
 	/**
 	 * Content invalid against the specification or a profile.
@@ -105,8 +106,6 @@ public enum IssueType implements FhirCodeSystem {
 	THROTTLED("Throttled"),
 	INFORMATIONAL("Informational Note");
 	
-	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-type";
-	
 	private String displayName;
 	
 	private IssueType(String displayName) {
@@ -114,17 +113,8 @@ public enum IssueType implements FhirCodeSystem {
 	}
 	
 	@Override
-	public String getCodeValue() {
-		return name().toLowerCase();
-	}
-	
-	@Override
 	public String getDisplayName() {
 		return displayName;
 	}
 	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
 }

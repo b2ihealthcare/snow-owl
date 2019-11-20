@@ -140,12 +140,12 @@ public class Issue {
 			
 			String outcomeCodeString = operationOutcomeCode.getDisplayName();
 			if (outcomeCodeString.contains("%s")) {
-				String.format(outcomeCodeString, Arrays.toString(locations.toArray()));
+				outcomeCodeString = String.format(outcomeCodeString, Arrays.toString(locations.toArray()));
 			}
 			
 			Coding coding = Coding.builder()
 				.code(operationOutcomeCode.getCodeValue())
-				.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+				.system(operationOutcomeCode.getCodeSystem().uri())
 				.display(outcomeCodeString).build();
 			
 			CodeableConcept codeableConcept = CodeableConcept.builder()
@@ -163,7 +163,7 @@ public class Issue {
 			
 			Coding coding = Coding.builder()
 					.code(operationOutcomeCode.getCodeValue())
-					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+					.system(operationOutcomeCode.getCodeSystem().uri())
 					.display(substitutedDisplayName)
 					.build();
 			
@@ -180,7 +180,7 @@ public class Issue {
 			
 			Coding coding = Coding.builder()
 					.code(operationOutcomeCode.getCodeValue())
-					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+					.system(operationOutcomeCode.getCodeSystem().uri())
 					.display(display)
 					.build();
 			

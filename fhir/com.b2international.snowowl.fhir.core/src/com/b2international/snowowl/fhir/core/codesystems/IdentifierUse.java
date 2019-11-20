@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * usual	 The identifier recommended for display and use in real-world interactions.
  * official  The identifier considered to be most trusted for the identification of this item.
@@ -27,28 +24,15 @@ import com.b2international.snowowl.fhir.core.ResourceNarrative;
  * @see <a href="https://www.hl7.org/fhir/codesystem-identifier-use.html">FHIR:CodeSystem:Terminology</a>
  * @since 6.4
  */
-@ResourceNarrative("Identifies the purpose for this identifier, if known.")
-public enum IdentifierUse implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/identifier-use",
+	resourceNarrative = "Identifies the purpose for this identifier, if known."
+)
+public enum IdentifierUse implements FhirInternalCode {
 	
 	USUAL,
 	OFFICIAL,
 	TEMP,
 	SECONDARY;
 	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/identifier-use";
-
-	public String getDisplayName() {
-		return StringUtils.capitalizeFirstLetter(name());
-	}
-	
-	@Override
-	public String getCodeValue() {
-		return name().toLowerCase();
-	}
-	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-
 }

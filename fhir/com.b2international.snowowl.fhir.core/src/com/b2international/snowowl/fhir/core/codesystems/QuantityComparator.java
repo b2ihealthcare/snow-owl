@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,24 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.ResourceNarrative;
-
 /**
  * FHIR property type code system
  * 
  * @since 6.4
  */
-@ResourceNarrative("How the Quantity should be understood and represented.")
-public enum QuantityComparator implements FhirCodeSystem {
+@FhirInternalCodeSystem(
+	uri = "http://hl7.org/fhir/quantity-comparator",
+	resourceNarrative = "How the Quantity should be understood and represented."
+)
+public enum QuantityComparator implements FhirInternalCode {
 	
 	LESS_THAN("<", "Less than"),
 	LESS_OR_EQUAL_TO("<=", "Less or Equal to"), 
 	GREATER_OR_EQUAL_TO(">=", "Greater or Equal to"), 
 	GREATER_THAN(">", "Greater than");
 	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/quantity-comparator";
-	
-	private String code;
-	private String displayName;
-
+	private final String code;
+	private final String displayName;
 
 	private QuantityComparator(String code, String displayName) {
 		this.code = code;
@@ -49,11 +47,6 @@ public enum QuantityComparator implements FhirCodeSystem {
 	@Override
 	public String getDisplayName() {
 		return displayName;
-	}
-	
-	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
 	}
 
 }
