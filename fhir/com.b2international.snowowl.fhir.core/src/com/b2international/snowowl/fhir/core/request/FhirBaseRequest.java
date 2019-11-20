@@ -15,26 +15,27 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import java.util.List;
+
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 7.2
+ * @param <C>
+ * @param <R>
  */
-public final class FhirLookupRequestBuilder 
-		extends FhirBaseRequestBuilder<FhirLookupRequestBuilder, FhirCodeSystemContext, LookupResult>
-		implements FhirCodeSystemRequestBuilder<LookupResult> {
+public abstract class FhirBaseRequest<C extends ServiceProvider, R> implements Request<C, R> {
 
-	private LookupRequest lookup;
+	private List<ExtendedLocale> locales;
+
+	void setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
+	}
 	
-	public FhirLookupRequestBuilder setLookup(LookupRequest lookup) {
-		this.lookup = lookup;
-		return getSelf();
+	protected final List<ExtendedLocale> locales() {
+		return locales;
 	}
-
-	@Override
-	protected FhirBaseRequest<FhirCodeSystemContext, LookupResult> createFhirRequest() {
-		return new FhirLookupRequest(lookup);
-	}
-
+	
 }

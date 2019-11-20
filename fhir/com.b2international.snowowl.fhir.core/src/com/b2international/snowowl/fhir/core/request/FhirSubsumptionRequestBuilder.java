@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 
@@ -24,7 +22,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
  * @since 7.2
  */
 public final class FhirSubsumptionRequestBuilder 
-		extends BaseRequestBuilder<FhirSubsumptionRequestBuilder, FhirCodeSystemContext, SubsumptionResult> 
+		extends FhirBaseRequestBuilder<FhirSubsumptionRequestBuilder, FhirCodeSystemContext, SubsumptionResult> 
 		implements FhirCodeSystemRequestBuilder<SubsumptionResult> {
 
 	private SubsumptionRequest request;
@@ -35,7 +33,7 @@ public final class FhirSubsumptionRequestBuilder
 	}
 	
 	@Override
-	protected Request<FhirCodeSystemContext, SubsumptionResult> doBuild() {
+	protected FhirBaseRequest<FhirCodeSystemContext, SubsumptionResult> createFhirRequest() {
 		return new FhirSubsumptionRequest(request);
 	}
 

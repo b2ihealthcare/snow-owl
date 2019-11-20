@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.core.request;
 
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
@@ -26,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 /**
  * @since 7.2
  */
-final class FhirLookupRequest implements Request<FhirCodeSystemContext, LookupResult> {
+final class FhirLookupRequest extends FhirBaseRequest<FhirCodeSystemContext, LookupResult> {
 
 	@NotNull
 	@JsonUnwrapped

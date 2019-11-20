@@ -132,9 +132,10 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
 		
 		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
-		ConceptMap conceptMap = IConceptMapApiProvider.Registry
-			.getConceptMapProvider(getBus(), locales, logicalId) 
-			.getConceptMap(logicalId);
+		ConceptMap conceptMap = null; 
+//			IConceptMapApiProvider.Registry
+//			.getConceptMapProvider(getBus(), locales, logicalId) 
+//			.getConceptMap(logicalId);
 
 		return applyResponseContentFilter(conceptMap, requestParameters);
 	}
@@ -300,8 +301,8 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	private TranslateResult doTranslate(String conceptMapId, TranslateRequest translateRequest) {
 		
 		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
-		IConceptMapApiProvider conceptMapApiProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(getBus(), locales, logicalId);
-		TranslateResult translateResult = conceptMapApiProvider.translate(logicalId, translateRequest);
+//		IConceptMapApiProvider conceptMapApiProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(getBus(), locales, logicalId);
+		TranslateResult translateResult = null;//conceptMapApiProvider.translate(logicalId, translateRequest);
 		return translateResult;
 	}
 	

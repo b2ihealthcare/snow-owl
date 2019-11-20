@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,49 +65,40 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("CodeSystem")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
-public class CodeSystem extends MetadataResource {
+public final class CodeSystem extends MetadataResource {
 
 	@Summary
-	@JsonProperty
 	private Boolean caseSensitive;
 	
 	@Summary
 	@Valid
-	@JsonProperty
 	private Uri valueSet;
 	
 	@Summary
-	@JsonProperty
 	private Code hierarchyMeaning;
 	
 	@Summary
-	@JsonProperty
 	private Boolean compositional;
 	
 	@Summary
-	@JsonProperty
 	private Boolean versionNeeded;
 	
 	@Mandatory
 	@Valid
 	@NotNull
-	@JsonProperty
 	private Code content;
 	
 	@Summary
 	@Valid
-	@JsonProperty
 	private Uri supplements;
 
 	//not primitive int to avoid serialization when the default value is 0
 	@Summary
 	@Min(value = 0, message = "Count must be equal to or larger than 0")
-	@JsonProperty
 	private Integer count;
 
 	@Summary
 	@Valid
-	@JsonProperty("filter")
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Filter> filters;
 
@@ -116,7 +107,6 @@ public class CodeSystem extends MetadataResource {
 	 */
 	@Summary
 	@Valid
-	@JsonProperty("property")
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<SupportedConceptProperty> properties;
 
@@ -124,7 +114,6 @@ public class CodeSystem extends MetadataResource {
 	 * Concepts in the code system, up to the server if they are returned
 	 */
 	@Valid
-	@JsonProperty("concept")
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Concept> concepts;
 
@@ -153,6 +142,53 @@ public class CodeSystem extends MetadataResource {
 		this.filters = filters;
 		this.properties = properties;
 		this.concepts = concepts;
+	}
+	
+	public Boolean getCaseSensitive() {
+		return caseSensitive;
+	}
+	
+	public Uri getValueSet() {
+		return valueSet;
+	}
+	
+	public Code getHierarchyMeaning() {
+		return hierarchyMeaning;
+	}
+	
+	public Boolean getCompositional() {
+		return compositional;
+	}
+	
+	public Boolean getVersionNeeded() {
+		return versionNeeded;
+	}
+	
+	public Code getContent() {
+		return content;
+	}
+	
+	public Uri getSupplements() {
+		return supplements;
+	}
+	
+	public Integer getCount() {
+		return count;
+	}
+	
+	@JsonProperty("filter")
+	public Collection<Filter> getFilters() {
+		return filters;
+	}
+	
+	@JsonProperty("property")
+	public Collection<SupportedConceptProperty> getProperties() {
+		return properties;
+	}
+	
+	@JsonProperty("concept")
+	public Collection<Concept> getConcepts() {
+		return concepts;
 	}
 
 	public static Builder builder() {

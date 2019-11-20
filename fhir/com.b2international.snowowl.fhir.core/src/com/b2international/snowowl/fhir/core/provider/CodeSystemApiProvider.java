@@ -64,18 +64,10 @@ import com.google.common.collect.Lists;
  */
 public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
 	
-	private final String repositoryId;
-	
 	private Collection<IConceptProperty> supportedProperties;
 
-	public CodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales, String repositoryId) {
+	public CodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
 		super(bus, locales);
-		this.repositoryId = repositoryId;
-	}
-	
-	@Override
-	protected String getRepositoryId() {
-		return repositoryId;
 	}
 	
 	/**
@@ -161,7 +153,8 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
-			.url(getFhirUri(codeSystemEntry, codeSystemVersion))
+			.url((String) null)
+//			getFhirUri(codeSystemEntry, codeSystemVersion)
 			.content(getCodeSystemContentMode())
 			.count(getCount(codeSystemVersion));
 		
@@ -214,66 +207,66 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 
 	protected abstract int getCount(CodeSystemVersionEntry codeSystemVersion);
 
-	@Override
-	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
-		
-		final String version = getVersion(subsumptionRequest);
-		final String branchPath = getBranchPath(version);
-		
-		String codeA = null;
-		String codeB = null;
-		if (subsumptionRequest.getCodeA() != null && subsumptionRequest.getCodeB() != null) {
-			codeA = subsumptionRequest.getCodeA();
-			codeB = subsumptionRequest.getCodeB();
-		} else {
-			codeA = subsumptionRequest.getCodingA().getCodeValue();
-			codeB = subsumptionRequest.getCodingB().getCodeValue();
-		}
-		
-		final Set<String> ancestorsA = fetchAncestors(branchPath, codeA);
-		final Set<String> ancestorsB = fetchAncestors(branchPath, codeB);
-		
-		if (codeA.equals(codeB)) {
-			return SubsumptionResult.equivalent();
-		} else if (ancestorsA.contains(codeB)) {
-			return SubsumptionResult.subsumedBy();
-		} else if (ancestorsB.contains(codeA)) {
-			return SubsumptionResult.subsumes();
-		} else {
-			return SubsumptionResult.notSubsumed();
-		}
-	}
+//	@Override
+//	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
+//		
+//		final String version = getVersion(subsumptionRequest);
+//		final String branchPath = getBranchPath(version);
+//		
+//		String codeA = null;
+//		String codeB = null;
+//		if (subsumptionRequest.getCodeA() != null && subsumptionRequest.getCodeB() != null) {
+//			codeA = subsumptionRequest.getCodeA();
+//			codeB = subsumptionRequest.getCodeB();
+//		} else {
+//			codeA = subsumptionRequest.getCodingA().getCodeValue();
+//			codeB = subsumptionRequest.getCodingB().getCodeValue();
+//		}
+//		
+//		final Set<String> ancestorsA = fetchAncestors(branchPath, codeA);
+//		final Set<String> ancestorsB = fetchAncestors(branchPath, codeB);
+//		
+//		if (codeA.equals(codeB)) {
+//			return SubsumptionResult.equivalent();
+//		} else if (ancestorsA.contains(codeB)) {
+//			return SubsumptionResult.subsumedBy();
+//		} else if (ancestorsB.contains(codeA)) {
+//			return SubsumptionResult.subsumes();
+//		} else {
+//			return SubsumptionResult.notSubsumed();
+//		}
+//	}
 	
-	/**
-	 * Returns the version information from the request
-	 * @param subsumptionRequest 
-	 * @return version string
-	 */
-	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-		
-		String version = subsumptionRequest.getVersion();
-
-		//get the latest version
-		if (version == null) {
-			Optional<CodeSystemVersionEntry> optionalVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-				.build(getRepositoryId())
-				.execute(getBus())
-				.getSync()
-				.first();
-				
-			if (optionalVersion.isPresent()) {
-				return optionalVersion.get().getVersionId();
-			} else {
-				//never been versioned
-				return null;
-			}
-		}
-		
-		return version;
-	}
+//	/**
+//	 * Returns the version information from the request
+//	 * @param subsumptionRequest 
+//	 * @return version string
+//	 */
+//	protected String getVersion(SubsumptionRequest subsumptionRequest) {
+//		
+//		String version = subsumptionRequest.getVersion();
+//
+//		//get the latest version
+//		if (version == null) {
+//			Optional<CodeSystemVersionEntry> optionalVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+//				.one()
+//				.filterByCodeSystemShortName(getCodeSystemShortName())
+//				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+//				.build(getRepositoryId())
+//				.execute(getBus())
+//				.getSync()
+//				.first();
+//				
+//			if (optionalVersion.isPresent()) {
+//				return optionalVersion.get().getVersionId();
+//			} else {
+//				//never been versioned
+//				return null;
+//			}
+//		}
+//		
+//		return version;
+//	}
 	
 	/**
 	 * Builds a lookup result property for the given @see {@link IConceptProperty} based on the supplier's value

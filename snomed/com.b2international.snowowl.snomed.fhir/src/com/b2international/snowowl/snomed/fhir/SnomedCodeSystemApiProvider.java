@@ -84,7 +84,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	);
 	
 	public SnomedCodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
-		super(bus, locales, SnomedDatastoreActivator.REPOSITORY_UUID);
+		super(bus, locales);
 	}
 	
 	@Override
@@ -92,36 +92,36 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
 	}
 	
-	@Override
-	public LookupResult lookup(LookupRequest lookup) {
-		
-		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem(), "CodeSystem$lookup.system");
-		
-		validateVersion(snomedUri, lookup.getVersion());
-		
-		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
-		String branchPath = codeSystemVersion.getPath();
-		String versionString = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
-		
-		validateRequestedProperties(lookup);
-		
-		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
-		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
-		
-		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
-		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
-		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
-		
-		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
-			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
-		
-		SnomedConcept concept = req.build(getRepositoryId(), branchPath)
-			.execute(getBus())
-			.getSync();
-		
-		return mapToLookupResult(concept, lookup, versionString);
-	}
+//	@Override
+//	public LookupResult lookup(LookupRequest lookup) {
+//		
+//		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem(), "CodeSystem$lookup.system");
+//		
+//		validateVersion(snomedUri, lookup.getVersion());
+//		
+//		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+//		String branchPath = codeSystemVersion.getPath();
+//		String versionString = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
+//		
+//		validateRequestedProperties(lookup);
+//		
+//		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
+//		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
+//		
+//		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
+//		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
+//		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
+//		
+//		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
+//			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
+//			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
+//		
+//		SnomedConcept concept = req.build(getRepositoryId(), branchPath)
+//			.execute(getBus())
+//			.getSync();
+//		
+//		return mapToLookupResult(concept, lookup, versionString);
+//	}
 	
 	@Override
 	protected Collection<IConceptProperty> getSupportedConceptProperties() {
@@ -140,21 +140,21 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		properties.add(CommonConceptProperties.PARENT); 
 		
 		// fetch available relationship types and register them as supported concept property
-		SnomedRequests.prepareSearchConcept()
-			.all()
-			.filterByActive(true)
-			.filterByAncestor(Concepts.CONCEPT_MODEL_ATTRIBUTE)
-			.setExpand("pt()")
-			.setLocales(locales)
-			.build(getRepositoryId(), Branch.MAIN_PATH)
-			.execute(getBus())
-			.getSync()
-			.stream()
-			.map(type -> {
-				final String displayName = getPreferredTermOrId(type);
-				return IConceptProperty.Dynamic.valueCode(URI_BASE + "/id", displayName, type.getId());
-			})
-			.forEach(properties::add);
+//		SnomedRequests.prepareSearchConcept()
+//			.all()
+//			.filterByActive(true)
+//			.filterByAncestor(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+//			.setExpand("pt()")
+//			.setLocales(locales)
+//			.build(getRepositoryId(), Branch.MAIN_PATH)
+//			.execute(getBus())
+//			.getSync()
+//			.stream()
+//			.map(type -> {
+//				final String displayName = getPreferredTermOrId(type);
+//				return IConceptProperty.Dynamic.valueCode(URI_BASE + "/id", displayName, type.getId());
+//			})
+//			.forEach(properties::add);
 		
 		return properties.build();
 	}
@@ -193,9 +193,10 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	
 	@Override
 	protected int getCount(CodeSystemVersionEntry codeSystemVersion) {
-		return SnomedRequests.prepareSearchConcept().setLimit(0)
-			.build(getRepositoryId(), codeSystemVersion.getPath())
-			.execute(getBus()).getSync().getTotal();
+		return 0; 
+//		SnomedRequests.prepareSearchConcept().setLimit(0)
+//			.build(getRepositoryId(), codeSystemVersion.getPath())
+//			.execute(getBus()).getSync().getTotal();
 	}
 	
 	@Override
@@ -302,7 +303,8 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			.collect(Collectors.toSet());
 		
 		
-		String branchPath = getBranchPath(lookupRequest.getVersion());
+//		String branchPath = getBranchPath(lookupRequest.getVersion());
+		String branchPath = Branch.MAIN_PATH;
 		
 		if (!relationshipTypeIds.isEmpty()) {
 			SnomedRequests.prepareSearchRelationship()

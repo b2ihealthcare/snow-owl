@@ -44,16 +44,8 @@ public abstract class SnomedFhirApiProvider extends FhirApiProvider {
 			SnomedUri.SNOMED_BASE_URI_STRING
 		);
 	
-	protected String repositoryId;
-	
 	public SnomedFhirApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
 		super(bus, locales);
-		this.repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID;
-	}
-	
-	@Override
-	protected String getRepositoryId() {
-		return repositoryId;
 	}
 	
 	public Collection<String> getSupportedURIs() {

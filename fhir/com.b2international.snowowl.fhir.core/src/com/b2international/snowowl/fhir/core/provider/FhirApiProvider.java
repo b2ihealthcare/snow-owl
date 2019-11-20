@@ -57,84 +57,84 @@ public abstract class FhirApiProvider {
 		return locales;
 	}
 	
-	/**
-	 * @param version - the version to target 
-	 * @return an absolute branch path to use in terminology API requests
-	 */
-	protected final String getBranchPath(String version) {
-		
-		if (version != null) {
-			return Branch.get(Branch.MAIN_PATH, version);
-		} else {
-			
-			//get the last version for now
-			Optional<CodeSystemVersionEntry> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-				.build(getRepositoryId())
-				.execute(getBus())
-				.getSync()
-				.first();
-			
-			if (latestVersion.isPresent()) {
-				return latestVersion.get().getPath();
-			}
-			
-			//no version supplied, no version found in the repository, we should probably throw an exception, but for now returning MAIN
-			return Branch.MAIN_PATH;
-		}
-	}
+//	/**
+//	 * @param version - the version to target 
+//	 * @return an absolute branch path to use in terminology API requests
+//	 */
+//	protected final String getBranchPath(String version) {
+//		
+//		if (version != null) {
+//			return Branch.get(Branch.MAIN_PATH, version);
+//		} else {
+//			
+//			//get the last version for now
+//			Optional<CodeSystemVersionEntry> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+//				.one()
+//				.filterByCodeSystemShortName(getCodeSystemShortName())
+//				.sortBy(SearchResourceRequest.SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+//				.build(getRepositoryId())
+//				.execute(getBus())
+//				.getSync()
+//				.first();
+//			
+//			if (latestVersion.isPresent()) {
+//				return latestVersion.get().getPath();
+//			}
+//			
+//			//no version supplied, no version found in the repository, we should probably throw an exception, but for now returning MAIN
+//			return Branch.MAIN_PATH;
+//		}
+//	}
 	
-	/**
-	 * Returns the code system version for the logical id
-	 * @param logicalId
-	 * @return
-	 */
-	protected CodeSystemVersionEntry findCodeSystemVersion(LogicalId logicalId) {
-		
-		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.one()
-			.filterByBranchPath(logicalId.getBranchPath())
-			.build(getRepositoryId())
-			.execute(getBus())
-			.getSync()
-			.first();
-			
-		return codeSystemOptional.orElseThrow(() -> 
-			new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
-	}
+//	/**
+//	 * Returns the code system version for the logical id
+//	 * @param logicalId
+//	 * @return
+//	 */
+//	protected CodeSystemVersionEntry findCodeSystemVersion(LogicalId logicalId) {
+//		
+//		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
+//			.one()
+//			.filterByBranchPath(logicalId.getBranchPath())
+//			.build(getRepositoryId())
+//			.execute(getBus())
+//			.getSync()
+//			.first();
+//			
+//		return codeSystemOptional.orElseThrow(() -> 
+//			new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
+//	}
 	
-	/**
-	 * Returns a code system version that matches the provided effective date
-	 * @param versionEffectiveDate
-	 * @return code system version with the effective date
-	 */
-	protected CodeSystemVersionEntry getCodeSystemVersion(String versionEffectiveDate) {
-		
-		if (versionEffectiveDate == null) {
-			//get the last version
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-				.build(getRepositoryId())
-				.execute(getBus())
-				.getSync()
-				.first()
-				.orElseThrow(() -> new BadRequestException(String.format("Could not find any versions for %s with effective date '%s'", getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
-		} else {
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByEffectiveDate(EffectiveTimes.parse(versionEffectiveDate, DateFormats.SHORT))
-				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.build(getRepositoryId())
-				.execute(getBus())
-				.getSync()
-				.first()
-				.orElseThrow(() -> new BadRequestException(String.format("Could not find code system for %s version '%s'", getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
-		}
-	}
+//	/**
+//	 * Returns a code system version that matches the provided effective date
+//	 * @param versionEffectiveDate
+//	 * @return code system version with the effective date
+//	 */
+//	protected CodeSystemVersionEntry getCodeSystemVersion(String versionEffectiveDate) {
+//		
+//		if (versionEffectiveDate == null) {
+//			//get the last version
+//			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+//				.one()
+//				.filterByCodeSystemShortName(getCodeSystemShortName())
+//				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+//				.build(getRepositoryId())
+//				.execute(getBus())
+//				.getSync()
+//				.first()
+//				.orElseThrow(() -> new BadRequestException(String.format("Could not find any versions for %s with effective date '%s'", getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
+//		} else {
+//			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+//				.one()
+//				.filterByEffectiveDate(EffectiveTimes.parse(versionEffectiveDate, DateFormats.SHORT))
+//				.filterByCodeSystemShortName(getCodeSystemShortName())
+//				.build(getRepositoryId())
+//				.execute(getBus())
+//				.getSync()
+//				.first()
+//				.orElseThrow(() -> new BadRequestException(String.format("Could not find code system for %s version '%s'", getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
+//		}
+//	}
 	
 	protected List<CodeSystemVersionEntry> collectCodeSystemVersions(String repositoryId) {
 		

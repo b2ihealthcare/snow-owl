@@ -66,11 +66,6 @@ public enum CoreSnomedConceptProperties implements IConceptProperty {
 	}
 
 	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
-	}
-	
-	@Override
 	public ConceptPropertyType getConceptPropertyType() {
 		return conceptPropertyType;
 	}
@@ -90,7 +85,7 @@ public enum CoreSnomedConceptProperties implements IConceptProperty {
 	//for now we will just concat the URI and the value
 	@Override
 	public Uri getUri() {
-		return new Uri(String.format("%s/field/Concept.%s", getCodeSystemUri(), getCodeValue()));
+		return new Uri(String.format("%s/field/Concept.%s", CODE_SYSTEM_URI, getCodeValue()));
 	}
 
 

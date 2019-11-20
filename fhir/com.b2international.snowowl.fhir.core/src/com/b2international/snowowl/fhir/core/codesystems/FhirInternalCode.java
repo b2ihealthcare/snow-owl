@@ -67,7 +67,7 @@ public interface FhirInternalCode {
 	 */
 	@JsonIgnore
 	default FhirInternalCodeSystem getCodeSystem() {
-		return checkNotNull(getClass().getAnnotation(FhirInternalCodeSystem.class), "Type must be annotated with " + FhirInternalCodeSystem.class.getSimpleName() + " in order to be designated as internal code system.");
+		return checkNotNull(getClass().getAnnotation(FhirInternalCodeSystem.class), "Type "+ getClass().getSimpleName() +" must be annotated with " + FhirInternalCodeSystem.class.getSimpleName() + " in order to be designated as internal code system.");
 	}
 
 	@JsonIgnore

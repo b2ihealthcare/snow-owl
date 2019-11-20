@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.core.request;
 
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -25,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 /**
  * @since 7.2
  */
-final class FhirSubsumptionRequest implements Request<FhirCodeSystemContext, SubsumptionResult> {
+final class FhirSubsumptionRequest extends FhirBaseRequest<FhirCodeSystemContext, SubsumptionResult> {
 
 	@NotNull
 	@JsonUnwrapped

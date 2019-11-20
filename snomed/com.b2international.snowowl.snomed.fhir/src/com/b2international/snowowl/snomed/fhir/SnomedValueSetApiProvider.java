@@ -76,15 +76,15 @@ import com.google.common.collect.Sets;
  */
 public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider implements IValueSetApiProvider {
 
-	@Component
-	public static final class Factory implements IValueSetApiProvider.Factory {
-		
-		@Override
-		public IValueSetApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
-			return new SnomedValueSetApiProvider(bus, locales);
-		}
-		
-	}
+//	@Component
+//	public static final class Factory implements IValueSetApiProvider.Factory {
+//		
+//		@Override
+//		public IValueSetApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
+//			return new SnomedValueSetApiProvider(bus, locales);
+//		}
+//		
+//	}
 	
 	public SnomedValueSetApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
 		super(bus, locales);

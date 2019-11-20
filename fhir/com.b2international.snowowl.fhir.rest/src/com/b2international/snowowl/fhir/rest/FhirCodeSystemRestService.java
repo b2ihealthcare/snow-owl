@@ -91,25 +91,21 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	})
 	@GetMapping
 	public Promise<Bundle> getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
-		// TODO move th
 		Multimap<String, String> multiMap = HashMultimap.create();
 		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
 		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
 		
 		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemRestService.class).build().toString();
-		final FhirCodeSystemSearchRequestBuilder req = FhirRequests.prepareSearchCodeSystem();
-		
-		if (requestParameters.getId() != null) {
-			
-		}
-		
-		return req
+		return FhirRequests.prepareSearchCodeSystem()
+				.filterById(requestParameters.getId())
 				.setUri(uri)
 				.setLocales(locales)
 				.buildAsync()
-				.execute(getBus());
-//		int total = 0;
-//		applyResponseContentFilter(codeSystem, requestParameters);
+				.execute(getBus())
+				.then(bundle -> {
+					applyResponseContentFilter(bundle, requestParameters);
+					return bundle;
+				});
 	}
 	
 	/**

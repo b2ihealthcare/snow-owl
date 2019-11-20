@@ -15,12 +15,21 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import com.b2international.commons.extension.Component;
+
 /**
  * Internal FHIR code system
  * 
  * @see <a href="http://hl7.org/fhir/terminologies-systems.html">FHIR:Terminology:Code Systems</a>
  * @since 6.4
  */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface FhirInternalCodeSystem {
 	
 	/**
@@ -36,6 +45,6 @@ public @interface FhirInternalCodeSystem {
 	/**
 	 * @return the version tag of the code system
 	 */
-	String version() default "3.0.1";
+	String version() default "4.0.1";
 
 }

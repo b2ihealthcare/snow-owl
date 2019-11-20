@@ -36,7 +36,7 @@ public enum FhirInternalCodeSystemRegistry {
 	private final List<CodeSystem> codeSystems;
 	
 	private FhirInternalCodeSystemRegistry() {
-		this.codeSystems = ClassPathScanner.INSTANCE.getComponentsClassesByInterface(FhirInternalCode.class)
+		this.codeSystems = ClassPathScanner.INSTANCE.getClassesByInterface(FhirInternalCode.class)
 				.stream()
 				.filter(c -> c.isEnum() && c.isAnnotationPresent(FhirInternalCodeSystem.class))
 				.map(c -> buildCodeSystem((Class) c, c.getAnnotation(FhirInternalCodeSystem.class)))
