@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.core.request;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +40,9 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 7.2
@@ -141,11 +142,22 @@ public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Ser
 
 	private List<CodeSystem> toFhirCodeSystem(ServiceProvider context, CodeSystems codeSystems, CodeSystemVersions versions) {
 		final IEventBus bus = context.service(IEventBus.class);
-		final Map<String, com.b2international.snowowl.datastore.CodeSystem> codeSystemsById = Maps.uniqueIndex(codeSystems, com.b2international.snowowl.datastore.CodeSystem::getShortName);
-		return versions.stream().map(version -> {
-			final com.b2international.snowowl.datastore.CodeSystem codeSystem = codeSystemsById.get(version.getCodeSystemShortName());
-			return ICodeSystemApiProvider.Registry.getProvider(bus, locales(), codeSystem.getToolingId()).createFhirCodeSystem(codeSystem, version);
-		}).collect(Collectors.toList());
+		final Multimap<String, CodeSystemVersionEntry> versionsByCodeSystem = Multimaps.index(versions, CodeSystemVersionEntry::getCodeSystemShortName);
+		return codeSystems.stream()
+				.map(cs -> {
+					// generate MAIN version
+					// generate one FHIR CodeSystem for each version present in an internal code system
+					ICodeSystemApiProvider provider = ICodeSystemApiProvider.Registry.getProvider(bus, locales(), cs.getToolingId());
+					final List<CodeSystem> fhirCodeSystems = Lists.newArrayList();
+					fhirCodeSystems.add(provider.createFhirCodeSystem(cs, null));
+					versionsByCodeSystem.get(cs.getShortName()).forEach(version -> {
+						fhirCodeSystems.add(provider.createFhirCodeSystem(cs, version));
+					});
+					return fhirCodeSystems;
+				})
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
+		
 	}
 
 }
