@@ -19,6 +19,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,7 +50,7 @@ public final class FhirCodeSystemGetRequest implements Request<ServiceProvider, 
 			.findFirst()
 			.map(Entry::getResource)
 			.map(CodeSystem.class::cast)
-			.orElseThrow(() -> new RuntimeException());
+			.orElseThrow(() -> FhirException.createFhirError(String.format("No code system version found for code system %s", logicalId), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem"));
 	}
 
 }

@@ -20,12 +20,9 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.text.ParseException;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
-import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,11 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.fhir.core.LogicalId;
-import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
@@ -52,7 +46,6 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.request.FhirCodeSystemSearchRequestBuilder;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
@@ -168,7 +161,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
-	public Parameters.Fhir lookup(
+	public Promise<Parameters.Fhir> lookup(
 		
 		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
@@ -179,28 +172,28 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
 		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required = false) Set<String> properties) {
 		
-		Builder builder = LookupRequest.builder()
+		Builder req = LookupRequest.builder()
 			.code(code)
 			.system(system);
 		
 		if (version.isPresent()) {
-			builder.version(version.get());
+			req.version(version.get());
 		}
 		
 		if (date.isPresent()) {
-			builder.date(date.get());
+			req.date(date.get());
 		}
 
 		if (displayLanguage.isPresent()) {
-			builder.displayLanguage(displayLanguage.get());
+			req.displayLanguage(displayLanguage.get());
 		}
 
 		if (properties != null && !properties.isEmpty()) {
-			builder.properties(properties);
+			req.properties(properties);
 		}
 		
 		//all good, now do something
-		return toResponse(lookup(builder.build()));
+		return lookup(req.build()).then(this::toResponse);
 	}
 	
 	/**
@@ -215,14 +208,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
-	public Parameters.Fhir lookup(
+	public Promise<Parameters.Fhir> lookup(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody Parameters.Fhir in) {
-		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
-		
-		LookupResult result = lookup(req);
-		return toResponse(result);
+		return lookup(req).then(this::toResponse);
 	}
 
 	/*
@@ -237,7 +227,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$subsumes", method=RequestMethod.GET)
-	public Parameters.Fhir subsumes(
+	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
 			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
@@ -252,10 +242,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 				.version(version)
 				.build();
 		
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, req.getSystem());
-		final SubsumptionResult result = codeSystemProvider.subsumes(req);
-		
-		return toResponse(result);
+		return req.execute(getBus()).then(this::toResponse);
 	}
 	
 	/*
@@ -270,7 +257,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.GET)
-	public Parameters.Fhir subsumes(
+	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
@@ -286,10 +273,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			.version(version)
 			.build();
 		
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, req.getSystem());
-		final SubsumptionResult result = codeSystemProvider.subsumes(req);
-		
-		return toResponse(result);
+		return req.execute(getBus()).then(this::toResponse);
 	}
 	
 	/*
@@ -302,17 +286,12 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$subsumes", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
-	public Parameters.Fhir subsumes(
+	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody Parameters.Fhir in) {
-		
-		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
-		
-		validateSubsumptionRequest(request);
-		
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, request.getSystem());
-		SubsumptionResult result = codeSystemProvider.subsumes(request);
-		return toResponse(result);
+		SubsumptionRequest req = toRequest(in, SubsumptionRequest.class);
+		validateSubsumptionRequest(req);
+		return req.execute(getBus()).then(this::toResponse);
 	}
 	
 	/*
@@ -325,16 +304,13 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
-	public Parameters.Fhir subsumes(
+	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(name = "body", value = "The lookup request parameters") @RequestBody Parameters.Fhir in) {
 		
-		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
-		
-		validateSubsumptionRequest(request);
-		
-		SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, request.getSystem()).subsumes(request);
-		return toResponse(result);
+		SubsumptionRequest req = toRequest(in, SubsumptionRequest.class);
+		validateSubsumptionRequest(req);
+		return req.execute(getBus()).then(this::toResponse);
 	}
 	
 	@ApiOperation(
@@ -346,19 +322,14 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		return "Ping!";
 	}
 	
-//	private CodeSystem getCodeSystemById(String codeSystemId) {
-//		LogicalId logicalId = LogicalId.fromIdString(codeSystemId);
-//		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, logicalId);
-//		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(logicalId);
-//		return codeSystem;
-//	}
-	
 	/*
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
-	private LookupResult lookup(LookupRequest lookupRequest) {
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(getBus(), locales, lookupRequest.getSystem());
-		return codeSystemProvider.lookup(lookupRequest);
+	private Promise<LookupResult> lookup(LookupRequest lookupRequest) {
+		return FhirRequests.prepareLookup()
+			.setLookup(lookupRequest)
+			.build(lookupRequest.getSystem())
+			.execute(getBus());
 	}
 	
 	private void validateSubsumptionRequest(String codeA, String codeB, String system, String version) {
@@ -367,7 +338,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	
 	private void validateSubsumptionRequest(SubsumptionRequest request) {
 		validateSubsumptionRequest(null, request);
-		
 	}
 	
 	private void validateSubsumptionRequest(String codeSystemId, SubsumptionRequest request) {

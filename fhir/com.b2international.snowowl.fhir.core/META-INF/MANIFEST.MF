@@ -27,6 +27,7 @@ Require-Bundle: com.b2international.snowowl.datastore;visibility:=reexport,
  io.swagger.annotations;bundle-version="1.5.14"
 Bundle-ClassPath: .
 Import-Package: org.osgi.framework;version="1.7.0",
- org.osgi.framework.wiring;version="1.1.0"
+ org.osgi.framework.wiring;version="1.1.0",
+ org.slf4j;version="1.7.25"
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: com.b2international.snowowl.fhir.core.FhirCoreActivator

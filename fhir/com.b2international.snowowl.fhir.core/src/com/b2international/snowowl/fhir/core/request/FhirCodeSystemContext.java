@@ -15,27 +15,24 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.DelegatingContext;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+
 /**
  * @since 7.2
  */
-public class FhirRequests {
+public final class FhirCodeSystemContext extends DelegatingContext {
 
-	private FhirRequests() {}
-	
-	public static FhirCodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
-		return new FhirCodeSystemSearchRequestBuilder();
+	private final CodeSystem codeSystem;
+
+	public FhirCodeSystemContext(ServiceProvider context, CodeSystem codeSystem) {
+		super(context);
+		this.codeSystem = codeSystem;
 	}
 	
-	public static FhirCodeSystemGetRequestBuilder prepareGetCodeSystem(String logicalId) {
-		return new FhirCodeSystemGetRequestBuilder(logicalId);
+	public CodeSystem codeSystem() {
+		return codeSystem;
 	}
-	
-	public static FhirLookupRequestBuilder prepareLookup() {
-		return new FhirLookupRequestBuilder();
-	}
-	
-	public static FhirSubsumptionRequestBuilder prepareSubsumption() {
-		return new FhirSubsumptionRequestBuilder();
-	}
-	
+
 }

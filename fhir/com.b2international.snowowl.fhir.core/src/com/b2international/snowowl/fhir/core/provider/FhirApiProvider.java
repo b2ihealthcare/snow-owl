@@ -166,13 +166,6 @@ public abstract class FhirApiProvider {
 	}
 	
 	/**
-	 * Returns the repository id for the provider
-	 * @return
-	 */
-	protected abstract String getRepositoryId();
-		
-	
-	/**
 	 * Returns (attempts) the ISO 639 two letter code based on the language name.
 	 * @return two letter language code
 	 */

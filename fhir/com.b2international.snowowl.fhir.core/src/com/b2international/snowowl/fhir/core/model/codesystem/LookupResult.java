@@ -154,7 +154,7 @@ public final class LookupResult {
 		}
 		
 		@Override
-		public LookupResult doBuild() {
+		protected LookupResult doBuild() {
 			return new LookupResult(name, version, display, designations.build(), properties.build());
 		}
 	}

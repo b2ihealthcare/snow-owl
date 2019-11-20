@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
+import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -138,6 +141,13 @@ public class SubsumptionRequest {
 			return new SubsumptionRequest(system, version, codeA, codeB, codingA, codingB);
 		}
 		
+	}
+
+	public Promise<SubsumptionResult> execute(IEventBus bus) {
+		return FhirRequests.prepareSubsumption()
+				.setRequest(this)
+				.build(getSystem())
+				.execute(bus);
 	}
 
 }

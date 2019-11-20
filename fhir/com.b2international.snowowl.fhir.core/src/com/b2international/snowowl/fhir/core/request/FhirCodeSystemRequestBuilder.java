@@ -15,27 +15,18 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.RequestBuilder;
+
 /**
  * @since 7.2
  */
-public class FhirRequests {
+public interface FhirCodeSystemRequestBuilder<R> extends RequestBuilder<FhirCodeSystemContext, R>{
 
-	private FhirRequests() {}
-	
-	public static FhirCodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
-		return new FhirCodeSystemSearchRequestBuilder();
-	}
-	
-	public static FhirCodeSystemGetRequestBuilder prepareGetCodeSystem(String logicalId) {
-		return new FhirCodeSystemGetRequestBuilder(logicalId);
-	}
-	
-	public static FhirLookupRequestBuilder prepareLookup() {
-		return new FhirLookupRequestBuilder();
-	}
-	
-	public static FhirSubsumptionRequestBuilder prepareSubsumption() {
-		return new FhirSubsumptionRequestBuilder();
+	default AsyncRequest<R> build(String codeSystemId) {
+		return new AsyncRequest<>(
+			new FhirCodeSystemRequest<>(build(), codeSystemId)
+		);
 	}
 	
 }

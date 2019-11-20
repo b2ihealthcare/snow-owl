@@ -15,27 +15,29 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import javax.validation.constraints.NotNull;
+
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 /**
  * @since 7.2
  */
-public class FhirRequests {
+final class FhirSubsumptionRequest implements Request<FhirCodeSystemContext, SubsumptionResult> {
 
-	private FhirRequests() {}
+	@NotNull
+	@JsonUnwrapped
+	private SubsumptionRequest request;
 	
-	public static FhirCodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
-		return new FhirCodeSystemSearchRequestBuilder();
+	FhirSubsumptionRequest(SubsumptionRequest request) {
+		this.request = request;
 	}
-	
-	public static FhirCodeSystemGetRequestBuilder prepareGetCodeSystem(String logicalId) {
-		return new FhirCodeSystemGetRequestBuilder(logicalId);
+
+	@Override
+	public SubsumptionResult execute(FhirCodeSystemContext context) {
+		return SubsumptionResult.equivalent();
 	}
-	
-	public static FhirLookupRequestBuilder prepareLookup() {
-		return new FhirLookupRequestBuilder();
-	}
-	
-	public static FhirSubsumptionRequestBuilder prepareSubsumption() {
-		return new FhirSubsumptionRequestBuilder();
-	}
-	
+
 }

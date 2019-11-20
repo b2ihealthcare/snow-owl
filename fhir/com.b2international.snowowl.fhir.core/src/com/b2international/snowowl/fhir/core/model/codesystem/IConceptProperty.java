@@ -21,6 +21,7 @@ import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
 import com.b2international.snowowl.fhir.core.codesystems.FhirInternalCode;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * @since 6.4
@@ -132,12 +133,17 @@ public interface IConceptProperty extends FhirInternalCode {
 			this.code = code;
 			this.propertyType = propertyType;
 		}
+
+		@Override
+		public String name() {
+			return code;
+		}
 		
 		@Override
-		public String getCodeSystemUri() {
-			return codeSystemUri;
+		public Uri getUri() {
+			return new Uri(String.format("%s/%s", codeSystemUri, getCodeValue()));
 		}
-
+		
 		@Override
 		public String getDisplayName() {
 			return displayName;

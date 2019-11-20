@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.request.FhirCodeSystemSearchRequest.OptionKey;
 
 /**
  * @since 7.2
@@ -35,6 +36,14 @@ public final class FhirCodeSystemSearchRequestBuilder
 		return getSelf();
 	}
 
+	public FhirCodeSystemSearchRequestBuilder filterBySystem(String system) {
+		return addOption(OptionKey.SYSTEM, system);
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder filterBySystems(Iterable<String> systems) {
+		return addOption(OptionKey.SYSTEM, systems);
+	}
+	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, Bundle> createSearch() {
 		final FhirCodeSystemSearchRequest req = new FhirCodeSystemSearchRequest();

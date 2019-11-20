@@ -57,34 +57,34 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 			return INSTANCE.providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
 		}
 		
-		/**
-		 * Returns the matching {@link IConceptMapApiProvider} for the given path (repository:branchPath).
-		 * @param bus
-		 * @param locales
-		 * @param logicalId code system path (e.g.icd10Store:20140101)
-		 * @return FHIR concept map provider
-		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
-		 */
-		public static IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
-			return getProviders(bus, locales).stream()
-				.filter(provider -> provider.isSupported(logicalId))
-				.findFirst()
-				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
-		}
+//		/**
+//		 * Returns the matching {@link IConceptMapApiProvider} for the given path (repository:branchPath).
+//		 * @param bus
+//		 * @param locales
+//		 * @param logicalId code system path (e.g.icd10Store:20140101)
+//		 * @return FHIR concept map provider
+//		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
+//		 */
+//		public static IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+//			return getProviders(bus, locales).stream()
+//				.filter(provider -> provider.isSupported(logicalId))
+//				.findFirst()
+//				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
+//		}
 		
-		/**
-		 * Returns the matching {@link IConceptMapApiProvider} for the given URI.
-		 * @param bus
-		 * @param locales
-		 * @param uriValue
-		 * @return FHIR value set provider
-		 */
-		public static IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
-			return getProviders(bus, locales).stream()
-				.filter(provider -> provider.isSupported(uriValue))
-				.findFirst()
-				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
-		}
+//		/**
+//		 * Returns the matching {@link IConceptMapApiProvider} for the given URI.
+//		 * @param bus
+//		 * @param locales
+//		 * @param uriValue
+//		 * @return FHIR value set provider
+//		 */
+//		public static IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
+//			return getProviders(bus, locales).stream()
+//				.filter(provider -> provider.isSupported(uriValue))
+//				.findFirst()
+//				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
+//		}
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,6 @@ public enum SupportedCodeSystemRequestProperties implements IConceptProperty {
 	PARENT, //this is also part of the common concept properties, what gives?
 	CHILD; //this is also part of the common concept properties, what gives?
 	//LANG.X? where X is the designation language code
-
-	//this is not really a code system
-	@Override
-	public String getCodeSystemUri() {
-		return null;
-	}
 
 	@Override
 	public String getCodeValue() {
