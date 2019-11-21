@@ -25,37 +25,29 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.CodeSystem;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filters;
 import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.provider.BaseFhirCodeSystemExtension;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.fhir.SnomedUri.Builder;
 import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProperties;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -63,18 +55,11 @@ import com.google.common.collect.ImmutableSet;
  * Provider for the SNOMED CT FHIR support
  * @since 6.4
  * @see ICodeSystemApiProvider
- * @see CodeSystemApiProvider
+ * @see BaseFhirCodeSystemExtension
  */
-public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
+@Component
+public final class SnomedFhirCodeSystemExtension extends BaseFhirCodeSystemExtension {
 
-	@Component
-	public static final class Factory implements ICodeSystemApiProvider.Factory {
-		@Override
-		public ICodeSystemApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
-			return new SnomedCodeSystemApiProvider(bus, locales);
-		}
-	}
-	
 	private static final String URI_BASE = "http://snomed.info";
 	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
@@ -83,45 +68,35 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		SnomedUri.SNOMED_BASE_URI_STRING
 	);
 	
-	public SnomedCodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
-		super(bus, locales);
-	}
-	
 	@Override
 	public String getToolingId() {
 		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
 	}
 	
-//	@Override
-//	public LookupResult lookup(LookupRequest lookup) {
-//		
-//		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem(), "CodeSystem$lookup.system");
-//		
+	@Override
+	public LookupResult lookup(BranchContext context, LookupRequest lookup) {
 //		validateVersion(snomedUri, lookup.getVersion());
 //		
 //		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 //		String branchPath = codeSystemVersion.getPath();
 //		String versionString = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
-//		
-//		validateRequestedProperties(lookup);
-//		
-//		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
-//		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
-//		
-//		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
-//		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
-//		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
-//		
-//		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
-//			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
-//			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
-//		
-//		SnomedConcept concept = req.build(getRepositoryId(), branchPath)
-//			.execute(getBus())
-//			.getSync();
-//		
-//		return mapToLookupResult(concept, lookup, versionString);
-//	}
+		validateRequestedProperties(lookup);
+
+		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
+		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
+		
+		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
+		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
+		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
+		
+		SnomedConcept concept = SnomedRequests.prepareGetConcept(lookup.getCode())
+			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
+			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.build()
+			.execute(context);
+		
+		return mapToLookupResult(context, concept, lookup);
+	}
 	
 	@Override
 	protected Collection<IConceptProperty> getSupportedConceptProperties() {
@@ -159,11 +134,10 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		return properties.build();
 	}
 	
-	
-	@Override
-	public boolean isSupported(LogicalId logicalId) {
-		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
-	}
+//	@Override
+//	public boolean isSupported(LogicalId logicalId) {
+//		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
+//	}
 	
 //	@Override
 //	public final boolean isSupported(String uri) {
@@ -184,11 +158,10 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 //	}
 	
 	@Override
-	protected Set<String> fetchAncestors(String branchPath, String componentId) {
+	protected Set<String> fetchAncestors(BranchContext context, String componentId) {
 		return SnomedConcept.GET_ANCESTORS.apply(SnomedRequests.prepareGetConcept(componentId)
-			.build(getRepositoryId(), branchPath)
-			.execute(getBus())
-			.getSync());
+			.build()
+			.execute(context));
 	}
 	
 	@Override
@@ -230,17 +203,18 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	 * @param subsumptionRequest 
 	 * @return version string
 	 */
-	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-		SnomedUri snomedUri = SnomedUri.fromUriString(subsumptionRequest.getSystem(), "CodeSystem$subsumes.system");
-		validateVersion(snomedUri, subsumptionRequest.getVersion());
-		return getCodeSystemVersion(snomedUri.getVersionTag()).getVersionId();
-	}
+//	protected String getVersion(SubsumptionRequest subsumptionRequest) {
+//		SnomedUri snomedUri = SnomedUri.fromUriString(subsumptionRequest.getSystem(), "CodeSystem$subsumes.system");
+//		validateVersion(snomedUri, subsumptionRequest.getVersion());
+//		return getCodeSystemVersion(snomedUri.getVersionTag()).getVersionId();
+//	}
 	
-	private LookupResult mapToLookupResult(SnomedConcept concept, LookupRequest lookupRequest, String version) {
+	private LookupResult mapToLookupResult(BranchContext context, SnomedConcept concept, LookupRequest lookupRequest) {
 		
 		final LookupResult.Builder resultBuilder = LookupResult.builder();
 		
-		setBaseProperties(lookupRequest, resultBuilder, SnomedTerminologyComponentConstants.SNOMED_NAME, version, getPreferredTermOrId(concept));
+		CodeSystem system = context.service(CodeSystem.class);
+		setBaseProperties(lookupRequest, resultBuilder, "TODO cs name", "TODO version", getPreferredTermOrId(concept));
 		
 		//add terms as designations
 		if (lookupRequest.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
@@ -313,9 +287,8 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				.filterByCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId())
 				.filterBySource(concept.getId())
 				.filterByType(relationshipTypeIds)
-				.build(getRepositoryId(), branchPath)
-				.execute(getBus())
-				.getSync()
+				.build()
+				.execute(context)
 				.forEach(r -> {
 					Property property = Property.builder()
 						.code(r.getTypeId())

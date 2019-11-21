@@ -161,7 +161,7 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody OperationOutcome handle(final Exception ex) {
-		LOG.error("Exception during processing of a request", ex);
+//		LOG.error("Exception during processing of a request", ex);
 		
 		FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
 		return fhirException.toOperationOutcome();

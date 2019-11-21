@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.request;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +39,7 @@ import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.provider.FhirCodeSystemExtension;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -97,10 +98,11 @@ public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Ser
 				});
 		
 		// append all default FHIR codesystems
-		FhirInternalCodeSystemRegistry.INSTANCE.getCodeSystems()
+		FhirInternalCodeSystemRegistry.getCodeSystems()
 			.stream()
 			// apply ID filter here
 			.filter(cs -> componentIds() == null /*no filter*/ || componentIds().contains(cs.getId().getIdValue()))
+			.filter(cs -> !containsKey(OptionKey.SYSTEM) || getCollection(OptionKey.SYSTEM, String.class).contains(cs.getId().getIdValue()))
 			.forEach(cs -> {
 				String resourceUrl = String.format("%s/%s", uri, cs.getId().getIdValue());
 				Entry entry = new Entry(new Uri(resourceUrl), cs);
@@ -113,6 +115,7 @@ public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Ser
 	
 	private Collection<Promise<List<CodeSystem>>> fetchCodeSystems(ServiceProvider context) {
 		final IEventBus bus = context.service(IEventBus.class);
+		final Collection<String> systems = containsKey(OptionKey.SYSTEM) ? getCollection(OptionKey.SYSTEM, String.class) : null;
 		return context.service(RepositoryManager.class)
 				.repositories()
 				.stream()
@@ -120,7 +123,7 @@ public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Ser
 				.map(repositoryId -> {
 					return CodeSystemRequests.prepareSearchCodeSystem()
 							.all()
-							.filterByUris(containsKey(OptionKey.SYSTEM) ? getCollection(OptionKey.SYSTEM, String.class) : null)
+							.filterByUris(systems)
 							.build(repositoryId)
 							.execute(bus)
 							.thenWith(cs -> fetchVersions(context, repositoryId, cs));
@@ -137,19 +140,18 @@ public final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Ser
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build(repositoryId)
 				.execute(bus)
-				.then(versions -> toFhirCodeSystem(context, codeSystems, versions));
+				.then(versions -> toFhirCodeSystem(codeSystems, versions));
 	}
 
-	private List<CodeSystem> toFhirCodeSystem(ServiceProvider context, CodeSystems codeSystems, CodeSystemVersions versions) {
-		final IEventBus bus = context.service(IEventBus.class);
+	private List<CodeSystem> toFhirCodeSystem(CodeSystems codeSystems, CodeSystemVersions versions) {
 		final Multimap<String, CodeSystemVersionEntry> versionsByCodeSystem = Multimaps.index(versions, CodeSystemVersionEntry::getCodeSystemShortName);
 		return codeSystems.stream()
 				.map(cs -> {
-					// generate MAIN version
-					// generate one FHIR CodeSystem for each version present in an internal code system
-					ICodeSystemApiProvider provider = ICodeSystemApiProvider.Registry.getProvider(bus, locales(), cs.getToolingId());
+					final FhirCodeSystemExtension provider = FhirCodeSystemExtension.Registry.getCodeSystemExtension(cs.getToolingId());
 					final List<CodeSystem> fhirCodeSystems = Lists.newArrayList();
+					// generate MAIN version
 					fhirCodeSystems.add(provider.createFhirCodeSystem(cs, null));
+					// generate one FHIR CodeSystem for each version present in an internal code system
 					versionsByCodeSystem.get(cs.getShortName()).forEach(version -> {
 						fhirCodeSystems.add(provider.createFhirCodeSystem(cs, version));
 					});

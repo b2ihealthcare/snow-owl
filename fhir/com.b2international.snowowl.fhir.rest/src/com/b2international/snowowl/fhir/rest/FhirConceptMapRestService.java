@@ -93,7 +93,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 			.addLink(uri);
 		
 		int total = 0;
-		for (IConceptMapApiProvider fhirProvider : IConceptMapApiProvider.Registry.getProviders(getBus(), locales)) {
+		for (IConceptMapApiProvider fhirProvider : IConceptMapApiProvider.Registry.getProviders()) {
 			Collection<ConceptMap> conceptMaps = fhirProvider.getConceptMaps();
 			for (ConceptMap conceptMap : conceptMaps) {
 				applyResponseContentFilter(conceptMap, requestParameters);
@@ -315,7 +315,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		
 		int totalMatch = 0;
 		
-		Collection<IConceptMapApiProvider> providers = IConceptMapApiProvider.Registry.getProviders(getBus(), locales);
+		Collection<IConceptMapApiProvider> providers = IConceptMapApiProvider.Registry.getProviders();
 		
 		for (IConceptMapApiProvider provider : providers) {
 			Collection<Match> matches = provider.translate(translateRequest);

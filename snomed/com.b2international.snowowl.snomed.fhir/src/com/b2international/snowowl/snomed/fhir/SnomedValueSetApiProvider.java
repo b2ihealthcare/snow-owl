@@ -86,10 +86,6 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 //		
 //	}
 	
-	public SnomedValueSetApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
-		super(bus, locales);
-	}
-
 	@Override
 	public Collection<ValueSet> getValueSets() {
 		

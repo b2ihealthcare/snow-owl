@@ -28,6 +28,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.extension.Component;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -48,7 +49,6 @@ import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -82,10 +82,6 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 //			return new SnomedConceptMapApiProvider(bus, locales);
 //		}		
 //	}
-	
-	public SnomedConceptMapApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
-		super(bus, locales);
-	}
 
 	@Override
 	public Collection<ConceptMap> getConceptMaps() {

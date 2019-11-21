@@ -93,7 +93,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.addLink(uri);
 		
 		int total = 0;
-		for (IValueSetApiProvider fhirProvider : IValueSetApiProvider.Registry.getProviders(getBus(), locales)) {
+		for (IValueSetApiProvider fhirProvider : IValueSetApiProvider.Registry.getProviders()) {
 			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
 			for (ValueSet valueSet : valueSets) {
 				applyResponseContentFilter(valueSet, requestParameters);

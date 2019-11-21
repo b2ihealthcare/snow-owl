@@ -17,9 +17,18 @@ package com.b2international.snowowl.fhir.core.request;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.fhir.core.codesystems.FhirInternalCode;
+import com.b2international.snowowl.fhir.core.codesystems.FhirInternalCodeSystem;
+import com.b2international.snowowl.fhir.core.codesystems.FhirInternalCodeSystemRegistry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import com.b2international.snowowl.fhir.core.provider.FhirCodeSystemExtension;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
@@ -38,8 +47,19 @@ final class FhirLookupRequest extends FhirBaseRequest<FhirCodeSystemContext, Loo
 	@Override
 	public LookupResult execute(FhirCodeSystemContext context) {
 		final CodeSystem cs = context.codeSystem();
-		return LookupResult.builder()
-				.build();
+		final FhirCodeSystemExtension ext = FhirCodeSystemExtension.Registry.getCodeSystemExtension(cs.toolingId());
+		if (FhirInternalCodeSystemRegistry.TERMINOLOGY_ID.equals(cs.toolingId())) {
+			// TODO lookup the code in the enum literals
+			throw new NotImplementedException();
+		} else {
+			// execute as code system revision search, if not internal code system
+			return new RevisionIndexRequestBuilder<LookupResult>() {
+				@Override
+				public Request<BranchContext, LookupResult> build() {
+					return context -> ext.lookup(context, request);
+				}
+			}.build(cs.repositoryId(), cs.branchPath()).getRequest().execute(context);
+		}
 	}
 
 }

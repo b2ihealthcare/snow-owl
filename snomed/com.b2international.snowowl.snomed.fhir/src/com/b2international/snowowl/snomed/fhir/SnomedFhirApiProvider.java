@@ -16,14 +16,10 @@
 package com.b2international.snowowl.snomed.fhir;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
-import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -36,17 +32,13 @@ import com.google.common.collect.ImmutableSet;
  * @since 7.1
  * @see FhirApiProvider
  */
-public abstract class SnomedFhirApiProvider extends FhirApiProvider {
+public abstract class SnomedFhirApiProvider {
 
 	protected static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
-			SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
-			SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
-			SnomedUri.SNOMED_BASE_URI_STRING
-		);
-	
-	public SnomedFhirApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
-		super(bus, locales);
-	}
+		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
+		SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
+		SnomedUri.SNOMED_BASE_URI_STRING
+	);
 	
 	public Collection<String> getSupportedURIs() {
 		return SUPPORTED_URIS;

@@ -20,20 +20,14 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.CodeSystemVersions;
-import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -54,22 +48,16 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSyste
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.collect.Lists;
 
 /**
  * FHIR provider base class.
  * 
  * @since 7.0
  */
-public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
+public abstract class BaseFhirCodeSystemExtension implements FhirCodeSystemExtension {
 	
 	private Collection<IConceptProperty> supportedProperties;
 
-	public CodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
-		super(bus, locales);
-	}
-	
 	/**
 	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
 	 * @return
@@ -78,49 +66,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return Collections.emptySet();
 	}
 
-//	@Override
-//	public CodeSystem getCodeSystem(LogicalId codeSystemLogicalId) {
-//		
-//		String branchPath = codeSystemLogicalId.getBranchPath();
-//		
-//		if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
-//			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemLogicalId), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
-//		} else {
-//			Optional<CodeSystemVersionEntry> csve = CodeSystemRequests.prepareSearchCodeSystemVersion()
-//				.one()
-//				.filterByBranchPath(branchPath)
-//				.build(repositoryId)
-//				.execute(getBus())
-//				.getSync()
-//				.first();
-//			
-//			//could not find code system + version
-//			if (!csve.isPresent()) {
-//				throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemLogicalId), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
-//			}
-//			CodeSystemVersionEntry codeSystemVersionEntry = csve.get();
-//
-//			com.b2international.snowowl.datastore.CodeSystem codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemVersionEntry.getCodeSystemShortName())
-//					.build(repositoryId)
-//					.execute(getBus())
-//					.getSync();
-//
-//			return createCodeSystemBuilder(codeSystemEntry, codeSystemVersionEntry).build();
-//		}
-//	}
-	
-//	@Override
-//	public final CodeSystem getCodeSystem(String codeSystemUri) {
-//		if (!isSupported(codeSystemUri)) {
-//			throw new BadRequestException(String.format("Code system with URI %s is not supported by this provider %s.", codeSystemUri, this.getClass().getSimpleName()));
-//		}
-//		return getCodeSystems()
-//				.stream()
-//				.filter(cs -> cs.getUrl().getUriValue().equals(codeSystemUri))
-//				.findFirst()
-//				.orElseThrow(() -> new NotFoundException("Could not find any code systems for %s.", codeSystemUri));
-//	}
-	
 	@Override
 	public CodeSystem createFhirCodeSystem(com.b2international.snowowl.datastore.CodeSystem codeSystem, CodeSystemVersionEntry version) {
 		return createCodeSystemBuilder(codeSystem, version)
@@ -128,41 +73,42 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	}
 	
 	/**
-	 * Creates a FHIR {@link CodeSystem} from a {@link CodeSystem}
-	 * @param codeSystemEntry
-	 * @param codeSystemVersion
+	 * Creates a FHIR {@link CodeSystem} from a {@link com.b2international.snowowl.datastore.CodeSystem} and optional {@link CodeSystemVersionEntry}.
+	 * @param codeSystem
+	 * @param version
 	 * @return FHIR Code system
 	 */
-	protected final Builder createCodeSystemBuilder(final com.b2international.snowowl.datastore.CodeSystem codeSystemEntry, final CodeSystemVersionEntry codeSystemVersion) {
+	protected final Builder createCodeSystemBuilder(final com.b2international.snowowl.datastore.CodeSystem codeSystem, final CodeSystemVersionEntry version) {
 		
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
-			.system(codeSystemEntry.getOrgLink())
-			.value(codeSystemEntry.getOid())
+			.system(codeSystem.getOrgLink())
+			.value(codeSystem.getOid())
 			.build();
 		
-		String id = getId(codeSystemEntry, codeSystemVersion);
+		String id = getId(codeSystem, version);
 		
 		final Builder builder = CodeSystem.builder(id)
+			.toolingId(getToolingId())
 			.identifier(identifier)
-			.language(getLanguage(codeSystemEntry))
-			.name(codeSystemEntry.getShortName())
-			.narrative(NarrativeStatus.ADDITIONAL, "<div>"+ codeSystemEntry.getCitation() + "</div>")
-			.publisher(codeSystemEntry.getOrgLink())
+			.language(FhirCodeSystemExtension.getLanguageCode(codeSystem.getLanguage()))
+			.name(codeSystem.getShortName())
+			.narrative(NarrativeStatus.ADDITIONAL, "<div>"+ codeSystem.getCitation() + "</div>")
+			.publisher(codeSystem.getOrgLink())
 			.status(PublicationStatus.ACTIVE)
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
-			.title(codeSystemEntry.getName())
-			.description(codeSystemEntry.getCitation())
+			.title(codeSystem.getName())
+			.description(codeSystem.getCitation())
 			.url((String) null)
 //			getFhirUri(codeSystemEntry, codeSystemVersion)
 			.content(getCodeSystemContentMode())
-			.count(getCount(codeSystemVersion));
+			.count(getCount(version));
 		
-		if (codeSystemVersion !=null) {
-			builder.version(codeSystemVersion.getVersionId());
+		if (version !=null) {
+			builder.version(version.getVersionId());
 			
 			Meta meta = Meta.builder()
-				.lastUpdated(Instant.builder().instant(codeSystemVersion.getLatestUpdateDate()).build())
+				.lastUpdated(Instant.builder().instant(version.getLatestUpdateDate()).build())
 				.build();
 			
 			builder.meta(meta);
@@ -174,7 +120,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			builder.addFilter(filter);
 		}
 		
-		Collection<Concept> concepts = getConcepts(codeSystemEntry);
+		Collection<Concept> concepts = getConcepts(codeSystem);
 		for (Concept concept: concepts) {
 			builder.addConcept(concept);
 		}
@@ -207,35 +153,34 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 
 	protected abstract int getCount(CodeSystemVersionEntry codeSystemVersion);
 
-//	@Override
-//	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
-//		
+	@Override
+	public SubsumptionResult subsumes(BranchContext context, SubsumptionRequest subsumptionRequest) {
 //		final String version = getVersion(subsumptionRequest);
 //		final String branchPath = getBranchPath(version);
-//		
-//		String codeA = null;
-//		String codeB = null;
-//		if (subsumptionRequest.getCodeA() != null && subsumptionRequest.getCodeB() != null) {
-//			codeA = subsumptionRequest.getCodeA();
-//			codeB = subsumptionRequest.getCodeB();
-//		} else {
-//			codeA = subsumptionRequest.getCodingA().getCodeValue();
-//			codeB = subsumptionRequest.getCodingB().getCodeValue();
-//		}
-//		
-//		final Set<String> ancestorsA = fetchAncestors(branchPath, codeA);
-//		final Set<String> ancestorsB = fetchAncestors(branchPath, codeB);
-//		
-//		if (codeA.equals(codeB)) {
-//			return SubsumptionResult.equivalent();
-//		} else if (ancestorsA.contains(codeB)) {
-//			return SubsumptionResult.subsumedBy();
-//		} else if (ancestorsB.contains(codeA)) {
-//			return SubsumptionResult.subsumes();
-//		} else {
-//			return SubsumptionResult.notSubsumed();
-//		}
-//	}
+		
+		String codeA = null;
+		String codeB = null;
+		if (subsumptionRequest.getCodeA() != null && subsumptionRequest.getCodeB() != null) {
+			codeA = subsumptionRequest.getCodeA();
+			codeB = subsumptionRequest.getCodeB();
+		} else {
+			codeA = subsumptionRequest.getCodingA().getCodeValue();
+			codeB = subsumptionRequest.getCodingB().getCodeValue();
+		}
+		
+		final Set<String> ancestorsA = fetchAncestors(context, codeA);
+		final Set<String> ancestorsB = fetchAncestors(context, codeB);
+		
+		if (codeA.equals(codeB)) {
+			return SubsumptionResult.equivalent();
+		} else if (ancestorsA.contains(codeB)) {
+			return SubsumptionResult.subsumedBy();
+		} else if (ancestorsB.contains(codeA)) {
+			return SubsumptionResult.subsumes();
+		} else {
+			return SubsumptionResult.notSubsumed();
+		}
+	}
 	
 //	/**
 //	 * Returns the version information from the request
@@ -287,11 +232,11 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	/**
 	 * Returns all ancestors up to the terminology's root component (in terms of Snow Owl, this means {@link IComponent#ROOT_ID}).
 	 * 
-	 * @param branchPath
+	 * @param context
 	 * @param componentId
 	 * @return
 	 */
-	protected abstract Set<String> fetchAncestors(String branchPath, String componentId);
+	protected abstract Set<String> fetchAncestors(BranchContext context, String componentId);
 
 	/**
 	 * Returns the supported properties
@@ -367,8 +312,4 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return CodeSystemContentMode.NOT_PRESENT;
 	}
 
-	protected String getLanguage(com.b2international.snowowl.datastore.CodeSystem codeSystemEntry) {
-		return getLanguageCode(codeSystemEntry.getLanguage());
-	}
-	
 }

@@ -29,7 +29,7 @@ public final class FhirCodeSystemSearchRequestBuilder
 		extends SearchResourceRequestBuilder<FhirCodeSystemSearchRequestBuilder, ServiceProvider, Bundle>
 		implements SystemRequestBuilder<Bundle> {
 
-	private String uri;
+	private String uri = "unknown";
 	
 	public FhirCodeSystemSearchRequestBuilder setUri(String uri) {
 		this.uri = uri;

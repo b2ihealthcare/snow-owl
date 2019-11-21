@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -37,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 
 
@@ -271,15 +269,15 @@ public final class CodeSystem implements Serializable {
 			final String branchPath, 
 			final String extensionOf,
 			final List<String> uris) {
-		this.oid = Strings.nullToEmpty(oid);
-		this.name = Strings.nullToEmpty(name);
-		this.shortName = Strings.nullToEmpty(shortName);
-		this.orgLink = Strings.nullToEmpty(orgLink);
-		this.language = Strings.nullToEmpty(language);
-		this.citation = Strings.nullToEmpty(citation);
-		this.iconPath = Strings.nullToEmpty(iconPath);
-		this.toolingId = checkNotNull(toolingId);
-		this.repositoryId = checkNotNull(repositoryId);
+		this.oid = oid;
+		this.name = name;
+		this.shortName = shortName;
+		this.orgLink = orgLink;
+		this.language = language;
+		this.citation = citation;
+		this.iconPath = iconPath;
+		this.toolingId = toolingId;
+		this.repositoryId = repositoryId;
 		this.branchPath = branchPath;
 		this.extensionOf = extensionOf;
 		this.uris = Collections3.toImmutableList(uris);

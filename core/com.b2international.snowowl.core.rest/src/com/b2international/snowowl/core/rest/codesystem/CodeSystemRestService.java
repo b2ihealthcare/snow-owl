@@ -141,6 +141,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setIconPath(codeSystem.getIconPath())
 				.setLanguage(codeSystem.getLanguage())
 				.setLink(codeSystem.getOrgLink())
+				.setUris(codeSystem.getUris())
 				.build(codeSystem.getRepositoryId(), Branch.MAIN_PATH, author, commitComment)
 				.execute(getBus())
 				.getSync();

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.Date;
 
@@ -38,9 +40,10 @@ import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -117,16 +120,47 @@ public final class CodeSystem extends MetadataResource {
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Concept> concepts;
 
+	// extra properties to carry over to other services, should be ignored by any serializer/deserializer
+	private String repositoryId;
+	private String branchPath;
+	private String toolingId;
+
 	@SuppressWarnings("rawtypes")
-	public CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			final Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
-			final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
-			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
+	private CodeSystem(
+			final Id id, 
+			final Meta meta, 
+			final Uri impliciteRules, 
+			final Code language, 
+			final Narrative text, 
+			final Uri url, 
+			final Identifier identifier, 
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status,
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description, 
+			final Collection<UsageContext> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, 
+			final String purpose, 
+			final String copyright,
 			
 			//CodeSystem only
-			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
-			final Code content, final Uri supplements, final Integer count, 
-			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
+			final Boolean caseSensitive, 
+			final Uri valueSet, 
+			final Code hierarchyMeaning, 
+			final Boolean compositional, 
+			final Boolean versionNeeded,
+			final Code content, 
+			final Uri supplements, 
+			final Integer count, 
+			final Collection<Filter> filters, 
+			final Collection<SupportedConceptProperty> properties, 
+			final Collection<Concept> concepts,
+			// internal, non-FHIR stuff
+			final String toolingId) {
 
 		super("CodeSystem", id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
@@ -142,6 +176,7 @@ public final class CodeSystem extends MetadataResource {
 		this.filters = filters;
 		this.properties = properties;
 		this.concepts = concepts;
+		this.toolingId = checkNotNull(toolingId);
 	}
 	
 	public Boolean getCaseSensitive() {
@@ -190,6 +225,21 @@ public final class CodeSystem extends MetadataResource {
 	public Collection<Concept> getConcepts() {
 		return concepts;
 	}
+	
+	@JsonIgnore
+	public String toolingId() {
+		return toolingId;
+	}
+	
+	@JsonIgnore
+	public String repositoryId() {
+		return repositoryId;
+	}
+	
+	@JsonIgnore
+	public String branchPath() {
+		return branchPath;
+	}
 
 	public static Builder builder() {
 		return new Builder();
@@ -222,6 +272,10 @@ public final class CodeSystem extends MetadataResource {
 		private Collection<SupportedConceptProperty> properties = Lists.newArrayList();
 
 		private Collection<Concept> concepts = Sets.newHashSet();
+
+		private String toolingId;
+
+		private boolean internal;
 
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -297,13 +351,18 @@ public final class CodeSystem extends MetadataResource {
 			this.concepts.add(concept);
 			return getSelf();
 		}
-
+		
+		public Builder toolingId(String toolingId) {
+			this.toolingId = toolingId;
+			return getSelf();
+		}
+		
 		@Override
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright,
 				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
-				content, supplements, count, filters, properties, concepts);
+				content, supplements, count, filters, properties, concepts, toolingId);
 		}
 	}
 

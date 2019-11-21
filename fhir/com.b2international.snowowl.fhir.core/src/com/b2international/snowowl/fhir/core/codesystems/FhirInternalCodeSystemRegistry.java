@@ -19,40 +19,44 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.extension.ClassPathScanner;
+import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.provider.FhirCodeSystemExtension;
 import com.google.common.base.Strings;
 
 /**
  * @since 7.2
  */
-public enum FhirInternalCodeSystemRegistry {
+@Component
+public final class FhirInternalCodeSystemRegistry implements FhirCodeSystemExtension {
 
-	INSTANCE;
+	public static final String TERMINOLOGY_ID = "com.b2international.snowowl.fhir.internal";
 	
-	private final List<CodeSystem> codeSystems;
-	
-	private FhirInternalCodeSystemRegistry() {
-		this.codeSystems = ClassPathScanner.INSTANCE.getClassesByInterface(FhirInternalCode.class)
+	public static List<CodeSystem> getCodeSystems() {
+		return ClassPathScanner.INSTANCE.getClassesByInterface(FhirInternalCode.class)
 				.stream()
 				.filter(c -> c.isEnum() && c.isAnnotationPresent(FhirInternalCodeSystem.class))
 				.map(c -> buildCodeSystem((Class) c, c.getAnnotation(FhirInternalCodeSystem.class)))
 				.collect(Collectors.toList());
 	}
 	
-	public List<CodeSystem> getCodeSystems() {
-		return codeSystems;
-	}
-	
-	private <T extends Enum<T>> CodeSystem buildCodeSystem(Class<T> enumType, FhirInternalCodeSystem codeSystem) {
+	private static <T extends Enum<T>> CodeSystem buildCodeSystem(Class<T> enumType, FhirInternalCodeSystem codeSystem) {
 		
 		String supportedUri = codeSystem.uri();
 		String id = supportedUri.substring(supportedUri.lastIndexOf("/") + 1, supportedUri.length());
 		
 		Builder builder = CodeSystem.builder(id)
+			.toolingId(TERMINOLOGY_ID)
 			.language("en")
 			.name(enumType.getSimpleName())
 			.publisher("www.hl7.org")
@@ -84,6 +88,27 @@ public enum FhirInternalCodeSystemRegistry {
 		
 		builder.count(counter);
 		return builder.build();
+	}
+
+	@Override
+	public String getToolingId() {
+		return TERMINOLOGY_ID;
+	}
+	
+	@Override
+	public LookupResult lookup(BranchContext context, LookupRequest lookup) {
+		return null;
+	}
+	
+	@Override
+	public SubsumptionResult subsumes(BranchContext context, SubsumptionRequest subsumption) {
+		return null;
+	}
+	
+	@Override
+	public CodeSystem createFhirCodeSystem(com.b2international.snowowl.datastore.CodeSystem codeSystem,
+			CodeSystemVersionEntry version) {
+		return null;
 	}
 	
 }
