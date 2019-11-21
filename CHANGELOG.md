@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.22.0
+
+### Bugs/Improvements
+- [api] add filter by `mapGroup` member property (76560db)
+- [api] Add proper throws declarations for attachments api methods (adc2ed7)
+- [ecl] support BooleanValueEquals and NotEquals data comparisons in concrete domain member refinements (3399d33)
+- [validation] duplicate reference set member validation rule (#420)
+- [classification] cancel classification task properly after cancelling the corresponding remote job (05bf99b)
+- [jobs] Fix NPE for canceled but scheduled jobs (173fcb6)
+
 ## 6.21.0
 
 ### API
