@@ -58,3 +58,7 @@ NOTE: while this might work in certain use cases (testing, evaluation, etc.), it
 NOTE: This is the recommended backup and restore solution for Snow Owl CIS.
 Using the Snapshot and Restore API of the underlying Elasticsearch instance administrators can create incremental backups and restore to specific tagged backups when necessary.
 See more details at: https://www.elastic.co/guide/en/elasticsearch/reference/6.5/modules-snapshots.html
+
+## SCTID lifecycle
+
+![](sctid_states.png)
