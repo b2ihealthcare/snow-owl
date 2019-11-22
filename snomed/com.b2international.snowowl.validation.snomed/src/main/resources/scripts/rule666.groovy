@@ -3,18 +3,20 @@ package scripts
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.Acceptability
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
 import com.google.common.collect.HashMultiset
 import com.google.common.collect.Lists
-import com.google.common.collect.Sets
 import com.google.common.collect.Multiset
+import com.google.common.collect.Sets
 
 final List<ComponentIdentifier> issues = Lists.newArrayList()
 
@@ -35,9 +37,33 @@ SnomedConceptSearchRequestBuilder conceptsRequestBuilder = SnomedRequests.prepar
 		.setExpand("preferredDescriptions()")
 				
 if (params.isUnpublishedOnly) {
-	conceptsRequestBuilder.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+
+	def descriptionsIdsWithUnpublishedLanguageMembers = SnomedRequests.prepareSearchMember()
+		.filterByReferencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
+		.filterByRefSetType(SnomedRefSetType.LANGUAGE)
+		.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+		.filterByActive(true)
+		.all()
+		.build()
+		.execute(ctx)
+		.collect({ it.referencedComponent.id})	
+	
+	def conceptsWithUnpublishedLanguageMembers = SnomedRequests.prepareSearchDescription()
+				.filterByIds(descriptionsIdsWithUnpublishedLanguageMembers)
+				.setLimit(descriptionsIdsWithUnpublishedLanguageMembers.size())
+				.setFields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
+				.build()
+				.execute(ctx)
+				.collect({SnomedDescription d -> d.getConceptId()})
+	
+	if (!conceptsWithUnpublishedLanguageMembers.isEmpty()) {
+		conceptsRequestBuilder.filterByIds(conceptsWithUnpublishedLanguageMembers)
+	} else {
+		return issues
+	}
+	
 }
-		
+
 final SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> iterator = new SearchResourceRequestIterator<>(conceptsRequestBuilder, {scrolledBuilder ->
 	return scrolledBuilder.build().execute(ctx)
 });

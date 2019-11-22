@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
+import com.b2international.snowowl.datastore.request.job.SearchJobRequest.OptionKey;
 
 /**
  * A request builder that builds a request to search/list {@link RemoteJob job entries}.
@@ -50,6 +51,10 @@ public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<
 	 */
 	public SearchJobRequestBuilder filterByParameter(String parameter, Iterable<String> values) {
 		return addOption(parameter, values);
+	}
+	
+	public SearchJobRequestBuilder filterByTerm(String filterTerm) {
+		return addOption(OptionKey.TERM, filterTerm);
 	}
 	
 	@Override

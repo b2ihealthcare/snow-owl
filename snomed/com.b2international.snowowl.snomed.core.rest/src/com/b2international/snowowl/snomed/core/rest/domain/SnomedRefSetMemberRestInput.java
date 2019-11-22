@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
+import java.util.UUID;
 
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
  */
 public class SnomedRefSetMemberRestInput {
 
+	private String id = UUID.randomUUID().toString();
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
 	private String referencedComponentId;
@@ -45,6 +47,10 @@ public class SnomedRefSetMemberRestInput {
 		this.properties.put(key, value);
 	}
 	
+	public void setId(String memberId) {
+		this.id = memberId;
+	}
+	
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
@@ -59,6 +65,10 @@ public class SnomedRefSetMemberRestInput {
 	
 	public void setReferenceSetId(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
+	}
+	
+	public String getId() {
+		return id;
 	}
 	
 	public Boolean isActive() {
@@ -79,6 +89,7 @@ public class SnomedRefSetMemberRestInput {
 
 	public SnomedRefSetMemberCreateRequestBuilder toRequestBuilder() {
 		final SnomedRefSetMemberCreateRequestBuilder req = SnomedRequests.prepareNewMember();
+		req.setId(id);
 		req.setActive(isActive());
 		req.setReferenceSetId(getReferenceSetId());
 		req.setReferencedComponentId(getReferencedComponentId());

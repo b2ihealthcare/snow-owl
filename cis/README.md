@@ -62,3 +62,17 @@ See more details at: https://www.elastic.co/guide/en/elasticsearch/reference/6.5
 ## SCTID lifecycle
 
 ![](sctid_states.png)
+
+## Synchronize from Snow Owl Server instances
+
+To migrate your Snow Owl terminology server deployments to use a centralized CIS solution, follow these steps:
+1. Connect your CIS instance with your existing Snow Owl terminology server deployment with a private network
+2. Expose the `9200` port on each machine that runs a Snow Owl instance (NOTE: do NOT expose the 9200 port publicly to the Internet)
+3. Install CIS and configure `reindex.remote.whitelist` configuration property with all source Snow Owl hosts with port `9200`
+4. Start CIS
+5. Configure and run the script at `<CIS_HOME>/scripts/cis_data_sync.sh`
+6. One-by-one configure and restart each Snow Owl instance to use the centralized CIS instance
+
+NOTE: After successful synchronization you can disconnect them from the private network and remove the port `9200` from the exposed ports.
+
+The script connects to each configured Snow Owl instance sequentially and copies the available SNOMED CT Identifiers to the underlying Elasticsearch index.

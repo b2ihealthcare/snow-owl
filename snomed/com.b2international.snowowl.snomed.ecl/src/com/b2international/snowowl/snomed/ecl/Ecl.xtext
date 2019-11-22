@@ -119,7 +119,9 @@ AttributeComparison:
 	AttributeValueEquals | AttributeValueNotEquals;
 
 DataTypeComparison:
-	StringValueEquals
+	BooleanValueEquals
+	| BooleanValueNotEquals
+	| StringValueEquals
 	| StringValueNotEquals
 	| IntegerValueEquals
 	| IntegerValueNotEquals
@@ -139,6 +141,12 @@ AttributeValueEquals:
 
 AttributeValueNotEquals:
 	NOT_EQUAL constraint=SubExpressionConstraint;
+
+BooleanValueEquals:
+	EQUAL value=Boolean;
+
+BooleanValueNotEquals:
+	NOT_EQUAL value=Boolean;
 
 StringValueEquals:
 	EQUAL value=STRING;
@@ -185,7 +193,7 @@ DecimalValueLessThanEquals:
 NestedExpression:
 	ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE;
 
-	// hidden grammar rules
+// hidden grammar rules
 SnomedIdentifier hidden():
 	DIGIT_NONZERO (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO)
 	(DIGIT_NONZERO | ZERO)+;
@@ -204,19 +212,22 @@ Decimal returns ecore::EBigDecimal hidden():
 
 NonNegativeDecimal returns ecore::EBigDecimal hidden():
 	NonNegativeInteger DOT (DIGIT_NONZERO | ZERO)*;
+	
+Boolean returns ecore::EBoolean hidden(): 
+	'true'|'false';
 
-	// ---TERMINALS---
+// ---TERMINALS---
 terminal TERM_STRING:
 	"|" (!("|"))* "|";
 
 terminal REVERSED:
 	'R';
 
-	// ECL terminals
+// ECL terminals
 terminal TO:
 	'..';
 
-	// numeric terminals
+// numeric terminals
 terminal ZERO:
 	'0';
 
@@ -295,7 +306,7 @@ terminal LTE:
 terminal HASH:
 	'#';
 
-	// comment terminals
+// comment terminals
 terminal WS:
 	(' ' | '\t' | '\n' | '\r');
 

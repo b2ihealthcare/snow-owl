@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -184,6 +184,12 @@ public class JobRequestsTest {
 		// 1 changed - FINISHED
 		verifyJobEvents(jobId, 1, 12, 0);
 	}
+	
+	@Test(expected = NotFoundException.class)
+	public void scheduleAndClean() throws Exception {
+		final String jobId = schedule("scheduleAndClean", true, context -> RESULT);
+		waitDone(jobId);
+	}
 
 	private void verifyJobEvents(String jobId, int expectedAdded, int expectedChanged, int expectedRemoved) {
 		long actualAdded = notifications.stream().filter(RemoteJobNotification::isAdded).count();
@@ -213,10 +219,15 @@ public class JobRequestsTest {
 	}
 	
 	private String schedule(String description, Request<ServiceProvider, ?> request) {
+		return schedule(description, false, request);
+	}
+	
+	private String schedule(String description, boolean autoClean, Request<ServiceProvider, ?> request) {
 		return JobRequests.prepareSchedule()
 				.setUser(USER)
 				.setDescription(description)
 				.setRequest(request)
+				.setAutoClean(autoClean)
 				.build()
 				.execute(context);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	private String id = UUID.randomUUID().toString();
 	private String user;
 	private String description;
+	private boolean autoClean = false;
 	private Request<ServiceProvider, ?> request;
 	private SerializableSchedulingRule schedulingRule;
 	
@@ -42,7 +43,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
-		return new ScheduleJobRequest(id, user, request, description, schedulingRule);
+		return new ScheduleJobRequest(id, user, request, autoClean, description, schedulingRule);
 	}
 	
 	/**
@@ -50,7 +51,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	 * @param id - the identifier the job will be assigned to
 	 * @return this builder
 	 */
-	public ScheduleJobRequestBuilder setId(String id) {
+	public ScheduleJobRequestBuilder setId(final String id) {
 		this.id = id;
 		return getSelf();
 	}
@@ -60,7 +61,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	 * @param user - the user the job will be assigned to
 	 * @return this builder
 	 */
-	public ScheduleJobRequestBuilder setUser(String user) {
+	public ScheduleJobRequestBuilder setUser(final String user) {
 		this.user = user;
 		return getSelf();
 	}
@@ -70,7 +71,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	 * @param description - the human readable description of the job
 	 * @return this builder
 	 */
-	public ScheduleJobRequestBuilder setDescription(String description) {
+	public ScheduleJobRequestBuilder setDescription(final String description) {
 		this.description = description;
 		return getSelf();
 	}
@@ -81,7 +82,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	 * @param request - the request to execute
 	 * @return this builder
 	 */
-	public ScheduleJobRequestBuilder setRequest(AsyncRequest<?> request) {
+	public ScheduleJobRequestBuilder setRequest(final AsyncRequest<?> request) {
 		this.request = request.getRequest();
 		return getSelf();
 	}
@@ -91,8 +92,18 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	 * @param request - the request to execute
 	 * @return this builder
 	 */
-	public ScheduleJobRequestBuilder setRequest(Request<ServiceProvider, ?> request) {
+	public ScheduleJobRequestBuilder setRequest(final Request<ServiceProvider, ?> request) {
 		this.request = request;
+		return getSelf();
+	}
+	
+	/**
+	 * Set to automatically remove the job from index after completion if it was successful.
+	 * @param autoClean - if the job should be deleted from index after completion
+	 * @return this builder
+	 */
+	public ScheduleJobRequestBuilder setAutoClean(final boolean autoClean) {
+		this.autoClean = autoClean;
 		return getSelf();
 	}
 	
@@ -101,7 +112,7 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	 * @param schedulingRule - the scheduling rule to apply for this job
 	 * @return this builder
 	 */
-	public ScheduleJobRequestBuilder setSchedulingRule(SerializableSchedulingRule schedulingRule) {
+	public ScheduleJobRequestBuilder setSchedulingRule(final SerializableSchedulingRule schedulingRule) {
 		this.schedulingRule = schedulingRule;
 		return getSelf();
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.google.common.io.ByteSink;
@@ -45,16 +46,16 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 		this.folder = folder;
 		this.folder.toFile().mkdirs();
 	}
-
+	
 	@Override
-	public void upload(UUID id, InputStream in) {
+	public void upload(UUID id, InputStream in) throws AlreadyExistsException, BadRequestException {
 		final File file = toFile(id);
 		if (file.exists()) {
 			throw new AlreadyExistsException("Zip File", id.toString());
 		}
-
+		
 		final BufferedInputStream bin = new BufferedInputStream(in);
-
+		
 		try {
 			new ByteSource() {
 				@Override
@@ -68,9 +69,9 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 	}
 
 	@Override
-	public void download(UUID id, OutputStream out) {
+	public void download(UUID id, OutputStream out) throws NotFoundException {
 		final File requestedFile = getAttachment(id);
-
+		
 		try {
 			Files.asByteSource(requestedFile).copyTo(new ByteSink() {
 				@Override
@@ -79,7 +80,7 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 				}
 			});
 		} catch (IOException e) {
-			throw new SnowowlRuntimeException("Failed to download attachment of " + id, e);
+			throw new SnowowlRuntimeException("Failed to download attachment of " + id, e); 
 		}
 	}
 
@@ -91,7 +92,7 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 		}
 		return requestedFile;
 	}
-
+	
 	@Override
 	public void delete(UUID id) {
 		toFile(id).delete();
@@ -100,5 +101,5 @@ public final class DefaultAttachmentRegistry implements InternalAttachmentRegist
 	private File toFile(UUID id) {
 		return this.folder.resolve(id.toString()).toFile();
 	}
-
+	
 }

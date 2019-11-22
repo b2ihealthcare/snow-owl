@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 
 /**
@@ -37,10 +38,11 @@ public interface AttachmentRegistry {
 	 *            - the unique identifier of the attachment
 	 * @param in
 	 *            - the contents of the attachment
+	 * @throws BadRequestException - if the file is not a valid zip file
 	 * @throws AlreadyExistsException
 	 *             - if an attachment already exists with the given {@link UUID}
 	 */
-	void upload(UUID id, InputStream in);
+	void upload(UUID id, InputStream in) throws AlreadyExistsException, BadRequestException;
 
 	/**
 	 * Downloads an attachment from the server identified by the given {@link UUID}.
@@ -52,8 +54,8 @@ public interface AttachmentRegistry {
 	 * @throws NotFoundException
 	 *             - if the attachment does not exist with the given identifier
 	 */
-	void download(UUID id, OutputStream out);
-
+	void download(UUID id, OutputStream out) throws NotFoundException;
+	
 	/**
 	 * Deletes the attachment associated with the given identifier. Does nothing
 	 * when the attachment is missing or has been already deleted.

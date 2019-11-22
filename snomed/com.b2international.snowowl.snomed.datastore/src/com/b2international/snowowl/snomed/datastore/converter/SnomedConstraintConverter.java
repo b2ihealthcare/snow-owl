@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedReferenceSetDefinition;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipDefinition;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedSingletonDefinition;
 import com.b2international.snowowl.snomed.datastore.index.constraint.CardinalityPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.CompositeDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
@@ -48,6 +49,7 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFr
 import com.b2international.snowowl.snomed.datastore.index.constraint.ReferenceSetDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SingletonDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 
 /**
@@ -101,6 +103,10 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 			hierarchyDefinition.setConceptId(((HierarchyDefinitionFragment) fragment).getConceptId());
 			hierarchyDefinition.setInclusionType(((HierarchyDefinitionFragment) fragment).getInclusionType());
 			definition = hierarchyDefinition;
+		} else if (fragment instanceof SingletonDefinitionFragment) {
+			final SnomedSingletonDefinition singletonDefinition = new SnomedSingletonDefinition();
+			singletonDefinition.setConceptId(((SingletonDefinitionFragment) fragment).getConceptId());
+			definition = singletonDefinition;
 		} else if (fragment instanceof ReferenceSetDefinitionFragment) {
 			final SnomedReferenceSetDefinition referenceSetDefinition = new SnomedReferenceSetDefinition();
 			referenceSetDefinition.setRefSetId(((ReferenceSetDefinitionFragment) fragment).getRefSetId());

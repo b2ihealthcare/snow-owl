@@ -37,7 +37,7 @@ public class AllGenericValidationTests {
 	@BeforeClass
 	public static void init() {
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
-		Path resourcesDir = PlatformUtil.toAbsoluteBundlePath(BaseGenericValidationRuleTest.class.getClassLoader().getResource("src/main/resources"));
+		final Path resourcesDir = PlatformUtil.toAbsoluteBundlePath(BaseGenericValidationRuleTest.class.getClassLoader().getResource("src/main/resources"));
 		ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(resourcesDir));
 	}
 

@@ -35,86 +35,86 @@ public final class SnomedReferenceSetMemberRestSearch {
 	@ApiParam(value = "Member UUID(s) to match")
 	private Set<String> id;
 	
-	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
+	@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 	
-	@ApiParam(value = "The status to match")
+	@ApiParam(value="The status to match")
 	private Boolean active;
 	
-	@ApiParam(value = "The module identifier to match")
+	@ApiParam(value="The module identifier to match")
 	private String module;
 	
-	@ApiParam(value = "The reference set identifier(s) to match, or a single ECL expression")
+	@ApiParam(value="The reference set identifier(s) to match, or a single ECL expression")
 	private List<String> referenceSet;
 	
-	@ApiParam(value = "The referenced component identifier(s) to match")
+	@ApiParam(value="The referenced component identifier(s) to match")
 	private List<String> referencedComponentId;
 
 	// Special RF2 member columns go here
-	@ApiParam(value = "The acceptability identifier(s) to match in case of language refset members")
+	@ApiParam(value="The acceptability identifier(s) to match in case of language refset members")
 	private List<String> acceptabilityId;
 	
-	@ApiParam(value = "The target component identifier(s) to match in case of association refset members")
+	@ApiParam(value="The target component identifier(s) to match in case of association refset members")
 	private List<String> targetComponent;
 	
-	@ApiParam(value = "The value identifier(s) to match in case of attribute value refset members")
+	@ApiParam(value="The value identifier(s) to match in case of attribute value refset members")
 	private List<String> valueId;
 	
-	@ApiParam(value = "The correlation identifdescription) to match in case of complex/extended map refset members")
+	@ApiParam(value="The correlation identifier(s) to match in case of complex/extended map refset members")
 	private List<String> correlationId;
 	
-	@ApiParam(value = "The description format identifier(s) to match in case of description format refset members")
+	@ApiParam(value="The description format identifier(s) to match in case of description format refset members")
 	private List<String> descriptionFormat;
 	
-	@ApiParam(value = "The characteristic type identifier(s) to match in case of concrete domain refset members")
+	@ApiParam(value="The characteristic type identifier(s) to match in case of concrete domain refset members")
 	private List<String> characteristicTypeId;
 	
-	@ApiParam(value = "The attribute type identifier(s) to match in case of concrete domain refset members")
+	@ApiParam(value="The attribute type identifier(s) to match in case of concrete domain refset members")
 	private List<String> typeId;
 	
-	@ApiParam(value = "The map category identifier(s) to match in case of extended refset members")
+	@ApiParam(value="The map category identifier(s) to match in case of extended refset members")
 	private List<String> mapCategoryId;
 	
-	@ApiParam(value = "The mrcm domain identifier(s) to match in case of mrcm domain refset members")
+	@ApiParam(value="The mrcm domain identifier(s) to match in case of mrcm domain refset members")
 	private List<String> domainId;
 	
-	@ApiParam(value = "The content type identifier(s) to match in case of mrcm attribute domain and range refset members")
+	@ApiParam(value="The content type identifier(s) to match in case of mrcm attribute domain and range refset members")
 	private List<String> contentTypeId;
 	
-	@ApiParam(value = "The rule strength identifier(s) to match in case of mrcm attribute domain and range refset members")
+	@ApiParam(value="The rule strength identifier(s) to match in case of mrcm attribute domain and range refset members")
 	private List<String> ruleStrengthId;
 	
-	@ApiParam(value = "The rule refset identifier(s) to match in case of mrcm module scope refset members")
+	@ApiParam(value="The rule refset identifier(s) to match in case of mrcm module scope refset members")
 	private List<String> mrcmRuleRefSetId;
 	
-	@ApiParam(value = "The relationship group value(s) to match in case of concrete domain refset members")
+	@ApiParam(value="The relationship group value(s) to match in case of concrete domain refset members")
 	private List<String> relationshipGroup;
 	
-	@ApiParam(value = "The map target value(s) to match in case of mapping refset members")
+	@ApiParam(value="The map target value(s) to match in case of mapping refset members")
 	private List<String> mapTarget;
 	
-	@ApiParam(value = "An MRCM rule refset member should be grouped or not")
+	@ApiParam(value="An MRCM rule refset member should be grouped or not")
 	private Boolean grouped;
 	
-	@ApiParam(value = "Special filters for owlExpression axiom values")
+	@ApiParam(value="Special filters for owlExpression axiom values")
 	private SnomedOwlExpressionFilters owlExpression; 
 	
-	@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
+	@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
 	private String scrollKeepAlive;
 	
-	@ApiParam(value = "A scrollId to continue scrolling a previous query")
+	@ApiParam(value="A scrollId to continue scrolling a previous query")
 	private String scrollId;
 
-	@ApiParam(value = "The search key to use for retrieving the next page of results")
+	@ApiParam(value="The search key to use for retrieving the next page of results")
 	private String searchAfter;
 
-	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
+	@ApiParam(value="The maximum number of items to return", defaultValue = "50")
 	private int limit = 50;
 	
-	@ApiParam(value = "Expansion parameters")
+	@ApiParam(value="Expansion parameters")
 	private String expand;
 	
-	@ApiParam(value = "Sort keys")
+	@ApiParam(value="Sort keys")
 	private List<String> sort;
 	
 	public Set<String> getId() {

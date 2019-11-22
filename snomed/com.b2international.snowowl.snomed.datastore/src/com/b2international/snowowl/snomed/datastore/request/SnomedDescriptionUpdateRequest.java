@@ -139,7 +139,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			updatedDescription.active(false);
 			updateInactivationIndicator(context, description, newIndicator);
 			updateAssociationTargets(context, description, newAssociationTargets);
-			setAcceptability(ImmutableMap.of());
+			
 			return true;
 			
 		} else if (!currentStatus && newStatus) {

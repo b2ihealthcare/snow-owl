@@ -225,6 +225,24 @@ public interface EclFactory extends EFactory
   AttributeValueNotEquals createAttributeValueNotEquals();
 
   /**
+   * Returns a new object of class '<em>Boolean Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Boolean Value Equals</em>'.
+   * @generated
+   */
+  BooleanValueEquals createBooleanValueEquals();
+
+  /**
+   * Returns a new object of class '<em>Boolean Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Boolean Value Not Equals</em>'.
+   * @generated
+   */
+  BooleanValueNotEquals createBooleanValueNotEquals();
+
+  /**
    * Returns a new object of class '<em>String Value Equals</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

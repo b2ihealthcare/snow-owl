@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -184,6 +184,14 @@ public class Expressions {
 	
 	public static Expression scriptScore(Expression query, String scriptName, Map<String, Object> params) {
 		return new ScriptScoreExpression(query, scriptName, params);
+	}
+	
+	public static Expression scriptQuery(String script) {
+		return new ScriptQueryExpression(script, Collections.emptyMap());
+	}
+	
+	public static Expression scriptQuery(String script, Map<String, Object> params) {
+		return new ScriptQueryExpression(script, params);
 	}
 
 }
