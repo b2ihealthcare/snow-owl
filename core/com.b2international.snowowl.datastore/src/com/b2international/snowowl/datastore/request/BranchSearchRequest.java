@@ -51,8 +51,12 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 		/**
 		 * Filter branches by their name
 		 */
-		NAME,
+		NAME, 
 		
+		/**
+		 * Filter branches by numeric identifier
+		 */
+		BRANCH_ID,
 	}
 	
 	BranchSearchRequest() {}
@@ -66,14 +70,18 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 	protected Expression prepareQuery(RepositoryContext context) {
 		ExpressionBuilder queryBuilder = Expressions.builder();
 				
-		addIdFilter(queryBuilder, ids -> Expressions.matchAny("path", ids));
+		addIdFilter(queryBuilder, ids -> Expressions.matchAny(RevisionBranch.Fields.PATH, ids));
 		
 		if (containsKey(OptionKey.PARENT)) {
-			queryBuilder.filter(Expressions.matchAny("parentPath", getCollection(OptionKey.PARENT, String.class)));
+			queryBuilder.filter(Expressions.matchAny(RevisionBranch.Fields.PARENT_PATH, getCollection(OptionKey.PARENT, String.class)));
 		}
 		
 		if (containsKey(OptionKey.NAME)) {
-			queryBuilder.filter(Expressions.matchAny("name", getCollection(OptionKey.NAME, String.class)));
+			queryBuilder.filter(Expressions.matchAny(RevisionBranch.Fields.NAME, getCollection(OptionKey.NAME, String.class)));
+		}
+		
+		if (containsKey(OptionKey.BRANCH_ID)) {
+			queryBuilder.filter(Expressions.matchAnyLong(RevisionBranch.Fields.ID, getCollection(OptionKey.BRANCH_ID, Long.class)));
 		}
 		
 		return queryBuilder.build();
