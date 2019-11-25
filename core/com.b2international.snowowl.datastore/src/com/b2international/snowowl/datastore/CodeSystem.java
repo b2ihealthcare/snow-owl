@@ -72,6 +72,10 @@ public final class CodeSystem implements Serializable {
 		public static Expression uris(Collection<String> uris) {
 			return matchAny(Fields.URIS, uris);
 		}
+
+		public static Expression toolings(Collection<String> toolingIds) {
+			return matchAny(Fields.TOOLING_ID, toolingIds);
+		}
 		
 	}
 	

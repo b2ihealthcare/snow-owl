@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,16 @@
  */
 package com.b2international.snowowl.snomed.common;
 
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.b2international.commons.VerhoeffCheck;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 public abstract class SnomedTerminologyComponentConstants {
 	
 	// suppress constructor
 	private SnomedTerminologyComponentConstants() {}
 
-	public static final Set<String> NS_URI_SET = ImmutableSet.of(
-			"http://b2international.com/snowowl/sct/1.0", 
-			"http://b2international.com/snowowl/snomed/refset/1.0", 
-			"http://b2international.com/snowowl/snomed/mrcm");
-	
-	public static final String[] NS_URI = Iterables.toArray(NS_URI_SET, String.class);
-	
 	public static final String TERMINOLOGY_ID = "com.b2international.snowowl.terminology.snomed";
 	
 	public static final String CONCEPT = "com.b2international.snowowl.terminology.snomed.concept";
@@ -67,9 +57,11 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String SNOMED_B2I_NAME = SNOMED_NAME + ", B2i extension";
 	public static final String SNOMED_B2I_OID = SNOMED_INT_OID + ".1000154";
 	public static final String SNOMED_B2I_LINK = "https://b2i.sg";
+	public static final String URI_BASE = "http://snomed.info";
+	public static final String SNOMED_URI = URI_BASE + "/sct";
 
 	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
-	
+
 	public static short getTerminologyComponentIdValue(final String referencedComponentId) {
 		final short s = getTerminologyComponentIdValueSafe(referencedComponentId);
 		if (-1 == s) {

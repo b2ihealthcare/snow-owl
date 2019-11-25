@@ -48,6 +48,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSyste
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.google.common.collect.Iterables;
 
 /**
  * FHIR provider base class.
@@ -55,7 +56,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Instant;
  * @since 7.0
  */
 public abstract class BaseFhirCodeSystemExtension implements FhirCodeSystemExtension {
-	
+
 	private Collection<IConceptProperty> supportedProperties;
 
 	/**
@@ -71,7 +72,7 @@ public abstract class BaseFhirCodeSystemExtension implements FhirCodeSystemExten
 		return createCodeSystemBuilder(codeSystem, version)
 				.build();
 	}
-	
+
 	/**
 	 * Creates a FHIR {@link CodeSystem} from a {@link com.b2international.snowowl.datastore.CodeSystem} and optional {@link CodeSystemVersionEntry}.
 	 * @param codeSystem
@@ -99,8 +100,7 @@ public abstract class BaseFhirCodeSystemExtension implements FhirCodeSystemExten
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.title(codeSystem.getName())
 			.description(codeSystem.getCitation())
-			.url((String) null)
-//			getFhirUri(codeSystemEntry, codeSystemVersion)
+			.url(Iterables.getFirst(codeSystem.getUris(), "not_set"))
 			.content(getCodeSystemContentMode())
 			.count(getCount(version));
 		
@@ -155,9 +155,6 @@ public abstract class BaseFhirCodeSystemExtension implements FhirCodeSystemExten
 
 	@Override
 	public SubsumptionResult subsumes(BranchContext context, SubsumptionRequest subsumptionRequest) {
-//		final String version = getVersion(subsumptionRequest);
-//		final String branchPath = getBranchPath(version);
-		
 		String codeA = null;
 		String codeB = null;
 		if (subsumptionRequest.getCodeA() != null && subsumptionRequest.getCodeB() != null) {
@@ -181,37 +178,6 @@ public abstract class BaseFhirCodeSystemExtension implements FhirCodeSystemExten
 			return SubsumptionResult.notSubsumed();
 		}
 	}
-	
-//	/**
-//	 * Returns the version information from the request
-//	 * @param subsumptionRequest 
-//	 * @return version string
-//	 */
-//	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-//		
-//		String version = subsumptionRequest.getVersion();
-//
-//		//get the latest version
-//		if (version == null) {
-//			Optional<CodeSystemVersionEntry> optionalVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
-//				.one()
-//				.filterByCodeSystemShortName(getCodeSystemShortName())
-//				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-//				.build(getRepositoryId())
-//				.execute(getBus())
-//				.getSync()
-//				.first();
-//				
-//			if (optionalVersion.isPresent()) {
-//				return optionalVersion.get().getVersionId();
-//			} else {
-//				//never been versioned
-//				return null;
-//			}
-//		}
-//		
-//		return version;
-//	}
 	
 	/**
 	 * Builds a lookup result property for the given @see {@link IConceptProperty} based on the supplier's value

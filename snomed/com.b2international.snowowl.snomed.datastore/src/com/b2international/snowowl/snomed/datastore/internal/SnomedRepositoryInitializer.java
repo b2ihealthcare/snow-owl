@@ -39,7 +39,7 @@ public final class SnomedRepositoryInitializer extends TerminologyRepositoryInit
 				.oid(SnomedTerminologyComponentConstants.SNOMED_INT_OID)
 				.toolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 				.repositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.uris(Collections.singletonList("http://snomed.info/sct"))
+				.uris(Collections.singletonList(SnomedTerminologyComponentConstants.SNOMED_URI))
 				.build();
 	}
 

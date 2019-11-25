@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -49,7 +48,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProperties;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Provider for the SNOMED CT FHIR support
@@ -60,14 +58,6 @@ import com.google.common.collect.ImmutableSet;
 @Component
 public final class SnomedFhirCodeSystemExtension extends BaseFhirCodeSystemExtension {
 
-	private static final String URI_BASE = "http://snomed.info";
-	
-	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
-		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
-		SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
-		SnomedUri.SNOMED_BASE_URI_STRING
-	);
-	
 	@Override
 	public String getToolingId() {
 		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
@@ -215,19 +205,18 @@ public final class SnomedFhirCodeSystemExtension extends BaseFhirCodeSystemExten
 		
 		CodeSystem system = context.service(CodeSystem.class);
 		setBaseProperties(lookupRequest, resultBuilder, "TODO cs name", "TODO version", getPreferredTermOrId(concept));
-		
+
 		//add terms as designations
 		if (lookupRequest.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
-				
+
 			String languageCode = lookupRequest.getDisplayLanguage() != null ? lookupRequest.getDisplayLanguage().getCodeValue() : "en-GB";
 				for (SnomedDescription description : concept.getDescriptions()) {
-						
 					Coding coding = Coding.builder()
 						.system(SnomedUri.SNOMED_BASE_URI_STRING)
 						.code(description.getTypeId())
 						.display(getPreferredTermOrId(description.getType()))
 						.build();
-						
+
 					resultBuilder.addDesignation(Designation.builder()
 						.languageCode(languageCode)
 						.use(coding)
@@ -235,7 +224,7 @@ public final class SnomedFhirCodeSystemExtension extends BaseFhirCodeSystemExten
 						.build());
 				}
 		}
-				
+
 		// add basic SNOMED properties
 		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.INACTIVE)) {
 			resultBuilder.addProperty(CoreSnomedConceptProperties.INACTIVE.propertyOf(!concept.isActive()));
@@ -275,10 +264,6 @@ public final class SnomedFhirCodeSystemExtension extends BaseFhirCodeSystemExten
 			.filter(p -> p.startsWith("http://snomed.info/id/"))
 			.map(p -> p.substring(p.lastIndexOf('/') + 1, p.length()))
 			.collect(Collectors.toSet());
-		
-		
-//		String branchPath = getBranchPath(lookupRequest.getVersion());
-		String branchPath = Branch.MAIN_PATH;
 		
 		if (!relationshipTypeIds.isEmpty()) {
 			SnomedRequests.prepareSearchRelationship()

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
@@ -131,6 +133,13 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	}
 
 	private CodeSystem createCodeSystem(final TransactionContext context) {
+		final List<String> urisToAdd = newArrayList();
+		if (!Strings.isNullOrEmpty(link)) {
+			urisToAdd.add(link);
+		}
+		if (uris != null) {
+			urisToAdd.addAll(uris);
+		}
 		return CodeSystem.builder()
 				.oid(oid)
 				.branchPath(branchPath)
@@ -143,7 +152,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.toolingId(toolingId)
 				.repositoryId(repositoryId)
 				.extensionOf(extensionOf)
-				.uris(uris)
+				.uris(urisToAdd)
 				.build();
 	}
 	

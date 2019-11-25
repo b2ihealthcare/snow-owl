@@ -40,7 +40,12 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 		/**
 		 * Filter code systems by their associated URIs.
 		 */
-		URI
+		URI,
+		
+		/**
+		 * Filter code systems by their associated tooling identifier.
+		 */
+		TOOLING
 		
 	}
 	
@@ -62,6 +67,10 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 		
 		if (containsKey(OptionKey.URI)) {
 			queryBuilder.filter(CodeSystem.Expressions.uris(getCollection(OptionKey.URI, String.class)));
+		}
+		
+		if (containsKey(OptionKey.TOOLING)) {
+			queryBuilder.filter(CodeSystem.Expressions.toolings(getCollection(OptionKey.TOOLING, String.class)));
 		}
 		
 		return queryBuilder.build();

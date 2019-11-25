@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 
 /**
@@ -39,7 +40,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 public class SnomedUri {
 	
 	public static final String VERSION_PATH_SEGMENT = "version"; //$NON-NLS-N$
-	public static final String SNOMED_BASE_URI_STRING = "http://snomed.info/sct"; //$NON-NLS-N$
+	public static final String SNOMED_BASE_URI_STRING = SnomedTerminologyComponentConstants.URI_BASE; //$NON-NLS-N$
 	public static final Uri SNOMED_BASE_URI = new Uri(SNOMED_BASE_URI_STRING);
 	public static final Uri SNOMED_INT_CORE_MODULE_URI = new Uri(SNOMED_BASE_URI_STRING + "/" + Concepts.MODULE_SCT_CORE );
 	
