@@ -188,9 +188,10 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 
 		Instant mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
-		
-		if (!effectiveTime.toInstant().isAfter(mostRecentVersionEffectiveTime)) {
-			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
+		Instant requestEffectiveTime = effectiveTime.toInstant();
+
+		if (!requestEffectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
+			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", requestEffectiveTime, mostRecentVersionEffectiveTime);
 		}
 	}
 	

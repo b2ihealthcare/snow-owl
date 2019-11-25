@@ -37,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.RevisionHash;
@@ -71,6 +72,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * Lightweight representation of a SNOMED CT reference set member.
@@ -294,6 +296,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression mapTargetDescriptions(Collection<String> mapTargetDescriptions) {
 			return matchAny(Fields.MAP_TARGET_DESCRIPTION, mapTargetDescriptions);
 		}
+		
+		public static Expression mapGroups(Collection<Integer> mapGroups) {
+			return matchAnyInt(Fields.MAP_GROUP, mapGroups);
+		}
 
 		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
 			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes.stream().map(Short::intValue).collect(Collectors.toSet()));
@@ -357,6 +363,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression values(DataType type, Collection<? extends Object> values) {
 			switch (type) {
+			case BOOLEAN:
+				if (values.size() > 1) {
+					throw new BadRequestException("Only one boolean filter value (either true or false) is allowed. Got: %s", values);
+				}
+				return match(Fields.BOOLEAN_VALUE, (Boolean) Iterables.getOnlyElement(values));
 			case STRING: 
 				return matchAny(Fields.STRING_VALUE, FluentIterable.from(values).filter(String.class).toSet());
 			case INTEGER:

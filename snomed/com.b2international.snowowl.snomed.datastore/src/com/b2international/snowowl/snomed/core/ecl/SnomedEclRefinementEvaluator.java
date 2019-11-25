@@ -51,8 +51,8 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -64,30 +64,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSe
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.Ecl;
-import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeComparison;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
-import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
-import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
-import com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
-import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.*;
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
@@ -415,7 +392,15 @@ final class SnomedEclRefinementEvaluator {
 		final Object value;
 		final DataType type;
 		final SearchResourceRequest.Operator operator;
-		if (comparison instanceof StringValueEquals) {
+		if (comparison instanceof BooleanValueEquals) {
+			value = ((BooleanValueEquals) comparison).isValue();
+			type = DataType.BOOLEAN;
+			operator = SearchResourceRequest.Operator.EQUALS;
+		} else if (comparison instanceof BooleanValueNotEquals) {
+			value = ((BooleanValueNotEquals) comparison).isValue();
+			type = DataType.BOOLEAN;
+			operator = SearchResourceRequest.Operator.NOT_EQUALS;
+		} else if (comparison instanceof StringValueEquals) {
 			value = ((StringValueEquals) comparison).getValue();
 			type = DataType.STRING;
 			operator = SearchResourceRequest.Operator.EQUALS;

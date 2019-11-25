@@ -98,6 +98,8 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.DATA_TYPE_COMPARISON: return createDataTypeComparison();
       case EclPackage.ATTRIBUTE_VALUE_EQUALS: return createAttributeValueEquals();
       case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS: return createAttributeValueNotEquals();
+      case EclPackage.BOOLEAN_VALUE_EQUALS: return createBooleanValueEquals();
+      case EclPackage.BOOLEAN_VALUE_NOT_EQUALS: return createBooleanValueNotEquals();
       case EclPackage.STRING_VALUE_EQUALS: return createStringValueEquals();
       case EclPackage.STRING_VALUE_NOT_EQUALS: return createStringValueNotEquals();
       case EclPackage.INTEGER_VALUE_EQUALS: return createIntegerValueEquals();
@@ -354,6 +356,28 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     AttributeValueNotEqualsImpl attributeValueNotEquals = new AttributeValueNotEqualsImpl();
     return attributeValueNotEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public BooleanValueEquals createBooleanValueEquals()
+  {
+    BooleanValueEqualsImpl booleanValueEquals = new BooleanValueEqualsImpl();
+    return booleanValueEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public BooleanValueNotEquals createBooleanValueNotEquals()
+  {
+    BooleanValueNotEqualsImpl booleanValueNotEquals = new BooleanValueNotEqualsImpl();
+    return booleanValueNotEquals;
   }
 
   /**

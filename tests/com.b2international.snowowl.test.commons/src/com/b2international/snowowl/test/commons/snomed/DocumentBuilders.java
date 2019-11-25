@@ -131,6 +131,10 @@ public abstract class DocumentBuilders {
 				.classAxiomRelationships(classAxioms);
 	}
 	
+	public static SnomedRefSetMemberIndexEntry.Builder booleanMember(final String referencedComponentId, final String typeId, final Boolean value, final String characteristicTypeId) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.BOOLEAN, characteristicTypeId);
+	}
+	
 	public static SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String typeId, final BigDecimal value, final String characteristicTypeId) {
 		return concreteDomain(referencedComponentId, typeId, value, DataType.DECIMAL, characteristicTypeId);
 	}

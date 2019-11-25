@@ -4,10 +4,10 @@ rem Snow Owl CIS Startup Script
 if "%OS%" == "Windows_NT" setlocal
 
 rem Derive full path for script (includes trailing backslash)
-  set SCRIPT_DIR=%~dp0
+set SCRIPT_DIR=%~dp0
 
 rem Derive KERNEL_HOME full path from script's parent (no backslash)
-  for %%I in ("%SCRIPT_DIR%..") do set KERNEL_HOME=%%~fsI
+  for %%I in ("%SCRIPT_DIR%..") do set KERNEL_HOME="%%~fsI"
 
 set CONFIG_AREA=%KERNEL_HOME%/work
 
@@ -32,6 +32,9 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+AlwaysLockClassLoader
 
 REM Jetty configuration 
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.port=9090
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.home="%KERNEL_HOME%/configuration"
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djetty.etc.config.urls=jetty.xml,jetty-http.xml,jetty-deployer.xml
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog
 
 REM GC configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+UseConcMarkSweepGC
@@ -41,8 +44,9 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
 
 REM Misc configuration
 set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
+set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dlogback.configurationFile="%KERNEL_HOME%/configuration/serviceability.xml"
 
 REM Run Snow Owl
 PUSHD %KERNEL_HOME%
-"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.400.v20190515-0925.jar 
+"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.400.v20190515-0925.jar  -console 2501 
 POPD

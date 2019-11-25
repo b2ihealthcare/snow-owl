@@ -38,12 +38,31 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 
 	SearchJobRequest() {
 	}
+	
+	enum OptionKey {
+		
+		/**
+		 * Filter matches by description, status, user and created/started/finished date
+		 */
+		TERM
+	}
 
 	@Override
 	protected Expression prepareQuery(ServiceProvider context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addIdFilter(queryBuilder, RemoteJobEntry.Expressions::ids);
+		
+		if (containsKey(OptionKey.TERM)) {
+			String searchTerm = getString(OptionKey.TERM);
+			queryBuilder.must(
+					Expressions.builder()
+						.should(Expressions.prefixMatch(RemoteJobEntry.Fields.USER, searchTerm))
+						.should(Expressions.prefixMatch(RemoteJobEntry.Fields.STATE, searchTerm.toUpperCase()))
+						.should(Expressions.matchTextAll(RemoteJobEntry.Fields.DESCRIPTION + ".prefix", searchTerm))
+					.build()
+			);
+		}
 		
 		if (options().containsKey(USER)) {
 			queryBuilder.filter(user(options().getString(USER)));

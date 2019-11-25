@@ -134,6 +134,59 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.22.0
+
+### Bugs/Improvements
+- [api] add filter by `mapGroup` member property (76560db)
+- [api] Add proper throws declarations for attachments api methods (adc2ed7)
+- [ecl] support BooleanValueEquals and NotEquals data comparisons in concrete domain member refinements (3399d33)
+- [validation] duplicate reference set member validation rule (#420)
+- [classification] cancel classification task properly after cancelling the corresponding remote job (05bf99b)
+- [jobs] Fix NPE for canceled but scheduled jobs (173fcb6)
+
+## 6.21.0
+
+### API
+- Support filtering refset members by OWL expression (#407)
+
+### MRCM
+- Add new concept set definition type (#408)
+
+### Jobs
+- Improve job filtering API (#411)
+- Add auto cleanup option to job schedule (#406)
+
+### Validation
+- Rename common validation rules (#410)
+
+### Bugs/improvements
+- Fix refset member duplication issue (#412)
+- Allow adding inactive query refset members (#414)
+
+## 6.20.0
+
+### API
+- Expose special member property based filtering over REST API (5fde911)
+
+### CIS
+- Add data synchronization script and migration guide to CIS product (d645ce1, 5f01750)
+
+### Scripts
+- New auto RF2 import script to automatically import RF2 files via REST API (#398)
+
+### Validation
+- Supporting deletion of validation issues by tooling and branch (db9b492)
+- Add published/unpublished filtering to validation issues (#391) 
+- Properly filter unpublished members in rule `snomed-common-4` (#394)
+- Add new description character length validation rule (#400)
+- Handle reference sets properly in validation issue detail expansion (#402)
+
+### Bugs/Improvements
+- Revert fix `[api] inactivate all language members when inactivating a SNOMED CT Description`
+- Allow duplicate relationships in DSV export (#393)
+- Handle descriptions during equivalent concept merging during classification (#392)
+>>>>>>> refs/remotes/origin/6.x
+
 ## 6.19.0
 
 ### Bugs/Improvements

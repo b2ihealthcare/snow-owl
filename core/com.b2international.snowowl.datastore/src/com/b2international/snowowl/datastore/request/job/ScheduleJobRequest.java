@@ -53,13 +53,16 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	
 	@NotNull
 	private final Request<ServiceProvider, ?> request;
+	
+	private final boolean autoClean;
 
 	private SerializableSchedulingRule schedulingRule;
 
-	ScheduleJobRequest(String id, String user, Request<ServiceProvider, ?> request, String description, SerializableSchedulingRule schedulingRule) {
+	ScheduleJobRequest(String id, String user, Request<ServiceProvider, ?> request, boolean autoClean, String description, SerializableSchedulingRule schedulingRule) {
 		this.id = id;
 		this.user = user;
 		this.request = request;
+		this.autoClean = autoClean;
 		this.description = description;
 		this.schedulingRule = schedulingRule;
 	}
@@ -80,7 +83,7 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 				} else {
 					userId = user;
 				}
-				RemoteJob job = new RemoteJob(id, description, userId, context, request);
+				RemoteJob job = new RemoteJob(id, description, userId, context, request, autoClean);
 				job.setSystem(true);
 				if (schedulingRule != null) {
 					job.setRule(schedulingRule);

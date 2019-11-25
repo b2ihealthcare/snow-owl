@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.commit;
 import java.io.Serializable;
 
 import com.b2international.index.revision.Commit;
+import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -45,7 +46,8 @@ public final class CommitInfo implements Serializable {
 			.author(doc.getAuthor())
 			.comment(doc.getComment())
 			.timestamp(doc.getTimestamp())
-			.groupId(doc.getGroupId());
+			.groupId(doc.getGroupId())
+			.mergeSource(doc.getMergeSource());
 	}
 	
 	public static Builder builder(final RepositoryCommitNotification notification) {
@@ -55,7 +57,8 @@ public final class CommitInfo implements Serializable {
 				.author(notification.getUserId())
 				.comment(notification.getComment())
 				.timestamp(notification.getCommitTimestamp())
-				.groupId(notification.getGroupId());
+				.groupId(notification.getGroupId())
+				.mergeSource(notification.getMergeSource());
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
@@ -67,6 +70,7 @@ public final class CommitInfo implements Serializable {
 		private String comment;
 		private long timestamp;
 		private String groupId;
+		private RevisionBranchPoint mergeSource;
 		private CommitInfoDetails details;
 		
 		public Builder id(final String id) {
@@ -99,13 +103,18 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
+		public Builder mergeSource(RevisionBranchPoint mergeSource) {
+			this.mergeSource = mergeSource;
+			return this;
+		}
+		
 		public Builder details(CommitInfoDetails details) {
 			this.details = details;
 			return this;
 		}
 		
 		public CommitInfo build() {
-			return new CommitInfo(id, branch, author, comment, timestamp, groupId, details);
+			return new CommitInfo(id, branch, author, comment, timestamp, groupId, mergeSource, details);
 		}
 
 	}
@@ -116,6 +125,7 @@ public final class CommitInfo implements Serializable {
 	private final String comment;
 	private final long timestamp;
 	private final String groupId;
+	private final RevisionBranchPoint mergeSource;
 	private final CommitInfoDetails details;
 	
 	CommitInfo(
@@ -125,6 +135,7 @@ public final class CommitInfo implements Serializable {
 			final String comment,
 			final long timestamp, 
 			final String groupId,
+			final RevisionBranchPoint mergeSource,
 			final CommitInfoDetails details) {
 		this.id = id;
 		this.branch = branch;
@@ -132,6 +143,7 @@ public final class CommitInfo implements Serializable {
 		this.comment = comment;
 		this.timestamp = timestamp;
 		this.groupId = groupId;
+		this.mergeSource = mergeSource;
 		this.details = details;
 	}
 
@@ -157,6 +169,10 @@ public final class CommitInfo implements Serializable {
 	
 	public String getGroupId() {
 		return groupId;
+	}
+
+	public RevisionBranchPoint getMergeSource() {
+		return mergeSource;
 	}
 	
 	public CommitInfoDetails getDetails() {

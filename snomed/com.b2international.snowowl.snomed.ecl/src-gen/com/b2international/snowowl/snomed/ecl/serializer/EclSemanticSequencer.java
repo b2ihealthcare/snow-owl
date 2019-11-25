@@ -24,6 +24,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
@@ -122,6 +124,12 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				return; 
 			case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS:
 				sequence_AttributeValueNotEquals(context, (AttributeValueNotEquals) semanticObject); 
+				return; 
+			case EclPackage.BOOLEAN_VALUE_EQUALS:
+				sequence_BooleanValueEquals(context, (BooleanValueEquals) semanticObject); 
+				return; 
+			case EclPackage.BOOLEAN_VALUE_NOT_EQUALS:
+				sequence_BooleanValueNotEquals(context, (BooleanValueNotEquals) semanticObject); 
 				return; 
 			case EclPackage.CARDINALITY:
 				sequence_Cardinality(context, (Cardinality) semanticObject); 
@@ -483,6 +491,46 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getAttributeValueNotEqualsAccess().getConstraintSubExpressionConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     Comparison returns BooleanValueEquals
+	 *     DataTypeComparison returns BooleanValueEquals
+	 *     BooleanValueEquals returns BooleanValueEquals
+	 *
+	 * Constraint:
+	 *     value=Boolean
+	 */
+	protected void sequence_BooleanValueEquals(ISerializationContext context, BooleanValueEquals semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, EclPackage.Literals.BOOLEAN_VALUE_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.BOOLEAN_VALUE_EQUALS__VALUE));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getBooleanValueEqualsAccess().getValueBooleanParserRuleCall_1_0(), semanticObject.isValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     Comparison returns BooleanValueNotEquals
+	 *     DataTypeComparison returns BooleanValueNotEquals
+	 *     BooleanValueNotEquals returns BooleanValueNotEquals
+	 *
+	 * Constraint:
+	 *     value=Boolean
+	 */
+	protected void sequence_BooleanValueNotEquals(ISerializationContext context, BooleanValueNotEquals semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, EclPackage.Literals.BOOLEAN_VALUE_NOT_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.BOOLEAN_VALUE_NOT_EQUALS__VALUE));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getBooleanValueNotEqualsAccess().getValueBooleanParserRuleCall_1_0(), semanticObject.isValue());
 		feeder.finish();
 	}
 	

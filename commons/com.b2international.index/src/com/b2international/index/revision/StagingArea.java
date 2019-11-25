@@ -272,27 +272,37 @@ public final class StagingArea {
 			final String changedRevisionId = changedRevision.getKey();
 			if (!removedObjects.containsKey(changedRevisionId)) {
 				RevisionDiff revisionDiff = changedRevision.getValue();
+				if (!revisionDiff.hasChanges()) {
+					// System.err.println("No raw property change for revision " + changedRevisionId + ", skipping");
+					continue;
+				}
+				
 				final Revision rev = revisionDiff.newRevision;
-				// XXX temporal coupling between writer.put() and revisionDiff.diff(mapper) call
-				// first put the new revision into the writer so that created and revised fields will get their values properly
-				// then call the diff method to calculate the diff and serialize the new node into a JsonNode with _changes and created, revised fields
 				writer.put(changedRevisionId, rev);
+				
 				if (shouldSetRevisedOnMergeBranch()) {
 					revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
 				}
+				
 				ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 				ObjectId objectId = rev.getObjectId();
-				if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
-					changedComponentsByContainer.put(containerId, objectId);
-				}
 				
-				if (revisionDiff.diff() != null) {
-					revisionDiff.diff().forEach(node -> {
-						if (node instanceof ObjectNode) {
-							revisionsByChange.put((ObjectNode) node, objectId);
-						}
-					});
+				// If the object has no "important" property-level changes, make a note of it as changed
+				if (!revisionDiff.hasComponentChanges()) {
+					changedComponentsByContainer.put(containerId, objectId);
+					continue;
 				}
+
+				// Otherwise, it is only recorded if it is not a container
+				if (!containerId.isRoot()) {
+					changedComponentsByContainer.put(containerId, objectId);	
+				}
+
+				revisionDiff.diff().forEach(node -> {
+					if (node instanceof ObjectNode) {
+						revisionsByChange.put((ObjectNode) node, objectId);
+					}
+				});
 			}
 		}
 		
@@ -445,7 +455,8 @@ public final class StagingArea {
 		public final Revision oldRevision;
 		public final Revision newRevision;
 		
-		private ArrayNode changes;
+		private ArrayNode rawDiff;
+		private ArrayNode diff;
 		private Map<String, RevisionPropertyDiff> propertyChanges;
 		
 		private RevisionDiff(Revision oldRevision, Revision newRevision) {
@@ -453,31 +464,59 @@ public final class StagingArea {
 			this.newRevision = newRevision;
 		}
 
+		public boolean hasChanges() {
+			return rawDiff().size() > 0;
+		}
+
+		public boolean hasComponentChanges() {
+			return diff() != null && diff().size() > 0;
+		}
+
+		private ArrayNode rawDiff() {
+			if (rawDiff == null) {
+				ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
+				ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
+				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
+				final ArrayNode rawDiff = ClassUtils.checkAndCast(diff, ArrayNode.class);
+				final ArrayNode filteredRawDiff = mapper.createArrayNode();
+				final Iterator<JsonNode> elements = rawDiff.elements();
+				while (elements.hasNext()) {
+					JsonNode node = elements.next();
+					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
+					final String property = change.get("path").asText().substring(1);
+					
+					// Remove administrative revision fields from diff, but keep all other ones
+					if (!Revision.Fields.CREATED.equals(property) && !Revision.Fields.REVISED.equals(property)) {
+						filteredRawDiff.add(change);
+					}
+				}
+				this.rawDiff = filteredRawDiff;
+			}
+			return this.rawDiff;
+		}
+		
 		public ArrayNode diff() {
-			if (changes == null) {
+			if (diff == null) {
 				final DocumentMapping mapping = index.admin().mappings().getMapping(newRevision.getClass());
 				final Set<String> diffFields = mapping.getHashedFields();
 				if (diffFields.isEmpty()) {
 					return null; // in case of no hash fields, do NOT try to compute the diff
 				}
-				ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
-				ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
-				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
-				// remove revision specific fields from diff
-				final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
-				final ArrayNode changes = mapper.createArrayNode();
-				final Iterator<JsonNode> elements = diffNode.elements();
+				
+				final ArrayNode diff = mapper.createArrayNode();
+				final Iterator<JsonNode> elements = rawDiff().elements();
 				while (elements.hasNext()) {
 					JsonNode node = elements.next();
 					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
 					final String property = change.get("path").asText().substring(1);
+					// Keep hashed fields only
 					if (diffFields.contains(property)) {
-						changes.add(change);
+						diff.add(change);
 					}
 				}
-				this.changes = changes;
+				this.diff = diff;
 			}
-			return this.changes;
+			return this.diff;
 		}
 
 		public RevisionPropertyDiff getRevisionPropertyDiff(String property) {
@@ -632,6 +671,10 @@ public final class StagingArea {
 			// then handle changed vs. changed with the conflict processor
 			Set<String> changedInSourceAndTargetIds = Sets.intersection(changedRevisionIdsToMerge, changedRevisionIdsToCheck);
 			if (!changedInSourceAndTargetIds.isEmpty()) {
+
+				// Even if we have no property-level information, the source revision must be revised
+				revisionsToReviseOnMergeSource.putAll(type, changedInSourceAndTargetIds);
+				
 				for (String changedInSourceAndTargetId : changedInSourceAndTargetIds) {
 					Map<String, RevisionCompareDetail> sourcePropertyChanges = fromChangeDetails.stream()
 							.filter(detail -> detail.getObject().id().equals(changedInSourceAndTargetId))
@@ -684,6 +727,7 @@ public final class StagingArea {
 		
 		boolean stagedChanges = false;
 		// apply property changes, conflicts, etc.
+		
 		if (!propertyUpdatesToApply.isEmpty()) {
 			// if there are property conflict resolutions, then we have staged changes and it does not matter if the merge is fast-forward
 			for (Entry<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> entry : propertyUpdatesToApply.entrySet()) {
@@ -694,7 +738,6 @@ public final class StagingArea {
 				for (Revision objectToUpdate : objectsToUpdate) {
 					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
 					stagedChanges = true;
-					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
 				}
 			}
 		}

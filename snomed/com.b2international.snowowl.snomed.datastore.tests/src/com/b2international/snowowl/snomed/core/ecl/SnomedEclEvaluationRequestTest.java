@@ -26,7 +26,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.classAxioms;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.decimalMember;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.integerMember;
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.*;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.relationship;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.stringMember;
 import static org.junit.Assert.assertEquals;
@@ -116,6 +116,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String DRUG_ROOT = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final long DRUG_ROOTL = Long.parseLong(DRUG_ROOT);
 	
+	private static final String MANUFACTURED = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_TRADE_NAME = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String PREFERRED_STRENGTH = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_1_MG = RandomSnomedIdentiferGenerator.generateConceptId();
@@ -858,6 +859,30 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void refinementBooleanValueEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s: %s = true", DRUG_ROOT, MANUFACTURED));
+		final Expression expected = and(
+			descendantsOf(DRUG_ROOT),
+			ids(ImmutableSet.of(PANADOL_TABLET, TRIPHASIL_TABLET))
+		);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementBooleanValueNotEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s: %s != true", DRUG_ROOT, MANUFACTURED));
+		final Expression expected = and(
+			descendantsOf(DRUG_ROOT),
+			ids(ImmutableSet.of(AMOXICILLIN_TABLET))
+		);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void refinementStringEquals() throws Exception {
 		generateDrugHierarchy();
 		
@@ -1261,6 +1286,14 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 			.stageNew(integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500, getCharacteristicType()).build())
 			.stageNew(decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d), getCharacteristicType()).build())
 			.stageNew(decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d), getCharacteristicType()).build())
+			.stageNew(integerMember(PANADOL_TABLET, PREFERRED_STRENGTH, 500, getCharacteristicType()).build())
+			.stageNew(integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500, getCharacteristicType()).build())
+			.stageNew(decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d), getCharacteristicType()).build())
+			.stageNew(decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d), getCharacteristicType()).build())
+			// manufactured flags
+			.stageNew(booleanMember(PANADOL_TABLET, MANUFACTURED, true, getCharacteristicType()).build())
+			.stageNew(booleanMember(TRIPHASIL_TABLET, MANUFACTURED, true, getCharacteristicType()).build())
+			.stageNew(booleanMember(AMOXICILLIN_TABLET, MANUFACTURED, false, getCharacteristicType()).build())
 			.commit(currentTime(), UUID.randomUUID().toString(), "Initialize generated drugs");
 	}
 

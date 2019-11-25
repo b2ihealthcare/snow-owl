@@ -26,15 +26,18 @@ import org.junit.runners.Parameterized;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.ImmutableList;
 
@@ -46,8 +49,8 @@ import com.google.common.collect.ImmutableList;
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test
-	public void ruleSnomedCommon1() throws Exception {
-		final String ruleId = "snomed-common-1";
+	public void rule663() throws Exception {
+		final String ruleId = "663";
 		indexRule(ruleId);
 		
 		SnomedConceptDocument inactiveDestinationConcept = concept(generateConceptId()).active(false).build();
@@ -78,8 +81,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void ruleSnomedCommon2() throws Exception {
-		final String ruleId = "snomed-common-2";
+	public void rule664() throws Exception {
+		final String ruleId = "664";
 		indexRule(ruleId);
 
 		// index three concepts
@@ -108,8 +111,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void ruleSnomedCommon3() throws Exception {
-		final String ruleId = "snomed-common-3";
+	public void rule665() throws Exception {
+		final String ruleId = "665";
 		indexRule(ruleId);
 
 		// Relationships with deprecated characteristic types
@@ -156,8 +159,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void ruleSnomedCommon4() throws Exception {
-		final String ruleId = "snomed-common-4";
+	public void rule666() throws Exception {
+		final String ruleId = "666";
 		indexRule(ruleId);
 
 		// index concept with two FSNs in the same language refset
@@ -214,6 +217,44 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c1.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c2.getId()));
+	}
+	
+	@Test
+	public void rule667() throws Exception {
+		final String ruleId = "667";
+		indexRule(ruleId);
+		
+		final SnomedDescriptionIndexEntry correctSynonym = description(generateDescriptionId(), Concepts.SYNONYM, "correct synonym length").build();
+		final SnomedDescriptionIndexEntry incorrectSynonym = description(generateDescriptionId(), Concepts.SYNONYM, generateTermOfLength(256)).build();
+		final SnomedDescriptionIndexEntry correctFsn = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "correct FSN length(this is an fsn)").build();
+		final SnomedDescriptionIndexEntry incorrectFsn = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, generateTermOfLength(256)).build();
+		final SnomedDescriptionIndexEntry correctTextDefinition = description(generateDescriptionId(), Concepts.TEXT_DEFINITION, "Correct text definition length").build();
+		final SnomedDescriptionIndexEntry incorrectTextDefinition = description(generateDescriptionId(), Concepts.TEXT_DEFINITION, generateTermOfLength(4097)).build();
+		final String newDescriptionTypeId = generateConceptId();
+		final SnomedRefSetMemberIndexEntry descriptionFormatEntry = member(newDescriptionTypeId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_DESCRIPTION_TYPE)
+				.field(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 50)
+				.build();
+		final SnomedDescriptionIndexEntry newCorrectDescriptionTypedDesc = description(generateConceptId(), newDescriptionTypeId, "correct new description type length").build();
+		final SnomedDescriptionIndexEntry newIncorrectDescriptionTypedDesc = description(generateConceptId(), newDescriptionTypeId, generateTermOfLength(51)).build();
+		
+		indexRevision(MAIN, 
+			correctSynonym, 
+			incorrectSynonym, 
+			correctFsn, 
+			incorrectFsn, 
+			correctTextDefinition, 
+			incorrectTextDefinition,
+			descriptionFormatEntry,
+			newCorrectDescriptionTypedDesc,
+			newIncorrectDescriptionTypedDesc
+		);
+		
+		final ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectSynonym.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectFsn.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectTextDefinition.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, newIncorrectDescriptionTypedDesc.getId()));
 	}
 	
 	@Test
@@ -297,6 +338,24 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		assertAffectedComponents(issues, 
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship3.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()));
+	}
+	
+	@Test
+	public void rule_duplicate_members() throws Exception {
+		final String ruleId = "rule_duplicate_members";
+		indexRule(ruleId);
+		
+		final SnomedRefSetMemberIndexEntry duplicateMember1 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		final SnomedRefSetMemberIndexEntry duplicateMember2 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		final SnomedRefSetMemberIndexEntry correctMember = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		
+		indexRevision(MAIN, duplicateMember1, duplicateMember2, correctMember);
+		
+		final ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A));
 	}
 	
 }

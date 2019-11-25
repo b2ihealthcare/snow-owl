@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.snomed.common;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -306,8 +310,10 @@ public abstract class SnomedConstants {
 		public static final String UK_MAINTAINED_CLINICAL_MODULE = "999003121000000100";
 		public static final String UK_EDITION_MODULE = "999000041000000102";
 		public static final String UK_EDITION_REFERENCE_SET_MODULE = "999000031000000106";
+		public static final String UK_EDITION_COMPOSITION_MODULE = "83821000000107";
 		public static final String UK_CLINICAL_EXTENSION_MODULE = "999000011000000103";
 		public static final String UK_CLINICAL_EXTENSION_REFERENCE_SET_MODULE = "999000021000000109";
+		public static final String UK_PATHOLOGY_EXTENSION_MODULE = "748131000000104";
 		
 		public static final String UK_MAINTAINED_PHARMACY_MODULE = "999000871000001102";
 		public static final String UK_DRUG_EXTENSION_MODULE = "999000011000001104";

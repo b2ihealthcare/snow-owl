@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
@@ -197,6 +198,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		final SnomedRefSetMemberRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId();
+		
+		final String id = change.getId();
+		// Check for correct UUID format in id input
+		UUID.fromString(id);
 		
 		final String createdRefSetMemberId = change.toRequestBuilder()
 				.build(repositoryId, branchPath, author, commitComment, defaultModuleId)

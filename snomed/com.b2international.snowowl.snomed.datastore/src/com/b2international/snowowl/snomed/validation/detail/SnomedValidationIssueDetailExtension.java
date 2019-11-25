@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,15 @@ import static com.b2international.snowowl.snomed.validation.detail.SnomedValidat
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_STATUS;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONCEPT_STATUS;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONTENT_TYPE;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.swing.SortOrder;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
@@ -46,6 +44,7 @@ import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -82,6 +81,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		public static final String COMPONENT_EFFECTIVE_TIME_START = "effectiveTimeStart";
 		public static final String COMPONENT_EFFECTIVE_TIME_END = "effectiveTimeEnd";
 		public static final String CONCEPT_STATUS = "conceptStatus";
+		public static final String CONTENT_TYPE = "contentType";
 		
 	}
 	
@@ -104,18 +104,31 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			queryBuilder.filter(Expressions.match(CONCEPT_STATUS, isConceptActive));
 		}
 		
-		if (options.containsKey(COMPONENT_EFFECTIVE_TIME_START) || options.containsKey(COMPONENT_EFFECTIVE_TIME_END)) {
-			final Long start = options.get(COMPONENT_EFFECTIVE_TIME_START, Long.class);
-			final Long end = options.get(COMPONENT_EFFECTIVE_TIME_END, Long.class);
+		if (options.containsKey(CONTENT_TYPE)) {
+			final Boolean contentTypeFilter = options.get(CONTENT_TYPE, Boolean.class);
+			if (contentTypeFilter != null && contentTypeFilter) {
+				// published only
+				if (options.containsKey(COMPONENT_EFFECTIVE_TIME_START) || options.containsKey(COMPONENT_EFFECTIVE_TIME_END)) {
+					final Long start = options.get(COMPONENT_EFFECTIVE_TIME_START, Long.class);
+					final Long end = options.get(COMPONENT_EFFECTIVE_TIME_END, Long.class);
 
-			final Expression effectiveTimeExpression = Expressions.matchRange(SnomedDocument.Fields.EFFECTIVE_TIME,
-				start == null ? 0L : start,
-				end == null ? Long.MAX_VALUE : end
-			);
-			
-			queryBuilder.filter(effectiveTimeExpression);
+					final Expression effectiveTimeExpression = Expressions.matchRange(SnomedDocument.Fields.EFFECTIVE_TIME,
+						start == null ? 0L : start,
+						end == null ? Long.MAX_VALUE : end
+					);
+					
+					queryBuilder.filter(effectiveTimeExpression);
+				} else {
+					queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(0L, Long.MAX_VALUE));
+				}
+
+			} else if (contentTypeFilter != null && !contentTypeFilter) {
+				// unpublished only 
+				queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+			}
+			// Both
 		}
-
+		
 	}
 	
 	@Override
@@ -347,6 +360,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	private ComponentCategory getComponentCategory(short terminologyComponentId) {
 		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER == terminologyComponentId) {
 			return CONCEPT;
+		} else if (SnomedTerminologyComponentConstants.REFSET_NUMBER == terminologyComponentId) {
+				return CONCEPT;
 		} else if (SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == terminologyComponentId) {
 			return DESCRIPTION;
 		} else if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {

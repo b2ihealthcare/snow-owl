@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,52 @@ public class RevisionFixtures {
 	@RevisionHash({ "field1", "field2" })
 	public static class RevisionData extends Revision {
 		
+		public static class Builder extends Revision.Builder<RevisionData.Builder, RevisionData> {
+
+			protected String id;
+			protected String field1;
+			protected String field2;
+		
+			public Builder(RevisionData revisionData) {
+				this.id = revisionData.getId();
+				this.field1 = revisionData.field1;
+				this.field2 = revisionData.field2;
+			}
+
+			public Builder id(String id) {
+				this.id = id;
+				return getSelf();
+			}
+			
+			public Builder field1(String field1) {
+				this.field1 = field1;
+				return getSelf();
+			}
+			
+			public Builder field2(String field2) {
+				this.field2 = field2;
+				return getSelf();
+			}
+			
+			public Builder score(float score) {
+				// We will ignore the score here
+				return getSelf();
+			}
+			
+			@Override
+			protected Builder getSelf() {
+				return this;
+			}
+
+			@Override
+			public RevisionData build() {
+				return new RevisionData(id, field1, field2);
+			}
+		}
+		
 		@Text(analyzer=Analyzers.TOKENIZED)
-		private String field1;
-		private String field2;
+		private final String field1;
+		private final String field2;
 
 		@JsonCreator
 		public RevisionData(
@@ -67,8 +110,12 @@ public class RevisionFixtures {
 			return Objects.hash(field1, field2);
 		}
 		
+		@Override
+		protected Builder toBuilder() {
+			return new Builder(this);
+		}
 	}
-	
+
 	@Doc
 	public static class AnalyzedData extends Revision {
 		
@@ -252,7 +299,71 @@ public class RevisionFixtures {
 			DeeplyNestedData other = (DeeplyNestedData) obj;
 			return Objects.equals(parentData, other.parentData); 
 		}
+	}
+	
+	@Doc
+	@RevisionHash({ "field1", "field2" }) // numberOfAncestors is a derived field
+	public static class DerivedData extends RevisionData {
 		
+		public static class Builder extends RevisionData.Builder {
+
+			private int numberOfAncestors;
+		
+			public Builder(DerivedData revisionData) {
+				super(revisionData);
+				this.numberOfAncestors = revisionData.numberOfAncestors;
+			}
+			
+			public Builder numberOfAncestors(int numberOfAncestors) {
+				this.numberOfAncestors = numberOfAncestors;
+				return getSelf();
+			}
+			
+			@Override
+			protected Builder getSelf() {
+				return this;
+			}
+
+			@Override
+			public DerivedData build() {
+				return new DerivedData(id, field1, field2, numberOfAncestors);
+			}
+		}
+		
+		private final int numberOfAncestors;
+
+		@JsonCreator
+		public DerivedData(
+				@JsonProperty(Revision.Fields.ID) final String id, 
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2,
+				@JsonProperty("numberOfAncestors") final int numberOfAncestors) {
+			super(id, field1, field2);
+			this.numberOfAncestors = numberOfAncestors;
+		}
+		
+		public int getNumberOfAncestors() {
+			return numberOfAncestors;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (!super.equals(obj)) return false;
+			if (getClass() != obj.getClass()) return false;
+			DerivedData other = (DerivedData) obj;
+			return numberOfAncestors == other.numberOfAncestors;
+		}
+		
+		@Override
+		public int hashCode() {
+			return 31 * super.hashCode() + Objects.hash(numberOfAncestors);
+		}
+		
+		@Override
+		protected Builder toBuilder() {
+			return new Builder(this);
+		}
 	}
 	
 }

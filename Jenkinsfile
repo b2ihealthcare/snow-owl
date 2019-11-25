@@ -75,9 +75,9 @@ node('docker') {
 							--build-arg VERSION=${tag}\
 							--build-arg GIT_REVISION=${revision} ./docker"
 
-					docker.withRegistry(custom_docker_registry, 'nexus_credentials') {
+					docker.withRegistry(custom_docker_registry, '2eba2892-1e11-4f17-af63-11d8ab3a55e9') {
 
-						def image = docker.build("snow-owl-oss:${tag}", "${buildArgs}")
+						def image = docker.build("b2ihealthcare/snow-owl-oss:${tag}", "${buildArgs}")
 						image.push()
 
 						if (!currentVersion.contains("SNAPSHOT")) {
@@ -97,7 +97,7 @@ node('docker') {
 				  --build-arg VERSION=${tag}\
 				  --build-arg GIT_REVISION=${revision} ./docker"
 
-				docker.withRegistry('', 'docker-hub-credentials') {
+				docker.withRegistry('', '0f4c3f31-b252-4104-928a-286eeeb075dc') {
 
 					def image = docker.build("b2ihealthcare/snow-owl-oss:${tag}", "${buildArgs}")
 					image.push()
@@ -112,7 +112,7 @@ node('docker') {
 
 			stage('Clean up') {
 				sh 'rm -fv docker/*.rpm'
-				sh 'docker system prune -f'
+				sh 'docker system prune --force --all --volumes'
 			}
 			
 		}
