@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 /**
@@ -52,15 +53,15 @@ public final class Rf2ValidationIssueReporter {
 	}
 	
 	public Collection<String> getErrors() {
-		return validationProblems.get(Rf2ValidationType.ERROR);
+		return ImmutableList.copyOf(validationProblems.get(Rf2ValidationType.ERROR));
 	}
 	
 	public Collection<String> getWarnings() {
-		return validationProblems.get(Rf2ValidationType.WARNING);
+		return ImmutableList.copyOf(validationProblems.get(Rf2ValidationType.WARNING));
 	}
 	
 	public Collection<String> getIssues() {
-		return validationProblems.values();
+		return ImmutableList.copyOf(validationProblems.values());
 	}
 
 	public void logWarnings(Logger log) {

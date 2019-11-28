@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.identity.domain.User;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
@@ -36,7 +36,7 @@ import com.google.common.collect.Iterables;
  */
 public final class JWTGenerator {
 
-	private static final String PERMISSION = "permission";
+	private static final String ROLE_PREFIX = "role_";
 	
 	private final Algorithm algorithm;
 	private final String issuer;
@@ -77,7 +77,13 @@ public final class JWTGenerator {
 	 * @return
 	 */
 	public String generate(User user) {
-		return generate(user.getUsername(), ImmutableMap.of(PERMISSION, user.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList())));
+		final List<Role> currentRoles = user.getRoles();
+		final ImmutableMap.Builder<String, Object> claims = ImmutableMap.builder();
+		for (Role role : currentRoles) {
+			claims.put(String.format("%s%s", ROLE_PREFIX, role.getName()), role.getPermissions().stream().map(Permission::getPermission).collect(Collectors.toList()));
+		}
+		
+		return generate(user.getUsername(), claims.build());
 	}	
 	
 	/**
@@ -87,8 +93,17 @@ public final class JWTGenerator {
 	 */
 	public static User toUser(DecodedJWT jwt) {
 		final String subject = jwt.getSubject();
-		final List<Permission> permissions = jwt.getClaim(PERMISSION).asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
-		return new User(subject, ImmutableList.of(new Role("oauth_scopes", permissions)));
+		final List<Role> roles = jwt.getClaims().entrySet().stream()
+				.filter(entry -> entry.getKey().startsWith(ROLE_PREFIX))
+				.map(entry -> {
+					final String roleName = entry.getKey();
+					final Claim claim = entry.getValue();
+					final List<Permission> permissions = claim.asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
+					
+					return new Role(roleName.replace(ROLE_PREFIX, ""), permissions);
+				}).collect(Collectors.toList());
+		
+		return new User(subject, roles);
 	}
 	
 }

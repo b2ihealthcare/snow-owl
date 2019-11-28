@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.osgi.service.prefs.PreferencesService;
-
 import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.ft.FeatureToggles;
@@ -54,8 +52,6 @@ public final class SnowOwlPlugin extends Plugin {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
-		final PreferencesService preferences = env.preferences(); 
-		
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
 		
 		final MonitoringConfiguration monitoringConfig = configuration.getModuleConfig(MonitoringConfiguration.class);

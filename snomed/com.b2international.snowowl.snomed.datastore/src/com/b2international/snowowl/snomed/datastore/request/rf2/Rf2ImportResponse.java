@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 import java.io.Serializable;
 import java.util.Collection;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.google.common.collect.Lists;
 
@@ -43,7 +44,7 @@ public final class Rf2ImportResponse implements Serializable {
 	}
 	
 	public void setIssues(Collection<String> issues) {
-		this.issues = issues;
+		this.issues = Collections3.toImmutableList(issues);
 	}
 	
 }

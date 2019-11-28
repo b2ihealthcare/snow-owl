@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.Mode;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
 import com.google.inject.Provider;
 
 /**
@@ -48,7 +47,6 @@ public final class Environment implements ServiceProvider {
 		// intialize global services based on the environment
 		final PreferencesService preferences = PlatformUtil.getPreferencesService(CoreActivator.getContext());
 		services().registerService(PreferencesService.class, preferences);
-		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(configPath));
 		services().registerService(Environment.class, this);
 	}
 	
