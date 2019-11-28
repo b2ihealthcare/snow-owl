@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
  */
 package com.b2international.commons.numeral;
 
+import java.util.regex.Pattern;
+
 /**
  * Class for converting Roman numeral to Arabic number.
  */
 public abstract class RomanNumeralToArabicConverter {
+	
+	public static final Pattern CONTAINS_ROMAN_NUMBER_REGEX = Pattern.compile("^.*\\b(^(?=[MDCLXVI])M*(C[MD]|D?C*)(X[CL]|L?X*)(I[XV]|V?I*))\\b.*$");
 
 	private static int decodeSingle(final char letter) {
 		switch (letter) {
