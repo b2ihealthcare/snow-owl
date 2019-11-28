@@ -100,7 +100,7 @@ public final class JWTGenerator {
 					final Claim claim = entry.getValue();
 					final List<Permission> permissions = claim.asList(String.class).stream().map(Permission::valueOf).collect(Collectors.toList());
 					
-					return new Role(roleName.substring(roleName.indexOf("_") + 1, roleName.length()), permissions);
+					return new Role(roleName.replace(ROLE_PREFIX, ""), permissions);
 				}).collect(Collectors.toList());
 		
 		return new User(subject, roles);
