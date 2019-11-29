@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.repository.TerminologyComponents;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -68,7 +68,6 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	@Override
 	public CompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
-		final TerminologyRegistry registry = context.service(TerminologyRegistry.class);
 		final Branch branchToCompare = RepositoryRequests.branching().prepareGet(compare).build().execute(context);
 		final long compareHeadTimestamp = branchToCompare.headTimestamp();
 		
@@ -94,7 +93,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			} else {
 				affectedId = detail.getObject();
 			}
-			final short terminologyComponentId = registry.getTerminologyComponentByDocType(DocumentMapping.getClass(affectedId.type())).shortId();
+			final short terminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(affectedId.type()));
 			final ComponentIdentifier identifier = ComponentIdentifier.of(terminologyComponentId, affectedId.id());
 			
 			switch (detail.getOp()) {

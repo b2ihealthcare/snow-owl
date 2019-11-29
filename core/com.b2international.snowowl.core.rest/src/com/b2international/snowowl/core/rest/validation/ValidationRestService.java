@@ -29,6 +29,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -48,10 +49,10 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
@@ -116,15 +117,17 @@ public class ValidationRestService extends AbstractRestService {
 			@RequestBody 
 			final ValidationRestInput validationInput) {
 
-		final String codeSystemShortName = validationInput.codeSystemShortName();
+		final String codeSystemShortName = validationInput.getCodeSystemShortName();
 		final CodeSystemEntry codeSystem = getCodeSystem(codeSystemShortName);
 		
-		Preconditions.checkArgument(codeSystem.getBranchPath().equals(validationInput.branchPath()));
+		if (!validationInput.getBranchPath().startsWith(codeSystem.getBranchPath())) {
+			throw new BadRequestException("No relation between branch '%s' and '%s' codesystem's branch '%s'.", validationInput.getBranchPath(), codeSystem.getShortName(), codeSystem.getBranchPath());
+		}
 		
-		final String uniqueJobId = ValidationRequests.createUniqueValidationId(codeSystemShortName, codeSystem.getBranchPath());
+		final String uniqueJobId = ValidationRequests.createUniqueValidationId(codeSystemShortName, validationInput.getBranchPath());
 		
 		final Map<String, Object> ruleParams = ImmutableMap.<String, Object>builder()
-				.put(ValidationConfiguration.IS_UNPUBLISHED_ONLY, validationInput.isUnpublishedValidation())
+				.put(ValidationConfiguration.IS_UNPUBLISHED_ONLY, validationInput.isUnpublishedOnly())
 				.build();
 		
 		final Promise<Boolean> deleteValidationJobPromise;
@@ -154,15 +157,15 @@ public class ValidationRestService extends AbstractRestService {
 		final ValidateRequestBuilder validateRequestBuilder = ValidationRequests
 				.prepareValidate()
 				.setRuleParameters(ruleParams)
-				.setRuleIds(validationInput.ruleIds());
+				.setRuleIds(validationInput.getRuleIds());
 		
 		final Request<ServiceProvider, ValidationResult> request = validateRequestBuilder
-				.build(codeSystem.getRepositoryUuid(), validationInput.branchPath())
+				.build(codeSystem.getRepositoryUuid(), validationInput.getBranchPath())
 				.getRequest();
 		
 		JobRequests.prepareSchedule()
 			.setRequest(request)
-			.setDescription(String.format("Validating SNOMED CT on branch '%s'", validationInput.branchPath()))
+			.setDescription(String.format("Validating SNOMED CT on branch '%s'", validationInput.getBranchPath()))
 			.setId(uniqueJobId)
 			.buildAsync()
 			.execute(getBus())
@@ -226,6 +229,7 @@ public class ValidationRestService extends AbstractRestService {
 			final String contentType) {
 		
 		final RemoteJobEntry validationJob = getValidationJobById(validationId);
+		final IEventBus bus = getBus();
 		
 		if (validationJob != null) {
 			if (AbstractRestService.CSV_MEDIA_TYPE.equals(contentType)) {
@@ -237,7 +241,7 @@ public class ValidationRestService extends AbstractRestService {
 						.filterByBranchPath(branchPath)
 						.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
 						.buildAsync()
-						.execute(getBus())
+						.execute(bus)
 						.then(issues -> {
 							final Set<String> rulesToFetch = issues.stream()
 									.map(ValidationIssue::getRuleId)
@@ -246,7 +250,7 @@ public class ValidationRestService extends AbstractRestService {
 									.all()
 									.filterByIds(rulesToFetch)
 									.buildAsync()
-									.execute(getBus())
+									.execute(bus)
 									.getSync()
 									.stream()
 									.collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
@@ -271,7 +275,7 @@ public class ValidationRestService extends AbstractRestService {
 						.setSearchAfter(searchAfter)
 						.filterByBranchPath(branchPath)
 						.buildAsync()
-						.execute(getBus())
+						.execute(bus)
 						.then(issues -> {
 							return issues.getItems().stream().collect(Collectors.toList());
 						});

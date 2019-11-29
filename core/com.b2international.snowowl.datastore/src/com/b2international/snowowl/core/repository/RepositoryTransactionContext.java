@@ -301,7 +301,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	private short getTerminologyComponentId(String componentType) {
 		try {
-			return TerminologyRegistry.INSTANCE.getTerminologyComponentByDocType(DocumentMapping.getClass(componentType)).shortId();
+			return service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(componentType));
 		} catch (IllegalArgumentException e) {
 			// return unspecified terminology component for each unknown components committed to the repo
 			return TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
