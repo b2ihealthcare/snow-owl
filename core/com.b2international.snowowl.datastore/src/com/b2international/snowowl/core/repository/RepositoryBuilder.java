@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import java.time.temporal.ChronoUnit;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.index.mapping.Mappings;
@@ -28,8 +30,11 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
@@ -44,11 +49,11 @@ public final class RepositoryBuilder {
 	
 	private final String repositoryId;
 	private final DefaultRepositoryManager manager;
+	private final Logger log;
 	
 	private int mergeMaxResults;
 	private TerminologyRepositoryInitializer initializer;
 	private Hooks.PreCommitHook hook;
-	private Logger log;
 	private VersioningRequestBuilder versioningRequestBuilder;
 	private ComponentDeletionPolicy deletionPolicy;
 	
@@ -58,11 +63,18 @@ public final class RepositoryBuilder {
 		CodeSystemEntry.class, 
 		CodeSystemVersionEntry.class
 	);
+	private final TerminologyComponents terminologyComponents;
 	private ComponentRevisionConflictProcessor componentRevisionConflictProcessor;
 
-	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId) {
-		this.manager = defaultRepositoryManager;
+	RepositoryBuilder(DefaultRepositoryManager manager, String repositoryId) {
+		this.manager = manager;
 		this.repositoryId = repositoryId;
+		this.log = LoggerFactory.getLogger("repository."+repositoryId);
+		this.terminologyComponents = new TerminologyComponents(this.log);
+	}
+	
+	public Logger log() {
+		return log;
 	}
 
 	public RepositoryBuilder setMergeMaxResults(int mergeMaxResults) {
@@ -75,6 +87,16 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
+	public RepositoryBuilder addTerminologyComponents(List<Class<? extends IComponent>> terminologyComponents) {
+		for (Class<? extends IComponent> terminologyComponent : terminologyComponents) {
+			TerminologyComponent tc = TerminologyRegistry.getTerminologyComponentAnnotation(terminologyComponent);
+			checkNotNull(tc.docType(), "Document must be specified for terminology component: %s", terminologyComponent);
+			this.terminologyComponents.add(tc);
+			this.mappings.putMapping(tc.docType());
+		}
+		return this;
+	}
+	
 	public RepositoryBuilder addMappings(Collection<Class<?>> mappings) {
 		mappings.forEach(this.mappings::putMapping);
 		return this;
@@ -82,11 +104,6 @@ public final class RepositoryBuilder {
 	
 	public RepositoryBuilder withPreCommitHook(Hooks.PreCommitHook hook) {
 		this.hook = hook;
-		return this;
-	}
-	
-	public RepositoryBuilder logger(Logger log) {
-		this.log = log;
 		return this;
 	}
 	
@@ -121,6 +138,7 @@ public final class RepositoryBuilder {
 		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
 		repository.bind(ComponentDeletionPolicy.class, deletionPolicy);
 		repository.bind(ComponentRevisionConflictProcessor.class, componentRevisionConflictProcessor);
+		repository.bind(TerminologyComponents.class, terminologyComponents);
 		repository.activate();
 		repository.service(RevisionIndex.class).hooks().addHook(hook);
 		manager.put(repositoryId, repository);

@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
+import org.slf4j.Logger;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.Hooks.PreCommitHook;
@@ -63,12 +63,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
@@ -126,17 +121,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
-	protected Collection<Class<?>> getMappings() {
-		return ImmutableList.<Class<?>>of(
-			SnomedConceptDocument.class,
-			SnomedDescriptionIndexEntry.class,
-			SnomedRelationshipIndexEntry.class,
-			SnomedConstraintDocument.class,
-			SnomedRefSetMemberIndexEntry.class
-		);
-	}
-	
-	@Override
 	protected String getRepositoryId() {
 		return SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
@@ -185,8 +169,8 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
-	protected PreCommitHook getTerminologyRepositoryPreCommitHook() {
-		return new SnomedRepositoryPreCommitHook(log());
+	protected PreCommitHook getTerminologyRepositoryPreCommitHook(Logger log) {
+		return new SnomedRepositoryPreCommitHook(log);
 	}
 	
 	@Override

@@ -45,7 +45,6 @@ public enum TerminologyRegistry {
 	private final Map<String, Terminology> terminologies = newHashMap();
 	private final Map<String, TerminologyComponent> terminologyComponentsById = newHashMap();
 	private final Map<Short, TerminologyComponent> terminologyComponentsByShortId = newHashMap();
-	private final Map<Class<?>, TerminologyComponent> terminologyComponentsByDocType = newHashMap();
 	private final Map<String, String> terminologyIdByTerminologyComponentId = newHashMap();
 	private final Multimap<String, String> terminologyComponentIdsByTerminology = HashMultimap.create();
 	
@@ -79,8 +78,7 @@ public enum TerminologyRegistry {
 			throw new IllegalArgumentException(String.format("A terminology is already registered with id '%s'", terminology.getId()));
 		}
 		for (Class<? extends IComponent> terminologyComponentType : terminology.getTerminologyComponents()) {
-			checkArgument(terminologyComponentType.isAnnotationPresent(TerminologyComponent.class), "%s domain class must have a @TerminologyComponent annotation.", terminologyComponentType.getSimpleName());
-			TerminologyComponent terminologyComponent = terminologyComponentType.getAnnotation(TerminologyComponent.class);
+			TerminologyComponent terminologyComponent = getTerminologyComponentAnnotation(terminologyComponentType);
 			register(terminologyComponent);
 			terminologyIdByTerminologyComponentId.put(terminologyComponent.id(), terminology.getId());
 			terminologyComponentIdsByTerminology.put(terminology.getId(), terminologyComponent.id());
@@ -93,9 +91,6 @@ public enum TerminologyRegistry {
 			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", tcAnnotation.id()));	
 		}
 		terminologyComponentsByShortId.put(tcAnnotation.shortId(), tcAnnotation);
-		if (tcAnnotation.docType() != null && !terminologyComponentsByDocType.containsKey(tcAnnotation.docType())) {
-			terminologyComponentsByDocType.put(tcAnnotation.docType(), tcAnnotation);
-		}
 	}
 	
 	public Terminology getTerminology(String terminologyId) {
@@ -113,11 +108,6 @@ public enum TerminologyRegistry {
 		return terminologyComponentsById.get(id);
 	}
 
-	public TerminologyComponent getTerminologyComponentByDocType(Class<?> docType) {
-		checkArgument(terminologyComponentsByDocType.containsKey(docType), "Missing terminology component for document type '%s'.", docType);
-		return terminologyComponentsByDocType.get(docType);
-	}
-	
 	public Terminology getTerminologyByTerminologyComponentId(String terminologyComponentId) {
 		checkArgument(terminologyIdByTerminologyComponentId.containsKey(terminologyComponentId), "Missing terminology component for ID '%s'.", terminologyComponentId);
 		return getTerminology(terminologyIdByTerminologyComponentId.get(terminologyComponentId));
@@ -126,6 +116,11 @@ public enum TerminologyRegistry {
 	public Collection<String> getTerminologyComponentIdsByTerminology(String terminologyId) {
 		checkArgument(terminologyComponentIdsByTerminology.containsKey(terminologyId), "Missing terminology '%s'.", terminologyId);
 		return ImmutableSet.copyOf(terminologyComponentIdsByTerminology.get(terminologyId));
+	}
+	
+	public static TerminologyComponent getTerminologyComponentAnnotation(Class<? extends IComponent> terminologyComponentType) {
+		checkArgument(terminologyComponentType.isAnnotationPresent(TerminologyComponent.class), "%s domain class must have a @TerminologyComponent annotation.", terminologyComponentType.getSimpleName());
+		return terminologyComponentType.getAnnotation(TerminologyComponent.class);
 	}
 	
 	private static TerminologyComponent createUnspecifiedTerminologyComponent() {
