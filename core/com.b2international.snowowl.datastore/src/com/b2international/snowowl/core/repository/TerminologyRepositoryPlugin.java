@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.repository;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,18 +50,20 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	public final void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		// register terminology and component definitions
 		TerminologyRegistry registry = env.service(TerminologyRegistry.class);
-		registry
-			.registerTerminology(this);
+		registry.register(this);
 		
 		if (env.isServer()) {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 			final RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 			final RepositoryBuilder builder = repositories.prepareCreate(getRepositoryId());
+			
+			
 			final Repository repo = builder
 					.withInitializer(getTerminologyRepositoryInitializer())
 					.withPreCommitHook(getTerminologyRepositoryPreCommitHook(builder.log()))
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 					.addTerminologyComponents(getTerminologyComponents())
+					.addTerminologyComponents(getAdditionalTerminologyComponents())
 					.addMappings(getAdditionalMappings())
 					.withComponentDeletionPolicy(getComponentDeletionPolicy())
 					.withVersioningRequestBuilder(getVersioningRequestBuilder())
@@ -90,6 +93,13 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 */
 	protected Collection<Class<?>> getAdditionalMappings() {
 		return Collections.emptyList();
+	}
+	
+	/**
+	 * @return the additional terminology components for this terminology.
+	 */
+	protected Map<Class<?>, TerminologyComponent> getAdditionalTerminologyComponents() {
+		return Collections.emptyMap();
 	}
 
 	/**

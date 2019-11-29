@@ -36,11 +36,15 @@ public final class TerminologyComponents {
 	}
 	
 	public void add(TerminologyComponent component) {
-		if (terminologyComponentIdToDocuments.containsValue(component.docType())) {
-			log.warn("Preferring primary '{}' terminologyComponentId over '{}'", getTerminologyComponentId(component.docType()), component.shortId());
+		add(component.shortId(), component.docType());
+	}
+	
+	public void add(short terminologyComponentId, Class<?> docType) {
+		if (terminologyComponentIdToDocuments.containsValue(docType)) {
+			log.warn("Preferring primary '{}' terminologyComponentId over '{}'", getTerminologyComponentId(docType), terminologyComponentId);
 			return;
 		}
-		terminologyComponentIdToDocuments.put(component.shortId(), component.docType());
+		terminologyComponentIdToDocuments.put(terminologyComponentId, docType);
 	}
 	
 	public Class<?> getDocType(short terminologyComponentId) {

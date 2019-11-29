@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.terminology;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -58,13 +60,18 @@ public interface Terminology {
 	 *         {@link TerminologyComponent} on them.
 	 */
 	List<Class<? extends IComponent>> getTerminologyComponents();
-
+	
 	/**
 	 * @return a {@link SortedSet} of code system shortnames that are set as dependencies
 	 *         of this {@link Terminology}, by default returns empty {@link SortedSet}.
 	 */
 	default SortedSet<String> getDependencies() {
 		return Collections.emptySortedSet();
+	}
+	
+	static TerminologyComponent getAnnotation(Class<?> type) {
+		checkArgument(type.isAnnotationPresent(TerminologyComponent.class), "'%s' class must have a @TerminologyComponent annotation.", type.getSimpleName());
+		return type.getAnnotation(TerminologyComponent.class);
 	}
 
 }
