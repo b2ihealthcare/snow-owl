@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +90,13 @@ public final class RepositoryBuilder {
 	}
 	
 	public RepositoryBuilder addTerminologyComponents(List<Class<? extends IComponent>> terminologyComponents) {
-		return addTerminologyComponents(terminologyComponents.stream().map(Terminology::getAnnotation).collect(Collectors.toMap(tc -> tc.docType(), tc -> tc)));
+		for (Class<? extends IComponent> terminologyComponent : terminologyComponents) {
+			TerminologyComponent tc = Terminology.getAnnotation(terminologyComponent);
+			checkNotNull(tc.docType(), "Document must be specified for terminology component: %s", terminologyComponent);
+			this.terminologyComponents.add(tc);
+			this.mappings.putMapping(tc.docType());
+		}
+		return this;
 	}
 	
 	public RepositoryBuilder addTerminologyComponents(Map<Class<?>, TerminologyComponent> terminologyComponents) {
