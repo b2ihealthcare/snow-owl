@@ -61,7 +61,7 @@
 				<version>3.1.0</version>
 				<executions>
 					<execution>
-            			<id>clean-lib</id>
+            			<id>clean-folders</id>
             			<phase>generate-sources</phase>
             			<goals>
               				<goal>clean</goal>
@@ -79,6 +79,12 @@
 									<excludes>
 										<exclude>.gitignore</exclude>
 									</excludes>
+								</fileset>
+								<fileset>
+									<directory>snow-owl-api-docs/node_modules</directory>
+								</fileset>
+								<fileset>
+									<directory>snow-owl-api-docs/build</directory>
 								</fileset>
 							</filesets>
             			</configuration>
