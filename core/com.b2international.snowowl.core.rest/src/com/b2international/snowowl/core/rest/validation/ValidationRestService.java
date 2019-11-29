@@ -48,6 +48,7 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
@@ -226,6 +227,7 @@ public class ValidationRestService extends AbstractRestService {
 			final String contentType) {
 		
 		final RemoteJobEntry validationJob = getValidationJobById(validationId);
+		final IEventBus bus = getBus();
 		
 		if (validationJob != null) {
 			if (AbstractRestService.CSV_MEDIA_TYPE.equals(contentType)) {
@@ -237,7 +239,7 @@ public class ValidationRestService extends AbstractRestService {
 						.filterByBranchPath(branchPath)
 						.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
 						.buildAsync()
-						.execute(getBus())
+						.execute(bus)
 						.then(issues -> {
 							final Set<String> rulesToFetch = issues.stream()
 									.map(ValidationIssue::getRuleId)
@@ -246,7 +248,7 @@ public class ValidationRestService extends AbstractRestService {
 									.all()
 									.filterByIds(rulesToFetch)
 									.buildAsync()
-									.execute(getBus())
+									.execute(bus)
 									.getSync()
 									.stream()
 									.collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
@@ -271,7 +273,7 @@ public class ValidationRestService extends AbstractRestService {
 						.setSearchAfter(searchAfter)
 						.filterByBranchPath(branchPath)
 						.buildAsync()
-						.execute(getBus())
+						.execute(bus)
 						.then(issues -> {
 							return issues.getItems().stream().collect(Collectors.toList());
 						});
