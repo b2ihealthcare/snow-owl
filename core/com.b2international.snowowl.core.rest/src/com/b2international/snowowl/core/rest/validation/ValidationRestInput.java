@@ -33,9 +33,9 @@ public class ValidationRestInput {
 	@NotEmpty
 	private Set<String> ruleIds;
 	
-	private Boolean isUnpublishedValidation;
+	private boolean unpublishedOnly = true;
 
-	public String branchPath() {
+	public String getBranchPath() {
 		return branchPath;
 	}
 
@@ -43,7 +43,7 @@ public class ValidationRestInput {
 		this.branchPath = branchPath;
 	}
 	
-	public String codeSystemShortName() {
+	public String getCodeSystemShortName() {
 		return codeSystemShortName;
 	}
 	
@@ -51,22 +51,22 @@ public class ValidationRestInput {
 		this.codeSystemShortName = codeSystemShortName;
 	}
 
-	public Set<String> ruleIds() {
+	public Set<String> getRuleIds() {
 		return ruleIds;
 	}
 
 	public void setRuleIds(Set<String> ruleIds) {
 		this.ruleIds = ruleIds;
 	}
-	
-	public Boolean isUnpublishedValidation() {
-		return isUnpublishedValidation;
-	}
-	
-	public void setIsUnpublishedValidation(Boolean isUnpublishedValidation) {
-		this.isUnpublishedValidation = isUnpublishedValidation;
-	}
 
+	public boolean isUnpublishedOnly() {
+		return unpublishedOnly;
+	}
+	
+	public void setUnpublishedOnly(boolean unpublishedOnly) {
+		this.unpublishedOnly = unpublishedOnly;
+	}
+	
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -74,8 +74,8 @@ public class ValidationRestInput {
 		builder.append(branchPath);
 		builder.append(", ruleIds=");
 		builder.append(ruleIds);
-		builder.append(", isUnpublishedValidation=");
-		builder.append(isUnpublishedValidation);
+		builder.append(", unpublishedOnly=");
+		builder.append(unpublishedOnly);
 		builder.append("]");
 		return builder.toString();
 	}
