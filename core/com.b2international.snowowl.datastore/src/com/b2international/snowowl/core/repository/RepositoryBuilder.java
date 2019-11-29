@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -33,8 +33,8 @@ import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
@@ -88,11 +88,14 @@ public final class RepositoryBuilder {
 	}
 	
 	public RepositoryBuilder addTerminologyComponents(List<Class<? extends IComponent>> terminologyComponents) {
-		for (Class<? extends IComponent> terminologyComponent : terminologyComponents) {
-			TerminologyComponent tc = TerminologyRegistry.getTerminologyComponentAnnotation(terminologyComponent);
-			checkNotNull(tc.docType(), "Document must be specified for terminology component: %s", terminologyComponent);
-			this.terminologyComponents.add(tc);
-			this.mappings.putMapping(tc.docType());
+		return addTerminologyComponents(terminologyComponents.stream().map(Terminology::getAnnotation).collect(Collectors.toMap(tc -> tc.docType(), tc -> tc)));
+	}
+	
+	public RepositoryBuilder addTerminologyComponents(Map<Class<?>, TerminologyComponent> terminologyComponents) {
+		for (Entry<Class<?>, TerminologyComponent> terminologyComponent : terminologyComponents.entrySet()) {
+			final Class<?> docType = terminologyComponent.getKey();
+			this.terminologyComponents.add(terminologyComponent.getValue());
+			this.mappings.putMapping(docType);
 		}
 		return this;
 	}
