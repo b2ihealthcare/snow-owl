@@ -79,6 +79,9 @@ public final class StagingArea {
 	private Map<String, RevisionDiff> changedRevisions;
 	private Map<String, Object> removedObjects;
 
+	// Revisions with these IDs should only go in the commit document, and not be indexed or revised
+	private Set<String> noIndexObjects;
+	
 	private SortedSet<RevisionBranchPoint> mergeSources;
 	private RevisionBranchRef mergeFromBranchRef;
 	private boolean squashMerge;
@@ -226,7 +229,9 @@ public final class StagingArea {
 		final Multimap<Class<?>, String> deletedIdsByType = HashMultimap.create();
 		
 		removedObjects.forEach((key, value) -> {
-			deletedIdsByType.put(value.getClass(), key);
+			final boolean shouldIndex = !noIndexObjects.contains(key);
+			if (shouldIndex) { deletedIdsByType.put(value.getClass(), key); }
+			
 			if (value instanceof Revision) {
 				Revision rev = (Revision) value;
 				removedComponentsByContainer.put(rev.getContainerId(), rev.getObjectId());
@@ -244,13 +249,15 @@ public final class StagingArea {
 		
 		// then new documents and revisions
 		for (Entry<String, Object> doc : newObjects.entrySet()) {
+			final boolean shouldIndex = !noIndexObjects.contains(doc.getKey());
+			
 			if (!removedObjects.containsKey(doc.getKey())) {
 				Object document = doc.getValue();
-				writer.put(doc.getKey(), document);
+				if (shouldIndex) { writer.put(doc.getKey(), document); }
 				if (document instanceof Revision) {
 					Revision rev = (Revision) document;
 					newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev), rev.getObjectId());
-					if (shouldSetRevisedOnMergeBranch()) {
+					if (shouldIndex && shouldSetRevisedOnMergeBranch()) {
 						revisionsToReviseOnMergeSource.put(document.getClass(), doc.getKey());
 					}
 				}
@@ -259,7 +266,9 @@ public final class StagingArea {
 		
 		// and changed documents
 		for (Entry<String, Object> doc : changedObjects.entrySet()) {
-			if (!removedObjects.containsKey(doc.getKey())) {
+			final boolean shouldIndex = !noIndexObjects.contains(doc.getKey());
+			
+			if (shouldIndex && !removedObjects.containsKey(doc.getKey())) {
 				Object document = doc.getValue();
 				writer.put(doc.getKey(), document);
 			}
@@ -270,6 +279,8 @@ public final class StagingArea {
 		// and changed revisions
 		for (Entry<String, RevisionDiff> changedRevision : changedRevisions.entrySet()) {
 			final String changedRevisionId = changedRevision.getKey();
+			final boolean shouldIndex = !noIndexObjects.contains(changedRevisionId);
+			
 			if (!removedObjects.containsKey(changedRevisionId)) {
 				RevisionDiff revisionDiff = changedRevision.getValue();
 				if (!revisionDiff.hasChanges()) {
@@ -278,10 +289,12 @@ public final class StagingArea {
 				}
 				
 				final Revision rev = revisionDiff.newRevision;
-				writer.put(changedRevisionId, rev);
 				
-				if (shouldSetRevisedOnMergeBranch()) {
-					revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+				if (shouldIndex) {
+					writer.put(changedRevisionId, rev);
+					if (shouldSetRevisedOnMergeBranch()) {
+						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+					}
 				}
 				
 				ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
@@ -418,6 +431,7 @@ public final class StagingArea {
 		changedRevisions = newHashMap();
 		removedObjects = newHashMap();
 		revisionsToReviseOnMergeSource = HashMultimap.create();
+		noIndexObjects = newHashSet();
 	}
 
 	public StagingArea stageNew(Revision newRevision) {
@@ -426,18 +440,21 @@ public final class StagingArea {
 	
 	public StagingArea stageNew(String key, Object newDocument) {
 		newObjects.put(key, newDocument);
+		if (noIndexObjects.remove(key)) { revisionsToReviseOnMergeSource.put(newDocument.getClass(), key); }
 		return this;
 	}
 	
 	public StagingArea stageChange(Revision oldRevision, Revision changedRevision) {
 		checkArgument(Objects.equals(oldRevision.getId(), changedRevision.getId()), "IDs of oldRevision and changedRevision must match");
 		changedRevisions.put(changedRevision.getId(), new RevisionDiff(oldRevision, changedRevision));
+		if (noIndexObjects.remove(changedRevision.getId())) { revisionsToReviseOnMergeSource.put(changedRevision.getClass(), changedRevision.getId()); }
 		return this;
 	}
 	
 	public StagingArea stageChange(String key, Object changed) {
 		checkArgument(!(changed instanceof Revision), "Use the other stageChange method properly track changes for revision documents.");
 		changedObjects.put(key, changed);
+		noIndexObjects.remove(key);
 		return this;
 	}
 	
@@ -447,6 +464,7 @@ public final class StagingArea {
 
 	public StagingArea stageRemove(String key, Object removed) {
 		removedObjects.put(key, removed);
+		if (noIndexObjects.remove(key)) { revisionsToReviseOnMergeSource.put(removed.getClass(), key); }
 		return this;
 	}
 	
@@ -574,41 +592,117 @@ public final class StagingArea {
 		
 	}
 
-	long merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor) {
+	/**
+	 * 
+	 * @param fromRef
+	 * @param toRef
+	 * @param squash
+	 * @param conflictProcessor
+	 * @return <code>true</code> if a commit needs to be added, <code>false</code> otherwise
+	 */
+	boolean merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
+		
+		// Collect all points in the commit graph that become accessible through this merge
 		this.mergeSources = fromRef.difference(toRef)
-				.segments()
-				.stream()
-				.filter(segment -> segment.branchId() != toRef.branchId())
-				.map(RevisionSegment::getEndPoint)
-				.collect(Collectors.toCollection(TreeSet::new));
+			.segments()
+			.stream()
+			.filter(segment -> segment.branchId() != toRef.branchId())
+			.map(RevisionSegment::getEndPoint)
+			.collect(Collectors.toCollection(TreeSet::new));
+		
 		this.mergeFromBranchRef = fromRef;
 		this.squashMerge = squash;
 		
 		final RevisionCompare fromChanges = index.compare(toRef, fromRef, Integer.MAX_VALUE);
-		
 		final List<RevisionCompareDetail> fromChangeDetails = fromChanges.getDetails();
-		
-		final long fastForwardCommitTimestamp = fromChanges.getCompare().segments().last().end();
-		
-		// in case of nothing to merge, then just commit the headtimestamp change, similar to fast forward in Git
 		if (fromChangeDetails.isEmpty()) {
-			return squash ? -1L : fastForwardCommitTimestamp;
-		}
-		
-		final RevisionCompare toChanges = index.compare(fromRef, toRef, Integer.MAX_VALUE);
-		// check conflicts and commit only the resolved conflicts
-		final List<RevisionCompareDetail> toChangeDetails = toChanges.getDetails();
-		
-		// in case of fast-forward merge only check conflicts when there are changes on the to branch
-		if (toChangeDetails.isEmpty() && !squash) {
-			return fastForwardCommitTimestamp;
+			// If there is nothing on "fromRef", we do not need to commit this merge
+			return false;
 		}
 		
 		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(index, fromRef, fromChanges);
-		final RevisionBranchChangeSet toChangeSet = new RevisionBranchChangeSet(index, toRef, toChanges);
+		final RevisionCompare toChanges = index.compare(fromRef, toRef, Integer.MAX_VALUE);
+		final List<RevisionCompareDetail> toChangeDetails = toChanges.getDetails();
 		
-		List<Conflict> conflicts = newArrayList();
+		final Map<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> resolvedConflicts;
+		if (toChangeDetails.isEmpty()) {
+			// If there is nothing on "toRef", there is no need to check for conflicts
+			resolvedConflicts = ImmutableMap.of();
+		} else {
+			final RevisionBranchChangeSet toChangeSet = new RevisionBranchChangeSet(index, toRef, toChanges);
+			resolvedConflicts = resolveConflicts(fromChangeSet, toChangeSet, fromChangeDetails, toChangeDetails, 
+					conflictProcessor);
+		}
+		
+		boolean stagedChanges = false;
+		
+		if (!resolvedConflicts.isEmpty()) {
+			// if there are property conflict resolutions, then we have staged changes and it does not matter if the merge is fast-forward
+			for (Entry<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> entry : resolvedConflicts.entrySet()) {
+				final Class<? extends Revision> type = entry.getKey();
+				final Multimap<String, RevisionPropertyDiff> propertyUpdatesByObject = entry.getValue();
+				final DocumentMapping mapping = index.admin().mappings().getMapping(type);
+				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
+				for (Revision objectToUpdate : objectsToUpdate) {
+					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
+					stagedChanges = true;
+				}
+			}
+		}
+		
+		// apply new objects (or keep them for change set computation)
+		for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
+			final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
+			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(this::stageNew);
+			if (!squash) { noIndexObjects.addAll(newRevisionIds); }
+			stagedChanges = true;
+		}
+		
+		// apply changed objects (or keep them for change set computation)
+		for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
+			final Collection<String> changedRevisionIds = fromChangeSet.getChangedIds(type);
+			
+			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
+			final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
+			
+			final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
+			final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
+			
+			for (String updatedId : updatedRevisionsById.keySet()) {
+				if (oldRevisionsById.containsKey(updatedId)) {
+					// Changed on "fromRef", nothing on "toRef": needs to be applied regardless of squashing
+					stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId));
+					revisionsToReviseOnMergeSource.put(type, updatedId);
+				} else {
+					// New on "fromRef": like additions, only if it is a squashed commit
+					stageNew(updatedRevisionsById.get(updatedId));
+					if (!squash) { noIndexObjects.add(updatedId); }
+				}
+				
+				stagedChanges = true;
+			}
+		}
+		
+		// always apply deleted objects, they set the revised timestamp properly without introducing any new document
+		for (Class<? extends Revision> type : fromChangeSet.getRemovedTypes()) {
+			final Collection<String> removedRevisionIds = fromChangeSet.getRemovedIds(type);
+			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
+			stagedChanges = true;
+		}
+		
+		return stagedChanges;
+	}
+
+	private Map<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> resolveConflicts(
+			final RevisionBranchChangeSet fromChangeSet, 
+			final RevisionBranchChangeSet toChangeSet, 
+			final Collection<RevisionCompareDetail> fromChangeDetails, 
+			final Collection<RevisionCompareDetail> toChangeDetails, 
+			final RevisionConflictProcessor conflictProcessor) {
+
+		final Map<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> resolvedConflicts = newHashMap();
+		final List<Conflict> conflicts = newArrayList();
 		
 		for (Class<? extends Revision> type : Iterables.concat(fromChangeSet.getAddedTypes(), toChangeSet.getAddedTypes())) {
 			final String docType = DocumentMapping.getType(type);
@@ -641,7 +735,6 @@ public final class StagingArea {
 		}
 		
 		// check property conflicts
-		final Map<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> propertyUpdatesToApply = newHashMap();
 		
 		Set<String> changedRevisionIdsToCheck = newHashSet(toChangeSet.getChangedIds());
 		Set<String> removedRevisionIdsToCheck = newHashSet(toChangeSet.getRemovedIds());
@@ -690,10 +783,10 @@ public final class StagingArea {
 						final RevisionCompareDetail targetPropertyChange = targetPropertyChanges.remove(sourceChange.getKey());
 						if (targetPropertyChange == null) {
 							// this property did not change in target, just apply directly on the target object via
-							if (!propertyUpdatesToApply.containsKey(type)) {
-								propertyUpdatesToApply.put(type, HashMultimap.create());
+							if (!resolvedConflicts.containsKey(type)) {
+								resolvedConflicts.put(type, HashMultimap.create());
 							}
-							propertyUpdatesToApply.get(type).put(changedInSourceAndTargetId, sourceChangeDiff);
+							resolvedConflicts.get(type).put(changedInSourceAndTargetId, sourceChangeDiff);
 							fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 						} else {
 							RevisionPropertyDiff targetChangeDiff = new RevisionPropertyDiff(targetPropertyChange.getProperty(), targetPropertyChange.getFromValue(), targetPropertyChange.getValue());
@@ -706,10 +799,10 @@ public final class StagingArea {
 							if (resolution == null) {
 								conflicts.add(new ChangedInSourceAndTargetConflict(sourceChange.getValue().getObject(), sourceChangeDiff.convert(conflictProcessor), targetChangeDiff.convert(conflictProcessor)));
 							} else {
-								if (!propertyUpdatesToApply.containsKey(type)) {
-									propertyUpdatesToApply.put(type, HashMultimap.create());
+								if (!resolvedConflicts.containsKey(type)) {
+									resolvedConflicts.put(type, HashMultimap.create());
 								}
-								propertyUpdatesToApply.get(type).put(changedInSourceAndTargetId, resolution);
+								resolvedConflicts.get(type).put(changedInSourceAndTargetId, resolution);
 							}
 							fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 						}
@@ -724,59 +817,11 @@ public final class StagingArea {
 		if (!conflicts.isEmpty()) {
 			throw new BranchMergeConflictException(conflicts.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
 		}
-		
-		boolean stagedChanges = false;
-		// apply property changes, conflicts, etc.
-		
-		if (!propertyUpdatesToApply.isEmpty()) {
-			// if there are property conflict resolutions, then we have staged changes and it does not matter if the merge is fast-forward
-			for (Entry<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> entry : propertyUpdatesToApply.entrySet()) {
-				final Class<? extends Revision> type = entry.getKey();
-				final Multimap<String, RevisionPropertyDiff> propertyUpdatesByObject = entry.getValue();
-				final DocumentMapping mapping = index.admin().mappings().getMapping(type);
-				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
-				for (Revision objectToUpdate : objectsToUpdate) {
-					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
-					stagedChanges = true;
-				}
-			}
-		}
-		
-		if (squash) {
-			// apply new objects
-			for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
-				final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
-				index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(this::stageNew);
-				stagedChanges = true;
-			}
-			
-			// apply changed objects
-			for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
-				final Collection<String> changedRevisionIds = fromChangeSet.getChangedIds(type);
-				final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
-				final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
-				
-				final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
-				final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
-				for (String updatedId : updatedRevisionsById.keySet()) {
-					if (oldRevisionsById.containsKey(updatedId)) {
-						stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId));
-					} else {
-						stageNew(updatedRevisionsById.get(updatedId));
-					}
-					stagedChanges = true;
-				}
-			}
-		}
-		
-		// always apply deleted objects, they set the revised timestamp properly without introducing any new document
-		for (Class<? extends Revision> type : fromChangeSet.getRemovedTypes()) {
-			final Collection<String> removedRevisionIds = fromChangeSet.getRemovedIds(type);
-			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
-			stagedChanges = true;
-		}
-		
-		return stagedChanges ? -1L : fastForwardCommitTimestamp;
+
+		return resolvedConflicts;
 	}
 
+	SortedSet<RevisionBranchPoint> getMergeSources() {
+		return mergeSources;
+	}
 }
