@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.events;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.CompositeClassLoader;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -43,7 +44,9 @@ public final class AsyncRequest<R> {
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = request.getReturnType();
-		final ClassLoader classLoader = request.getClassLoader();
+		final CompositeClassLoader classLoader = new CompositeClassLoader();
+		classLoader.add(request.getClassLoader());
+		request.getNestedRequests().stream().map(Request::getClassLoader).forEach(classLoader::add);
 		bus.send(Request.ADDRESS, request, Request.TAG, Collections.emptyMap(), new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
