@@ -24,9 +24,13 @@ public final class MapTargetTypes {
 		// Prevent instantiation
 	}
 	
+	public static final String LANGUAGE = "LANGUAGE";
+	public static final String ATTRIBUTE_VALUE = "ATTRIBUTE_VALUE";
+	public static final String SIMPLE = "SIMPLE";
 	public static final String SIMPLE_MAP = "SIMPLE_MAP";
 	public static final String SIMPLE_MAP_WITH_DESCRIPTION = "SIMPLE_MAP_WITH_DESCRIPTION";
 	public static final String COMPLEX_MAP = "COMPLEX_MAP";
 	public static final String EXTENDED_MAP = "EXTENDED_MAP";
+	public static final String QUERY = "QUERY";
 	
 }
