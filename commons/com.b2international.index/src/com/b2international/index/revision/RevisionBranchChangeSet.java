@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.index.IndexRead;
 import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -51,16 +52,10 @@ public final class RevisionBranchChangeSet {
 						containersRequiredForNewAndChangedRevisions.put(detail.getComponent(), detail.getObject());
 					}
 				}
-			} else if (detail.isChange() && !detail.isComponentChange()) {
-				// XXX: check property-level changes before generic changes, as the latter includes the former
+			} else if (detail.isChange()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
 				if (Revision.class.isAssignableFrom(revType)) {
 					changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getObject().id());
-				}
-			} else if (detail.isChange()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
-				if (Revision.class.isAssignableFrom(revType)) {
-					changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
 				}
 			} else if (detail.isRemove()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());

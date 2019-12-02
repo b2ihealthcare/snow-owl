@@ -286,23 +286,17 @@ public final class StagingArea {
 				
 				ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 				ObjectId objectId = rev.getObjectId();
-				
-				// If the object has no "important" property-level changes, make a note of it as changed
-				if (!revisionDiff.hasComponentChanges()) {
+				if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
 					changedComponentsByContainer.put(containerId, objectId);
-					continue;
 				}
-
-				// Otherwise, it is only recorded if it is not a container
-				if (!containerId.isRoot()) {
-					changedComponentsByContainer.put(containerId, objectId);	
+				
+				if (revisionDiff.diff() != null) {
+					revisionDiff.diff().forEach(node -> {
+						if (node instanceof ObjectNode) {
+							revisionsByChange.put((ObjectNode) node, objectId);
+						}
+					});
 				}
-
-				revisionDiff.diff().forEach(node -> {
-					if (node instanceof ObjectNode) {
-						revisionsByChange.put((ObjectNode) node, objectId);
-					}
-				});
 			}
 		}
 		
@@ -466,10 +460,6 @@ public final class StagingArea {
 
 		public boolean hasChanges() {
 			return rawDiff().size() > 0;
-		}
-
-		public boolean hasComponentChanges() {
-			return diff() != null && diff().size() > 0;
 		}
 
 		private ArrayNode rawDiff() {
@@ -671,10 +661,6 @@ public final class StagingArea {
 			// then handle changed vs. changed with the conflict processor
 			Set<String> changedInSourceAndTargetIds = Sets.intersection(changedRevisionIdsToMerge, changedRevisionIdsToCheck);
 			if (!changedInSourceAndTargetIds.isEmpty()) {
-
-				// Even if we have no property-level information, the source revision must be revised
-				revisionsToReviseOnMergeSource.putAll(type, changedInSourceAndTargetIds);
-				
 				for (String changedInSourceAndTargetId : changedInSourceAndTargetIds) {
 					Map<String, RevisionCompareDetail> sourcePropertyChanges = fromChangeDetails.stream()
 							.filter(detail -> detail.getObject().id().equals(changedInSourceAndTargetId))
@@ -727,7 +713,6 @@ public final class StagingArea {
 		
 		boolean stagedChanges = false;
 		// apply property changes, conflicts, etc.
-		
 		if (!propertyUpdatesToApply.isEmpty()) {
 			// if there are property conflict resolutions, then we have staged changes and it does not matter if the merge is fast-forward
 			for (Entry<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> entry : propertyUpdatesToApply.entrySet()) {
@@ -738,6 +723,7 @@ public final class StagingArea {
 				for (Revision objectToUpdate : objectsToUpdate) {
 					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
 					stagedChanges = true;
+					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
 				}
 			}
 		}
