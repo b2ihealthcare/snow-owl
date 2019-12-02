@@ -157,10 +157,8 @@ public final class RevisionCompareDetail {
 				return this;
 			} else if (isChange() && other.isAdd()) {
 				return other;
-			} else if (getOp().equals(other.getOp())) {
-				// two changes after each other in the commit history, keep only a single change
-				// FIXME: do we need to check container IDs here?
-				return this; 
+			} else if (isChange() && other.isChange()) {
+				return this; // two changes after each other in the commit history, keep only a single change
 			} else {
 				throw new UnsupportedOperationException("Unknown case for _component change: " + this + " vs. " + other);
 			}
@@ -175,12 +173,4 @@ public final class RevisionCompareDetail {
 		}
 	}
 
-	@Override
-	public String toString() {
-		if (isComponentChange()) {
-			return String.format("%s container: %s component: %s", op, object, component);
-		} else {
-			return String.format("%s object: %s %s --[%s]--> %s", op, object, fromValue, property, value);
-		}
-	}
 }

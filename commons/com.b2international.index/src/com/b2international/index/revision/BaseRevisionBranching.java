@@ -21,12 +21,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ApiException;
@@ -284,6 +282,7 @@ public abstract class BaseRevisionBranching {
 
 		RevisionBranch from = getBranch(source);
 		RevisionBranch to = getBranch(target);
+		
 		BranchState changesFromState = from.state(to);
 
 		// do nothing if from state compared to toBranch is either UP_TO_DATE or BEHIND
@@ -293,27 +292,16 @@ public abstract class BaseRevisionBranching {
 		
 		final InternalRevisionIndex index = revisionIndex();
 		final StagingArea staging = index.prepareCommit(to.getPath()).withContext(operation.context);
-		final boolean hasChanges = staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor);
 		
-		if (!hasChanges && !operation.squash) {
-			// Fast Forward merge: update the branch document only, but do not add a commit
-			final Map<String, Object> params = ImmutableMap.<String, Object>of(
-					"headTimestamp", Long.max(from.getHeadTimestamp(), to.getHeadTimestamp()),
-					"mergeSources", staging.getMergeSources() 
-						.stream()
-						.map(RevisionBranchPoint::toIpAddress)
-						.collect(Collectors.toCollection(TreeSet::new)),
-					"squash", operation.squash);
-			
-			commit(update(target, RevisionBranch.Scripts.COMMIT, params));
-			return null;
+		// TODO add conflict processing
+		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor);
+		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
+		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
+			fastForwardCommitTimestamp = -1L;
 		}
-		
-		final String commitMessage = !Strings.isNullOrEmpty(operation.commitMessage) 
-				? operation.commitMessage 
-				: String.format("Merge %s into %s", source, target);
-		
-		return staging.commit(currentTime(), operation.author, commitMessage);
+		final boolean isFastForwardMerge = fastForwardCommitTimestamp != -1L && !operation.squash;
+		final String commitMessage = !Strings.isNullOrEmpty(operation.commitMessage) ? operation.commitMessage : String.format("Merge %s into %s", source, target);
+		return staging.commit(isFastForwardMerge ? fastForwardCommitTimestamp : currentTime(), operation.author, commitMessage);
 	}
 	
 	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {

@@ -164,6 +164,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		public static final String COMMIT = "commit";
 		public static final String WITH_DELETED = "withDeleted";
 		public static final String WITH_METADATA = "withMetadata";
+		public static final String WITH_MERGE_SOURCE = "withMergeSource";
 		public static final String REPLACE = "replace";
 	}
 	
