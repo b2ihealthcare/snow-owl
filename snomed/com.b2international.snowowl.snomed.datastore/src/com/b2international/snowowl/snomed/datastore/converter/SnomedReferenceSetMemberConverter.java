@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -41,8 +42,10 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableListMultimap;
@@ -55,8 +58,11 @@ import com.google.common.collect.Multimaps;
  */
 final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
 
+	final SnomedOWLExpressionConverter owlExpressionConverter;
+	
 	SnomedReferenceSetMemberConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+		owlExpressionConverter = new SnomedOWLExpressionConverter(context);
 	}
 
 	@Override
@@ -216,6 +222,21 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		}
 		
 		member.setProperties(props);
+		
+		String owlExpression = entry.getOwlExpression();
+		if (entry.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM) &&
+				expand().containsKey("owlRelationships") && 
+				!Strings.isNullOrEmpty(owlExpression)) {
+			if (!entry.getClassAxiomRelationships().isEmpty()) {
+				if (owlExpression.startsWith("EquivalentClasses")) {
+					member.setEquivalentOWLRelationships(entry.getClassAxiomRelationships());
+				} else {
+					member.setClassOWLRelationships(entry.getClassAxiomRelationships());
+				}
+			} else if (!entry.getGciAxiomRelationships().isEmpty()) {
+				member.setGciOWLRelationships(entry.getGciAxiomRelationships());
+			}
+		}
 		
 		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
 		return member;
