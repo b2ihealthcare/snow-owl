@@ -83,6 +83,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.finishConcepts();
 		
+		taxonomyBuilder.addFullySpecifiedNames(revisionSearcher);
 		taxonomyBuilder.addConceptFlags(revisionSearcher);
 		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
 		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
@@ -104,7 +105,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 			final OWLOntology ontology = ontologyManager.createOntology(ontologyIRI);
 			OWLOntology ontologyToExport = ontologyManager.createOntology();
 			
-			ontology.getLogicalAxioms().forEach(axiom -> {
+			ontology.getAxioms().forEach(axiom -> {
 				ontologyManager.addAxiom(ontologyToExport, axiom);
 			});
 			
