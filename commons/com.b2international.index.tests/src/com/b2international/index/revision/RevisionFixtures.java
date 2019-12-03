@@ -52,7 +52,7 @@ public class RevisionFixtures {
 			}
 
 			public Builder id(String id) {
-				this.id = field1;
+				this.id = id;
 				return getSelf();
 			}
 			
