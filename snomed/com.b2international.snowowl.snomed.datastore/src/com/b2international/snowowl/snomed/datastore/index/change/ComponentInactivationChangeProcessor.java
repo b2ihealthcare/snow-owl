@@ -127,8 +127,8 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					.build())) {
 				hits.forEach(relationship -> {
 					inactivatedComponentIds.add(relationship.getId());
-					if (staging.getChangedRevisions().containsKey(relationship.getId())) {
-						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) staging.getChangedRevisions().get(relationship.getId()).newRevision)
+					if (staging.getChangedRevisions().containsKey(relationship.getObjectId())) {
+						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) staging.getChangedRevisions().get(relationship.getObjectId()).newRevision)
 								.active(false)
 								.build());
 					} else {
@@ -151,8 +151,8 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				.limit(PAGE_SIZE)
 				.build())) {
 			hits.forEach(member -> {
-				if (staging.getChangedRevisions().containsKey(member.getId())) {
-					stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) staging.getChangedRevisions().get(member.getId()).newRevision)
+				if (staging.getChangedRevisions().containsKey(member.getObjectId())) {
+					stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) staging.getChangedRevisions().get(member.getObjectId()).newRevision)
 							.active(false)
 							.build());
 				} else {
