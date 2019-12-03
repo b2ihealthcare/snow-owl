@@ -128,11 +128,16 @@ public final class StagingArea {
 		return so != null && so.isRemoved();
 	}
 	
-	public Map<ObjectId, Object> getNewObjects() {
+	public Stream<Object> getNewObjects() {
 		return stagedObjects.entrySet()
 				.stream()
 				.filter(entry -> entry.getValue().isAdded())
-				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getObject()));
+				.map(e -> e.getValue().getObject());
+	}
+	
+	public <T> T getNewObject(Class<T> type, String key) {
+		StagedObject stagedObject = stagedObjects.get(ObjectId.of(DocumentMapping.getType(type), key));
+		return stagedObject == null ? null : type.cast(stagedObject.getObject());
 	}
 	
 	public <T> Stream<T> getNewObjects(Class<T> type) {
@@ -144,11 +149,11 @@ public final class StagingArea {
 				.map(type::cast);
 	}
 	
-	public Map<ObjectId, Object> getChangedObjects() {
+	public Stream<Object> getChangedObjects() {
 		return stagedObjects.entrySet()
 				.stream()
 				.filter(entry -> entry.getValue().isChanged())
-				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getObject()));
+				.map(e -> e.getValue().getObject());
 	}
 	
 	public <T> Stream<T> getChangedObjects(Class<T> type) {
@@ -160,11 +165,11 @@ public final class StagingArea {
 				.map(type::cast);
 	}
 	
-	public Map<ObjectId, Object> getRemovedObjects() {
+	public Stream<Object> getRemovedObjects() {
 		return stagedObjects.entrySet()
 				.stream()
 				.filter(entry -> entry.getValue().isRemoved())
-				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getObject()));
+				.map(e -> e.getValue().getObject());
 	}
 	
 	public <T> Stream<T> getRemovedObjects(Class<T> type) {

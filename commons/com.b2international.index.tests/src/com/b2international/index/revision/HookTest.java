@@ -42,7 +42,7 @@ public class HookTest extends BaseRevisionIndexTest {
 	public void preCommitHook() throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
 		withHook((Hooks.PreCommitHook) staging -> {
-			assertEquals(1, staging.getNewObjects().size());
+			assertEquals(1L, staging.getNewObjects().count());
 			latch.countDown();
 		});
 		commit(MAIN, Collections.singleton(new RevisionData(STORAGE_KEY1, "field1", "field2")));

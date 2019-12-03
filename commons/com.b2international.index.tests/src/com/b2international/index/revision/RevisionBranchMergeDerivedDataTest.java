@@ -238,7 +238,7 @@ public class RevisionBranchMergeDerivedDataTest extends BaseRevisionIndexTest {
 			final Map<String, Edge> edges = newHashMap(Maps.uniqueIndex(staging.read(searcher -> searcher.search(Query.select(Edge.class).where(Expressions.matchAll()).build())).getHits(), Edge::getId));
 			
 			// then apply changes from the current staging area
-			staging.getNewObjects().values().forEach(newObject -> {
+			staging.getNewObjects().forEach(newObject -> {
 				if (newObject instanceof Node) {
 					Node node = (Node) newObject;
 					nodes.put(node.getId(), node);
@@ -247,7 +247,7 @@ public class RevisionBranchMergeDerivedDataTest extends BaseRevisionIndexTest {
 					edges.put(edge.getId(), edge);
 				}
 			});
-			staging.getChangedObjects().values().forEach(changedObject -> {
+			staging.getChangedObjects().forEach(changedObject -> {
 				if (changedObject instanceof Node) {
 					Node node = (Node) changedObject;
 					nodes.put(node.getId(), node);
@@ -256,7 +256,7 @@ public class RevisionBranchMergeDerivedDataTest extends BaseRevisionIndexTest {
 					edges.put(edge.getId(), edge);
 				}
 			});
-			staging.getRemovedObjects().values().forEach(removedObject -> {
+			staging.getRemovedObjects().forEach(removedObject -> {
 				if (removedObject instanceof Node) {
 					Node node = (Node) removedObject;
 					nodes.remove(node.getId());

@@ -299,7 +299,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			final StagingArea staging = service(StagingArea.class);
 			for (String newRefSetId : newRefSetIds) {
 				SnomedConceptDocument newRefSet = (SnomedConceptDocument) newComponents.get(newRefSetId);
-				SnomedConceptDocument stagedNewRefSet = (SnomedConceptDocument) staging.getNewObjects().get(newRefSetId);
+				SnomedConceptDocument stagedNewRefSet = (SnomedConceptDocument) staging.getNewObject(SnomedConceptDocument.class, newRefSetId);
 				if (newRefSet != null && stagedNewRefSet != null) {
 					if (stagedNewRefSet.getRefSetType() == null) {
 						add(SnomedConceptDocument.builder(stagedNewRefSet)
