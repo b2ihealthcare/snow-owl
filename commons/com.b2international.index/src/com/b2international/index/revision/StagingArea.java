@@ -65,7 +65,7 @@ public final class StagingArea {
 	private final String branchPath;
 	private final ObjectMapper mapper;
 
-	private Map<String, StagedObject> stagedObjects;
+	private Map<ObjectId, StagedObject> stagedObjects;
 
 	private SortedSet<RevisionBranchPoint> mergeSources;
 	private RevisionBranchRef mergeFromBranchRef;
@@ -114,21 +114,21 @@ public final class StagingArea {
 	}
 	
 	public boolean isNew(Revision revision) {
-		StagedObject so = stagedObjects.get(revision.getId());
+		StagedObject so = stagedObjects.get(revision.getObjectId());
 		return so != null && so.isAdded();
 	}
 	
 	public boolean isChanged(Revision revision) {
-		StagedObject so = stagedObjects.get(revision.getId());
+		StagedObject so = stagedObjects.get(revision.getObjectId());
 		return so != null && so.isChanged();
 	}
 	
 	public boolean isRemoved(Revision revision) {
-		StagedObject so = stagedObjects.get(revision.getId());
+		StagedObject so = stagedObjects.get(revision.getObjectId());
 		return so != null && so.isRemoved();
 	}
 	
-	public Map<String, Object> getNewObjects() {
+	public Map<ObjectId, Object> getNewObjects() {
 		return stagedObjects.entrySet()
 				.stream()
 				.filter(entry -> entry.getValue().isAdded())
@@ -144,7 +144,7 @@ public final class StagingArea {
 				.map(type::cast);
 	}
 	
-	public Map<String, Object> getChangedObjects() {
+	public Map<ObjectId, Object> getChangedObjects() {
 		return stagedObjects.entrySet()
 				.stream()
 				.filter(entry -> entry.getValue().isChanged())
@@ -160,7 +160,7 @@ public final class StagingArea {
 				.map(type::cast);
 	}
 	
-	public Map<String, Object> getRemovedObjects() {
+	public Map<ObjectId, Object> getRemovedObjects() {
 		return stagedObjects.entrySet()
 				.stream()
 				.filter(entry -> entry.getValue().isRemoved())
@@ -176,7 +176,7 @@ public final class StagingArea {
 				.map(type::cast);
 	}
 	
-	public Map<String, RevisionDiff> getChangedRevisions() {
+	public Map<ObjectId, RevisionDiff> getChangedRevisions() {
 		return stagedObjects.entrySet()
 				.stream()
 				.filter(entry -> entry.getValue().isChanged())
@@ -252,10 +252,12 @@ public final class StagingArea {
 		stagedObjects.forEach((key, value) -> {
 			if (value.isRemoved() && value.isCommit()) {
 				Object object = value.getObject();
-				deletedIdsByType.put(object.getClass(), key);
+				deletedIdsByType.put(object.getClass(), key.id());
 				if (object instanceof Revision) {
 					Revision rev = (Revision) object;
-					removedComponentsByContainer.put(rev.getContainerId(), rev.getObjectId());
+					removedComponentsByContainer.put(rev.getContainerId(), key);
+				} else {
+					removedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(object.getClass())), key);
 				}
 			}
 		});
@@ -273,13 +275,15 @@ public final class StagingArea {
 		stagedObjects.forEach((key, value) -> {
 			if (value.isAdded() && value.isCommit()) {
 				Object document = value.getObject();
-				writer.put(key, document);
+				writer.put(key.id(), document);
 				if (document instanceof Revision) {
 					Revision rev = (Revision) document;
 					newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev), rev.getObjectId());
 					if (shouldSetRevisedOnMergeBranch()) {
-						revisionsToReviseOnMergeSource.put(document.getClass(), key);
+						revisionsToReviseOnMergeSource.put(document.getClass(), key.id());
 					}
+				} else {
+					newComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(document.getClass())), key);
 				}
 			}
 		});
@@ -301,7 +305,7 @@ public final class StagingArea {
 						return;
 					}
 					
-					writer.put(key, rev);
+					writer.put(key.id(), rev);
 					
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
@@ -317,7 +321,8 @@ public final class StagingArea {
 						});
 					}
 				} else {
-					writer.put(key, object);
+					writer.put(key.id(), object);
+					changedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(object.getClass())), key);
 				}
 			}
 		});
@@ -446,31 +451,33 @@ public final class StagingArea {
 	}
 	
 	public StagingArea stageNew(String key, Object newDocument, boolean commit) {
-		stagedObjects.put(key, added(newDocument, null, commit));
+		stagedObjects.put(toObjectId(newDocument, key), added(newDocument, null, commit));
 		return this;
 	}
-	
+
 	public StagingArea stageChange(Revision oldRevision, Revision changedRevision) {
 		return stageChange(oldRevision, changedRevision, true);
 	}
 	
 	public StagingArea stageChange(Revision oldRevision, Revision changedRevision, boolean commit) {
 		checkArgument(Objects.equals(oldRevision.getId(), changedRevision.getId()), "IDs of oldRevision and changedRevision must match");
-		if (stagedObjects.containsKey(changedRevision.getId())) {
-			StagedObject currentObject = stagedObjects.get(changedRevision.getId());
-			stagedObjects.put(changedRevision.getId(), currentObject.withObject(changedRevision, commit));
+		ObjectId id = toObjectId(changedRevision, changedRevision.getId());
+		if (stagedObjects.containsKey(id)) {
+			StagedObject currentObject = stagedObjects.get(id);
+			stagedObjects.put(id, currentObject.withObject(changedRevision, commit));
 		} else {
-			stagedObjects.put(changedRevision.getId(), changed(changedRevision, new RevisionDiff(oldRevision, changedRevision), commit));
+			stagedObjects.put(id, changed(changedRevision, new RevisionDiff(oldRevision, changedRevision), commit));
 		}
 		return this;
 	}
 	
 	public StagingArea stageChange(String key, Object changed) {
 		checkArgument(!(changed instanceof Revision), "Use the other stageChange method properly track changes for revision documents.");
-		if (stagedObjects.containsKey(key)) {
-			stagedObjects.put(key, stagedObjects.get(key).withObject(changed, true));
+		ObjectId id = toObjectId(changed, key);
+		if (stagedObjects.containsKey(id)) {
+			stagedObjects.put(id, stagedObjects.get(id).withObject(changed, true));
 		} else {
-			stagedObjects.put(key, changed(changed, null, true));
+			stagedObjects.put(id, changed(changed, null, true));
 		}
 		return this;
 	}
@@ -488,8 +495,16 @@ public final class StagingArea {
 	}
 	
 	public StagingArea stageRemove(String key, Object removed, boolean commit) {
-		stagedObjects.put(key, removed(removed, null, commit));
+		stagedObjects.put(toObjectId(removed, key), removed(removed, null, commit));
 		return this;
+	}
+	
+	private ObjectId toObjectId(Object obj, String id) {
+		if (obj instanceof Revision) {
+			return ((Revision) obj).getObjectId();
+		} else {
+			return ObjectId.of(DocumentMapping.getType(obj.getClass()), id);
+		}
 	}
 	
 	long merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor) {
