@@ -149,18 +149,18 @@ public final class RevisionCompareDetail {
 	RevisionCompareDetail merge(RevisionCompareDetail other) {
 		checkArgument(key().equals(other.key()), "Cannot merge unrelated compare details.");
 		if (isComponentChange()) {
-			// other is a revert of this detail return null 
 			if ((isAdd() && other.isRemove()) || 
 					(isRemove() && other.isAdd())) {
+				// other is a revert of this detail return null
 				return null;
 			} else if (isAdd() && other.isChange()) {
 				return this;
 			} else if (isChange() && other.isAdd()) {
 				return other;
-			} else if (isChange() && other.isChange()) {
+			} else if (getOp() == other.getOp()) {
 				return this; // two changes after each other in the commit history, keep only a single change
 			} else {
-				throw new UnsupportedOperationException("Unknown case for _component change: " + this + " vs. " + other);
+				throw new UnsupportedOperationException("Unknown case for _component change: " + this.getOp() + " vs. " + other.getOp());
 			}
 		} else {
 			// if this is a property change, but it is a revert then return null

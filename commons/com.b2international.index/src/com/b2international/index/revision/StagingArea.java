@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,8 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,10 +65,7 @@ public final class StagingArea {
 	private final String branchPath;
 	private final ObjectMapper mapper;
 
-	private Map<String, Object> newObjects;
-	private Map<String, Object> changedObjects;
-	private Map<String, RevisionDiff> changedRevisions;
-	private Map<String, Object> removedObjects;
+	private Map<String, StagedObject> stagedObjects;
 
 	private SortedSet<RevisionBranchPoint> mergeSources;
 	private RevisionBranchRef mergeFromBranchRef;
@@ -126,52 +114,88 @@ public final class StagingArea {
 	}
 	
 	public boolean isNew(Revision revision) {
-		return newObjects.containsKey(revision.getId());
+		StagedObject so = stagedObjects.get(revision.getId());
+		return so != null && so.isAdded();
 	}
 	
 	public boolean isChanged(Revision revision) {
-		return changedObjects.containsKey(revision.getId()) || changedRevisions.containsKey(revision.getId());
+		StagedObject so = stagedObjects.get(revision.getId());
+		return so != null && so.isChanged();
 	}
 	
 	public boolean isRemoved(Revision revision) {
-		return removedObjects.containsKey(revision.getId());
+		StagedObject so = stagedObjects.get(revision.getId());
+		return so != null && so.isRemoved();
 	}
 	
 	public Map<String, Object> getNewObjects() {
-		return newObjects;
+		return stagedObjects.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isAdded())
+				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getObject()));
 	}
 	
 	public <T> Stream<T> getNewObjects(Class<T> type) {
-		return newObjects.values().stream().filter(type::isInstance).map(type::cast);
+		return stagedObjects.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isAdded())
+				.map(entry -> entry.getValue().getObject())
+				.filter(type::isInstance)
+				.map(type::cast);
 	}
 	
 	public Map<String, Object> getChangedObjects() {
-		return changedObjects;
+		return stagedObjects.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isChanged())
+				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getObject()));
 	}
 	
 	public <T> Stream<T> getChangedObjects(Class<T> type) {
-		return changedObjects.values().stream().filter(type::isInstance).map(type::cast);
+		return stagedObjects.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isChanged())
+				.map(entry -> entry.getValue().getObject())
+				.filter(type::isInstance)
+				.map(type::cast);
 	}
 	
 	public Map<String, Object> getRemovedObjects() {
-		return removedObjects;
+		return stagedObjects.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isRemoved())
+				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getObject()));
 	}
 	
 	public <T> Stream<T> getRemovedObjects(Class<T> type) {
-		return removedObjects.values().stream().filter(type::isInstance).map(type::cast);
+		return stagedObjects.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isRemoved())
+				.map(entry -> entry.getValue().getObject())
+				.filter(type::isInstance)
+				.map(type::cast);
 	}
 	
 	public Map<String, RevisionDiff> getChangedRevisions() {
-		return changedRevisions;
+		return stagedObjects.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isChanged())
+				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getDiff()));
 	}
 	
 	public Stream<RevisionDiff> getChangedRevisions(Class<? extends Revision> type) {
-		return changedRevisions.values().stream().filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()));
+		return stagedObjects.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isChanged())
+				.map(entry -> entry.getValue().getDiff())
+				.filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()));
 	}
 	
 	public Stream<RevisionDiff> getChangedRevisions(Class<? extends Revision> type, Set<String> changedPropertyNames) {
-		return changedRevisions.values()
+		return stagedObjects.entrySet()
 				.stream()
+				.filter(entry -> entry.getValue().isChanged())
+				.map(entry -> entry.getValue().getDiff())
 				.filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()))
 				.filter(diff -> changedPropertyNames.stream().filter(diff::hasRevisionPropertyDiff).findFirst().isPresent());
 	}
@@ -224,12 +248,15 @@ public final class StagingArea {
 		final Multimap<ObjectId, ObjectId> changedComponentsByContainer = HashMultimap.create();
 		final Multimap<ObjectId, ObjectId> removedComponentsByContainer = HashMultimap.create();
 		final Multimap<Class<?>, String> deletedIdsByType = HashMultimap.create();
-		
-		removedObjects.forEach((key, value) -> {
-			deletedIdsByType.put(value.getClass(), key);
-			if (value instanceof Revision) {
-				Revision rev = (Revision) value;
-				removedComponentsByContainer.put(rev.getContainerId(), rev.getObjectId());
+
+		stagedObjects.forEach((key, value) -> {
+			if (value.isRemoved() && value.isCommit()) {
+				Object object = value.getObject();
+				deletedIdsByType.put(object.getClass(), key);
+				if (object instanceof Revision) {
+					Revision rev = (Revision) object;
+					removedComponentsByContainer.put(rev.getContainerId(), rev.getObjectId());
+				}
 			}
 		});
 
@@ -243,62 +270,57 @@ public final class StagingArea {
 		}
 		
 		// then new documents and revisions
-		for (Entry<String, Object> doc : newObjects.entrySet()) {
-			if (!removedObjects.containsKey(doc.getKey())) {
-				Object document = doc.getValue();
-				writer.put(doc.getKey(), document);
+		stagedObjects.forEach((key, value) -> {
+			if (value.isAdded() && value.isCommit()) {
+				Object document = value.getObject();
+				writer.put(key, document);
 				if (document instanceof Revision) {
 					Revision rev = (Revision) document;
 					newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev), rev.getObjectId());
 					if (shouldSetRevisedOnMergeBranch()) {
-						revisionsToReviseOnMergeSource.put(document.getClass(), doc.getKey());
+						revisionsToReviseOnMergeSource.put(document.getClass(), key);
 					}
 				}
 			}
-		}
+		});
 		
-		// and changed documents
-		for (Entry<String, Object> doc : changedObjects.entrySet()) {
-			if (!removedObjects.containsKey(doc.getKey())) {
-				Object document = doc.getValue();
-				writer.put(doc.getKey(), document);
-			}
-		}
-		
+		// and changed documents/revisions
 		final Multimap<ObjectNode, ObjectId> revisionsByChange = HashMultimap.create();
-		
-		// and changed revisions
-		for (Entry<String, RevisionDiff> changedRevision : changedRevisions.entrySet()) {
-			final String changedRevisionId = changedRevision.getKey();
-			if (!removedObjects.containsKey(changedRevisionId)) {
-				RevisionDiff revisionDiff = changedRevision.getValue();
-				if (!revisionDiff.hasChanges()) {
-					// System.err.println("No raw property change for revision " + changedRevisionId + ", skipping");
-					continue;
-				}
-				
-				final Revision rev = revisionDiff.newRevision;
-				writer.put(changedRevisionId, rev);
-				
-				if (shouldSetRevisedOnMergeBranch()) {
-					revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
-				}
-				
-				ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
-				ObjectId objectId = rev.getObjectId();
-				if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
-					changedComponentsByContainer.put(containerId, objectId);
-				}
-				
-				if (revisionDiff.diff() != null) {
-					revisionDiff.diff().forEach(node -> {
-						if (node instanceof ObjectNode) {
-							revisionsByChange.put((ObjectNode) node, objectId);
-						}
-					});
+		stagedObjects.forEach((key, value) -> {
+			if (value.isChanged() && value.isCommit()) {
+				Object object = value.getObject();
+				if (object instanceof Revision) {
+					RevisionDiff revisionDiff = value.getDiff();
+					final Revision rev = revisionDiff.newRevision;
+					
+					if (shouldSetRevisedOnMergeBranch()) {
+						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+					}
+					
+					if (!revisionDiff.hasChanges()) {
+						return;
+					}
+					
+					writer.put(key, rev);
+					
+					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
+					ObjectId objectId = rev.getObjectId();
+					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
+						changedComponentsByContainer.put(containerId, objectId);
+					}
+					
+					if (revisionDiff.diff() != null) {
+						revisionDiff.diff().forEach(node -> {
+							if (node instanceof ObjectNode) {
+								revisionsByChange.put((ObjectNode) node, objectId);
+							}
+						});
+					}
+				} else {
+					writer.put(key, object);
 				}
 			}
-		}
+		});
 		
 		// apply revised flag on merge source branch
 		for (Class<?> type : revisionsToReviseOnMergeSource.keySet()) {
@@ -400,170 +422,76 @@ public final class StagingArea {
 	}
 
 	private boolean shouldSetRevisedOnMergeBranch() {
-		return mergeFromBranchRef != null && squashMerge;
+		return mergeFromBranchRef != null;
 	}
 
 	/**
 	 * Reset staging area to empty.
 	 */
 	private void reset() {
-		newObjects = newHashMap();
-		changedObjects = newHashMap();
-		changedRevisions = newHashMap();
-		removedObjects = newHashMap();
+		stagedObjects = newHashMap();
 		revisionsToReviseOnMergeSource = HashMultimap.create();
 	}
 
 	public StagingArea stageNew(Revision newRevision) {
-		return stageNew(newRevision.getId(), newRevision);
+		return stageNew(newRevision, true);
+	}
+	
+	public StagingArea stageNew(Revision newRevision, boolean commit) {
+		return stageNew(newRevision.getId(), newRevision, commit);
 	}
 	
 	public StagingArea stageNew(String key, Object newDocument) {
-		newObjects.put(key, newDocument);
+		return stageNew(key, newDocument, true);
+	}
+	
+	public StagingArea stageNew(String key, Object newDocument, boolean commit) {
+		stagedObjects.put(key, added(newDocument, null, commit));
 		return this;
 	}
 	
 	public StagingArea stageChange(Revision oldRevision, Revision changedRevision) {
+		return stageChange(oldRevision, changedRevision, true);
+	}
+	
+	public StagingArea stageChange(Revision oldRevision, Revision changedRevision, boolean commit) {
 		checkArgument(Objects.equals(oldRevision.getId(), changedRevision.getId()), "IDs of oldRevision and changedRevision must match");
-		changedRevisions.put(changedRevision.getId(), new RevisionDiff(oldRevision, changedRevision));
+		if (stagedObjects.containsKey(changedRevision.getId())) {
+			StagedObject currentObject = stagedObjects.get(changedRevision.getId());
+			stagedObjects.put(changedRevision.getId(), currentObject.withObject(changedRevision, commit));
+		} else {
+			stagedObjects.put(changedRevision.getId(), changed(changedRevision, new RevisionDiff(oldRevision, changedRevision), commit));
+		}
 		return this;
 	}
 	
 	public StagingArea stageChange(String key, Object changed) {
 		checkArgument(!(changed instanceof Revision), "Use the other stageChange method properly track changes for revision documents.");
-		changedObjects.put(key, changed);
+		if (stagedObjects.containsKey(key)) {
+			stagedObjects.put(key, stagedObjects.get(key).withObject(changed, true));
+		} else {
+			stagedObjects.put(key, changed(changed, null, true));
+		}
 		return this;
 	}
 	
 	public StagingArea stageRemove(Revision removedRevision) {
-		return stageRemove(removedRevision.getId(), removedRevision);
+		return stageRemove(removedRevision, true);
 	}
-
+	
+	public StagingArea stageRemove(Revision removedRevision, boolean commit) {
+		return stageRemove(removedRevision.getId(), removedRevision, commit);
+	}
+	
 	public StagingArea stageRemove(String key, Object removed) {
-		removedObjects.put(key, removed);
+		return stageRemove(key, removed, true);
+	}
+	
+	public StagingArea stageRemove(String key, Object removed, boolean commit) {
+		stagedObjects.put(key, removed(removed, null, commit));
 		return this;
 	}
 	
-	public final class RevisionDiff {
-		
-		public final Revision oldRevision;
-		public final Revision newRevision;
-		
-		private ArrayNode rawDiff;
-		private ArrayNode diff;
-		private Map<String, RevisionPropertyDiff> propertyChanges;
-		
-		private RevisionDiff(Revision oldRevision, Revision newRevision) {
-			this.oldRevision = oldRevision;
-			this.newRevision = newRevision;
-		}
-
-		public boolean hasChanges() {
-			return rawDiff().size() > 0;
-		}
-
-		private ArrayNode rawDiff() {
-			if (rawDiff == null) {
-				ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
-				ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
-				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
-				final ArrayNode rawDiff = ClassUtils.checkAndCast(diff, ArrayNode.class);
-				final ArrayNode filteredRawDiff = mapper.createArrayNode();
-				final Iterator<JsonNode> elements = rawDiff.elements();
-				while (elements.hasNext()) {
-					JsonNode node = elements.next();
-					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
-					final String property = change.get("path").asText().substring(1);
-					
-					// Remove administrative revision fields from diff, but keep all other ones
-					if (!Revision.Fields.CREATED.equals(property) && !Revision.Fields.REVISED.equals(property)) {
-						filteredRawDiff.add(change);
-					}
-				}
-				this.rawDiff = filteredRawDiff;
-			}
-			return this.rawDiff;
-		}
-		
-		public ArrayNode diff() {
-			if (diff == null) {
-				final DocumentMapping mapping = index.admin().mappings().getMapping(newRevision.getClass());
-				final Set<String> diffFields = mapping.getHashedFields();
-				if (diffFields.isEmpty()) {
-					return null; // in case of no hash fields, do NOT try to compute the diff
-				}
-				
-				final ArrayNode diff = mapper.createArrayNode();
-				final Iterator<JsonNode> elements = rawDiff().elements();
-				while (elements.hasNext()) {
-					JsonNode node = elements.next();
-					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
-					final String property = change.get("path").asText().substring(1);
-					// Keep hashed fields only
-					if (diffFields.contains(property)) {
-						diff.add(change);
-					}
-				}
-				this.diff = diff;
-			}
-			return this.diff;
-		}
-
-		public RevisionPropertyDiff getRevisionPropertyDiff(String property) {
-			if (propertyChanges == null) {
-				propertyChanges = newHashMapWithExpectedSize(2);
-			}
-			for (ObjectNode change : Iterables.filter(diff(), ObjectNode.class)) {
-				String prop = change.get("path").asText().substring(1);
-				if (property.equals(prop)) {
-					final String from = change.get("fromValue").asText();
-					final String to = change.get("value").asText();
-					propertyChanges.put(property, new RevisionPropertyDiff(property, from, to));
-				}
-			}
-			return propertyChanges.get(property);
-		}
-		
-		public boolean hasRevisionPropertyDiff(String property) {
-			return getRevisionPropertyDiff(property) != null;
-		}
-		
-	}
-	
-	public static final class RevisionPropertyDiff {
-		
-		private final String property;
-		private final String oldValue;
-		private final String newValue;
-		
-		private RevisionPropertyDiff(String property, String oldValue, String newValue) {
-			this.property = property;
-			this.oldValue = oldValue;
-			this.newValue = newValue;
-		}
-		
-		public String getProperty() {
-			return property;
-		}
-		
-		public String getOldValue() {
-			return oldValue;
-		}
-		
-		public String getNewValue() {
-			return newValue;
-		}
-
-		public String toValueChangeString() {
-			return String.format("%s -> %s", getOldValue(), getNewValue());
-		}
-		
-		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {
-			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
-		}
-		
-	}
-
 	long merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
 		this.mergeSources = fromRef.difference(toRef)
@@ -728,30 +656,28 @@ public final class StagingArea {
 			}
 		}
 		
-		if (squash) {
-			// apply new objects
-			for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
-				final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
-				index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(this::stageNew);
-				stagedChanges = true;
-			}
+		// apply new objects
+		for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
+			final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
+			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(rev -> stageNew(rev, squash));
+			stagedChanges = squash;
+		}
+		
+		// apply changed objects
+		for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
+			final Collection<String> changedRevisionIds = fromChangeSet.getChangedIds(type);
+			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
+			final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
 			
-			// apply changed objects
-			for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
-				final Collection<String> changedRevisionIds = fromChangeSet.getChangedIds(type);
-				final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
-				final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
-				
-				final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
-				final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
-				for (String updatedId : updatedRevisionsById.keySet()) {
-					if (oldRevisionsById.containsKey(updatedId)) {
-						stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId));
-					} else {
-						stageNew(updatedRevisionsById.get(updatedId));
-					}
-					stagedChanges = true;
+			final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
+			final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
+			for (String updatedId : updatedRevisionsById.keySet()) {
+				if (oldRevisionsById.containsKey(updatedId)) {
+					stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId), squash);
+				} else {
+					stageNew(updatedRevisionsById.get(updatedId), squash);
 				}
+				stagedChanges = squash;
 			}
 		}
 		
@@ -763,6 +689,190 @@ public final class StagingArea {
 		}
 		
 		return stagedChanges ? -1L : fastForwardCommitTimestamp;
+	}
+	
+	public final class RevisionDiff {
+		
+		public final Revision oldRevision;
+		public final Revision newRevision;
+		
+		private ArrayNode rawDiff;
+		private ArrayNode diff;
+		private Map<String, RevisionPropertyDiff> propertyChanges;
+		
+		private RevisionDiff(Revision oldRevision, Revision newRevision) {
+			this.oldRevision = oldRevision;
+			this.newRevision = newRevision;
+		}
+
+		public boolean hasChanges() {
+			return rawDiff().size() > 0;
+		}
+
+		private ArrayNode rawDiff() {
+			if (rawDiff == null) {
+				ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
+				ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
+				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
+				final ArrayNode rawDiff = ClassUtils.checkAndCast(diff, ArrayNode.class);
+				final ArrayNode filteredRawDiff = mapper.createArrayNode();
+				final Iterator<JsonNode> elements = rawDiff.elements();
+				while (elements.hasNext()) {
+					JsonNode node = elements.next();
+					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
+					final String property = change.get("path").asText().substring(1);
+					
+					// Remove administrative revision fields from diff, but keep all other ones
+					if (!Revision.Fields.CREATED.equals(property) && !Revision.Fields.REVISED.equals(property)) {
+						filteredRawDiff.add(change);
+					}
+				}
+				this.rawDiff = filteredRawDiff;
+			}
+			return this.rawDiff;
+		}
+		
+		public ArrayNode diff() {
+			if (diff == null) {
+				final DocumentMapping mapping = index.admin().mappings().getMapping(newRevision.getClass());
+				final Set<String> diffFields = mapping.getHashedFields();
+				if (diffFields.isEmpty()) {
+					return null; // in case of no hash fields, do NOT try to compute the diff
+				}
+				
+				final ArrayNode diff = mapper.createArrayNode();
+				final Iterator<JsonNode> elements = rawDiff().elements();
+				while (elements.hasNext()) {
+					JsonNode node = elements.next();
+					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
+					final String property = change.get("path").asText().substring(1);
+					// Keep hashed fields only
+					if (diffFields.contains(property)) {
+						diff.add(change);
+					}
+				}
+				this.diff = diff;
+			}
+			return this.diff;
+		}
+
+		public RevisionPropertyDiff getRevisionPropertyDiff(String property) {
+			if (propertyChanges == null) {
+				propertyChanges = newHashMapWithExpectedSize(2);
+			}
+			for (ObjectNode change : Iterables.filter(diff(), ObjectNode.class)) {
+				String prop = change.get("path").asText().substring(1);
+				if (property.equals(prop)) {
+					final String from = change.get("fromValue").asText();
+					final String to = change.get("value").asText();
+					propertyChanges.put(property, new RevisionPropertyDiff(property, from, to));
+				}
+			}
+			return propertyChanges.get(property);
+		}
+		
+		public boolean hasRevisionPropertyDiff(String property) {
+			return getRevisionPropertyDiff(property) != null;
+		}
+		
+	}
+	
+	public static final class RevisionPropertyDiff {
+		
+		private final String property;
+		private final String oldValue;
+		private final String newValue;
+		
+		private RevisionPropertyDiff(String property, String oldValue, String newValue) {
+			this.property = property;
+			this.oldValue = oldValue;
+			this.newValue = newValue;
+		}
+		
+		public String getProperty() {
+			return property;
+		}
+		
+		public String getOldValue() {
+			return oldValue;
+		}
+		
+		public String getNewValue() {
+			return newValue;
+		}
+
+		public String toValueChangeString() {
+			return String.format("%s -> %s", getOldValue(), getNewValue());
+		}
+		
+		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {
+			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
+		}
+		
+	}
+	
+	private enum StageKind {
+		ADDED, CHANGED, REMOVED
+	}
+	
+	private final class StagedObject {
+		
+		private final Object object;
+		private final StageKind stageKind;
+		private final boolean commit;
+		private final RevisionDiff diff;
+		
+		private StagedObject(StageKind stageKind, Object object, RevisionDiff diff, boolean commit) {
+			this.stageKind = stageKind;
+			this.object = object;
+			this.diff = diff;
+			this.commit = commit;
+		}
+		
+		public StagedObject withObject(Object newObject, boolean commit) {
+			if (isChanged()) {
+				return new StagedObject(stageKind, newObject, diff != null ? new RevisionDiff(diff.oldRevision, (Revision) newObject) : null, commit);
+			} else {
+				return new StagedObject(stageKind, newObject, null, commit);
+			}
+		}
+		
+		public boolean isAdded() {
+			return StageKind.ADDED == stageKind;
+		}
+		
+		public boolean isChanged() {
+			return StageKind.CHANGED == stageKind;
+		}
+		
+		public boolean isRemoved() {
+			return StageKind.REMOVED == stageKind;
+		}
+
+		public Object getObject() {
+			return object;
+		}
+		
+		public boolean isCommit() {
+			return commit;
+		}
+		
+		public RevisionDiff getDiff() {
+			return diff;
+		}
+		
+	}
+	
+	public StagedObject added(Object object, RevisionDiff diff, boolean commit) {
+		return new StagedObject(StageKind.ADDED, object, diff, commit);
+	}
+	
+	public StagedObject changed(Object object, RevisionDiff diff, boolean commit) {
+		return new StagedObject(StageKind.CHANGED, object, diff, commit);
+	}
+
+	public StagedObject removed(Object object, RevisionDiff diff, boolean commit) {
+		return new StagedObject(StageKind.REMOVED, object, diff, commit);
 	}
 
 }
