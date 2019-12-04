@@ -50,16 +50,15 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 		final Set<String> deletedCoreComponentIds = newHashSet();
 		final Set<String> deletedConceptIds = newHashSet();
 		
-		staging.getRemovedObjects().values()
-			.forEach(detachedObject -> {
-				if (detachedObject instanceof SnomedComponentDocument) {
-					String id = ((SnomedComponentDocument) detachedObject).getId();
-					deletedCoreComponentIds.add(id);
-					if (detachedObject instanceof SnomedConceptDocument) {
-						deletedConceptIds.add(id);
-					}
+		staging.getRemovedObjects().forEach(detachedObject -> {
+			if (detachedObject instanceof SnomedComponentDocument) {
+				String id = ((SnomedComponentDocument) detachedObject).getId();
+				deletedCoreComponentIds.add(id);
+				if (detachedObject instanceof SnomedConceptDocument) {
+					deletedConceptIds.add(id);
 				}
-			});
+			}
+		});
 		
 		if (deletedCoreComponentIds.isEmpty() && deletedConceptIds.isEmpty()) {
 			return;

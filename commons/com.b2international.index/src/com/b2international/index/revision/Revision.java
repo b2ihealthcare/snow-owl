@@ -86,7 +86,7 @@ public abstract class Revision {
 	}
 	
 	@JsonIgnore
-	final ObjectId getObjectId() {
+	public final ObjectId getObjectId() {
 		return ObjectId.of(DocumentMapping.getType(getClass()), getId());
 	}
 	

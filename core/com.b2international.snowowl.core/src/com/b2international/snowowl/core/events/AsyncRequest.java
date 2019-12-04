@@ -47,6 +47,7 @@ public final class AsyncRequest<R> {
 		final CompositeClassLoader classLoader = new CompositeClassLoader();
 		classLoader.add(request.getClassLoader());
 		request.getNestedRequests().stream().map(Request::getClassLoader).forEach(classLoader::add);
+		request.getNestedRequests().stream().map(r -> r.getClass().getClassLoader()).forEach(classLoader::add);
 		bus.send(Request.ADDRESS, request, Request.TAG, Collections.emptyMap(), new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {

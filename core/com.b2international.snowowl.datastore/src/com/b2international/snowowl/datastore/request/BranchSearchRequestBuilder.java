@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,14 @@ public final class BranchSearchRequestBuilder extends SearchResourceRequestBuild
 		return addOption(BranchSearchRequest.OptionKey.NAME, names);
 	}
 	
+	public BranchSearchRequestBuilder filterByBranchId(long branchId) {
+		return filterByBranchId(ImmutableSet.of(branchId));
+	}
+	
+	public BranchSearchRequestBuilder filterByBranchId(Collection<Long> branchIds) {
+		return addOption(BranchSearchRequest.OptionKey.BRANCH_ID, branchIds);
+	}
+
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Branches> createSearch() {
 		return new BranchSearchRequest();

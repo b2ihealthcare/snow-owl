@@ -29,7 +29,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.b2international.commons.collect.LongSets;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
@@ -147,7 +149,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		if (!dirtyConceptIds.isEmpty()) {
 			// fetch all dirty concept documents by their ID
 			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
-					.filter(id -> !staging.getChangedRevisions().containsKey(id))
+					.filter(id -> !staging.getChangedRevisions().containsKey(ObjectId.of(DocumentMapping.getType(SnomedConceptDocument.class), id)))
 					.collect(Collectors.toSet());
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
@@ -155,6 +157,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					.build();
 			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.search(query), IComponent::getId));
 			dirtyConceptIds.stream()
+				.map(id -> ObjectId.of(DocumentMapping.getType(SnomedConceptDocument.class), id))
 				.filter(id -> staging.getChangedRevisions().containsKey(id))
 				.map(id -> staging.getChangedRevisions().get(id))
 				.map(diff -> (SnomedConceptDocument) diff.oldRevision)
