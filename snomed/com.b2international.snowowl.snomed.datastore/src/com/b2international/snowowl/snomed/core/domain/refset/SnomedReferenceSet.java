@@ -20,6 +20,7 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -61,9 +62,7 @@ import com.google.common.collect.ImmutableSet;
 	componentCategory = ComponentCategory.SET,
 	name = "SNOMED CT Reference Set",
 	docType = SnomedConceptDocument.class,
-	supportedRefSetTypes = {
-		"QUERY"
-	}
+	supportedRefSetTypes = {MapTargetTypes.QUERY}
 )
 public final class SnomedReferenceSet extends SnomedComponent {
 

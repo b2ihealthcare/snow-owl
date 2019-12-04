@@ -79,7 +79,7 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 	 */
 	@JsonIgnore
 	default ClassLoader getClassLoader() {
-		return getReturnType().getClassLoader();
+		return getReturnType().getClassLoader() == null ? getClass().getClassLoader() : getReturnType().getClassLoader();
 	}
 	
 	/**

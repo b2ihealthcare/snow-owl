@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -87,12 +88,12 @@ import com.google.common.collect.Multimap;
 	componentCategory = ComponentCategory.CONCEPT,
 	docType = SnomedConceptDocument.class,
 	supportedRefSetTypes = {
-		"SIMPLE",
-		"SIMPLE_MAP",
-		"SIMPLE_MAP_WITH_DESCRIPTION",
-		"ATTRIBUTE_VALUE",
-		"COMPLEX_MAP",
-		"EXTENDED_MAP"
+		MapTargetTypes.SIMPLE,
+		MapTargetTypes.SIMPLE_MAP,
+		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION,
+		MapTargetTypes.ATTRIBUTE_VALUE,
+		MapTargetTypes.COMPLEX_MAP,
+		MapTargetTypes.EXTENDED_MAP
 	},
 	supportedMapTargetTypes = {
 		"SIMPLE_MAP",
