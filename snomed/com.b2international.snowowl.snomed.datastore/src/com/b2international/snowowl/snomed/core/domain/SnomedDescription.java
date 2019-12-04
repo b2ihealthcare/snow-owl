@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -65,10 +66,11 @@ import com.google.common.collect.Multimap;
 	componentCategory = ComponentCategory.DESCRIPTION,
 	docType = SnomedDescriptionIndexEntry.class,
 	supportedRefSetTypes = {
-		"SIMPLE",
-		"ATTRIBUTE_VALUE",
-		"SIMPLE_MAP",
-		"SIMPLE_MAP_WITH_DESCRIPTION"
+		MapTargetTypes.SIMPLE,
+		MapTargetTypes.ATTRIBUTE_VALUE,
+		MapTargetTypes.SIMPLE_MAP,
+		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION,
+		MapTargetTypes.LANGUAGE
 	}
 )
 public final class SnomedDescription extends SnomedCoreComponent {
