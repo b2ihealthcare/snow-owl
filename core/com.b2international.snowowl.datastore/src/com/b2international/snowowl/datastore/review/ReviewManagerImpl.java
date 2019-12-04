@@ -228,8 +228,6 @@ public class ReviewManagerImpl implements ReviewManager {
 	public Review createReview(final Branch source, final Branch target) {
 		if (source.path().equals(target.path())) {
 			throw new BadRequestException("Cannot create a review with the same source and target '%s'.", source.path());
-		} else if (!source.parentPath().equals(target.path()) && !target.parentPath().equals(source.path())){
-			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
 		}
 
 		// the compared branch is always the source branch
