@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.google.common.collect.HashMultimap;
@@ -82,6 +83,8 @@ public enum TerminologyRegistry {
 			register(terminologyComponent);
 			terminologyIdByTerminologyComponentId.put(terminologyComponent.id(), terminology.getId());
 			terminologyComponentIdsByTerminology.put(terminology.getId(), terminologyComponent.id());
+			// XXX This will inject the necessary values in the underlying document mapping caches 
+			DocumentMapping.getType(terminologyComponent.docType());
 		}
 	}
 
