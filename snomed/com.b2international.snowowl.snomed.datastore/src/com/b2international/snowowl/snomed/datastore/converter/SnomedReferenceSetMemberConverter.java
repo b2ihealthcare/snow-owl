@@ -224,7 +224,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		member.setProperties(props);
 		
 		String owlExpression = entry.getOwlExpression();
-		if (entry.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM) &&
+		if (Concepts.REFSET_OWL_AXIOM.equals(entry.getReferenceSetId()) &&
 				expand().containsKey("owlRelationships") && 
 				!Strings.isNullOrEmpty(owlExpression)) {
 			if (!entry.getClassAxiomRelationships().isEmpty()) {
