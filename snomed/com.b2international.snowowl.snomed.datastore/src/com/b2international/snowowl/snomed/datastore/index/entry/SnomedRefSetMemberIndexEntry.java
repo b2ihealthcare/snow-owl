@@ -40,7 +40,6 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -77,53 +76,55 @@ import com.google.common.collect.Iterables;
 /**
  * Lightweight representation of a SNOMED CT reference set member.
  */
-@Doc(type="member")
+@Doc(
+	type="member",
+	revisionHash = { 
+		SnomedDocument.Fields.ACTIVE, 
+		SnomedDocument.Fields.EFFECTIVE_TIME, 
+		SnomedDocument.Fields.MODULE_ID, 
+		SnomedDocument.Fields.RELEASED,
+		SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
+		SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
+		SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE,
+		SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE,
+		SnomedRefSetMemberIndexEntry.Fields.INTEGER_VALUE,
+		SnomedRefSetMemberIndexEntry.Fields.DECIMAL_VALUE,
+		SnomedRefSetMemberIndexEntry.Fields.RELATIONSHIP_GROUP,
+		SnomedRefSetMemberIndexEntry.Fields.TYPE_ID,
+		SnomedRefSetMemberIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
+		SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_LENGTH,
+		SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_FORMAT,
+		SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID,
+		SnomedRefSetMemberIndexEntry.Fields.SOURCE_EFFECTIVE_TIME,
+		SnomedRefSetMemberIndexEntry.Fields.TARGET_EFFECTIVE_TIME,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_DESCRIPTION,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_CATEGORY_ID,
+		SnomedRefSetMemberIndexEntry.Fields.CORRELATION_ID,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_ADVICE,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_RULE,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_GROUP,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_PRIORITY,
+		SnomedRefSetMemberIndexEntry.Fields.QUERY,
+		SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_CONSTRAINT,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_PARENT_DOMAIN,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_EDITORIAL_GUIDE_REFERENCE,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_CARDINALITY,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_STRENGTH_ID,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_RULE,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID
+	}
+)
 @JsonDeserialize(builder = SnomedRefSetMemberIndexEntry.Builder.class)
-@RevisionHash({ 
-	SnomedDocument.Fields.ACTIVE, 
-	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID, 
-	SnomedDocument.Fields.RELEASED,
-	SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
-	SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.INTEGER_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.DECIMAL_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.RELATIONSHIP_GROUP,
-	SnomedRefSetMemberIndexEntry.Fields.TYPE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_LENGTH,
-	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_FORMAT,
-	SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID,
-	SnomedRefSetMemberIndexEntry.Fields.SOURCE_EFFECTIVE_TIME,
-	SnomedRefSetMemberIndexEntry.Fields.TARGET_EFFECTIVE_TIME,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_DESCRIPTION,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_CATEGORY_ID,
-	SnomedRefSetMemberIndexEntry.Fields.CORRELATION_ID,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_ADVICE,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_RULE,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_GROUP,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_PRIORITY,
-	SnomedRefSetMemberIndexEntry.Fields.QUERY,
-	SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_CONSTRAINT,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_PARENT_DOMAIN,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_EDITORIAL_GUIDE_REFERENCE,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_CARDINALITY,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_STRENGTH_ID,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_RULE,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID
-})
 public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	public static class Fields extends SnomedDocument.Fields {

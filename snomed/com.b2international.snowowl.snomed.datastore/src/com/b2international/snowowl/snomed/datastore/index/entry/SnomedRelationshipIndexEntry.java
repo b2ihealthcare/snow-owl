@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,13 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Doc;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -47,21 +46,23 @@ import com.google.common.base.Strings;
 /**
  * A transfer object representing a SNOMED CT description.
  */
-@Doc(type="relationship")
+@Doc(
+	type="relationship",
+	revisionHash = { 
+		SnomedDocument.Fields.ACTIVE, 
+		SnomedDocument.Fields.EFFECTIVE_TIME, 
+		SnomedDocument.Fields.MODULE_ID, 
+		SnomedDocument.Fields.RELEASED,
+		SnomedRelationshipIndexEntry.Fields.GROUP,
+		SnomedRelationshipIndexEntry.Fields.UNION_GROUP,
+		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
+		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,
+		SnomedRelationshipIndexEntry.Fields.TYPE_ID,
+		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
+		SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED
+	}
+)
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
-@RevisionHash({ 
-	SnomedDocument.Fields.ACTIVE, 
-	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID, 
-	SnomedDocument.Fields.RELEASED,
-	SnomedRelationshipIndexEntry.Fields.GROUP,
-	SnomedRelationshipIndexEntry.Fields.UNION_GROUP,
-	SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
-	SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,
-	SnomedRelationshipIndexEntry.Fields.TYPE_ID,
-	SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
-	SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED
-})
 public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = -7873086925532169024L;

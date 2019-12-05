@@ -39,7 +39,6 @@ import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.Normalizers;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.mapping.DocumentMapping;
@@ -47,8 +46,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -66,18 +65,20 @@ import com.google.common.collect.Maps;
 /**
  * A transfer object representing a SNOMED CT description.
  */
-@Doc(type="description")
+@Doc(
+	type="description",
+	revisionHash = { 
+		SnomedDocument.Fields.ACTIVE, 
+		SnomedDocument.Fields.EFFECTIVE_TIME, 
+		SnomedDocument.Fields.MODULE_ID, 
+		SnomedDocument.Fields.RELEASED,
+		SnomedDescriptionIndexEntry.Fields.TYPE_ID,
+		SnomedDescriptionIndexEntry.Fields.TERM,
+		SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
+	}
+)
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
 @Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
-@RevisionHash({ 
-	SnomedDocument.Fields.ACTIVE, 
-	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID, 
-	SnomedDocument.Fields.RELEASED,
-	SnomedDescriptionIndexEntry.Fields.TYPE_ID,
-	SnomedDescriptionIndexEntry.Fields.TERM,
-	SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
-})
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;

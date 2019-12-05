@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -47,8 +46,7 @@ import com.google.common.graph.NetworkBuilder;
  */
 public class RevisionBranchMergeDerivedDataTest extends BaseRevisionIndexTest {
 
-	@Doc
-	@RevisionHash({"id"})
+	@Doc(revisionHash = {"id"})
 	public static class Node extends Revision {
 
 		private final Set<String> ancestors;
@@ -75,8 +73,7 @@ public class RevisionBranchMergeDerivedDataTest extends BaseRevisionIndexTest {
 		
 	}
 	
-	@Doc
-	@RevisionHash({"id", "source", "target"})
+	@Doc(revisionHash = {"id", "source", "target"})
 	public static class Edge extends Revision {
 
 		private final String source;

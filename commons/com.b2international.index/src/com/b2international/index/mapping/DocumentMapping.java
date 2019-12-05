@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import java.util.TreeMap;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
@@ -39,7 +38,6 @@ import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.FluentIterable;
@@ -66,12 +64,7 @@ public final class DocumentMapping {
 	public static final String _TYPE = "_type";
 	public static final String _HASH = "_hash";
 
-	private static final Function<? super Field, String> GET_NAME = new Function<Field, String>() {
-		@Override
-		public String apply(Field field) {
-			return field.getName();
-		}
-	};
+	private static final Function<? super Field, String> GET_NAME = Field::getName;
 	
 	private final Class<?> type;
 	private final String typeAsString;
@@ -117,31 +110,22 @@ public final class DocumentMapping {
 		this.textFields = new TreeMap<>(textFields.build());
 		this.keywordFields = new TreeMap<>(keywordFields.build());
 
-		// @RevisionHash should be directly present, not inherited
-		final RevisionHash revisionHash = type.getDeclaredAnnotation(RevisionHash.class);
-		if (revisionHash != null) {
-			this.hashedFields = ImmutableSortedSet.copyOf(revisionHash.value());
+		final Doc doc = getDocAnnotation(type);
+		if (doc != null) {
+			this.hashedFields = ImmutableSortedSet.copyOf(doc.revisionHash());
 		} else {
 			this.hashedFields = ImmutableSortedSet.of();
 		}
 				
 		this.nestedTypes = FluentIterable.from(getFields())
-			.transform(new Function<Field, Class<?>>() {
-				@Override
-				public Class<?> apply(Field field) {
-					if (Reflections.isMapType(field)) {
-						return Map.class;
-					} else {
-						return Reflections.getType(field);
-					}
+			.transform(field -> {
+				if (Reflections.isMapType(field)) {
+					return Map.class;
+				} else {
+					return Reflections.getType(field);
 				}
 			})
-			.filter(new Predicate<Class<?>>() {
-				@Override
-				public boolean apply(Class<?> fieldType) {
-					return isNestedDoc(fieldType);
-				}
-			})
+			.filter(fieldType -> isNestedDoc(fieldType))
 			.toMap(new Function<Class<?>, DocumentMapping>() {
 				@Override
 				public DocumentMapping apply(Class<?> input) {

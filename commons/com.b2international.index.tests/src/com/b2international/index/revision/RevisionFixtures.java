@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Objects;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.WithScore;
@@ -35,8 +34,7 @@ public class RevisionFixtures {
 	private RevisionFixtures() {
 	}
 	
-	@Doc
-	@RevisionHash({ "field1", "field2" })
+	@Doc(revisionHash = { "field1", "field2" })
 	public static class RevisionData extends Revision {
 		
 		public static class Builder extends Revision.Builder<RevisionData.Builder, RevisionData> {

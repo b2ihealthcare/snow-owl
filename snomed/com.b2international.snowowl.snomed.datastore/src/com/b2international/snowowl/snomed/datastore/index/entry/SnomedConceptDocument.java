@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
@@ -59,7 +58,17 @@ import com.google.common.collect.ImmutableMap;
 /**
  * A transfer object representing a SNOMED CT concept.
  */
-@Doc(type="concept")
+@Doc(
+	type="concept",
+	revisionHash = { 
+		SnomedDocument.Fields.ACTIVE, 
+		SnomedDocument.Fields.EFFECTIVE_TIME, 
+		SnomedDocument.Fields.MODULE_ID,
+		SnomedDocument.Fields.RELEASED,
+		SnomedConceptDocument.Fields.PRIMITIVE,
+		SnomedConceptDocument.Fields.EXHAUSTIVE
+	}
+)
 @JsonDeserialize(builder=SnomedConceptDocument.Builder.class)
 @Script(
 	name="doiFactor", 
@@ -101,14 +110,6 @@ import com.google.common.collect.ImmutableMap;
 	+ "}"
 	// Otherwise select the ID for sorting
 	+ "return doc.id.value")
-@RevisionHash({ 
-	SnomedDocument.Fields.ACTIVE, 
-	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID,
-	SnomedDocument.Fields.RELEASED,
-	SnomedConceptDocument.Fields.PRIMITIVE,
-	SnomedConceptDocument.Fields.EXHAUSTIVE
-})
 public final class SnomedConceptDocument extends SnomedComponentDocument {
 
 	public static final float DEFAULT_DOI = 1.0f;
