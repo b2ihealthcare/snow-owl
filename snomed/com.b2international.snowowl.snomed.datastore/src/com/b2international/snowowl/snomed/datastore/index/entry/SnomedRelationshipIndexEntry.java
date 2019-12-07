@@ -30,7 +30,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -41,7 +40,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.base.Strings;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -78,7 +76,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		String id = input.getId();
 		final Builder builder = builder()
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
@@ -103,7 +100,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		String id = input.getId();
 		return builder()
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.active(input.isActive())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
@@ -293,7 +289,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					group, 
 					unionGroup, 
 					destinationNegated,
-					namespace,
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
@@ -324,7 +319,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			final int group,
 			final int unionGroup,
 			final boolean destinationNegated,
-			final String namespace,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets) {
 
@@ -335,7 +329,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				released, 
 				active, 
 				effectiveTimeLong,
-				namespace,
 				referringRefSets,
 				referringMappingRefSets);
 

@@ -46,7 +46,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -106,7 +105,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		String id = input.getId();
 		final Builder builder = builder()
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(input.getTerm()) 
 				.moduleId(input.getModuleId())
 				.languageCode(input.getLanguageCode())
@@ -161,7 +159,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		String id = doc.getId();
 		return builder()
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(doc.getTerm())
 				.moduleId(doc.getModuleId())
 				.released(doc.isReleased())
@@ -409,7 +406,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					caseSignificanceId,
 					preferredIn, 
 					acceptableIn,
-					namespace,
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
@@ -446,7 +442,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			final String typeLabel,
 			final String caseSignificanceId,
 			final Set<String> preferredIn, final Set<String> acceptableIn,
-			final String namespace,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets) {
 		
@@ -457,7 +452,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				released,
 				active,
 				effectiveTime,
-				namespace,
 				referringRefSets,
 				referringMappingRefSets);
 		

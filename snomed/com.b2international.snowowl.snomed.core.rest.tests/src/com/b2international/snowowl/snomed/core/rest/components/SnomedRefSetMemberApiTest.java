@@ -43,7 +43,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.TransactionContext;

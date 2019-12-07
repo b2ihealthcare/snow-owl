@@ -39,7 +39,6 @@ import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -215,8 +214,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		final String id = input.getId();
 		return builder()
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
-//				.score(input.getScore())
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
 				.released(input.isReleased())
@@ -239,7 +236,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		String id = input.getId();
 		final Builder builder = builder()
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
 				.released(input.isReleased())
@@ -395,7 +391,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 					released, 
 					active, 
 					effectiveTime, 
-					namespace,
 					primitive, 
 					exhaustive,
 					refSetType, 
@@ -449,7 +444,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final boolean released,
 			final boolean active,
 			final long effectiveTime,
-			final String namespace,
 			final boolean primitive,
 			final boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
@@ -459,7 +453,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
-		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
+		super(id, label, iconId, moduleId, released, active, effectiveTime, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;
