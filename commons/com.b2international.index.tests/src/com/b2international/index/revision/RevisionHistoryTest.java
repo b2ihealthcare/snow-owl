@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		// first element should be the latest commit
 		final Commit commit = Iterables.getFirst(commits, null);
 		assertThat(commit.getDetails()).hasSize(1);
-		final CommitDetail objectChange = CommitDetail.changedProperty("field1", "field1", "field1Changed", DOC_TYPE, Collections.singleton(STORAGE_KEY1));
+		final CommitDetail objectChange = CommitDetail.changedProperty("field1", "field1", "field1Changed", DOC_TYPE, Collections.singletonList(STORAGE_KEY1));
 		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).containsOnly(objectChange);
 	}
 	

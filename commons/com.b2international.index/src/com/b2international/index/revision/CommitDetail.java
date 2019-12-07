@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.index.revision;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -65,7 +65,7 @@ public final class CommitDetail {
 				.componentType(componentType);
 	}
 	
-	public static CommitDetail changedProperty(String prop, String from, String to, String objectType, Collection<String> objects) {
+	public static CommitDetail changedProperty(String prop, String from, String to, String objectType, List<String> objects) {
 		return new Builder()
 				.op(Operation.CHANGE)
 				.prop(prop)
@@ -118,10 +118,18 @@ public final class CommitDetail {
 			return this;
 		}
 		
+		Builder objects(String objectId) {
+			return objects(Collections.singletonList(objectId));
+		}
+		
 		@JsonProperty
-		Builder objects(Iterable<String> objects) {
+		Builder objects(List<String> objects) {
 			this.objects = objects == null ? null : ImmutableList.copyOf(objects);
 			return this;
+		}
+		
+		Builder components(Set<String> components) {
+			return components(Collections.singletonList(components));
 		}
 		
 		@JsonProperty

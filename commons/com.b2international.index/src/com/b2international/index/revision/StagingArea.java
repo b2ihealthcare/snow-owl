@@ -42,14 +42,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * A place that stores information about what will go into your next commit.
@@ -344,7 +337,7 @@ public final class StagingArea {
 			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
 			final String from = change.get("fromValue").asText();
 			final String to = change.get("value").asText();
-			Multimap<String, String> objectIdsByType = HashMultimap.create();
+			ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
 			// split by object type
 			objectIdsByType.keySet().forEach(type -> {
@@ -380,6 +373,33 @@ public final class StagingArea {
 					.forEach(details::add);
 			}
 		}
+		
+		// add non-revision components as new/changed/removed as well
+		stagedObjects.forEach((key, value) -> {
+			if (!(value.getObject() instanceof Revision)) {
+				String componentType = key.type();
+				switch (value.stageKind) {
+				case ADDED:
+					details.add(CommitDetail.added(componentType, componentType)
+							.objects(ObjectId.ROOT)
+							.components(Collections.singleton(key.id()))
+							.build());
+					break;
+				case CHANGED:
+					details.add(CommitDetail.changed(componentType, componentType)
+							.objects(ObjectId.ROOT)
+							.components(Collections.singleton(key.id()))
+							.build());
+					break;
+				case REMOVED:
+					details.add(CommitDetail.removed(componentType, componentType)
+							.objects(ObjectId.ROOT)
+							.components(Collections.singleton(key.id()))
+							.build());
+					break;
+				}
+			}
+		});
 		
 		// free up memory before committing 
 		reset();
