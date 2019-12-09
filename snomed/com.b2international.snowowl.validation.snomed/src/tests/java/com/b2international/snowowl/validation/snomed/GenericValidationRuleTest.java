@@ -17,9 +17,11 @@ package com.b2international.snowowl.validation.snomed;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
+import static org.assertj.core.api.Assertions.assertThat;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
@@ -29,6 +31,7 @@ import org.junit.runners.Parameterized;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -40,6 +43,7 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConst
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
@@ -49,6 +53,7 @@ import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.4
@@ -56,7 +61,7 @@ import com.google.common.collect.ImmutableSet;
 @RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
-	@Test
+	//@Test
 	public void rule663() throws Exception {
 		final String ruleId = "663";
 		indexRule(ruleId);
@@ -94,6 +99,50 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		assertAffectedComponents(validationIssues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidSourceRelationship.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidDestinationRelationship.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidTypeRelationship.getId()));
+	}
+	
+	@Test
+	public void rule663_owl_axiom() throws Exception {
+		final String ruleId = "663_owl_axiom";
+		indexRule(ruleId);
+		
+		SnomedConceptDocument activeSourceConcept = concept(generateConceptId()).active(true).build();
+		indexRevision(MAIN, nextStorageKey(), activeSourceConcept);		
+		SnomedConceptDocument inactiveTypeConcept = concept(generateConceptId()).active(false).build();
+		indexRevision(MAIN, nextStorageKey(), inactiveTypeConcept);
+		SnomedConceptDocument activeTypeConcept = concept(generateConceptId()).active(true).build();
+		indexRevision(MAIN, nextStorageKey(), activeTypeConcept);
+		SnomedConceptDocument inactiveDestinationConcept = concept(generateConceptId()).active(false).build();
+		indexRevision(MAIN, nextStorageKey(), inactiveDestinationConcept);
+		SnomedConceptDocument activeDestinationConcept = concept(generateConceptId()).active(true).build();
+		indexRevision(MAIN, nextStorageKey(), activeDestinationConcept);
+		
+		SnomedRefSetMemberIndexEntry invalidDestinationAxiomMember = member(activeSourceConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, inactiveDestinationConcept.getId(), 0)))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), invalidDestinationAxiomMember);
+		
+		SnomedRefSetMemberIndexEntry invalidDestinationGciAxiomMember = member(activeSourceConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.gciAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(activeTypeConcept.getId(), inactiveDestinationConcept.getId(), 0)))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), invalidDestinationGciAxiomMember);
+		
+		SnomedRefSetMemberIndexEntry invalidTypeAxiomMember = member(activeSourceConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(inactiveTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), invalidTypeAxiomMember);
+		
+		SnomedRefSetMemberIndexEntry validGciAxiomMember = member(activeSourceConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.gciAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(activeTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), validGciAxiomMember);
+		
+		ValidationIssues validationIssues = validate(ruleId);
+		
+		assertAffectedComponents(validationIssues,
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidDestinationAxiomMember.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidDestinationGciAxiomMember.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidTypeAxiomMember.getId()));
 	}
 	
 	@Test
@@ -371,9 +420,28 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.group(2).build();
 		indexRevision(MAIN, nextStorageKey(), relationship3);
 		
+		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), axiomMember1);
+		
+		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
+				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), axiomMember2);
+		
+		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), axiomMember3);
+		
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()));
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember1.getId()));
 	}
 	
 	@Test
@@ -428,10 +496,37 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.group(3).build();
 		indexRevision(MAIN, nextStorageKey(), relationship5);
 		
+		// OWL axioms
+		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), axiomMember1);
+		
+		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.TEXT_DEFINITION, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
+				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), axiomMember2);
+		
+		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.build();
+		indexRevision(MAIN, nextStorageKey(), axiomMember3);
+		
 		ValidationIssues issues = validate(ruleId);
-		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship3.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()));
+		
+		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
+			.contains(
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember2.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember3.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship3.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()))
+			.doesNotContain(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember1.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship2.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()));
 	}
 	
 }
