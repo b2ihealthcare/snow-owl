@@ -300,17 +300,11 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 	
 	private short getTerminologyComponentId(String componentType) {
-		if (DocumentMapping.getType(CodeSystemEntry.class).equals(componentType)) {
-			return CodeSystemEntry.TERMINOLOGY_COMPONENT_ID;
-		} else if (DocumentMapping.getType(CodeSystemVersionEntry.class).equals(componentType)) {
-			return CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID;
-		} else {
-			try {
-				return service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(componentType));
-			} catch (IllegalArgumentException e) {
-				// return unspecified terminology component for each unknown components committed to the repo
-				return TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
-			}
+		try {
+			return service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(componentType));
+		} catch (IllegalArgumentException e) {
+			// return unspecified terminology component for each unknown components committed to the repo
+			return TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
 		}
 	}
 
