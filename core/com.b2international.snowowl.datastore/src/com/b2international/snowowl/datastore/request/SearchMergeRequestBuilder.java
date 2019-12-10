@@ -16,39 +16,33 @@
 package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.merge.MergeCollection;
+import com.b2international.snowowl.core.merge.Merges;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.SearchMergeRequest.OptionKey;
 
 /**
  * @since 7.1 
  */
-public class SearchMergeRequestBuilder extends BaseRequestBuilder<SearchMergeRequestBuilder, RepositoryContext, MergeCollection> implements RepositoryRequestBuilder<MergeCollection>  {
+public final class SearchMergeRequestBuilder extends SearchResourceRequestBuilder<SearchMergeRequestBuilder, RepositoryContext, Merges> implements RepositoryRequestBuilder<Merges>  {
 
-	private String source;
-	private String target;
-	private String status;
-	
 	SearchMergeRequestBuilder() {}
 	
 	public SearchMergeRequestBuilder filterBySource(String source) {
-		this.source = source;
-		return this;
+		return addOption(OptionKey.SOURCE, source);
 	}
 	
 	public SearchMergeRequestBuilder filterByTarget(String target) {
-		this.target = target;
-		return this;
+		return addOption(OptionKey.TARGET, target);
 	}
 	
 	public SearchMergeRequestBuilder filterByStatus(String status) {
-		this.status = status;
-		return this;
+		return addOption(OptionKey.STATUS, status);
 	}
-	
+
 	@Override
-	protected Request<RepositoryContext, MergeCollection> doBuild() {
-		return new SearchMergeRequest(source, target, status);
+	protected SearchResourceRequest<RepositoryContext, Merges> createSearch() {
+		return new SearchMergeRequest();
 	}
 
 }

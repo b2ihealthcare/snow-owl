@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.remotejobs;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.nestedMatch;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -116,6 +117,14 @@ public final class RemoteJobEntry implements Serializable {
 		
 		public static Expression state(Iterable<RemoteJobState> states) {
 			return matchAny(Fields.STATE, FluentIterable.from(states).transform(Enum::name).toSet());
+		}
+
+		public static Expression matchRequestType(Iterable<String> values) {
+			return matchParameter("type", values);
+		}
+		
+		public static Expression matchParameter(String parameterName, Iterable<String> values) {
+			return nestedMatch(RemoteJobEntry.Fields.PARAMETERS, matchAny(parameterName, values));
 		}
 		
 	}

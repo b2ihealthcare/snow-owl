@@ -15,16 +15,12 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.Map;
-
-import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -48,25 +44,9 @@ public class GetMergeRequest implements Request<RepositoryContext, Merge>, Repos
 	public Merge execute(RepositoryContext context) {
 		final RemoteJobEntry job = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(DocumentMapping.matchId(id), 1), null);
 		if (job == null) {
-			throw new NotFoundException("Merge ", id);
+			throw new NotFoundException("Merge", id);
 		}
-		
-		final ObjectMapper mapper = context.service(ObjectMapper.class);
-		
-		if (job.isSuccessful()) {
-			return job.getResultAs(mapper, Merge.class);
-		}
-		
-		final Map<String, Object> params = job.getParameters(mapper);
-		final String source = (String) params.get("source");
-		final String target = (String) params.get("target");
-		
-		if (job.getResult() == null) {
-			return MergeImpl.builder(source, target).build();
-		}
-		
-		// failed job result is ApiError
-		return MergeImpl.builder(source, target).build().failed(job.getResultAs(mapper, ApiError.class));
+		return SearchMergeRequest.createMergefromJobEntry(job, context.service(ObjectMapper.class));
 	}
 
 	@Override

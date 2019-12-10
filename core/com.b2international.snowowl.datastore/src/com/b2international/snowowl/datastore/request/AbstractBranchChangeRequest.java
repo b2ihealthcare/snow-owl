@@ -44,8 +44,6 @@ import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
-import com.b2international.snowowl.core.merge.MergeConflictImpl;
-import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -114,9 +112,10 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 				}
 			}
 			
-			Merge merge = MergeImpl.builder(source.path(), target.path()).build();
-			
-			merge = merge.start();
+			Merge merge = Merge.builder()
+					.source(sourcePath)
+					.target(targetPath)
+					.build();
 			
 			try {
 				applyChanges(context, source, target);
@@ -147,7 +146,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	}
 	
 	private MergeConflict toMergeConflict(ObjectId objectId, Collection<Conflict> conflicts) {
-		final MergeConflictImpl.Builder conflict = MergeConflictImpl.builder()
+		final MergeConflict.Builder conflict = MergeConflict.builder()
 			.componentId(objectId.id())
 			.componentType(objectId.type())
 			.type(ConflictType.CONFLICTING_CHANGE);

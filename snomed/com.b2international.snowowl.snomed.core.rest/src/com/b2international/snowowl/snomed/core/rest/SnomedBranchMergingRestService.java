@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.MergeCollection;
+import com.b2international.snowowl.core.merge.Merges;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -128,7 +128,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class)
 	})
 	@GetMapping
-	public Promise<MergeCollection> searchMerge(			
+	public Promise<Merges> searchMerge(			
 			@ApiParam(value = "The source branch path to match")
 			@RequestParam(value="source", required = false) 
 			final String source,
