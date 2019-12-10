@@ -61,7 +61,7 @@ import com.google.common.collect.Lists;
 @RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
-	//@Test
+	@Test
 	public void rule663() throws Exception {
 		final String ruleId = "663";
 		indexRule(ruleId);
@@ -102,8 +102,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void rule663_owl_axiom() throws Exception {
-		final String ruleId = "663_owl_axiom";
+	public void rule668() throws Exception {
+		final String ruleId = "668";
 		indexRule(ruleId);
 		
 		SnomedConceptDocument activeSourceConcept = concept(generateConceptId()).active(true).build();

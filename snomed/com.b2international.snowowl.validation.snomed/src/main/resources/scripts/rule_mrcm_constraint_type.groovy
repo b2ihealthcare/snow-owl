@@ -221,7 +221,7 @@ if (params.isUnpublishedOnly) {
 		})
 	})
 	
-	//OWL axiom member search based checks //TODO
+	//OWL axiom member search based checks
 	for (String typeExpression : mrcmRulesByAttributeType.keySet()) {
 		def allowedDomainExpressions = mrcmRulesByAttributeType.get(typeExpression)
 			.stream()
