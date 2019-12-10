@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.index.Doc;
@@ -29,7 +30,7 @@ import com.google.common.base.MoreObjects;
  * @since 6.14
  */
 @Doc(type = "owlRelationship", nested = true)
-public final class SnomedOWLRelationshipDocument {
+public final class SnomedOWLRelationshipDocument implements Serializable {
 
 	private final String typeId;
 	private final String destinationId;
