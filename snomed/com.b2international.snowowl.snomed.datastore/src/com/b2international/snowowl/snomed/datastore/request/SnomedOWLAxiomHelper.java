@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.14
@@ -35,8 +36,9 @@ public final class SnomedOWLAxiomHelper {
 		}
 		
 		Optional<String> equivalenClassesExpression = owlExpressions.stream()
-			.filter(expression -> expression.toLowerCase(Locale.ENGLISH).contains(EQUIVALENTCLASSES))
-			.findFirst();
+				.filter(expression -> !Strings.isNullOrEmpty(expression))
+				.filter(expression -> expression.toLowerCase(Locale.ENGLISH).contains(EQUIVALENTCLASSES))
+				.findFirst();
 		
 		if (equivalenClassesExpression.isPresent()) {
 			return DefinitionStatus.FULLY_DEFINED;
