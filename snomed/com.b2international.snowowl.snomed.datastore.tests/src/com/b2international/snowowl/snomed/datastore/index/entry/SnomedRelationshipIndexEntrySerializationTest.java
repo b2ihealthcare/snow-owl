@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 				.build();
 		indexRevision(RevisionBranch.MAIN_PATH, relationship);
 		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, id);
-		assertEquals(null, actual.getNamespace());
+		assertEquals("", actual.getNamespace());
 		assertDocEquals(relationship, actual);
 	}
 	

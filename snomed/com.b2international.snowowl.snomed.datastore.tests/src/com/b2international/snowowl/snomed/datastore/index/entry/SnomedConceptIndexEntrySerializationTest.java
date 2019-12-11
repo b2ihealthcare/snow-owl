@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 		
 		indexRevision(RevisionBranch.MAIN_PATH, concept);
 		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, Concepts.ROOT_CONCEPT);
-		assertEquals(null, actual.getNamespace());
+		assertEquals("", actual.getNamespace());
 		assertDocEquals(concept, actual);
 	}
 	
