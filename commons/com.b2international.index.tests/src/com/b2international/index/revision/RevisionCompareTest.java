@@ -16,6 +16,7 @@
 package com.b2international.index.revision;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 
@@ -174,4 +175,22 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		final RevisionCompare compare = index().compare(MAIN, branch);
 		assertThat(compare.getDetails()).isEmpty();
 	}
+	
+	@Test
+	public void compareBranchWithNewAndChanged() throws Exception {
+		final String branch = createBranch(MAIN, "a");
+		// new revision
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(branch, rev1);
+		// change storageKey1 component
+		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
+		indexChange(branch, rev1, changed);
+
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).hasSize(1);
+		assertThat(compare.getTotalAdded()).isEqualTo(1);
+		assertThat(compare.getTotalChanged()).isEqualTo(0);
+		assertThat(compare.getTotalRemoved()).isEqualTo(0);
+	}
+	
 }
