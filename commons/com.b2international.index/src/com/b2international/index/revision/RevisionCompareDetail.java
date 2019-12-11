@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,9 +140,9 @@ public final class RevisionCompareDetail {
 	@JsonIgnore
 	String key() {
 		if (isComponentChange()) {
-			return String.format("%s_%s", object, component);
+			return component.toString();
 		} else {
-			return String.format("%s_%s_%s", op, object, property);
+			return String.format("%s_%s", object, property);
 		}
 	}
 
@@ -158,12 +158,12 @@ public final class RevisionCompareDetail {
 			} else if (isChange() && other.isAdd()) {
 				return other;
 			} else if (getOp() == other.getOp()) {
-				return this; // two changes after each other in the commit history, keep only a single change
+				return this; // two changes after each other in the commit history, keep only a single component change
 			} else {
 				throw new UnsupportedOperationException("Unknown case for _component change: " + this.getOp() + " vs. " + other.getOp());
 			}
 		} else {
-			// if this is a property change, but it is a revert then return null
+			// two property changes
 			if (Objects.equals(getFromValue(), other.getValue()) && Objects.equals(getValue(), other.getFromValue())) {
 				return null;
 			} else {
