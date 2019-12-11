@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Doc;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
@@ -353,7 +352,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 
 	@Override
 	public ObjectId getContainerId() {
-		return ObjectId.of(DocumentMapping.getType(SnomedConceptDocument.class), getSourceId());
+		return ObjectId.of(SnomedConceptDocument.class, getSourceId());
 	}
 	
 	@Override

@@ -129,7 +129,7 @@ public final class StagingArea {
 	}
 	
 	public <T> T getNewObject(Class<T> type, String key) {
-		StagedObject stagedObject = stagedObjects.get(ObjectId.of(DocumentMapping.getType(type), key));
+		StagedObject stagedObject = stagedObjects.get(ObjectId.of(type, key));
 		return stagedObject == null ? null : type.cast(stagedObject.getObject());
 	}
 	
@@ -528,7 +528,7 @@ public final class StagingArea {
 		if (obj instanceof Revision) {
 			return ((Revision) obj).getObjectId();
 		} else {
-			return ObjectId.of(DocumentMapping.getType(obj.getClass()), id);
+			return ObjectId.of(obj.getClass(), id);
 		}
 	}
 	
@@ -569,19 +569,18 @@ public final class StagingArea {
 		List<Conflict> conflicts = newArrayList();
 		
 		for (Class<? extends Revision> type : Iterables.concat(fromChangeSet.getAddedTypes(), toChangeSet.getAddedTypes())) {
-			final String docType = DocumentMapping.getType(type);
 			final Set<String> newRevisionIdsOnSource = fromChangeSet.getAddedIds(type);
 			final Set<String> newRevisionIdsOnTarget = toChangeSet.getAddedIds(type);
 			final Set<String> addedInSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
 			// check for added in both source and target conflicts
 			if (!addedInSourceAndTarget.isEmpty()) {
 				addedInSourceAndTarget.forEach(revisionId -> {
-					conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(docType, revisionId)));
+					conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(type, revisionId)));
 				});
 			}
 			// check deleted containers on target and report them as conflicts
 			newRevisionIdsOnSource.forEach(newRevisionOnSource -> {
-				ObjectId newRevisionOnSourceId = ObjectId.of(docType, newRevisionOnSource);
+				ObjectId newRevisionOnSourceId = ObjectId.of(type, newRevisionOnSource);
 				ObjectId requiredContainer = fromChangeSet.getContainerId(newRevisionOnSourceId);
 				if (requiredContainer != null && toChangeSet.isRemoved(requiredContainer)) {
 					conflicts.add(new AddedInSourceAndDetachedInTargetConflict(newRevisionOnSourceId, requiredContainer));
@@ -590,7 +589,7 @@ public final class StagingArea {
 			
 			// check deleted containers on source and report them as conflicts
 			newRevisionIdsOnTarget.forEach(newRevisionOnTarget -> {
-				ObjectId newRevisionOnTargetId = ObjectId.of(docType, newRevisionOnTarget);
+				ObjectId newRevisionOnTargetId = ObjectId.of(type, newRevisionOnTarget);
 				ObjectId requiredContainer = toChangeSet.getContainerId(newRevisionOnTargetId);
 				if (requiredContainer != null && fromChangeSet.isRemoved(requiredContainer)) {
 					conflicts.add(new AddedInTargetAndDetachedInSourceConflict(requiredContainer, newRevisionOnTargetId));
