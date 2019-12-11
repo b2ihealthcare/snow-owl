@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Set;
 
+import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -35,6 +36,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 
 	private final InternalIdMap conceptMap;
 	private final InternalIdMap definedConceptMap;
+	private final LongKeyMap<String> fullySpecifiedNames;
 
 	private final InternalIdEdges statedAncestors;
 	private final InternalIdEdges statedDescendants;
@@ -62,6 +64,8 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 	/*package*/ ReasonerTaxonomy(
 			final InternalIdMap conceptMap, 
 			final InternalIdMap definedConceptMap,
+			final LongKeyMap<String> fullySpecifiedNames,
+			
 			final InternalIdEdges statedAncestors,
 			final InternalIdEdges statedDescendants, 
 			
@@ -87,6 +91,8 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 
 		this.conceptMap = conceptMap;
 		this.definedConceptMap = definedConceptMap;
+		this.fullySpecifiedNames = fullySpecifiedNames;
+		
 		this.statedAncestors = statedAncestors;
 		this.statedDescendants = statedDescendants;
 		
@@ -117,6 +123,10 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 	
 	public InternalIdMap getDefinedConceptMap() {
 		return definedConceptMap;
+	}
+
+	public LongKeyMap<String> getFullySpecifiedNames() {
+		return fullySpecifiedNames;
 	}
 
 	public InternalIdEdges getStatedAncestors() {
@@ -206,6 +216,8 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 
 		return new ReasonerTaxonomy(conceptMap, 
 				definedConceptMap, 
+				fullySpecifiedNames,
+				
 				statedAncestors, 
 				statedDescendants, 
 				

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public interface FileRegistry {
 	 * @throws AlreadyExistsException
 	 *             - if a file already exists with the given {@link UUID}
 	 */
-	void upload(UUID id, InputStream in);
+	void upload(UUID id, InputStream in) throws AlreadyExistsException, BadRequestException;
 
 	/**
 	 * Downloads a zip file from the server identified by the given {@link UUID}.
@@ -51,7 +51,7 @@ public interface FileRegistry {
 	 * @throws NotFoundException
 	 *             - if the file does not exist with the given identifier
 	 */
-	void download(UUID id, OutputStream out);
+	void download(UUID id, OutputStream out) throws NotFoundException;
 	
 	/**
 	 * Deletes the file associated with the given identifier. Does nothing when the file is missing or already deleted.

@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.LongFunction;
@@ -120,27 +121,32 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("ontology");
 	
-	private final class EntityDeclarationAxiomIterator extends AbstractIterator<OWLDeclarationAxiom> {
+	private final class AnnotationAssertionAxiomIterator extends AbstractIterator<OWLAnnotationAssertionAxiom> {
 		private final LongIterator idIterator;
-		private final LongFunction<OWLEntity> entityFactory;
-
-		public EntityDeclarationAxiomIterator(final LongIterator idIterator, final LongFunction<OWLEntity> entityFactory) {
+		private final OWLAnnotationProperty property;
+		private final LongFunction<OWLAnnotationValue> valueFactory;
+		
+		public AnnotationAssertionAxiomIterator(final LongIterator idIterator, 
+				final OWLAnnotationProperty property, 
+				final LongFunction<OWLAnnotationValue> valueFactory) {
+			
 			this.idIterator = idIterator;
-			this.entityFactory = entityFactory;
+			this.property = property;
+			this.valueFactory = valueFactory;
 		}
-
+		
 		@Override
-		protected OWLDeclarationAxiom computeNext() {
+		protected OWLAnnotationAssertionAxiom computeNext() {
 			if (!idIterator.hasNext()) {
 				return endOfData();
 			}
-
+			
 			final long conceptId = idIterator.next();
-			final OWLEntity entity = entityFactory.apply(conceptId);
-			return getOWLDeclarationAxiom(entity);
+			final OWLAnnotationValue value = valueFactory.apply(conceptId);
+			return getOWLAnnotationAssertionAxiom(property, IRI.create(NAMESPACE_SCT + conceptId), value);
 		}
 	}
-
+	
 	private final class ConceptAxiomIterator<T extends OWLClassAxiom> extends AbstractIterator<T> {
 		private final LongIterator idIterator;
 		private final LongPredicate idPredicate;
@@ -426,6 +432,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	
 	@Override
 	public final Set<OWLAnnotationAssertionAxiom> getAnnotationAssertionAxioms(OWLAnnotationSubject entity) {
+		// XXX: technically incorrect if RDFS labels are included, but reasoners are typically not interested in those 
 		return Collections.emptySet();
 	}
 	
@@ -516,11 +523,11 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	
 	@Override
 	public int getLogicalAxiomCount() {
-		return owlReferenceSetAdditionalAxiomCount()	// owlReferenceSetAxioms()
-				+ conceptCount()			// conceptSubClassOfAxioms() + conceptEquivalentClassesAxioms()
-				+ objectHierarchyCount()	// objectAttributeSubPropertyOfAxioms()
-				+ dataHierarchyCount()		// dataAttributeSubPropertyOfAxioms()
-				+ disjointUnionCount();		// disjointUnionAxioms()
+		return owlReferenceSetAdditionalAxiomCount() // owlReferenceSetAxioms()
+				+ conceptCount()                     // conceptSubClassOfAxioms() + conceptEquivalentClassesAxioms()
+				+ objectHierarchyCount()             // objectAttributeSubPropertyOfAxioms()
+				+ dataHierarchyCount()               // dataAttributeSubPropertyOfAxioms()
+				+ disjointUnionCount();              // disjointUnionAxioms()
 	}
 	
 	@Override
@@ -530,9 +537,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 			@SuppressWarnings("unchecked")
 			public Iterator<OWLAxiom> iterator() {
 				return Iterators.concat(
-//						conceptDeclarationAxioms(),
-//						objectAttributeDeclarationAxioms(),
-//						dataAttributeDeclarationAxioms(),
+						conceptLabelAxioms(),
 						owlReferenceSetAxioms(),
 						conceptSubClassOfAxioms(),
 						conceptEquivalentClassesAxioms(),
@@ -550,13 +555,12 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	
 	@Override
 	public int getAxiomCount() {
-		return 1 * conceptCount()				// conceptDeclarationAxioms() + conceptSubClassOfAxioms() + conceptEquivalentClassesAxioms()
-//				+ objectAttributeCount()		// objectAttributeDeclarationAxioms()
-				+ objectHierarchyCount()		// objectAttributeSubPropertyOfAxioms()
-//				+ dataAttributeCount()			// dataAttributeDeclarationAxioms()
-				+ dataHierarchyCount()			// dataAttributeSubPropertyOfAxioms()
-				+ disjointUnionCount()			// disjointUnionAxioms()
-				+ owlReferenceSetAdditionalAxiomCount();	// owlReferenceSetAxioms()
+		return conceptLabelCount()                      // conceptLabelAxioms()
+				+ owlReferenceSetAdditionalAxiomCount() // owlReferenceSetAxioms()
+				+ conceptCount()                        // conceptSubClassOfAxioms() + conceptEquivalentClassesAxioms()
+				+ objectHierarchyCount()                // objectAttributeSubPropertyOfAxioms()
+				+ dataHierarchyCount()                  // dataAttributeSubPropertyOfAxioms()
+				+ disjointUnionCount();                 // disjointUnionAxioms()
 	}
 
 	@Override
@@ -579,24 +583,24 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		}
 	}
 
-	////////////////////////
-	// Declaration axioms
-	////////////////////////
-	
-	private Iterator<OWLDeclarationAxiom> conceptDeclarationAxioms() {
-		return new EntityDeclarationAxiomIterator(conceptIdIterator(), this::getConceptClass);
+	/////////////////////////////////
+	// Annotation assertion axioms
+	/////////////////////////////////
+
+	private Iterator<OWLAnnotationAssertionAxiom> conceptLabelAxioms() {
+		if (hasFsns()) {
+			return new AnnotationAssertionAxiomIterator(conceptIdIterator(), getRDFSLabel(), this::getConceptAnnotationValue); 
+		}
+		
+		return Collections.emptyIterator();
 	}
 
-	private Iterator<OWLDeclarationAxiom> objectAttributeDeclarationAxioms() {
-		return new EntityDeclarationAxiomIterator(objectAttributeIdIterator(), this::getConceptObjectProperty);
+	private int conceptLabelCount() {
+		return hasFsns() ? conceptCount() : 0;
 	}
 
-//	private Iterator<OWLDeclarationAxiom> dataAttributeDeclarationAxioms() {
-//		return new EntityDeclarationAxiomIterator(dataAttributeIdIterator(), this::getConceptDataProperty);
-//	}
-	
-	private Iterator<OWLDeclarationAxiom> dataAttributeDeclarationAxioms() {
-		return new EntityDeclarationAxiomIterator(dataAttributeIdIterator(), this::getConceptObjectProperty);
+	private boolean hasFsns() {
+		return taxonomy.getFullySpecifiedNames() != null;
 	}
 
 	///////////////////////////////
@@ -636,13 +640,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 				this::getOWLSubObjectPropertyOfAxiom);
 	}
 
-//	private Iterator<OWLSubDataPropertyOfAxiom> dataAttributeSubPropertyOfAxioms() {
-//		return new SubPropertyAxiomIterator<>(dataAttributeId, 
-//				dataAttributeIdIterator(), 
-//				this::getConceptDataProperty, 
-//				this::getOWLSubDataPropertyOfAxiom);
-//	}
-	
 	private Iterator<OWLSubObjectPropertyOfAxiom> dataAttributeSubPropertyOfAxioms() {
 		return new SubPropertyAxiomIterator<>(dataAttributeId, 
 				dataAttributeIdIterator(), 
@@ -686,16 +683,8 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		return taxonomy.getConceptMap().size();
 	}
 
-	private int objectAttributeCount() {
-		return getAllSubTypesCount(objectAttributeId);
-	}
-
 	private int objectHierarchyCount() {
 		return hierarchyCount(objectAttributeId);
-	}
-
-	private int dataAttributeCount() {
-		return getAllSubTypesCount(dataAttributeId);
 	}
 
 	private int dataHierarchyCount() {
@@ -708,16 +697,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 
 	private int owlReferenceSetAdditionalAxiomCount() {
 		return (int) taxonomy.getStatedAdditionalAxioms().valueStream().count();
-	}
-
-	private int getAllSubTypesCount(final long ancestorId) {
-		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
-			return taxonomy.getStatedDescendants()
-					.getDestinations(ancestorId, false)
-					.size();
-		} else {
-			return 0;
-		}
 	}
 
 	private LongSet getAllSubTypes(final long ancestorId) {
@@ -774,14 +753,15 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	public OWLClass getConceptClass(final long conceptId) {
 		return getOWLClass(PREFIX_SCT + conceptId);
 	}
+	
+	public OWLAnnotationValue getConceptAnnotationValue(final long conceptId) {
+		final Optional<String> fsn = Optional.ofNullable(taxonomy.getFullySpecifiedNames().get(conceptId));
+		return getOWLLiteral(fsn.orElseGet(() -> String.format("<SCT concept %s>", conceptId)));
+	}
 
 	private OWLObjectProperty getConceptObjectProperty(final long conceptId) {
 		return getOWLObjectProperty(PREFIX_SCT + conceptId);
 	}
-
-//	private OWLDataProperty getConceptDataProperty(final long conceptId) {
-//		return getOWLDataProperty(PREFIX_SCT + conceptId);
-//	}
 
 	private OWLQuantifiedObjectRestriction getRelationshipExpression(final long typeId, final long destinationId, final boolean destinationNegated, final boolean universal) {
 		final OWLClass destinationClass = getConceptClass(destinationId);
@@ -935,10 +915,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		final OWLClass valueConcept = getOWLClass(PREFIX_SO + encodedValue);
 		final OWLQuantifiedObjectRestriction valueExpression = getRelationshipExpression(typeId, valueConcept, false);
 		
-//		final OWLDataProperty dataProperty = getConceptDataProperty(typeId);
-//		final OWLLiteral valueLiteral = getDataFactory().getOWLLiteral(serializedValue, owl2Datatype);
-//		final OWLDataHasValue dataExpression = getDataFactory().getOWLDataHasValue(dataProperty, valueLiteral);
-
 		intersection.add(valueExpression);
 	}
 	
@@ -977,10 +953,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		return getDataFactory().getOWLObjectProperty(abbreviatedIRI, prefixManager);
 	}
 
-//	private OWLDataProperty getOWLDataProperty(final String abbreviatedIRI) {
-//		return getDataFactory().getOWLDataProperty(abbreviatedIRI, prefixManager);
-//	}
-
 	private OWLClassExpression getOWLObjectIntersectionOf(final Set<OWLClassExpression> conjuncts) {
 		if (conjuncts.size() > 1) {
 			return getDataFactory().getOWLObjectIntersectionOf(conjuncts);
@@ -1009,10 +981,21 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		return getDataFactory().getOWLObjectAllValuesFrom(property, filler);
 	}
 
-	private OWLDeclarationAxiom getOWLDeclarationAxiom(final OWLEntity e) {
-		return getDataFactory().getOWLDeclarationAxiom(e);
+	private OWLAnnotationAssertionAxiom getOWLAnnotationAssertionAxiom(final OWLAnnotationProperty property, 
+			final IRI subject, 
+			final OWLAnnotationValue value) {
+		
+		return getDataFactory().getOWLAnnotationAssertionAxiom(property, subject, value);
 	}
-
+	
+	private OWLAnnotationProperty getRDFSLabel() {
+		return getDataFactory().getRDFSLabel();
+	}
+	
+	private OWLLiteral getOWLLiteral(String value) {
+		return getDataFactory().getOWLLiteral(value);
+	}
+	
 	private OWLSubClassOfAxiom getOWLSubClassOfAxiom(final OWLClassExpression child, final OWLClassExpression parent) {
 		return getDataFactory().getOWLSubClassOfAxiom(child, parent);
 	}
@@ -1028,8 +1011,4 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	private OWLSubObjectPropertyOfAxiom getOWLSubObjectPropertyOfAxiom(final OWLObjectPropertyExpression child, final OWLObjectPropertyExpression parent) {
 		return getDataFactory().getOWLSubObjectPropertyOfAxiom(child, parent);
 	}
-
-//	private OWLSubDataPropertyOfAxiom getOWLSubDataPropertyOfAxiom(final OWLDataPropertyExpression child, final OWLDataPropertyExpression parent) {
-//		return getDataFactory().getOWLSubDataPropertyOfAxiom(child, parent);
-//	}
 }

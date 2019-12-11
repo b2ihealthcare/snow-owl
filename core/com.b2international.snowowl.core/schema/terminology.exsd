@@ -50,7 +50,7 @@
    <element name="terminology">
       <complexType>
          <sequence>
-            <element ref="dependency" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="dependency" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>

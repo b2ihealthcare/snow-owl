@@ -42,6 +42,7 @@ public final class SnomedRefSetMemberLookupService extends AbstractLookupService
 		return SnomedRequests.prepareSearchMember()
 				.setLimit(2)
 				.filterById(uuid)
+				.setExpand("owlRelationships()")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry>() {

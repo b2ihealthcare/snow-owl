@@ -23,5 +23,10 @@ public final class PrefixPredicate extends SingleArgumentPredicate<String> {
 	PrefixPredicate(String field, String argument) {
 		super(field, argument);
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s = %s*", getField(), getArgument());
+	}
 
 }

@@ -50,6 +50,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Script(name=ClassificationTaskDocument.Scripts.SAVED, script="ctx._source.status = 'SAVED'; "
 		+ "ctx._source.saveDate = params.saveDate")
 @Script(name=ClassificationTaskDocument.Scripts.SAVE_FAILED, script="ctx._source.status = 'SAVE_FAILED'")
+@Script(name=ClassificationTaskDocument.Scripts.CANCELED, script="ctx._source.status = 'CANCELED'")
 public final class ClassificationTaskDocument {
 
 	public static class Scripts {
@@ -60,6 +61,7 @@ public final class ClassificationTaskDocument {
 		public static final String SAVING_IN_PROGRESS = "saving_in_progress";
 		public static final String SAVE_FAILED = "save_failed";
 		public static final String SAVED = "saved";
+		public static final String CANCELED = "canceled";
 	}
 
 	public static class Fields {
