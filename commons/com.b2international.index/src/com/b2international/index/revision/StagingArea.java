@@ -335,7 +335,12 @@ public final class StagingArea {
 		// collect property changes
 		revisionsByChange.asMap().forEach((change, objects) -> {
 			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
-			final String from = change.get("fromValue").asText();
+			final String from;
+			if (change.has("fromValue")) {
+				from = change.get("fromValue").asText();
+			} else  {
+				from = "";
+			}
 			final String to = change.get("value").asText();
 			ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
