@@ -64,8 +64,15 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 	}
 
 	@JsonIgnore
-	public StatementFragment toStatementFragment() {
-		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, group, 0, false, -1L, false, false);
+	public StatementFragment toStatementFragment(final int groupOffset) {
+		final int adjustedGroup;
+		if (group == 0) {
+			adjustedGroup = group;
+		} else {
+			adjustedGroup = group + groupOffset;
+		}
+		
+		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, adjustedGroup, 0, false, -1L, false, false);
 	}
 	
 	@Override
