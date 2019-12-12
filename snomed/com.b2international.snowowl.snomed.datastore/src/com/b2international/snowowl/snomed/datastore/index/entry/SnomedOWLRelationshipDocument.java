@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.index.Doc;
@@ -29,7 +30,7 @@ import com.google.common.base.MoreObjects;
  * @since 6.14
  */
 @Doc(type = "owlRelationship", nested = true)
-public final class SnomedOWLRelationshipDocument {
+public final class SnomedOWLRelationshipDocument implements Serializable {
 
 	private final String typeId;
 	private final String destinationId;
@@ -63,8 +64,15 @@ public final class SnomedOWLRelationshipDocument {
 	}
 
 	@JsonIgnore
-	public StatementFragment toStatementFragment() {
-		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, group, 0, false, -1L, false, false);
+	public StatementFragment toStatementFragment(final int groupOffset) {
+		final int adjustedGroup;
+		if (group == 0) {
+			adjustedGroup = group;
+		} else {
+			adjustedGroup = group + groupOffset;
+		}
+		
+		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, adjustedGroup, 0, false, -1L, false, false);
 	}
 	
 	@Override

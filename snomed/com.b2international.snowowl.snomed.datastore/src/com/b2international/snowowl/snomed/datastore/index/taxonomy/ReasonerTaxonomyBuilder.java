@@ -91,6 +91,8 @@ import com.google.common.collect.Iterables;
  */
 public final class ReasonerTaxonomyBuilder {
 
+	private static final int AXIOM_GROUP_BASE = 10_000;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner-taxonomy");
 
 	private static final Set<String> INFERRED_RELATIONSHIP_CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(
@@ -804,6 +806,7 @@ public final class ReasonerTaxonomyBuilder {
 		final List<StatementFragment> equivalentFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		final List<String> additionalAxioms = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		String lastReferencedComponentId = "";
+		int groupOffset = AXIOM_GROUP_BASE;
 		
 		for (final Hits<SnomedRefSetMemberIndexEntry> hits : scrolledHits) {
 			for (final SnomedRefSetMemberIndexEntry member : hits) {
@@ -826,7 +829,9 @@ public final class ReasonerTaxonomyBuilder {
 					sourceIds.clear();
 					destinationIds.clear();
 					additionalAxioms.clear();
+					
 					lastReferencedComponentId = referencedComponentId;
+					groupOffset = AXIOM_GROUP_BASE;
 				}
 
 				// if not a class axiom then process it as owl axiom member
@@ -869,7 +874,7 @@ public final class ReasonerTaxonomyBuilder {
 								sourceIds.add(referencedComponentId);
 								destinationIds.add(relationship.getDestinationId());
 							} else {
-								fragments.add(relationship.toStatementFragment());
+								fragments.add(relationship.toStatementFragment(groupOffset));
 							}
 						} else {
 							LOGGER.debug(
@@ -882,6 +887,7 @@ public final class ReasonerTaxonomyBuilder {
 					additionalAxioms.add(expression);
 				}
 				
+				groupOffset += AXIOM_GROUP_BASE;
 			}
 		}
 		

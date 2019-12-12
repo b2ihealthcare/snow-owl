@@ -9,6 +9,15 @@
     "implementation": "scripts/rule663.groovy"
   },
   {
+  	"id": "668",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "OWL axiom relationships must not refer to inactive concepts as their type or destination.",
+    "severity": "ERROR",
+    "checkType": "FAST",
+    "type": "script-groovy",
+    "implementation": "scripts/rule668.groovy"
+  },
+  {
   	"id": "664",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Fully-specified names of active concepts should be unique.",
