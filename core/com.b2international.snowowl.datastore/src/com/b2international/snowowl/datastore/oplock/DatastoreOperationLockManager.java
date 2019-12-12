@@ -286,35 +286,37 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	}
 
 	private IOperationLock getOrCreateLock(DatastoreLockContext context, final DatastoreLockTarget target) {
-		final String repositoryId = target.getRepositoryId();
-		final String branchPath = target.getBranchPath();
-		
-		final Expression searchExpression = Expressions.builder()
-			.filter(DatastoreLockIndexEntry.Expressions.repositoryId(repositoryId))
-			.filter(DatastoreLockIndexEntry.Expressions.branchPath(branchPath))
-			.build();
-		
-		final DatastoreLockIndexEntry existingLockEntry = Iterables.getOnlyElement(search(searchExpression, 2), null);
-		final IOperationLock lock;
-		if (existingLockEntry == null) {
-			lastAssignedId = assignedIds.nextClearBit(lastAssignedId);
-			final String lockId = Integer.toString(lastAssignedId);
-			lock = createLock(lastAssignedId, target);
-			final DatastoreLockIndexEntry newEntry = buildIndexEntry(lockId, branchPath, repositoryId, context);
-			put(lockId, newEntry);
+		synchronized (syncObject) {
+			final String repositoryId = target.getRepositoryId();
+			final String branchPath = target.getBranchPath();
 			
-			assignedIds.set(lastAssignedId);
-			/* 
-			 * XXX (apeteri): this makes the lock manager revisit low IDs after every 128 issued locks, but 
-			 * it can still assign a number over 128 if all of the early ones are in use, since the BitSet grows unbounded. 
-			 */
-			lastAssignedId = lastAssignedId % EXPECTED_LOCKS;
-		} else {
-			lock = new OperationLock(Integer.parseInt(existingLockEntry.getId()), target);
+			final Expression searchExpression = Expressions.builder()
+					.filter(DatastoreLockIndexEntry.Expressions.repositoryId(repositoryId))
+					.filter(DatastoreLockIndexEntry.Expressions.branchPath(branchPath))
+					.build();
+			
+			final DatastoreLockIndexEntry existingLockEntry = Iterables.getOnlyElement(search(searchExpression, 2), null);
+			final IOperationLock lock;
+			if (existingLockEntry == null) {
+				lastAssignedId = assignedIds.nextClearBit(lastAssignedId);
+				final String lockId = Integer.toString(lastAssignedId);
+				lock = createLock(lastAssignedId, target);
+				final DatastoreLockIndexEntry newEntry = buildIndexEntry(lockId, branchPath, repositoryId, context);
+				put(lockId, newEntry);
+				
+				assignedIds.set(lastAssignedId);
+				/* 
+				 * XXX (apeteri): this makes the lock manager revisit low IDs after every 128 issued locks, but 
+				 * it can still assign a number over 128 if all of the early ones are in use, since the BitSet grows unbounded. 
+				 */
+				lastAssignedId = lastAssignedId % EXPECTED_LOCKS;
+			} else {
+				lock = new OperationLock(Integer.parseInt(existingLockEntry.getId()), target);
+			}
+			
+			lock.acquire(context);
+			return lock;
 		}
-		
-		lock.acquire(context);
-		return lock;
 	}
 
 	private DatastoreLockIndexEntry buildIndexEntry(final String lockId, final String branchPath, final String repositoryId, final DatastoreLockContext context) {
