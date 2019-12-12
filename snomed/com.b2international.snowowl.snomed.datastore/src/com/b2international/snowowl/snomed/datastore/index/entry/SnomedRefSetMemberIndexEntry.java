@@ -40,7 +40,6 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.ObjectId;
@@ -1059,7 +1058,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	@Override
 	public ObjectId getContainerId() {
-		return ObjectId.of(DocumentMapping.getType(getReferencedComponentDocClass()), getReferencedComponentId());
+		return ObjectId.of(getReferencedComponentDocClass(), getReferencedComponentId());
 	}
 
 	@JsonIgnore

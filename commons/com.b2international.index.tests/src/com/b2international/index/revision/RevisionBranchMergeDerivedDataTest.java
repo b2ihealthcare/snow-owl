@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -103,7 +102,7 @@ public class RevisionBranchMergeDerivedDataTest extends BaseRevisionIndexTest {
 		
 		@Override
 		protected ObjectId getContainerId() {
-			return ObjectId.of(DocumentMapping.getType(Node.class), source);
+			return ObjectId.of(Node.class, source);
 		}
 		
 	}

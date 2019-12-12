@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.index.revision;
 
 import java.util.Objects;
 
+import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -78,6 +79,10 @@ public final class ObjectId {
 
 	public static ObjectId of(String type, String id) {
 		return new ObjectId(type, id);
+	}
+	
+	public static ObjectId of(Class<?> type, String id) {
+		return new ObjectId(DocumentMapping.getType(type), id);
 	}
 	
 	public static ObjectId rootOf(String type) {

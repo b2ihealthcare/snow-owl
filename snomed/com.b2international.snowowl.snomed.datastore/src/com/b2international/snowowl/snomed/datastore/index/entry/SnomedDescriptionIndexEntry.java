@@ -41,7 +41,6 @@ import com.b2international.index.Keyword;
 import com.b2international.index.Normalizers;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
@@ -472,7 +471,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	
 	@Override
 	protected ObjectId getContainerId() {
-		return ObjectId.of(DocumentMapping.getType(SnomedConceptDocument.class), getConceptId());
+		return ObjectId.of(SnomedConceptDocument.class, getConceptId());
 	}
 	
 	@Override
