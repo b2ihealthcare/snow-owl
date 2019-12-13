@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType
 import com.google.common.base.Joiner
 import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMultimap
@@ -273,6 +274,7 @@ if (params.isUnpublishedOnly) {
 	
 	final ExpressionBuilder owlMemberExpressionBuilder = Expressions.builder()
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
 		.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(allowedTypeIdsForOwlRelationships))
 	
 	final Query<String> owlMemberQuery = Query.select(String.class)
