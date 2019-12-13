@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 - Support OWL Axiom (`owlRelationships()`) expansion on OWL Reference Set Members
 
 ### Validation
-- Support OWL Axiom Members in certaint SNOMED CT Validation Rules (#455) 
+- Support OWL Axiom Members in certain SNOMED CT Validation Rules (#455) 
 
 ### Bugs/Improvements
 - [reasoner] multiple changes to SNOMED to OWL conversion (28f6615)
