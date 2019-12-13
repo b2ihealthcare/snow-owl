@@ -210,10 +210,10 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final List<ValidationIssue> conceptIssues = issues.stream()
 				.filter(issue -> SnomedTerminologyComponentConstants.CONCEPT_NUMBER == issue.getAffectedComponent().getTerminologyComponentId())
 				.collect(Collectors.toList());
-		
+
 		final Map<String, ValidationIssue> memberIssues = issues.stream()
 				.filter(issue ->  SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER == issue.getAffectedComponent().getTerminologyComponentId())
-				.collect(Collectors.toMap(issue -> issue.getAffectedComponent().getComponentId(), issue -> issue));
+				.collect(Collectors.toMap(issue -> issue.getAffectedComponent().getComponentId(), issue -> issue, (issue1, issue2) -> issue1));
 		
 		if (conceptIssues.isEmpty() && memberIssues.isEmpty()) {
 			return;
