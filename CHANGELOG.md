@@ -1,6 +1,19 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.23.0
+
+### API
+- Support OWL Axiom (`owlRelationships()`) expansion on OWL Reference Set Members
+
+### Validation
+- Support OWL Axiom Members in certaint SNOMED CT Validation Rules (#455) 
+
+### Bugs/Improvements
+- [reasoner] multiple changes to SNOMED to OWL conversion (28f6615)
+- [reasoner] fix group numbering issue in classification (8678901)
+- [validation] handle no result when evaluating query based validation rules (1cedb3b)
+
 ## 6.22.0
 
 ### Bugs/Improvements
