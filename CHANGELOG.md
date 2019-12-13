@@ -134,6 +134,19 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.23.0
+
+### API
+- Support OWL Axiom (`owlRelationships()`) expansion on OWL Reference Set Members
+
+### Validation
+- Support OWL Axiom Members in certain SNOMED CT Validation Rules (#455) 
+
+### Bugs/Improvements
+- [reasoner] multiple changes to SNOMED to OWL conversion (28f6615)
+- [reasoner] fix group numbering issue in classification (8678901)
+- [validation] handle no result when evaluating query based validation rules (1cedb3b)
+
 ## 6.22.0
 
 ### Bugs/Improvements

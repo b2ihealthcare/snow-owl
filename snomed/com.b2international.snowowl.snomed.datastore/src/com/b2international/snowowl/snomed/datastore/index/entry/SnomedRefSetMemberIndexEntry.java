@@ -221,6 +221,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.referenceSetId(source.getReferenceSetId())
 				.referenceSetType(source.getReferenceSetType())
 				.released(source.isReleased())
+				.gciAxiomRelationships(source.getGciAxiomRelationships())
+				.classAxiomRelationships(source.getClassAxiomRelationships())
 				.fields(source.getAdditionalFields());
 	}
 	
@@ -243,6 +245,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			builder.referencedComponentType(RELATIONSHIP_NUMBER);
 		} else {
 			builder.referencedComponentType(TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT);
+		}
+		
+		if (input.getEquivalentOWLRelationships() != null) {
+			builder.classAxiomRelationships(input.getEquivalentOWLRelationships());
+		} else if (input.getClassOWLRelationships() != null) {
+			builder.classAxiomRelationships(input.getClassOWLRelationships());
+		} else if (input.getGciOWLRelationships() != null) {
+			builder.gciAxiomRelationships(input.getGciOWLRelationships());
 		}
 		
 		for (Entry<String, Object> entry : input.getProperties().entrySet()) {

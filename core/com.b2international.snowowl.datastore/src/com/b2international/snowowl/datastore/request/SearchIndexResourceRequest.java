@@ -25,6 +25,7 @@ import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
@@ -150,7 +151,11 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	 * @return the raw expression configured with all specified filters.
 	 */
 	public final Expression toRawQuery(C context) {
-		return prepareQuery(context);
+		try {
+			return prepareQuery(context);
+		} catch (NoResultException e) {
+			return Expressions.matchNone();
+		}
 	}
 	
 }

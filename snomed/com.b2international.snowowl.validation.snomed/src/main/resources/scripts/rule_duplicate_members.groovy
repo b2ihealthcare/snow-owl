@@ -59,7 +59,9 @@ memberAggregation.getBuckets().entrySet().each({entry ->
 				// ignore
 				break;
 		}
-		issues.add(affectedComponent)
+		if (!issues.contains(affectedComponent)) {
+			issues.add(affectedComponent)
+		}
 	})
 })
 

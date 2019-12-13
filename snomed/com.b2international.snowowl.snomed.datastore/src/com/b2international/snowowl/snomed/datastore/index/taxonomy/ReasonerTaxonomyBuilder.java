@@ -45,8 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollections;
+import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
@@ -72,6 +74,7 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -87,6 +90,8 @@ import com.google.common.collect.Iterables;
  * @since
  */
 public final class ReasonerTaxonomyBuilder {
+
+	private static final int AXIOM_GROUP_BASE = 10_000;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner-taxonomy");
 
@@ -109,6 +114,7 @@ public final class ReasonerTaxonomyBuilder {
 
 	private InternalIdEdges.Builder statedAncestors;
 	private InternalIdEdges.Builder statedDescendants;
+	private LongKeyMap<String> fullySpecifiedNames;
 
 	private InternalSctIdSet.Builder exhaustiveConcepts;
 
@@ -128,6 +134,7 @@ public final class ReasonerTaxonomyBuilder {
 	private InternalIdMap builtDefinedConceptMap;
 
 	private ImmutableSet.Builder<PropertyChain> propertyChains;
+
 
 	public ReasonerTaxonomyBuilder() {
 		this(ImmutableSet.<String>of());
@@ -237,6 +244,55 @@ public final class ReasonerTaxonomyBuilder {
 
 		this.propertyChains = ImmutableSet.builder();
 		
+		return this;
+	}
+	
+	public ReasonerTaxonomyBuilder addFullySpecifiedNames(final RevisionSearcher searcher) {
+		entering("Registering fully specified names using revision searcher");
+		
+		if (fullySpecifiedNames == null) {
+			fullySpecifiedNames = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(builtConceptMap.size());
+		}
+		
+		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+				.filter(SnomedDescriptionIndexEntry.Expressions.active())
+				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME));
+		
+		if (!excludedModuleIds.isEmpty()) {
+			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
+		}
+		
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, // 0
+						SnomedDescriptionIndexEntry.Fields.TERM) // 1
+				.where(whereExpressionBuilder.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		final List<String> conceptIds = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final List<String> terms = newArrayListWithExpectedSize(SCROLL_LIMIT);
+
+		for (final Hits<String[]> hits : scrolledHits) {
+			for (final String[] description : hits) {
+				if (builtConceptMap.containsKey(description[0])) {
+					conceptIds.add(description[0]);
+					terms.add(description[1]);
+				} else {
+					LOGGER.debug("Not registering FSN as its concept {} is inactive.", description[0]);
+				}
+			}
+
+			for (int i = 0; i < conceptIds.size(); i++) {
+				fullySpecifiedNames.put(Long.parseLong(conceptIds.get(i)), terms.get(i));
+			}
+			
+			conceptIds.clear();
+			terms.clear();
+		}
+		
+		leaving("Registering fully specified names using revision searcher");
 		return this;
 	}
 
@@ -750,6 +806,7 @@ public final class ReasonerTaxonomyBuilder {
 		final List<StatementFragment> equivalentFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		final List<String> additionalAxioms = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		String lastReferencedComponentId = "";
+		int groupOffset = AXIOM_GROUP_BASE;
 		
 		for (final Hits<SnomedRefSetMemberIndexEntry> hits : scrolledHits) {
 			for (final SnomedRefSetMemberIndexEntry member : hits) {
@@ -772,7 +829,9 @@ public final class ReasonerTaxonomyBuilder {
 					sourceIds.clear();
 					destinationIds.clear();
 					additionalAxioms.clear();
+					
 					lastReferencedComponentId = referencedComponentId;
+					groupOffset = AXIOM_GROUP_BASE;
 				}
 
 				// if not a class axiom then process it as owl axiom member
@@ -815,7 +874,7 @@ public final class ReasonerTaxonomyBuilder {
 								sourceIds.add(referencedComponentId);
 								destinationIds.add(relationship.getDestinationId());
 							} else {
-								fragments.add(relationship.toStatementFragment());
+								fragments.add(relationship.toStatementFragment(groupOffset));
 							}
 						} else {
 							LOGGER.debug(
@@ -828,6 +887,7 @@ public final class ReasonerTaxonomyBuilder {
 					additionalAxioms.add(expression);
 				}
 				
+				groupOffset += AXIOM_GROUP_BASE;
 			}
 		}
 		
@@ -1042,10 +1102,12 @@ public final class ReasonerTaxonomyBuilder {
 
 	public ReasonerTaxonomy build() {
 		checkState(builtConceptMap != null, "finishConcepts() method was not called on taxonomy builder.");
-
+		
 		return new ReasonerTaxonomy(
 				builtConceptMap, 
 				builtDefinedConceptMap,
+				fullySpecifiedNames,
+				
 				statedAncestors.build(),
 				statedDescendants.build(),
 				
