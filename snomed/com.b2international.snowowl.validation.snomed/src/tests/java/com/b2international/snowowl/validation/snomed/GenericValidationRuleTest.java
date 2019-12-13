@@ -501,18 +501,21 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), axiomMember1);
 		
 		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.TEXT_DEFINITION, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), axiomMember2);
 		
 		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), axiomMember3);
 		
@@ -546,9 +549,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		final ValidationIssues issues = validate(ruleId);
 		
-		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A));
 	}
 	
 }
