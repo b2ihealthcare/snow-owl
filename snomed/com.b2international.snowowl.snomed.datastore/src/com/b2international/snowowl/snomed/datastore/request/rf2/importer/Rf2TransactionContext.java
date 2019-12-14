@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -61,6 +62,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -114,15 +116,19 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
+		final Set<String> idsToRegister = ImmutableSet.copyOf(newComponents.keySet());
 		try {
 			// clear local cache before executing commit
 			newComponents = newHashMap();
 			LOG.info("Pushing changes: " + commitComment);
 			long timestamp = getDelegate().commit(userId, commitComment, parentContextDescription);
+			// after successful commit register all commited IDs to CIS
+			final ISnomedIdentifierService cis = service(ISnomedIdentifierService.class);
+			if (cis.importSupported()) {
+				cis.register(idsToRegister);
+			}
 			return timestamp;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
+		} finally {
 		}
 	}
 	
