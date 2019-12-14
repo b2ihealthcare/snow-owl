@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
@@ -117,7 +118,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	protected ComponentDeletionPolicy getComponentDeletionPolicy() {
-		return doc -> doc instanceof SnomedDocument && !((SnomedDocument) doc).isReleased();
+		return doc -> (doc instanceof SnomedDocument && !((SnomedDocument) doc).isReleased()) || doc instanceof SnomedConstraintDocument;
 	}
 	
 	@Override
