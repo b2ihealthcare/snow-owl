@@ -146,9 +146,10 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		dirtyConceptIds.removeAll(staging.getNewObjects(SnomedConceptDocument.class).map(SnomedConceptDocument::getId).collect(Collectors.toSet()));
 		
 		if (!dirtyConceptIds.isEmpty()) {
+			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			// fetch all dirty concept documents by their ID
 			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
-					.filter(id -> !staging.getChangedRevisions().containsKey(ObjectId.of(SnomedConceptDocument.class, id)))
+					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConceptDocument.class, id)))
 					.collect(Collectors.toSet());
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
@@ -157,8 +158,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.search(query), IComponent::getId));
 			dirtyConceptIds.stream()
 				.map(id -> ObjectId.of(SnomedConceptDocument.class, id))
-				.filter(id -> staging.getChangedRevisions().containsKey(id))
-				.map(id -> staging.getChangedRevisions().get(id))
+				.filter(changedRevisions::containsKey)
+				.map(changedRevisions::get)
 				.map(diff -> (SnomedConceptDocument) diff.oldRevision)
 				.forEach(doc -> currentConceptDocumentsById.put(doc.getId(), doc));
 			

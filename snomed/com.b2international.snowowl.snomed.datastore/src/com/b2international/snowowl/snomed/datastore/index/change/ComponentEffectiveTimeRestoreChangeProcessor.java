@@ -76,8 +76,9 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 	@Override
 	public void process(StagingArea staging, RevisionSearcher searcher) throws IOException {
 		final Multimap<Class<? extends SnomedDocument>, SnomedDocument> componentsByType = ArrayListMultimap.create();
-		staging.getChangedRevisions().values().stream()
-			.map(diff -> (SnomedDocument) diff.newRevision)
+		staging.getChangedObjects()
+			.filter(SnomedDocument.class::isInstance)
+			.map(SnomedDocument.class::cast)
 			.filter(doc -> doc.isReleased() && EffectiveTimes.isUnset(doc.getEffectiveTime()))
 			.forEach(doc -> componentsByType.put(doc.getClass(), doc));
 

@@ -18,12 +18,14 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
@@ -118,6 +120,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			}
 			
 			// inactivate relationships of inactivated concepts
+			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
 							.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactivatedConceptIds))
@@ -127,8 +130,8 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					.build())) {
 				hits.forEach(relationship -> {
 					inactivatedComponentIds.add(relationship.getId());
-					if (staging.getChangedRevisions().containsKey(relationship.getObjectId())) {
-						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) staging.getChangedRevisions().get(relationship.getObjectId()).newRevision)
+					if (changedRevisions.containsKey(relationship.getObjectId())) {
+						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) changedRevisions.get(relationship.getObjectId()).newRevision)
 								.active(false)
 								.build());
 					} else {
@@ -143,6 +146,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		}
 		
 		// inactivate referring members of all inactivated core component, and all members of inactivated refsets
+		final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(Expressions.builder()
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
@@ -151,8 +155,8 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				.limit(PAGE_SIZE)
 				.build())) {
 			hits.forEach(member -> {
-				if (staging.getChangedRevisions().containsKey(member.getObjectId())) {
-					stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) staging.getChangedRevisions().get(member.getObjectId()).newRevision)
+				if (changedRevisions.containsKey(member.getObjectId())) {
+					stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) changedRevisions.get(member.getObjectId()).newRevision)
 							.active(false)
 							.build());
 				} else {
