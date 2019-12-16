@@ -22,13 +22,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -86,8 +84,9 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseComponentMem
 			
 			if (acceptability.equals(newLanguageMembersToCreate.get(languageReferenceSetId))) {
 				// Exact match: make sure that the member is active
-				ensureMemberActive(context, existingMember, updatedMember);
-				context.update(oldRevision, updatedMember.build());
+				if (ensureMemberActive(context, existingMember, updatedMember)) {
+					context.update(oldRevision, updatedMember.build());
+				}
 
 				// Remove it from the working list, as we have found a match
 				newLanguageMembersToCreate.remove(languageReferenceSetId);
@@ -102,8 +101,9 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseComponentMem
 				newLanguageMembersToCreate.remove(languageReferenceSetId);
 			} else {
 				// Not acceptable in this language reference set, remove or inactivate if already released
-				removeOrDeactivate(context, existingMember, updatedMember);
-				context.update(oldRevision, updatedMember.build());
+				if (removeOrDeactivate(context, existingMember, updatedMember)) {
+					context.update(oldRevision, updatedMember.build());
+				}
 			}
 		}
 		

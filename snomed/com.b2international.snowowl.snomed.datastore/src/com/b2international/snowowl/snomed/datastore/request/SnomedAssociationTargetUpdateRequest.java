@@ -175,8 +175,9 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 			} else {
 				// We have no use for this member -- remove or inactivate if already released
 				SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
-				removeOrDeactivate(context, existingMember, updatedMember);
-				context.update(oldRevision, updatedMember.build());
+				if (removeOrDeactivate(context, existingMember, updatedMember)) {
+					context.update(oldRevision, updatedMember.build());
+				}
 			}
 		}
 

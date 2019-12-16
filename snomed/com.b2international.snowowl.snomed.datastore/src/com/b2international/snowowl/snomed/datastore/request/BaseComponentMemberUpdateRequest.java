@@ -52,40 +52,48 @@ abstract class BaseComponentMemberUpdateRequest implements Request<TransactionCo
 	
 	protected abstract String getMemberType();
 
-	protected final void ensureMemberActive(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
+	protected final boolean ensureMemberActive(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		if (!existingMember.isActive()) {
 
 			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating {} member {}.", getMemberType(), existingMember.getId()); }
 			updatedMember.active(true);
 			updateModule(context, existingMember, updatedMember, context.service(ModuleIdProvider.class).apply(componentToUpdate));
 			unsetEffectiveTime(existingMember, updatedMember);
+			return true;
 			
 		} else {
+			
 			if (LOG.isDebugEnabled()) { LOG.debug("{} member {} already active, not updating.", getMemberType(), existingMember.getId()); }
+			return false;
+			
 		}
 	}
 
-	protected final void removeOrDeactivate(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
+	protected final boolean removeOrDeactivate(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		if (!existingMember.isReleased()) {
 
 			if (LOG.isDebugEnabled()) { LOG.debug("Removing {} member {}.", getMemberType(), existingMember.getId()); }
 			context.delete(updatedMember.build());
+			return true;
 			
 		} else if (existingMember.isActive()) {
 
 			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating {} member {}.", getMemberType(), existingMember.getId()); }
-			updatedMember.active(true);
+			
+			updatedMember.active(false);
 			updateModule(context, existingMember, updatedMember, context.service(ModuleIdProvider.class).apply(componentToUpdate));
 			unsetEffectiveTime(existingMember, updatedMember);
+			return true;
 			
 		} else {
 			
 			if (LOG.isDebugEnabled()) { LOG.debug("{} member {} already inactive, not updating.", getMemberType(), existingMember.getId()); }
+			return false;
 			
 		}
 	}
 
-	protected final void updateModule(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember, String moduleId) {
+	protected final boolean updateModule(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember, String moduleId) {
 
 		if (!existingMember.getModuleId().equals(moduleId)) {
 			
@@ -98,18 +106,28 @@ abstract class BaseComponentMemberUpdateRequest implements Request<TransactionCo
 			}
 			
 			updatedMember.moduleId(moduleId);
+			return true;
 			
 		} else {
+
 			if (LOG.isDebugEnabled()) { LOG.debug("{} member {} already in the expected module, not updating.", getMemberType(), existingMember.getId()); }
+			return false;
+			
 		}
 	}
 
-	protected final void unsetEffectiveTime(final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
+	protected final boolean unsetEffectiveTime(final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		if (existingMember.getEffectiveTime() != null) {
+			
 			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on {} member {}.", getMemberType(), existingMember.getId()); }
 			updatedMember.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			return true;
+			
 		} else {
+			
 			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on {} member {} already unset, not updating.", getMemberType(), existingMember.getId()); }
+			return false;
+			
 		}
 	}
 	

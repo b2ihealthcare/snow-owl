@@ -125,11 +125,12 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 				continue;
 			}
 			
+			boolean changed = false;
 			final String existingValueId = (String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID);
 			if (Objects.equals(existingValueId, inactivationValueId)) {
 
 				// Exact match, just make sure that the member is active
-				ensureMemberActive(context, existingMember, updatedMember);
+				changed = ensureMemberActive(context, existingMember, updatedMember);
 
 			} else if (!CLEAR.equals(inactivationValueId)) {
 				// Re-use this member, if the intention was not to remove the existing value
@@ -146,15 +147,17 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 				updatedMember.field(SnomedRf2Headers.FIELD_VALUE_ID, inactivationValueId);
 				updateModule(context, existingMember, updatedMember, context.service(ModuleIdProvider.class).apply(componentToUpdate));
 				unsetEffectiveTime(existingMember, updatedMember);
-				
+				changed = true;
 			} else /* if (CLEAR.equals(inactivationValueId) */ {
 				// Inactivation value is set to "no reason given", so remove or inactivate the member
 				// If the member needs inactivation, place it in the supplied module
-				removeOrDeactivate(context, existingMember, updatedMember);
+				changed = removeOrDeactivate(context, existingMember, updatedMember);
 			}
 
 			// If we get to the end of this loop, the first member has been processed
-			context.update(oldRevision, updatedMember.build());
+			if (changed) {
+				context.update(oldRevision, updatedMember.build());
+			}
 			// By the end of this loop, the first member has been processed
 			firstMemberFound = true;
 		}
