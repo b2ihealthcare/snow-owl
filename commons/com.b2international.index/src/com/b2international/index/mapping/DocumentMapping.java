@@ -44,6 +44,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
@@ -274,6 +275,13 @@ public final class DocumentMapping {
 			DOC_TYPE_CACHE.put(type, docType);
 		}
 		return DOC_TYPE_CACHE.get(type);
+	}
+	
+	/**
+	 * @return all types currently registered in doc type mapping
+	 */
+	public static Collection<Class<?>> getTypes() {
+		return ImmutableSet.copyOf(DOC_TYPE_CACHE.keySet());
 	}
 	
 	public static Class<?> getClass(String type) {

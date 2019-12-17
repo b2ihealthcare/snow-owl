@@ -83,6 +83,7 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		initializeServices();
 		RevisionIndex index = initIndex(mapper, mappings);
 		bind(Repository.class, this);
+		bind(Mappings.class, mappings);
 		bind(ClassLoader.class, getDelegate().plugins().getCompositeClassLoader());
 		// initialize the index
 		index.admin().create();

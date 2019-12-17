@@ -29,9 +29,9 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Boolean>
 		implements TransactionalRequestBuilder<Boolean> {
 
-	private final String componentId;
-	private final Class<? extends RevisionDocument> type;
-	private Boolean force = Boolean.FALSE;
+	protected final String componentId;
+	protected final Class<? extends RevisionDocument> type;
+	protected Boolean force = Boolean.FALSE;
 
 	public DeleteRequestBuilder(String componentId, Class<? extends RevisionDocument> type) {
 		super();
