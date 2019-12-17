@@ -195,23 +195,25 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 	
 	private void convertRelationships(final TransactionContext context, String conceptId) {
-		final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet();
-		requiredRelationships.add(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
-		
-		for (final SnomedRelationshipCreateRequest relationshipRequest : relationships) {
-			relationshipRequest.setSourceId(conceptId);
+		if (!relationships.isEmpty()) {
+			final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet();
+			requiredRelationships.add(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
 			
-			if (null == relationshipRequest.getModuleId()) {
-				relationshipRequest.setModuleId(getModuleId());
+			for (final SnomedRelationshipCreateRequest relationshipRequest : relationships) {
+				relationshipRequest.setSourceId(conceptId);
+				
+				if (null == relationshipRequest.getModuleId()) {
+					relationshipRequest.setModuleId(getModuleId());
+				}
+				
+				relationshipRequest.execute(context);
+				
+				requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicType()));
 			}
 			
-			relationshipRequest.execute(context);
-			
-			requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicType()));
-		}
-		
-		if (!requiredRelationships.isEmpty()) {
-			throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
+			if (!requiredRelationships.isEmpty()) {
+				throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
+			}
 		}
 	}
 	
