@@ -464,9 +464,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			return Collections.emptySet();
 		}
 		
-		final IEquivalentConceptMerger merger = Extensions.getFirstPriorityExtension(
+		IEquivalentConceptMerger merger = Extensions.getFirstPriorityExtension(
 				IEquivalentConceptMerger.EXTENSION_POINT, 
 				IEquivalentConceptMerger.class);
+		if (merger == null) {
+			merger = new IEquivalentConceptMerger.Default();
+		}
 		
 		final String mergerName = merger.getClass().getSimpleName();
 		LOG.info("Reasoner service will use {} for equivalent concept merging.", mergerName);
