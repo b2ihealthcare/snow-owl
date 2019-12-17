@@ -163,6 +163,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Thread interrupted while acquiring exclusive access to terminology store for persisting classification changes.", e);
 		} catch (final Exception e) {
+			LOG.error("Unexpected error while persisting classification changes.", e);
 			tracker.classificationSaveFailed(classificationId);
 			throw new ReasonerApiException("Error while persisting classification changes on '%s'.", context.branchPath(), e);
 		} finally {
