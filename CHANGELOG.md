@@ -1,6 +1,78 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.2.0
+
+### Changes from 6.x stream since 7.1.0 release
+
+All changes happened on the `6.x` stream (since 6.19.0) has been merged into the `7.2.0` release. See changelog entries from `6.19.0` to `6.23.0` for details.
+
+### Docker build
+
+Snow Owl 7.2.0 now supports Docker based deployments via the official image. See [here](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss). 
+
+### Known issues
+- Query parameters are not supplied to `Try it out` requests from the Swagger UI (see GH issue: #441)
+
+### Core changes
+
+#### API
+- New Swagger API design and navigation menu (#419)
+- Generate proper commit notifications after successful commit (32ce42d)
+- Improve revision merging by introducing Git-like behaviour when merging a branch into another (e3d2da5)
+
+#### Authentication & Authorization
+- New `POST /login` endpoint to authenticate a user and get back a JWT token for further API calls (#403)
+- Support `X-Author` header in most transaction endpoints (#403)
+- New bearer token based authentication support (#403)
+- New permission system to allow fine grained `operation:resource` based authorization (#403)
+- API endpoints that do not require permissions: `GET /admin/info`, `GET /admin/jobs`, `GET /admin/repositories` (#413)
+
+#### Rate limiting
+- New rate-limiting configuration options are available (#409)
+
+### SNOMED CT changes
+
+#### API
+- Add support for refset member filtering based on the following properties: `acceptabilityId`, `valueId`, `correlationId`, `descriptionFormat`, `characteristicTypeId`, `typeId`, `mapCategoryId`, `domainId`, `contentTypeId`, `ruleStrengthId`, `mrcmRuleRefSetId`, `relationshipGroup`, `mapTarget`, `grouped` (beede5f)
+- Support ECL expressions in the following refset member property filters: `characteristicTypeId`, `correlationId`, `descriptionFormat`, `mapCategoryId`, `targetComponentId`, `targetComponent`, `valueId`, `mrcmDomainId`, `mrcmContentTypeId`, `mrmcRuleStrengthId`, `mrcmRuleRefSetId`, `owlExpressionConceptId`, `owlExpressionDestinationId`, `owlExpressionTypeId` (7b3d21c)
+- Allow creation of SNOMED CT Concepts without relationships (fc81d59)
+
+#### RF2
+- Validate `referencedComponentId` values when importing RF2 RefSet files (93167d2)
+- Register IDs in CIS after successfully importing RF2 content (908d053)
+
+#### Classification
+- Add ELK as default classifier (ee68a94)
+
+### Scalability and reliability
+- Health check now includes ES cluster and indices health statuses (2a6628b)
+- Use retry policy to detect ES cluster outages and retry a few times before failing the request (97fc936, d5d8418) 
+
+### Plug-in development
+- New easily extensible REST API modules (#403)
+
+### Bugs/Improvements
+- Add shutdown hook to gracefully shut down Snow Owl (00faaae)   
+- Fix NPE in list branches OSGi command (80bc0c5)
+- Fix potential NPE in case of communication failure with ES cluster (d00e56e)
+- Fix `modifiers` field access issue on Java 12 (93cb94b)
+- Fix branch counter initialization issue causing issues after restart (277bf10)
+- Do NOT index revisions when there are no changes (66c3f0e) 
+- Fix `namespace` field indexing issue (a09c44c)
+- Fix MRCM constraints deletion issue (88de20b)
+- Fixed reported GH issues: #422, #424, #436, #442, #444, #450
+
+### Dependencies
+- Bump Jackson to 2.9.10
+- Bump SnakeYAML to 1.25
+- Bump Spring to 5.1.9
+- Bump Springfox to 2.9.2
+- Bump Swagger to 1.5.23
+- Bump Swagger UI to 3.24.3
+- Bump micrometer to 1.3.2 
+- Bump Tycho to 1.5.0
+
 ## 7.1.0
 
 ### Breaking changes
@@ -198,7 +270,6 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
 - Revert fix `[api] inactivate all language members when inactivating a SNOMED CT Description`
 - Allow duplicate relationships in DSV export (#393)
 - Handle descriptions during equivalent concept merging during classification (#392)
->>>>>>> refs/remotes/origin/6.x
 
 ## 6.19.0
 
