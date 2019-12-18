@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes from 6.x stream since 7.1.0 release
 
-All changes happened on the `6.x` stream (since 6.19.0) has been merged into the `7.2.0` release. See changelog entries from `6.19.0` to `6.23.0` for details.
+All changes from the `6.x` stream (since 6.19.0) have been merged into the `7.2.0` release. See changelog entries from `6.19.0` to `6.23.0` for details.
 
 ### Docker build
 
