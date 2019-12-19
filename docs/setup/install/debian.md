@@ -2,8 +2,6 @@
 
 The Debian package for Snow Owl can be downloaded from the Downloads section. It can be used to install Snow Owl on any Debian-based system such as Debian and Ubuntu.
 
-include::license.asciidoc[]
-
 ## Download and install
 
 ```bash
