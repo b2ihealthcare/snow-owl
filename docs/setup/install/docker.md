@@ -1,6 +1,6 @@
 # Install Snow Owl with Docker
 
-Snow Owl is also available as Docker images. The images use https://hub.docker.com/_/centos/[centos:7] as the base image.
+Snow Owl is also available as Docker images. The images use [centos:7](https://hub.docker.com/_/centos/) as the base image.
 
 A list of all published Docker images and tags is available at [Docker Hub](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss/).
 
@@ -14,9 +14,9 @@ Obtaining Snow Owl for Docker is as simple as issuing a `docker pull` command ag
 docker pull snow-owl-oss:latest
 ```
 
-==== Running Snow Owl from the command line
+## Running Snow Owl from the command line
 
-===== Development mode
+### Development mode
 
 Snow Owl can be quickly started for development or testing use with the following command:
 
@@ -24,7 +24,7 @@ Snow Owl can be quickly started for development or testing use with the followin
 docker run -p 8080:8080 snow-owl-oss:latest
 ```
 
-===== Production mode
+### Production mode
 
 {% hint style="info" %}
 The `vm.max_map_count` kernel setting needs to be set to at least `262144` permanently in `/etc/sysctl.conf` for production use.

@@ -6,8 +6,6 @@ include::license.asciidoc[]
 
 ## Download and install
 
-ifeval::["{release-state}"!="unreleased"]
-
 ```bash
 wget https://github.com/b2ihealthcare/snow-owl/releases/download/<version>/snow-owl-oss-<version>.deb
 wget https://github.com/b2ihealthcare/snow-owl/releases/download/<version>/snow-owl-oss-<version>.deb.sha512
