@@ -96,7 +96,7 @@ Any Docker parameters mentioned below assume the use of `docker run`.
 
 By default, Snow Owl runs inside the container as user `snowowl` using uid:gid `1000:1000`.
 
-1. If you are bind-mounting a local directory or file, ensure it is readable by
+* If you are bind-mounting a local directory or file, ensure it is readable by
 this user, while the <<path-settings,data and log dirs>> additionally require
 write access. A good strategy is to grant group access to gid `1000` or `0` for
 the local directory. As an example, to prepare a local directory for storing
@@ -108,7 +108,7 @@ data through a bind-mount:
   chgrp 1000 sodatadir
 ```
 
-2. It is important to ensure increased ulimits for `nofile`
+* It is important to ensure increased ulimits for `nofile`
 and `nproc` are available for the Snow Owl containers.
 Verify the [init system](https://github.com/moby/moby/tree/ea4d1243953e6b652082305a9c3cda8656edab26/contrib/init)
 for the Docker daemon is already setting those to acceptable values and, if
@@ -126,17 +126,17 @@ ulimits is by running:
   docker run --rm centos:7 /bin/bash -c 'ulimit -Hn && ulimit -Sn && ulimit -Hu && ulimit -Su'
 ```
 
-3. Swapping needs to be disabled for performance and stability. This can be
+* Swapping needs to be disabled for performance and stability. This can be
 achieved through any of the methods mentioned in the [system settings](../configure/system-settings.md). 
 
-4. The image [exposes](https://docs.docker.com/engine/reference/builder/#/expose)
+* The image [exposes](https://docs.docker.com/engine/reference/builder/#/expose)
 TCP ports 8080 and 2036.
 
-5. Use the `SO_JAVA_OPTS` environment variable to set heap size. For example, to
+* Use the `SO_JAVA_OPTS` environment variable to set heap size. For example, to
 use 16GB use `SO_JAVA_OPTS="-Xms16g -Xmx16g"` with `docker run`.
 
-6. Pin your deployments to a specific version of the Snow Owl OSS Docker image. For
+* Pin your deployments to a specific version of the Snow Owl OSS Docker image. For
 example, `snow-owl-oss:7.2.0`.
 
-7. Consider centralizing your logs by using a different https://docs.docker.com/engine/admin/logging/overview/[logging driver]. Also note
+* Consider centralizing your logs by using a different https://docs.docker.com/engine/admin/logging/overview/[logging driver]. Also note
 that the default json-file logging driver is not ideally suited for production use.
