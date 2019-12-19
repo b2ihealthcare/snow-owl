@@ -5,7 +5,7 @@ Snow Owl is provided as a `.zip` and as a `.tar.gz` package. These packages can 
 The latest stable version of Snow Owl can be found on the [Snow Owl Releases](https://github.com/b2ihealthcare/snow-owl/releases) page.
 
 {% hint style="info" %}
-Snow Owl requires Java 8 or later. Use the official Oracle distribution or an open-source distribution such as OpenJDK.
+Snow Owl requires Java 11 or newer version. Use the official Oracle distribution or an open-source distribution such as OpenJDK.
 {% endhint %}
 
 ## Download and install the `zip` package
