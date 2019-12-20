@@ -82,7 +82,7 @@ public class CisAuthenticationService extends AbstractRestService {
 		return new ResponseEntity<>(new EmptyJsonResponse(), HttpStatus.OK);
 	}
 	
-	@ApiOperation(value = "Validates a token, checking if it' assigned to a current session, and retrieves user data.")
+	@ApiOperation(value = "Validates a token, checking if it's assigned to a current session, and retrieves user data.")
 	@ApiResponses({
 		@ApiResponse(code = 400, message = "Error", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
