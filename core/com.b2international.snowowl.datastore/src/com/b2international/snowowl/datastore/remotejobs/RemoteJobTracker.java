@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,8 @@ public final class RemoteJobTracker implements IDisposableService {
 		public void run() {
 			try {
 				index.write(writer -> {
-					final Hits<RemoteJobEntry> hits = writer.searcher().search(Query.select(RemoteJobEntry.class)
+					final Hits<String> hits = writer.searcher().search(Query.select(String.class)
+							.from(RemoteJobEntry.class)
 							.where(
 								Expressions.builder()
 									.filter(RemoteJobEntry.Expressions.deleted(true))
@@ -81,9 +82,8 @@ public final class RemoteJobTracker implements IDisposableService {
 							.limit(Integer.MAX_VALUE)
 							.build());
 					if (hits.getTotal() > 0) {
-						final Set<String> ids = FluentIterable.from(hits).transform(RemoteJobEntry::getId).toSet();
-						LOG.trace("Purging job entries {}", ids);
-						writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, ids));
+						LOG.trace("Purging job entries {}", hits.getHits());
+						writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, ImmutableSet.copyOf(hits.getHits())));
 						writer.commit();
 					}
 					return null;
