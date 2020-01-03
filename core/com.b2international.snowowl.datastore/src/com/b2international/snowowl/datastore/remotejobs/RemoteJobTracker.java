@@ -72,6 +72,7 @@ public final class RemoteJobTracker implements IDisposableService {
 			try {
 				index.write(writer -> {
 					final Hits<String> hits = writer.searcher().search(Query.select(String.class)
+							.fields(RemoteJobEntry.Fields.ID)
 							.from(RemoteJobEntry.class)
 							.where(
 								Expressions.builder()
@@ -83,7 +84,7 @@ public final class RemoteJobTracker implements IDisposableService {
 							.build());
 					if (hits.getTotal() > 0) {
 						LOG.trace("Purging job entries {}", hits.getHits());
-						writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, ImmutableSet.copyOf(hits.getHits())));
+						writer.remove(RemoteJobEntry.class, ImmutableSet.copyOf(hits.getHits()));
 						writer.commit();
 					}
 					return null;
