@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.extension.Component;
@@ -401,7 +402,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		SnomedReferenceSetMembers members = snomedReferenceSet.getMembers();
 		
 		//no members, nothing to do further
-		if (members.isEmpty()) return groupBuilder.build();
+		if (CompareUtils.isEmpty(members)) return groupBuilder.build();
 		
 		//Potentially many targets for the same source
 		Multimap<String, SnomedReferenceSetMember> mappingMultimap = HashMultimap.create();
