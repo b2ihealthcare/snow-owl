@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 package com.b2international.snowowl.fhir.core.model.conceptmap;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableList;
 
 /**
  * FHIR Concept map group backbone element
@@ -51,21 +51,20 @@ public class Group {
 	private final String targetVersion;
 	
 	@Valid
-	@NotEmpty
+	@NotNull
 	@JsonProperty("element")
-	private final Collection<ConceptMapElement> elements;
+	private final List<ConceptMapElement> elements;
 	
 	@Valid
 	@JsonProperty
 	private final UnMapped unmapped;
 
-	Group(Uri source, String sourceVersion, Uri target, String targetVersion,
-			Collection<ConceptMapElement> elements, UnMapped unmapped) {
+	Group(Uri source, String sourceVersion, Uri target, String targetVersion, List<ConceptMapElement> elements, UnMapped unmapped) {
 		this.source = source;
 		this.sourceVersion = sourceVersion;
 		this.target = target;
 		this.targetVersion = targetVersion;
-		this.elements = elements;
+		this.elements = Collections3.toImmutableList(elements);
 		this.unmapped = unmapped;
 	}
 	
@@ -79,7 +78,7 @@ public class Group {
 		private String sourceVersion;
 		private Uri target;
 		private String targetVersion;
-		private Collection<ConceptMapElement> elements = Sets.newHashSet();
+		private ImmutableList.Builder<ConceptMapElement> elements = ImmutableList.builder();
 		private UnMapped unmapped;
 
 		public Builder source(final Uri source) {
@@ -124,7 +123,7 @@ public class Group {
 		
 		@Override
 		protected Group doBuild() {
-			return new Group(source, sourceVersion, target, targetVersion, elements, unmapped);
+			return new Group(source, sourceVersion, target, targetVersion, elements.build(), unmapped);
 		}
 	}
 	
