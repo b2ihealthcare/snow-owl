@@ -43,6 +43,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 /**
  *
@@ -76,6 +77,8 @@ public class CoreTerminologyBroker {
 		 */
 		@Override
 		String getId();
+		
+		Collection<String> getSupportedRefsets();
 	}
 
 	public static final String UNSPECIFIED = "UNSPECIFIED";
@@ -85,6 +88,7 @@ public class CoreTerminologyBroker {
 	private static final ICoreTerminologyComponentInformation UNSPECIFIED_COMPONENT = new ICoreTerminologyComponentInformation() {
 		@Override public String getName() {	return UNSPECIFIED;	}
 		@Override public String getId() { return UNSPECIFIED; }
+		@Override public Collection<String> getSupportedRefsets() { return Collections.emptySet(); }
 	};
 
 	public static final String TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminologyComponent";
@@ -104,6 +108,9 @@ public class CoreTerminologyBroker {
 	public static final String NAME_ATTRIBUTE = "name";
 	public static final String DEPENDENCY_ATTRIBUTE = "dependency";
 	public static final String SHORT_NAME_ATTRIBUTE = "shortName";
+	
+	private static final String SUPPORTED_REFSET_TYPE_ELEMENT_ID = "supportedRefSetType";
+	private static final String TYPE_ATTRIBUTE = "type";
 
 	private static final Map<Integer, String> INT_TO_ID_CACHE = Maps.newConcurrentMap();
 	private static final Map<String, Integer> ID_TO_INT_CACHE = Maps.newConcurrentMap();
@@ -471,6 +478,12 @@ public class CoreTerminologyBroker {
 							@Override
 							public String getId() {
 								return element.getAttribute(CoreTerminologyBroker.ID_ATTRIBUTE);
+							}
+
+							@Override
+							public Collection<String> getSupportedRefsets() {
+								 IConfigurationElement[] configurationElements = element.getChildren(SUPPORTED_REFSET_TYPE_ELEMENT_ID);
+								 return Sets.newHashSet(configurationElements).stream().map(ce -> ce.getAttribute(TYPE_ATTRIBUTE)).collect(Collectors.toSet());
 							}
 						};
 					}
