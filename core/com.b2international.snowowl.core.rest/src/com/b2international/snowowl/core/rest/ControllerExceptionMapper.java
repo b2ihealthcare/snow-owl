@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.commons.exceptions.*;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.base.Throwables;
 
 /**
  * @since 4.1
@@ -46,8 +47,12 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody RestApiError handle(final Exception ex) {
-		LOG.error("Exception during request processing", ex);
-		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
+		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
+	        return null; // socket is closed, cannot return any response    
+	    } else {
+	    	LOG.trace("Exception during request processing", ex);
+	    	return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	    }
 	}
 	
 	@ExceptionHandler
@@ -67,7 +72,7 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
 	public @ResponseBody RestApiError handle(RequestTimeoutException ex) {
-		LOG.error("Timeout during request processing", ex);
+		LOG.trace("Timeout during request processing", ex);
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
 	}
 	
@@ -80,7 +85,7 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(HttpMessageNotReadableException ex) {
-		LOG.error("Exception during processing of a JSON document", ex);
+		LOG.trace("Exception during processing of a JSON document", ex);
 		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").developerMessage(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
