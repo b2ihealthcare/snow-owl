@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.commit;
 
 import java.util.List;
 
@@ -21,12 +21,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
-import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -41,12 +39,14 @@ import io.swagger.annotations.ApiResponses;
  * @since 7.0
  */
 @Api(value = "Commits", description = "Commits", tags = "commits")
-@RestController
 @RequestMapping(value="/commits")
-public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
+public abstract class RepositoryCommitRestService extends AbstractRestService {
 
-	public SnomedCommitInfoRestService() {
+	private final String repositoryId;
+
+	public RepositoryCommitRestService(String repositoryId) {
 		super(Commit.Fields.ALL);
+		this.repositoryId = repositoryId;
 	}
 	
 	@ApiOperation(

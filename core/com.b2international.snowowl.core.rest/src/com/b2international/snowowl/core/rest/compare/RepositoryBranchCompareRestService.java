@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.compare;
 
 import java.util.Collections;
 
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -30,7 +29,6 @@ import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.compare.CompareResult;
-import com.b2international.snowowl.snomed.core.rest.domain.SnomedCompareRestRequest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,12 +39,14 @@ import io.swagger.annotations.ApiResponses;
  * @since 7.0
  */
 @Api(value = "Compare", description = "Compare", tags = "compare")
-@RestController
 @RequestMapping(value = "/compare")
-public class SnomedCompareRestService extends AbstractSnomedRestService {
+public abstract class RepositoryBranchCompareRestService extends AbstractRestService {
 	
-	public SnomedCompareRestService() {
+	private final String repositoryId;
+
+	public RepositoryBranchCompareRestService(String repositoryId) {
 		super(Collections.emptySet());
+		this.repositoryId = repositoryId;
 	}
 	
 	@ApiOperation(
@@ -59,7 +59,7 @@ public class SnomedCompareRestService extends AbstractSnomedRestService {
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.OK)
-	public Promise<CompareResult> compareBranches(@RequestBody SnomedCompareRestRequest request) {
+	public Promise<CompareResult> compareBranches(@RequestBody CompareRestRequest request) {
 		ApiValidation.checkInput(request);
 		return RepositoryRequests.branching().prepareCompare()
 			.setBase(request.getBaseBranch())

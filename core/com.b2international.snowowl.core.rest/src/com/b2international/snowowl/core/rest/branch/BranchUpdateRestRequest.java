@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.branch;
 
-import java.util.Set;
-
-import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.SnomedApiConfig;
+import com.b2international.commons.options.Metadata;
 
 /**
- * @since 7.2
+ * @since 5.0
  */
-public abstract class AbstractSnomedRestService extends AbstractRestService {
+public class BranchUpdateRestRequest {
 
-	protected final String repositoryId = SnomedApiConfig.REPOSITORY_ID;
+	private Metadata metadata;
 	
-	public AbstractSnomedRestService() {
-		super();
+	public Metadata getMetadata() {
+		return metadata;
 	}
 	
-	public AbstractSnomedRestService(Set<String> sortFields) {
-		super(sortFields);
+	public void setMetadata(Metadata metadata) {
+		this.metadata = metadata;
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import java.util.Set;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.SnomedApiConfig;
+import com.b2international.snowowl.core.rest.branch.RepositoryBranchRestService;
 
 /**
- * @since 7.2
+ * @since 7.3
  */
-public abstract class AbstractSnomedRestService extends AbstractRestService {
+@RestController
+public class SnomedRepositoryBranchRestService extends RepositoryBranchRestService {
 
-	protected final String repositoryId = SnomedApiConfig.REPOSITORY_ID;
-	
-	public AbstractSnomedRestService() {
-		super();
+	public SnomedRepositoryBranchRestService() {
+		super(SnomedApiConfig.REPOSITORY_ID);
 	}
-	
-	public AbstractSnomedRestService(Set<String> sortFields) {
-		super(sortFields);
-	}
-	
+
 }
