@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -35,6 +36,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -42,6 +44,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRefSetRestInput;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedReferenceSetRestSearch;
 import com.b2international.snowowl.snomed.core.rest.request.BulkRestRequest;
 import com.b2international.snowowl.snomed.core.rest.request.RefSetMemberRequestResolver;
 import com.b2international.snowowl.snomed.core.rest.request.RefSetRequestResolver;
@@ -70,51 +73,69 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	
 	@ApiOperation(
 		value="Retrieve Reference Sets from a branch", 
-		notes="Returns a list with all reference sets from a branch."
+		notes="Returns a list with all/filtered Reference Sets from a branch."
+				+ "<p>The following properties can be expanded:"
+				+ "<p>"
+				+ "&bull; members() &ndash; members currently available in the reference set<br>"
 	)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = SnomedReferenceSets.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
-	public @ResponseBody Promise<SnomedReferenceSets> search(
+	public @ResponseBody Promise<SnomedReferenceSets> searchByGet(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String branch,
 			
-			@ApiParam(value = "The reference set type to match")
-			@RequestParam(value="refSetTypes", required=false)
-			final String[] refSetTypes,
+			final SnomedReferenceSetRestSearch params,
 			
-			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false) 
-			final String scrollKeepAlive,
-			
-			@ApiParam(value = "A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false) 
-			final String scrollId,
+			@ApiParam(value = "Accepted language tags, in order of preference")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+		
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 
-			@ApiParam(value = "The search key to use for retrieving the next page of results")
-			@RequestParam(value="searchAfter", required=false) 
-			final String searchAfter,
-
-			@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
-			@RequestParam(value="limit", required=false) 
-			final int limit,
-			
-			@ApiParam(value = "Sort keys")
-			@RequestParam(value="sort", required=false)
-			final List<String> sortKeys) {
+		List<Sort> sorts = extractSortFields(params.getSort(), branch, extendedLocales);
 		
 		return SnomedRequests.prepareSearchRefSet()
-				.filterByTypes(getRefSetTypes(refSetTypes))
-				.setScroll(scrollKeepAlive)
-				.setScrollId(scrollId)
-				.setSearchAfter(searchAfter)
-				.setLimit(limit)
-				.sortBy(extractSortFields(sortKeys))
-				.build(repositoryId, branchPath)
+				.filterByTypes(getRefSetTypes(params.getRefSetTypes()))
+				.setLimit(params.getLimit())
+				.setScroll(params.getScrollKeepAlive())
+				.setScrollId(params.getScrollId())
+				.setSearchAfter(params.getSearchAfter())
+				.sortBy(sorts)
+				.build(repositoryId, branch)
 				.execute(getBus());
+	}
+	
+	@ApiOperation(
+		value="Retrieve Reference Sets from a branch", 
+		notes="Returns a list with all/filtered Reference Sets from a branch."
+				+ "<p>The following properties can be expanded:"
+				+ "<p>"
+				+ "&bull; members() &ndash; members currently available in the reference set<br>"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = SnomedReferenceSets.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+	})
+	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public @ResponseBody Promise<SnomedReferenceSets> searchByPost(
+			@ApiParam(value = "The branch path", required = true)
+			@PathVariable(value="path")
+			final String branch,
+
+			@RequestBody(required = false)
+			final SnomedReferenceSetRestSearch body,
+			
+			@ApiParam(value = "Accepted language tags, in order of preference")
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+		
+		return searchByGet(branch, body, acceptLanguage);
 	}
 	
 	private Collection<SnomedRefSetType> getRefSetTypes(String[] refSetTypes) {
