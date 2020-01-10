@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.BoostingQueryBuilder;
 import org.elasticsearch.index.query.DisMaxQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -336,9 +335,7 @@ public final class EsQueryBuilder {
 	private void visit(BoostPredicate boost) {
 		visit(boost.expression());
 		QueryBuilder qb = deque.pop();
-		if (qb instanceof BoostingQueryBuilder) {
-			((BoostingQueryBuilder) qb).boost(boost.boost());
-		}
+		qb.boost(boost.boost());
 		deque.push(qb);
 	}
 	
