@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,19 +176,22 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 
 	@Override
-	public void add(Object o) {
+	public String add(Object o) {
 		if (o instanceof CodeSystemEntry) {
 			final CodeSystemEntry cs = (CodeSystemEntry) o;
 			staging.stageNew(cs.getShortName(), cs);
 			resolvedObjectsById.put(createComponentKey(cs.getShortName(), cs.getClass()), cs);
+			return cs.getShortName();
 		} else if (o instanceof CodeSystemVersionEntry) { 
 			final CodeSystemVersionEntry cs = (CodeSystemVersionEntry) o;
 			staging.stageNew(cs.getVersionId(), cs);
 			resolvedObjectsById.put(createComponentKey(cs.getVersionId(), cs.getClass()), cs);
+			return cs.getVersionId();
 		} else if (o instanceof Revision) {
 			Revision rev = (Revision) o;
 			staging.stageNew(rev);
 			resolvedObjectsById.put(createComponentKey(rev.getId(), rev.getClass()), rev);
+			return rev.getId();
 		} else {
 			throw new UnsupportedOperationException("Cannot add object to this repository: " + o);
 		}
