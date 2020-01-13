@@ -453,6 +453,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression mapGroups(Collection<Integer> mapGroups) {
 			return matchAnyInt(Fields.MAP_GROUP, mapGroups);
 		}
+		
+		public static Expression mapPriority(Collection<Integer> mapPriorities) {
+			return matchAnyInt(Fields.MAP_PRIORITY, mapPriorities);
+		}
 
 		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
 			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes.stream().map(Short::intValue).collect(Collectors.toSet()));

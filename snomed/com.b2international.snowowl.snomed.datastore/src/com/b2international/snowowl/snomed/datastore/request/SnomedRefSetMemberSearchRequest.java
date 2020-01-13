@@ -47,6 +47,8 @@ import com.google.common.collect.Iterables;
  */
 final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry> {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * @since 4.5
 	 */
@@ -160,6 +162,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_GROUP)) {
 				queryBuilder.filter(mapGroups(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_PRIORITY)) {
+				queryBuilder.filter(mapPriority(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
 				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::valueIds);
