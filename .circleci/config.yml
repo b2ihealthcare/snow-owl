@@ -1,0 +1,33 @@
+version: 2
+workflows:
+  version: 2
+  flow:
+    jobs:
+      - deploy:
+          context: babylon
+#          filters:
+#            branches:
+#              only:
+#                - 7.x
+env: &env
+  working_directory: ~/project
+  resource_class: large
+  docker:
+    - image: docker:17.03.0-ce-git
+
+jobs:
+  deploy:
+    <<: *env
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build prerequisites
+          command: |
+            echo "$CIRCLE_SHA1" > .commit-keyId
+            docker --version
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
+            apk add --no-cache make=4.2.1-r0 openjdk8
+      - deploy:
+          name: Deploy
+          command: ./mvnw clean deploy

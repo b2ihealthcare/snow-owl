@@ -9,19 +9,22 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<!-- Nexus instance URL, example: http://example:8081/nexus -->
-				<nexus.url>url/to/local/nexus/instance</nexus.url>
-				<nexus.snapshots.url>${nexus.url}/content/repositories/snapshots</nexus.snapshots.url>
-				<nexus.releases.url>${nexus.url}/content/repositories/releases</nexus.releases.url>
+				<artifactory.url>${ARTIFACTORY_URL}</artifactory.url>
+				<artifactory.snapshots.url>${artifactory.url}/babylon-maven-snapshots</artifactory.snapshots.url>
+				<artifactory.releases.url>${artifactory.url}/babylon-maven-releases</artifactory.releases.url>
 			</properties>
 		</profile>
 	</profiles>
 	<servers>
-		<!-- Example deployment user and pass, replace with your deployment user and pass, see Nexus OSS guide for more information -->
 		<server>
-			<id>nexus_deployment</id>
-			<username>nexus_deployment_user</username>
-			<password>nexus_deployment_pass</password>
+			<id>babylon-snapshots</id>
+			<username>${env.ARTIFACTORY_USER}</username>
+			<password>${env.ARTIFACTORY_PWD}</password>
+		</server>
+		<server>
+			<id>babylon-releases</id>
+			<username>${env.ARTIFACTORY_USER}</username>
+			<password>${env.ARTIFACTORY_PWD}</password>
 		</server>
 	</servers>
 
