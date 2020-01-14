@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import java.util.List;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -61,6 +62,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 		.prettyPrint();
 	}
 	
+	@Ignore
 	@Test
 	public void conceptMapsTest() throws Exception {
 		
@@ -101,6 +103,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.body("target[0].equivalence", equalTo("equivalent"));
 	}
 	
+	@Ignore
 	@Test
 	public void getSimpleMapTypeConceptMapTest() {
 		
@@ -137,6 +140,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
+	@Ignore
 	@Test
 	public void getComplexMapTypeConceptMapTest() {
 		
@@ -174,6 +178,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
+	@Ignore
 	@Test
 	public void getExtendedMapTypeConceptMapTest() {
 		

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.extension.Component;
@@ -99,7 +100,8 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 					return SnomedRequests.prepareSearchRefSet()
 						.all()
 						.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-						.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
+						// TODO figure out how to expand members on a ConceptMap in a pageable fashion (there is no official API for it right now)
+//						.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
 						.setLocales(getLocales())
 						.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 						.build(repositoryId, csve.getPath())
@@ -125,7 +127,8 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.all()
 			.filterById(logicalId.getComponentId())
 			.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:" + Integer.MAX_VALUE +")")
+			// TODO figure out how to expand members on a ConceptMap in a pageable fashion (there is no official API for it right now)
+//			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:" + Integer.MAX_VALUE +")")
 			.setLocales(getLocales())
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 			.build(repositoryId,logicalId.getBranchPath())
@@ -399,7 +402,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		SnomedReferenceSetMembers members = snomedReferenceSet.getMembers();
 		
 		//no members, nothing to do further
-		if (members.isEmpty()) return groupBuilder.build();
+		if (CompareUtils.isEmpty(members)) return groupBuilder.build();
 		
 		//Potentially many targets for the same source
 		Multimap<String, SnomedReferenceSetMember> mappingMultimap = HashMultimap.create();

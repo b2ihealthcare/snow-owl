@@ -273,22 +273,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void groupMissingMandatoryFiledTest() {
-
-		exception.expect(ValidationException.class);
-
-		Group.builder()
-			.source("Source")
-			.sourceVersion("SourceVersion")
-			.target("Target")
-			.targetVersion("TargetVersion")
-			.unmapped(UnMapped.builder()
-				.mode("Mode")
-				.build())
-			.build();
-	}
-	
-	@Test
 	public void conceptMapTest() throws Exception {
 	
 		ConceptMap conceptMap = ConceptMap.builder("-1")

@@ -50,6 +50,7 @@ import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -161,10 +162,13 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody OperationOutcome handle(final Exception ex) {
-		LOG.error("Exception during processing of a request", ex);
-		
-		FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
-		return fhirException.toOperationOutcome();
+		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
+	        return null; // socket is closed, cannot return any response    
+	    } else {
+	    	LOG.trace("Exception during processing of a request", ex);
+	    	FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
+	    	return fhirException.toOperationOutcome();
+	    }
 	}
 	
 	@ExceptionHandler
@@ -183,7 +187,7 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody OperationOutcome handle(HttpMessageNotReadableException ex) {
-		LOG.error("Exception during processing of a JSON document", ex);
+		LOG.trace("Exception during processing of a JSON document", ex);
 		
 		FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_CANT_PARSE_CONTENT);
 		return fhirException.toOperationOutcome();
