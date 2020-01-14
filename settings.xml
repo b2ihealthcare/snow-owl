@@ -2,19 +2,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                       http://maven.apache.org/xsd/settings-1.0.0.xsd">
-	<profiles>
-		<profile>
-			<id>repositories</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<artifactory.url>${env.ARTIFACTORY_URL}</artifactory.url>
-				<artifactory.snapshots.url>${env.ARTIFACTORY_URL}/babylon-maven-snapshots</artifactory.snapshots.url>
-				<artifactory.releases.url>${env.ARTIFACTORY_URL}/babylon-maven-releases</artifactory.releases.url>
-			</properties>
-		</profile>
-	</profiles>
 	<servers>
 		<server>
 			<id>artifactory-snapshots</id>

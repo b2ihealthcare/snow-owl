@@ -68,7 +68,7 @@
     <repositories>
         <repository>
             <id>artifactory-releases</id>
-            <url>${artifactory.releases.url}</url>
+            <url>${env.ARTIFACTORY_URL}/babylon-maven-releases</url>
             <releases>
                 <enabled>true</enabled>
                 <updatePolicy>never</updatePolicy>
@@ -76,12 +76,11 @@
         </repository>
         <repository>
             <id>artifactory-snapshots</id>
-            <url>${artifactory.snapshots.url}</url>
+            <url>${env.ARTIFACTORY_URL}/babylon-maven-snapshots</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>never</updatePolicy>
             </snapshots>
-
         </repository>
         <repository>
             <id>protege-mvn-repo</id>
@@ -935,11 +934,11 @@
     <distributionManagement>
         <repository>
             <id>artifactory-releases</id>
-            <url>${artifactory.releases.url}</url>
+            <url>${env.ARTIFACTORY_URL}/babylon-maven-releases</url>
         </repository>
         <snapshotRepository>
             <id>artifactory-snapshots</id>
-            <url>${artifactory.snapshots.url}</url>
+            <url>${env.ARTIFACTORY_URL}/babylon-maven-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
