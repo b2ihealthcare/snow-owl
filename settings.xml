@@ -9,9 +9,9 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<artifactory.url>${ARTIFACTORY_URL}</artifactory.url>
-				<artifactory.snapshots.url>${artifactory.url}/babylon-maven-snapshots</artifactory.snapshots.url>
-				<artifactory.releases.url>${artifactory.url}/babylon-maven-releases</artifactory.releases.url>
+				<artifactory.url>${env.ARTIFACTORY_URL}</artifactory.url>
+				<artifactory.snapshots.url>${env.ARTIFACTORY_URL}/babylon-maven-snapshots</artifactory.snapshots.url>
+				<artifactory.releases.url>${env.ARTIFACTORY_URL}/babylon-maven-releases</artifactory.releases.url>
 			</properties>
 		</profile>
 	</profiles>
