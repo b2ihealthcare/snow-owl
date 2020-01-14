@@ -4,12 +4,12 @@
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
     <servers>
         <server>
-            <id>babylon-snapshots</id>
+            <id>artifactory-snapshots</id>
             <username>${env.ARTIFACTORY_USER}</username>
             <password>${env.ARTIFACTORY_PWD}</password>
         </server>
         <server>
-            <id>babylon-releases</id>
+            <id>artifactory-releases</id>
             <username>${env.ARTIFACTORY_USER}</username>
             <password>${env.ARTIFACTORY_PWD}</password>
         </server>
