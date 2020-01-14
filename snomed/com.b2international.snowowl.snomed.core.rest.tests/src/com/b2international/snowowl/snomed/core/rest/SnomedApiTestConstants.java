@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -70,8 +69,6 @@ public abstract class SnomedApiTestConstants {
 	public static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(60L);
 
 	public static final String EXTENSION_PATH = "MAIN/2016-07-31/SNOMEDCT-B2I";
-
-	public static final Joiner PATH_JOINER = Joiner.on('/');
 
 	public static final String OWL_AXIOM_1 = 
 			"SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:246075003 :410942007)) :8801005)";

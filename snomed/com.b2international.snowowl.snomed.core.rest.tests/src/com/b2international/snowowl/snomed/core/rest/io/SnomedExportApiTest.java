@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_ACCEPTABLE_MAP;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_PREFERRED_MAP;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
@@ -557,7 +556,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		IBranchPath taskBranch = BranchPathUtils.createPath(versionPath, "Fix01");
 		
 		// create fixer branch for version branch
-		createBranch(taskBranch).statusCode(201);
+		branching.createBranch(taskBranch).statusCode(201);
 		
 		// change an existing component
 		final String newEffectiveTime = "20170302";
@@ -618,7 +617,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		IBranchPath taskBranch = BranchPathUtils.createPath(versionPath, "Fix01");
 		
 		// create fixer branch for version branch
-		createBranch(taskBranch).statusCode(201);
+		branching.createBranch(taskBranch).statusCode(201);
 		
 		// change an existing component
 

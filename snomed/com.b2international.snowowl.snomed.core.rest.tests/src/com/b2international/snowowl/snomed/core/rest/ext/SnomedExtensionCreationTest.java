@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest.ext;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getVersion;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -73,7 +72,7 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 	@Test
 	public void createExtensionVersion02() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		String conceptId = createNewConcept(a);
 

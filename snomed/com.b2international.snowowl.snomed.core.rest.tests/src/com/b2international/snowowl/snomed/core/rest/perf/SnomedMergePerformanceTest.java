@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.perf;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranch;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
@@ -78,7 +77,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 	@Test
 	public void testPerf() throws Exception {
 		IBranchPath branch = BranchPathUtils.createPath(branchPath, "merge-test");
-		createBranch(branch).statusCode(201);
+		branching.createBranch(branch).statusCode(201);
 		BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
 		final int numberOfConceptsToWorkWith = 10_000;
 		for (int i = 0; i < numberOfConceptsToWorkWith; i++) {

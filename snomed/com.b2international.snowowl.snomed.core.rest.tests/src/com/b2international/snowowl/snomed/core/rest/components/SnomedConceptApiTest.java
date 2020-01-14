@@ -20,8 +20,6 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_ACCEPTABLE_MAP;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranchRecursively;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.deleteBranch;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
@@ -182,7 +180,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptOnDeletedBranch() {
-		deleteBranch(branchPath);
+		branching.deleteBranch(branchPath);
 
 		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
 				.put("commitComment", "Created new concept on deleted branch")
@@ -531,7 +529,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranchRecursively(b);
+		branching.createBranchRecursively(b);
 
 		// New component on nested branch resets the container's version to 1 again
 		createNewConcept(b, parentId);
