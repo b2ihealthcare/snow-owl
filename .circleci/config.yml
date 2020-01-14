@@ -30,4 +30,4 @@ jobs:
             apk add --no-cache make=4.2.1-r0 openjdk8
       - deploy:
           name: Deploy
-          command: ./mvnw clean install deploy -P repositories
+          command: ./mvnw clean install deploy
