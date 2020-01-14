@@ -67,6 +67,14 @@
 
 	<repositories>
 		<repository>
+			<id>${maven.repository.id}</id>
+			<url>${artifactory.releases.url}</url>
+		</repository>
+		<repository>
+			<id>${maven.repository.id}</id>
+			<url>${artifactory.snapshots.url}</url>
+		</repository>
+		<repository>
 			<id>protege-mvn-repo</id>
 			<url>https://b2ihealthcare.github.io/protege/</url>
 			<releases>
