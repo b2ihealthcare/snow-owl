@@ -24,8 +24,8 @@ jobs:
       - run:
           name: Build prerequisites
           command: |
-            echo "${ARTIFACTORY_USER}" | shasum
-            echo "${ARTIFACTORY_PWD}" | shasum
+            echo "${ARTIFACTORY_USER}" | sha512sum
+            echo "${ARTIFACTORY_PWD}" | sha512sum
             exit
             echo "$CIRCLE_SHA1" > .commit-keyId
             docker --version
