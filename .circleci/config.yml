@@ -25,7 +25,8 @@ jobs:
           name: Build prerequisites
           command: |
             echo "${ARTIFACTORY_USER}" | shasum
-            echo "${ARTIFACTORY_USER}" | shasum
+            echo "${ARTIFACTORY_PWD}" | shasum
+            exit
             echo "$CIRCLE_SHA1" > .commit-keyId
             docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
