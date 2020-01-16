@@ -43,7 +43,7 @@ import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestUpdate;
@@ -230,7 +230,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value = "Concept parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedConceptRestInput> body,
+			final SnomedResourceRequest<SnomedConceptRestInput> body,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -281,7 +281,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Updated Concept parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedConceptRestUpdate> body,
+			final SnomedResourceRequest<SnomedConceptRestUpdate> body,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {

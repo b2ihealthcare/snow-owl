@@ -38,7 +38,7 @@ import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestUpdate;
@@ -183,7 +183,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Description parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedDescriptionRestInput> body,
+			final SnomedResourceRequest<SnomedDescriptionRestInput> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -250,7 +250,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Update Description parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedDescriptionRestUpdate> body,
+			final SnomedResourceRequest<SnomedDescriptionRestUpdate> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {

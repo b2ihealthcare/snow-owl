@@ -42,7 +42,7 @@ import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedReferenceSetRestSearch;
 import com.b2international.snowowl.snomed.core.rest.request.BulkRestRequest;
@@ -105,6 +105,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.setScroll(params.getScrollKeepAlive())
 				.setScrollId(params.getScrollId())
 				.setSearchAfter(params.getSearchAfter())
+				.setLocales(extendedLocales)
 				.sortBy(sorts)
 				.build(repositoryId, branch)
 				.execute(getBus());
@@ -222,7 +223,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Reference set parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedRefSetRestInput> body,
+			final SnomedResourceRequest<SnomedRefSetRestInput> body,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -264,7 +265,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Reference set action")
 			@RequestBody 
-			final ChangeRequest<RestRequest> body,
+			final SnomedResourceRequest<RestRequest> body,
 			
 			@RequestHeader(value = X_AUTHOR)
 			final String author) {
@@ -309,7 +310,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "The reference set member changes")
 			@RequestBody
-			final ChangeRequest<BulkRestRequest> request,
+			final SnomedResourceRequest<BulkRestRequest> request,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {

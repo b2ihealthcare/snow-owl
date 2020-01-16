@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedMemberRestUpdate;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRefSetMemberRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedReferenceSetMemberRestSearch;
@@ -190,7 +190,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			
 			@ApiParam(value = "Reference set member parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedRefSetMemberRestInput> body,
+			final SnomedResourceRequest<SnomedRefSetMemberRestInput> body,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -272,7 +272,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			
 			@ApiParam(value = "Updated Reference Set parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedMemberRestUpdate> body,
+			final SnomedResourceRequest<SnomedMemberRestUpdate> body,
 			
 			@ApiParam(value = "Force update flag")
 			@RequestParam(defaultValue="false", required=false)
@@ -321,7 +321,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			
 			@ApiParam(value = "Reference set member action")
 			@RequestBody 
-			final ChangeRequest<RestRequest> body,
+			final SnomedResourceRequest<RestRequest> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {

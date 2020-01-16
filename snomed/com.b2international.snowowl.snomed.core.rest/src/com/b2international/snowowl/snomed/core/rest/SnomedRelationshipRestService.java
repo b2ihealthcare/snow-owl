@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRestUpdate;
@@ -150,7 +150,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Relationship parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedRelationshipRestInput> body,
+			final SnomedResourceRequest<SnomedRelationshipRestInput> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -212,7 +212,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Update Relationship parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedRelationshipRestUpdate> body,
+			final SnomedResourceRequest<SnomedRelationshipRestUpdate> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
