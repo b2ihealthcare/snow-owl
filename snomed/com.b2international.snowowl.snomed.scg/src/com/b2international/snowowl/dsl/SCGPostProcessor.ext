@@ -1,8 +1,0 @@
-/**
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- */
-import ecore;
-
-// Simple Postprocessor class that delegates to a public static Java method.
-process(xtext::GeneratedMetamodel model):
-JAVA com.b2international.snowowl.dsl.SCGPostProcessor.process(org.eclipse.xtext.GeneratedMetamodel);
