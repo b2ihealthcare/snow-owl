@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.emf.ecore.generated_package">
+      <package
+            class="com.b2international.snowowl.snomed.scg.scg.ScgPackage"
+            genModel="model/generated/Scg.genmodel"
+            uri="http://www.b2international.com/snowowl/snomed/Scg">
+      </package>
+   </extension>
+
+</plugin>

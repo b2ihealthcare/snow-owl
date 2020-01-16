@@ -1,0 +1,78 @@
+module com.b2international.snowowl.snomed.scg.GenerateScg
+
+import org.eclipse.xtext.xtext.generator.*
+import org.eclipse.xtext.xtext.generator.model.project.*
+
+var rootPath = ".."
+var header = "/*
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */"
+
+Workflow {
+	
+	component = XtextGenerator {
+		configuration = {
+			project = StandardProjectConfig {
+				baseName = "com.b2international.snowowl.snomed.scg"
+				rootPath = rootPath
+				 genericIde = {
+                    enabled = true
+                    // Set relative path of IDE project here 
+                    root = "../../../snow-owl-ext/snomed-ui/com.b2international.snowowl.snomed.scg.ui"
+                    name = "com.b2international.snowowl.snomed.scg.ui"
+                }
+                runtimeTest = {
+                    enabled = true
+                }
+                eclipsePlugin = {
+                    enabled = true
+                    // Set relative path of Eclipse plugin project here
+                    root = "../../../snow-owl-ext/snomed-ui/com.b2international.snowowl.snomed.scg.ui"
+                }
+                eclipsePluginTest = {
+                    enabled = false
+                }
+                createEclipseMetaData = false
+			}
+			code = {
+				encoding = "UTF-8"
+				lineDelimiter = "\n"
+				fileHeader = header
+			}
+		}
+		language = StandardLanguage {
+			name = "com.b2international.snowowl.snomed.scg.Scg"
+			fileExtensions = "scg"
+
+			serializer = {
+				generateStub = false
+			}
+			
+			parserGenerator = org.eclipse.xtext.xtext.generator.parser.antlr.XtextAntlrGeneratorFragment2 auto-inject {
+              options = {
+                  backtrack = true
+                  ignoreCase = true
+                  classSplitting = true
+              }
+            }
+            
+			validator = {
+				// composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
+				// Generates checks for @Deprecated grammar annotations, an IssueProvider and a corresponding PropertyPage
+				// generateDeprecationValidation = true
+			}
+		}
+	}
+}

@@ -1,0 +1,129 @@
+/*
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+grammar com.b2international.snowowl.snomed.scg.Scg hidden(WS, ML_COMMENT, SL_COMMENT)
+
+generate scg "http://www.b2international.com/snowowl/snomed/scg/Scg"
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+
+Expression:
+	{Expression} ((primitive?=SUBTYPE_OF | EQUIVALENT_TO)? expression=SubExpression)?;
+
+SubExpression:
+	focusConcepts+=ConceptReference (PLUS focusConcepts+=ConceptReference)* (COLON refinement=Refinement)?;
+
+Refinement:
+	(attributes+=Attribute (COMMA attributes+=Attribute)* | groups+=AttributeGroup) (COMMA? groups+=AttributeGroup)*;
+
+AttributeGroup:
+	CURLY_OPEN attributes+=Attribute (COMMA attributes+=Attribute)* CURLY_CLOSE;
+
+Attribute:
+	name=ConceptReference EQUAL_SIGN value=AttributeValue;
+
+AttributeValue:
+	ConceptReference | OPENING_ROUND_BRACKET SubExpression CLOSING_ROUND_BRACKET | StringValue | IntegerValue |
+	DecimalValue;
+
+StringValue:
+	value=STRING;
+
+IntegerValue:
+	HASH value=Integer;
+
+DecimalValue:
+	HASH value=Decimal;
+
+ConceptReference:
+	id=SnomedIdentifier (term=TERM_STRING)?;
+
+terminal EQUIVALENT_TO:
+	'===';
+
+terminal SUBTYPE_OF:
+	'<<<';
+
+terminal TERM_STRING:
+	"|" (!("|"))* "|";
+
+terminal ZERO:
+	'0';
+
+terminal DIGIT_NONZERO:
+	'1'..'9';
+
+terminal CURLY_OPEN:
+	'{';
+
+terminal CURLY_CLOSE:
+	'}';
+
+terminal COMMA:
+	',';
+
+terminal EQUAL_SIGN:
+	'=';
+
+terminal COLON:
+	':';
+
+terminal PLUS:
+	'+';
+
+terminal DASH:
+	'-';
+
+terminal DOT:
+	'.';
+
+terminal QUOTATION_MARK:
+	'"';
+
+terminal OPENING_ROUND_BRACKET:
+	'(';
+
+terminal CLOSING_ROUND_BRACKET:
+	')';
+
+terminal HASH:
+	'#';
+	
+terminal WS:
+	(' ' | '\t' | '\n' | '\r');
+
+terminal ML_COMMENT:
+	'/*'->'*/';
+
+terminal SL_COMMENT:
+	'//' !('\n' | '\r')* ('\r'? '\n')?;
+
+terminal STRING:
+	'"' ('\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\' | '"'))* '"' |
+	"'" ('\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\' | "'"))* "'"; 
+
+SnomedIdentifier hidden():
+	DIGIT_NONZERO (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO)+;
+
+NonNegativeInteger returns ecore::EInt hidden():
+	ZERO | DIGIT_NONZERO (DIGIT_NONZERO | ZERO)*;
+
+Integer returns ecore::EInt hidden():
+	(PLUS | DASH)? NonNegativeInteger;
+
+Decimal returns ecore::EBigDecimal hidden():
+	(PLUS | DASH)? NonNegativeDecimal;
+
+NonNegativeDecimal returns ecore::EBigDecimal hidden():
+	NonNegativeInteger DOT (DIGIT_NONZERO | ZERO)*;
