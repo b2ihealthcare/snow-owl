@@ -42,61 +42,60 @@ public abstract class ResourceRestSearch {
 	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
 	private int limit = 50;
 
-	public Set<String> getId() {
+	public final Set<String> getId() {
 		return id;
 	}
 
-	public void setId(Set<String> id) {
+	public final void setId(Set<String> id) {
 		this.id = id;
 	}
 	
-	public String getExpand() {
+	public final String getExpand() {
 		return expand;
 	}
 
-	public void setExpand(String expand) {
+	public final void setExpand(String expand) {
 		this.expand = expand;
 	}
 
-	public String getScrollKeepAlive() {
+	public final String getScrollKeepAlive() {
 		return scrollKeepAlive;
 	}
 
-	public void setScrollKeepAlive(String scrollKeepAlive) {
+	public final void setScrollKeepAlive(String scrollKeepAlive) {
 		this.scrollKeepAlive = scrollKeepAlive;
 	}
 
-	public String getScrollId() {
+	public final String getScrollId() {
 		return scrollId;
 	}
 
-	public void setScrollId(String scrollId) {
+	public final void setScrollId(String scrollId) {
 		this.scrollId = scrollId;
 	}
 
-	public String getSearchAfter() {
+	public final String getSearchAfter() {
 		return searchAfter;
 	}
 
-	public void setSearchAfter(String searchAfter) {
+	public final void setSearchAfter(String searchAfter) {
 		this.searchAfter = searchAfter;
 	}
 
-	public List<String> getSort() {
+	public final List<String> getSort() {
 		return sort;
 	}
 
-	public void setSort(List<String> sort) {
+	public final void setSort(List<String> sort) {
 		this.sort = sort;
 	}
 
-	public int getLimit() {
+	public final int getLimit() {
 		return limit;
 	}
 
-	public void setLimit(int limit) {
+	public final void setLimit(int limit) {
 		this.limit = limit;
 	}
 
-	
 }

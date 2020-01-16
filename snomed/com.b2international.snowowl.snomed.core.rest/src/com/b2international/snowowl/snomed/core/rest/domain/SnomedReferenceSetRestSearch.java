@@ -22,7 +22,7 @@ import io.swagger.annotations.ApiParam;
 /**
  * @since 7.3
  */
-public class SnomedReferenceSetRestSearch extends ResourceRestSearch {
+public final class SnomedReferenceSetRestSearch extends ResourceRestSearch {
 
 	@ApiParam(value = "The reference set type to match")
 	private String[] refSetTypes;
