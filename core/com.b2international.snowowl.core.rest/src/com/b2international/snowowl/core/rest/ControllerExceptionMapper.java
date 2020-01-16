@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.commons.exceptions.*;
+import com.b2international.commons.platform.PlatformUtil;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Throwables;
 
@@ -50,7 +51,11 @@ public class ControllerExceptionMapper {
 		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
-	    	LOG.trace("Exception during request processing", ex);
+	    	if (PlatformUtil.isDevVersion()) {
+	    		LOG.error("Exception during request processing", ex);
+	    	} else {
+	    		LOG.trace("Exception during request processing", ex);
+	    	}
 	    	return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	    }
 	}
@@ -72,7 +77,11 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
 	public @ResponseBody RestApiError handle(RequestTimeoutException ex) {
-		LOG.trace("Timeout during request processing", ex);
+		if (PlatformUtil.isDevVersion()) {
+    		LOG.error("Timeout during request processing", ex);
+    	} else {
+    		LOG.trace("Timeout during request processing", ex);
+    	}
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
 	}
 	
