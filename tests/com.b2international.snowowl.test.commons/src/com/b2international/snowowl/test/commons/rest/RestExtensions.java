@@ -203,5 +203,11 @@ public class RestExtensions {
 	public static Response putJson(String api, Map<String, ?> json, String...segments) {
 		return withJson(givenAuthenticatedRequest(api), json).put(asPath(Arrays.asList(segments)));
 	}
+
+	public static String assertCreated(ValidatableResponse response) {
+		return lastPathSegment(response.statusCode(201)
+				.extract()
+				.header("Location"));
+	}
 	
 }
