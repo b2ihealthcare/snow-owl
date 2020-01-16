@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
@@ -42,9 +40,9 @@ import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedReferenceSetRestSearch;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.request.BulkRestRequest;
 import com.b2international.snowowl.snomed.core.rest.request.RefSetMemberRequestResolver;
 import com.b2international.snowowl.snomed.core.rest.request.RefSetRequestResolver;
@@ -238,7 +236,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
 		
-		return ResponseEntity.created(getRefSetLocationURI(branchPath, createdRefSetId)).build();
+		return ResponseEntity.created(getResourceLocationURI(branchPath, createdRefSetId)).build();
 	}
 	
 	@ApiOperation(
@@ -372,7 +370,4 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.getSync();
 	}
 	
-	private URI getRefSetLocationURI(String branchPath, String refSetId) {
-		return MvcUriComponentsBuilder.fromController(SnomedReferenceSetRestService.class).pathSegment(branchPath, refSetId).build().toUri();
-	}
 }

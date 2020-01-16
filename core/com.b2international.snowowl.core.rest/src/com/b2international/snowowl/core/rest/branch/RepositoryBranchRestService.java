@@ -21,8 +21,15 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.branch.Branch;
@@ -65,7 +72,7 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public Promise<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRestRequest request) {
 		ApiValidation.checkInput(request);
-		final URI location = getBranchLocationHeader(request.path());
+		final URI location = getResourceLocationURI(request.path());
 		return RepositoryRequests
 					.branching()
 					.prepareCreate()
@@ -206,10 +213,6 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 					.build(repositoryId)
 					.execute(getBus())
 					.then(success -> ResponseEntity.noContent().build());
-	}
-	
-	private URI getBranchLocationHeader(String branchPath) {
-		return MvcUriComponentsBuilder.fromController(RepositoryBranchRestService.class).pathSegment(branchPath).build().toUri();
 	}
 	
 }

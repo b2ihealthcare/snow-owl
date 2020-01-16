@@ -27,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -172,7 +171,7 @@ public class ValidationRestService extends AbstractRestService {
 			.getSync();
 		final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
 		
-		return ResponseEntity.created(MvcUriComponentsBuilder.fromController(ValidationRestService.class).pathSegment(encodedId).build().toUri()).build();
+		return ResponseEntity.created(getResourceLocationURI(encodedId)).build();
 	}
 	
 	@ApiOperation(

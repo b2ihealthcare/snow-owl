@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -34,10 +32,10 @@ import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedMemberRestUpdate;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRefSetMemberRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedReferenceSetMemberRestSearch;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.core.rest.request.RefSetMemberRequestResolver;
 import com.b2international.snowowl.snomed.core.rest.request.RequestResolver;
 import com.b2international.snowowl.snomed.core.rest.request.RestRequest;
@@ -209,7 +207,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
 		
-		return ResponseEntity.created(getRefSetMemberLocationURI(branchPath, createdRefSetMemberId)).build();
+		return ResponseEntity.created(getResourceLocationURI(branchPath, createdRefSetMemberId)).build();
 	}
 	
 	@ApiOperation(
@@ -344,7 +342,4 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.getSync();
 	}
 	
-	private URI getRefSetMemberLocationURI(String branchPath, String memberId) {
-		return MvcUriComponentsBuilder.fromController(SnomedReferenceSetMemberRestService.class).pathSegment(branchPath, memberId).build().toUri();
-	}
 }

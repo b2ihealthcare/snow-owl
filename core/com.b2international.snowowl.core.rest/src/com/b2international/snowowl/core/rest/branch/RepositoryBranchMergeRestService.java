@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.rest.branch;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -30,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -105,8 +103,7 @@ public abstract class RepositoryBranchMergeRestService extends AbstractRestServi
 			.buildAsync()
 			.execute(getBus());
 		
-		final URI linkUri = MvcUriComponentsBuilder.fromController(RepositoryBranchMergeRestService.class).pathSegment(jobId).build().toUri();
-		return ResponseEntity.accepted().location(linkUri).build();
+		return ResponseEntity.accepted().location(getResourceLocationURI(jobId)).build();
 	}
 	
 	@ApiOperation(
