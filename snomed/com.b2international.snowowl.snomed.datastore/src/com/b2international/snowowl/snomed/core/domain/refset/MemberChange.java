@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 public interface MemberChange extends Comparable<MemberChange>, Serializable {
 
 	public enum MemberChangeKind {
-		ADD, REMOVE
+		ADD, REMOVE, CHANGE
 	}
 	
 	MemberChangeKind getChangeKind();
