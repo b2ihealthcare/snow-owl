@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1247,7 +1247,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//RefinedExpressionConstraint ExpressionConstraint:
-	//	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
+	//	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=EclRefinement)?;
 	public EclGrammarAccess.RefinedExpressionConstraintElements getRefinedExpressionConstraintAccess() {
 		return gaEcl.getRefinedExpressionConstraintAccess();
 	}
@@ -1267,7 +1267,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//SubExpressionConstraint ExpressionConstraint:
-	//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
+	//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | EclFocusConcept;
 	public EclGrammarAccess.SubExpressionConstraintElements getSubExpressionConstraintAccess() {
 		return gaEcl.getSubExpressionConstraintAccess();
 	}
@@ -1276,18 +1276,18 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getSubExpressionConstraintAccess().getRule();
 	}
 	
-	//FocusConcept ExpressionConstraint:
-	//	MemberOf | ConceptReference | Any | NestedExpression;
-	public EclGrammarAccess.FocusConceptElements getFocusConceptAccess() {
-		return gaEcl.getFocusConceptAccess();
+	//EclFocusConcept ExpressionConstraint:
+	//	MemberOf | EclConceptReference | Any | NestedExpression;
+	public EclGrammarAccess.EclFocusConceptElements getEclFocusConceptAccess() {
+		return gaEcl.getEclFocusConceptAccess();
 	}
 	
-	public ParserRule getFocusConceptRule() {
-		return getFocusConceptAccess().getRule();
+	public ParserRule getEclFocusConceptRule() {
+		return getEclFocusConceptAccess().getRule();
 	}
 	
 	//ChildOf:
-	//	LT_EM constraint=FocusConcept;
+	//	LT_EM constraint=EclFocusConcept;
 	public EclGrammarAccess.ChildOfElements getChildOfAccess() {
 		return gaEcl.getChildOfAccess();
 	}
@@ -1297,7 +1297,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//DescendantOf:
-	//	LT constraint=FocusConcept;
+	//	LT constraint=EclFocusConcept;
 	public EclGrammarAccess.DescendantOfElements getDescendantOfAccess() {
 		return gaEcl.getDescendantOfAccess();
 	}
@@ -1307,7 +1307,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//DescendantOrSelfOf:
-	//	DBL_LT constraint=FocusConcept;
+	//	DBL_LT constraint=EclFocusConcept;
 	public EclGrammarAccess.DescendantOrSelfOfElements getDescendantOrSelfOfAccess() {
 		return gaEcl.getDescendantOrSelfOfAccess();
 	}
@@ -1317,7 +1317,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//ParentOf:
-	//	GT_EM constraint=FocusConcept;
+	//	GT_EM constraint=EclFocusConcept;
 	public EclGrammarAccess.ParentOfElements getParentOfAccess() {
 		return gaEcl.getParentOfAccess();
 	}
@@ -1327,7 +1327,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AncestorOf:
-	//	GT constraint=FocusConcept;
+	//	GT constraint=EclFocusConcept;
 	public EclGrammarAccess.AncestorOfElements getAncestorOfAccess() {
 		return gaEcl.getAncestorOfAccess();
 	}
@@ -1337,7 +1337,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AncestorOrSelfOf:
-	//	DBL_GT constraint=FocusConcept;
+	//	DBL_GT constraint=EclFocusConcept;
 	public EclGrammarAccess.AncestorOrSelfOfElements getAncestorOrSelfOfAccess() {
 		return gaEcl.getAncestorOrSelfOfAccess();
 	}
@@ -1347,7 +1347,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//MemberOf:
-	//	CARET constraint=(ConceptReference | Any | NestedExpression);
+	//	CARET constraint=(EclConceptReference | Any | NestedExpression);
 	public EclGrammarAccess.MemberOfElements getMemberOfAccess() {
 		return gaEcl.getMemberOfAccess();
 	}
@@ -1356,14 +1356,14 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getMemberOfAccess().getRule();
 	}
 	
-	//ConceptReference:
+	//EclConceptReference:
 	//	id=SnomedIdentifier term=TERM_STRING?;
-	public EclGrammarAccess.ConceptReferenceElements getConceptReferenceAccess() {
-		return gaEcl.getConceptReferenceAccess();
+	public EclGrammarAccess.EclConceptReferenceElements getEclConceptReferenceAccess() {
+		return gaEcl.getEclConceptReferenceAccess();
 	}
 	
-	public ParserRule getConceptReferenceRule() {
-		return getConceptReferenceAccess().getRule();
+	public ParserRule getEclConceptReferenceRule() {
+		return getEclConceptReferenceAccess().getRule();
 	}
 	
 	//Any:
@@ -1376,17 +1376,17 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getAnyAccess().getRule();
 	}
 	
-	//Refinement:
+	//EclRefinement:
 	//	OrRefinement;
-	public EclGrammarAccess.RefinementElements getRefinementAccess() {
-		return gaEcl.getRefinementAccess();
+	public EclGrammarAccess.EclRefinementElements getEclRefinementAccess() {
+		return gaEcl.getEclRefinementAccess();
 	}
 	
-	public ParserRule getRefinementRule() {
-		return getRefinementAccess().getRule();
+	public ParserRule getEclRefinementRule() {
+		return getEclRefinementAccess().getRule();
 	}
 	
-	//OrRefinement Refinement:
+	//OrRefinement EclRefinement:
 	//	AndRefinement -> ({OrRefinement.left=current} 'OR' right=AndRefinement)*;
 	public EclGrammarAccess.OrRefinementElements getOrRefinementAccess() {
 		return gaEcl.getOrRefinementAccess();
@@ -1396,7 +1396,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getOrRefinementAccess().getRule();
 	}
 	
-	//AndRefinement Refinement:
+	//AndRefinement EclRefinement:
 	//	SubRefinement -> ({AndRefinement.left=current} ('AND' | ',') right=SubRefinement)*;
 	public EclGrammarAccess.AndRefinementElements getAndRefinementAccess() {
 		return gaEcl.getAndRefinementAccess();
@@ -1406,8 +1406,8 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getAndRefinementAccess().getRule();
 	}
 	
-	//SubRefinement Refinement:
-	//	AttributeConstraint | AttributeGroup | NestedRefinement;
+	//SubRefinement EclRefinement:
+	//	AttributeConstraint | EclAttributeGroup | NestedRefinement;
 	public EclGrammarAccess.SubRefinementElements getSubRefinementAccess() {
 		return gaEcl.getSubRefinementAccess();
 	}
@@ -1417,7 +1417,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//NestedRefinement:
-	//	ROUND_OPEN nested=Refinement ROUND_CLOSE;
+	//	ROUND_OPEN nested=EclRefinement ROUND_CLOSE;
 	public EclGrammarAccess.NestedRefinementElements getNestedRefinementAccess() {
 		return gaEcl.getNestedRefinementAccess();
 	}
@@ -1426,27 +1426,27 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getNestedRefinementAccess().getRule();
 	}
 	
-	//AttributeGroup:
-	//	cardinality=Cardinality? CURLY_OPEN refinement=AttributeSet CURLY_CLOSE;
-	public EclGrammarAccess.AttributeGroupElements getAttributeGroupAccess() {
-		return gaEcl.getAttributeGroupAccess();
+	//EclAttributeGroup:
+	//	cardinality=Cardinality? CURLY_OPEN refinement=EclAttributeSet CURLY_CLOSE;
+	public EclGrammarAccess.EclAttributeGroupElements getEclAttributeGroupAccess() {
+		return gaEcl.getEclAttributeGroupAccess();
 	}
 	
-	public ParserRule getAttributeGroupRule() {
-		return getAttributeGroupAccess().getRule();
+	public ParserRule getEclAttributeGroupRule() {
+		return getEclAttributeGroupAccess().getRule();
 	}
 	
-	//AttributeSet Refinement:
+	//EclAttributeSet EclRefinement:
 	//	OrAttributeSet;
-	public EclGrammarAccess.AttributeSetElements getAttributeSetAccess() {
-		return gaEcl.getAttributeSetAccess();
+	public EclGrammarAccess.EclAttributeSetElements getEclAttributeSetAccess() {
+		return gaEcl.getEclAttributeSetAccess();
 	}
 	
-	public ParserRule getAttributeSetRule() {
-		return getAttributeSetAccess().getRule();
+	public ParserRule getEclAttributeSetRule() {
+		return getEclAttributeSetAccess().getRule();
 	}
 	
-	//OrAttributeSet Refinement:
+	//OrAttributeSet EclRefinement:
 	//	AndAttributeSet ({OrRefinement.left=current} 'OR' right=AndAttributeSet)*;
 	public EclGrammarAccess.OrAttributeSetElements getOrAttributeSetAccess() {
 		return gaEcl.getOrAttributeSetAccess();
@@ -1456,7 +1456,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getOrAttributeSetAccess().getRule();
 	}
 	
-	//AndAttributeSet Refinement:
+	//AndAttributeSet EclRefinement:
 	//	SubAttributeSet ({AndRefinement.left=current} ('AND' | ',') right=SubAttributeSet)*;
 	public EclGrammarAccess.AndAttributeSetElements getAndAttributeSetAccess() {
 		return gaEcl.getAndAttributeSetAccess();
@@ -1466,7 +1466,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getAndAttributeSetAccess().getRule();
 	}
 	
-	//SubAttributeSet Refinement:
+	//SubAttributeSet EclRefinement:
 	//	AttributeConstraint | NestedAttributeSet;
 	public EclGrammarAccess.SubAttributeSetElements getSubAttributeSetAccess() {
 		return gaEcl.getSubAttributeSetAccess();
@@ -1477,7 +1477,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//NestedAttributeSet NestedRefinement:
-	//	ROUND_OPEN nested=AttributeSet ROUND_CLOSE;
+	//	ROUND_OPEN nested=EclAttributeSet ROUND_CLOSE;
 	public EclGrammarAccess.NestedAttributeSetElements getNestedAttributeSetAccess() {
 		return gaEcl.getNestedAttributeSetAccess();
 	}
@@ -1901,12 +1901,6 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	//	'^';
 	public TerminalRule getCARETRule() {
 		return gaEcl.getCARETRule();
-	}
-	
-	//terminal NOT:
-	//	'!';
-	public TerminalRule getNOTRule() {
-		return gaEcl.getNOTRule();
 	}
 	
 	//terminal DOT:

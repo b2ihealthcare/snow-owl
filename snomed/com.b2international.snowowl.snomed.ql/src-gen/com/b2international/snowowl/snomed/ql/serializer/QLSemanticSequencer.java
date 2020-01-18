@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,12 @@ import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
-import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
@@ -38,6 +36,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup;
+import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
@@ -113,7 +113,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				sequence_AndExpressionConstraint(context, (AndExpressionConstraint) semanticObject); 
 				return; 
 			case EclPackage.AND_REFINEMENT:
-				if (rule == grammarAccess.getAttributeSetRule()
+				if (rule == grammarAccess.getEclAttributeSetRule()
 						|| rule == grammarAccess.getOrAttributeSetRule()
 						|| action == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0()
 						|| rule == grammarAccess.getAndAttributeSetRule()
@@ -121,7 +121,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 					sequence_AndAttributeSet(context, (AndRefinement) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getRefinementRule()
+				else if (rule == grammarAccess.getEclRefinementRule()
 						|| rule == grammarAccess.getOrRefinementRule()
 						|| action == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0()
 						|| rule == grammarAccess.getAndRefinementRule()
@@ -135,9 +135,6 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case EclPackage.ATTRIBUTE_CONSTRAINT:
 				sequence_AttributeConstraint(context, (AttributeConstraint) semanticObject); 
-				return; 
-			case EclPackage.ATTRIBUTE_GROUP:
-				sequence_AttributeGroup(context, (AttributeGroup) semanticObject); 
 				return; 
 			case EclPackage.ATTRIBUTE_VALUE_EQUALS:
 				sequence_AttributeValueEquals(context, (AttributeValueEquals) semanticObject); 
@@ -156,9 +153,6 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case EclPackage.CHILD_OF:
 				sequence_ChildOf(context, (ChildOf) semanticObject); 
-				return; 
-			case EclPackage.CONCEPT_REFERENCE:
-				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
 				return; 
 			case EclPackage.DECIMAL_VALUE_EQUALS:
 				sequence_DecimalValueEquals(context, (DecimalValueEquals) semanticObject); 
@@ -186,6 +180,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case EclPackage.DOTTED_EXPRESSION_CONSTRAINT:
 				sequence_DottedExpressionConstraint(context, (DottedExpressionConstraint) semanticObject); 
+				return; 
+			case EclPackage.ECL_ATTRIBUTE_GROUP:
+				sequence_EclAttributeGroup(context, (EclAttributeGroup) semanticObject); 
+				return; 
+			case EclPackage.ECL_CONCEPT_REFERENCE:
+				sequence_EclConceptReference(context, (EclConceptReference) semanticObject); 
 				return; 
 			case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT:
 				sequence_ExclusionExpressionConstraint(context, (ExclusionExpressionConstraint) semanticObject); 
@@ -215,7 +215,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				sequence_NestedExpression(context, (NestedExpression) semanticObject); 
 				return; 
 			case EclPackage.NESTED_REFINEMENT:
-				if (rule == grammarAccess.getAttributeSetRule()
+				if (rule == grammarAccess.getEclAttributeSetRule()
 						|| rule == grammarAccess.getOrAttributeSetRule()
 						|| action == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0()
 						|| rule == grammarAccess.getAndAttributeSetRule()
@@ -225,7 +225,7 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 					sequence_NestedAttributeSet(context, (NestedRefinement) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getRefinementRule()
+				else if (rule == grammarAccess.getEclRefinementRule()
 						|| rule == grammarAccess.getOrRefinementRule()
 						|| action == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0()
 						|| rule == grammarAccess.getAndRefinementRule()
@@ -240,13 +240,13 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				sequence_OrExpressionConstraint(context, (OrExpressionConstraint) semanticObject); 
 				return; 
 			case EclPackage.OR_REFINEMENT:
-				if (rule == grammarAccess.getAttributeSetRule()
+				if (rule == grammarAccess.getEclAttributeSetRule()
 						|| rule == grammarAccess.getOrAttributeSetRule()
 						|| action == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0()) {
 					sequence_OrAttributeSet(context, (OrRefinement) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getRefinementRule()
+				else if (rule == grammarAccess.getEclRefinementRule()
 						|| rule == grammarAccess.getOrRefinementRule()
 						|| action == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0()) {
 					sequence_OrRefinement(context, (OrRefinement) semanticObject); 

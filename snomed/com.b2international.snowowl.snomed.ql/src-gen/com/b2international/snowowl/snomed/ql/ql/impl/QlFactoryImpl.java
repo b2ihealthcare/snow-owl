@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,6 +149,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Query createQuery()
   {
     QueryImpl query = new QueryImpl();
@@ -160,6 +161,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public QueryConstraint createQueryConstraint()
   {
     QueryConstraintImpl queryConstraint = new QueryConstraintImpl();
@@ -171,6 +173,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public SubQuery createSubQuery()
   {
     SubQueryImpl subQuery = new SubQueryImpl();
@@ -182,6 +185,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DomainQuery createDomainQuery()
   {
     DomainQueryImpl domainQuery = new DomainQueryImpl();
@@ -193,6 +197,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public NestedQuery createNestedQuery()
   {
     NestedQueryImpl nestedQuery = new NestedQueryImpl();
@@ -204,6 +209,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Filter createFilter()
   {
     FilterImpl filter = new FilterImpl();
@@ -215,6 +221,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public NestedFilter createNestedFilter()
   {
     NestedFilterImpl nestedFilter = new NestedFilterImpl();
@@ -226,6 +233,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public PropertyFilter createPropertyFilter()
   {
     PropertyFilterImpl propertyFilter = new PropertyFilterImpl();
@@ -237,6 +245,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ActiveFilter createActiveFilter()
   {
     ActiveFilterImpl activeFilter = new ActiveFilterImpl();
@@ -248,6 +257,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ModuleFilter createModuleFilter()
   {
     ModuleFilterImpl moduleFilter = new ModuleFilterImpl();
@@ -259,6 +269,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public TermFilter createTermFilter()
   {
     TermFilterImpl termFilter = new TermFilterImpl();
@@ -270,6 +281,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public PreferredInFilter createPreferredInFilter()
   {
     PreferredInFilterImpl preferredInFilter = new PreferredInFilterImpl();
@@ -281,6 +293,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AcceptableInFilter createAcceptableInFilter()
   {
     AcceptableInFilterImpl acceptableInFilter = new AcceptableInFilterImpl();
@@ -292,6 +305,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public LanguageRefSetFilter createLanguageRefSetFilter()
   {
     LanguageRefSetFilterImpl languageRefSetFilter = new LanguageRefSetFilterImpl();
@@ -303,6 +317,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public TypeFilter createTypeFilter()
   {
     TypeFilterImpl typeFilter = new TypeFilterImpl();
@@ -314,6 +329,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public CaseSignificanceFilter createCaseSignificanceFilter()
   {
     CaseSignificanceFilterImpl caseSignificanceFilter = new CaseSignificanceFilterImpl();
@@ -325,6 +341,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public LanguageCodeFilter createLanguageCodeFilter()
   {
     LanguageCodeFilterImpl languageCodeFilter = new LanguageCodeFilterImpl();
@@ -336,6 +353,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public QueryDisjunction createQueryDisjunction()
   {
     QueryDisjunctionImpl queryDisjunction = new QueryDisjunctionImpl();
@@ -347,6 +365,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public QueryConjunction createQueryConjunction()
   {
     QueryConjunctionImpl queryConjunction = new QueryConjunctionImpl();
@@ -358,6 +377,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public QueryExclusion createQueryExclusion()
   {
     QueryExclusionImpl queryExclusion = new QueryExclusionImpl();
@@ -369,6 +389,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Disjunction createDisjunction()
   {
     DisjunctionImpl disjunction = new DisjunctionImpl();
@@ -380,6 +401,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Conjunction createConjunction()
   {
     ConjunctionImpl conjunction = new ConjunctionImpl();
@@ -391,6 +413,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Exclusion createExclusion()
   {
     ExclusionImpl exclusion = new ExclusionImpl();
@@ -446,6 +469,7 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public QlPackage getQlPackage()
   {
     return (QlPackage)getEPackage();
