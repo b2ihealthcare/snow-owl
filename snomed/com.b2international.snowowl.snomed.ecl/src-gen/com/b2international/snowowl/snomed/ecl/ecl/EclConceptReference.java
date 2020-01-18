@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,34 +25,30 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getId <em>Id</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getTerm <em>Term</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference#getId <em>Id</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference#getTerm <em>Term</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getConceptReference()
+ * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getEclConceptReference()
  * @model
  * @generated
  */
-public interface ConceptReference extends ExpressionConstraint
+public interface EclConceptReference extends ExpressionConstraint
 {
   /**
    * Returns the value of the '<em><b>Id</b></em>' attribute.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Id</em>' attribute isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Id</em>' attribute.
    * @see #setId(String)
-   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getConceptReference_Id()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getEclConceptReference_Id()
    * @model
    * @generated
    */
   String getId();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getId <em>Id</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference#getId <em>Id</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Id</em>' attribute.
@@ -64,21 +60,17 @@ public interface ConceptReference extends ExpressionConstraint
   /**
    * Returns the value of the '<em><b>Term</b></em>' attribute.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Term</em>' attribute isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Term</em>' attribute.
    * @see #setTerm(String)
-   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getConceptReference_Term()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getEclConceptReference_Term()
    * @model
    * @generated
    */
   String getTerm();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getTerm <em>Term</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference#getTerm <em>Term</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Term</em>' attribute.
@@ -87,4 +79,4 @@ public interface ConceptReference extends ExpressionConstraint
    */
   void setTerm(String value);
 
-} // ConceptReference
+} // EclConceptReference

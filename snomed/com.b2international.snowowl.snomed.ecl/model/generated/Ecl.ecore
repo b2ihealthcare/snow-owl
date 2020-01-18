@@ -35,23 +35,23 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ConceptReference" eSuperTypes="#//ExpressionConstraint">
+  <eClassifiers xsi:type="ecore:EClass" name="EclConceptReference" eSuperTypes="#//ExpressionConstraint">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Any" eSuperTypes="#//ExpressionConstraint"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Refinement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="NestedRefinement" eSuperTypes="#//Refinement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="nested" eType="#//Refinement"
+  <eClassifiers xsi:type="ecore:EClass" name="EclRefinement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NestedRefinement" eSuperTypes="#//EclRefinement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="nested" eType="#//EclRefinement"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AttributeGroup" eSuperTypes="#//Refinement">
+  <eClassifiers xsi:type="ecore:EClass" name="EclAttributeGroup" eSuperTypes="#//EclRefinement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="cardinality" eType="#//Cardinality"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//Refinement"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//EclRefinement"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AttributeConstraint" eSuperTypes="#//Refinement">
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeConstraint" eSuperTypes="#//EclRefinement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="cardinality" eType="#//Cardinality"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="reversed" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
@@ -145,7 +145,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="RefinedExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//Refinement"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//EclRefinement"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DottedExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
@@ -154,16 +154,16 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" eType="#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OrRefinement" eSuperTypes="#//Refinement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Refinement"
+  <eClassifiers xsi:type="ecore:EClass" name="OrRefinement" eSuperTypes="#//EclRefinement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//EclRefinement"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Refinement"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//EclRefinement"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AndRefinement" eSuperTypes="#//Refinement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Refinement"
+  <eClassifiers xsi:type="ecore:EClass" name="AndRefinement" eSuperTypes="#//EclRefinement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//EclRefinement"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Refinement"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//EclRefinement"
         containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

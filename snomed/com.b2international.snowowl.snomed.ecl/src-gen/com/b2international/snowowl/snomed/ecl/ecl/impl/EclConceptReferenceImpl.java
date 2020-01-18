@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
+import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -32,13 +32,13 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl#getId <em>Id</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl#getTerm <em>Term</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclConceptReferenceImpl#getId <em>Id</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclConceptReferenceImpl#getTerm <em>Term</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class ConceptReferenceImpl extends ExpressionConstraintImpl implements ConceptReference
+public class EclConceptReferenceImpl extends ExpressionConstraintImpl implements EclConceptReference
 {
   /**
    * The default value of the '{@link #getId() <em>Id</em>}' attribute.
@@ -85,7 +85,7 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
    * <!-- end-user-doc -->
    * @generated
    */
-  protected ConceptReferenceImpl()
+  protected EclConceptReferenceImpl()
   {
     super();
   }
@@ -98,7 +98,7 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.CONCEPT_REFERENCE;
+    return EclPackage.Literals.ECL_CONCEPT_REFERENCE;
   }
 
   /**
@@ -106,6 +106,7 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public String getId()
   {
     return id;
@@ -116,12 +117,13 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setId(String newId)
   {
     String oldId = id;
     id = newId;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.CONCEPT_REFERENCE__ID, oldId, id));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.ECL_CONCEPT_REFERENCE__ID, oldId, id));
   }
 
   /**
@@ -129,6 +131,7 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public String getTerm()
   {
     return term;
@@ -139,12 +142,13 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setTerm(String newTerm)
   {
     String oldTerm = term;
     term = newTerm;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.CONCEPT_REFERENCE__TERM, oldTerm, term));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.ECL_CONCEPT_REFERENCE__TERM, oldTerm, term));
   }
 
   /**
@@ -157,9 +161,9 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
   {
     switch (featureID)
     {
-      case EclPackage.CONCEPT_REFERENCE__ID:
+      case EclPackage.ECL_CONCEPT_REFERENCE__ID:
         return getId();
-      case EclPackage.CONCEPT_REFERENCE__TERM:
+      case EclPackage.ECL_CONCEPT_REFERENCE__TERM:
         return getTerm();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -175,10 +179,10 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
   {
     switch (featureID)
     {
-      case EclPackage.CONCEPT_REFERENCE__ID:
+      case EclPackage.ECL_CONCEPT_REFERENCE__ID:
         setId((String)newValue);
         return;
-      case EclPackage.CONCEPT_REFERENCE__TERM:
+      case EclPackage.ECL_CONCEPT_REFERENCE__TERM:
         setTerm((String)newValue);
         return;
     }
@@ -195,10 +199,10 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
   {
     switch (featureID)
     {
-      case EclPackage.CONCEPT_REFERENCE__ID:
+      case EclPackage.ECL_CONCEPT_REFERENCE__ID:
         setId(ID_EDEFAULT);
         return;
-      case EclPackage.CONCEPT_REFERENCE__TERM:
+      case EclPackage.ECL_CONCEPT_REFERENCE__TERM:
         setTerm(TERM_EDEFAULT);
         return;
     }
@@ -215,9 +219,9 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
   {
     switch (featureID)
     {
-      case EclPackage.CONCEPT_REFERENCE__ID:
+      case EclPackage.ECL_CONCEPT_REFERENCE__ID:
         return ID_EDEFAULT == null ? id != null : !ID_EDEFAULT.equals(id);
-      case EclPackage.CONCEPT_REFERENCE__TERM:
+      case EclPackage.ECL_CONCEPT_REFERENCE__TERM:
         return TERM_EDEFAULT == null ? term != null : !TERM_EDEFAULT.equals(term);
     }
     return super.eIsSet(featureID);
@@ -242,4 +246,4 @@ public class ConceptReferenceImpl extends ExpressionConstraintImpl implements Co
     return result.toString();
   }
 
-} //ConceptReferenceImpl
+} //EclConceptReferenceImpl

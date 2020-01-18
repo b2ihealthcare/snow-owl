@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,11 +155,11 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EclPackage.CONCEPT_REFERENCE:
+      case EclPackage.ECL_CONCEPT_REFERENCE:
       {
-        ConceptReference conceptReference = (ConceptReference)theEObject;
-        T result = caseConceptReference(conceptReference);
-        if (result == null) result = caseExpressionConstraint(conceptReference);
+        EclConceptReference eclConceptReference = (EclConceptReference)theEObject;
+        T result = caseEclConceptReference(eclConceptReference);
+        if (result == null) result = caseExpressionConstraint(eclConceptReference);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -171,10 +171,10 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EclPackage.REFINEMENT:
+      case EclPackage.ECL_REFINEMENT:
       {
-        Refinement refinement = (Refinement)theEObject;
-        T result = caseRefinement(refinement);
+        EclRefinement eclRefinement = (EclRefinement)theEObject;
+        T result = caseEclRefinement(eclRefinement);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -182,15 +182,15 @@ public class EclSwitch<T> extends Switch<T>
       {
         NestedRefinement nestedRefinement = (NestedRefinement)theEObject;
         T result = caseNestedRefinement(nestedRefinement);
-        if (result == null) result = caseRefinement(nestedRefinement);
+        if (result == null) result = caseEclRefinement(nestedRefinement);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EclPackage.ATTRIBUTE_GROUP:
+      case EclPackage.ECL_ATTRIBUTE_GROUP:
       {
-        AttributeGroup attributeGroup = (AttributeGroup)theEObject;
-        T result = caseAttributeGroup(attributeGroup);
-        if (result == null) result = caseRefinement(attributeGroup);
+        EclAttributeGroup eclAttributeGroup = (EclAttributeGroup)theEObject;
+        T result = caseEclAttributeGroup(eclAttributeGroup);
+        if (result == null) result = caseEclRefinement(eclAttributeGroup);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -198,7 +198,7 @@ public class EclSwitch<T> extends Switch<T>
       {
         AttributeConstraint attributeConstraint = (AttributeConstraint)theEObject;
         T result = caseAttributeConstraint(attributeConstraint);
-        if (result == null) result = caseRefinement(attributeConstraint);
+        if (result == null) result = caseEclRefinement(attributeConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -446,7 +446,7 @@ public class EclSwitch<T> extends Switch<T>
       {
         OrRefinement orRefinement = (OrRefinement)theEObject;
         T result = caseOrRefinement(orRefinement);
-        if (result == null) result = caseRefinement(orRefinement);
+        if (result == null) result = caseEclRefinement(orRefinement);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -454,7 +454,7 @@ public class EclSwitch<T> extends Switch<T>
       {
         AndRefinement andRefinement = (AndRefinement)theEObject;
         T result = caseAndRefinement(andRefinement);
-        if (result == null) result = caseRefinement(andRefinement);
+        if (result == null) result = caseEclRefinement(andRefinement);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -617,7 +617,7 @@ public class EclSwitch<T> extends Switch<T>
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseConceptReference(ConceptReference object)
+  public T caseEclConceptReference(EclConceptReference object)
   {
     return null;
   }
@@ -649,7 +649,7 @@ public class EclSwitch<T> extends Switch<T>
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseRefinement(Refinement object)
+  public T caseEclRefinement(EclRefinement object)
   {
     return null;
   }
@@ -681,7 +681,7 @@ public class EclSwitch<T> extends Switch<T>
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseAttributeGroup(AttributeGroup object)
+  public T caseEclAttributeGroup(EclAttributeGroup object)
   {
     return null;
   }

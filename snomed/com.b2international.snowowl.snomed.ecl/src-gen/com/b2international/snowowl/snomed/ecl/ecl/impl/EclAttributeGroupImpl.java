@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
+import com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
+import com.b2international.snowowl.snomed.ecl.ecl.EclRefinement;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -36,13 +36,13 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl#getCardinality <em>Cardinality</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl#getRefinement <em>Refinement</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclAttributeGroupImpl#getCardinality <em>Cardinality</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclAttributeGroupImpl#getRefinement <em>Refinement</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
+public class EclAttributeGroupImpl extends EclRefinementImpl implements EclAttributeGroup
 {
   /**
    * The cached value of the '{@link #getCardinality() <em>Cardinality</em>}' containment reference.
@@ -62,14 +62,14 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
    * @generated
    * @ordered
    */
-  protected Refinement refinement;
+  protected EclRefinement refinement;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected AttributeGroupImpl()
+  protected EclAttributeGroupImpl()
   {
     super();
   }
@@ -82,7 +82,7 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.ATTRIBUTE_GROUP;
+    return EclPackage.Literals.ECL_ATTRIBUTE_GROUP;
   }
 
   /**
@@ -90,6 +90,7 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Cardinality getCardinality()
   {
     return cardinality;
@@ -106,7 +107,7 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
     cardinality = newCardinality;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.ATTRIBUTE_GROUP__CARDINALITY, oldCardinality, newCardinality);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY, oldCardinality, newCardinality);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -117,20 +118,21 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setCardinality(Cardinality newCardinality)
   {
     if (newCardinality != cardinality)
     {
       NotificationChain msgs = null;
       if (cardinality != null)
-        msgs = ((InternalEObject)cardinality).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.ATTRIBUTE_GROUP__CARDINALITY, null, msgs);
+        msgs = ((InternalEObject)cardinality).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY, null, msgs);
       if (newCardinality != null)
-        msgs = ((InternalEObject)newCardinality).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.ATTRIBUTE_GROUP__CARDINALITY, null, msgs);
+        msgs = ((InternalEObject)newCardinality).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY, null, msgs);
       msgs = basicSetCardinality(newCardinality, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.ATTRIBUTE_GROUP__CARDINALITY, newCardinality, newCardinality));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY, newCardinality, newCardinality));
   }
 
   /**
@@ -138,7 +140,8 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
    * <!-- end-user-doc -->
    * @generated
    */
-  public Refinement getRefinement()
+  @Override
+  public EclRefinement getRefinement()
   {
     return refinement;
   }
@@ -148,13 +151,13 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRefinement(Refinement newRefinement, NotificationChain msgs)
+  public NotificationChain basicSetRefinement(EclRefinement newRefinement, NotificationChain msgs)
   {
-    Refinement oldRefinement = refinement;
+    EclRefinement oldRefinement = refinement;
     refinement = newRefinement;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.ATTRIBUTE_GROUP__REFINEMENT, oldRefinement, newRefinement);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT, oldRefinement, newRefinement);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -165,20 +168,21 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRefinement(Refinement newRefinement)
+  @Override
+  public void setRefinement(EclRefinement newRefinement)
   {
     if (newRefinement != refinement)
     {
       NotificationChain msgs = null;
       if (refinement != null)
-        msgs = ((InternalEObject)refinement).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.ATTRIBUTE_GROUP__REFINEMENT, null, msgs);
+        msgs = ((InternalEObject)refinement).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT, null, msgs);
       if (newRefinement != null)
-        msgs = ((InternalEObject)newRefinement).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.ATTRIBUTE_GROUP__REFINEMENT, null, msgs);
+        msgs = ((InternalEObject)newRefinement).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT, null, msgs);
       msgs = basicSetRefinement(newRefinement, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.ATTRIBUTE_GROUP__REFINEMENT, newRefinement, newRefinement));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT, newRefinement, newRefinement));
   }
 
   /**
@@ -191,9 +195,9 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
   {
     switch (featureID)
     {
-      case EclPackage.ATTRIBUTE_GROUP__CARDINALITY:
+      case EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY:
         return basicSetCardinality(null, msgs);
-      case EclPackage.ATTRIBUTE_GROUP__REFINEMENT:
+      case EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT:
         return basicSetRefinement(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -209,9 +213,9 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
   {
     switch (featureID)
     {
-      case EclPackage.ATTRIBUTE_GROUP__CARDINALITY:
+      case EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY:
         return getCardinality();
-      case EclPackage.ATTRIBUTE_GROUP__REFINEMENT:
+      case EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT:
         return getRefinement();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -227,11 +231,11 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
   {
     switch (featureID)
     {
-      case EclPackage.ATTRIBUTE_GROUP__CARDINALITY:
+      case EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY:
         setCardinality((Cardinality)newValue);
         return;
-      case EclPackage.ATTRIBUTE_GROUP__REFINEMENT:
-        setRefinement((Refinement)newValue);
+      case EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT:
+        setRefinement((EclRefinement)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -247,11 +251,11 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
   {
     switch (featureID)
     {
-      case EclPackage.ATTRIBUTE_GROUP__CARDINALITY:
+      case EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY:
         setCardinality((Cardinality)null);
         return;
-      case EclPackage.ATTRIBUTE_GROUP__REFINEMENT:
-        setRefinement((Refinement)null);
+      case EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT:
+        setRefinement((EclRefinement)null);
         return;
     }
     super.eUnset(featureID);
@@ -267,12 +271,12 @@ public class AttributeGroupImpl extends RefinementImpl implements AttributeGroup
   {
     switch (featureID)
     {
-      case EclPackage.ATTRIBUTE_GROUP__CARDINALITY:
+      case EclPackage.ECL_ATTRIBUTE_GROUP__CARDINALITY:
         return cardinality != null;
-      case EclPackage.ATTRIBUTE_GROUP__REFINEMENT:
+      case EclPackage.ECL_ATTRIBUTE_GROUP__REFINEMENT:
         return refinement != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //AttributeGroupImpl
+} //EclAttributeGroupImpl

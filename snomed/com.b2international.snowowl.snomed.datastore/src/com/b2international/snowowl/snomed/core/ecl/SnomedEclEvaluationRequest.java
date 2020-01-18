@@ -110,10 +110,10 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	/**
-	 * Handles ConceptReference/Self simple expression constraints
+	 * Handles EclConceptReference/Self simple expression constraints
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
-	protected Promise<Expression> eval(BranchContext context, ConceptReference concept) {
+	protected Promise<Expression> eval(BranchContext context, EclConceptReference concept) {
 		return Promise.immediate(id(concept.getId()));
 	}
 	
@@ -123,8 +123,8 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, MemberOf memberOf) {
 		final ExpressionConstraint inner = memberOf.getConstraint();
-		if (inner instanceof ConceptReference) {
-			final ConceptReference concept = (ConceptReference) inner;
+		if (inner instanceof EclConceptReference) {
+			final EclConceptReference concept = (EclConceptReference) inner;
 			return Promise.immediate(activeMemberOf(concept.getId()));
 		} else if (inner instanceof Any) {
 			return Promise.immediate(Expressions.exists(ACTIVE_MEMBER_OF));

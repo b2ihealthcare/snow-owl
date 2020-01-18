@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
+import com.b2international.snowowl.snomed.ecl.ecl.EclRefinement;
 
 import org.eclipse.emf.ecore.EClass;
 
@@ -29,14 +29,14 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *
  * @generated
  */
-public class RefinementImpl extends MinimalEObjectImpl.Container implements Refinement
+public class EclRefinementImpl extends MinimalEObjectImpl.Container implements EclRefinement
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected RefinementImpl()
+  protected EclRefinementImpl()
   {
     super();
   }
@@ -49,7 +49,7 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.REFINEMENT;
+    return EclPackage.Literals.ECL_REFINEMENT;
   }
 
-} //RefinementImpl
+} //EclRefinementImpl

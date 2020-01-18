@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,12 @@ import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
-import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
@@ -38,6 +36,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup;
+import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
@@ -93,7 +93,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				sequence_AndExpressionConstraint(context, (AndExpressionConstraint) semanticObject); 
 				return; 
 			case EclPackage.AND_REFINEMENT:
-				if (rule == grammarAccess.getAttributeSetRule()
+				if (rule == grammarAccess.getEclAttributeSetRule()
 						|| rule == grammarAccess.getOrAttributeSetRule()
 						|| action == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0()
 						|| rule == grammarAccess.getAndAttributeSetRule()
@@ -101,7 +101,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 					sequence_AndAttributeSet(context, (AndRefinement) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getRefinementRule()
+				else if (rule == grammarAccess.getEclRefinementRule()
 						|| rule == grammarAccess.getOrRefinementRule()
 						|| action == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0()
 						|| rule == grammarAccess.getAndRefinementRule()
@@ -115,9 +115,6 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				return; 
 			case EclPackage.ATTRIBUTE_CONSTRAINT:
 				sequence_AttributeConstraint(context, (AttributeConstraint) semanticObject); 
-				return; 
-			case EclPackage.ATTRIBUTE_GROUP:
-				sequence_AttributeGroup(context, (AttributeGroup) semanticObject); 
 				return; 
 			case EclPackage.ATTRIBUTE_VALUE_EQUALS:
 				sequence_AttributeValueEquals(context, (AttributeValueEquals) semanticObject); 
@@ -136,9 +133,6 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				return; 
 			case EclPackage.CHILD_OF:
 				sequence_ChildOf(context, (ChildOf) semanticObject); 
-				return; 
-			case EclPackage.CONCEPT_REFERENCE:
-				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
 				return; 
 			case EclPackage.DECIMAL_VALUE_EQUALS:
 				sequence_DecimalValueEquals(context, (DecimalValueEquals) semanticObject); 
@@ -166,6 +160,12 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				return; 
 			case EclPackage.DOTTED_EXPRESSION_CONSTRAINT:
 				sequence_DottedExpressionConstraint(context, (DottedExpressionConstraint) semanticObject); 
+				return; 
+			case EclPackage.ECL_ATTRIBUTE_GROUP:
+				sequence_EclAttributeGroup(context, (EclAttributeGroup) semanticObject); 
+				return; 
+			case EclPackage.ECL_CONCEPT_REFERENCE:
+				sequence_EclConceptReference(context, (EclConceptReference) semanticObject); 
 				return; 
 			case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT:
 				sequence_ExclusionExpressionConstraint(context, (ExclusionExpressionConstraint) semanticObject); 
@@ -195,7 +195,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				sequence_NestedExpression(context, (NestedExpression) semanticObject); 
 				return; 
 			case EclPackage.NESTED_REFINEMENT:
-				if (rule == grammarAccess.getAttributeSetRule()
+				if (rule == grammarAccess.getEclAttributeSetRule()
 						|| rule == grammarAccess.getOrAttributeSetRule()
 						|| action == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0()
 						|| rule == grammarAccess.getAndAttributeSetRule()
@@ -205,7 +205,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 					sequence_NestedAttributeSet(context, (NestedRefinement) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getRefinementRule()
+				else if (rule == grammarAccess.getEclRefinementRule()
 						|| rule == grammarAccess.getOrRefinementRule()
 						|| action == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0()
 						|| rule == grammarAccess.getAndRefinementRule()
@@ -220,13 +220,13 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				sequence_OrExpressionConstraint(context, (OrExpressionConstraint) semanticObject); 
 				return; 
 			case EclPackage.OR_REFINEMENT:
-				if (rule == grammarAccess.getAttributeSetRule()
+				if (rule == grammarAccess.getEclAttributeSetRule()
 						|| rule == grammarAccess.getOrAttributeSetRule()
 						|| action == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0()) {
 					sequence_OrAttributeSet(context, (OrRefinement) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getRefinementRule()
+				else if (rule == grammarAccess.getEclRefinementRule()
 						|| rule == grammarAccess.getOrRefinementRule()
 						|| action == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0()) {
 					sequence_OrRefinement(context, (OrRefinement) semanticObject); 
@@ -270,7 +270,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     AncestorOf returns AncestorOf
 	 *
 	 * Constraint:
-	 *     constraint=FocusConcept
+	 *     constraint=EclFocusConcept
 	 */
 	protected void sequence_AncestorOf(ISerializationContext context, AncestorOf semanticObject) {
 		if (errorAcceptor != null) {
@@ -278,7 +278,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ANCESTOR_OF__CONSTRAINT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getAncestorOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getAncestorOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
 		feeder.finish();
 	}
 	
@@ -300,7 +300,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     AncestorOrSelfOf returns AncestorOrSelfOf
 	 *
 	 * Constraint:
-	 *     constraint=FocusConcept
+	 *     constraint=EclFocusConcept
 	 */
 	protected void sequence_AncestorOrSelfOf(ISerializationContext context, AncestorOrSelfOf semanticObject) {
 		if (errorAcceptor != null) {
@@ -308,14 +308,14 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ANCESTOR_OR_SELF_OF__CONSTRAINT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getAncestorOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getAncestorOrSelfOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
 		feeder.finish();
 	}
 	
 	
 	/**
 	 * Contexts:
-	 *     AttributeSet returns AndRefinement
+	 *     EclAttributeSet returns AndRefinement
 	 *     OrAttributeSet returns AndRefinement
 	 *     OrAttributeSet.OrRefinement_1_0 returns AndRefinement
 	 *     AndAttributeSet returns AndRefinement
@@ -365,7 +365,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Refinement returns AndRefinement
+	 *     EclRefinement returns AndRefinement
 	 *     OrRefinement returns AndRefinement
 	 *     OrRefinement.OrRefinement_1_0_0 returns AndRefinement
 	 *     AndRefinement returns AndRefinement
@@ -402,7 +402,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     DottedExpressionConstraint returns Any
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns Any
 	 *     SubExpressionConstraint returns Any
-	 *     FocusConcept returns Any
+	 *     EclFocusConcept returns Any
 	 *     Any returns Any
 	 *
 	 * Constraint:
@@ -415,13 +415,13 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Refinement returns AttributeConstraint
+	 *     EclRefinement returns AttributeConstraint
 	 *     OrRefinement returns AttributeConstraint
 	 *     OrRefinement.OrRefinement_1_0_0 returns AttributeConstraint
 	 *     AndRefinement returns AttributeConstraint
 	 *     AndRefinement.AndRefinement_1_0_0 returns AttributeConstraint
 	 *     SubRefinement returns AttributeConstraint
-	 *     AttributeSet returns AttributeConstraint
+	 *     EclAttributeSet returns AttributeConstraint
 	 *     OrAttributeSet returns AttributeConstraint
 	 *     OrAttributeSet.OrRefinement_1_0 returns AttributeConstraint
 	 *     AndAttributeSet returns AttributeConstraint
@@ -433,24 +433,6 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     (cardinality=Cardinality? reversed?=REVERSED? attribute=SubExpressionConstraint comparison=Comparison)
 	 */
 	protected void sequence_AttributeConstraint(ISerializationContext context, AttributeConstraint semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     Refinement returns AttributeGroup
-	 *     OrRefinement returns AttributeGroup
-	 *     OrRefinement.OrRefinement_1_0_0 returns AttributeGroup
-	 *     AndRefinement returns AttributeGroup
-	 *     AndRefinement.AndRefinement_1_0_0 returns AttributeGroup
-	 *     SubRefinement returns AttributeGroup
-	 *     AttributeGroup returns AttributeGroup
-	 *
-	 * Constraint:
-	 *     (cardinality=Cardinality? refinement=AttributeSet)
-	 */
-	protected void sequence_AttributeGroup(ISerializationContext context, AttributeGroup semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -573,7 +555,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     ChildOf returns ChildOf
 	 *
 	 * Constraint:
-	 *     constraint=FocusConcept
+	 *     constraint=EclFocusConcept
 	 */
 	protected void sequence_ChildOf(ISerializationContext context, ChildOf semanticObject) {
 		if (errorAcceptor != null) {
@@ -581,33 +563,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.CHILD_OF__CONSTRAINT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getChildOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getChildOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
 		feeder.finish();
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     ExpressionConstraint returns ConceptReference
-	 *     OrExpressionConstraint returns ConceptReference
-	 *     OrExpressionConstraint.OrExpressionConstraint_1_0 returns ConceptReference
-	 *     AndExpressionConstraint returns ConceptReference
-	 *     AndExpressionConstraint.AndExpressionConstraint_1_0 returns ConceptReference
-	 *     ExclusionExpressionConstraint returns ConceptReference
-	 *     ExclusionExpressionConstraint.ExclusionExpressionConstraint_1_0 returns ConceptReference
-	 *     RefinedExpressionConstraint returns ConceptReference
-	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns ConceptReference
-	 *     DottedExpressionConstraint returns ConceptReference
-	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns ConceptReference
-	 *     SubExpressionConstraint returns ConceptReference
-	 *     FocusConcept returns ConceptReference
-	 *     ConceptReference returns ConceptReference
-	 *
-	 * Constraint:
-	 *     (id=SnomedIdentifier term=TERM_STRING?)
-	 */
-	protected void sequence_ConceptReference(ISerializationContext context, ConceptReference semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -748,7 +705,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     DescendantOf returns DescendantOf
 	 *
 	 * Constraint:
-	 *     constraint=FocusConcept
+	 *     constraint=EclFocusConcept
 	 */
 	protected void sequence_DescendantOf(ISerializationContext context, DescendantOf semanticObject) {
 		if (errorAcceptor != null) {
@@ -756,7 +713,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DESCENDANT_OF__CONSTRAINT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getDescendantOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getDescendantOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
 		feeder.finish();
 	}
 	
@@ -778,7 +735,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     DescendantOrSelfOf returns DescendantOrSelfOf
 	 *
 	 * Constraint:
-	 *     constraint=FocusConcept
+	 *     constraint=EclFocusConcept
 	 */
 	protected void sequence_DescendantOrSelfOf(ISerializationContext context, DescendantOrSelfOf semanticObject) {
 		if (errorAcceptor != null) {
@@ -786,7 +743,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DESCENDANT_OR_SELF_OF__CONSTRAINT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getDescendantOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getDescendantOrSelfOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
 		feeder.finish();
 	}
 	
@@ -819,6 +776,49 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		feeder.accept(grammarAccess.getDottedExpressionConstraintAccess().getDottedExpressionConstraintConstraintAction_1_0(), semanticObject.getConstraint());
 		feeder.accept(grammarAccess.getDottedExpressionConstraintAccess().getAttributeSubExpressionConstraintParserRuleCall_1_2_0(), semanticObject.getAttribute());
 		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     EclRefinement returns EclAttributeGroup
+	 *     OrRefinement returns EclAttributeGroup
+	 *     OrRefinement.OrRefinement_1_0_0 returns EclAttributeGroup
+	 *     AndRefinement returns EclAttributeGroup
+	 *     AndRefinement.AndRefinement_1_0_0 returns EclAttributeGroup
+	 *     SubRefinement returns EclAttributeGroup
+	 *     EclAttributeGroup returns EclAttributeGroup
+	 *
+	 * Constraint:
+	 *     (cardinality=Cardinality? refinement=EclAttributeSet)
+	 */
+	protected void sequence_EclAttributeGroup(ISerializationContext context, EclAttributeGroup semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     ExpressionConstraint returns EclConceptReference
+	 *     OrExpressionConstraint returns EclConceptReference
+	 *     OrExpressionConstraint.OrExpressionConstraint_1_0 returns EclConceptReference
+	 *     AndExpressionConstraint returns EclConceptReference
+	 *     AndExpressionConstraint.AndExpressionConstraint_1_0 returns EclConceptReference
+	 *     ExclusionExpressionConstraint returns EclConceptReference
+	 *     ExclusionExpressionConstraint.ExclusionExpressionConstraint_1_0 returns EclConceptReference
+	 *     RefinedExpressionConstraint returns EclConceptReference
+	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns EclConceptReference
+	 *     DottedExpressionConstraint returns EclConceptReference
+	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns EclConceptReference
+	 *     SubExpressionConstraint returns EclConceptReference
+	 *     EclFocusConcept returns EclConceptReference
+	 *     EclConceptReference returns EclConceptReference
+	 *
+	 * Constraint:
+	 *     (id=SnomedIdentifier term=TERM_STRING?)
+	 */
+	protected void sequence_EclConceptReference(ISerializationContext context, EclConceptReference semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -982,11 +982,11 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     DottedExpressionConstraint returns MemberOf
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns MemberOf
 	 *     SubExpressionConstraint returns MemberOf
-	 *     FocusConcept returns MemberOf
+	 *     EclFocusConcept returns MemberOf
 	 *     MemberOf returns MemberOf
 	 *
 	 * Constraint:
-	 *     (constraint=ConceptReference | constraint=Any | constraint=NestedExpression)
+	 *     (constraint=EclConceptReference | constraint=Any | constraint=NestedExpression)
 	 */
 	protected void sequence_MemberOf(ISerializationContext context, MemberOf semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -995,7 +995,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     AttributeSet returns NestedRefinement
+	 *     EclAttributeSet returns NestedRefinement
 	 *     OrAttributeSet returns NestedRefinement
 	 *     OrAttributeSet.OrRefinement_1_0 returns NestedRefinement
 	 *     AndAttributeSet returns NestedRefinement
@@ -1004,7 +1004,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     NestedAttributeSet returns NestedRefinement
 	 *
 	 * Constraint:
-	 *     nested=AttributeSet
+	 *     nested=EclAttributeSet
 	 */
 	protected void sequence_NestedAttributeSet(ISerializationContext context, NestedRefinement semanticObject) {
 		if (errorAcceptor != null) {
@@ -1012,7 +1012,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.NESTED_REFINEMENT__NESTED));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getNestedAttributeSetAccess().getNestedAttributeSetParserRuleCall_1_0(), semanticObject.getNested());
+		feeder.accept(grammarAccess.getNestedAttributeSetAccess().getNestedEclAttributeSetParserRuleCall_1_0(), semanticObject.getNested());
 		feeder.finish();
 	}
 	
@@ -1031,7 +1031,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     DottedExpressionConstraint returns NestedExpression
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns NestedExpression
 	 *     SubExpressionConstraint returns NestedExpression
-	 *     FocusConcept returns NestedExpression
+	 *     EclFocusConcept returns NestedExpression
 	 *     NestedExpression returns NestedExpression
 	 *
 	 * Constraint:
@@ -1050,7 +1050,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Refinement returns NestedRefinement
+	 *     EclRefinement returns NestedRefinement
 	 *     OrRefinement returns NestedRefinement
 	 *     OrRefinement.OrRefinement_1_0_0 returns NestedRefinement
 	 *     AndRefinement returns NestedRefinement
@@ -1059,7 +1059,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     NestedRefinement returns NestedRefinement
 	 *
 	 * Constraint:
-	 *     nested=Refinement
+	 *     nested=EclRefinement
 	 */
 	protected void sequence_NestedRefinement(ISerializationContext context, NestedRefinement semanticObject) {
 		if (errorAcceptor != null) {
@@ -1067,14 +1067,14 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.NESTED_REFINEMENT__NESTED));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getNestedRefinementAccess().getNestedRefinementParserRuleCall_1_0(), semanticObject.getNested());
+		feeder.accept(grammarAccess.getNestedRefinementAccess().getNestedEclRefinementParserRuleCall_1_0(), semanticObject.getNested());
 		feeder.finish();
 	}
 	
 	
 	/**
 	 * Contexts:
-	 *     AttributeSet returns OrRefinement
+	 *     EclAttributeSet returns OrRefinement
 	 *     OrAttributeSet returns OrRefinement
 	 *     OrAttributeSet.OrRefinement_1_0 returns OrRefinement
 	 *
@@ -1120,7 +1120,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Refinement returns OrRefinement
+	 *     EclRefinement returns OrRefinement
 	 *     OrRefinement returns OrRefinement
 	 *     OrRefinement.OrRefinement_1_0_0 returns OrRefinement
 	 *
@@ -1158,7 +1158,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     ParentOf returns ParentOf
 	 *
 	 * Constraint:
-	 *     constraint=FocusConcept
+	 *     constraint=EclFocusConcept
 	 */
 	protected void sequence_ParentOf(ISerializationContext context, ParentOf semanticObject) {
 		if (errorAcceptor != null) {
@@ -1166,7 +1166,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.PARENT_OF__CONSTRAINT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getParentOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getParentOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
 		feeder.finish();
 	}
 	
@@ -1183,7 +1183,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint returns RefinedExpressionConstraint
 	 *
 	 * Constraint:
-	 *     (constraint=RefinedExpressionConstraint_RefinedExpressionConstraint_1_0 refinement=Refinement)
+	 *     (constraint=RefinedExpressionConstraint_RefinedExpressionConstraint_1_0 refinement=EclRefinement)
 	 */
 	protected void sequence_RefinedExpressionConstraint(ISerializationContext context, RefinedExpressionConstraint semanticObject) {
 		if (errorAcceptor != null) {
@@ -1194,7 +1194,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getRefinedExpressionConstraintAccess().getRefinedExpressionConstraintConstraintAction_1_0(), semanticObject.getConstraint());
-		feeder.accept(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementRefinementParserRuleCall_1_2_0(), semanticObject.getRefinement());
+		feeder.accept(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementEclRefinementParserRuleCall_1_2_0(), semanticObject.getRefinement());
 		feeder.finish();
 	}
 	

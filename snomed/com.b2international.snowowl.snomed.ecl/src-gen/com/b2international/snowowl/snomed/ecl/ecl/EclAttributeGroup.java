@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,34 +25,30 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getCardinality <em>Cardinality</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getRefinement <em>Refinement</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup#getCardinality <em>Cardinality</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup#getRefinement <em>Refinement</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getAttributeGroup()
+ * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getEclAttributeGroup()
  * @model
  * @generated
  */
-public interface AttributeGroup extends Refinement
+public interface EclAttributeGroup extends EclRefinement
 {
   /**
    * Returns the value of the '<em><b>Cardinality</b></em>' containment reference.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Cardinality</em>' containment reference isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Cardinality</em>' containment reference.
    * @see #setCardinality(Cardinality)
-   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getAttributeGroup_Cardinality()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getEclAttributeGroup_Cardinality()
    * @model containment="true"
    * @generated
    */
   Cardinality getCardinality();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getCardinality <em>Cardinality</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup#getCardinality <em>Cardinality</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Cardinality</em>' containment reference.
@@ -64,27 +60,23 @@ public interface AttributeGroup extends Refinement
   /**
    * Returns the value of the '<em><b>Refinement</b></em>' containment reference.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Refinement</em>' containment reference isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Refinement</em>' containment reference.
-   * @see #setRefinement(Refinement)
-   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getAttributeGroup_Refinement()
+   * @see #setRefinement(EclRefinement)
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getEclAttributeGroup_Refinement()
    * @model containment="true"
    * @generated
    */
-  Refinement getRefinement();
+  EclRefinement getRefinement();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getRefinement <em>Refinement</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup#getRefinement <em>Refinement</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Refinement</em>' containment reference.
    * @see #getRefinement()
    * @generated
    */
-  void setRefinement(Refinement value);
+  void setRefinement(EclRefinement value);
 
-} // AttributeGroup
+} // EclAttributeGroup

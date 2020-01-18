@@ -22,47 +22,46 @@ import java.util.HashMap;
 @SuppressWarnings("all")
 public class InternalEclParser extends AbstractInternalAntlrParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "MINUS", "False", "True", "AND", "OR", "Comma", "RULE_TERM_STRING", "RULE_REVERSED", "RULE_TO", "RULE_ZERO", "RULE_DIGIT_NONZERO", "RULE_COLON", "RULE_CURLY_OPEN", "RULE_CURLY_CLOSE", "RULE_ROUND_OPEN", "RULE_ROUND_CLOSE", "RULE_SQUARE_OPEN", "RULE_SQUARE_CLOSE", "RULE_PLUS", "RULE_DASH", "RULE_CARET", "RULE_NOT", "RULE_DOT", "RULE_WILDCARD", "RULE_EQUAL", "RULE_NOT_EQUAL", "RULE_LT", "RULE_GT", "RULE_DBL_LT", "RULE_DBL_GT", "RULE_LT_EM", "RULE_GT_EM", "RULE_GTE", "RULE_LTE", "RULE_HASH", "RULE_WS", "RULE_ML_COMMENT", "RULE_SL_COMMENT", "RULE_STRING"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "MINUS", "False", "True", "AND", "OR", "Comma", "RULE_TERM_STRING", "RULE_REVERSED", "RULE_TO", "RULE_ZERO", "RULE_DIGIT_NONZERO", "RULE_COLON", "RULE_CURLY_OPEN", "RULE_CURLY_CLOSE", "RULE_ROUND_OPEN", "RULE_ROUND_CLOSE", "RULE_SQUARE_OPEN", "RULE_SQUARE_CLOSE", "RULE_PLUS", "RULE_DASH", "RULE_CARET", "RULE_DOT", "RULE_WILDCARD", "RULE_EQUAL", "RULE_NOT_EQUAL", "RULE_LT", "RULE_GT", "RULE_DBL_LT", "RULE_DBL_GT", "RULE_LT_EM", "RULE_GT_EM", "RULE_GTE", "RULE_LTE", "RULE_HASH", "RULE_WS", "RULE_ML_COMMENT", "RULE_SL_COMMENT", "RULE_STRING"
     };
-    public static final int RULE_LTE=37;
+    public static final int RULE_LTE=36;
     public static final int RULE_DIGIT_NONZERO=14;
     public static final int RULE_CURLY_OPEN=16;
     public static final int RULE_TO=12;
     public static final int RULE_ROUND_CLOSE=19;
-    public static final int RULE_DBL_GT=33;
+    public static final int RULE_DBL_GT=32;
     public static final int True=6;
-    public static final int RULE_GT=31;
-    public static final int RULE_STRING=42;
+    public static final int RULE_GT=30;
+    public static final int RULE_STRING=41;
     public static final int False=5;
-    public static final int RULE_NOT=25;
     public static final int RULE_REVERSED=11;
     public static final int MINUS=4;
-    public static final int RULE_GTE=36;
-    public static final int RULE_SL_COMMENT=41;
+    public static final int RULE_GTE=35;
+    public static final int RULE_SL_COMMENT=40;
     public static final int Comma=9;
-    public static final int RULE_HASH=38;
+    public static final int RULE_HASH=37;
     public static final int RULE_ROUND_OPEN=18;
     public static final int RULE_DASH=23;
-    public static final int RULE_DBL_LT=32;
+    public static final int RULE_DBL_LT=31;
     public static final int RULE_PLUS=22;
-    public static final int RULE_NOT_EQUAL=29;
-    public static final int RULE_DOT=26;
+    public static final int RULE_NOT_EQUAL=28;
+    public static final int RULE_DOT=25;
     public static final int EOF=-1;
     public static final int RULE_SQUARE_CLOSE=21;
     public static final int OR=8;
     public static final int RULE_SQUARE_OPEN=20;
-    public static final int RULE_EQUAL=28;
-    public static final int RULE_LT_EM=34;
-    public static final int RULE_GT_EM=35;
-    public static final int RULE_WS=39;
+    public static final int RULE_EQUAL=27;
+    public static final int RULE_LT_EM=33;
+    public static final int RULE_GT_EM=34;
+    public static final int RULE_WS=38;
     public static final int RULE_CURLY_CLOSE=17;
     public static final int RULE_ZERO=13;
     public static final int RULE_COLON=15;
     public static final int RULE_CARET=24;
-    public static final int RULE_LT=30;
+    public static final int RULE_LT=29;
     public static final int AND=7;
-    public static final int RULE_ML_COMMENT=40;
-    public static final int RULE_WILDCARD=27;
+    public static final int RULE_ML_COMMENT=39;
+    public static final int RULE_WILDCARD=26;
     public static final int RULE_TERM_STRING=10;
 
     // delegates
@@ -993,7 +992,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleRefinedExpressionConstraint"
-    // InternalEclParser.g:360:1: ruleRefinedExpressionConstraint returns [EObject current=null] : (this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleRefinement ) ) )? ) ;
+    // InternalEclParser.g:360:1: ruleRefinedExpressionConstraint returns [EObject current=null] : (this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleEclRefinement ) ) )? ) ;
     public final EObject ruleRefinedExpressionConstraint() throws RecognitionException {
         EObject current = null;
 
@@ -1007,11 +1006,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:366:2: ( (this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleRefinement ) ) )? ) )
-            // InternalEclParser.g:367:2: (this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleRefinement ) ) )? )
+            // InternalEclParser.g:366:2: ( (this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleEclRefinement ) ) )? ) )
+            // InternalEclParser.g:367:2: (this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleEclRefinement ) ) )? )
             {
-            // InternalEclParser.g:367:2: (this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleRefinement ) ) )? )
-            // InternalEclParser.g:368:3: this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleRefinement ) ) )?
+            // InternalEclParser.g:367:2: (this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleEclRefinement ) ) )? )
+            // InternalEclParser.g:368:3: this_DottedExpressionConstraint_0= ruleDottedExpressionConstraint ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleEclRefinement ) ) )?
             {
             if ( state.backtracking==0 ) {
 
@@ -1034,7 +1033,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalEclParser.g:379:3: ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleRefinement ) ) )?
+            // InternalEclParser.g:379:3: ( () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleEclRefinement ) ) )?
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -1043,7 +1042,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             }
             switch (alt6) {
                 case 1 :
-                    // InternalEclParser.g:380:4: () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleRefinement ) )
+                    // InternalEclParser.g:380:4: () this_COLON_2= RULE_COLON ( (lv_refinement_3_0= ruleEclRefinement ) )
                     {
                     // InternalEclParser.g:380:4: ()
                     // InternalEclParser.g:381:5: 
@@ -1069,19 +1068,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                       				newLeafNode(this_COLON_2, grammarAccess.getRefinedExpressionConstraintAccess().getCOLONTerminalRuleCall_1_1());
                       			
                     }
-                    // InternalEclParser.g:394:4: ( (lv_refinement_3_0= ruleRefinement ) )
-                    // InternalEclParser.g:395:5: (lv_refinement_3_0= ruleRefinement )
+                    // InternalEclParser.g:394:4: ( (lv_refinement_3_0= ruleEclRefinement ) )
+                    // InternalEclParser.g:395:5: (lv_refinement_3_0= ruleEclRefinement )
                     {
-                    // InternalEclParser.g:395:5: (lv_refinement_3_0= ruleRefinement )
-                    // InternalEclParser.g:396:6: lv_refinement_3_0= ruleRefinement
+                    // InternalEclParser.g:395:5: (lv_refinement_3_0= ruleEclRefinement )
+                    // InternalEclParser.g:396:6: lv_refinement_3_0= ruleEclRefinement
                     {
                     if ( state.backtracking==0 ) {
 
-                      						newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementRefinementParserRuleCall_1_2_0());
+                      						newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementEclRefinementParserRuleCall_1_2_0());
                       					
                     }
                     pushFollow(FollowSets000.FOLLOW_2);
-                    lv_refinement_3_0=ruleRefinement();
+                    lv_refinement_3_0=ruleEclRefinement();
 
                     state._fsp--;
                     if (state.failed) return current;
@@ -1094,7 +1093,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                       							current,
                       							"refinement",
                       							lv_refinement_3_0,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.Refinement");
+                      							"com.b2international.snowowl.snomed.ecl.Ecl.EclRefinement");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -1364,7 +1363,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleSubExpressionConstraint"
-    // InternalEclParser.g:490:1: ruleSubExpressionConstraint returns [EObject current=null] : (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_AncestorOf_4= ruleAncestorOf | this_AncestorOrSelfOf_5= ruleAncestorOrSelfOf | this_FocusConcept_6= ruleFocusConcept ) ;
+    // InternalEclParser.g:490:1: ruleSubExpressionConstraint returns [EObject current=null] : (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_AncestorOf_4= ruleAncestorOf | this_AncestorOrSelfOf_5= ruleAncestorOrSelfOf | this_EclFocusConcept_6= ruleEclFocusConcept ) ;
     public final EObject ruleSubExpressionConstraint() throws RecognitionException {
         EObject current = null;
 
@@ -1380,17 +1379,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
         EObject this_AncestorOrSelfOf_5 = null;
 
-        EObject this_FocusConcept_6 = null;
+        EObject this_EclFocusConcept_6 = null;
 
 
 
         	enterRule();
 
         try {
-            // InternalEclParser.g:496:2: ( (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_AncestorOf_4= ruleAncestorOf | this_AncestorOrSelfOf_5= ruleAncestorOrSelfOf | this_FocusConcept_6= ruleFocusConcept ) )
-            // InternalEclParser.g:497:2: (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_AncestorOf_4= ruleAncestorOf | this_AncestorOrSelfOf_5= ruleAncestorOrSelfOf | this_FocusConcept_6= ruleFocusConcept )
+            // InternalEclParser.g:496:2: ( (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_AncestorOf_4= ruleAncestorOf | this_AncestorOrSelfOf_5= ruleAncestorOrSelfOf | this_EclFocusConcept_6= ruleEclFocusConcept ) )
+            // InternalEclParser.g:497:2: (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_AncestorOf_4= ruleAncestorOf | this_AncestorOrSelfOf_5= ruleAncestorOrSelfOf | this_EclFocusConcept_6= ruleEclFocusConcept )
             {
-            // InternalEclParser.g:497:2: (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_AncestorOf_4= ruleAncestorOf | this_AncestorOrSelfOf_5= ruleAncestorOrSelfOf | this_FocusConcept_6= ruleFocusConcept )
+            // InternalEclParser.g:497:2: (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_AncestorOf_4= ruleAncestorOf | this_AncestorOrSelfOf_5= ruleAncestorOrSelfOf | this_EclFocusConcept_6= ruleEclFocusConcept )
             int alt8=7;
             switch ( input.LA(1) ) {
             case RULE_LT_EM:
@@ -1603,7 +1602,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 7 :
-                    // InternalEclParser.g:570:3: this_FocusConcept_6= ruleFocusConcept
+                    // InternalEclParser.g:570:3: this_EclFocusConcept_6= ruleEclFocusConcept
                     {
                     if ( state.backtracking==0 ) {
 
@@ -1612,17 +1611,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getFocusConceptParserRuleCall_6());
+                      			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getEclFocusConceptParserRuleCall_6());
                       		
                     }
                     pushFollow(FollowSets000.FOLLOW_2);
-                    this_FocusConcept_6=ruleFocusConcept();
+                    this_EclFocusConcept_6=ruleEclFocusConcept();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      			current = this_FocusConcept_6;
+                      			current = this_EclFocusConcept_6;
                       			afterParserOrEnumRuleCall();
                       		
                     }
@@ -1653,28 +1652,28 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     // $ANTLR end "ruleSubExpressionConstraint"
 
 
-    // $ANTLR start "entryRuleFocusConcept"
-    // InternalEclParser.g:585:1: entryRuleFocusConcept returns [EObject current=null] : iv_ruleFocusConcept= ruleFocusConcept EOF ;
-    public final EObject entryRuleFocusConcept() throws RecognitionException {
+    // $ANTLR start "entryRuleEclFocusConcept"
+    // InternalEclParser.g:585:1: entryRuleEclFocusConcept returns [EObject current=null] : iv_ruleEclFocusConcept= ruleEclFocusConcept EOF ;
+    public final EObject entryRuleEclFocusConcept() throws RecognitionException {
         EObject current = null;
 
-        EObject iv_ruleFocusConcept = null;
+        EObject iv_ruleEclFocusConcept = null;
 
 
         try {
-            // InternalEclParser.g:585:53: (iv_ruleFocusConcept= ruleFocusConcept EOF )
-            // InternalEclParser.g:586:2: iv_ruleFocusConcept= ruleFocusConcept EOF
+            // InternalEclParser.g:585:56: (iv_ruleEclFocusConcept= ruleEclFocusConcept EOF )
+            // InternalEclParser.g:586:2: iv_ruleEclFocusConcept= ruleEclFocusConcept EOF
             {
             if ( state.backtracking==0 ) {
-               newCompositeNode(grammarAccess.getFocusConceptRule()); 
+               newCompositeNode(grammarAccess.getEclFocusConceptRule()); 
             }
             pushFollow(FollowSets000.FOLLOW_1);
-            iv_ruleFocusConcept=ruleFocusConcept();
+            iv_ruleEclFocusConcept=ruleEclFocusConcept();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
-               current =iv_ruleFocusConcept; 
+               current =iv_ruleEclFocusConcept; 
             }
             match(input,EOF,FollowSets000.FOLLOW_2); if (state.failed) return current;
 
@@ -1690,17 +1689,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "entryRuleFocusConcept"
+    // $ANTLR end "entryRuleEclFocusConcept"
 
 
-    // $ANTLR start "ruleFocusConcept"
-    // InternalEclParser.g:592:1: ruleFocusConcept returns [EObject current=null] : (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny | this_NestedExpression_3= ruleNestedExpression ) ;
-    public final EObject ruleFocusConcept() throws RecognitionException {
+    // $ANTLR start "ruleEclFocusConcept"
+    // InternalEclParser.g:592:1: ruleEclFocusConcept returns [EObject current=null] : (this_MemberOf_0= ruleMemberOf | this_EclConceptReference_1= ruleEclConceptReference | this_Any_2= ruleAny | this_NestedExpression_3= ruleNestedExpression ) ;
+    public final EObject ruleEclFocusConcept() throws RecognitionException {
         EObject current = null;
 
         EObject this_MemberOf_0 = null;
 
-        EObject this_ConceptReference_1 = null;
+        EObject this_EclConceptReference_1 = null;
 
         EObject this_Any_2 = null;
 
@@ -1711,10 +1710,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:598:2: ( (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny | this_NestedExpression_3= ruleNestedExpression ) )
-            // InternalEclParser.g:599:2: (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny | this_NestedExpression_3= ruleNestedExpression )
+            // InternalEclParser.g:598:2: ( (this_MemberOf_0= ruleMemberOf | this_EclConceptReference_1= ruleEclConceptReference | this_Any_2= ruleAny | this_NestedExpression_3= ruleNestedExpression ) )
+            // InternalEclParser.g:599:2: (this_MemberOf_0= ruleMemberOf | this_EclConceptReference_1= ruleEclConceptReference | this_Any_2= ruleAny | this_NestedExpression_3= ruleNestedExpression )
             {
-            // InternalEclParser.g:599:2: (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny | this_NestedExpression_3= ruleNestedExpression )
+            // InternalEclParser.g:599:2: (this_MemberOf_0= ruleMemberOf | this_EclConceptReference_1= ruleEclConceptReference | this_Any_2= ruleAny | this_NestedExpression_3= ruleNestedExpression )
             int alt9=4;
             switch ( input.LA(1) ) {
             case RULE_CARET:
@@ -1756,7 +1755,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getFocusConceptAccess().getMemberOfParserRuleCall_0());
+                      			newCompositeNode(grammarAccess.getEclFocusConceptAccess().getMemberOfParserRuleCall_0());
                       		
                     }
                     pushFollow(FollowSets000.FOLLOW_2);
@@ -1774,7 +1773,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // InternalEclParser.g:612:3: this_ConceptReference_1= ruleConceptReference
+                    // InternalEclParser.g:612:3: this_EclConceptReference_1= ruleEclConceptReference
                     {
                     if ( state.backtracking==0 ) {
 
@@ -1783,17 +1782,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getFocusConceptAccess().getConceptReferenceParserRuleCall_1());
+                      			newCompositeNode(grammarAccess.getEclFocusConceptAccess().getEclConceptReferenceParserRuleCall_1());
                       		
                     }
                     pushFollow(FollowSets000.FOLLOW_2);
-                    this_ConceptReference_1=ruleConceptReference();
+                    this_EclConceptReference_1=ruleEclConceptReference();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      			current = this_ConceptReference_1;
+                      			current = this_EclConceptReference_1;
                       			afterParserOrEnumRuleCall();
                       		
                     }
@@ -1810,7 +1809,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getFocusConceptAccess().getAnyParserRuleCall_2());
+                      			newCompositeNode(grammarAccess.getEclFocusConceptAccess().getAnyParserRuleCall_2());
                       		
                     }
                     pushFollow(FollowSets000.FOLLOW_2);
@@ -1837,7 +1836,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getFocusConceptAccess().getNestedExpressionParserRuleCall_3());
+                      			newCompositeNode(grammarAccess.getEclFocusConceptAccess().getNestedExpressionParserRuleCall_3());
                       		
                     }
                     pushFollow(FollowSets000.FOLLOW_2);
@@ -1875,7 +1874,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "ruleFocusConcept"
+    // $ANTLR end "ruleEclFocusConcept"
 
 
     // $ANTLR start "entryRuleChildOf"
@@ -1919,7 +1918,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleChildOf"
-    // InternalEclParser.g:658:1: ruleChildOf returns [EObject current=null] : (this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleFocusConcept ) ) ) ;
+    // InternalEclParser.g:658:1: ruleChildOf returns [EObject current=null] : (this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) ;
     public final EObject ruleChildOf() throws RecognitionException {
         EObject current = null;
 
@@ -1931,11 +1930,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:664:2: ( (this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleFocusConcept ) ) ) )
-            // InternalEclParser.g:665:2: (this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleFocusConcept ) ) )
+            // InternalEclParser.g:664:2: ( (this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) )
+            // InternalEclParser.g:665:2: (this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
             {
-            // InternalEclParser.g:665:2: (this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleFocusConcept ) ) )
-            // InternalEclParser.g:666:3: this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleFocusConcept ) )
+            // InternalEclParser.g:665:2: (this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
+            // InternalEclParser.g:666:3: this_LT_EM_0= RULE_LT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) )
             {
             this_LT_EM_0=(Token)match(input,RULE_LT_EM,FollowSets000.FOLLOW_4); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -1943,19 +1942,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_LT_EM_0, grammarAccess.getChildOfAccess().getLT_EMTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:670:3: ( (lv_constraint_1_0= ruleFocusConcept ) )
-            // InternalEclParser.g:671:4: (lv_constraint_1_0= ruleFocusConcept )
+            // InternalEclParser.g:670:3: ( (lv_constraint_1_0= ruleEclFocusConcept ) )
+            // InternalEclParser.g:671:4: (lv_constraint_1_0= ruleEclFocusConcept )
             {
-            // InternalEclParser.g:671:4: (lv_constraint_1_0= ruleFocusConcept )
-            // InternalEclParser.g:672:5: lv_constraint_1_0= ruleFocusConcept
+            // InternalEclParser.g:671:4: (lv_constraint_1_0= ruleEclFocusConcept )
+            // InternalEclParser.g:672:5: lv_constraint_1_0= ruleEclFocusConcept
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getChildOfAccess().getConstraintFocusConceptParserRuleCall_1_0());
+              					newCompositeNode(grammarAccess.getChildOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_2);
-            lv_constraint_1_0=ruleFocusConcept();
+            lv_constraint_1_0=ruleEclFocusConcept();
 
             state._fsp--;
             if (state.failed) return current;
@@ -1968,7 +1967,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.FocusConcept");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -2043,7 +2042,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleDescendantOf"
-    // InternalEclParser.g:700:1: ruleDescendantOf returns [EObject current=null] : (this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleFocusConcept ) ) ) ;
+    // InternalEclParser.g:700:1: ruleDescendantOf returns [EObject current=null] : (this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) ;
     public final EObject ruleDescendantOf() throws RecognitionException {
         EObject current = null;
 
@@ -2055,11 +2054,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:706:2: ( (this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleFocusConcept ) ) ) )
-            // InternalEclParser.g:707:2: (this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleFocusConcept ) ) )
+            // InternalEclParser.g:706:2: ( (this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) )
+            // InternalEclParser.g:707:2: (this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
             {
-            // InternalEclParser.g:707:2: (this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleFocusConcept ) ) )
-            // InternalEclParser.g:708:3: this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleFocusConcept ) )
+            // InternalEclParser.g:707:2: (this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
+            // InternalEclParser.g:708:3: this_LT_0= RULE_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) )
             {
             this_LT_0=(Token)match(input,RULE_LT,FollowSets000.FOLLOW_4); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -2067,19 +2066,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_LT_0, grammarAccess.getDescendantOfAccess().getLTTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:712:3: ( (lv_constraint_1_0= ruleFocusConcept ) )
-            // InternalEclParser.g:713:4: (lv_constraint_1_0= ruleFocusConcept )
+            // InternalEclParser.g:712:3: ( (lv_constraint_1_0= ruleEclFocusConcept ) )
+            // InternalEclParser.g:713:4: (lv_constraint_1_0= ruleEclFocusConcept )
             {
-            // InternalEclParser.g:713:4: (lv_constraint_1_0= ruleFocusConcept )
-            // InternalEclParser.g:714:5: lv_constraint_1_0= ruleFocusConcept
+            // InternalEclParser.g:713:4: (lv_constraint_1_0= ruleEclFocusConcept )
+            // InternalEclParser.g:714:5: lv_constraint_1_0= ruleEclFocusConcept
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getDescendantOfAccess().getConstraintFocusConceptParserRuleCall_1_0());
+              					newCompositeNode(grammarAccess.getDescendantOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_2);
-            lv_constraint_1_0=ruleFocusConcept();
+            lv_constraint_1_0=ruleEclFocusConcept();
 
             state._fsp--;
             if (state.failed) return current;
@@ -2092,7 +2091,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.FocusConcept");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -2167,7 +2166,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleDescendantOrSelfOf"
-    // InternalEclParser.g:742:1: ruleDescendantOrSelfOf returns [EObject current=null] : (this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleFocusConcept ) ) ) ;
+    // InternalEclParser.g:742:1: ruleDescendantOrSelfOf returns [EObject current=null] : (this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) ;
     public final EObject ruleDescendantOrSelfOf() throws RecognitionException {
         EObject current = null;
 
@@ -2179,11 +2178,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:748:2: ( (this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleFocusConcept ) ) ) )
-            // InternalEclParser.g:749:2: (this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleFocusConcept ) ) )
+            // InternalEclParser.g:748:2: ( (this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) )
+            // InternalEclParser.g:749:2: (this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
             {
-            // InternalEclParser.g:749:2: (this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleFocusConcept ) ) )
-            // InternalEclParser.g:750:3: this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleFocusConcept ) )
+            // InternalEclParser.g:749:2: (this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
+            // InternalEclParser.g:750:3: this_DBL_LT_0= RULE_DBL_LT ( (lv_constraint_1_0= ruleEclFocusConcept ) )
             {
             this_DBL_LT_0=(Token)match(input,RULE_DBL_LT,FollowSets000.FOLLOW_4); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -2191,19 +2190,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_DBL_LT_0, grammarAccess.getDescendantOrSelfOfAccess().getDBL_LTTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:754:3: ( (lv_constraint_1_0= ruleFocusConcept ) )
-            // InternalEclParser.g:755:4: (lv_constraint_1_0= ruleFocusConcept )
+            // InternalEclParser.g:754:3: ( (lv_constraint_1_0= ruleEclFocusConcept ) )
+            // InternalEclParser.g:755:4: (lv_constraint_1_0= ruleEclFocusConcept )
             {
-            // InternalEclParser.g:755:4: (lv_constraint_1_0= ruleFocusConcept )
-            // InternalEclParser.g:756:5: lv_constraint_1_0= ruleFocusConcept
+            // InternalEclParser.g:755:4: (lv_constraint_1_0= ruleEclFocusConcept )
+            // InternalEclParser.g:756:5: lv_constraint_1_0= ruleEclFocusConcept
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getDescendantOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0());
+              					newCompositeNode(grammarAccess.getDescendantOrSelfOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_2);
-            lv_constraint_1_0=ruleFocusConcept();
+            lv_constraint_1_0=ruleEclFocusConcept();
 
             state._fsp--;
             if (state.failed) return current;
@@ -2216,7 +2215,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.FocusConcept");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -2291,7 +2290,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleParentOf"
-    // InternalEclParser.g:784:1: ruleParentOf returns [EObject current=null] : (this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleFocusConcept ) ) ) ;
+    // InternalEclParser.g:784:1: ruleParentOf returns [EObject current=null] : (this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) ;
     public final EObject ruleParentOf() throws RecognitionException {
         EObject current = null;
 
@@ -2303,11 +2302,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:790:2: ( (this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleFocusConcept ) ) ) )
-            // InternalEclParser.g:791:2: (this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleFocusConcept ) ) )
+            // InternalEclParser.g:790:2: ( (this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) )
+            // InternalEclParser.g:791:2: (this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
             {
-            // InternalEclParser.g:791:2: (this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleFocusConcept ) ) )
-            // InternalEclParser.g:792:3: this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleFocusConcept ) )
+            // InternalEclParser.g:791:2: (this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
+            // InternalEclParser.g:792:3: this_GT_EM_0= RULE_GT_EM ( (lv_constraint_1_0= ruleEclFocusConcept ) )
             {
             this_GT_EM_0=(Token)match(input,RULE_GT_EM,FollowSets000.FOLLOW_4); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -2315,19 +2314,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_GT_EM_0, grammarAccess.getParentOfAccess().getGT_EMTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:796:3: ( (lv_constraint_1_0= ruleFocusConcept ) )
-            // InternalEclParser.g:797:4: (lv_constraint_1_0= ruleFocusConcept )
+            // InternalEclParser.g:796:3: ( (lv_constraint_1_0= ruleEclFocusConcept ) )
+            // InternalEclParser.g:797:4: (lv_constraint_1_0= ruleEclFocusConcept )
             {
-            // InternalEclParser.g:797:4: (lv_constraint_1_0= ruleFocusConcept )
-            // InternalEclParser.g:798:5: lv_constraint_1_0= ruleFocusConcept
+            // InternalEclParser.g:797:4: (lv_constraint_1_0= ruleEclFocusConcept )
+            // InternalEclParser.g:798:5: lv_constraint_1_0= ruleEclFocusConcept
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getParentOfAccess().getConstraintFocusConceptParserRuleCall_1_0());
+              					newCompositeNode(grammarAccess.getParentOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_2);
-            lv_constraint_1_0=ruleFocusConcept();
+            lv_constraint_1_0=ruleEclFocusConcept();
 
             state._fsp--;
             if (state.failed) return current;
@@ -2340,7 +2339,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.FocusConcept");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -2415,7 +2414,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleAncestorOf"
-    // InternalEclParser.g:826:1: ruleAncestorOf returns [EObject current=null] : (this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleFocusConcept ) ) ) ;
+    // InternalEclParser.g:826:1: ruleAncestorOf returns [EObject current=null] : (this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) ;
     public final EObject ruleAncestorOf() throws RecognitionException {
         EObject current = null;
 
@@ -2427,11 +2426,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:832:2: ( (this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleFocusConcept ) ) ) )
-            // InternalEclParser.g:833:2: (this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleFocusConcept ) ) )
+            // InternalEclParser.g:832:2: ( (this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) )
+            // InternalEclParser.g:833:2: (this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
             {
-            // InternalEclParser.g:833:2: (this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleFocusConcept ) ) )
-            // InternalEclParser.g:834:3: this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleFocusConcept ) )
+            // InternalEclParser.g:833:2: (this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
+            // InternalEclParser.g:834:3: this_GT_0= RULE_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) )
             {
             this_GT_0=(Token)match(input,RULE_GT,FollowSets000.FOLLOW_4); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -2439,19 +2438,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_GT_0, grammarAccess.getAncestorOfAccess().getGTTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:838:3: ( (lv_constraint_1_0= ruleFocusConcept ) )
-            // InternalEclParser.g:839:4: (lv_constraint_1_0= ruleFocusConcept )
+            // InternalEclParser.g:838:3: ( (lv_constraint_1_0= ruleEclFocusConcept ) )
+            // InternalEclParser.g:839:4: (lv_constraint_1_0= ruleEclFocusConcept )
             {
-            // InternalEclParser.g:839:4: (lv_constraint_1_0= ruleFocusConcept )
-            // InternalEclParser.g:840:5: lv_constraint_1_0= ruleFocusConcept
+            // InternalEclParser.g:839:4: (lv_constraint_1_0= ruleEclFocusConcept )
+            // InternalEclParser.g:840:5: lv_constraint_1_0= ruleEclFocusConcept
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getAncestorOfAccess().getConstraintFocusConceptParserRuleCall_1_0());
+              					newCompositeNode(grammarAccess.getAncestorOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_2);
-            lv_constraint_1_0=ruleFocusConcept();
+            lv_constraint_1_0=ruleEclFocusConcept();
 
             state._fsp--;
             if (state.failed) return current;
@@ -2464,7 +2463,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.FocusConcept");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -2539,7 +2538,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleAncestorOrSelfOf"
-    // InternalEclParser.g:868:1: ruleAncestorOrSelfOf returns [EObject current=null] : (this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleFocusConcept ) ) ) ;
+    // InternalEclParser.g:868:1: ruleAncestorOrSelfOf returns [EObject current=null] : (this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) ;
     public final EObject ruleAncestorOrSelfOf() throws RecognitionException {
         EObject current = null;
 
@@ -2551,11 +2550,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:874:2: ( (this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleFocusConcept ) ) ) )
-            // InternalEclParser.g:875:2: (this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleFocusConcept ) ) )
+            // InternalEclParser.g:874:2: ( (this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) ) )
+            // InternalEclParser.g:875:2: (this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
             {
-            // InternalEclParser.g:875:2: (this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleFocusConcept ) ) )
-            // InternalEclParser.g:876:3: this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleFocusConcept ) )
+            // InternalEclParser.g:875:2: (this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) ) )
+            // InternalEclParser.g:876:3: this_DBL_GT_0= RULE_DBL_GT ( (lv_constraint_1_0= ruleEclFocusConcept ) )
             {
             this_DBL_GT_0=(Token)match(input,RULE_DBL_GT,FollowSets000.FOLLOW_4); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -2563,19 +2562,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_DBL_GT_0, grammarAccess.getAncestorOrSelfOfAccess().getDBL_GTTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:880:3: ( (lv_constraint_1_0= ruleFocusConcept ) )
-            // InternalEclParser.g:881:4: (lv_constraint_1_0= ruleFocusConcept )
+            // InternalEclParser.g:880:3: ( (lv_constraint_1_0= ruleEclFocusConcept ) )
+            // InternalEclParser.g:881:4: (lv_constraint_1_0= ruleEclFocusConcept )
             {
-            // InternalEclParser.g:881:4: (lv_constraint_1_0= ruleFocusConcept )
-            // InternalEclParser.g:882:5: lv_constraint_1_0= ruleFocusConcept
+            // InternalEclParser.g:881:4: (lv_constraint_1_0= ruleEclFocusConcept )
+            // InternalEclParser.g:882:5: lv_constraint_1_0= ruleEclFocusConcept
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getAncestorOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0());
+              					newCompositeNode(grammarAccess.getAncestorOrSelfOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_2);
-            lv_constraint_1_0=ruleFocusConcept();
+            lv_constraint_1_0=ruleEclFocusConcept();
 
             state._fsp--;
             if (state.failed) return current;
@@ -2588,7 +2587,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.FocusConcept");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -2663,7 +2662,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleMemberOf"
-    // InternalEclParser.g:910:1: ruleMemberOf returns [EObject current=null] : (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) ) ) ;
+    // InternalEclParser.g:910:1: ruleMemberOf returns [EObject current=null] : (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) ) ) ;
     public final EObject ruleMemberOf() throws RecognitionException {
         EObject current = null;
 
@@ -2679,11 +2678,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:916:2: ( (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) ) ) )
-            // InternalEclParser.g:917:2: (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) ) )
+            // InternalEclParser.g:916:2: ( (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) ) ) )
+            // InternalEclParser.g:917:2: (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) ) )
             {
-            // InternalEclParser.g:917:2: (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) ) )
-            // InternalEclParser.g:918:3: this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) )
+            // InternalEclParser.g:917:2: (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) ) )
+            // InternalEclParser.g:918:3: this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) )
             {
             this_CARET_0=(Token)match(input,RULE_CARET,FollowSets000.FOLLOW_4); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -2691,13 +2690,13 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_CARET_0, grammarAccess.getMemberOfAccess().getCARETTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:922:3: ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) )
-            // InternalEclParser.g:923:4: ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) )
+            // InternalEclParser.g:922:3: ( ( (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) ) )
+            // InternalEclParser.g:923:4: ( (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) )
             {
-            // InternalEclParser.g:923:4: ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) )
-            // InternalEclParser.g:924:5: (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression )
+            // InternalEclParser.g:923:4: ( (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression ) )
+            // InternalEclParser.g:924:5: (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression )
             {
-            // InternalEclParser.g:924:5: (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression )
+            // InternalEclParser.g:924:5: (lv_constraint_1_1= ruleEclConceptReference | lv_constraint_1_2= ruleAny | lv_constraint_1_3= ruleNestedExpression )
             int alt10=3;
             switch ( input.LA(1) ) {
             case RULE_DIGIT_NONZERO:
@@ -2725,15 +2724,15 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             switch (alt10) {
                 case 1 :
-                    // InternalEclParser.g:925:6: lv_constraint_1_1= ruleConceptReference
+                    // InternalEclParser.g:925:6: lv_constraint_1_1= ruleEclConceptReference
                     {
                     if ( state.backtracking==0 ) {
 
-                      						newCompositeNode(grammarAccess.getMemberOfAccess().getConstraintConceptReferenceParserRuleCall_1_0_0());
+                      						newCompositeNode(grammarAccess.getMemberOfAccess().getConstraintEclConceptReferenceParserRuleCall_1_0_0());
                       					
                     }
                     pushFollow(FollowSets000.FOLLOW_2);
-                    lv_constraint_1_1=ruleConceptReference();
+                    lv_constraint_1_1=ruleEclConceptReference();
 
                     state._fsp--;
                     if (state.failed) return current;
@@ -2746,7 +2745,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                       							current,
                       							"constraint",
                       							lv_constraint_1_1,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.ConceptReference");
+                      							"com.b2international.snowowl.snomed.ecl.Ecl.EclConceptReference");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -2844,28 +2843,28 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     // $ANTLR end "ruleMemberOf"
 
 
-    // $ANTLR start "entryRuleConceptReference"
-    // InternalEclParser.g:979:1: entryRuleConceptReference returns [EObject current=null] : iv_ruleConceptReference= ruleConceptReference EOF ;
-    public final EObject entryRuleConceptReference() throws RecognitionException {
+    // $ANTLR start "entryRuleEclConceptReference"
+    // InternalEclParser.g:979:1: entryRuleEclConceptReference returns [EObject current=null] : iv_ruleEclConceptReference= ruleEclConceptReference EOF ;
+    public final EObject entryRuleEclConceptReference() throws RecognitionException {
         EObject current = null;
 
-        EObject iv_ruleConceptReference = null;
+        EObject iv_ruleEclConceptReference = null;
 
 
         try {
-            // InternalEclParser.g:979:57: (iv_ruleConceptReference= ruleConceptReference EOF )
-            // InternalEclParser.g:980:2: iv_ruleConceptReference= ruleConceptReference EOF
+            // InternalEclParser.g:979:60: (iv_ruleEclConceptReference= ruleEclConceptReference EOF )
+            // InternalEclParser.g:980:2: iv_ruleEclConceptReference= ruleEclConceptReference EOF
             {
             if ( state.backtracking==0 ) {
-               newCompositeNode(grammarAccess.getConceptReferenceRule()); 
+               newCompositeNode(grammarAccess.getEclConceptReferenceRule()); 
             }
             pushFollow(FollowSets000.FOLLOW_1);
-            iv_ruleConceptReference=ruleConceptReference();
+            iv_ruleEclConceptReference=ruleEclConceptReference();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
-               current =iv_ruleConceptReference; 
+               current =iv_ruleEclConceptReference; 
             }
             match(input,EOF,FollowSets000.FOLLOW_2); if (state.failed) return current;
 
@@ -2881,12 +2880,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "entryRuleConceptReference"
+    // $ANTLR end "entryRuleEclConceptReference"
 
 
-    // $ANTLR start "ruleConceptReference"
-    // InternalEclParser.g:986:1: ruleConceptReference returns [EObject current=null] : ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) ( (lv_term_1_0= RULE_TERM_STRING ) )? ) ;
-    public final EObject ruleConceptReference() throws RecognitionException {
+    // $ANTLR start "ruleEclConceptReference"
+    // InternalEclParser.g:986:1: ruleEclConceptReference returns [EObject current=null] : ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) ( (lv_term_1_0= RULE_TERM_STRING ) )? ) ;
+    public final EObject ruleEclConceptReference() throws RecognitionException {
         EObject current = null;
 
         Token lv_term_1_0=null;
@@ -2911,7 +2910,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getConceptReferenceAccess().getIdSnomedIdentifierParserRuleCall_0_0());
+              					newCompositeNode(grammarAccess.getEclConceptReferenceAccess().getIdSnomedIdentifierParserRuleCall_0_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_10);
@@ -2922,7 +2921,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             if ( state.backtracking==0 ) {
 
               					if (current==null) {
-              						current = createModelElementForParent(grammarAccess.getConceptReferenceRule());
+              						current = createModelElementForParent(grammarAccess.getEclConceptReferenceRule());
               					}
               					set(
               						current,
@@ -2955,13 +2954,13 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     lv_term_1_0=(Token)match(input,RULE_TERM_STRING,FollowSets000.FOLLOW_2); if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      					newLeafNode(lv_term_1_0, grammarAccess.getConceptReferenceAccess().getTermTERM_STRINGTerminalRuleCall_1_0());
+                      					newLeafNode(lv_term_1_0, grammarAccess.getEclConceptReferenceAccess().getTermTERM_STRINGTerminalRuleCall_1_0());
                       				
                     }
                     if ( state.backtracking==0 ) {
 
                       					if (current==null) {
-                      						current = createModelElement(grammarAccess.getConceptReferenceRule());
+                      						current = createModelElement(grammarAccess.getEclConceptReferenceRule());
                       					}
                       					setWithLastConsumed(
                       						current,
@@ -3000,7 +2999,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "ruleConceptReference"
+    // $ANTLR end "ruleEclConceptReference"
 
 
     // $ANTLR start "entryRuleAny"
@@ -3108,28 +3107,28 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     // $ANTLR end "ruleAny"
 
 
-    // $ANTLR start "entryRuleRefinement"
-    // InternalEclParser.g:1068:1: entryRuleRefinement returns [EObject current=null] : iv_ruleRefinement= ruleRefinement EOF ;
-    public final EObject entryRuleRefinement() throws RecognitionException {
+    // $ANTLR start "entryRuleEclRefinement"
+    // InternalEclParser.g:1068:1: entryRuleEclRefinement returns [EObject current=null] : iv_ruleEclRefinement= ruleEclRefinement EOF ;
+    public final EObject entryRuleEclRefinement() throws RecognitionException {
         EObject current = null;
 
-        EObject iv_ruleRefinement = null;
+        EObject iv_ruleEclRefinement = null;
 
 
         try {
-            // InternalEclParser.g:1068:51: (iv_ruleRefinement= ruleRefinement EOF )
-            // InternalEclParser.g:1069:2: iv_ruleRefinement= ruleRefinement EOF
+            // InternalEclParser.g:1068:54: (iv_ruleEclRefinement= ruleEclRefinement EOF )
+            // InternalEclParser.g:1069:2: iv_ruleEclRefinement= ruleEclRefinement EOF
             {
             if ( state.backtracking==0 ) {
-               newCompositeNode(grammarAccess.getRefinementRule()); 
+               newCompositeNode(grammarAccess.getEclRefinementRule()); 
             }
             pushFollow(FollowSets000.FOLLOW_1);
-            iv_ruleRefinement=ruleRefinement();
+            iv_ruleEclRefinement=ruleEclRefinement();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
-               current =iv_ruleRefinement; 
+               current =iv_ruleEclRefinement; 
             }
             match(input,EOF,FollowSets000.FOLLOW_2); if (state.failed) return current;
 
@@ -3145,12 +3144,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "entryRuleRefinement"
+    // $ANTLR end "entryRuleEclRefinement"
 
 
-    // $ANTLR start "ruleRefinement"
-    // InternalEclParser.g:1075:1: ruleRefinement returns [EObject current=null] : this_OrRefinement_0= ruleOrRefinement ;
-    public final EObject ruleRefinement() throws RecognitionException {
+    // $ANTLR start "ruleEclRefinement"
+    // InternalEclParser.g:1075:1: ruleEclRefinement returns [EObject current=null] : this_OrRefinement_0= ruleOrRefinement ;
+    public final EObject ruleEclRefinement() throws RecognitionException {
         EObject current = null;
 
         EObject this_OrRefinement_0 = null;
@@ -3170,7 +3169,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             }
             if ( state.backtracking==0 ) {
 
-              		newCompositeNode(grammarAccess.getRefinementAccess().getOrRefinementParserRuleCall());
+              		newCompositeNode(grammarAccess.getEclRefinementAccess().getOrRefinementParserRuleCall());
               	
             }
             pushFollow(FollowSets000.FOLLOW_2);
@@ -3202,7 +3201,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "ruleRefinement"
+    // $ANTLR end "ruleEclRefinement"
 
 
     // $ANTLR start "entryRuleOrRefinement"
@@ -3697,13 +3696,13 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleSubRefinement"
-    // InternalEclParser.g:1246:1: ruleSubRefinement returns [EObject current=null] : (this_AttributeConstraint_0= ruleAttributeConstraint | this_AttributeGroup_1= ruleAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement ) ;
+    // InternalEclParser.g:1246:1: ruleSubRefinement returns [EObject current=null] : (this_AttributeConstraint_0= ruleAttributeConstraint | this_EclAttributeGroup_1= ruleEclAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement ) ;
     public final EObject ruleSubRefinement() throws RecognitionException {
         EObject current = null;
 
         EObject this_AttributeConstraint_0 = null;
 
-        EObject this_AttributeGroup_1 = null;
+        EObject this_EclAttributeGroup_1 = null;
 
         EObject this_NestedRefinement_2 = null;
 
@@ -3712,10 +3711,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:1252:2: ( (this_AttributeConstraint_0= ruleAttributeConstraint | this_AttributeGroup_1= ruleAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement ) )
-            // InternalEclParser.g:1253:2: (this_AttributeConstraint_0= ruleAttributeConstraint | this_AttributeGroup_1= ruleAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement )
+            // InternalEclParser.g:1252:2: ( (this_AttributeConstraint_0= ruleAttributeConstraint | this_EclAttributeGroup_1= ruleEclAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement ) )
+            // InternalEclParser.g:1253:2: (this_AttributeConstraint_0= ruleAttributeConstraint | this_EclAttributeGroup_1= ruleEclAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement )
             {
-            // InternalEclParser.g:1253:2: (this_AttributeConstraint_0= ruleAttributeConstraint | this_AttributeGroup_1= ruleAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement )
+            // InternalEclParser.g:1253:2: (this_AttributeConstraint_0= ruleAttributeConstraint | this_EclAttributeGroup_1= ruleEclAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement )
             int alt15=3;
             alt15 = dfa15.predict(input);
             switch (alt15) {
@@ -3747,7 +3746,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // InternalEclParser.g:1266:3: this_AttributeGroup_1= ruleAttributeGroup
+                    // InternalEclParser.g:1266:3: this_EclAttributeGroup_1= ruleEclAttributeGroup
                     {
                     if ( state.backtracking==0 ) {
 
@@ -3756,17 +3755,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getSubRefinementAccess().getAttributeGroupParserRuleCall_1());
+                      			newCompositeNode(grammarAccess.getSubRefinementAccess().getEclAttributeGroupParserRuleCall_1());
                       		
                     }
                     pushFollow(FollowSets000.FOLLOW_2);
-                    this_AttributeGroup_1=ruleAttributeGroup();
+                    this_EclAttributeGroup_1=ruleEclAttributeGroup();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      			current = this_AttributeGroup_1;
+                      			current = this_EclAttributeGroup_1;
                       			afterParserOrEnumRuleCall();
                       		
                     }
@@ -3865,7 +3864,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleNestedRefinement"
-    // InternalEclParser.g:1300:1: ruleNestedRefinement returns [EObject current=null] : (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) ;
+    // InternalEclParser.g:1300:1: ruleNestedRefinement returns [EObject current=null] : (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) ;
     public final EObject ruleNestedRefinement() throws RecognitionException {
         EObject current = null;
 
@@ -3878,11 +3877,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:1306:2: ( (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) )
-            // InternalEclParser.g:1307:2: (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
+            // InternalEclParser.g:1306:2: ( (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) )
+            // InternalEclParser.g:1307:2: (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
             {
-            // InternalEclParser.g:1307:2: (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
-            // InternalEclParser.g:1308:3: this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE
+            // InternalEclParser.g:1307:2: (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
+            // InternalEclParser.g:1308:3: this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclRefinement ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE
             {
             this_ROUND_OPEN_0=(Token)match(input,RULE_ROUND_OPEN,FollowSets000.FOLLOW_8); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -3890,19 +3889,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_ROUND_OPEN_0, grammarAccess.getNestedRefinementAccess().getROUND_OPENTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:1312:3: ( (lv_nested_1_0= ruleRefinement ) )
-            // InternalEclParser.g:1313:4: (lv_nested_1_0= ruleRefinement )
+            // InternalEclParser.g:1312:3: ( (lv_nested_1_0= ruleEclRefinement ) )
+            // InternalEclParser.g:1313:4: (lv_nested_1_0= ruleEclRefinement )
             {
-            // InternalEclParser.g:1313:4: (lv_nested_1_0= ruleRefinement )
-            // InternalEclParser.g:1314:5: lv_nested_1_0= ruleRefinement
+            // InternalEclParser.g:1313:4: (lv_nested_1_0= ruleEclRefinement )
+            // InternalEclParser.g:1314:5: lv_nested_1_0= ruleEclRefinement
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getNestedRefinementAccess().getNestedRefinementParserRuleCall_1_0());
+              					newCompositeNode(grammarAccess.getNestedRefinementAccess().getNestedEclRefinementParserRuleCall_1_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_11);
-            lv_nested_1_0=ruleRefinement();
+            lv_nested_1_0=ruleEclRefinement();
 
             state._fsp--;
             if (state.failed) return current;
@@ -3915,7 +3914,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               						current,
               						"nested",
               						lv_nested_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Refinement");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclRefinement");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -3955,28 +3954,28 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     // $ANTLR end "ruleNestedRefinement"
 
 
-    // $ANTLR start "entryRuleAttributeGroup"
-    // InternalEclParser.g:1339:1: entryRuleAttributeGroup returns [EObject current=null] : iv_ruleAttributeGroup= ruleAttributeGroup EOF ;
-    public final EObject entryRuleAttributeGroup() throws RecognitionException {
+    // $ANTLR start "entryRuleEclAttributeGroup"
+    // InternalEclParser.g:1339:1: entryRuleEclAttributeGroup returns [EObject current=null] : iv_ruleEclAttributeGroup= ruleEclAttributeGroup EOF ;
+    public final EObject entryRuleEclAttributeGroup() throws RecognitionException {
         EObject current = null;
 
-        EObject iv_ruleAttributeGroup = null;
+        EObject iv_ruleEclAttributeGroup = null;
 
 
         try {
-            // InternalEclParser.g:1339:55: (iv_ruleAttributeGroup= ruleAttributeGroup EOF )
-            // InternalEclParser.g:1340:2: iv_ruleAttributeGroup= ruleAttributeGroup EOF
+            // InternalEclParser.g:1339:58: (iv_ruleEclAttributeGroup= ruleEclAttributeGroup EOF )
+            // InternalEclParser.g:1340:2: iv_ruleEclAttributeGroup= ruleEclAttributeGroup EOF
             {
             if ( state.backtracking==0 ) {
-               newCompositeNode(grammarAccess.getAttributeGroupRule()); 
+               newCompositeNode(grammarAccess.getEclAttributeGroupRule()); 
             }
             pushFollow(FollowSets000.FOLLOW_1);
-            iv_ruleAttributeGroup=ruleAttributeGroup();
+            iv_ruleEclAttributeGroup=ruleEclAttributeGroup();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
-               current =iv_ruleAttributeGroup; 
+               current =iv_ruleEclAttributeGroup; 
             }
             match(input,EOF,FollowSets000.FOLLOW_2); if (state.failed) return current;
 
@@ -3992,12 +3991,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "entryRuleAttributeGroup"
+    // $ANTLR end "entryRuleEclAttributeGroup"
 
 
-    // $ANTLR start "ruleAttributeGroup"
-    // InternalEclParser.g:1346:1: ruleAttributeGroup returns [EObject current=null] : ( ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE ) ;
-    public final EObject ruleAttributeGroup() throws RecognitionException {
+    // $ANTLR start "ruleEclAttributeGroup"
+    // InternalEclParser.g:1346:1: ruleEclAttributeGroup returns [EObject current=null] : ( ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleEclAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE ) ;
+    public final EObject ruleEclAttributeGroup() throws RecognitionException {
         EObject current = null;
 
         Token this_CURLY_OPEN_1=null;
@@ -4011,11 +4010,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:1352:2: ( ( ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE ) )
-            // InternalEclParser.g:1353:2: ( ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE )
+            // InternalEclParser.g:1352:2: ( ( ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleEclAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE ) )
+            // InternalEclParser.g:1353:2: ( ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleEclAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE )
             {
-            // InternalEclParser.g:1353:2: ( ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE )
-            // InternalEclParser.g:1354:3: ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE
+            // InternalEclParser.g:1353:2: ( ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleEclAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE )
+            // InternalEclParser.g:1354:3: ( (lv_cardinality_0_0= ruleCardinality ) )? this_CURLY_OPEN_1= RULE_CURLY_OPEN ( (lv_refinement_2_0= ruleEclAttributeSet ) ) this_CURLY_CLOSE_3= RULE_CURLY_CLOSE
             {
             // InternalEclParser.g:1354:3: ( (lv_cardinality_0_0= ruleCardinality ) )?
             int alt16=2;
@@ -4033,7 +4032,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     {
                     if ( state.backtracking==0 ) {
 
-                      					newCompositeNode(grammarAccess.getAttributeGroupAccess().getCardinalityCardinalityParserRuleCall_0_0());
+                      					newCompositeNode(grammarAccess.getEclAttributeGroupAccess().getCardinalityCardinalityParserRuleCall_0_0());
                       				
                     }
                     pushFollow(FollowSets000.FOLLOW_12);
@@ -4044,7 +4043,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       					if (current==null) {
-                      						current = createModelElementForParent(grammarAccess.getAttributeGroupRule());
+                      						current = createModelElementForParent(grammarAccess.getEclAttributeGroupRule());
                       					}
                       					set(
                       						current,
@@ -4066,35 +4065,35 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             this_CURLY_OPEN_1=(Token)match(input,RULE_CURLY_OPEN,FollowSets000.FOLLOW_13); if (state.failed) return current;
             if ( state.backtracking==0 ) {
 
-              			newLeafNode(this_CURLY_OPEN_1, grammarAccess.getAttributeGroupAccess().getCURLY_OPENTerminalRuleCall_1());
+              			newLeafNode(this_CURLY_OPEN_1, grammarAccess.getEclAttributeGroupAccess().getCURLY_OPENTerminalRuleCall_1());
               		
             }
-            // InternalEclParser.g:1377:3: ( (lv_refinement_2_0= ruleAttributeSet ) )
-            // InternalEclParser.g:1378:4: (lv_refinement_2_0= ruleAttributeSet )
+            // InternalEclParser.g:1377:3: ( (lv_refinement_2_0= ruleEclAttributeSet ) )
+            // InternalEclParser.g:1378:4: (lv_refinement_2_0= ruleEclAttributeSet )
             {
-            // InternalEclParser.g:1378:4: (lv_refinement_2_0= ruleAttributeSet )
-            // InternalEclParser.g:1379:5: lv_refinement_2_0= ruleAttributeSet
+            // InternalEclParser.g:1378:4: (lv_refinement_2_0= ruleEclAttributeSet )
+            // InternalEclParser.g:1379:5: lv_refinement_2_0= ruleEclAttributeSet
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getAttributeGroupAccess().getRefinementAttributeSetParserRuleCall_2_0());
+              					newCompositeNode(grammarAccess.getEclAttributeGroupAccess().getRefinementEclAttributeSetParserRuleCall_2_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_14);
-            lv_refinement_2_0=ruleAttributeSet();
+            lv_refinement_2_0=ruleEclAttributeSet();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
 
               					if (current==null) {
-              						current = createModelElementForParent(grammarAccess.getAttributeGroupRule());
+              						current = createModelElementForParent(grammarAccess.getEclAttributeGroupRule());
               					}
               					set(
               						current,
               						"refinement",
               						lv_refinement_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.AttributeSet");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclAttributeSet");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -4107,7 +4106,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             this_CURLY_CLOSE_3=(Token)match(input,RULE_CURLY_CLOSE,FollowSets000.FOLLOW_2); if (state.failed) return current;
             if ( state.backtracking==0 ) {
 
-              			newLeafNode(this_CURLY_CLOSE_3, grammarAccess.getAttributeGroupAccess().getCURLY_CLOSETerminalRuleCall_3());
+              			newLeafNode(this_CURLY_CLOSE_3, grammarAccess.getEclAttributeGroupAccess().getCURLY_CLOSETerminalRuleCall_3());
               		
             }
 
@@ -4131,31 +4130,31 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "ruleAttributeGroup"
+    // $ANTLR end "ruleEclAttributeGroup"
 
 
-    // $ANTLR start "entryRuleAttributeSet"
-    // InternalEclParser.g:1404:1: entryRuleAttributeSet returns [EObject current=null] : iv_ruleAttributeSet= ruleAttributeSet EOF ;
-    public final EObject entryRuleAttributeSet() throws RecognitionException {
+    // $ANTLR start "entryRuleEclAttributeSet"
+    // InternalEclParser.g:1404:1: entryRuleEclAttributeSet returns [EObject current=null] : iv_ruleEclAttributeSet= ruleEclAttributeSet EOF ;
+    public final EObject entryRuleEclAttributeSet() throws RecognitionException {
         EObject current = null;
 
-        EObject iv_ruleAttributeSet = null;
+        EObject iv_ruleEclAttributeSet = null;
 
 
         try {
-            // InternalEclParser.g:1404:53: (iv_ruleAttributeSet= ruleAttributeSet EOF )
-            // InternalEclParser.g:1405:2: iv_ruleAttributeSet= ruleAttributeSet EOF
+            // InternalEclParser.g:1404:56: (iv_ruleEclAttributeSet= ruleEclAttributeSet EOF )
+            // InternalEclParser.g:1405:2: iv_ruleEclAttributeSet= ruleEclAttributeSet EOF
             {
             if ( state.backtracking==0 ) {
-               newCompositeNode(grammarAccess.getAttributeSetRule()); 
+               newCompositeNode(grammarAccess.getEclAttributeSetRule()); 
             }
             pushFollow(FollowSets000.FOLLOW_1);
-            iv_ruleAttributeSet=ruleAttributeSet();
+            iv_ruleEclAttributeSet=ruleEclAttributeSet();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
-               current =iv_ruleAttributeSet; 
+               current =iv_ruleEclAttributeSet; 
             }
             match(input,EOF,FollowSets000.FOLLOW_2); if (state.failed) return current;
 
@@ -4171,12 +4170,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "entryRuleAttributeSet"
+    // $ANTLR end "entryRuleEclAttributeSet"
 
 
-    // $ANTLR start "ruleAttributeSet"
-    // InternalEclParser.g:1411:1: ruleAttributeSet returns [EObject current=null] : this_OrAttributeSet_0= ruleOrAttributeSet ;
-    public final EObject ruleAttributeSet() throws RecognitionException {
+    // $ANTLR start "ruleEclAttributeSet"
+    // InternalEclParser.g:1411:1: ruleEclAttributeSet returns [EObject current=null] : this_OrAttributeSet_0= ruleOrAttributeSet ;
+    public final EObject ruleEclAttributeSet() throws RecognitionException {
         EObject current = null;
 
         EObject this_OrAttributeSet_0 = null;
@@ -4196,7 +4195,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             }
             if ( state.backtracking==0 ) {
 
-              		newCompositeNode(grammarAccess.getAttributeSetAccess().getOrAttributeSetParserRuleCall());
+              		newCompositeNode(grammarAccess.getEclAttributeSetAccess().getOrAttributeSetParserRuleCall());
               	
             }
             pushFollow(FollowSets000.FOLLOW_2);
@@ -4228,7 +4227,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "ruleAttributeSet"
+    // $ANTLR end "ruleEclAttributeSet"
 
 
     // $ANTLR start "entryRuleOrAttributeSet"
@@ -4829,7 +4828,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleNestedAttributeSet"
-    // InternalEclParser.g:1618:1: ruleNestedAttributeSet returns [EObject current=null] : (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) ;
+    // InternalEclParser.g:1618:1: ruleNestedAttributeSet returns [EObject current=null] : (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) ;
     public final EObject ruleNestedAttributeSet() throws RecognitionException {
         EObject current = null;
 
@@ -4842,11 +4841,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:1624:2: ( (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) )
-            // InternalEclParser.g:1625:2: (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
+            // InternalEclParser.g:1624:2: ( (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) )
+            // InternalEclParser.g:1625:2: (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
             {
-            // InternalEclParser.g:1625:2: (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
-            // InternalEclParser.g:1626:3: this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE
+            // InternalEclParser.g:1625:2: (this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
+            // InternalEclParser.g:1626:3: this_ROUND_OPEN_0= RULE_ROUND_OPEN ( (lv_nested_1_0= ruleEclAttributeSet ) ) this_ROUND_CLOSE_2= RULE_ROUND_CLOSE
             {
             this_ROUND_OPEN_0=(Token)match(input,RULE_ROUND_OPEN,FollowSets000.FOLLOW_13); if (state.failed) return current;
             if ( state.backtracking==0 ) {
@@ -4854,19 +4853,19 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			newLeafNode(this_ROUND_OPEN_0, grammarAccess.getNestedAttributeSetAccess().getROUND_OPENTerminalRuleCall_0());
               		
             }
-            // InternalEclParser.g:1630:3: ( (lv_nested_1_0= ruleAttributeSet ) )
-            // InternalEclParser.g:1631:4: (lv_nested_1_0= ruleAttributeSet )
+            // InternalEclParser.g:1630:3: ( (lv_nested_1_0= ruleEclAttributeSet ) )
+            // InternalEclParser.g:1631:4: (lv_nested_1_0= ruleEclAttributeSet )
             {
-            // InternalEclParser.g:1631:4: (lv_nested_1_0= ruleAttributeSet )
-            // InternalEclParser.g:1632:5: lv_nested_1_0= ruleAttributeSet
+            // InternalEclParser.g:1631:4: (lv_nested_1_0= ruleEclAttributeSet )
+            // InternalEclParser.g:1632:5: lv_nested_1_0= ruleEclAttributeSet
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getNestedAttributeSetAccess().getNestedAttributeSetParserRuleCall_1_0());
+              					newCompositeNode(grammarAccess.getNestedAttributeSetAccess().getNestedEclAttributeSetParserRuleCall_1_0());
               				
             }
             pushFollow(FollowSets000.FOLLOW_11);
-            lv_nested_1_0=ruleAttributeSet();
+            lv_nested_1_0=ruleEclAttributeSet();
 
             state._fsp--;
             if (state.failed) return current;
@@ -4879,7 +4878,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               						current,
               						"nested",
               						lv_nested_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.AttributeSet");
+              						"com.b2international.snowowl.snomed.ecl.Ecl.EclAttributeSet");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -10104,11 +10103,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
     // $ANTLR start synpred25_InternalEclParser
     public final void synpred25_InternalEclParser_fragment() throws RecognitionException {   
-        EObject this_AttributeGroup_1 = null;
+        EObject this_EclAttributeGroup_1 = null;
 
 
-        // InternalEclParser.g:1266:3: (this_AttributeGroup_1= ruleAttributeGroup )
-        // InternalEclParser.g:1266:3: this_AttributeGroup_1= ruleAttributeGroup
+        // InternalEclParser.g:1266:3: (this_EclAttributeGroup_1= ruleEclAttributeGroup )
+        // InternalEclParser.g:1266:3: this_EclAttributeGroup_1= ruleEclAttributeGroup
         {
         if ( state.backtracking==0 ) {
 
@@ -10116,7 +10115,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
           		
         }
         pushFollow(FollowSets000.FOLLOW_2);
-        this_AttributeGroup_1=ruleAttributeGroup();
+        this_EclAttributeGroup_1=ruleEclAttributeGroup();
 
         state._fsp--;
         if (state.failed) return ;
@@ -10227,11 +10226,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     protected DFA25 dfa25 = new DFA25(this);
     static final String dfa_1s = "\17\uffff";
     static final String dfa_2s = "\1\13\1\0\12\uffff\1\0\2\uffff";
-    static final String dfa_3s = "\1\43\1\0\12\uffff\1\0\2\uffff";
+    static final String dfa_3s = "\1\42\1\0\12\uffff\1\0\2\uffff";
     static final String dfa_4s = "\2\uffff\1\1\12\uffff\1\2\1\3";
     static final String dfa_5s = "\1\uffff\1\0\12\uffff\1\1\2\uffff}>";
     static final String[] dfa_6s = {
-            "\1\2\2\uffff\1\2\1\uffff\1\15\1\uffff\1\14\1\uffff\1\1\3\uffff\1\2\2\uffff\1\2\2\uffff\6\2",
+            "\1\2\2\uffff\1\2\1\uffff\1\15\1\uffff\1\14\1\uffff\1\1\3\uffff\1\2\1\uffff\1\2\2\uffff\6\2",
             "\1\uffff",
             "",
             "",
@@ -10269,7 +10268,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             this.transition = dfa_6;
         }
         public String getDescription() {
-            return "1253:2: (this_AttributeConstraint_0= ruleAttributeConstraint | this_AttributeGroup_1= ruleAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement )";
+            return "1253:2: (this_AttributeConstraint_0= ruleAttributeConstraint | this_EclAttributeGroup_1= ruleEclAttributeGroup | this_NestedRefinement_2= ruleNestedRefinement )";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -10315,11 +10314,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     }
     static final String dfa_7s = "\16\uffff";
     static final String dfa_8s = "\1\13\13\uffff\1\0\1\uffff";
-    static final String dfa_9s = "\1\43\13\uffff\1\0\1\uffff";
+    static final String dfa_9s = "\1\42\13\uffff\1\0\1\uffff";
     static final String dfa_10s = "\1\uffff\1\1\13\uffff\1\2";
     static final String dfa_11s = "\14\uffff\1\0\1\uffff}>";
     static final String[] dfa_12s = {
-            "\1\1\2\uffff\1\1\3\uffff\1\14\1\uffff\1\1\3\uffff\1\1\2\uffff\1\1\2\uffff\6\1",
+            "\1\1\2\uffff\1\1\3\uffff\1\14\1\uffff\1\1\3\uffff\1\1\1\uffff\1\1\2\uffff\6\1",
             "",
             "",
             "",
@@ -10387,14 +10386,14 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     }
     static final String dfa_13s = "\101\uffff";
     static final String dfa_14s = "\23\uffff\2\51\2\uffff\2\55\2\uffff\2\62\2\uffff\2\65\2\uffff\2\71\2\uffff\2\75\2\uffff\2\51\2\uffff\2\55\2\uffff\2\62\2\uffff\2\65\2\uffff\2\71\2\uffff\2\75";
-    static final String dfa_15s = "\1\34\2\5\4\46\1\uffff\1\15\3\uffff\7\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4";
-    static final String dfa_16s = "\1\45\2\52\4\46\1\uffff\1\27\3\uffff\5\27\2\16\2\32\2\16\2\32\2\16\2\32\2\16\2\32\2\16\2\32\2\16\2\32\2\uffff\2\32\2\uffff\2\32\2\uffff\2\32\2\uffff\2\32\2\uffff\2\32\2\uffff\2\32";
+    static final String dfa_15s = "\1\33\2\5\4\45\1\uffff\1\15\3\uffff\7\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4";
+    static final String dfa_16s = "\1\44\2\51\4\45\1\uffff\1\27\3\uffff\5\27\2\16\2\31\2\16\2\31\2\16\2\31\2\16\2\31\2\16\2\31\2\16\2\31\2\uffff\2\31\2\uffff\2\31\2\uffff\2\31\2\uffff\2\31\2\uffff\2\31\2\uffff\2\31";
     static final String dfa_17s = "\7\uffff\1\3\1\uffff\1\1\1\4\1\2\35\uffff\1\5\1\13\2\uffff\1\6\1\14\2\uffff\1\15\1\7\2\uffff\1\10\1\16\2\uffff\1\11\1\17\2\uffff\1\12\1\20\2\uffff";
     static final String dfa_18s = "\101\uffff}>";
     static final String[] dfa_19s = {
             "\1\1\1\2\1\5\1\3\4\uffff\1\4\1\6",
-            "\2\11\37\uffff\1\10\3\uffff\1\7",
-            "\2\13\37\uffff\1\14\3\uffff\1\12",
+            "\2\11\36\uffff\1\10\3\uffff\1\7",
+            "\2\13\36\uffff\1\14\3\uffff\1\12",
             "\1\15",
             "\1\16",
             "\1\17",
@@ -10411,52 +10410,52 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             "\1\47\1\50\7\uffff\1\45\1\46",
             "\1\23\1\24",
             "\1\23\1\24",
-            "\1\51\2\uffff\3\51\7\uffff\1\51\1\uffff\1\51\6\uffff\1\52",
-            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\6\uffff\1\52",
+            "\1\51\2\uffff\3\51\7\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
+            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
             "\1\27\1\30",
             "\1\27\1\30",
-            "\1\55\2\uffff\3\55\7\uffff\1\55\1\uffff\1\55\6\uffff\1\56",
-            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\6\uffff\1\56",
+            "\1\55\2\uffff\3\55\7\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
+            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
             "\1\33\1\34",
             "\1\33\1\34",
-            "\1\62\2\uffff\3\62\7\uffff\1\62\1\uffff\1\62\6\uffff\1\61",
-            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\6\uffff\1\61",
+            "\1\62\2\uffff\3\62\7\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
+            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
             "\1\37\1\40",
             "\1\37\1\40",
-            "\1\65\2\uffff\3\65\7\uffff\1\65\1\uffff\1\65\6\uffff\1\66",
-            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\6\uffff\1\66",
+            "\1\65\2\uffff\3\65\7\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
+            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
             "\1\43\1\44",
             "\1\43\1\44",
-            "\1\71\2\uffff\3\71\7\uffff\1\71\1\uffff\1\71\6\uffff\1\72",
-            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\6\uffff\1\72",
+            "\1\71\2\uffff\3\71\7\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
+            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
             "\1\47\1\50",
             "\1\47\1\50",
-            "\1\75\2\uffff\3\75\7\uffff\1\75\1\uffff\1\75\6\uffff\1\76",
-            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\6\uffff\1\76",
+            "\1\75\2\uffff\3\75\7\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
+            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
             "",
             "",
-            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\6\uffff\1\52",
-            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\6\uffff\1\52",
+            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
+            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
             "",
             "",
-            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\6\uffff\1\56",
-            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\6\uffff\1\56",
+            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
+            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
             "",
             "",
-            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\6\uffff\1\61",
-            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\6\uffff\1\61",
+            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
+            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
             "",
             "",
-            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\6\uffff\1\66",
-            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\6\uffff\1\66",
+            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
+            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
             "",
             "",
-            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\6\uffff\1\72",
-            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\6\uffff\1\72",
+            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
+            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
             "",
             "",
-            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\6\uffff\1\76",
-            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\6\uffff\1\76"
+            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
+            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76"
     };
 
     static final short[] dfa_13 = DFA.unpackEncodedString(dfa_13s);
@@ -10491,29 +10490,29 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         public static final BitSet FOLLOW_1 = new BitSet(new long[]{0x0000000000000000L});
         public static final BitSet FOLLOW_2 = new BitSet(new long[]{0x0000000000000002L});
         public static final BitSet FOLLOW_3 = new BitSet(new long[]{0x0000000000000102L});
-        public static final BitSet FOLLOW_4 = new BitSet(new long[]{0x0000000FC9044000L});
+        public static final BitSet FOLLOW_4 = new BitSet(new long[]{0x00000007E5044000L});
         public static final BitSet FOLLOW_5 = new BitSet(new long[]{0x0000000000000282L});
         public static final BitSet FOLLOW_6 = new BitSet(new long[]{0x0000000000000012L});
         public static final BitSet FOLLOW_7 = new BitSet(new long[]{0x0000000000008002L});
-        public static final BitSet FOLLOW_8 = new BitSet(new long[]{0x0000000FC9154800L});
-        public static final BitSet FOLLOW_9 = new BitSet(new long[]{0x0000000004000002L});
+        public static final BitSet FOLLOW_8 = new BitSet(new long[]{0x00000007E5154800L});
+        public static final BitSet FOLLOW_9 = new BitSet(new long[]{0x0000000002000002L});
         public static final BitSet FOLLOW_10 = new BitSet(new long[]{0x0000000000000402L});
         public static final BitSet FOLLOW_11 = new BitSet(new long[]{0x0000000000080000L});
         public static final BitSet FOLLOW_12 = new BitSet(new long[]{0x0000000000010000L});
-        public static final BitSet FOLLOW_13 = new BitSet(new long[]{0x0000000FC9144800L});
+        public static final BitSet FOLLOW_13 = new BitSet(new long[]{0x00000007E5144800L});
         public static final BitSet FOLLOW_14 = new BitSet(new long[]{0x0000000000020000L});
-        public static final BitSet FOLLOW_15 = new BitSet(new long[]{0x0000000FC9044800L});
-        public static final BitSet FOLLOW_16 = new BitSet(new long[]{0x00000030F0000000L});
+        public static final BitSet FOLLOW_15 = new BitSet(new long[]{0x00000007E5044800L});
+        public static final BitSet FOLLOW_16 = new BitSet(new long[]{0x0000001878000000L});
         public static final BitSet FOLLOW_17 = new BitSet(new long[]{0x0000000000006000L});
         public static final BitSet FOLLOW_18 = new BitSet(new long[]{0x0000000000001000L});
-        public static final BitSet FOLLOW_19 = new BitSet(new long[]{0x0000000008006000L});
+        public static final BitSet FOLLOW_19 = new BitSet(new long[]{0x0000000004006000L});
         public static final BitSet FOLLOW_20 = new BitSet(new long[]{0x0000000000200000L});
         public static final BitSet FOLLOW_21 = new BitSet(new long[]{0x0000000000000060L});
-        public static final BitSet FOLLOW_22 = new BitSet(new long[]{0x0000040000000000L});
-        public static final BitSet FOLLOW_23 = new BitSet(new long[]{0x0000004000000000L});
+        public static final BitSet FOLLOW_22 = new BitSet(new long[]{0x0000020000000000L});
+        public static final BitSet FOLLOW_23 = new BitSet(new long[]{0x0000002000000000L});
         public static final BitSet FOLLOW_24 = new BitSet(new long[]{0x0000000000C06000L});
         public static final BitSet FOLLOW_25 = new BitSet(new long[]{0x0000000000006002L});
-        public static final BitSet FOLLOW_26 = new BitSet(new long[]{0x0000000004000000L});
+        public static final BitSet FOLLOW_26 = new BitSet(new long[]{0x0000000002000000L});
     }
 
 
