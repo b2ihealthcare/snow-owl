@@ -216,31 +216,31 @@ public interface QlFactory extends EFactory
   QueryExclusion createQueryExclusion();
 
   /**
-   * Returns a new object of class '<em>Disjunction</em>'.
+   * Returns a new object of class '<em>Disjunction Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Disjunction</em>'.
+   * @return a new object of class '<em>Disjunction Filter</em>'.
    * @generated
    */
-  Disjunction createDisjunction();
+  DisjunctionFilter createDisjunctionFilter();
 
   /**
-   * Returns a new object of class '<em>Conjunction</em>'.
+   * Returns a new object of class '<em>Conjunction Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Conjunction</em>'.
+   * @return a new object of class '<em>Conjunction Filter</em>'.
    * @generated
    */
-  Conjunction createConjunction();
+  ConjunctionFilter createConjunctionFilter();
 
   /**
-   * Returns a new object of class '<em>Exclusion</em>'.
+   * Returns a new object of class '<em>Exclusion Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Exclusion</em>'.
+   * @return a new object of class '<em>Exclusion Filter</em>'.
    * @generated
    */
-  Exclusion createExclusion();
+  ExclusionFilter createExclusionFilter();
 
   /**
    * Returns the package supported by this factory.

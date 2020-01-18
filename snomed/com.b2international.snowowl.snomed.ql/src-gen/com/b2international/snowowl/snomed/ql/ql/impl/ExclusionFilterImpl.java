@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Filter;
+import com.b2international.snowowl.snomed.ql.ql.ExclusionFilter;
+import com.b2international.snowowl.snomed.ql.ql.PropertyFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -29,19 +29,19 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Conjunction</b></em>'.
+ * An implementation of the model object '<em><b>Exclusion Filter</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.ConjunctionImpl#getLeft <em>Left</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.ConjunctionImpl#getRight <em>Right</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.ExclusionFilterImpl#getLeft <em>Left</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.impl.ExclusionFilterImpl#getRight <em>Right</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class ConjunctionImpl extends FilterImpl implements Conjunction
+public class ExclusionFilterImpl extends FilterImpl implements ExclusionFilter
 {
   /**
    * The cached value of the '{@link #getLeft() <em>Left</em>}' containment reference.
@@ -51,7 +51,7 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
    * @generated
    * @ordered
    */
-  protected Filter left;
+  protected PropertyFilter left;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -61,14 +61,14 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
    * @generated
    * @ordered
    */
-  protected Filter right;
+  protected PropertyFilter right;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected ConjunctionImpl()
+  protected ExclusionFilterImpl()
   {
     super();
   }
@@ -81,7 +81,7 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.CONJUNCTION;
+    return QlPackage.Literals.EXCLUSION_FILTER;
   }
 
   /**
@@ -90,7 +90,7 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
    * @generated
    */
   @Override
-  public Filter getLeft()
+  public PropertyFilter getLeft()
   {
     return left;
   }
@@ -100,13 +100,13 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetLeft(Filter newLeft, NotificationChain msgs)
+  public NotificationChain basicSetLeft(PropertyFilter newLeft, NotificationChain msgs)
   {
-    Filter oldLeft = left;
+    PropertyFilter oldLeft = left;
     left = newLeft;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.CONJUNCTION__LEFT, oldLeft, newLeft);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.EXCLUSION_FILTER__LEFT, oldLeft, newLeft);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -118,20 +118,20 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
    * @generated
    */
   @Override
-  public void setLeft(Filter newLeft)
+  public void setLeft(PropertyFilter newLeft)
   {
     if (newLeft != left)
     {
       NotificationChain msgs = null;
       if (left != null)
-        msgs = ((InternalEObject)left).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.CONJUNCTION__LEFT, null, msgs);
+        msgs = ((InternalEObject)left).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.EXCLUSION_FILTER__LEFT, null, msgs);
       if (newLeft != null)
-        msgs = ((InternalEObject)newLeft).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.CONJUNCTION__LEFT, null, msgs);
+        msgs = ((InternalEObject)newLeft).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.EXCLUSION_FILTER__LEFT, null, msgs);
       msgs = basicSetLeft(newLeft, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.CONJUNCTION__LEFT, newLeft, newLeft));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.EXCLUSION_FILTER__LEFT, newLeft, newLeft));
   }
 
   /**
@@ -140,7 +140,7 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
    * @generated
    */
   @Override
-  public Filter getRight()
+  public PropertyFilter getRight()
   {
     return right;
   }
@@ -150,13 +150,13 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRight(Filter newRight, NotificationChain msgs)
+  public NotificationChain basicSetRight(PropertyFilter newRight, NotificationChain msgs)
   {
-    Filter oldRight = right;
+    PropertyFilter oldRight = right;
     right = newRight;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.CONJUNCTION__RIGHT, oldRight, newRight);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.EXCLUSION_FILTER__RIGHT, oldRight, newRight);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -168,20 +168,20 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
    * @generated
    */
   @Override
-  public void setRight(Filter newRight)
+  public void setRight(PropertyFilter newRight)
   {
     if (newRight != right)
     {
       NotificationChain msgs = null;
       if (right != null)
-        msgs = ((InternalEObject)right).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.CONJUNCTION__RIGHT, null, msgs);
+        msgs = ((InternalEObject)right).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.EXCLUSION_FILTER__RIGHT, null, msgs);
       if (newRight != null)
-        msgs = ((InternalEObject)newRight).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.CONJUNCTION__RIGHT, null, msgs);
+        msgs = ((InternalEObject)newRight).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.EXCLUSION_FILTER__RIGHT, null, msgs);
       msgs = basicSetRight(newRight, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.CONJUNCTION__RIGHT, newRight, newRight));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.EXCLUSION_FILTER__RIGHT, newRight, newRight));
   }
 
   /**
@@ -194,9 +194,9 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
   {
     switch (featureID)
     {
-      case QlPackage.CONJUNCTION__LEFT:
+      case QlPackage.EXCLUSION_FILTER__LEFT:
         return basicSetLeft(null, msgs);
-      case QlPackage.CONJUNCTION__RIGHT:
+      case QlPackage.EXCLUSION_FILTER__RIGHT:
         return basicSetRight(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -212,9 +212,9 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
   {
     switch (featureID)
     {
-      case QlPackage.CONJUNCTION__LEFT:
+      case QlPackage.EXCLUSION_FILTER__LEFT:
         return getLeft();
-      case QlPackage.CONJUNCTION__RIGHT:
+      case QlPackage.EXCLUSION_FILTER__RIGHT:
         return getRight();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -230,11 +230,11 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
   {
     switch (featureID)
     {
-      case QlPackage.CONJUNCTION__LEFT:
-        setLeft((Filter)newValue);
+      case QlPackage.EXCLUSION_FILTER__LEFT:
+        setLeft((PropertyFilter)newValue);
         return;
-      case QlPackage.CONJUNCTION__RIGHT:
-        setRight((Filter)newValue);
+      case QlPackage.EXCLUSION_FILTER__RIGHT:
+        setRight((PropertyFilter)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -250,11 +250,11 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
   {
     switch (featureID)
     {
-      case QlPackage.CONJUNCTION__LEFT:
-        setLeft((Filter)null);
+      case QlPackage.EXCLUSION_FILTER__LEFT:
+        setLeft((PropertyFilter)null);
         return;
-      case QlPackage.CONJUNCTION__RIGHT:
-        setRight((Filter)null);
+      case QlPackage.EXCLUSION_FILTER__RIGHT:
+        setRight((PropertyFilter)null);
         return;
     }
     super.eUnset(featureID);
@@ -270,12 +270,12 @@ public class ConjunctionImpl extends FilterImpl implements Conjunction
   {
     switch (featureID)
     {
-      case QlPackage.CONJUNCTION__LEFT:
+      case QlPackage.EXCLUSION_FILTER__LEFT:
         return left != null;
-      case QlPackage.CONJUNCTION__RIGHT:
+      case QlPackage.EXCLUSION_FILTER__RIGHT:
         return right != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //ConjunctionImpl
+} //ExclusionFilterImpl

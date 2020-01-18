@@ -74,17 +74,17 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryExclusion/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//QueryExclusion/right"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//Disjunction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Disjunction/left"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Disjunction/right"/>
+    <genClasses ecoreClass="QL.ecore#//DisjunctionFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DisjunctionFilter/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//DisjunctionFilter/right"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//Conjunction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Conjunction/left"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Conjunction/right"/>
+    <genClasses ecoreClass="QL.ecore#//ConjunctionFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//ConjunctionFilter/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//ConjunctionFilter/right"/>
     </genClasses>
-    <genClasses ecoreClass="QL.ecore#//Exclusion">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Exclusion/left"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Exclusion/right"/>
+    <genClasses ecoreClass="QL.ecore#//ExclusionFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//ExclusionFilter/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//ExclusionFilter/right"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

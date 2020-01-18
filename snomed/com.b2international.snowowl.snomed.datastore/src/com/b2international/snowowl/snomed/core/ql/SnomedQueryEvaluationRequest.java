@@ -254,7 +254,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 		return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.languageCode(languageCodeFilter.getLanguageCode()));
 	}
 	
-	protected Promise<Expression> eval(BranchContext context, final Conjunction conjunction) {
+	protected Promise<Expression> eval(BranchContext context, final ConjunctionFilter conjunction) {
 		return Promise.all(evaluate(context, conjunction.getLeft()), evaluate(context, conjunction.getRight()))
 				.then(results -> {
 					Expression left = (Expression) results.get(0);
@@ -266,7 +266,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 				});
 	}
 	
-	protected Promise<Expression> eval(BranchContext context, final Disjunction disjunction) {
+	protected Promise<Expression> eval(BranchContext context, final DisjunctionFilter disjunction) {
 		return Promise.all(evaluate(context, disjunction.getLeft()), evaluate(context, disjunction.getRight()))
 				.then(results -> {
 					Expression left = (Expression) results.get(0);
@@ -278,7 +278,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 				});
 	}
 	
-	protected Promise<Expression> eval(BranchContext context, final Exclusion exclusion) {
+	protected Promise<Expression> eval(BranchContext context, final ExclusionFilter exclusion) {
 		return Promise.all(evaluate(context, exclusion.getLeft()), evaluate(context, exclusion.getRight()))
 				.then(results -> {
 					Expression left = (Expression) results.get(0);

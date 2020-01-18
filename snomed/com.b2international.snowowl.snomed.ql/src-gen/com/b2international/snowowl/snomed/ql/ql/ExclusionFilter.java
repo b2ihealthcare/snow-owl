@@ -18,65 +18,65 @@ package com.b2international.snowowl.snomed.ql.ql;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Conjunction</b></em>'.
+ * A representation of the model object '<em><b>Exclusion Filter</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Conjunction#getLeft <em>Left</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Conjunction#getRight <em>Right</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ExclusionFilter#getLeft <em>Left</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ExclusionFilter#getRight <em>Right</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getConjunction()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getExclusionFilter()
  * @model
  * @generated
  */
-public interface Conjunction extends Filter
+public interface ExclusionFilter extends Filter
 {
   /**
    * Returns the value of the '<em><b>Left</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Left</em>' containment reference.
-   * @see #setLeft(Filter)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getConjunction_Left()
+   * @see #setLeft(PropertyFilter)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getExclusionFilter_Left()
    * @model containment="true"
    * @generated
    */
-  Filter getLeft();
+  PropertyFilter getLeft();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Conjunction#getLeft <em>Left</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ExclusionFilter#getLeft <em>Left</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Left</em>' containment reference.
    * @see #getLeft()
    * @generated
    */
-  void setLeft(Filter value);
+  void setLeft(PropertyFilter value);
 
   /**
    * Returns the value of the '<em><b>Right</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Right</em>' containment reference.
-   * @see #setRight(Filter)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getConjunction_Right()
+   * @see #setRight(PropertyFilter)
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getExclusionFilter_Right()
    * @model containment="true"
    * @generated
    */
-  Filter getRight();
+  PropertyFilter getRight();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Conjunction#getRight <em>Right</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ExclusionFilter#getRight <em>Right</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Right</em>' containment reference.
    * @see #getRight()
    * @generated
    */
-  void setRight(Filter value);
+  void setRight(PropertyFilter value);
 
-} // Conjunction
+} // ExclusionFilter

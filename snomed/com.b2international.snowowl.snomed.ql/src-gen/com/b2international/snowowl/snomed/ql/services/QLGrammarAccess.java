@@ -79,28 +79,28 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cQueryConjunctionParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cQueryDisjunctionLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final Keyword cORKeyword_1_1 = (Keyword)cGroup_1.eContents().get(1);
+		private final RuleCall cDISJUNCTIONTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightQueryConjunctionParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//QueryDisjunction QueryConstraint:
-		//	QueryConjunction ({QueryDisjunction.left=current} 'OR' right=QueryConjunction)*;
+		//	QueryConjunction ({QueryDisjunction.left=current} DISJUNCTION right=QueryConjunction)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//QueryConjunction ({QueryDisjunction.left=current} 'OR' right=QueryConjunction)*
+		//QueryConjunction ({QueryDisjunction.left=current} DISJUNCTION right=QueryConjunction)*
 		public Group getGroup() { return cGroup; }
 		
 		//QueryConjunction
 		public RuleCall getQueryConjunctionParserRuleCall_0() { return cQueryConjunctionParserRuleCall_0; }
 		
-		//({QueryDisjunction.left=current} 'OR' right=QueryConjunction)*
+		//({QueryDisjunction.left=current} DISJUNCTION right=QueryConjunction)*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{QueryDisjunction.left=current}
 		public Action getQueryDisjunctionLeftAction_1_0() { return cQueryDisjunctionLeftAction_1_0; }
 		
-		//'OR'
-		public Keyword getORKeyword_1_1() { return cORKeyword_1_1; }
+		//DISJUNCTION
+		public RuleCall getDISJUNCTIONTerminalRuleCall_1_1() { return cDISJUNCTIONTerminalRuleCall_1_1; }
 		
 		//right=QueryConjunction
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -115,35 +115,35 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cQueryConjunctionLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
 		private final Alternatives cAlternatives_1_1 = (Alternatives)cGroup_1.eContents().get(1);
-		private final Keyword cANDKeyword_1_1_0 = (Keyword)cAlternatives_1_1.eContents().get(0);
-		private final Keyword cCommaKeyword_1_1_1 = (Keyword)cAlternatives_1_1.eContents().get(1);
+		private final RuleCall cCONJUNCTIONTerminalRuleCall_1_1_0 = (RuleCall)cAlternatives_1_1.eContents().get(0);
+		private final RuleCall cCOMMATerminalRuleCall_1_1_1 = (RuleCall)cAlternatives_1_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightQueryExclusionParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//QueryConjunction QueryConstraint:
-		//	QueryExclusion ({QueryConjunction.left=current} ('AND' | ',') right=QueryExclusion)*;
+		//	QueryExclusion ({QueryConjunction.left=current} (CONJUNCTION | COMMA) right=QueryExclusion)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//QueryExclusion ({QueryConjunction.left=current} ('AND' | ',') right=QueryExclusion)*
+		//QueryExclusion ({QueryConjunction.left=current} (CONJUNCTION | COMMA) right=QueryExclusion)*
 		public Group getGroup() { return cGroup; }
 		
 		//QueryExclusion
 		public RuleCall getQueryExclusionParserRuleCall_0() { return cQueryExclusionParserRuleCall_0; }
 		
-		//({QueryConjunction.left=current} ('AND' | ',') right=QueryExclusion)*
+		//({QueryConjunction.left=current} (CONJUNCTION | COMMA) right=QueryExclusion)*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{QueryConjunction.left=current}
 		public Action getQueryConjunctionLeftAction_1_0() { return cQueryConjunctionLeftAction_1_0; }
 		
-		//'AND' | ','
+		//CONJUNCTION | COMMA
 		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
 		
-		//'AND'
-		public Keyword getANDKeyword_1_1_0() { return cANDKeyword_1_1_0; }
+		//CONJUNCTION
+		public RuleCall getCONJUNCTIONTerminalRuleCall_1_1_0() { return cCONJUNCTIONTerminalRuleCall_1_1_0; }
 		
-		//','
-		public Keyword getCommaKeyword_1_1_1() { return cCommaKeyword_1_1_1; }
+		//COMMA
+		public RuleCall getCOMMATerminalRuleCall_1_1_1() { return cCOMMATerminalRuleCall_1_1_1; }
 		
 		//right=QueryExclusion
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -157,28 +157,28 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cSubQueryParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cQueryExclusionLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final Keyword cMINUSKeyword_1_1 = (Keyword)cGroup_1.eContents().get(1);
+		private final RuleCall cEXCLUSIONTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightSubQueryParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//QueryExclusion QueryConstraint:
-		//	SubQuery ({QueryExclusion.left=current} 'MINUS' right=SubQuery)?;
+		//	SubQuery ({QueryExclusion.left=current} EXCLUSION right=SubQuery)?;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//SubQuery ({QueryExclusion.left=current} 'MINUS' right=SubQuery)?
+		//SubQuery ({QueryExclusion.left=current} EXCLUSION right=SubQuery)?
 		public Group getGroup() { return cGroup; }
 		
 		//SubQuery
 		public RuleCall getSubQueryParserRuleCall_0() { return cSubQueryParserRuleCall_0; }
 		
-		//({QueryExclusion.left=current} 'MINUS' right=SubQuery)?
+		//({QueryExclusion.left=current} EXCLUSION right=SubQuery)?
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{QueryExclusion.left=current}
 		public Action getQueryExclusionLeftAction_1_0() { return cQueryExclusionLeftAction_1_0; }
 		
-		//'MINUS'
-		public Keyword getMINUSKeyword_1_1() { return cMINUSKeyword_1_1; }
+		//EXCLUSION
+		public RuleCall getEXCLUSIONTerminalRuleCall_1_1() { return cEXCLUSIONTerminalRuleCall_1_1; }
 		
 		//right=SubQuery
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -277,122 +277,122 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	public class FilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Filter");
-		private final RuleCall cDisjunctionParserRuleCall = (RuleCall)rule.eContents().get(1);
+		private final RuleCall cDisjunctionFilterParserRuleCall = (RuleCall)rule.eContents().get(1);
 		
 		//// Domain Property Filters
 		//Filter:
-		//	Disjunction;
+		//	DisjunctionFilter;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Disjunction
-		public RuleCall getDisjunctionParserRuleCall() { return cDisjunctionParserRuleCall; }
+		//DisjunctionFilter
+		public RuleCall getDisjunctionFilterParserRuleCall() { return cDisjunctionFilterParserRuleCall; }
 	}
-	public class DisjunctionElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Disjunction");
+	public class DisjunctionFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.DisjunctionFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cConjunctionParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cConjunctionFilterParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
-		private final Action cDisjunctionLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final Keyword cORKeyword_1_1 = (Keyword)cGroup_1.eContents().get(1);
+		private final Action cDisjunctionFilterLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cDISJUNCTIONTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
-		private final RuleCall cRightConjunctionParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		private final RuleCall cRightConjunctionFilterParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
-		//Disjunction Filter:
-		//	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
+		//DisjunctionFilter Filter:
+		//	ConjunctionFilter ({DisjunctionFilter.left=current} DISJUNCTION right=ConjunctionFilter)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*
+		//ConjunctionFilter ({DisjunctionFilter.left=current} DISJUNCTION right=ConjunctionFilter)*
 		public Group getGroup() { return cGroup; }
 		
-		//Conjunction
-		public RuleCall getConjunctionParserRuleCall_0() { return cConjunctionParserRuleCall_0; }
+		//ConjunctionFilter
+		public RuleCall getConjunctionFilterParserRuleCall_0() { return cConjunctionFilterParserRuleCall_0; }
 		
-		//({Disjunction.left=current} 'OR' right=Conjunction)*
+		//({DisjunctionFilter.left=current} DISJUNCTION right=ConjunctionFilter)*
 		public Group getGroup_1() { return cGroup_1; }
 		
-		//{Disjunction.left=current}
-		public Action getDisjunctionLeftAction_1_0() { return cDisjunctionLeftAction_1_0; }
+		//{DisjunctionFilter.left=current}
+		public Action getDisjunctionFilterLeftAction_1_0() { return cDisjunctionFilterLeftAction_1_0; }
 		
-		//'OR'
-		public Keyword getORKeyword_1_1() { return cORKeyword_1_1; }
+		//DISJUNCTION
+		public RuleCall getDISJUNCTIONTerminalRuleCall_1_1() { return cDISJUNCTIONTerminalRuleCall_1_1; }
 		
-		//right=Conjunction
+		//right=ConjunctionFilter
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
 		
-		//Conjunction
-		public RuleCall getRightConjunctionParserRuleCall_1_2_0() { return cRightConjunctionParserRuleCall_1_2_0; }
+		//ConjunctionFilter
+		public RuleCall getRightConjunctionFilterParserRuleCall_1_2_0() { return cRightConjunctionFilterParserRuleCall_1_2_0; }
 	}
-	public class ConjunctionElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Conjunction");
+	public class ConjunctionFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ConjunctionFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cExclusionParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cExclusionFilterParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
-		private final Action cConjunctionLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final Action cConjunctionFilterLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
 		private final Alternatives cAlternatives_1_1 = (Alternatives)cGroup_1.eContents().get(1);
-		private final Keyword cANDKeyword_1_1_0 = (Keyword)cAlternatives_1_1.eContents().get(0);
-		private final Keyword cCommaKeyword_1_1_1 = (Keyword)cAlternatives_1_1.eContents().get(1);
+		private final RuleCall cCONJUNCTIONTerminalRuleCall_1_1_0 = (RuleCall)cAlternatives_1_1.eContents().get(0);
+		private final RuleCall cCOMMATerminalRuleCall_1_1_1 = (RuleCall)cAlternatives_1_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
-		private final RuleCall cRightExclusionParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		private final RuleCall cRightExclusionFilterParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
-		//Conjunction Filter:
-		//	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
+		//ConjunctionFilter Filter:
+		//	ExclusionFilter ({ConjunctionFilter.left=current} (CONJUNCTION | COMMA) right=ExclusionFilter)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*
+		//ExclusionFilter ({ConjunctionFilter.left=current} (CONJUNCTION | COMMA) right=ExclusionFilter)*
 		public Group getGroup() { return cGroup; }
 		
-		//Exclusion
-		public RuleCall getExclusionParserRuleCall_0() { return cExclusionParserRuleCall_0; }
+		//ExclusionFilter
+		public RuleCall getExclusionFilterParserRuleCall_0() { return cExclusionFilterParserRuleCall_0; }
 		
-		//({Conjunction.left=current} ('AND' | ',') right=Exclusion)*
+		//({ConjunctionFilter.left=current} (CONJUNCTION | COMMA) right=ExclusionFilter)*
 		public Group getGroup_1() { return cGroup_1; }
 		
-		//{Conjunction.left=current}
-		public Action getConjunctionLeftAction_1_0() { return cConjunctionLeftAction_1_0; }
+		//{ConjunctionFilter.left=current}
+		public Action getConjunctionFilterLeftAction_1_0() { return cConjunctionFilterLeftAction_1_0; }
 		
-		//'AND' | ','
+		//CONJUNCTION | COMMA
 		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
 		
-		//'AND'
-		public Keyword getANDKeyword_1_1_0() { return cANDKeyword_1_1_0; }
+		//CONJUNCTION
+		public RuleCall getCONJUNCTIONTerminalRuleCall_1_1_0() { return cCONJUNCTIONTerminalRuleCall_1_1_0; }
 		
-		//','
-		public Keyword getCommaKeyword_1_1_1() { return cCommaKeyword_1_1_1; }
+		//COMMA
+		public RuleCall getCOMMATerminalRuleCall_1_1_1() { return cCOMMATerminalRuleCall_1_1_1; }
 		
-		//right=Exclusion
+		//right=ExclusionFilter
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
 		
-		//Exclusion
-		public RuleCall getRightExclusionParserRuleCall_1_2_0() { return cRightExclusionParserRuleCall_1_2_0; }
+		//ExclusionFilter
+		public RuleCall getRightExclusionFilterParserRuleCall_1_2_0() { return cRightExclusionFilterParserRuleCall_1_2_0; }
 	}
-	public class ExclusionElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Exclusion");
+	public class ExclusionFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.ExclusionFilter");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cPropertyFilterParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
-		private final Action cExclusionLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final Keyword cMINUSKeyword_1_1 = (Keyword)cGroup_1.eContents().get(1);
+		private final Action cExclusionFilterLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cEXCLUSIONTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightPropertyFilterParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
-		//Exclusion Filter:
-		//	PropertyFilter ({Exclusion.left=current} 'MINUS' right=PropertyFilter)?;
+		//ExclusionFilter Filter:
+		//	PropertyFilter ({ExclusionFilter.left=current} EXCLUSION right=PropertyFilter)?;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//PropertyFilter ({Exclusion.left=current} 'MINUS' right=PropertyFilter)?
+		//PropertyFilter ({ExclusionFilter.left=current} EXCLUSION right=PropertyFilter)?
 		public Group getGroup() { return cGroup; }
 		
 		//PropertyFilter
 		public RuleCall getPropertyFilterParserRuleCall_0() { return cPropertyFilterParserRuleCall_0; }
 		
-		//({Exclusion.left=current} 'MINUS' right=PropertyFilter)?
+		//({ExclusionFilter.left=current} EXCLUSION right=PropertyFilter)?
 		public Group getGroup_1() { return cGroup_1; }
 		
-		//{Exclusion.left=current}
-		public Action getExclusionLeftAction_1_0() { return cExclusionLeftAction_1_0; }
+		//{ExclusionFilter.left=current}
+		public Action getExclusionFilterLeftAction_1_0() { return cExclusionFilterLeftAction_1_0; }
 		
-		//'MINUS'
-		public Keyword getMINUSKeyword_1_1() { return cMINUSKeyword_1_1; }
+		//EXCLUSION
+		public RuleCall getEXCLUSIONTerminalRuleCall_1_1() { return cEXCLUSIONTerminalRuleCall_1_1; }
 		
 		//right=PropertyFilter
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -845,9 +845,9 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	private final DomainQueryElements pDomainQuery;
 	private final NestedQueryElements pNestedQuery;
 	private final FilterElements pFilter;
-	private final DisjunctionElements pDisjunction;
-	private final ConjunctionElements pConjunction;
-	private final ExclusionElements pExclusion;
+	private final DisjunctionFilterElements pDisjunctionFilter;
+	private final ConjunctionFilterElements pConjunctionFilter;
+	private final ExclusionFilterElements pExclusionFilter;
 	private final NestedFilterElements pNestedFilter;
 	private final PropertyFilterElements pPropertyFilter;
 	private final ActiveFilterElements pActiveFilter;
@@ -882,9 +882,9 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		this.pDomainQuery = new DomainQueryElements();
 		this.pNestedQuery = new NestedQueryElements();
 		this.pFilter = new FilterElements();
-		this.pDisjunction = new DisjunctionElements();
-		this.pConjunction = new ConjunctionElements();
-		this.pExclusion = new ExclusionElements();
+		this.pDisjunctionFilter = new DisjunctionFilterElements();
+		this.pConjunctionFilter = new ConjunctionFilterElements();
+		this.pExclusionFilter = new ExclusionFilterElements();
 		this.pNestedFilter = new NestedFilterElements();
 		this.pPropertyFilter = new PropertyFilterElements();
 		this.pActiveFilter = new ActiveFilterElements();
@@ -951,7 +951,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//QueryDisjunction QueryConstraint:
-	//	QueryConjunction ({QueryDisjunction.left=current} 'OR' right=QueryConjunction)*;
+	//	QueryConjunction ({QueryDisjunction.left=current} DISJUNCTION right=QueryConjunction)*;
 	public QueryDisjunctionElements getQueryDisjunctionAccess() {
 		return pQueryDisjunction;
 	}
@@ -961,7 +961,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//QueryConjunction QueryConstraint:
-	//	QueryExclusion ({QueryConjunction.left=current} ('AND' | ',') right=QueryExclusion)*;
+	//	QueryExclusion ({QueryConjunction.left=current} (CONJUNCTION | COMMA) right=QueryExclusion)*;
 	public QueryConjunctionElements getQueryConjunctionAccess() {
 		return pQueryConjunction;
 	}
@@ -971,7 +971,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//QueryExclusion QueryConstraint:
-	//	SubQuery ({QueryExclusion.left=current} 'MINUS' right=SubQuery)?;
+	//	SubQuery ({QueryExclusion.left=current} EXCLUSION right=SubQuery)?;
 	public QueryExclusionElements getQueryExclusionAccess() {
 		return pQueryExclusion;
 	}
@@ -1012,7 +1012,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	//// Domain Property Filters
 	//Filter:
-	//	Disjunction;
+	//	DisjunctionFilter;
 	public FilterElements getFilterAccess() {
 		return pFilter;
 	}
@@ -1021,34 +1021,34 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getFilterAccess().getRule();
 	}
 	
-	//Disjunction Filter:
-	//	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
-	public DisjunctionElements getDisjunctionAccess() {
-		return pDisjunction;
+	//DisjunctionFilter Filter:
+	//	ConjunctionFilter ({DisjunctionFilter.left=current} DISJUNCTION right=ConjunctionFilter)*;
+	public DisjunctionFilterElements getDisjunctionFilterAccess() {
+		return pDisjunctionFilter;
 	}
 	
-	public ParserRule getDisjunctionRule() {
-		return getDisjunctionAccess().getRule();
+	public ParserRule getDisjunctionFilterRule() {
+		return getDisjunctionFilterAccess().getRule();
 	}
 	
-	//Conjunction Filter:
-	//	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
-	public ConjunctionElements getConjunctionAccess() {
-		return pConjunction;
+	//ConjunctionFilter Filter:
+	//	ExclusionFilter ({ConjunctionFilter.left=current} (CONJUNCTION | COMMA) right=ExclusionFilter)*;
+	public ConjunctionFilterElements getConjunctionFilterAccess() {
+		return pConjunctionFilter;
 	}
 	
-	public ParserRule getConjunctionRule() {
-		return getConjunctionAccess().getRule();
+	public ParserRule getConjunctionFilterRule() {
+		return getConjunctionFilterAccess().getRule();
 	}
 	
-	//Exclusion Filter:
-	//	PropertyFilter ({Exclusion.left=current} 'MINUS' right=PropertyFilter)?;
-	public ExclusionElements getExclusionAccess() {
-		return pExclusion;
+	//ExclusionFilter Filter:
+	//	PropertyFilter ({ExclusionFilter.left=current} EXCLUSION right=PropertyFilter)?;
+	public ExclusionFilterElements getExclusionFilterAccess() {
+		return pExclusionFilter;
 	}
 	
-	public ParserRule getExclusionRule() {
-		return getExclusionAccess().getRule();
+	public ParserRule getExclusionFilterRule() {
+		return getExclusionFilterAccess().getRule();
 	}
 	
 	//NestedFilter:
@@ -1216,7 +1216,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//OrExpressionConstraint ExpressionConstraint:
-	//	AndExpressionConstraint ({OrExpressionConstraint.left=current} 'OR' right=AndExpressionConstraint)*;
+	//	AndExpressionConstraint ({OrExpressionConstraint.left=current} DISJUNCTION right=AndExpressionConstraint)*;
 	public EclGrammarAccess.OrExpressionConstraintElements getOrExpressionConstraintAccess() {
 		return gaEcl.getOrExpressionConstraintAccess();
 	}
@@ -1226,7 +1226,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AndExpressionConstraint ExpressionConstraint:
-	//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} ('AND' | ',')
+	//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (CONJUNCTION | COMMA)
 	//	right=ExclusionExpressionConstraint)*;
 	public EclGrammarAccess.AndExpressionConstraintElements getAndExpressionConstraintAccess() {
 		return gaEcl.getAndExpressionConstraintAccess();
@@ -1237,7 +1237,8 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//ExclusionExpressionConstraint ExpressionConstraint:
-	//	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} 'MINUS' right=RefinedExpressionConstraint)?;
+	//	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} EXCLUSION
+	//	right=RefinedExpressionConstraint)?;
 	public EclGrammarAccess.ExclusionExpressionConstraintElements getExclusionExpressionConstraintAccess() {
 		return gaEcl.getExclusionExpressionConstraintAccess();
 	}
@@ -1387,7 +1388,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//OrRefinement EclRefinement:
-	//	AndRefinement -> ({OrRefinement.left=current} 'OR' right=AndRefinement)*;
+	//	AndRefinement -> ({OrRefinement.left=current} DISJUNCTION right=AndRefinement)*;
 	public EclGrammarAccess.OrRefinementElements getOrRefinementAccess() {
 		return gaEcl.getOrRefinementAccess();
 	}
@@ -1397,7 +1398,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AndRefinement EclRefinement:
-	//	SubRefinement -> ({AndRefinement.left=current} ('AND' | ',') right=SubRefinement)*;
+	//	SubRefinement -> ({AndRefinement.left=current} (CONJUNCTION | COMMA) right=SubRefinement)*;
 	public EclGrammarAccess.AndRefinementElements getAndRefinementAccess() {
 		return gaEcl.getAndRefinementAccess();
 	}
@@ -1447,7 +1448,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//OrAttributeSet EclRefinement:
-	//	AndAttributeSet ({OrRefinement.left=current} 'OR' right=AndAttributeSet)*;
+	//	AndAttributeSet ({OrRefinement.left=current} DISJUNCTION right=AndAttributeSet)*;
 	public EclGrammarAccess.OrAttributeSetElements getOrAttributeSetAccess() {
 		return gaEcl.getOrAttributeSetAccess();
 	}
@@ -1457,7 +1458,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AndAttributeSet EclRefinement:
-	//	SubAttributeSet ({AndRefinement.left=current} ('AND' | ',') right=SubAttributeSet)*;
+	//	SubAttributeSet ({AndRefinement.left=current} (CONJUNCTION | COMMA) right=SubAttributeSet)*;
 	public EclGrammarAccess.AndAttributeSetElements getAndAttributeSetAccess() {
 		return gaEcl.getAndAttributeSetAccess();
 	}
@@ -1829,6 +1830,30 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	//	'..';
 	public TerminalRule getTORule() {
 		return gaEcl.getTORule();
+	}
+	
+	//terminal COMMA:
+	//	',';
+	public TerminalRule getCOMMARule() {
+		return gaEcl.getCOMMARule();
+	}
+	
+	//terminal CONJUNCTION:
+	//	('a' | 'A') ('n' | 'N') ('d' | 'D');
+	public TerminalRule getCONJUNCTIONRule() {
+		return gaEcl.getCONJUNCTIONRule();
+	}
+	
+	//terminal DISJUNCTION:
+	//	('o' | 'O') ('r' | 'R');
+	public TerminalRule getDISJUNCTIONRule() {
+		return gaEcl.getDISJUNCTIONRule();
+	}
+	
+	//terminal EXCLUSION:
+	//	('m' | 'M') ('i' | 'I') ('n' | 'N') ('u' | 'U') ('s' | 'S');
+	public TerminalRule getEXCLUSIONRule() {
+		return gaEcl.getEXCLUSIONRule();
 	}
 	
 	//terminal ZERO:

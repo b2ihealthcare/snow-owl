@@ -60,10 +60,10 @@ import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
-import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter;
+import com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter;
 import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
-import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.ExclusionFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
 import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
@@ -280,17 +280,17 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 			case QlPackage.CASE_SIGNIFICANCE_FILTER:
 				sequence_CaseSignificanceFilter(context, (CaseSignificanceFilter) semanticObject); 
 				return; 
-			case QlPackage.CONJUNCTION:
-				sequence_Conjunction(context, (Conjunction) semanticObject); 
+			case QlPackage.CONJUNCTION_FILTER:
+				sequence_ConjunctionFilter(context, (ConjunctionFilter) semanticObject); 
 				return; 
-			case QlPackage.DISJUNCTION:
-				sequence_Disjunction(context, (Disjunction) semanticObject); 
+			case QlPackage.DISJUNCTION_FILTER:
+				sequence_DisjunctionFilter(context, (DisjunctionFilter) semanticObject); 
 				return; 
 			case QlPackage.DOMAIN_QUERY:
 				sequence_DomainQuery(context, (DomainQuery) semanticObject); 
 				return; 
-			case QlPackage.EXCLUSION:
-				sequence_Exclusion(context, (Exclusion) semanticObject); 
+			case QlPackage.EXCLUSION_FILTER:
+				sequence_ExclusionFilter(context, (ExclusionFilter) semanticObject); 
 				return; 
 			case QlPackage.LANGUAGE_CODE_FILTER:
 				sequence_LanguageCodeFilter(context, (LanguageCodeFilter) semanticObject); 
@@ -336,12 +336,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns AcceptableInFilter
-	 *     Disjunction returns AcceptableInFilter
-	 *     Disjunction.Disjunction_1_0 returns AcceptableInFilter
-	 *     Conjunction returns AcceptableInFilter
-	 *     Conjunction.Conjunction_1_0 returns AcceptableInFilter
-	 *     Exclusion returns AcceptableInFilter
-	 *     Exclusion.Exclusion_1_0 returns AcceptableInFilter
+	 *     DisjunctionFilter returns AcceptableInFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns AcceptableInFilter
+	 *     ConjunctionFilter returns AcceptableInFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns AcceptableInFilter
+	 *     ExclusionFilter returns AcceptableInFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns AcceptableInFilter
 	 *     PropertyFilter returns AcceptableInFilter
 	 *     AcceptableInFilter returns AcceptableInFilter
 	 *
@@ -362,12 +362,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns ActiveFilter
-	 *     Disjunction returns ActiveFilter
-	 *     Disjunction.Disjunction_1_0 returns ActiveFilter
-	 *     Conjunction returns ActiveFilter
-	 *     Conjunction.Conjunction_1_0 returns ActiveFilter
-	 *     Exclusion returns ActiveFilter
-	 *     Exclusion.Exclusion_1_0 returns ActiveFilter
+	 *     DisjunctionFilter returns ActiveFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns ActiveFilter
+	 *     ConjunctionFilter returns ActiveFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns ActiveFilter
+	 *     ExclusionFilter returns ActiveFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns ActiveFilter
 	 *     PropertyFilter returns ActiveFilter
 	 *     ActiveFilter returns ActiveFilter
 	 *
@@ -382,12 +382,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns CaseSignificanceFilter
-	 *     Disjunction returns CaseSignificanceFilter
-	 *     Disjunction.Disjunction_1_0 returns CaseSignificanceFilter
-	 *     Conjunction returns CaseSignificanceFilter
-	 *     Conjunction.Conjunction_1_0 returns CaseSignificanceFilter
-	 *     Exclusion returns CaseSignificanceFilter
-	 *     Exclusion.Exclusion_1_0 returns CaseSignificanceFilter
+	 *     DisjunctionFilter returns CaseSignificanceFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns CaseSignificanceFilter
+	 *     ConjunctionFilter returns CaseSignificanceFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns CaseSignificanceFilter
+	 *     ExclusionFilter returns CaseSignificanceFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns CaseSignificanceFilter
 	 *     PropertyFilter returns CaseSignificanceFilter
 	 *     CaseSignificanceFilter returns CaseSignificanceFilter
 	 *
@@ -407,48 +407,48 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Filter returns Conjunction
-	 *     Disjunction returns Conjunction
-	 *     Disjunction.Disjunction_1_0 returns Conjunction
-	 *     Conjunction returns Conjunction
-	 *     Conjunction.Conjunction_1_0 returns Conjunction
+	 *     Filter returns ConjunctionFilter
+	 *     DisjunctionFilter returns ConjunctionFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns ConjunctionFilter
+	 *     ConjunctionFilter returns ConjunctionFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns ConjunctionFilter
 	 *
 	 * Constraint:
-	 *     (left=Conjunction_Conjunction_1_0 right=Exclusion)
+	 *     (left=ConjunctionFilter_ConjunctionFilter_1_0 right=ExclusionFilter)
 	 */
-	protected void sequence_Conjunction(ISerializationContext context, Conjunction semanticObject) {
+	protected void sequence_ConjunctionFilter(ISerializationContext context, ConjunctionFilter semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.CONJUNCTION__LEFT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.CONJUNCTION__LEFT));
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.CONJUNCTION__RIGHT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.CONJUNCTION__RIGHT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.CONJUNCTION_FILTER__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.CONJUNCTION_FILTER__LEFT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.CONJUNCTION_FILTER__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.CONJUNCTION_FILTER__RIGHT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getConjunctionAccess().getConjunctionLeftAction_1_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getConjunctionAccess().getRightExclusionParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.accept(grammarAccess.getConjunctionFilterAccess().getConjunctionFilterLeftAction_1_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getConjunctionFilterAccess().getRightExclusionFilterParserRuleCall_1_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
 	
 	
 	/**
 	 * Contexts:
-	 *     Filter returns Disjunction
-	 *     Disjunction returns Disjunction
-	 *     Disjunction.Disjunction_1_0 returns Disjunction
+	 *     Filter returns DisjunctionFilter
+	 *     DisjunctionFilter returns DisjunctionFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns DisjunctionFilter
 	 *
 	 * Constraint:
-	 *     (left=Disjunction_Disjunction_1_0 right=Conjunction)
+	 *     (left=DisjunctionFilter_DisjunctionFilter_1_0 right=ConjunctionFilter)
 	 */
-	protected void sequence_Disjunction(ISerializationContext context, Disjunction semanticObject) {
+	protected void sequence_DisjunctionFilter(ISerializationContext context, DisjunctionFilter semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.DISJUNCTION__LEFT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.DISJUNCTION__LEFT));
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.DISJUNCTION__RIGHT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.DISJUNCTION__RIGHT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.DISJUNCTION_FILTER__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.DISJUNCTION_FILTER__LEFT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.DISJUNCTION_FILTER__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.DISJUNCTION_FILTER__RIGHT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getDisjunctionAccess().getDisjunctionLeftAction_1_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getDisjunctionAccess().getRightConjunctionParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.accept(grammarAccess.getDisjunctionFilterAccess().getDisjunctionFilterLeftAction_1_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getDisjunctionFilterAccess().getRightConjunctionFilterParserRuleCall_1_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
 	
@@ -475,26 +475,26 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Filter returns Exclusion
-	 *     Disjunction returns Exclusion
-	 *     Disjunction.Disjunction_1_0 returns Exclusion
-	 *     Conjunction returns Exclusion
-	 *     Conjunction.Conjunction_1_0 returns Exclusion
-	 *     Exclusion returns Exclusion
+	 *     Filter returns ExclusionFilter
+	 *     DisjunctionFilter returns ExclusionFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns ExclusionFilter
+	 *     ConjunctionFilter returns ExclusionFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns ExclusionFilter
+	 *     ExclusionFilter returns ExclusionFilter
 	 *
 	 * Constraint:
-	 *     (left=Exclusion_Exclusion_1_0 right=PropertyFilter)
+	 *     (left=ExclusionFilter_ExclusionFilter_1_0 right=PropertyFilter)
 	 */
-	protected void sequence_Exclusion(ISerializationContext context, Exclusion semanticObject) {
+	protected void sequence_ExclusionFilter(ISerializationContext context, ExclusionFilter semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.EXCLUSION__LEFT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.EXCLUSION__LEFT));
-			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.EXCLUSION__RIGHT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.EXCLUSION__RIGHT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.EXCLUSION_FILTER__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.EXCLUSION_FILTER__LEFT));
+			if (transientValues.isValueTransient(semanticObject, QlPackage.Literals.EXCLUSION_FILTER__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, QlPackage.Literals.EXCLUSION_FILTER__RIGHT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getExclusionAccess().getExclusionLeftAction_1_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getExclusionAccess().getRightPropertyFilterParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.accept(grammarAccess.getExclusionFilterAccess().getExclusionFilterLeftAction_1_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getExclusionFilterAccess().getRightPropertyFilterParserRuleCall_1_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
 	
@@ -502,12 +502,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns LanguageCodeFilter
-	 *     Disjunction returns LanguageCodeFilter
-	 *     Disjunction.Disjunction_1_0 returns LanguageCodeFilter
-	 *     Conjunction returns LanguageCodeFilter
-	 *     Conjunction.Conjunction_1_0 returns LanguageCodeFilter
-	 *     Exclusion returns LanguageCodeFilter
-	 *     Exclusion.Exclusion_1_0 returns LanguageCodeFilter
+	 *     DisjunctionFilter returns LanguageCodeFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns LanguageCodeFilter
+	 *     ConjunctionFilter returns LanguageCodeFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns LanguageCodeFilter
+	 *     ExclusionFilter returns LanguageCodeFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns LanguageCodeFilter
 	 *     PropertyFilter returns LanguageCodeFilter
 	 *     LanguageCodeFilter returns LanguageCodeFilter
 	 *
@@ -528,12 +528,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns LanguageRefSetFilter
-	 *     Disjunction returns LanguageRefSetFilter
-	 *     Disjunction.Disjunction_1_0 returns LanguageRefSetFilter
-	 *     Conjunction returns LanguageRefSetFilter
-	 *     Conjunction.Conjunction_1_0 returns LanguageRefSetFilter
-	 *     Exclusion returns LanguageRefSetFilter
-	 *     Exclusion.Exclusion_1_0 returns LanguageRefSetFilter
+	 *     DisjunctionFilter returns LanguageRefSetFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns LanguageRefSetFilter
+	 *     ConjunctionFilter returns LanguageRefSetFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns LanguageRefSetFilter
+	 *     ExclusionFilter returns LanguageRefSetFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns LanguageRefSetFilter
 	 *     PropertyFilter returns LanguageRefSetFilter
 	 *     LanguageRefSetFilter returns LanguageRefSetFilter
 	 *
@@ -554,12 +554,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns ModuleFilter
-	 *     Disjunction returns ModuleFilter
-	 *     Disjunction.Disjunction_1_0 returns ModuleFilter
-	 *     Conjunction returns ModuleFilter
-	 *     Conjunction.Conjunction_1_0 returns ModuleFilter
-	 *     Exclusion returns ModuleFilter
-	 *     Exclusion.Exclusion_1_0 returns ModuleFilter
+	 *     DisjunctionFilter returns ModuleFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns ModuleFilter
+	 *     ConjunctionFilter returns ModuleFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns ModuleFilter
+	 *     ExclusionFilter returns ModuleFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns ModuleFilter
 	 *     PropertyFilter returns ModuleFilter
 	 *     ModuleFilter returns ModuleFilter
 	 *
@@ -574,12 +574,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns NestedFilter
-	 *     Disjunction returns NestedFilter
-	 *     Disjunction.Disjunction_1_0 returns NestedFilter
-	 *     Conjunction returns NestedFilter
-	 *     Conjunction.Conjunction_1_0 returns NestedFilter
-	 *     Exclusion returns NestedFilter
-	 *     Exclusion.Exclusion_1_0 returns NestedFilter
+	 *     DisjunctionFilter returns NestedFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns NestedFilter
+	 *     ConjunctionFilter returns NestedFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns NestedFilter
+	 *     ExclusionFilter returns NestedFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns NestedFilter
 	 *     NestedFilter returns NestedFilter
 	 *     PropertyFilter returns NestedFilter
 	 *
@@ -626,12 +626,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns PreferredInFilter
-	 *     Disjunction returns PreferredInFilter
-	 *     Disjunction.Disjunction_1_0 returns PreferredInFilter
-	 *     Conjunction returns PreferredInFilter
-	 *     Conjunction.Conjunction_1_0 returns PreferredInFilter
-	 *     Exclusion returns PreferredInFilter
-	 *     Exclusion.Exclusion_1_0 returns PreferredInFilter
+	 *     DisjunctionFilter returns PreferredInFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns PreferredInFilter
+	 *     ConjunctionFilter returns PreferredInFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns PreferredInFilter
+	 *     ExclusionFilter returns PreferredInFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns PreferredInFilter
 	 *     PropertyFilter returns PreferredInFilter
 	 *     PreferredInFilter returns PreferredInFilter
 	 *
@@ -738,12 +738,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns TermFilter
-	 *     Disjunction returns TermFilter
-	 *     Disjunction.Disjunction_1_0 returns TermFilter
-	 *     Conjunction returns TermFilter
-	 *     Conjunction.Conjunction_1_0 returns TermFilter
-	 *     Exclusion returns TermFilter
-	 *     Exclusion.Exclusion_1_0 returns TermFilter
+	 *     DisjunctionFilter returns TermFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns TermFilter
+	 *     ConjunctionFilter returns TermFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns TermFilter
+	 *     ExclusionFilter returns TermFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns TermFilter
 	 *     PropertyFilter returns TermFilter
 	 *     TermFilter returns TermFilter
 	 *
@@ -758,12 +758,12 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     Filter returns TypeFilter
-	 *     Disjunction returns TypeFilter
-	 *     Disjunction.Disjunction_1_0 returns TypeFilter
-	 *     Conjunction returns TypeFilter
-	 *     Conjunction.Conjunction_1_0 returns TypeFilter
-	 *     Exclusion returns TypeFilter
-	 *     Exclusion.Exclusion_1_0 returns TypeFilter
+	 *     DisjunctionFilter returns TypeFilter
+	 *     DisjunctionFilter.DisjunctionFilter_1_0 returns TypeFilter
+	 *     ConjunctionFilter returns TypeFilter
+	 *     ConjunctionFilter.ConjunctionFilter_1_0 returns TypeFilter
+	 *     ExclusionFilter returns TypeFilter
+	 *     ExclusionFilter.ExclusionFilter_1_0 returns TypeFilter
 	 *     PropertyFilter returns TypeFilter
 	 *     TypeFilter returns TypeFilter
 	 *

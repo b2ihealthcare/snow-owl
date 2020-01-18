@@ -18,22 +18,22 @@ package com.b2international.snowowl.snomed.ql.ql;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Disjunction</b></em>'.
+ * A representation of the model object '<em><b>Conjunction Filter</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Disjunction#getLeft <em>Left</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ql.ql.Disjunction#getRight <em>Right</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter#getLeft <em>Left</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter#getRight <em>Right</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDisjunction()
+ * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getConjunctionFilter()
  * @model
  * @generated
  */
-public interface Disjunction extends Filter
+public interface ConjunctionFilter extends Filter
 {
   /**
    * Returns the value of the '<em><b>Left</b></em>' containment reference.
@@ -41,14 +41,14 @@ public interface Disjunction extends Filter
    * <!-- end-user-doc -->
    * @return the value of the '<em>Left</em>' containment reference.
    * @see #setLeft(Filter)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDisjunction_Left()
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getConjunctionFilter_Left()
    * @model containment="true"
    * @generated
    */
   Filter getLeft();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Disjunction#getLeft <em>Left</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter#getLeft <em>Left</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Left</em>' containment reference.
@@ -63,14 +63,14 @@ public interface Disjunction extends Filter
    * <!-- end-user-doc -->
    * @return the value of the '<em>Right</em>' containment reference.
    * @see #setRight(Filter)
-   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getDisjunction_Right()
+   * @see com.b2international.snowowl.snomed.ql.ql.QlPackage#getConjunctionFilter_Right()
    * @model containment="true"
    * @generated
    */
   Filter getRight();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.Disjunction#getRight <em>Right</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter#getRight <em>Right</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Right</em>' containment reference.
@@ -79,4 +79,4 @@ public interface Disjunction extends Filter
    */
   void setRight(Filter value);
 
-} // Disjunction
+} // ConjunctionFilter
