@@ -34,6 +34,7 @@
 		<module>com.b2international.snowowl.snomed.ecl</module>
 		<module>com.b2international.snowowl.snomed.ecl.tests</module>
 		<module>com.b2international.snowowl.snomed.ql</module>
+		<module>com.b2international.snowowl.snomed.ql.tests</module>
 		
 		<!-- SNOMED CT Core Features -->
 		<module>com.b2international.snowowl.snomed.core.feature</module>
