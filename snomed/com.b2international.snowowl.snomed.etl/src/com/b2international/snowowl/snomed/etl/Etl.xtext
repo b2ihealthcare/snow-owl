@@ -1,0 +1,150 @@
+/*
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+grammar com.b2international.snowowl.snomed.etl.Etl with com.b2international.snowowl.snomed.ecl.Ecl
+
+generate etl "http://www.b2international.com/snowowl/snomed/etl/Etl"
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+
+ExpressionTemplate:
+	{ExpressionTemplate} (((primitive?=SUBTYPE_OF | EQUIVALENT_TO) | slot=TokenReplacementSlot)? expression=SubExpression)?;
+
+SubExpression:
+	focusConcepts+=FocusConcept (PLUS focusConcepts+=FocusConcept)* (COLON refinement=Refinement)?;
+
+FocusConcept:
+	(slot=TemplateInformationSlot)? concept=ConceptReference;
+
+Refinement:
+	(attributes+=Attribute (COMMA attributes+=Attribute)* | groups+=AttributeGroup) (COMMA? groups+=AttributeGroup)*;
+
+AttributeGroup:
+	(slot=TemplateInformationSlot)? CURLY_OPEN attributes+=Attribute (COMMA attributes+=Attribute)* CURLY_CLOSE;
+
+Attribute:
+	(slot=TemplateInformationSlot)? name=ConceptReference EQUAL value=AttributeValue;
+
+AttributeValue:
+	ConceptReference | ROUND_OPEN SubExpression ROUND_CLOSE | StringValue | IntegerValue | DecimalValue | ConcreteValueReplacementSlot;
+
+ConceptReplacementSlot:
+	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+
+ExpressionReplacementSlot:
+	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+
+TokenReplacementSlot:
+	{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken (WS tokens+=SlotToken)* ROUND_CLOSE)?	(AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+
+TemplateInformationSlot:
+	{TemplateInformationSlot} DOUBLE_SQUARE_OPEN (cardinality=Cardinality)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+
+ConcreteValueReplacementSlot:
+	StringReplacementSlot | IntegerReplacementSlot | DecimalReplacementSlot;
+
+StringReplacementSlot:
+	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue (values+=StringValue)* ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+
+IntegerReplacementSlot:
+	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues (values+=IntegerValues)* ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+
+DecimalReplacementSlot:
+	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues (values+=DecimalValues)* ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+
+@Override
+Cardinality: // this is required to be compatible with IHTSDO's template format v0.2
+	SQUARE_OPEN TILDE? min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
+
+SlotToken:
+	EQUIVALENT_TO | SUBTYPE_OF |
+	COMMA | CONJUNCTION | DISJUNCTION | EXCLUSION | REVERSED | CARET |
+	LT | LTE | DBL_LT | LT_EM |
+	GT | GTE | DBL_GT | GT_EM |
+	EQUAL | NOT_EQUAL;
+
+StringValue:
+	value=STRING;
+
+IntegerValues:
+	IntegerValue | IntegerRange;
+
+IntegerValue:
+	HASH value=Integer;
+
+IntegerRange:
+	(minimum=IntegerMinimumValue TO (maximum=IntegerMaximumValue)?) | (TO maximum=IntegerMaximumValue);
+
+IntegerMinimumValue:
+	(exclusive?=GT) HASH value=Integer;
+
+IntegerMaximumValue:
+	(exclusive?=LT) HASH value=Integer;
+
+DecimalValues:
+	DecimalValue | DecimalRange;
+
+DecimalValue:
+	HASH value=Decimal;
+
+DecimalRange:
+	(minimum=DecimalMinimumValue TO (maximum=DecimalMaximumValue)?) | (TO maximum=DecimalMaximumValue);
+
+DecimalMinimumValue:
+	(exclusive?=GT) HASH value=Decimal;
+
+DecimalMaximumValue:
+	(exclusive?=LT) HASH value=Decimal;
+
+ConceptReferenceSlot:
+	ConceptReplacementSlot | ExpressionReplacementSlot;
+
+ConceptReference:
+	(slot=ConceptReferenceSlot) | (id=SnomedIdentifier (term=TERM_STRING)?);
+
+terminal DOUBLE_SQUARE_OPEN:
+	'[[';
+
+terminal DOUBLE_SQUARE_CLOSE:
+	']]';
+
+terminal TILDE:
+	'~';
+
+terminal AT:
+	'@';
+
+terminal ID:
+	'id';
+
+terminal SCG:
+	'scg';
+
+terminal TOK:
+	'tok';
+
+terminal STR:
+	'str';
+
+terminal INT:
+	'int';
+
+terminal DEC:
+	'dec';
+
+terminal EQUIVALENT_TO:
+	'===';
+
+terminal SUBTYPE_OF:
+	'<<<';

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="etl" nsURI="http://www.b2international.com/snowowl/snomed/etl/Etl"
+    nsPrefix="etl">
+  <eClassifiers xsi:type="ecore:EClass" name="ExpressionTemplate">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="primitive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="slot" eType="#//TokenReplacementSlot"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//SubExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SubExpression" eSuperTypes="#//AttributeValue">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="focusConcepts" upperBound="-1"
+        eType="#//FocusConcept" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//Refinement"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FocusConcept">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="slot" eType="#//TemplateInformationSlot"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="concept" eType="#//ConceptReference"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Refinement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="attributes" upperBound="-1"
+        eType="#//Attribute" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="groups" upperBound="-1"
+        eType="#//AttributeGroup" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeGroup">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="slot" eType="#//TemplateInformationSlot"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="attributes" upperBound="-1"
+        eType="#//Attribute" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Attribute">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="slot" eType="#//TemplateInformationSlot"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="name" eType="#//ConceptReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//AttributeValue"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeValue"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ConceptReplacementSlot" eSuperTypes="#//ConceptReferenceSlot"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ExpressionReplacementSlot" eSuperTypes="#//ConceptReferenceSlot"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TokenReplacementSlot">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="tokens" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TemplateInformationSlot">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="cardinality" eType="#//Cardinality"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ConcreteValueReplacementSlot" eSuperTypes="#//AttributeValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StringReplacementSlot" eSuperTypes="#//ConcreteValueReplacementSlot">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="values" upperBound="-1"
+        eType="#//StringValue" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerReplacementSlot" eSuperTypes="#//ConcreteValueReplacementSlot">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="values" upperBound="-1"
+        eType="#//IntegerValues" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DecimalReplacementSlot" eSuperTypes="#//ConcreteValueReplacementSlot">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="values" upperBound="-1"
+        eType="#//DecimalValues" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Cardinality" eSuperTypes="platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Cardinality"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StringValue" eSuperTypes="#//AttributeValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerValues"/>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerValue" eSuperTypes="#//AttributeValue #//IntegerValues">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerRange" eSuperTypes="#//IntegerValues">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="minimum" eType="#//IntegerMinimumValue"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="maximum" eType="#//IntegerMaximumValue"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerMinimumValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="exclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerMaximumValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="exclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DecimalValues"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DecimalValue" eSuperTypes="#//AttributeValue #//DecimalValues">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigDecimal"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DecimalRange" eSuperTypes="#//DecimalValues">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="minimum" eType="#//DecimalMinimumValue"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="maximum" eType="#//DecimalMaximumValue"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DecimalMinimumValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="exclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigDecimal"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DecimalMaximumValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="exclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigDecimal"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ConceptReferenceSlot">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//ExpressionConstraint"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ConceptReference" eSuperTypes="#//AttributeValue">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="slot" eType="#//ConceptReferenceSlot"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+</ecore:EPackage>
