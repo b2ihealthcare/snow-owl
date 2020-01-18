@@ -22,29 +22,28 @@ import java.util.HashMap;
 @SuppressWarnings("all")
 public class InternalScgParser extends AbstractInternalAntlrParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "RULE_EQUIVALENT_TO", "RULE_SUBTYPE_OF", "RULE_TERM_STRING", "RULE_ZERO", "RULE_DIGIT_NONZERO", "RULE_CURLY_OPEN", "RULE_CURLY_CLOSE", "RULE_COMMA", "RULE_EQUAL_SIGN", "RULE_COLON", "RULE_PLUS", "RULE_DASH", "RULE_DOT", "RULE_QUOTATION_MARK", "RULE_OPENING_ROUND_BRACKET", "RULE_CLOSING_ROUND_BRACKET", "RULE_HASH", "RULE_WS", "RULE_ML_COMMENT", "RULE_SL_COMMENT", "RULE_STRING"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "RULE_EQUIVALENT_TO", "RULE_SUBTYPE_OF", "RULE_TERM_STRING", "RULE_ZERO", "RULE_DIGIT_NONZERO", "RULE_CURLY_OPEN", "RULE_CURLY_CLOSE", "RULE_COMMA", "RULE_EQUAL", "RULE_COLON", "RULE_PLUS", "RULE_DASH", "RULE_DOT", "RULE_ROUND_OPEN", "RULE_ROUND_CLOSE", "RULE_HASH", "RULE_WS", "RULE_ML_COMMENT", "RULE_SL_COMMENT", "RULE_STRING"
     };
     public static final int RULE_DIGIT_NONZERO=8;
     public static final int RULE_CURLY_OPEN=9;
-    public static final int RULE_STRING=24;
-    public static final int RULE_SL_COMMENT=23;
-    public static final int RULE_HASH=20;
+    public static final int RULE_ROUND_CLOSE=18;
+    public static final int RULE_STRING=23;
+    public static final int RULE_SL_COMMENT=22;
+    public static final int RULE_HASH=19;
     public static final int RULE_EQUIVALENT_TO=4;
     public static final int RULE_DASH=15;
+    public static final int RULE_ROUND_OPEN=17;
     public static final int RULE_PLUS=14;
     public static final int RULE_DOT=16;
     public static final int EOF=-1;
-    public static final int RULE_EQUAL_SIGN=12;
+    public static final int RULE_EQUAL=12;
     public static final int RULE_SUBTYPE_OF=5;
     public static final int RULE_COMMA=11;
-    public static final int RULE_WS=21;
+    public static final int RULE_WS=20;
     public static final int RULE_CURLY_CLOSE=10;
     public static final int RULE_ZERO=7;
-    public static final int RULE_CLOSING_ROUND_BRACKET=19;
     public static final int RULE_COLON=13;
-    public static final int RULE_QUOTATION_MARK=17;
-    public static final int RULE_OPENING_ROUND_BRACKET=18;
-    public static final int RULE_ML_COMMENT=22;
+    public static final int RULE_ML_COMMENT=21;
     public static final int RULE_TERM_STRING=6;
 
     // delegates
@@ -1145,11 +1144,11 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleAttribute"
-    // InternalScgParser.g:430:1: ruleAttribute returns [EObject current=null] : ( ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_SIGN_1= RULE_EQUAL_SIGN ( (lv_value_2_0= ruleAttributeValue ) ) ) ;
+    // InternalScgParser.g:430:1: ruleAttribute returns [EObject current=null] : ( ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_1= RULE_EQUAL ( (lv_value_2_0= ruleAttributeValue ) ) ) ;
     public final EObject ruleAttribute() throws RecognitionException {
         EObject current = null;
 
-        Token this_EQUAL_SIGN_1=null;
+        Token this_EQUAL_1=null;
         EObject lv_name_0_0 = null;
 
         EObject lv_value_2_0 = null;
@@ -1159,11 +1158,11 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalScgParser.g:436:2: ( ( ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_SIGN_1= RULE_EQUAL_SIGN ( (lv_value_2_0= ruleAttributeValue ) ) ) )
-            // InternalScgParser.g:437:2: ( ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_SIGN_1= RULE_EQUAL_SIGN ( (lv_value_2_0= ruleAttributeValue ) ) )
+            // InternalScgParser.g:436:2: ( ( ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_1= RULE_EQUAL ( (lv_value_2_0= ruleAttributeValue ) ) ) )
+            // InternalScgParser.g:437:2: ( ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_1= RULE_EQUAL ( (lv_value_2_0= ruleAttributeValue ) ) )
             {
-            // InternalScgParser.g:437:2: ( ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_SIGN_1= RULE_EQUAL_SIGN ( (lv_value_2_0= ruleAttributeValue ) ) )
-            // InternalScgParser.g:438:3: ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_SIGN_1= RULE_EQUAL_SIGN ( (lv_value_2_0= ruleAttributeValue ) )
+            // InternalScgParser.g:437:2: ( ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_1= RULE_EQUAL ( (lv_value_2_0= ruleAttributeValue ) ) )
+            // InternalScgParser.g:438:3: ( (lv_name_0_0= ruleConceptReference ) ) this_EQUAL_1= RULE_EQUAL ( (lv_value_2_0= ruleAttributeValue ) )
             {
             // InternalScgParser.g:438:3: ( (lv_name_0_0= ruleConceptReference ) )
             // InternalScgParser.g:439:4: (lv_name_0_0= ruleConceptReference )
@@ -1200,10 +1199,10 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
 
             }
 
-            this_EQUAL_SIGN_1=(Token)match(input,RULE_EQUAL_SIGN,FollowSets000.FOLLOW_9); if (state.failed) return current;
+            this_EQUAL_1=(Token)match(input,RULE_EQUAL,FollowSets000.FOLLOW_9); if (state.failed) return current;
             if ( state.backtracking==0 ) {
 
-              			newLeafNode(this_EQUAL_SIGN_1, grammarAccess.getAttributeAccess().getEQUAL_SIGNTerminalRuleCall_1());
+              			newLeafNode(this_EQUAL_1, grammarAccess.getAttributeAccess().getEQUALTerminalRuleCall_1());
               		
             }
             // InternalScgParser.g:461:3: ( (lv_value_2_0= ruleAttributeValue ) )
@@ -1306,12 +1305,12 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleAttributeValue"
-    // InternalScgParser.g:491:1: ruleAttributeValue returns [EObject current=null] : (this_ConceptReference_0= ruleConceptReference | (this_OPENING_ROUND_BRACKET_1= RULE_OPENING_ROUND_BRACKET this_SubExpression_2= ruleSubExpression this_CLOSING_ROUND_BRACKET_3= RULE_CLOSING_ROUND_BRACKET ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue ) ;
+    // InternalScgParser.g:491:1: ruleAttributeValue returns [EObject current=null] : (this_ConceptReference_0= ruleConceptReference | (this_ROUND_OPEN_1= RULE_ROUND_OPEN this_SubExpression_2= ruleSubExpression this_ROUND_CLOSE_3= RULE_ROUND_CLOSE ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue ) ;
     public final EObject ruleAttributeValue() throws RecognitionException {
         EObject current = null;
 
-        Token this_OPENING_ROUND_BRACKET_1=null;
-        Token this_CLOSING_ROUND_BRACKET_3=null;
+        Token this_ROUND_OPEN_1=null;
+        Token this_ROUND_CLOSE_3=null;
         EObject this_ConceptReference_0 = null;
 
         EObject this_SubExpression_2 = null;
@@ -1327,10 +1326,10 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalScgParser.g:497:2: ( (this_ConceptReference_0= ruleConceptReference | (this_OPENING_ROUND_BRACKET_1= RULE_OPENING_ROUND_BRACKET this_SubExpression_2= ruleSubExpression this_CLOSING_ROUND_BRACKET_3= RULE_CLOSING_ROUND_BRACKET ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue ) )
-            // InternalScgParser.g:498:2: (this_ConceptReference_0= ruleConceptReference | (this_OPENING_ROUND_BRACKET_1= RULE_OPENING_ROUND_BRACKET this_SubExpression_2= ruleSubExpression this_CLOSING_ROUND_BRACKET_3= RULE_CLOSING_ROUND_BRACKET ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue )
+            // InternalScgParser.g:497:2: ( (this_ConceptReference_0= ruleConceptReference | (this_ROUND_OPEN_1= RULE_ROUND_OPEN this_SubExpression_2= ruleSubExpression this_ROUND_CLOSE_3= RULE_ROUND_CLOSE ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue ) )
+            // InternalScgParser.g:498:2: (this_ConceptReference_0= ruleConceptReference | (this_ROUND_OPEN_1= RULE_ROUND_OPEN this_SubExpression_2= ruleSubExpression this_ROUND_CLOSE_3= RULE_ROUND_CLOSE ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue )
             {
-            // InternalScgParser.g:498:2: (this_ConceptReference_0= ruleConceptReference | (this_OPENING_ROUND_BRACKET_1= RULE_OPENING_ROUND_BRACKET this_SubExpression_2= ruleSubExpression this_CLOSING_ROUND_BRACKET_3= RULE_CLOSING_ROUND_BRACKET ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue )
+            // InternalScgParser.g:498:2: (this_ConceptReference_0= ruleConceptReference | (this_ROUND_OPEN_1= RULE_ROUND_OPEN this_SubExpression_2= ruleSubExpression this_ROUND_CLOSE_3= RULE_ROUND_CLOSE ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue )
             int alt10=5;
             alt10 = dfa10.predict(input);
             switch (alt10) {
@@ -1362,15 +1361,15 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // InternalScgParser.g:511:3: (this_OPENING_ROUND_BRACKET_1= RULE_OPENING_ROUND_BRACKET this_SubExpression_2= ruleSubExpression this_CLOSING_ROUND_BRACKET_3= RULE_CLOSING_ROUND_BRACKET )
+                    // InternalScgParser.g:511:3: (this_ROUND_OPEN_1= RULE_ROUND_OPEN this_SubExpression_2= ruleSubExpression this_ROUND_CLOSE_3= RULE_ROUND_CLOSE )
                     {
-                    // InternalScgParser.g:511:3: (this_OPENING_ROUND_BRACKET_1= RULE_OPENING_ROUND_BRACKET this_SubExpression_2= ruleSubExpression this_CLOSING_ROUND_BRACKET_3= RULE_CLOSING_ROUND_BRACKET )
-                    // InternalScgParser.g:512:4: this_OPENING_ROUND_BRACKET_1= RULE_OPENING_ROUND_BRACKET this_SubExpression_2= ruleSubExpression this_CLOSING_ROUND_BRACKET_3= RULE_CLOSING_ROUND_BRACKET
+                    // InternalScgParser.g:511:3: (this_ROUND_OPEN_1= RULE_ROUND_OPEN this_SubExpression_2= ruleSubExpression this_ROUND_CLOSE_3= RULE_ROUND_CLOSE )
+                    // InternalScgParser.g:512:4: this_ROUND_OPEN_1= RULE_ROUND_OPEN this_SubExpression_2= ruleSubExpression this_ROUND_CLOSE_3= RULE_ROUND_CLOSE
                     {
-                    this_OPENING_ROUND_BRACKET_1=(Token)match(input,RULE_OPENING_ROUND_BRACKET,FollowSets000.FOLLOW_3); if (state.failed) return current;
+                    this_ROUND_OPEN_1=(Token)match(input,RULE_ROUND_OPEN,FollowSets000.FOLLOW_3); if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      				newLeafNode(this_OPENING_ROUND_BRACKET_1, grammarAccess.getAttributeValueAccess().getOPENING_ROUND_BRACKETTerminalRuleCall_1_0());
+                      				newLeafNode(this_ROUND_OPEN_1, grammarAccess.getAttributeValueAccess().getROUND_OPENTerminalRuleCall_1_0());
                       			
                     }
                     if ( state.backtracking==0 ) {
@@ -1394,10 +1393,10 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
                       				afterParserOrEnumRuleCall();
                       			
                     }
-                    this_CLOSING_ROUND_BRACKET_3=(Token)match(input,RULE_CLOSING_ROUND_BRACKET,FollowSets000.FOLLOW_2); if (state.failed) return current;
+                    this_ROUND_CLOSE_3=(Token)match(input,RULE_ROUND_CLOSE,FollowSets000.FOLLOW_2); if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      				newLeafNode(this_CLOSING_ROUND_BRACKET_3, grammarAccess.getAttributeValueAccess().getCLOSING_ROUND_BRACKETTerminalRuleCall_1_2());
+                      				newLeafNode(this_ROUND_CLOSE_3, grammarAccess.getAttributeValueAccess().getROUND_CLOSETerminalRuleCall_1_2());
                       			
                     }
 
@@ -3131,23 +3130,23 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
     static final String dfa_1s = "\15\uffff";
     static final String dfa_2s = "\7\uffff\2\11\2\uffff\2\11";
     static final String dfa_3s = "\1\10\3\uffff\3\7\1\11\1\7\2\uffff\2\7";
-    static final String dfa_4s = "\1\30\3\uffff\1\17\2\10\2\23\2\uffff\2\23";
+    static final String dfa_4s = "\1\27\3\uffff\1\17\2\10\2\22\2\uffff\2\22";
     static final String dfa_5s = "\1\uffff\1\1\1\2\1\3\5\uffff\1\4\1\5\2\uffff";
     static final String dfa_6s = "\15\uffff}>";
     static final String[] dfa_7s = {
-            "\1\1\11\uffff\1\2\1\uffff\1\4\3\uffff\1\3",
+            "\1\1\10\uffff\1\2\1\uffff\1\4\3\uffff\1\3",
             "",
             "",
             "",
             "\1\7\1\10\5\uffff\1\5\1\6",
             "\1\7\1\10",
             "\1\7\1\10",
-            "\3\11\4\uffff\1\12\2\uffff\1\11",
-            "\1\14\1\13\3\11\4\uffff\1\12\2\uffff\1\11",
+            "\3\11\4\uffff\1\12\1\uffff\1\11",
+            "\1\14\1\13\3\11\4\uffff\1\12\1\uffff\1\11",
             "",
             "",
-            "\1\14\1\13\3\11\4\uffff\1\12\2\uffff\1\11",
-            "\1\14\1\13\3\11\4\uffff\1\12\2\uffff\1\11"
+            "\1\14\1\13\3\11\4\uffff\1\12\1\uffff\1\11",
+            "\1\14\1\13\3\11\4\uffff\1\12\1\uffff\1\11"
     };
 
     static final short[] dfa_1 = DFA.unpackEncodedString(dfa_1s);
@@ -3172,7 +3171,7 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
             this.transition = dfa_7;
         }
         public String getDescription() {
-            return "498:2: (this_ConceptReference_0= ruleConceptReference | (this_OPENING_ROUND_BRACKET_1= RULE_OPENING_ROUND_BRACKET this_SubExpression_2= ruleSubExpression this_CLOSING_ROUND_BRACKET_3= RULE_CLOSING_ROUND_BRACKET ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue )";
+            return "498:2: (this_ConceptReference_0= ruleConceptReference | (this_ROUND_OPEN_1= RULE_ROUND_OPEN this_SubExpression_2= ruleSubExpression this_ROUND_CLOSE_3= RULE_ROUND_CLOSE ) | this_StringValue_4= ruleStringValue | this_IntegerValue_5= ruleIntegerValue | this_DecimalValue_6= ruleDecimalValue )";
         }
     }
  
@@ -3187,8 +3186,8 @@ public class InternalScgParser extends AbstractInternalAntlrParser {
         public static final BitSet FOLLOW_6 = new BitSet(new long[]{0x0000000000000B02L});
         public static final BitSet FOLLOW_7 = new BitSet(new long[]{0x0000000000000C00L});
         public static final BitSet FOLLOW_8 = new BitSet(new long[]{0x0000000000001000L});
-        public static final BitSet FOLLOW_9 = new BitSet(new long[]{0x0000000001140100L});
-        public static final BitSet FOLLOW_10 = new BitSet(new long[]{0x0000000000080000L});
+        public static final BitSet FOLLOW_9 = new BitSet(new long[]{0x00000000008A0100L});
+        public static final BitSet FOLLOW_10 = new BitSet(new long[]{0x0000000000040000L});
         public static final BitSet FOLLOW_11 = new BitSet(new long[]{0x000000000000C180L});
         public static final BitSet FOLLOW_12 = new BitSet(new long[]{0x0000000000000042L});
         public static final BitSet FOLLOW_13 = new BitSet(new long[]{0x0000000000000180L});

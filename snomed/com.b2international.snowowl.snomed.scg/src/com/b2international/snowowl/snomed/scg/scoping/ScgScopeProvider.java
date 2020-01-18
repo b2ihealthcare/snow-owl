@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.scg.scoping
+package com.b2international.snowowl.snomed.scg.scoping;
 
 
 /**
@@ -22,6 +22,6 @@ package com.b2international.snowowl.snomed.scg.scoping
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
  * on how and when to use it.
  */
-class ScgScopeProvider extends AbstractScgScopeProvider {
+public class ScgScopeProvider extends AbstractScgScopeProvider {
 
 }

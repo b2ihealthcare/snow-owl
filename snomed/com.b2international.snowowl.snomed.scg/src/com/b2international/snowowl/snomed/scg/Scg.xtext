@@ -31,10 +31,10 @@ AttributeGroup:
 	CURLY_OPEN attributes+=Attribute (COMMA attributes+=Attribute)* CURLY_CLOSE;
 
 Attribute:
-	name=ConceptReference EQUAL_SIGN value=AttributeValue;
+	name=ConceptReference EQUAL value=AttributeValue;
 
 AttributeValue:
-	ConceptReference | OPENING_ROUND_BRACKET SubExpression CLOSING_ROUND_BRACKET | StringValue | IntegerValue |
+	ConceptReference | ROUND_OPEN SubExpression ROUND_CLOSE | StringValue | IntegerValue |
 	DecimalValue;
 
 StringValue:
@@ -73,7 +73,7 @@ terminal CURLY_CLOSE:
 terminal COMMA:
 	',';
 
-terminal EQUAL_SIGN:
+terminal EQUAL:
 	'=';
 
 terminal COLON:
@@ -88,13 +88,10 @@ terminal DASH:
 terminal DOT:
 	'.';
 
-terminal QUOTATION_MARK:
-	'"';
-
-terminal OPENING_ROUND_BRACKET:
+terminal ROUND_OPEN:
 	'(';
 
-terminal CLOSING_ROUND_BRACKET:
+terminal ROUND_CLOSE:
 	')';
 
 terminal HASH:

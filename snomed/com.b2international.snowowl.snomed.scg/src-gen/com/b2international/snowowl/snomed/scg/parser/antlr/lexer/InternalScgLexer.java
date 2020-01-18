@@ -14,25 +14,24 @@ import java.util.ArrayList;
 public class InternalScgLexer extends Lexer {
     public static final int RULE_DIGIT_NONZERO=8;
     public static final int RULE_CURLY_OPEN=9;
-    public static final int RULE_STRING=24;
-    public static final int RULE_SL_COMMENT=23;
-    public static final int RULE_HASH=20;
+    public static final int RULE_ROUND_CLOSE=18;
+    public static final int RULE_STRING=23;
+    public static final int RULE_SL_COMMENT=22;
+    public static final int RULE_HASH=19;
     public static final int RULE_EQUIVALENT_TO=4;
     public static final int RULE_DASH=15;
+    public static final int RULE_ROUND_OPEN=17;
     public static final int RULE_PLUS=14;
     public static final int RULE_DOT=16;
     public static final int EOF=-1;
-    public static final int RULE_EQUAL_SIGN=12;
+    public static final int RULE_EQUAL=12;
     public static final int RULE_SUBTYPE_OF=5;
     public static final int RULE_COMMA=11;
-    public static final int RULE_WS=21;
+    public static final int RULE_WS=20;
     public static final int RULE_CURLY_CLOSE=10;
     public static final int RULE_ZERO=7;
-    public static final int RULE_CLOSING_ROUND_BRACKET=19;
     public static final int RULE_COLON=13;
-    public static final int RULE_QUOTATION_MARK=17;
-    public static final int RULE_OPENING_ROUND_BRACKET=18;
-    public static final int RULE_ML_COMMENT=22;
+    public static final int RULE_ML_COMMENT=21;
     public static final int RULE_TERM_STRING=6;
 
     // delegates
@@ -244,13 +243,13 @@ public class InternalScgLexer extends Lexer {
     }
     // $ANTLR end "RULE_COMMA"
 
-    // $ANTLR start "RULE_EQUAL_SIGN"
-    public final void mRULE_EQUAL_SIGN() throws RecognitionException {
+    // $ANTLR start "RULE_EQUAL"
+    public final void mRULE_EQUAL() throws RecognitionException {
         try {
-            int _type = RULE_EQUAL_SIGN;
+            int _type = RULE_EQUAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:42:17: ( '=' )
-            // InternalScgLexer.g:42:19: '='
+            // InternalScgLexer.g:42:12: ( '=' )
+            // InternalScgLexer.g:42:14: '='
             {
             match('='); 
 
@@ -262,7 +261,7 @@ public class InternalScgLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end "RULE_EQUAL_SIGN"
+    // $ANTLR end "RULE_EQUAL"
 
     // $ANTLR start "RULE_COLON"
     public final void mRULE_COLON() throws RecognitionException {
@@ -344,33 +343,13 @@ public class InternalScgLexer extends Lexer {
     }
     // $ANTLR end "RULE_DOT"
 
-    // $ANTLR start "RULE_QUOTATION_MARK"
-    public final void mRULE_QUOTATION_MARK() throws RecognitionException {
+    // $ANTLR start "RULE_ROUND_OPEN"
+    public final void mRULE_ROUND_OPEN() throws RecognitionException {
         try {
-            int _type = RULE_QUOTATION_MARK;
+            int _type = RULE_ROUND_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:52:21: ( '\"' )
-            // InternalScgLexer.g:52:23: '\"'
-            {
-            match('\"'); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "RULE_QUOTATION_MARK"
-
-    // $ANTLR start "RULE_OPENING_ROUND_BRACKET"
-    public final void mRULE_OPENING_ROUND_BRACKET() throws RecognitionException {
-        try {
-            int _type = RULE_OPENING_ROUND_BRACKET;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:54:28: ( '(' )
-            // InternalScgLexer.g:54:30: '('
+            // InternalScgLexer.g:52:17: ( '(' )
+            // InternalScgLexer.g:52:19: '('
             {
             match('('); 
 
@@ -382,15 +361,15 @@ public class InternalScgLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end "RULE_OPENING_ROUND_BRACKET"
+    // $ANTLR end "RULE_ROUND_OPEN"
 
-    // $ANTLR start "RULE_CLOSING_ROUND_BRACKET"
-    public final void mRULE_CLOSING_ROUND_BRACKET() throws RecognitionException {
+    // $ANTLR start "RULE_ROUND_CLOSE"
+    public final void mRULE_ROUND_CLOSE() throws RecognitionException {
         try {
-            int _type = RULE_CLOSING_ROUND_BRACKET;
+            int _type = RULE_ROUND_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:56:28: ( ')' )
-            // InternalScgLexer.g:56:30: ')'
+            // InternalScgLexer.g:54:18: ( ')' )
+            // InternalScgLexer.g:54:20: ')'
             {
             match(')'); 
 
@@ -402,15 +381,15 @@ public class InternalScgLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end "RULE_CLOSING_ROUND_BRACKET"
+    // $ANTLR end "RULE_ROUND_CLOSE"
 
     // $ANTLR start "RULE_HASH"
     public final void mRULE_HASH() throws RecognitionException {
         try {
             int _type = RULE_HASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:58:11: ( '#' )
-            // InternalScgLexer.g:58:13: '#'
+            // InternalScgLexer.g:56:11: ( '#' )
+            // InternalScgLexer.g:56:13: '#'
             {
             match('#'); 
 
@@ -429,8 +408,8 @@ public class InternalScgLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:60:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
-            // InternalScgLexer.g:60:11: ( ' ' | '\\t' | '\\n' | '\\r' )
+            // InternalScgLexer.g:58:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
+            // InternalScgLexer.g:58:11: ( ' ' | '\\t' | '\\n' | '\\r' )
             {
             if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
                 input.consume();
@@ -457,12 +436,12 @@ public class InternalScgLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:62:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // InternalScgLexer.g:62:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalScgLexer.g:60:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalScgLexer.g:60:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // InternalScgLexer.g:62:24: ( options {greedy=false; } : . )*
+            // InternalScgLexer.g:60:24: ( options {greedy=false; } : . )*
             loop2:
             do {
                 int alt2=2;
@@ -487,7 +466,7 @@ public class InternalScgLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // InternalScgLexer.g:62:52: .
+            	    // InternalScgLexer.g:60:52: .
             	    {
             	    matchAny(); 
 
@@ -517,12 +496,12 @@ public class InternalScgLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:64:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // InternalScgLexer.g:64:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalScgLexer.g:62:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalScgLexer.g:62:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // InternalScgLexer.g:64:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalScgLexer.g:62:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop3:
             do {
                 int alt3=2;
@@ -535,7 +514,7 @@ public class InternalScgLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // InternalScgLexer.g:64:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalScgLexer.g:62:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -555,7 +534,7 @@ public class InternalScgLexer extends Lexer {
                 }
             } while (true);
 
-            // InternalScgLexer.g:64:40: ( ( '\\r' )? '\\n' )?
+            // InternalScgLexer.g:62:40: ( ( '\\r' )? '\\n' )?
             int alt5=2;
             int LA5_0 = input.LA(1);
 
@@ -564,9 +543,9 @@ public class InternalScgLexer extends Lexer {
             }
             switch (alt5) {
                 case 1 :
-                    // InternalScgLexer.g:64:41: ( '\\r' )? '\\n'
+                    // InternalScgLexer.g:62:41: ( '\\r' )? '\\n'
                     {
-                    // InternalScgLexer.g:64:41: ( '\\r' )?
+                    // InternalScgLexer.g:62:41: ( '\\r' )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -575,7 +554,7 @@ public class InternalScgLexer extends Lexer {
                     }
                     switch (alt4) {
                         case 1 :
-                            // InternalScgLexer.g:64:41: '\\r'
+                            // InternalScgLexer.g:62:41: '\\r'
                             {
                             match('\r'); 
 
@@ -607,10 +586,10 @@ public class InternalScgLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalScgLexer.g:66:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // InternalScgLexer.g:66:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalScgLexer.g:64:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalScgLexer.g:64:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // InternalScgLexer.g:66:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalScgLexer.g:64:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt8=2;
             int LA8_0 = input.LA(1);
 
@@ -628,10 +607,10 @@ public class InternalScgLexer extends Lexer {
             }
             switch (alt8) {
                 case 1 :
-                    // InternalScgLexer.g:66:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalScgLexer.g:64:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // InternalScgLexer.g:66:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalScgLexer.g:64:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop6:
                     do {
                         int alt6=3;
@@ -647,7 +626,7 @@ public class InternalScgLexer extends Lexer {
 
                         switch (alt6) {
                     	case 1 :
-                    	    // InternalScgLexer.g:66:21: '\\\\' .
+                    	    // InternalScgLexer.g:64:21: '\\\\' .
                     	    {
                     	    match('\\'); 
                     	    matchAny(); 
@@ -655,7 +634,7 @@ public class InternalScgLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalScgLexer.g:66:28: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalScgLexer.g:64:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -680,10 +659,10 @@ public class InternalScgLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalScgLexer.g:66:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalScgLexer.g:64:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // InternalScgLexer.g:66:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalScgLexer.g:64:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop7:
                     do {
                         int alt7=3;
@@ -699,7 +678,7 @@ public class InternalScgLexer extends Lexer {
 
                         switch (alt7) {
                     	case 1 :
-                    	    // InternalScgLexer.g:66:54: '\\\\' .
+                    	    // InternalScgLexer.g:64:54: '\\\\' .
                     	    {
                     	    match('\\'); 
                     	    matchAny(); 
@@ -707,7 +686,7 @@ public class InternalScgLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalScgLexer.g:66:61: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalScgLexer.g:64:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -746,8 +725,8 @@ public class InternalScgLexer extends Lexer {
     // $ANTLR end "RULE_STRING"
 
     public void mTokens() throws RecognitionException {
-        // InternalScgLexer.g:1:8: ( RULE_EQUIVALENT_TO | RULE_SUBTYPE_OF | RULE_TERM_STRING | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_COMMA | RULE_EQUAL_SIGN | RULE_COLON | RULE_PLUS | RULE_DASH | RULE_DOT | RULE_QUOTATION_MARK | RULE_OPENING_ROUND_BRACKET | RULE_CLOSING_ROUND_BRACKET | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING )
-        int alt9=21;
+        // InternalScgLexer.g:1:8: ( RULE_EQUIVALENT_TO | RULE_SUBTYPE_OF | RULE_TERM_STRING | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_COMMA | RULE_EQUAL | RULE_COLON | RULE_PLUS | RULE_DASH | RULE_DOT | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING )
+        int alt9=20;
         alt9 = dfa9.predict(input);
         switch (alt9) {
             case 1 :
@@ -807,91 +786,84 @@ public class InternalScgLexer extends Lexer {
                 }
                 break;
             case 9 :
-                // InternalScgLexer.g:1:135: RULE_EQUAL_SIGN
+                // InternalScgLexer.g:1:135: RULE_EQUAL
                 {
-                mRULE_EQUAL_SIGN(); 
+                mRULE_EQUAL(); 
 
                 }
                 break;
             case 10 :
-                // InternalScgLexer.g:1:151: RULE_COLON
+                // InternalScgLexer.g:1:146: RULE_COLON
                 {
                 mRULE_COLON(); 
 
                 }
                 break;
             case 11 :
-                // InternalScgLexer.g:1:162: RULE_PLUS
+                // InternalScgLexer.g:1:157: RULE_PLUS
                 {
                 mRULE_PLUS(); 
 
                 }
                 break;
             case 12 :
-                // InternalScgLexer.g:1:172: RULE_DASH
+                // InternalScgLexer.g:1:167: RULE_DASH
                 {
                 mRULE_DASH(); 
 
                 }
                 break;
             case 13 :
-                // InternalScgLexer.g:1:182: RULE_DOT
+                // InternalScgLexer.g:1:177: RULE_DOT
                 {
                 mRULE_DOT(); 
 
                 }
                 break;
             case 14 :
-                // InternalScgLexer.g:1:191: RULE_QUOTATION_MARK
+                // InternalScgLexer.g:1:186: RULE_ROUND_OPEN
                 {
-                mRULE_QUOTATION_MARK(); 
+                mRULE_ROUND_OPEN(); 
 
                 }
                 break;
             case 15 :
-                // InternalScgLexer.g:1:211: RULE_OPENING_ROUND_BRACKET
+                // InternalScgLexer.g:1:202: RULE_ROUND_CLOSE
                 {
-                mRULE_OPENING_ROUND_BRACKET(); 
+                mRULE_ROUND_CLOSE(); 
 
                 }
                 break;
             case 16 :
-                // InternalScgLexer.g:1:238: RULE_CLOSING_ROUND_BRACKET
-                {
-                mRULE_CLOSING_ROUND_BRACKET(); 
-
-                }
-                break;
-            case 17 :
-                // InternalScgLexer.g:1:265: RULE_HASH
+                // InternalScgLexer.g:1:219: RULE_HASH
                 {
                 mRULE_HASH(); 
 
                 }
                 break;
-            case 18 :
-                // InternalScgLexer.g:1:275: RULE_WS
+            case 17 :
+                // InternalScgLexer.g:1:229: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
-            case 19 :
-                // InternalScgLexer.g:1:283: RULE_ML_COMMENT
+            case 18 :
+                // InternalScgLexer.g:1:237: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
-            case 20 :
-                // InternalScgLexer.g:1:299: RULE_SL_COMMENT
+            case 19 :
+                // InternalScgLexer.g:1:253: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
-            case 21 :
-                // InternalScgLexer.g:1:315: RULE_STRING
+            case 20 :
+                // InternalScgLexer.g:1:269: RULE_STRING
                 {
                 mRULE_STRING(); 
 
@@ -905,22 +877,22 @@ public class InternalScgLexer extends Lexer {
 
     protected DFA9 dfa9 = new DFA9(this);
     static final String DFA9_eotS =
-        "\1\uffff\1\25\13\uffff\1\26\13\uffff";
+        "\1\uffff\1\24\25\uffff";
     static final String DFA9_eofS =
-        "\31\uffff";
+        "\27\uffff";
     static final String DFA9_minS =
-        "\1\11\1\75\13\uffff\1\0\4\uffff\1\52\6\uffff";
+        "\1\11\1\75\17\uffff\1\52\5\uffff";
     static final String DFA9_maxS =
-        "\1\175\1\75\13\uffff\1\uffff\4\uffff\1\57\6\uffff";
+        "\1\175\1\75\17\uffff\1\57\5\uffff";
     static final String DFA9_acceptS =
-        "\2\uffff\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\12\1\13\1\14\1\15\1\uffff\1\17\1\20\1\21\1\22\1\uffff\1\25\1\1\1\11\1\16\1\23\1\24";
+        "\2\uffff\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\uffff\1\24\1\1\1\11\1\22\1\23";
     static final String DFA9_specialS =
-        "\15\uffff\1\0\13\uffff}>";
+        "\27\uffff}>";
     static final String[] DFA9_transitionS = DFA9_transitionS_.DFA9_transitionS;
     private static final class DFA9_transitionS_ {
         static final String[] DFA9_transitionS = {
-                "\2\21\2\uffff\1\21\22\uffff\1\21\1\uffff\1\15\1\20\3\uffff\1\23\1\16\1\17\1\uffff\1\12\1\10\1\13\1\14\1\22\1\4\11\5\1\11\1\uffff\1\2\1\1\75\uffff\1\6\1\3\1\7",
-                "\1\24",
+                "\2\20\2\uffff\1\20\22\uffff\1\20\1\uffff\1\22\1\17\3\uffff\1\22\1\15\1\16\1\uffff\1\12\1\10\1\13\1\14\1\21\1\4\11\5\1\11\1\uffff\1\2\1\1\75\uffff\1\6\1\3\1\7",
+                "\1\23",
                 "",
                 "",
                 "",
@@ -932,13 +904,11 @@ public class InternalScgLexer extends Lexer {
                 "",
                 "",
                 "",
-                "\0\23",
                 "",
                 "",
                 "",
                 "",
-                "\1\27\4\uffff\1\30",
-                "",
+                "\1\25\4\uffff\1\26",
                 "",
                 "",
                 "",
@@ -963,7 +933,7 @@ public class InternalScgLexer extends Lexer {
         }
     }
 
-    static class DFA9 extends DFA {
+    class DFA9 extends DFA {
 
         public DFA9(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
@@ -977,27 +947,7 @@ public class InternalScgLexer extends Lexer {
             this.transition = DFA9_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( RULE_EQUIVALENT_TO | RULE_SUBTYPE_OF | RULE_TERM_STRING | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_COMMA | RULE_EQUAL_SIGN | RULE_COLON | RULE_PLUS | RULE_DASH | RULE_DOT | RULE_QUOTATION_MARK | RULE_OPENING_ROUND_BRACKET | RULE_CLOSING_ROUND_BRACKET | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING );";
-        }
-        public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
-            IntStream input = _input;
-        	int _s = s;
-            switch ( s ) {
-                    case 0 : 
-                        int LA9_13 = input.LA(1);
-
-                        s = -1;
-                        if ( ((LA9_13>='\u0000' && LA9_13<='\uFFFF')) ) {s = 19;}
-
-                        else s = 22;
-
-                        if ( s>=0 ) return s;
-                        break;
-            }
-            NoViableAltException nvae =
-                new NoViableAltException(getDescription(), 9, _s, input);
-            error(nvae);
-            throw nvae;
+            return "1:1: Tokens : ( RULE_EQUIVALENT_TO | RULE_SUBTYPE_OF | RULE_TERM_STRING | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_COMMA | RULE_EQUAL | RULE_COLON | RULE_PLUS | RULE_DASH | RULE_DOT | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING );";
         }
     }
  

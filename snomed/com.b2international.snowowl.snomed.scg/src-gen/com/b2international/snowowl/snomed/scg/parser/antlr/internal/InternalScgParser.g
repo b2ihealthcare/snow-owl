@@ -454,9 +454,9 @@ ruleAttribute returns [EObject current=null]
 				}
 			)
 		)
-		this_EQUAL_SIGN_1=RULE_EQUAL_SIGN
+		this_EQUAL_1=RULE_EQUAL
 		{
-			newLeafNode(this_EQUAL_SIGN_1, grammarAccess.getAttributeAccess().getEQUAL_SIGNTerminalRuleCall_1());
+			newLeafNode(this_EQUAL_1, grammarAccess.getAttributeAccess().getEQUALTerminalRuleCall_1());
 		}
 		(
 			(
@@ -509,9 +509,9 @@ ruleAttributeValue returns [EObject current=null]
 		}
 		    |
 		(
-			this_OPENING_ROUND_BRACKET_1=RULE_OPENING_ROUND_BRACKET
+			this_ROUND_OPEN_1=RULE_ROUND_OPEN
 			{
-				newLeafNode(this_OPENING_ROUND_BRACKET_1, grammarAccess.getAttributeValueAccess().getOPENING_ROUND_BRACKETTerminalRuleCall_1_0());
+				newLeafNode(this_ROUND_OPEN_1, grammarAccess.getAttributeValueAccess().getROUND_OPENTerminalRuleCall_1_0());
 			}
 			{
 				/* */
@@ -524,9 +524,9 @@ ruleAttributeValue returns [EObject current=null]
 				$current = $this_SubExpression_2.current;
 				afterParserOrEnumRuleCall();
 			}
-			this_CLOSING_ROUND_BRACKET_3=RULE_CLOSING_ROUND_BRACKET
+			this_ROUND_CLOSE_3=RULE_ROUND_CLOSE
 			{
-				newLeafNode(this_CLOSING_ROUND_BRACKET_3, grammarAccess.getAttributeValueAccess().getCLOSING_ROUND_BRACKETTerminalRuleCall_1_2());
+				newLeafNode(this_ROUND_CLOSE_3, grammarAccess.getAttributeValueAccess().getROUND_CLOSETerminalRuleCall_1_2());
 			}
 		)
 		    |

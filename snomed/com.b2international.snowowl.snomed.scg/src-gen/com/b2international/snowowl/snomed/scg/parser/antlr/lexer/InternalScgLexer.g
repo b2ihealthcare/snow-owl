@@ -39,7 +39,7 @@ RULE_CURLY_CLOSE : '}';
 
 RULE_COMMA : ',';
 
-RULE_EQUAL_SIGN : '=';
+RULE_EQUAL : '=';
 
 RULE_COLON : ':';
 
@@ -49,11 +49,9 @@ RULE_DASH : '-';
 
 RULE_DOT : '.';
 
-RULE_QUOTATION_MARK : '"';
+RULE_ROUND_OPEN : '(';
 
-RULE_OPENING_ROUND_BRACKET : '(';
-
-RULE_CLOSING_ROUND_BRACKET : ')';
+RULE_ROUND_CLOSE : ')';
 
 RULE_HASH : '#';
 

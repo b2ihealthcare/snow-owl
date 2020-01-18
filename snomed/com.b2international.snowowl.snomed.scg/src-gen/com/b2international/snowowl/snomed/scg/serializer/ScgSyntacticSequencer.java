@@ -44,9 +44,7 @@ public class ScgSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (ruleCall.getRule() == grammarAccess.getCLOSING_ROUND_BRACKETRule())
-			return getCLOSING_ROUND_BRACKETToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getCOLONRule())
+		if (ruleCall.getRule() == grammarAccess.getCOLONRule())
 			return getCOLONToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCOMMARule())
 			return getCOMMAToken(semanticObject, ruleCall, node);
@@ -54,29 +52,21 @@ public class ScgSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getCURLY_CLOSEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCURLY_OPENRule())
 			return getCURLY_OPENToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getEQUAL_SIGNRule())
-			return getEQUAL_SIGNToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getEQUALRule())
+			return getEQUALToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getEQUIVALENT_TORule())
 			return getEQUIVALENT_TOToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getHASHRule())
 			return getHASHToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getOPENING_ROUND_BRACKETRule())
-			return getOPENING_ROUND_BRACKETToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getPLUSRule())
 			return getPLUSToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getROUND_CLOSERule())
+			return getROUND_CLOSEToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getROUND_OPENRule())
+			return getROUND_OPENToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getSUBTYPE_OFRule())
 			return getSUBTYPE_OFToken(semanticObject, ruleCall, node);
 		return "";
-	}
-	
-	/**
-	 * terminal CLOSING_ROUND_BRACKET:
-	 * 	')';
-	 */
-	protected String getCLOSING_ROUND_BRACKETToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return ")";
 	}
 	
 	/**
@@ -120,10 +110,10 @@ public class ScgSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal EQUAL_SIGN:
+	 * terminal EQUAL:
 	 * 	'=';
 	 */
-	protected String getEQUAL_SIGNToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+	protected String getEQUALToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
 			return getTokenText(node);
 		return "=";
@@ -150,16 +140,6 @@ public class ScgSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal OPENING_ROUND_BRACKET:
-	 * 	'(';
-	 */
-	protected String getOPENING_ROUND_BRACKETToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "(";
-	}
-	
-	/**
 	 * terminal PLUS:
 	 * 	'+';
 	 */
@@ -167,6 +147,26 @@ public class ScgSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "+";
+	}
+	
+	/**
+	 * terminal ROUND_CLOSE:
+	 * 	')';
+	 */
+	protected String getROUND_CLOSEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ")";
+	}
+	
+	/**
+	 * terminal ROUND_OPEN:
+	 * 	'(';
+	 */
+	protected String getROUND_OPENToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "(";
 	}
 	
 	/**

@@ -13,11 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.scg
+package com.b2international.snowowl.snomed.scg.validation;
 
 
 /**
- * Use this class to register components to be used at runtime / without the Equinox extension registry.
+ * This class contains custom validation rules. 
+ *
+ * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-class ScgRuntimeModule extends AbstractScgRuntimeModule {
+public class ScgValidator extends AbstractScgValidator {
+	
+//	public static final INVALID_NAME = 'invalidName'
+//
+//	@Check
+//	public void checkGreetingStartsWithCapital(Greeting greeting) {
+//		if (!Character.isUpperCase(greeting.getName().charAt(0))) {
+//			warning("Name should start with a capital",
+//					ScgPackage.Literals.GREETING__NAME,
+//					INVALID_NAME);
+//		}
+//	}
+	
 }

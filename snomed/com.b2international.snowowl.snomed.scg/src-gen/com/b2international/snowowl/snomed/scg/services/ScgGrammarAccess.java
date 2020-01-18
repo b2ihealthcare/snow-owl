@@ -242,15 +242,15 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Assignment cNameAssignment_0 = (Assignment)cGroup.eContents().get(0);
 		private final RuleCall cNameConceptReferenceParserRuleCall_0_0 = (RuleCall)cNameAssignment_0.eContents().get(0);
-		private final RuleCall cEQUAL_SIGNTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final RuleCall cEQUALTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
 		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
 		private final RuleCall cValueAttributeValueParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
 		
 		//Attribute:
-		//	name=ConceptReference EQUAL_SIGN value=AttributeValue;
+		//	name=ConceptReference EQUAL value=AttributeValue;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//name=ConceptReference EQUAL_SIGN value=AttributeValue
+		//name=ConceptReference EQUAL value=AttributeValue
 		public Group getGroup() { return cGroup; }
 		
 		//name=ConceptReference
@@ -259,8 +259,8 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 		//ConceptReference
 		public RuleCall getNameConceptReferenceParserRuleCall_0_0() { return cNameConceptReferenceParserRuleCall_0_0; }
 		
-		//EQUAL_SIGN
-		public RuleCall getEQUAL_SIGNTerminalRuleCall_1() { return cEQUAL_SIGNTerminalRuleCall_1; }
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_1() { return cEQUALTerminalRuleCall_1; }
 		
 		//value=AttributeValue
 		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
@@ -273,35 +273,34 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cConceptReferenceParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
 		private final Group cGroup_1 = (Group)cAlternatives.eContents().get(1);
-		private final RuleCall cOPENING_ROUND_BRACKETTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
+		private final RuleCall cROUND_OPENTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
 		private final RuleCall cSubExpressionParserRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
-		private final RuleCall cCLOSING_ROUND_BRACKETTerminalRuleCall_1_2 = (RuleCall)cGroup_1.eContents().get(2);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_1_2 = (RuleCall)cGroup_1.eContents().get(2);
 		private final RuleCall cStringValueParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		private final RuleCall cIntegerValueParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
 		private final RuleCall cDecimalValueParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
 		
 		//AttributeValue:
-		//	ConceptReference | OPENING_ROUND_BRACKET SubExpression CLOSING_ROUND_BRACKET | StringValue | IntegerValue |
-		//	DecimalValue;
+		//	ConceptReference | ROUND_OPEN SubExpression ROUND_CLOSE | StringValue | IntegerValue | DecimalValue;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//ConceptReference | OPENING_ROUND_BRACKET SubExpression CLOSING_ROUND_BRACKET | StringValue | IntegerValue | DecimalValue
+		//ConceptReference | ROUND_OPEN SubExpression ROUND_CLOSE | StringValue | IntegerValue | DecimalValue
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//ConceptReference
 		public RuleCall getConceptReferenceParserRuleCall_0() { return cConceptReferenceParserRuleCall_0; }
 		
-		//OPENING_ROUND_BRACKET SubExpression CLOSING_ROUND_BRACKET
+		//ROUND_OPEN SubExpression ROUND_CLOSE
 		public Group getGroup_1() { return cGroup_1; }
 		
-		//OPENING_ROUND_BRACKET
-		public RuleCall getOPENING_ROUND_BRACKETTerminalRuleCall_1_0() { return cOPENING_ROUND_BRACKETTerminalRuleCall_1_0; }
+		//ROUND_OPEN
+		public RuleCall getROUND_OPENTerminalRuleCall_1_0() { return cROUND_OPENTerminalRuleCall_1_0; }
 		
 		//SubExpression
 		public RuleCall getSubExpressionParserRuleCall_1_1() { return cSubExpressionParserRuleCall_1_1; }
 		
-		//CLOSING_ROUND_BRACKET
-		public RuleCall getCLOSING_ROUND_BRACKETTerminalRuleCall_1_2() { return cCLOSING_ROUND_BRACKETTerminalRuleCall_1_2; }
+		//ROUND_CLOSE
+		public RuleCall getROUND_CLOSETerminalRuleCall_1_2() { return cROUND_CLOSETerminalRuleCall_1_2; }
 		
 		//StringValue
 		public RuleCall getStringValueParserRuleCall_2() { return cStringValueParserRuleCall_2; }
@@ -617,14 +616,13 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tCURLY_OPEN;
 	private final TerminalRule tCURLY_CLOSE;
 	private final TerminalRule tCOMMA;
-	private final TerminalRule tEQUAL_SIGN;
+	private final TerminalRule tEQUAL;
 	private final TerminalRule tCOLON;
 	private final TerminalRule tPLUS;
 	private final TerminalRule tDASH;
 	private final TerminalRule tDOT;
-	private final TerminalRule tQUOTATION_MARK;
-	private final TerminalRule tOPENING_ROUND_BRACKET;
-	private final TerminalRule tCLOSING_ROUND_BRACKET;
+	private final TerminalRule tROUND_OPEN;
+	private final TerminalRule tROUND_CLOSE;
 	private final TerminalRule tHASH;
 	private final TerminalRule tWS;
 	private final TerminalRule tML_COMMENT;
@@ -659,14 +657,13 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 		this.tCURLY_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.CURLY_OPEN");
 		this.tCURLY_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.CURLY_CLOSE");
 		this.tCOMMA = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.COMMA");
-		this.tEQUAL_SIGN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.EQUAL_SIGN");
+		this.tEQUAL = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.EQUAL");
 		this.tCOLON = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.COLON");
 		this.tPLUS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.PLUS");
 		this.tDASH = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.DASH");
 		this.tDOT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.DOT");
-		this.tQUOTATION_MARK = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.QUOTATION_MARK");
-		this.tOPENING_ROUND_BRACKET = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.OPENING_ROUND_BRACKET");
-		this.tCLOSING_ROUND_BRACKET = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.CLOSING_ROUND_BRACKET");
+		this.tROUND_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.ROUND_OPEN");
+		this.tROUND_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.ROUND_CLOSE");
 		this.tHASH = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.HASH");
 		this.tWS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.WS");
 		this.tML_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.scg.Scg.ML_COMMENT");
@@ -743,7 +740,7 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//Attribute:
-	//	name=ConceptReference EQUAL_SIGN value=AttributeValue;
+	//	name=ConceptReference EQUAL value=AttributeValue;
 	public AttributeElements getAttributeAccess() {
 		return pAttribute;
 	}
@@ -753,8 +750,7 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AttributeValue:
-	//	ConceptReference | OPENING_ROUND_BRACKET SubExpression CLOSING_ROUND_BRACKET | StringValue | IntegerValue |
-	//	DecimalValue;
+	//	ConceptReference | ROUND_OPEN SubExpression ROUND_CLOSE | StringValue | IntegerValue | DecimalValue;
 	public AttributeValueElements getAttributeValueAccess() {
 		return pAttributeValue;
 	}
@@ -851,10 +847,10 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 		return tCOMMA;
 	}
 	
-	//terminal EQUAL_SIGN:
+	//terminal EQUAL:
 	//	'=';
-	public TerminalRule getEQUAL_SIGNRule() {
-		return tEQUAL_SIGN;
+	public TerminalRule getEQUALRule() {
+		return tEQUAL;
 	}
 	
 	//terminal COLON:
@@ -881,22 +877,16 @@ public class ScgGrammarAccess extends AbstractGrammarElementFinder {
 		return tDOT;
 	}
 	
-	//terminal QUOTATION_MARK:
-	//	'"';
-	public TerminalRule getQUOTATION_MARKRule() {
-		return tQUOTATION_MARK;
-	}
-	
-	//terminal OPENING_ROUND_BRACKET:
+	//terminal ROUND_OPEN:
 	//	'(';
-	public TerminalRule getOPENING_ROUND_BRACKETRule() {
-		return tOPENING_ROUND_BRACKET;
+	public TerminalRule getROUND_OPENRule() {
+		return tROUND_OPEN;
 	}
 	
-	//terminal CLOSING_ROUND_BRACKET:
+	//terminal ROUND_CLOSE:
 	//	')';
-	public TerminalRule getCLOSING_ROUND_BRACKETRule() {
-		return tCLOSING_ROUND_BRACKET;
+	public TerminalRule getROUND_CLOSERule() {
+		return tROUND_CLOSE;
 	}
 	
 	//terminal HASH:
