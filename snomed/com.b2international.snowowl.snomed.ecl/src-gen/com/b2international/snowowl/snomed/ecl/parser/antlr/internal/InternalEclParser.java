@@ -22,23 +22,21 @@ import java.util.HashMap;
 @SuppressWarnings("all")
 public class InternalEclParser extends AbstractInternalAntlrParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "MINUS", "False", "True", "AND", "OR", "Comma", "RULE_TERM_STRING", "RULE_REVERSED", "RULE_TO", "RULE_ZERO", "RULE_DIGIT_NONZERO", "RULE_COLON", "RULE_CURLY_OPEN", "RULE_CURLY_CLOSE", "RULE_ROUND_OPEN", "RULE_ROUND_CLOSE", "RULE_SQUARE_OPEN", "RULE_SQUARE_CLOSE", "RULE_PLUS", "RULE_DASH", "RULE_CARET", "RULE_DOT", "RULE_WILDCARD", "RULE_EQUAL", "RULE_NOT_EQUAL", "RULE_LT", "RULE_GT", "RULE_DBL_LT", "RULE_DBL_GT", "RULE_LT_EM", "RULE_GT_EM", "RULE_GTE", "RULE_LTE", "RULE_HASH", "RULE_WS", "RULE_ML_COMMENT", "RULE_SL_COMMENT", "RULE_STRING"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "False", "True", "RULE_TERM_STRING", "RULE_REVERSED", "RULE_TO", "RULE_COMMA", "RULE_CONJUNCTION", "RULE_DISJUNCTION", "RULE_EXCLUSION", "RULE_ZERO", "RULE_DIGIT_NONZERO", "RULE_COLON", "RULE_CURLY_OPEN", "RULE_CURLY_CLOSE", "RULE_ROUND_OPEN", "RULE_ROUND_CLOSE", "RULE_SQUARE_OPEN", "RULE_SQUARE_CLOSE", "RULE_PLUS", "RULE_DASH", "RULE_CARET", "RULE_DOT", "RULE_WILDCARD", "RULE_EQUAL", "RULE_NOT_EQUAL", "RULE_LT", "RULE_GT", "RULE_DBL_LT", "RULE_DBL_GT", "RULE_LT_EM", "RULE_GT_EM", "RULE_GTE", "RULE_LTE", "RULE_HASH", "RULE_WS", "RULE_ML_COMMENT", "RULE_SL_COMMENT", "RULE_STRING"
     };
     public static final int RULE_LTE=36;
     public static final int RULE_DIGIT_NONZERO=14;
     public static final int RULE_CURLY_OPEN=16;
-    public static final int RULE_TO=12;
+    public static final int RULE_TO=8;
     public static final int RULE_ROUND_CLOSE=19;
     public static final int RULE_DBL_GT=32;
-    public static final int True=6;
+    public static final int True=5;
     public static final int RULE_GT=30;
     public static final int RULE_STRING=41;
-    public static final int False=5;
-    public static final int RULE_REVERSED=11;
-    public static final int MINUS=4;
+    public static final int False=4;
+    public static final int RULE_REVERSED=7;
     public static final int RULE_GTE=35;
     public static final int RULE_SL_COMMENT=40;
-    public static final int Comma=9;
     public static final int RULE_HASH=37;
     public static final int RULE_ROUND_OPEN=18;
     public static final int RULE_DASH=23;
@@ -48,21 +46,23 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     public static final int RULE_DOT=25;
     public static final int EOF=-1;
     public static final int RULE_SQUARE_CLOSE=21;
-    public static final int OR=8;
     public static final int RULE_SQUARE_OPEN=20;
     public static final int RULE_EQUAL=27;
+    public static final int RULE_COMMA=9;
     public static final int RULE_LT_EM=33;
     public static final int RULE_GT_EM=34;
     public static final int RULE_WS=38;
+    public static final int RULE_EXCLUSION=12;
     public static final int RULE_CURLY_CLOSE=17;
     public static final int RULE_ZERO=13;
     public static final int RULE_COLON=15;
     public static final int RULE_CARET=24;
     public static final int RULE_LT=29;
-    public static final int AND=7;
+    public static final int RULE_CONJUNCTION=10;
     public static final int RULE_ML_COMMENT=39;
     public static final int RULE_WILDCARD=26;
-    public static final int RULE_TERM_STRING=10;
+    public static final int RULE_DISJUNCTION=11;
+    public static final int RULE_TERM_STRING=6;
 
     // delegates
     // delegators
@@ -392,11 +392,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleOrExpressionConstraint"
-    // InternalEclParser.g:158:1: ruleOrExpressionConstraint returns [EObject current=null] : (this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () otherlv_2= OR ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )* ) ;
+    // InternalEclParser.g:158:1: ruleOrExpressionConstraint returns [EObject current=null] : (this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )* ) ;
     public final EObject ruleOrExpressionConstraint() throws RecognitionException {
         EObject current = null;
 
-        Token otherlv_2=null;
+        Token this_DISJUNCTION_2=null;
         EObject this_AndExpressionConstraint_0 = null;
 
         EObject lv_right_3_0 = null;
@@ -406,11 +406,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:164:2: ( (this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () otherlv_2= OR ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )* ) )
-            // InternalEclParser.g:165:2: (this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () otherlv_2= OR ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )* )
+            // InternalEclParser.g:164:2: ( (this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )* ) )
+            // InternalEclParser.g:165:2: (this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )* )
             {
-            // InternalEclParser.g:165:2: (this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () otherlv_2= OR ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )* )
-            // InternalEclParser.g:166:3: this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () otherlv_2= OR ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )*
+            // InternalEclParser.g:165:2: (this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )* )
+            // InternalEclParser.g:166:3: this_AndExpressionConstraint_0= ruleAndExpressionConstraint ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )*
             {
             if ( state.backtracking==0 ) {
 
@@ -433,20 +433,20 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalEclParser.g:177:3: ( () otherlv_2= OR ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )*
+            // InternalEclParser.g:177:3: ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndExpressionConstraint ) ) )*
             loop2:
             do {
                 int alt2=2;
                 int LA2_0 = input.LA(1);
 
-                if ( (LA2_0==OR) ) {
+                if ( (LA2_0==RULE_DISJUNCTION) ) {
                     alt2=1;
                 }
 
 
                 switch (alt2) {
             	case 1 :
-            	    // InternalEclParser.g:178:4: () otherlv_2= OR ( (lv_right_3_0= ruleAndExpressionConstraint ) )
+            	    // InternalEclParser.g:178:4: () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndExpressionConstraint ) )
             	    {
             	    // InternalEclParser.g:178:4: ()
             	    // InternalEclParser.g:179:5: 
@@ -466,10 +466,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             	    }
 
-            	    otherlv_2=(Token)match(input,OR,FollowSets000.FOLLOW_4); if (state.failed) return current;
+            	    this_DISJUNCTION_2=(Token)match(input,RULE_DISJUNCTION,FollowSets000.FOLLOW_4); if (state.failed) return current;
             	    if ( state.backtracking==0 ) {
 
-            	      				newLeafNode(otherlv_2, grammarAccess.getOrExpressionConstraintAccess().getORKeyword_1_1());
+            	      				newLeafNode(this_DISJUNCTION_2, grammarAccess.getOrExpressionConstraintAccess().getDISJUNCTIONTerminalRuleCall_1_1());
             	      			
             	    }
             	    // InternalEclParser.g:192:4: ( (lv_right_3_0= ruleAndExpressionConstraint ) )
@@ -581,12 +581,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleAndExpressionConstraint"
-    // InternalEclParser.g:223:1: ruleAndExpressionConstraint returns [EObject current=null] : (this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )* ) ;
+    // InternalEclParser.g:223:1: ruleAndExpressionConstraint returns [EObject current=null] : (this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )* ) ;
     public final EObject ruleAndExpressionConstraint() throws RecognitionException {
         EObject current = null;
 
-        Token otherlv_2=null;
-        Token otherlv_3=null;
+        Token this_CONJUNCTION_2=null;
+        Token this_COMMA_3=null;
         EObject this_ExclusionExpressionConstraint_0 = null;
 
         EObject lv_right_4_0 = null;
@@ -596,11 +596,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:229:2: ( (this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )* ) )
-            // InternalEclParser.g:230:2: (this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )* )
+            // InternalEclParser.g:229:2: ( (this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )* ) )
+            // InternalEclParser.g:230:2: (this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )* )
             {
-            // InternalEclParser.g:230:2: (this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )* )
-            // InternalEclParser.g:231:3: this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )*
+            // InternalEclParser.g:230:2: (this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )* )
+            // InternalEclParser.g:231:3: this_ExclusionExpressionConstraint_0= ruleExclusionExpressionConstraint ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )*
             {
             if ( state.backtracking==0 ) {
 
@@ -623,20 +623,20 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalEclParser.g:242:3: ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )*
+            // InternalEclParser.g:242:3: ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) ) )*
             loop4:
             do {
                 int alt4=2;
                 int LA4_0 = input.LA(1);
 
-                if ( (LA4_0==AND||LA4_0==Comma) ) {
+                if ( ((LA4_0>=RULE_COMMA && LA4_0<=RULE_CONJUNCTION)) ) {
                     alt4=1;
                 }
 
 
                 switch (alt4) {
             	case 1 :
-            	    // InternalEclParser.g:243:4: () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) )
+            	    // InternalEclParser.g:243:4: () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleExclusionExpressionConstraint ) )
             	    {
             	    // InternalEclParser.g:243:4: ()
             	    // InternalEclParser.g:244:5: 
@@ -656,14 +656,14 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             	    }
 
-            	    // InternalEclParser.g:253:4: (otherlv_2= AND | otherlv_3= Comma )
+            	    // InternalEclParser.g:253:4: (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA )
             	    int alt3=2;
             	    int LA3_0 = input.LA(1);
 
-            	    if ( (LA3_0==AND) ) {
+            	    if ( (LA3_0==RULE_CONJUNCTION) ) {
             	        alt3=1;
             	    }
-            	    else if ( (LA3_0==Comma) ) {
+            	    else if ( (LA3_0==RULE_COMMA) ) {
             	        alt3=2;
             	    }
             	    else {
@@ -675,24 +675,24 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    }
             	    switch (alt3) {
             	        case 1 :
-            	            // InternalEclParser.g:254:5: otherlv_2= AND
+            	            // InternalEclParser.g:254:5: this_CONJUNCTION_2= RULE_CONJUNCTION
             	            {
-            	            otherlv_2=(Token)match(input,AND,FollowSets000.FOLLOW_4); if (state.failed) return current;
+            	            this_CONJUNCTION_2=(Token)match(input,RULE_CONJUNCTION,FollowSets000.FOLLOW_4); if (state.failed) return current;
             	            if ( state.backtracking==0 ) {
 
-            	              					newLeafNode(otherlv_2, grammarAccess.getAndExpressionConstraintAccess().getANDKeyword_1_1_0());
+            	              					newLeafNode(this_CONJUNCTION_2, grammarAccess.getAndExpressionConstraintAccess().getCONJUNCTIONTerminalRuleCall_1_1_0());
             	              				
             	            }
 
             	            }
             	            break;
             	        case 2 :
-            	            // InternalEclParser.g:259:5: otherlv_3= Comma
+            	            // InternalEclParser.g:259:5: this_COMMA_3= RULE_COMMA
             	            {
-            	            otherlv_3=(Token)match(input,Comma,FollowSets000.FOLLOW_4); if (state.failed) return current;
+            	            this_COMMA_3=(Token)match(input,RULE_COMMA,FollowSets000.FOLLOW_4); if (state.failed) return current;
             	            if ( state.backtracking==0 ) {
 
-            	              					newLeafNode(otherlv_3, grammarAccess.getAndExpressionConstraintAccess().getCommaKeyword_1_1_1());
+            	              					newLeafNode(this_COMMA_3, grammarAccess.getAndExpressionConstraintAccess().getCOMMATerminalRuleCall_1_1_1());
             	              				
             	            }
 
@@ -810,11 +810,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleExclusionExpressionConstraint"
-    // InternalEclParser.g:295:1: ruleExclusionExpressionConstraint returns [EObject current=null] : (this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () otherlv_2= MINUS ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )? ) ;
+    // InternalEclParser.g:295:1: ruleExclusionExpressionConstraint returns [EObject current=null] : (this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () this_EXCLUSION_2= RULE_EXCLUSION ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )? ) ;
     public final EObject ruleExclusionExpressionConstraint() throws RecognitionException {
         EObject current = null;
 
-        Token otherlv_2=null;
+        Token this_EXCLUSION_2=null;
         EObject this_RefinedExpressionConstraint_0 = null;
 
         EObject lv_right_3_0 = null;
@@ -824,11 +824,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:301:2: ( (this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () otherlv_2= MINUS ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )? ) )
-            // InternalEclParser.g:302:2: (this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () otherlv_2= MINUS ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )? )
+            // InternalEclParser.g:301:2: ( (this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () this_EXCLUSION_2= RULE_EXCLUSION ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )? ) )
+            // InternalEclParser.g:302:2: (this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () this_EXCLUSION_2= RULE_EXCLUSION ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )? )
             {
-            // InternalEclParser.g:302:2: (this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () otherlv_2= MINUS ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )? )
-            // InternalEclParser.g:303:3: this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () otherlv_2= MINUS ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )?
+            // InternalEclParser.g:302:2: (this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () this_EXCLUSION_2= RULE_EXCLUSION ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )? )
+            // InternalEclParser.g:303:3: this_RefinedExpressionConstraint_0= ruleRefinedExpressionConstraint ( () this_EXCLUSION_2= RULE_EXCLUSION ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )?
             {
             if ( state.backtracking==0 ) {
 
@@ -851,16 +851,16 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalEclParser.g:314:3: ( () otherlv_2= MINUS ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )?
+            // InternalEclParser.g:314:3: ( () this_EXCLUSION_2= RULE_EXCLUSION ( (lv_right_3_0= ruleRefinedExpressionConstraint ) ) )?
             int alt5=2;
             int LA5_0 = input.LA(1);
 
-            if ( (LA5_0==MINUS) ) {
+            if ( (LA5_0==RULE_EXCLUSION) ) {
                 alt5=1;
             }
             switch (alt5) {
                 case 1 :
-                    // InternalEclParser.g:315:4: () otherlv_2= MINUS ( (lv_right_3_0= ruleRefinedExpressionConstraint ) )
+                    // InternalEclParser.g:315:4: () this_EXCLUSION_2= RULE_EXCLUSION ( (lv_right_3_0= ruleRefinedExpressionConstraint ) )
                     {
                     // InternalEclParser.g:315:4: ()
                     // InternalEclParser.g:316:5: 
@@ -880,10 +880,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
                     }
 
-                    otherlv_2=(Token)match(input,MINUS,FollowSets000.FOLLOW_4); if (state.failed) return current;
+                    this_EXCLUSION_2=(Token)match(input,RULE_EXCLUSION,FollowSets000.FOLLOW_4); if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      				newLeafNode(otherlv_2, grammarAccess.getExclusionExpressionConstraintAccess().getMINUSKeyword_1_1());
+                      				newLeafNode(this_EXCLUSION_2, grammarAccess.getExclusionExpressionConstraintAccess().getEXCLUSIONTerminalRuleCall_1_1());
                       			
                     }
                     // InternalEclParser.g:329:4: ( (lv_right_3_0= ruleRefinedExpressionConstraint ) )
@@ -3245,11 +3245,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleOrRefinement"
-    // InternalEclParser.g:1103:1: ruleOrRefinement returns [EObject current=null] : (this_AndRefinement_0= ruleAndRefinement ( ( OR )=> ( () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) ) ) )* ) ;
+    // InternalEclParser.g:1103:1: ruleOrRefinement returns [EObject current=null] : (this_AndRefinement_0= ruleAndRefinement ( ( RULE_DISJUNCTION )=> ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) ) ) )* ) ;
     public final EObject ruleOrRefinement() throws RecognitionException {
         EObject current = null;
 
-        Token otherlv_2=null;
+        Token this_DISJUNCTION_2=null;
         EObject this_AndRefinement_0 = null;
 
         EObject lv_right_3_0 = null;
@@ -3259,11 +3259,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:1109:2: ( (this_AndRefinement_0= ruleAndRefinement ( ( OR )=> ( () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) ) ) )* ) )
-            // InternalEclParser.g:1110:2: (this_AndRefinement_0= ruleAndRefinement ( ( OR )=> ( () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) ) ) )* )
+            // InternalEclParser.g:1109:2: ( (this_AndRefinement_0= ruleAndRefinement ( ( RULE_DISJUNCTION )=> ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) ) ) )* ) )
+            // InternalEclParser.g:1110:2: (this_AndRefinement_0= ruleAndRefinement ( ( RULE_DISJUNCTION )=> ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) ) ) )* )
             {
-            // InternalEclParser.g:1110:2: (this_AndRefinement_0= ruleAndRefinement ( ( OR )=> ( () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) ) ) )* )
-            // InternalEclParser.g:1111:3: this_AndRefinement_0= ruleAndRefinement ( ( OR )=> ( () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) ) ) )*
+            // InternalEclParser.g:1110:2: (this_AndRefinement_0= ruleAndRefinement ( ( RULE_DISJUNCTION )=> ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) ) ) )* )
+            // InternalEclParser.g:1111:3: this_AndRefinement_0= ruleAndRefinement ( ( RULE_DISJUNCTION )=> ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) ) ) )*
             {
             if ( state.backtracking==0 ) {
 
@@ -3286,13 +3286,13 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalEclParser.g:1122:3: ( ( OR )=> ( () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) ) ) )*
+            // InternalEclParser.g:1122:3: ( ( RULE_DISJUNCTION )=> ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) ) ) )*
             loop12:
             do {
                 int alt12=2;
                 int LA12_0 = input.LA(1);
 
-                if ( (LA12_0==OR) ) {
+                if ( (LA12_0==RULE_DISJUNCTION) ) {
                     int LA12_4 = input.LA(2);
 
                     if ( (synpred20_InternalEclParser()) ) {
@@ -3305,10 +3305,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
                 switch (alt12) {
             	case 1 :
-            	    // InternalEclParser.g:1123:4: ( OR )=> ( () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) ) )
+            	    // InternalEclParser.g:1123:4: ( RULE_DISJUNCTION )=> ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) ) )
             	    {
-            	    // InternalEclParser.g:1124:4: ( () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) ) )
-            	    // InternalEclParser.g:1125:5: () otherlv_2= OR ( (lv_right_3_0= ruleAndRefinement ) )
+            	    // InternalEclParser.g:1124:4: ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) ) )
+            	    // InternalEclParser.g:1125:5: () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndRefinement ) )
             	    {
             	    // InternalEclParser.g:1125:5: ()
             	    // InternalEclParser.g:1126:6: 
@@ -3328,10 +3328,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             	    }
 
-            	    otherlv_2=(Token)match(input,OR,FollowSets000.FOLLOW_8); if (state.failed) return current;
+            	    this_DISJUNCTION_2=(Token)match(input,RULE_DISJUNCTION,FollowSets000.FOLLOW_8); if (state.failed) return current;
             	    if ( state.backtracking==0 ) {
 
-            	      					newLeafNode(otherlv_2, grammarAccess.getOrRefinementAccess().getORKeyword_1_0_1());
+            	      					newLeafNode(this_DISJUNCTION_2, grammarAccess.getOrRefinementAccess().getDISJUNCTIONTerminalRuleCall_1_0_1());
             	      				
             	    }
             	    // InternalEclParser.g:1139:5: ( (lv_right_3_0= ruleAndRefinement ) )
@@ -3446,12 +3446,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleAndRefinement"
-    // InternalEclParser.g:1171:1: ruleAndRefinement returns [EObject current=null] : (this_SubRefinement_0= ruleSubRefinement ( ( AND | Comma )=> ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )* ) ;
+    // InternalEclParser.g:1171:1: ruleAndRefinement returns [EObject current=null] : (this_SubRefinement_0= ruleSubRefinement ( ( RULE_CONJUNCTION | RULE_COMMA )=> ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )* ) ;
     public final EObject ruleAndRefinement() throws RecognitionException {
         EObject current = null;
 
-        Token otherlv_2=null;
-        Token otherlv_3=null;
+        Token this_CONJUNCTION_2=null;
+        Token this_COMMA_3=null;
         EObject this_SubRefinement_0 = null;
 
         EObject lv_right_4_0 = null;
@@ -3461,11 +3461,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:1177:2: ( (this_SubRefinement_0= ruleSubRefinement ( ( AND | Comma )=> ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )* ) )
-            // InternalEclParser.g:1178:2: (this_SubRefinement_0= ruleSubRefinement ( ( AND | Comma )=> ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )* )
+            // InternalEclParser.g:1177:2: ( (this_SubRefinement_0= ruleSubRefinement ( ( RULE_CONJUNCTION | RULE_COMMA )=> ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )* ) )
+            // InternalEclParser.g:1178:2: (this_SubRefinement_0= ruleSubRefinement ( ( RULE_CONJUNCTION | RULE_COMMA )=> ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )* )
             {
-            // InternalEclParser.g:1178:2: (this_SubRefinement_0= ruleSubRefinement ( ( AND | Comma )=> ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )* )
-            // InternalEclParser.g:1179:3: this_SubRefinement_0= ruleSubRefinement ( ( AND | Comma )=> ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )*
+            // InternalEclParser.g:1178:2: (this_SubRefinement_0= ruleSubRefinement ( ( RULE_CONJUNCTION | RULE_COMMA )=> ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )* )
+            // InternalEclParser.g:1179:3: this_SubRefinement_0= ruleSubRefinement ( ( RULE_CONJUNCTION | RULE_COMMA )=> ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )*
             {
             if ( state.backtracking==0 ) {
 
@@ -3488,13 +3488,13 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalEclParser.g:1190:3: ( ( AND | Comma )=> ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )*
+            // InternalEclParser.g:1190:3: ( ( RULE_CONJUNCTION | RULE_COMMA )=> ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) ) ) )*
             loop14:
             do {
                 int alt14=2;
                 int LA14_0 = input.LA(1);
 
-                if ( (LA14_0==AND) ) {
+                if ( (LA14_0==RULE_CONJUNCTION) ) {
                     int LA14_3 = input.LA(2);
 
                     if ( (synpred22_InternalEclParser()) ) {
@@ -3503,7 +3503,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
                 }
-                else if ( (LA14_0==Comma) ) {
+                else if ( (LA14_0==RULE_COMMA) ) {
                     int LA14_4 = input.LA(2);
 
                     if ( (synpred22_InternalEclParser()) ) {
@@ -3516,10 +3516,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
                 switch (alt14) {
             	case 1 :
-            	    // InternalEclParser.g:1191:4: ( AND | Comma )=> ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) ) )
+            	    // InternalEclParser.g:1191:4: ( RULE_CONJUNCTION | RULE_COMMA )=> ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) ) )
             	    {
-            	    // InternalEclParser.g:1192:4: ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) ) )
-            	    // InternalEclParser.g:1193:5: () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubRefinement ) )
+            	    // InternalEclParser.g:1192:4: ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) ) )
+            	    // InternalEclParser.g:1193:5: () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubRefinement ) )
             	    {
             	    // InternalEclParser.g:1193:5: ()
             	    // InternalEclParser.g:1194:6: 
@@ -3539,14 +3539,14 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             	    }
 
-            	    // InternalEclParser.g:1203:5: (otherlv_2= AND | otherlv_3= Comma )
+            	    // InternalEclParser.g:1203:5: (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA )
             	    int alt13=2;
             	    int LA13_0 = input.LA(1);
 
-            	    if ( (LA13_0==AND) ) {
+            	    if ( (LA13_0==RULE_CONJUNCTION) ) {
             	        alt13=1;
             	    }
-            	    else if ( (LA13_0==Comma) ) {
+            	    else if ( (LA13_0==RULE_COMMA) ) {
             	        alt13=2;
             	    }
             	    else {
@@ -3558,24 +3558,24 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    }
             	    switch (alt13) {
             	        case 1 :
-            	            // InternalEclParser.g:1204:6: otherlv_2= AND
+            	            // InternalEclParser.g:1204:6: this_CONJUNCTION_2= RULE_CONJUNCTION
             	            {
-            	            otherlv_2=(Token)match(input,AND,FollowSets000.FOLLOW_8); if (state.failed) return current;
+            	            this_CONJUNCTION_2=(Token)match(input,RULE_CONJUNCTION,FollowSets000.FOLLOW_8); if (state.failed) return current;
             	            if ( state.backtracking==0 ) {
 
-            	              						newLeafNode(otherlv_2, grammarAccess.getAndRefinementAccess().getANDKeyword_1_0_1_0());
+            	              						newLeafNode(this_CONJUNCTION_2, grammarAccess.getAndRefinementAccess().getCONJUNCTIONTerminalRuleCall_1_0_1_0());
             	              					
             	            }
 
             	            }
             	            break;
             	        case 2 :
-            	            // InternalEclParser.g:1209:6: otherlv_3= Comma
+            	            // InternalEclParser.g:1209:6: this_COMMA_3= RULE_COMMA
             	            {
-            	            otherlv_3=(Token)match(input,Comma,FollowSets000.FOLLOW_8); if (state.failed) return current;
+            	            this_COMMA_3=(Token)match(input,RULE_COMMA,FollowSets000.FOLLOW_8); if (state.failed) return current;
             	            if ( state.backtracking==0 ) {
 
-            	              						newLeafNode(otherlv_3, grammarAccess.getAndRefinementAccess().getCommaKeyword_1_0_1_1());
+            	              						newLeafNode(this_COMMA_3, grammarAccess.getAndRefinementAccess().getCOMMATerminalRuleCall_1_0_1_1());
             	              					
             	            }
 
@@ -4271,11 +4271,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleOrAttributeSet"
-    // InternalEclParser.g:1439:1: ruleOrAttributeSet returns [EObject current=null] : (this_AndAttributeSet_0= ruleAndAttributeSet ( () otherlv_2= OR ( (lv_right_3_0= ruleAndAttributeSet ) ) )* ) ;
+    // InternalEclParser.g:1439:1: ruleOrAttributeSet returns [EObject current=null] : (this_AndAttributeSet_0= ruleAndAttributeSet ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndAttributeSet ) ) )* ) ;
     public final EObject ruleOrAttributeSet() throws RecognitionException {
         EObject current = null;
 
-        Token otherlv_2=null;
+        Token this_DISJUNCTION_2=null;
         EObject this_AndAttributeSet_0 = null;
 
         EObject lv_right_3_0 = null;
@@ -4285,11 +4285,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:1445:2: ( (this_AndAttributeSet_0= ruleAndAttributeSet ( () otherlv_2= OR ( (lv_right_3_0= ruleAndAttributeSet ) ) )* ) )
-            // InternalEclParser.g:1446:2: (this_AndAttributeSet_0= ruleAndAttributeSet ( () otherlv_2= OR ( (lv_right_3_0= ruleAndAttributeSet ) ) )* )
+            // InternalEclParser.g:1445:2: ( (this_AndAttributeSet_0= ruleAndAttributeSet ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndAttributeSet ) ) )* ) )
+            // InternalEclParser.g:1446:2: (this_AndAttributeSet_0= ruleAndAttributeSet ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndAttributeSet ) ) )* )
             {
-            // InternalEclParser.g:1446:2: (this_AndAttributeSet_0= ruleAndAttributeSet ( () otherlv_2= OR ( (lv_right_3_0= ruleAndAttributeSet ) ) )* )
-            // InternalEclParser.g:1447:3: this_AndAttributeSet_0= ruleAndAttributeSet ( () otherlv_2= OR ( (lv_right_3_0= ruleAndAttributeSet ) ) )*
+            // InternalEclParser.g:1446:2: (this_AndAttributeSet_0= ruleAndAttributeSet ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndAttributeSet ) ) )* )
+            // InternalEclParser.g:1447:3: this_AndAttributeSet_0= ruleAndAttributeSet ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndAttributeSet ) ) )*
             {
             if ( state.backtracking==0 ) {
 
@@ -4312,20 +4312,20 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalEclParser.g:1458:3: ( () otherlv_2= OR ( (lv_right_3_0= ruleAndAttributeSet ) ) )*
+            // InternalEclParser.g:1458:3: ( () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndAttributeSet ) ) )*
             loop17:
             do {
                 int alt17=2;
                 int LA17_0 = input.LA(1);
 
-                if ( (LA17_0==OR) ) {
+                if ( (LA17_0==RULE_DISJUNCTION) ) {
                     alt17=1;
                 }
 
 
                 switch (alt17) {
             	case 1 :
-            	    // InternalEclParser.g:1459:4: () otherlv_2= OR ( (lv_right_3_0= ruleAndAttributeSet ) )
+            	    // InternalEclParser.g:1459:4: () this_DISJUNCTION_2= RULE_DISJUNCTION ( (lv_right_3_0= ruleAndAttributeSet ) )
             	    {
             	    // InternalEclParser.g:1459:4: ()
             	    // InternalEclParser.g:1460:5: 
@@ -4345,10 +4345,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             	    }
 
-            	    otherlv_2=(Token)match(input,OR,FollowSets000.FOLLOW_13); if (state.failed) return current;
+            	    this_DISJUNCTION_2=(Token)match(input,RULE_DISJUNCTION,FollowSets000.FOLLOW_13); if (state.failed) return current;
             	    if ( state.backtracking==0 ) {
 
-            	      				newLeafNode(otherlv_2, grammarAccess.getOrAttributeSetAccess().getORKeyword_1_1());
+            	      				newLeafNode(this_DISJUNCTION_2, grammarAccess.getOrAttributeSetAccess().getDISJUNCTIONTerminalRuleCall_1_1());
             	      			
             	    }
             	    // InternalEclParser.g:1473:4: ( (lv_right_3_0= ruleAndAttributeSet ) )
@@ -4460,12 +4460,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleAndAttributeSet"
-    // InternalEclParser.g:1504:1: ruleAndAttributeSet returns [EObject current=null] : (this_SubAttributeSet_0= ruleSubAttributeSet ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )* ) ;
+    // InternalEclParser.g:1504:1: ruleAndAttributeSet returns [EObject current=null] : (this_SubAttributeSet_0= ruleSubAttributeSet ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )* ) ;
     public final EObject ruleAndAttributeSet() throws RecognitionException {
         EObject current = null;
 
-        Token otherlv_2=null;
-        Token otherlv_3=null;
+        Token this_CONJUNCTION_2=null;
+        Token this_COMMA_3=null;
         EObject this_SubAttributeSet_0 = null;
 
         EObject lv_right_4_0 = null;
@@ -4475,11 +4475,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalEclParser.g:1510:2: ( (this_SubAttributeSet_0= ruleSubAttributeSet ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )* ) )
-            // InternalEclParser.g:1511:2: (this_SubAttributeSet_0= ruleSubAttributeSet ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )* )
+            // InternalEclParser.g:1510:2: ( (this_SubAttributeSet_0= ruleSubAttributeSet ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )* ) )
+            // InternalEclParser.g:1511:2: (this_SubAttributeSet_0= ruleSubAttributeSet ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )* )
             {
-            // InternalEclParser.g:1511:2: (this_SubAttributeSet_0= ruleSubAttributeSet ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )* )
-            // InternalEclParser.g:1512:3: this_SubAttributeSet_0= ruleSubAttributeSet ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )*
+            // InternalEclParser.g:1511:2: (this_SubAttributeSet_0= ruleSubAttributeSet ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )* )
+            // InternalEclParser.g:1512:3: this_SubAttributeSet_0= ruleSubAttributeSet ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )*
             {
             if ( state.backtracking==0 ) {
 
@@ -4502,20 +4502,20 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalEclParser.g:1523:3: ( () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )*
+            // InternalEclParser.g:1523:3: ( () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubAttributeSet ) ) )*
             loop19:
             do {
                 int alt19=2;
                 int LA19_0 = input.LA(1);
 
-                if ( (LA19_0==AND||LA19_0==Comma) ) {
+                if ( ((LA19_0>=RULE_COMMA && LA19_0<=RULE_CONJUNCTION)) ) {
                     alt19=1;
                 }
 
 
                 switch (alt19) {
             	case 1 :
-            	    // InternalEclParser.g:1524:4: () (otherlv_2= AND | otherlv_3= Comma ) ( (lv_right_4_0= ruleSubAttributeSet ) )
+            	    // InternalEclParser.g:1524:4: () (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA ) ( (lv_right_4_0= ruleSubAttributeSet ) )
             	    {
             	    // InternalEclParser.g:1524:4: ()
             	    // InternalEclParser.g:1525:5: 
@@ -4535,14 +4535,14 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             	    }
 
-            	    // InternalEclParser.g:1534:4: (otherlv_2= AND | otherlv_3= Comma )
+            	    // InternalEclParser.g:1534:4: (this_CONJUNCTION_2= RULE_CONJUNCTION | this_COMMA_3= RULE_COMMA )
             	    int alt18=2;
             	    int LA18_0 = input.LA(1);
 
-            	    if ( (LA18_0==AND) ) {
+            	    if ( (LA18_0==RULE_CONJUNCTION) ) {
             	        alt18=1;
             	    }
-            	    else if ( (LA18_0==Comma) ) {
+            	    else if ( (LA18_0==RULE_COMMA) ) {
             	        alt18=2;
             	    }
             	    else {
@@ -4554,24 +4554,24 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    }
             	    switch (alt18) {
             	        case 1 :
-            	            // InternalEclParser.g:1535:5: otherlv_2= AND
+            	            // InternalEclParser.g:1535:5: this_CONJUNCTION_2= RULE_CONJUNCTION
             	            {
-            	            otherlv_2=(Token)match(input,AND,FollowSets000.FOLLOW_13); if (state.failed) return current;
+            	            this_CONJUNCTION_2=(Token)match(input,RULE_CONJUNCTION,FollowSets000.FOLLOW_13); if (state.failed) return current;
             	            if ( state.backtracking==0 ) {
 
-            	              					newLeafNode(otherlv_2, grammarAccess.getAndAttributeSetAccess().getANDKeyword_1_1_0());
+            	              					newLeafNode(this_CONJUNCTION_2, grammarAccess.getAndAttributeSetAccess().getCONJUNCTIONTerminalRuleCall_1_1_0());
             	              				
             	            }
 
             	            }
             	            break;
             	        case 2 :
-            	            // InternalEclParser.g:1540:5: otherlv_3= Comma
+            	            // InternalEclParser.g:1540:5: this_COMMA_3= RULE_COMMA
             	            {
-            	            otherlv_3=(Token)match(input,Comma,FollowSets000.FOLLOW_13); if (state.failed) return current;
+            	            this_COMMA_3=(Token)match(input,RULE_COMMA,FollowSets000.FOLLOW_13); if (state.failed) return current;
             	            if ( state.backtracking==0 ) {
 
-            	              					newLeafNode(otherlv_3, grammarAccess.getAndAttributeSetAccess().getCommaKeyword_1_1_1());
+            	              					newLeafNode(this_COMMA_3, grammarAccess.getAndAttributeSetAccess().getCOMMATerminalRuleCall_1_1_1());
             	              				
             	            }
 
@@ -10049,10 +10049,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
     // $ANTLR start synpred20_InternalEclParser
     public final void synpred20_InternalEclParser_fragment() throws RecognitionException {   
-        // InternalEclParser.g:1123:4: ( OR )
-        // InternalEclParser.g:1123:5: OR
+        // InternalEclParser.g:1123:4: ( RULE_DISJUNCTION )
+        // InternalEclParser.g:1123:5: RULE_DISJUNCTION
         {
-        match(input,OR,FollowSets000.FOLLOW_2); if (state.failed) return ;
+        match(input,RULE_DISJUNCTION,FollowSets000.FOLLOW_2); if (state.failed) return ;
 
         }
     }
@@ -10060,10 +10060,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
     // $ANTLR start synpred22_InternalEclParser
     public final void synpred22_InternalEclParser_fragment() throws RecognitionException {   
-        // InternalEclParser.g:1191:4: ( AND | Comma )
+        // InternalEclParser.g:1191:4: ( RULE_CONJUNCTION | RULE_COMMA )
         // InternalEclParser.g:
         {
-        if ( input.LA(1)==AND||input.LA(1)==Comma ) {
+        if ( (input.LA(1)>=RULE_COMMA && input.LA(1)<=RULE_CONJUNCTION) ) {
             input.consume();
             state.errorRecovery=false;state.failed=false;
         }
@@ -10225,12 +10225,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     protected DFA20 dfa20 = new DFA20(this);
     protected DFA25 dfa25 = new DFA25(this);
     static final String dfa_1s = "\17\uffff";
-    static final String dfa_2s = "\1\13\1\0\12\uffff\1\0\2\uffff";
+    static final String dfa_2s = "\1\7\1\0\12\uffff\1\0\2\uffff";
     static final String dfa_3s = "\1\42\1\0\12\uffff\1\0\2\uffff";
     static final String dfa_4s = "\2\uffff\1\1\12\uffff\1\2\1\3";
     static final String dfa_5s = "\1\uffff\1\0\12\uffff\1\1\2\uffff}>";
     static final String[] dfa_6s = {
-            "\1\2\2\uffff\1\2\1\uffff\1\15\1\uffff\1\14\1\uffff\1\1\3\uffff\1\2\1\uffff\1\2\2\uffff\6\2",
+            "\1\2\6\uffff\1\2\1\uffff\1\15\1\uffff\1\14\1\uffff\1\1\3\uffff\1\2\1\uffff\1\2\2\uffff\6\2",
             "\1\uffff",
             "",
             "",
@@ -10313,12 +10313,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
     }
     static final String dfa_7s = "\16\uffff";
-    static final String dfa_8s = "\1\13\13\uffff\1\0\1\uffff";
+    static final String dfa_8s = "\1\7\13\uffff\1\0\1\uffff";
     static final String dfa_9s = "\1\42\13\uffff\1\0\1\uffff";
     static final String dfa_10s = "\1\uffff\1\1\13\uffff\1\2";
     static final String dfa_11s = "\14\uffff\1\0\1\uffff}>";
     static final String[] dfa_12s = {
-            "\1\1\2\uffff\1\1\3\uffff\1\14\1\uffff\1\1\3\uffff\1\1\1\uffff\1\1\2\uffff\6\1",
+            "\1\1\6\uffff\1\1\3\uffff\1\14\1\uffff\1\1\3\uffff\1\1\1\uffff\1\1\2\uffff\6\1",
             "",
             "",
             "",
@@ -10386,14 +10386,14 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     }
     static final String dfa_13s = "\101\uffff";
     static final String dfa_14s = "\23\uffff\2\51\2\uffff\2\55\2\uffff\2\62\2\uffff\2\65\2\uffff\2\71\2\uffff\2\75\2\uffff\2\51\2\uffff\2\55\2\uffff\2\62\2\uffff\2\65\2\uffff\2\71\2\uffff\2\75";
-    static final String dfa_15s = "\1\33\2\5\4\45\1\uffff\1\15\3\uffff\7\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\15\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4\2\uffff\2\4";
+    static final String dfa_15s = "\1\33\2\4\4\45\1\uffff\1\15\3\uffff\7\15\2\11\2\15\2\11\2\15\2\11\2\15\2\11\2\15\2\11\2\15\2\11\2\uffff\2\11\2\uffff\2\11\2\uffff\2\11\2\uffff\2\11\2\uffff\2\11\2\uffff\2\11";
     static final String dfa_16s = "\1\44\2\51\4\45\1\uffff\1\27\3\uffff\5\27\2\16\2\31\2\16\2\31\2\16\2\31\2\16\2\31\2\16\2\31\2\16\2\31\2\uffff\2\31\2\uffff\2\31\2\uffff\2\31\2\uffff\2\31\2\uffff\2\31\2\uffff\2\31";
     static final String dfa_17s = "\7\uffff\1\3\1\uffff\1\1\1\4\1\2\35\uffff\1\5\1\13\2\uffff\1\6\1\14\2\uffff\1\15\1\7\2\uffff\1\10\1\16\2\uffff\1\11\1\17\2\uffff\1\12\1\20\2\uffff";
     static final String dfa_18s = "\101\uffff}>";
     static final String[] dfa_19s = {
             "\1\1\1\2\1\5\1\3\4\uffff\1\4\1\6",
-            "\2\11\36\uffff\1\10\3\uffff\1\7",
-            "\2\13\36\uffff\1\14\3\uffff\1\12",
+            "\2\11\37\uffff\1\10\3\uffff\1\7",
+            "\2\13\37\uffff\1\14\3\uffff\1\12",
             "\1\15",
             "\1\16",
             "\1\17",
@@ -10410,52 +10410,52 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             "\1\47\1\50\7\uffff\1\45\1\46",
             "\1\23\1\24",
             "\1\23\1\24",
-            "\1\51\2\uffff\3\51\7\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
-            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
+            "\4\51\4\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
+            "\4\51\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
             "\1\27\1\30",
             "\1\27\1\30",
-            "\1\55\2\uffff\3\55\7\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
-            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
+            "\4\55\4\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
+            "\4\55\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
             "\1\33\1\34",
             "\1\33\1\34",
-            "\1\62\2\uffff\3\62\7\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
-            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
+            "\4\62\4\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
+            "\4\62\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
             "\1\37\1\40",
             "\1\37\1\40",
-            "\1\65\2\uffff\3\65\7\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
-            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
+            "\4\65\4\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
+            "\4\65\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
             "\1\43\1\44",
             "\1\43\1\44",
-            "\1\71\2\uffff\3\71\7\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
-            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
+            "\4\71\4\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
+            "\4\71\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
             "\1\47\1\50",
             "\1\47\1\50",
-            "\1\75\2\uffff\3\75\7\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
-            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
+            "\4\75\4\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
+            "\4\75\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
             "",
             "",
-            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
-            "\1\51\2\uffff\3\51\3\uffff\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
+            "\4\51\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
+            "\4\51\1\54\1\53\2\uffff\1\51\1\uffff\1\51\5\uffff\1\52",
             "",
             "",
-            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
-            "\1\55\2\uffff\3\55\3\uffff\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
+            "\4\55\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
+            "\4\55\1\60\1\57\2\uffff\1\55\1\uffff\1\55\5\uffff\1\56",
             "",
             "",
-            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
-            "\1\62\2\uffff\3\62\3\uffff\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
+            "\4\62\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
+            "\4\62\1\64\1\63\2\uffff\1\62\1\uffff\1\62\5\uffff\1\61",
             "",
             "",
-            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
-            "\1\65\2\uffff\3\65\3\uffff\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
+            "\4\65\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
+            "\4\65\1\70\1\67\2\uffff\1\65\1\uffff\1\65\5\uffff\1\66",
             "",
             "",
-            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
-            "\1\71\2\uffff\3\71\3\uffff\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
+            "\4\71\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
+            "\4\71\1\74\1\73\2\uffff\1\71\1\uffff\1\71\5\uffff\1\72",
             "",
             "",
-            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
-            "\1\75\2\uffff\3\75\3\uffff\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76"
+            "\4\75\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76",
+            "\4\75\1\100\1\77\2\uffff\1\75\1\uffff\1\75\5\uffff\1\76"
     };
 
     static final short[] dfa_13 = DFA.unpackEncodedString(dfa_13s);
@@ -10489,25 +10489,25 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     private static class FollowSets000 {
         public static final BitSet FOLLOW_1 = new BitSet(new long[]{0x0000000000000000L});
         public static final BitSet FOLLOW_2 = new BitSet(new long[]{0x0000000000000002L});
-        public static final BitSet FOLLOW_3 = new BitSet(new long[]{0x0000000000000102L});
+        public static final BitSet FOLLOW_3 = new BitSet(new long[]{0x0000000000000802L});
         public static final BitSet FOLLOW_4 = new BitSet(new long[]{0x00000007E5044000L});
-        public static final BitSet FOLLOW_5 = new BitSet(new long[]{0x0000000000000282L});
-        public static final BitSet FOLLOW_6 = new BitSet(new long[]{0x0000000000000012L});
+        public static final BitSet FOLLOW_5 = new BitSet(new long[]{0x0000000000000602L});
+        public static final BitSet FOLLOW_6 = new BitSet(new long[]{0x0000000000001002L});
         public static final BitSet FOLLOW_7 = new BitSet(new long[]{0x0000000000008002L});
-        public static final BitSet FOLLOW_8 = new BitSet(new long[]{0x00000007E5154800L});
+        public static final BitSet FOLLOW_8 = new BitSet(new long[]{0x00000007E5154080L});
         public static final BitSet FOLLOW_9 = new BitSet(new long[]{0x0000000002000002L});
-        public static final BitSet FOLLOW_10 = new BitSet(new long[]{0x0000000000000402L});
+        public static final BitSet FOLLOW_10 = new BitSet(new long[]{0x0000000000000042L});
         public static final BitSet FOLLOW_11 = new BitSet(new long[]{0x0000000000080000L});
         public static final BitSet FOLLOW_12 = new BitSet(new long[]{0x0000000000010000L});
-        public static final BitSet FOLLOW_13 = new BitSet(new long[]{0x00000007E5144800L});
+        public static final BitSet FOLLOW_13 = new BitSet(new long[]{0x00000007E5144080L});
         public static final BitSet FOLLOW_14 = new BitSet(new long[]{0x0000000000020000L});
-        public static final BitSet FOLLOW_15 = new BitSet(new long[]{0x00000007E5044800L});
+        public static final BitSet FOLLOW_15 = new BitSet(new long[]{0x00000007E5044080L});
         public static final BitSet FOLLOW_16 = new BitSet(new long[]{0x0000001878000000L});
         public static final BitSet FOLLOW_17 = new BitSet(new long[]{0x0000000000006000L});
-        public static final BitSet FOLLOW_18 = new BitSet(new long[]{0x0000000000001000L});
+        public static final BitSet FOLLOW_18 = new BitSet(new long[]{0x0000000000000100L});
         public static final BitSet FOLLOW_19 = new BitSet(new long[]{0x0000000004006000L});
         public static final BitSet FOLLOW_20 = new BitSet(new long[]{0x0000000000200000L});
-        public static final BitSet FOLLOW_21 = new BitSet(new long[]{0x0000000000000060L});
+        public static final BitSet FOLLOW_21 = new BitSet(new long[]{0x0000000000000030L});
         public static final BitSet FOLLOW_22 = new BitSet(new long[]{0x0000020000000000L});
         public static final BitSet FOLLOW_23 = new BitSet(new long[]{0x0000002000000000L});
         public static final BitSet FOLLOW_24 = new BitSet(new long[]{0x0000000000C06000L});

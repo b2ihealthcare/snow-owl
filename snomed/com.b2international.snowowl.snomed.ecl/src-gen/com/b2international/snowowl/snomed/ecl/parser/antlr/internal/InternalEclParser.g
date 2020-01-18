@@ -185,9 +185,9 @@ ruleOrExpressionConstraint returns [EObject current=null]
 						$current);
 				}
 			)
-			otherlv_2=OR
+			this_DISJUNCTION_2=RULE_DISJUNCTION
 			{
-				newLeafNode(otherlv_2, grammarAccess.getOrExpressionConstraintAccess().getORKeyword_1_1());
+				newLeafNode(this_DISJUNCTION_2, grammarAccess.getOrExpressionConstraintAccess().getDISJUNCTIONTerminalRuleCall_1_1());
 			}
 			(
 				(
@@ -251,14 +251,14 @@ ruleAndExpressionConstraint returns [EObject current=null]
 				}
 			)
 			(
-				otherlv_2=AND
+				this_CONJUNCTION_2=RULE_CONJUNCTION
 				{
-					newLeafNode(otherlv_2, grammarAccess.getAndExpressionConstraintAccess().getANDKeyword_1_1_0());
+					newLeafNode(this_CONJUNCTION_2, grammarAccess.getAndExpressionConstraintAccess().getCONJUNCTIONTerminalRuleCall_1_1_0());
 				}
 				    |
-				otherlv_3=Comma
+				this_COMMA_3=RULE_COMMA
 				{
-					newLeafNode(otherlv_3, grammarAccess.getAndExpressionConstraintAccess().getCommaKeyword_1_1_1());
+					newLeafNode(this_COMMA_3, grammarAccess.getAndExpressionConstraintAccess().getCOMMATerminalRuleCall_1_1_1());
 				}
 			)
 			(
@@ -322,9 +322,9 @@ ruleExclusionExpressionConstraint returns [EObject current=null]
 						$current);
 				}
 			)
-			otherlv_2=MINUS
+			this_EXCLUSION_2=RULE_EXCLUSION
 			{
-				newLeafNode(otherlv_2, grammarAccess.getExclusionExpressionConstraintAccess().getMINUSKeyword_1_1());
+				newLeafNode(this_EXCLUSION_2, grammarAccess.getExclusionExpressionConstraintAccess().getEXCLUSIONTerminalRuleCall_1_1());
 			}
 			(
 				(
@@ -1120,7 +1120,7 @@ ruleOrRefinement returns [EObject current=null]
 			afterParserOrEnumRuleCall();
 		}
 		(
-			(OR)=>
+			(RULE_DISJUNCTION)=>
 			(
 				(
 					{
@@ -1132,9 +1132,9 @@ ruleOrRefinement returns [EObject current=null]
 							$current);
 					}
 				)
-				otherlv_2=OR
+				this_DISJUNCTION_2=RULE_DISJUNCTION
 				{
-					newLeafNode(otherlv_2, grammarAccess.getOrRefinementAccess().getORKeyword_1_0_1());
+					newLeafNode(this_DISJUNCTION_2, grammarAccess.getOrRefinementAccess().getDISJUNCTIONTerminalRuleCall_1_0_1());
 				}
 				(
 					(
@@ -1188,7 +1188,7 @@ ruleAndRefinement returns [EObject current=null]
 			afterParserOrEnumRuleCall();
 		}
 		(
-			(AND | Comma)=>
+			(RULE_CONJUNCTION | RULE_COMMA)=>
 			(
 				(
 					{
@@ -1201,14 +1201,14 @@ ruleAndRefinement returns [EObject current=null]
 					}
 				)
 				(
-					otherlv_2=AND
+					this_CONJUNCTION_2=RULE_CONJUNCTION
 					{
-						newLeafNode(otherlv_2, grammarAccess.getAndRefinementAccess().getANDKeyword_1_0_1_0());
+						newLeafNode(this_CONJUNCTION_2, grammarAccess.getAndRefinementAccess().getCONJUNCTIONTerminalRuleCall_1_0_1_0());
 					}
 					    |
-					otherlv_3=Comma
+					this_COMMA_3=RULE_COMMA
 					{
-						newLeafNode(otherlv_3, grammarAccess.getAndRefinementAccess().getCommaKeyword_1_0_1_1());
+						newLeafNode(this_COMMA_3, grammarAccess.getAndRefinementAccess().getCOMMATerminalRuleCall_1_0_1_1());
 					}
 				)
 				(
@@ -1466,9 +1466,9 @@ ruleOrAttributeSet returns [EObject current=null]
 						$current);
 				}
 			)
-			otherlv_2=OR
+			this_DISJUNCTION_2=RULE_DISJUNCTION
 			{
-				newLeafNode(otherlv_2, grammarAccess.getOrAttributeSetAccess().getORKeyword_1_1());
+				newLeafNode(this_DISJUNCTION_2, grammarAccess.getOrAttributeSetAccess().getDISJUNCTIONTerminalRuleCall_1_1());
 			}
 			(
 				(
@@ -1532,14 +1532,14 @@ ruleAndAttributeSet returns [EObject current=null]
 				}
 			)
 			(
-				otherlv_2=AND
+				this_CONJUNCTION_2=RULE_CONJUNCTION
 				{
-					newLeafNode(otherlv_2, grammarAccess.getAndAttributeSetAccess().getANDKeyword_1_1_0());
+					newLeafNode(this_CONJUNCTION_2, grammarAccess.getAndAttributeSetAccess().getCONJUNCTIONTerminalRuleCall_1_1_0());
 				}
 				    |
-				otherlv_3=Comma
+				this_COMMA_3=RULE_COMMA
 				{
-					newLeafNode(otherlv_3, grammarAccess.getAndAttributeSetAccess().getCommaKeyword_1_1_1());
+					newLeafNode(this_COMMA_3, grammarAccess.getAndAttributeSetAccess().getCOMMATerminalRuleCall_1_1_1());
 				}
 			)
 			(

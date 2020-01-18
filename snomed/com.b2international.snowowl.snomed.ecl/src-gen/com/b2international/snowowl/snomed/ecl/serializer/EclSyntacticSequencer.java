@@ -33,16 +33,16 @@ import org.eclipse.xtext.serializer.sequencer.AbstractSyntacticSequencer;
 public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 
 	protected EclGrammarAccess grammarAccess;
-	protected AbstractElementAlias match_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
-	protected AbstractElementAlias match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
-	protected AbstractElementAlias match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1;
+	protected AbstractElementAlias match_AndAttributeSet_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0;
+	protected AbstractElementAlias match_AndExpressionConstraint_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0;
+	protected AbstractElementAlias match_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0;
 	
 	@Inject
 	protected void init(IGrammarAccess access) {
 		grammarAccess = (EclGrammarAccess) access;
-		match_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getCommaKeyword_1_1_1()));
-		match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCommaKeyword_1_1_1()));
-		match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getANDKeyword_1_0_1_0()), new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getCommaKeyword_1_0_1_1()));
+		match_AndAttributeSet_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getCOMMATerminalRuleCall_1_1_1()), new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getCONJUNCTIONTerminalRuleCall_1_1_0()));
+		match_AndExpressionConstraint_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCOMMATerminalRuleCall_1_1_1()), new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCONJUNCTIONTerminalRuleCall_1_1_0()));
+		match_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getCOMMATerminalRuleCall_1_0_1_1()), new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getCONJUNCTIONTerminalRuleCall_1_0_1_0()));
 	}
 	
 	@Override
@@ -51,6 +51,10 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getCARETToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCOLONRule())
 			return getCOLONToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getCOMMARule())
+			return getCOMMAToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getCONJUNCTIONRule())
+			return getCONJUNCTIONToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCURLY_CLOSERule())
 			return getCURLY_CLOSEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCURLY_OPENRule())
@@ -59,10 +63,14 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getDBL_GTToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDBL_LTRule())
 			return getDBL_LTToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getDISJUNCTIONRule())
+			return getDISJUNCTIONToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDOTRule())
 			return getDOTToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getEQUALRule())
 			return getEQUALToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getEXCLUSIONRule())
+			return getEXCLUSIONToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getGTRule())
 			return getGTToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getGTERule())
@@ -117,6 +125,26 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
+	 * terminal COMMA:
+	 * 	',';
+	 */
+	protected String getCOMMAToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ",";
+	}
+	
+	/**
+	 * terminal CONJUNCTION:
+	 * 	('a' | 'A') ('n' | 'N') ('d' | 'D');
+	 */
+	protected String getCONJUNCTIONToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "and";
+	}
+	
+	/**
 	 * terminal CURLY_CLOSE:
 	 * 	'}';
 	 */
@@ -157,6 +185,16 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
+	 * terminal DISJUNCTION:
+	 * 	('o' | 'O') ('r' | 'R');
+	 */
+	protected String getDISJUNCTIONToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "or";
+	}
+	
+	/**
 	 * terminal DOT:
 	 * 	'.';
 	 */
@@ -174,6 +212,16 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "=";
+	}
+	
+	/**
+	 * terminal EXCLUSION:
+	 * 	('m' | 'M') ('i' | 'I') ('n' | 'N') ('u' | 'U') ('s' | 'S');
+	 */
+	protected String getEXCLUSIONToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "minus";
 	}
 	
 	/**
@@ -332,46 +380,46 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		List<INode> transitionNodes = collectNodes(fromNode, toNode);
 		for (AbstractElementAlias syntax : transition.getAmbiguousSyntaxes()) {
 			List<INode> syntaxNodes = getNodesFor(transitionNodes, syntax);
-			if (match_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1.equals(syntax))
-				emit_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
-			else if (match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1.equals(syntax))
-				emit_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
-			else if (match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1.equals(syntax))
-				emit_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
+			if (match_AndAttributeSet_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0.equals(syntax))
+				emit_AndAttributeSet_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0(semanticObject, getLastNavigableState(), syntaxNodes);
+			else if (match_AndExpressionConstraint_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0.equals(syntax))
+				emit_AndExpressionConstraint_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0(semanticObject, getLastNavigableState(), syntaxNodes);
+			else if (match_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0.equals(syntax))
+				emit_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0(semanticObject, getLastNavigableState(), syntaxNodes);
 			else acceptNodes(getLastNavigableState(), syntaxNodes);
 		}
 	}
 
 	/**
 	 * Ambiguous syntax:
-	 *     'AND' | ','
+	 *     CONJUNCTION | COMMA
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndRefinement.left=} (ambiguity) right=SubAttributeSet
 	 */
-	protected void emit_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+	protected void emit_AndAttributeSet_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);
 	}
 	
 	/**
 	 * Ambiguous syntax:
-	 *     'AND' | ','
+	 *     CONJUNCTION | COMMA
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndExpressionConstraint.left=} (ambiguity) right=ExclusionExpressionConstraint
 	 */
-	protected void emit_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+	protected void emit_AndExpressionConstraint_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);
 	}
 	
 	/**
 	 * Ambiguous syntax:
-	 *     'AND' | ','
+	 *     CONJUNCTION | COMMA
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndRefinement.left=} (ambiguity) right=SubRefinement
 	 */
-	protected void emit_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+	protected void emit_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);
 	}
 	

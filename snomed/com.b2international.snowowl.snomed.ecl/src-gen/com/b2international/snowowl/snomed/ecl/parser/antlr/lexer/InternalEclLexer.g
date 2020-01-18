@@ -23,23 +23,23 @@ package com.b2international.snowowl.snomed.ecl.parser.antlr.lexer;
 import org.eclipse.xtext.parser.antlr.Lexer;
 }
 
-MINUS : ('M'|'m')('I'|'i')('N'|'n')('U'|'u')('S'|'s');
-
 False : ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
 
 True : ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
-
-AND : ('A'|'a')('N'|'n')('D'|'d');
-
-OR : ('O'|'o')('R'|'r');
-
-Comma : ',';
 
 RULE_TERM_STRING : '|' ~('|')* '|';
 
 RULE_REVERSED : 'R';
 
 RULE_TO : '..';
+
+RULE_COMMA : ',';
+
+RULE_CONJUNCTION : ('a'|'A') ('n'|'N') ('d'|'D');
+
+RULE_DISJUNCTION : ('o'|'O') ('r'|'R');
+
+RULE_EXCLUSION : ('m'|'M') ('i'|'I') ('n'|'N') ('u'|'U') ('s'|'S');
 
 RULE_ZERO : '0';
 
