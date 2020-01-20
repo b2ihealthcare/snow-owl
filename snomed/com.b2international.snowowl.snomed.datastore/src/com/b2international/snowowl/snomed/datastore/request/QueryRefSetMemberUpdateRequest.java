@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,18 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 						.execute(context);
 				}
 				break;
+			case CHANGE:
+				final SnomedReferenceSetMember memberToChange = SnomedRequests.prepareGetMember(change.getMemberId())
+					.build()
+					.execute(context);
+				if(!memberToChange.isActive()) {
+					SnomedRequests.prepareUpdateMember()
+					.setMemberId(change.getMemberId())
+					.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.TRUE))
+					.build()
+					.execute(context);
+				}
+				break;	
 			default: 
 				throw new UnsupportedOperationException("Not implemented case: " + change.getChangeKind()); 
 			}
