@@ -57,6 +57,14 @@ class EclParsingTest {
 			MINUS ^ 450976002|disorders and diseases reference set for GP/FP reason for encounter|
 		'''.assertNoErrors
 	}
+	
+	@Test
+	def void test_5_4_2_BinaryOperators_1_lowerCase() {
+		'''
+			(< 19829001|disorder of lung| or ^ 700043003 |example problem list concepts reference set|) 
+			minus ^ 450976002|disorders and diseases reference set for GP/FP reason for encounter|
+		'''.assertNoErrors
+	}
 
 	@Test
 	def void test_5_4_2_BinaryOperators_2() {
@@ -434,6 +442,14 @@ class EclParsingTest {
 	def void test_6_4_1_CompoundExpressionConstraints_5() {
 		'''
 			(< 19829001 |disorder of lung| AND < 301867009 |edema of trunk|) OR 
+			^ 700043003 |example problem list concepts reference set|
+		'''.assertNoErrors
+	}
+	
+	@Test
+	def void test_6_4_1_CompoundExpressionConstraints_5_lowerCase() {
+		'''
+			(< 19829001 |disorder of lung| and < 301867009 |edema of trunk|) or 
 			^ 700043003 |example problem list concepts reference set|
 		'''.assertNoErrors
 	}

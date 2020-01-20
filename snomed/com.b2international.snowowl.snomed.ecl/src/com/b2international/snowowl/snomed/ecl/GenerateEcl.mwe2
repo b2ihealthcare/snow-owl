@@ -70,6 +70,7 @@ Workflow {
             }
         }
         language = StandardLanguage {
+        	
             name = "com.b2international.snowowl.snomed.ecl.Ecl"
             fileExtensions = "ecl"
             // The antlr parser generator fragment.
@@ -81,7 +82,7 @@ Workflow {
               }
             }
             serializer = {
-                generateStub = false
+                generateStub = true
             }
             validator = {
                 // composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"

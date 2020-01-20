@@ -70,7 +70,7 @@ import org.eclipse.xtext.serializer.sequencer.AbstractDelegatingSemanticSequence
 import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ValueTransient;
 
 @SuppressWarnings("all")
-public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
+public abstract class AbstractEclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 
 	@Inject
 	private EclGrammarAccess grammarAccess;
