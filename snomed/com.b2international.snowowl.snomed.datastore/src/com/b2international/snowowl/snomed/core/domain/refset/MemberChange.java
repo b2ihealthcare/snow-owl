@@ -34,4 +34,9 @@ public interface MemberChange extends Comparable<MemberChange>, Serializable {
 	
 	String getMemberId();
 	
+	default boolean isAdded() {
+		return getChangeKind() == MemberChangeKind.ADD 
+				|| getChangeKind() == MemberChangeKind.CHANGE; 
+	}
+	
 }
