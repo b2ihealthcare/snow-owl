@@ -325,6 +325,11 @@ public abstract class SnomedConstants {
 		public static final String HAS_ACTIVE_INGREDIENT = "127489000";
 		public static final String HAS_DOSE_FORM = "411116001";
 		
+		// Concepts needed by the NICIP terminology
+		public static final String LATERALITY_LEFT = "7771000";
+		public static final String LATERALITY_RIGHT = "24028007";
+		public static final String LATERALITY_WHOLE_BODY = "51440002";
+		
 		//	Australian specific concepts
 		public static final String AUSTRALIAN_LANGUAGE_REFERENCE_SET = "32570271000036106";
 
