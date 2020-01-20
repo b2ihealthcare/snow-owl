@@ -40,32 +40,31 @@ AttributeValue:
 	ConceptReference | ROUND_OPEN SubExpression ROUND_CLOSE | StringValue | IntegerValue | DecimalValue | ConcreteValueReplacementSlot;
 
 ConceptReplacementSlot:
-	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 ExpressionReplacementSlot:
-	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 TokenReplacementSlot:
-	{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken (WS tokens+=SlotToken)* ROUND_CLOSE)?	(AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken (tokens+=SlotToken)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 TemplateInformationSlot:
-	{TemplateInformationSlot} DOUBLE_SQUARE_OPEN (cardinality=Cardinality)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	{TemplateInformationSlot} DOUBLE_SQUARE_OPEN (cardinality=EtlCardinality)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 ConcreteValueReplacementSlot:
 	StringReplacementSlot | IntegerReplacementSlot | DecimalReplacementSlot;
 
 StringReplacementSlot:
-	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue (values+=StringValue)* ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue (values+=StringValue)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 IntegerReplacementSlot:
-	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues (values+=IntegerValues)* ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues (values+=IntegerValues)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 DecimalReplacementSlot:
-	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues (values+=DecimalValues)* ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues (values+=DecimalValues)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
-@Override
-Cardinality: // this is required to be compatible with IHTSDO's template format v0.2
-	SQUARE_OPEN TILDE? min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
+EtlCardinality: // XXX this is different to Ecl.Cardinality -> needed to remove square brackets and to add optional tilde (-> IHTSDO has template syntax v0.2)
+	TILDE? min=NonNegativeInteger TO max=MaxValue;
 
 SlotToken:
 	EQUIVALENT_TO | SUBTYPE_OF |
@@ -87,10 +86,10 @@ IntegerRange:
 	(minimum=IntegerMinimumValue TO (maximum=IntegerMaximumValue)?) | (TO maximum=IntegerMaximumValue);
 
 IntegerMinimumValue:
-	(exclusive?=GT) HASH value=Integer;
+	(exclusive?=GT)? HASH value=Integer;
 
 IntegerMaximumValue:
-	(exclusive?=LT) HASH value=Integer;
+	(exclusive?=LT)? HASH value=Integer;
 
 DecimalValues:
 	DecimalValue | DecimalRange;
@@ -102,10 +101,10 @@ DecimalRange:
 	(minimum=DecimalMinimumValue TO (maximum=DecimalMaximumValue)?) | (TO maximum=DecimalMaximumValue);
 
 DecimalMinimumValue:
-	(exclusive?=GT) HASH value=Decimal;
+	(exclusive?=GT)? HASH value=Decimal;
 
 DecimalMaximumValue:
-	(exclusive?=LT) HASH value=Decimal;
+	(exclusive?=LT)? HASH value=Decimal;
 
 ConceptReferenceSlot:
 	ConceptReplacementSlot | ExpressionReplacementSlot;
@@ -148,3 +147,6 @@ terminal EQUIVALENT_TO:
 
 terminal SUBTYPE_OF:
 	'<<<';
+	
+terminal SLOTNAME_STRING:
+	AT (STRING | (!('\\' | '"' | "'" | WS | AT | SQUARE_OPEN | SQUARE_CLOSE))*);

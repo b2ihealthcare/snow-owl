@@ -20,7 +20,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.etl.etl.Attribute;
 import com.b2international.snowowl.snomed.etl.etl.AttributeGroup;
 import com.b2international.snowowl.snomed.etl.etl.AttributeValue;
-import com.b2international.snowowl.snomed.etl.etl.Cardinality;
 import com.b2international.snowowl.snomed.etl.etl.ConceptReference;
 import com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot;
 import com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot;
@@ -31,6 +30,7 @@ import com.b2international.snowowl.snomed.etl.etl.DecimalRange;
 import com.b2international.snowowl.snomed.etl.etl.DecimalReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.DecimalValue;
 import com.b2international.snowowl.snomed.etl.etl.DecimalValues;
+import com.b2international.snowowl.snomed.etl.etl.EtlCardinality;
 import com.b2international.snowowl.snomed.etl.etl.EtlFactory;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot;
@@ -174,7 +174,7 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass cardinalityEClass = null;
+  private EClass etlCardinalityEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -746,9 +746,31 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * @generated
    */
   @Override
-  public EClass getCardinality()
+  public EClass getEtlCardinality()
   {
-    return cardinalityEClass;
+    return etlCardinalityEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getEtlCardinality_Min()
+  {
+    return (EAttribute)etlCardinalityEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getEtlCardinality_Max()
+  {
+    return (EAttribute)etlCardinalityEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -1197,7 +1219,9 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
     decimalReplacementSlotEClass = createEClass(DECIMAL_REPLACEMENT_SLOT);
     createEReference(decimalReplacementSlotEClass, DECIMAL_REPLACEMENT_SLOT__VALUES);
 
-    cardinalityEClass = createEClass(CARDINALITY);
+    etlCardinalityEClass = createEClass(ETL_CARDINALITY);
+    createEAttribute(etlCardinalityEClass, ETL_CARDINALITY__MIN);
+    createEAttribute(etlCardinalityEClass, ETL_CARDINALITY__MAX);
 
     stringValueEClass = createEClass(STRING_VALUE);
     createEAttribute(stringValueEClass, STRING_VALUE__VALUE);
@@ -1285,7 +1309,6 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
     stringReplacementSlotEClass.getESuperTypes().add(this.getConcreteValueReplacementSlot());
     integerReplacementSlotEClass.getESuperTypes().add(this.getConcreteValueReplacementSlot());
     decimalReplacementSlotEClass.getESuperTypes().add(this.getConcreteValueReplacementSlot());
-    cardinalityEClass.getESuperTypes().add(theEclPackage.getCardinality());
     stringValueEClass.getESuperTypes().add(this.getAttributeValue());
     integerValueEClass.getESuperTypes().add(this.getAttributeValue());
     integerValueEClass.getESuperTypes().add(this.getIntegerValues());
@@ -1333,7 +1356,7 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
     initEAttribute(getTokenReplacementSlot_Name(), ecorePackage.getEString(), "name", null, 0, 1, TokenReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(templateInformationSlotEClass, TemplateInformationSlot.class, "TemplateInformationSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getTemplateInformationSlot_Cardinality(), this.getCardinality(), null, "cardinality", null, 0, 1, TemplateInformationSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getTemplateInformationSlot_Cardinality(), this.getEtlCardinality(), null, "cardinality", null, 0, 1, TemplateInformationSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getTemplateInformationSlot_Name(), ecorePackage.getEString(), "name", null, 0, 1, TemplateInformationSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(concreteValueReplacementSlotEClass, ConcreteValueReplacementSlot.class, "ConcreteValueReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -1348,7 +1371,9 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
     initEClass(decimalReplacementSlotEClass, DecimalReplacementSlot.class, "DecimalReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getDecimalReplacementSlot_Values(), this.getDecimalValues(), null, "values", null, 0, -1, DecimalReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(cardinalityEClass, Cardinality.class, "Cardinality", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEClass(etlCardinalityEClass, EtlCardinality.class, "EtlCardinality", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getEtlCardinality_Min(), ecorePackage.getEInt(), "min", null, 0, 1, EtlCardinality.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getEtlCardinality_Max(), ecorePackage.getEInt(), "max", null, 0, 1, EtlCardinality.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(stringValueEClass, StringValue.class, "StringValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getStringValue_Value(), ecorePackage.getEString(), "value", null, 0, 1, StringValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

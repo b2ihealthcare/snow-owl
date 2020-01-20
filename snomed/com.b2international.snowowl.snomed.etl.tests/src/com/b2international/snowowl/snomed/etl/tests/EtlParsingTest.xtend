@@ -15,19 +15,30 @@
  */
 package com.b2international.snowowl.snomed.etl.tests
 
+import com.b2international.snowowl.snomed.etl.etl.Attribute
+import com.b2international.snowowl.snomed.etl.etl.ConceptReference
+import com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot
+import com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot
 import com.b2international.snowowl.snomed.etl.etl.ExpressionTemplate
+import com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot
 import com.google.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
 
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertFalse
 import static org.junit.Assert.assertNotNull
+import static org.junit.Assert.assertNull
+import static org.junit.Assert.assertTrue
 
 @RunWith(XtextRunner)
 @InjectWith(EtlInjectorProvider)
+@FixMethodOrder(NAME_ASCENDING)
 class EtlParsingTest {
 
 	@Inject extension ParseHelper<ExpressionTemplate>
@@ -40,37 +51,207 @@ class EtlParsingTest {
 
 	@Test
 	def void test_7_1_1_Simple_AttributeName_1() {
-		'''
+		
+		val expression = '''
 			404684003 |Clinical finding| : [[+]] =  80166006 |Streptococcus pyogenes|
 		'''.assertNoErrors
+		
+		assertNull(expression.slot)
+		assertFalse(expression.primitive)
+		
+		assertEquals(1, expression.expression.focusConcepts.size)
+		
+		val focusConcept = expression.expression.focusConcepts.head
+		
+		assertNull(focusConcept.slot)
+		assertNull(focusConcept.concept.slot)
+		
+		assertConceptReference(focusConcept.concept, "404684003", "Clinical finding")
+		
+		val refinement = expression.expression.refinement
+		
+		assertTrue(refinement.groups.empty)
+		assertEquals(1, refinement.attributes.size)
+		
+		val attribute = refinement.attributes.head
+		
+		assertNull(attribute.slot)
+		
+		assertNull(attribute.name.id)
+		assertNull(attribute.name.term)
+		
+		assertTrue(attribute.name.slot instanceof ExpressionReplacementSlot)
+		
+		val expressionReplacementSlot = attribute.name.slot as ExpressionReplacementSlot
+		
+		assertNull(expressionReplacementSlot.name)
+		assertNull(expressionReplacementSlot.constraint)
+		
+		assertTrue(attribute.value instanceof ConceptReference)
+		assertConceptReference(attribute.value as ConceptReference, "80166006", "Streptococcus pyogenes")
+		
 	}
 
 	@Test
 	def void test_7_1_1_Simple_AttributeValue_1() {
-		'''
+		
+		val expression = '''
 			404684003 |Clinical finding| :  363698007 |Finding site|  = [[+]]
 		'''.assertNoErrors
+		
+		assertNull(expression.slot)
+		assertFalse(expression.primitive)
+		
+		assertEquals(1, expression.expression.focusConcepts.size)
+		
+		val focusConcept = expression.expression.focusConcepts.head
+		
+		assertNull(focusConcept.slot)
+		assertNull(focusConcept.concept.slot)
+		
+		assertConceptReference(focusConcept.concept, "404684003", "Clinical finding")
+		
+		val refinement = expression.expression.refinement
+		
+		assertTrue(refinement.groups.empty)
+		assertEquals(1, refinement.attributes.size)
+		
+		val attribute = refinement.attributes.head
+		
+		assertNull(attribute.slot)
+		assertConceptReference(attribute.name, "363698007", "Finding site")
+		
+		assertTrue(attribute.value instanceof ConceptReference)
+		
+		val value = attribute.value as ConceptReference
+		
+		assertNull(value.id)
+		assertNull(value.term)
+		
+		assertTrue(value.slot instanceof ExpressionReplacementSlot)
+		
+		val expressionReplacementSlot = value.slot as ExpressionReplacementSlot
+		
+		assertNull(expressionReplacementSlot.name)
+		assertNull(expressionReplacementSlot.constraint)
+		
 	}
 
 	@Test
 	def void test_7_1_1_Simple_FocusConcept_1() {
-		'''
-			404684003 |Clinical finding| :  363698007 |Finding site|  = [[+]]
+		
+		val expression = '''
+			[[+]]: 272741003 |Laterality| =  24028007 |Right|
 		'''.assertNoErrors
+		
+		assertNull(expression.slot)
+		assertFalse(expression.primitive)
+		
+		assertEquals(1, expression.expression.focusConcepts.size)
+		
+		val focusConcept = expression.expression.focusConcepts.head
+		
+		assertNull(focusConcept.slot)
+		
+		assertNull(focusConcept.concept.id)
+		assertNull(focusConcept.concept.term)
+		
+		assertTrue(focusConcept.concept.slot instanceof ExpressionReplacementSlot)
+		
+		val expressionReplacementSlot = focusConcept.concept.slot as ExpressionReplacementSlot
+		assertNull(expressionReplacementSlot.name)
+		assertNull(expressionReplacementSlot.constraint)
+		
+		val refinement = expression.expression.refinement
+		
+		assertTrue(refinement.groups.empty)
+		assertEquals(1, refinement.attributes.size)
+
+		assertSimpleAttribute(refinement.attributes.head, "272741003", "Laterality", "24028007", "Right")
+		
 	}
 
 	@Test
 	def void test_7_1_2_Typed_ConceptReplacement_1() {
-		'''
+		
+		val expression = '''
 			404684003 |Clinical finding| :  255234002 |After|  = [[+id]]
 		'''.assertNoErrors
+		
+		assertNull(expression.slot)
+		assertFalse(expression.primitive)
+		
+		assertEquals(1, expression.expression.focusConcepts.size)
+		
+		val focusConcept = expression.expression.focusConcepts.head
+		
+		assertNull(focusConcept.slot)
+		assertNull(focusConcept.concept.slot)
+		
+		assertConceptReference(focusConcept.concept, "404684003", "Clinical finding")
+		
+		val refinement = expression.expression.refinement
+		
+		assertTrue(refinement.groups.empty)
+		assertEquals(1, refinement.attributes.size)
+		
+		val attribute = refinement.attributes.head
+		
+		assertNull(attribute.slot)
+		assertConceptReference(attribute.name, "255234002", "After")
+		
+		assertTrue(attribute.value instanceof ConceptReference)
+		
+		val value = attribute.value as ConceptReference
+		
+		assertNull(value.id)
+		assertNull(value.term)
+		
+		assertTrue(value.slot instanceof ConceptReplacementSlot)
+		
+		val conceptReplacementSlot = value.slot as ConceptReplacementSlot
+		
+		assertNull(conceptReplacementSlot.name)
+		assertNull(conceptReplacementSlot.constraint)
+		
 	}
 
 	@Test
 	def void test_7_1_2_Typed_ConcreteValueReplacement_1() {
-		'''
+		
+		val expression = '''
 			322236009 |Paracetamol 500mg tablet|  :   209999999104 |Has trade name|   = [[+str]]
 		'''.assertNoErrors
+		
+		assertNull(expression.slot)
+		assertFalse(expression.primitive)
+		
+		assertEquals(1, expression.expression.focusConcepts.size)
+		
+		val focusConcept = expression.expression.focusConcepts.head
+		
+		assertNull(focusConcept.slot)
+		assertNull(focusConcept.concept.slot)
+		
+		assertConceptReference(focusConcept.concept, "322236009", "Paracetamol 500mg tablet")
+		
+		val refinement = expression.expression.refinement
+		
+		assertTrue(refinement.groups.empty)
+		assertEquals(1, refinement.attributes.size)
+		
+		val attribute = refinement.attributes.head
+		
+		assertNull(attribute.slot)
+		assertConceptReference(attribute.name, "209999999104", "Has trade name")
+		
+		assertTrue(attribute.value instanceof StringReplacementSlot)
+		
+		val stringReplacementSlot = attribute.value as StringReplacementSlot
+		
+		assertNull(stringReplacementSlot.name)
+		assertTrue(stringReplacementSlot.values.empty)
+		
 	}
 
 	@Test
@@ -197,9 +378,7 @@ class EtlParsingTest {
 	@Test
 	def void test_7_1_4_Named_RepeatedSlotNames_1() {
 		'''
-			404684003 |Finding| : {
-			       363698007 |Finding site|  = [[+ @site]],
-			       363714003 |Interprets|  = ( 363787002 |Observable entity| :  704319004 |Inheres in|  = [[+ @site]])}
+			404684003 |Finding| : { 363698007 |Finding site|  = [[+ @site]], 363714003 |Interprets| = ( 363787002 |Observable entity| : 704319004 |Inheres in| = [[+ @site]])}
 		'''.assertNoErrors
 	}
 
@@ -291,10 +470,22 @@ class EtlParsingTest {
 		'''.assertNoErrors
 	}
 
-	private def void assertNoErrors(CharSequence it) throws Exception {
+	def private void assertConceptReference(ConceptReference reference, String id, String term) {
+		assertEquals(id, reference.id)
+		assertEquals('|' + term + '|', reference.term)
+	}
+	
+	def private void assertSimpleAttribute(Attribute attribute, String nameId, String nameTerm, String valueId, String valueTerm) {
+		assertConceptReference(attribute.name, nameId, nameTerm)
+		assertTrue(attribute.value instanceof ConceptReference)
+		assertConceptReference((attribute.value as ConceptReference), valueId, valueTerm)
+	}
+	
+	private def ExpressionTemplate assertNoErrors(CharSequence it) throws Exception {
 		val template = parse;
 		assertNotNull('''Cannot parse expression: «it».''', template);
 		template.assertNoErrors;
+		return template
 	}
 	
 }

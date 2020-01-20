@@ -177,7 +177,7 @@ public interface EtlFactory extends EFactory
    * @return a new object of class '<em>Cardinality</em>'.
    * @generated
    */
-  Cardinality createCardinality();
+  EtlCardinality createEtlCardinality();
 
   /**
    * Returns a new object of class '<em>String Value</em>'.

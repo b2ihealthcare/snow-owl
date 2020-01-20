@@ -12,57 +12,58 @@ import java.util.ArrayList;
 
 @SuppressWarnings("all")
 public class InternalEtlLexer extends Lexer {
-    public static final int RULE_DIGIT_NONZERO=26;
-    public static final int RULE_CURLY_OPEN=28;
-    public static final int RULE_TO=20;
-    public static final int RULE_ROUND_CLOSE=31;
-    public static final int RULE_DBL_GT=44;
+    public static final int RULE_DIGIT_NONZERO=31;
+    public static final int RULE_CURLY_OPEN=33;
+    public static final int RULE_TO=25;
+    public static final int RULE_ROUND_CLOSE=36;
+    public static final int RULE_DBL_GT=47;
     public static final int True=5;
-    public static final int RULE_GT=42;
+    public static final int RULE_GT=45;
     public static final int False=4;
+    public static final int RULE_SLOTNAME_STRING=22;
     public static final int RULE_SCG=11;
-    public static final int RULE_GTE=47;
+    public static final int RULE_GTE=50;
     public static final int RULE_DOUBLE_SQUARE_OPEN=6;
     public static final int RULE_EQUIVALENT_TO=16;
-    public static final int RULE_ROUND_OPEN=30;
-    public static final int RULE_DBL_LT=43;
-    public static final int RULE_NOT_EQUAL=40;
-    public static final int RULE_SQUARE_CLOSE=33;
+    public static final int RULE_ROUND_OPEN=35;
+    public static final int RULE_DBL_LT=46;
+    public static final int RULE_NOT_EQUAL=43;
+    public static final int RULE_SQUARE_CLOSE=21;
     public static final int RULE_ID=10;
-    public static final int RULE_SQUARE_OPEN=32;
-    public static final int RULE_EQUAL=39;
+    public static final int RULE_SQUARE_OPEN=20;
+    public static final int RULE_EQUAL=42;
     public static final int RULE_DEC=15;
-    public static final int RULE_COMMA=21;
-    public static final int RULE_LT_EM=45;
-    public static final int RULE_CURLY_CLOSE=29;
-    public static final int RULE_ZERO=25;
-    public static final int RULE_COLON=27;
+    public static final int RULE_COMMA=26;
+    public static final int RULE_LT_EM=48;
+    public static final int RULE_CURLY_CLOSE=34;
+    public static final int RULE_ZERO=30;
+    public static final int RULE_COLON=32;
     public static final int RULE_TILDE=8;
-    public static final int RULE_LT=41;
+    public static final int RULE_LT=44;
     public static final int RULE_INT=14;
-    public static final int RULE_ML_COMMENT=51;
+    public static final int RULE_ML_COMMENT=53;
     public static final int RULE_DOUBLE_SQUARE_CLOSE=7;
-    public static final int RULE_LTE=48;
-    public static final int RULE_STRING=53;
+    public static final int RULE_LTE=51;
+    public static final int RULE_STRING=18;
     public static final int RULE_AT=9;
-    public static final int RULE_REVERSED=19;
-    public static final int RULE_SL_COMMENT=52;
-    public static final int RULE_HASH=49;
+    public static final int RULE_REVERSED=24;
+    public static final int RULE_SL_COMMENT=54;
+    public static final int RULE_HASH=52;
     public static final int RULE_TOK=12;
-    public static final int RULE_DASH=35;
-    public static final int RULE_PLUS=34;
-    public static final int RULE_DOT=37;
+    public static final int RULE_DASH=38;
+    public static final int RULE_PLUS=37;
+    public static final int RULE_DOT=40;
     public static final int EOF=-1;
     public static final int RULE_SUBTYPE_OF=17;
-    public static final int RULE_GT_EM=46;
-    public static final int RULE_WS=50;
-    public static final int RULE_EXCLUSION=24;
-    public static final int RULE_CARET=36;
-    public static final int RULE_CONJUNCTION=22;
+    public static final int RULE_WS=19;
+    public static final int RULE_GT_EM=49;
+    public static final int RULE_EXCLUSION=29;
+    public static final int RULE_CARET=39;
+    public static final int RULE_CONJUNCTION=27;
     public static final int RULE_STR=13;
-    public static final int RULE_WILDCARD=38;
-    public static final int RULE_DISJUNCTION=23;
-    public static final int RULE_TERM_STRING=18;
+    public static final int RULE_WILDCARD=41;
+    public static final int RULE_DISJUNCTION=28;
+    public static final int RULE_TERM_STRING=23;
 
     // delegates
     // delegators
@@ -261,17 +262,13 @@ public class InternalEtlLexer extends Lexer {
     // $ANTLR start "RULE_AT"
     public final void mRULE_AT() throws RecognitionException {
         try {
-            int _type = RULE_AT;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:36:9: ( '@' )
-            // InternalEtlLexer.g:36:11: '@'
+            // InternalEtlLexer.g:36:18: ( '@' )
+            // InternalEtlLexer.g:36:20: '@'
             {
             match('@'); 
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
         }
         finally {
         }
@@ -446,29 +443,108 @@ public class InternalEtlLexer extends Lexer {
     }
     // $ANTLR end "RULE_SUBTYPE_OF"
 
+    // $ANTLR start "RULE_SLOTNAME_STRING"
+    public final void mRULE_SLOTNAME_STRING() throws RecognitionException {
+        try {
+            int _type = RULE_SLOTNAME_STRING;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalEtlLexer.g:54:22: ( RULE_AT ( RULE_STRING | (~ ( ( '\\\\' | '\"' | '\\'' | RULE_WS | RULE_AT | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE ) ) )* ) )
+            // InternalEtlLexer.g:54:24: RULE_AT ( RULE_STRING | (~ ( ( '\\\\' | '\"' | '\\'' | RULE_WS | RULE_AT | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE ) ) )* )
+            {
+            mRULE_AT(); 
+            // InternalEtlLexer.g:54:32: ( RULE_STRING | (~ ( ( '\\\\' | '\"' | '\\'' | RULE_WS | RULE_AT | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE ) ) )* )
+            int alt2=2;
+            int LA2_0 = input.LA(1);
+
+            if ( (LA2_0=='\"'||LA2_0=='\'') ) {
+                alt2=1;
+            }
+            else {
+                alt2=2;}
+            switch (alt2) {
+                case 1 :
+                    // InternalEtlLexer.g:54:33: RULE_STRING
+                    {
+                    mRULE_STRING(); 
+
+                    }
+                    break;
+                case 2 :
+                    // InternalEtlLexer.g:54:45: (~ ( ( '\\\\' | '\"' | '\\'' | RULE_WS | RULE_AT | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE ) ) )*
+                    {
+                    // InternalEtlLexer.g:54:45: (~ ( ( '\\\\' | '\"' | '\\'' | RULE_WS | RULE_AT | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE ) ) )*
+                    loop1:
+                    do {
+                        int alt1=2;
+                        int LA1_0 = input.LA(1);
+
+                        if ( ((LA1_0>='\u0000' && LA1_0<='\b')||(LA1_0>='\u000B' && LA1_0<='\f')||(LA1_0>='\u000E' && LA1_0<='\u001F')||LA1_0=='!'||(LA1_0>='#' && LA1_0<='&')||(LA1_0>='(' && LA1_0<='?')||(LA1_0>='A' && LA1_0<='Z')||(LA1_0>='^' && LA1_0<='\uFFFF')) ) {
+                            alt1=1;
+                        }
+
+
+                        switch (alt1) {
+                    	case 1 :
+                    	    // InternalEtlLexer.g:54:45: ~ ( ( '\\\\' | '\"' | '\\'' | RULE_WS | RULE_AT | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE ) )
+                    	    {
+                    	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\b')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\u001F')||input.LA(1)=='!'||(input.LA(1)>='#' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='?')||(input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='^' && input.LA(1)<='\uFFFF') ) {
+                    	        input.consume();
+
+                    	    }
+                    	    else {
+                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
+                    	        recover(mse);
+                    	        throw mse;}
+
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop1;
+                        }
+                    } while (true);
+
+
+                    }
+                    break;
+
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "RULE_SLOTNAME_STRING"
+
     // $ANTLR start "RULE_TERM_STRING"
     public final void mRULE_TERM_STRING() throws RecognitionException {
         try {
             int _type = RULE_TERM_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:54:18: ( '|' (~ ( '|' ) )* '|' )
-            // InternalEtlLexer.g:54:20: '|' (~ ( '|' ) )* '|'
+            // InternalEtlLexer.g:56:18: ( '|' (~ ( '|' ) )* '|' )
+            // InternalEtlLexer.g:56:20: '|' (~ ( '|' ) )* '|'
             {
             match('|'); 
-            // InternalEtlLexer.g:54:24: (~ ( '|' ) )*
-            loop1:
+            // InternalEtlLexer.g:56:24: (~ ( '|' ) )*
+            loop3:
             do {
-                int alt1=2;
-                int LA1_0 = input.LA(1);
+                int alt3=2;
+                int LA3_0 = input.LA(1);
 
-                if ( ((LA1_0>='\u0000' && LA1_0<='{')||(LA1_0>='}' && LA1_0<='\uFFFF')) ) {
-                    alt1=1;
+                if ( ((LA3_0>='\u0000' && LA3_0<='{')||(LA3_0>='}' && LA3_0<='\uFFFF')) ) {
+                    alt3=1;
                 }
 
 
-                switch (alt1) {
+                switch (alt3) {
             	case 1 :
-            	    // InternalEtlLexer.g:54:24: ~ ( '|' )
+            	    // InternalEtlLexer.g:56:24: ~ ( '|' )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='{')||(input.LA(1)>='}' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -484,7 +560,7 @@ public class InternalEtlLexer extends Lexer {
             	    break;
 
             	default :
-            	    break loop1;
+            	    break loop3;
                 }
             } while (true);
 
@@ -505,8 +581,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_REVERSED;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:56:15: ( 'R' )
-            // InternalEtlLexer.g:56:17: 'R'
+            // InternalEtlLexer.g:58:15: ( 'R' )
+            // InternalEtlLexer.g:58:17: 'R'
             {
             match('R'); 
 
@@ -525,8 +601,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_TO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:58:9: ( '..' )
-            // InternalEtlLexer.g:58:11: '..'
+            // InternalEtlLexer.g:60:9: ( '..' )
+            // InternalEtlLexer.g:60:11: '..'
             {
             match(".."); 
 
@@ -546,8 +622,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:60:12: ( ',' )
-            // InternalEtlLexer.g:60:14: ','
+            // InternalEtlLexer.g:62:12: ( ',' )
+            // InternalEtlLexer.g:62:14: ','
             {
             match(','); 
 
@@ -566,8 +642,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_CONJUNCTION;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:62:18: ( ( 'a' | 'A' ) ( 'n' | 'N' ) ( 'd' | 'D' ) )
-            // InternalEtlLexer.g:62:20: ( 'a' | 'A' ) ( 'n' | 'N' ) ( 'd' | 'D' )
+            // InternalEtlLexer.g:64:18: ( ( 'a' | 'A' ) ( 'n' | 'N' ) ( 'd' | 'D' ) )
+            // InternalEtlLexer.g:64:20: ( 'a' | 'A' ) ( 'n' | 'N' ) ( 'd' | 'D' )
             {
             if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
                 input.consume();
@@ -612,8 +688,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_DISJUNCTION;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:64:18: ( ( 'o' | 'O' ) ( 'r' | 'R' ) )
-            // InternalEtlLexer.g:64:20: ( 'o' | 'O' ) ( 'r' | 'R' )
+            // InternalEtlLexer.g:66:18: ( ( 'o' | 'O' ) ( 'r' | 'R' ) )
+            // InternalEtlLexer.g:66:20: ( 'o' | 'O' ) ( 'r' | 'R' )
             {
             if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                 input.consume();
@@ -649,8 +725,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_EXCLUSION;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:66:16: ( ( 'm' | 'M' ) ( 'i' | 'I' ) ( 'n' | 'N' ) ( 'u' | 'U' ) ( 's' | 'S' ) )
-            // InternalEtlLexer.g:66:18: ( 'm' | 'M' ) ( 'i' | 'I' ) ( 'n' | 'N' ) ( 'u' | 'U' ) ( 's' | 'S' )
+            // InternalEtlLexer.g:68:16: ( ( 'm' | 'M' ) ( 'i' | 'I' ) ( 'n' | 'N' ) ( 'u' | 'U' ) ( 's' | 'S' ) )
+            // InternalEtlLexer.g:68:18: ( 'm' | 'M' ) ( 'i' | 'I' ) ( 'n' | 'N' ) ( 'u' | 'U' ) ( 's' | 'S' )
             {
             if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
                 input.consume();
@@ -713,8 +789,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_ZERO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:68:11: ( '0' )
-            // InternalEtlLexer.g:68:13: '0'
+            // InternalEtlLexer.g:70:11: ( '0' )
+            // InternalEtlLexer.g:70:13: '0'
             {
             match('0'); 
 
@@ -733,8 +809,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_DIGIT_NONZERO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:70:20: ( '1' .. '9' )
-            // InternalEtlLexer.g:70:22: '1' .. '9'
+            // InternalEtlLexer.g:72:20: ( '1' .. '9' )
+            // InternalEtlLexer.g:72:22: '1' .. '9'
             {
             matchRange('1','9'); 
 
@@ -753,8 +829,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:72:12: ( ':' )
-            // InternalEtlLexer.g:72:14: ':'
+            // InternalEtlLexer.g:74:12: ( ':' )
+            // InternalEtlLexer.g:74:14: ':'
             {
             match(':'); 
 
@@ -773,8 +849,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_CURLY_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:74:17: ( '{' )
-            // InternalEtlLexer.g:74:19: '{'
+            // InternalEtlLexer.g:76:17: ( '{' )
+            // InternalEtlLexer.g:76:19: '{'
             {
             match('{'); 
 
@@ -793,8 +869,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_CURLY_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:76:18: ( '}' )
-            // InternalEtlLexer.g:76:20: '}'
+            // InternalEtlLexer.g:78:18: ( '}' )
+            // InternalEtlLexer.g:78:20: '}'
             {
             match('}'); 
 
@@ -813,8 +889,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_ROUND_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:78:17: ( '(' )
-            // InternalEtlLexer.g:78:19: '('
+            // InternalEtlLexer.g:80:17: ( '(' )
+            // InternalEtlLexer.g:80:19: '('
             {
             match('('); 
 
@@ -833,8 +909,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_ROUND_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:80:18: ( ')' )
-            // InternalEtlLexer.g:80:20: ')'
+            // InternalEtlLexer.g:82:18: ( ')' )
+            // InternalEtlLexer.g:82:20: ')'
             {
             match(')'); 
 
@@ -853,8 +929,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_SQUARE_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:82:18: ( '[' )
-            // InternalEtlLexer.g:82:20: '['
+            // InternalEtlLexer.g:84:18: ( '[' )
+            // InternalEtlLexer.g:84:20: '['
             {
             match('['); 
 
@@ -873,8 +949,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_SQUARE_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:84:19: ( ']' )
-            // InternalEtlLexer.g:84:21: ']'
+            // InternalEtlLexer.g:86:19: ( ']' )
+            // InternalEtlLexer.g:86:21: ']'
             {
             match(']'); 
 
@@ -893,8 +969,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:86:11: ( '+' )
-            // InternalEtlLexer.g:86:13: '+'
+            // InternalEtlLexer.g:88:11: ( '+' )
+            // InternalEtlLexer.g:88:13: '+'
             {
             match('+'); 
 
@@ -913,8 +989,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_DASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:88:11: ( '-' )
-            // InternalEtlLexer.g:88:13: '-'
+            // InternalEtlLexer.g:90:11: ( '-' )
+            // InternalEtlLexer.g:90:13: '-'
             {
             match('-'); 
 
@@ -933,8 +1009,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_CARET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:90:12: ( '^' )
-            // InternalEtlLexer.g:90:14: '^'
+            // InternalEtlLexer.g:92:12: ( '^' )
+            // InternalEtlLexer.g:92:14: '^'
             {
             match('^'); 
 
@@ -953,8 +1029,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:92:10: ( '.' )
-            // InternalEtlLexer.g:92:12: '.'
+            // InternalEtlLexer.g:94:10: ( '.' )
+            // InternalEtlLexer.g:94:12: '.'
             {
             match('.'); 
 
@@ -973,8 +1049,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_WILDCARD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:94:15: ( '*' )
-            // InternalEtlLexer.g:94:17: '*'
+            // InternalEtlLexer.g:96:15: ( '*' )
+            // InternalEtlLexer.g:96:17: '*'
             {
             match('*'); 
 
@@ -993,8 +1069,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_EQUAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:96:12: ( '=' )
-            // InternalEtlLexer.g:96:14: '='
+            // InternalEtlLexer.g:98:12: ( '=' )
+            // InternalEtlLexer.g:98:14: '='
             {
             match('='); 
 
@@ -1013,8 +1089,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_NOT_EQUAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:98:16: ( '!=' )
-            // InternalEtlLexer.g:98:18: '!='
+            // InternalEtlLexer.g:100:16: ( '!=' )
+            // InternalEtlLexer.g:100:18: '!='
             {
             match("!="); 
 
@@ -1034,8 +1110,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:100:9: ( '<' )
-            // InternalEtlLexer.g:100:11: '<'
+            // InternalEtlLexer.g:102:9: ( '<' )
+            // InternalEtlLexer.g:102:11: '<'
             {
             match('<'); 
 
@@ -1054,8 +1130,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:102:9: ( '>' )
-            // InternalEtlLexer.g:102:11: '>'
+            // InternalEtlLexer.g:104:9: ( '>' )
+            // InternalEtlLexer.g:104:11: '>'
             {
             match('>'); 
 
@@ -1074,8 +1150,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_DBL_LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:104:13: ( '<<' )
-            // InternalEtlLexer.g:104:15: '<<'
+            // InternalEtlLexer.g:106:13: ( '<<' )
+            // InternalEtlLexer.g:106:15: '<<'
             {
             match("<<"); 
 
@@ -1095,8 +1171,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_DBL_GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:106:13: ( '>>' )
-            // InternalEtlLexer.g:106:15: '>>'
+            // InternalEtlLexer.g:108:13: ( '>>' )
+            // InternalEtlLexer.g:108:15: '>>'
             {
             match(">>"); 
 
@@ -1116,8 +1192,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_LT_EM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:108:12: ( '<!' )
-            // InternalEtlLexer.g:108:14: '<!'
+            // InternalEtlLexer.g:110:12: ( '<!' )
+            // InternalEtlLexer.g:110:14: '<!'
             {
             match("<!"); 
 
@@ -1137,8 +1213,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_GT_EM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:110:12: ( '>!' )
-            // InternalEtlLexer.g:110:14: '>!'
+            // InternalEtlLexer.g:112:12: ( '>!' )
+            // InternalEtlLexer.g:112:14: '>!'
             {
             match(">!"); 
 
@@ -1158,8 +1234,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_GTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:112:10: ( '>=' )
-            // InternalEtlLexer.g:112:12: '>='
+            // InternalEtlLexer.g:114:10: ( '>=' )
+            // InternalEtlLexer.g:114:12: '>='
             {
             match(">="); 
 
@@ -1179,8 +1255,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_LTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:114:10: ( '<=' )
-            // InternalEtlLexer.g:114:12: '<='
+            // InternalEtlLexer.g:116:10: ( '<=' )
+            // InternalEtlLexer.g:116:12: '<='
             {
             match("<="); 
 
@@ -1200,8 +1276,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_HASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:116:11: ( '#' )
-            // InternalEtlLexer.g:116:13: '#'
+            // InternalEtlLexer.g:118:11: ( '#' )
+            // InternalEtlLexer.g:118:13: '#'
             {
             match('#'); 
 
@@ -1220,8 +1296,8 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:118:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
-            // InternalEtlLexer.g:118:11: ( ' ' | '\\t' | '\\n' | '\\r' )
+            // InternalEtlLexer.g:120:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
+            // InternalEtlLexer.g:120:11: ( ' ' | '\\t' | '\\n' | '\\r' )
             {
             if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
                 input.consume();
@@ -1248,37 +1324,37 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:120:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // InternalEtlLexer.g:120:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalEtlLexer.g:122:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalEtlLexer.g:122:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // InternalEtlLexer.g:120:24: ( options {greedy=false; } : . )*
-            loop2:
+            // InternalEtlLexer.g:122:24: ( options {greedy=false; } : . )*
+            loop4:
             do {
-                int alt2=2;
-                int LA2_0 = input.LA(1);
+                int alt4=2;
+                int LA4_0 = input.LA(1);
 
-                if ( (LA2_0=='*') ) {
-                    int LA2_1 = input.LA(2);
+                if ( (LA4_0=='*') ) {
+                    int LA4_1 = input.LA(2);
 
-                    if ( (LA2_1=='/') ) {
-                        alt2=2;
+                    if ( (LA4_1=='/') ) {
+                        alt4=2;
                     }
-                    else if ( ((LA2_1>='\u0000' && LA2_1<='.')||(LA2_1>='0' && LA2_1<='\uFFFF')) ) {
-                        alt2=1;
+                    else if ( ((LA4_1>='\u0000' && LA4_1<='.')||(LA4_1>='0' && LA4_1<='\uFFFF')) ) {
+                        alt4=1;
                     }
 
 
                 }
-                else if ( ((LA2_0>='\u0000' && LA2_0<=')')||(LA2_0>='+' && LA2_0<='\uFFFF')) ) {
-                    alt2=1;
+                else if ( ((LA4_0>='\u0000' && LA4_0<=')')||(LA4_0>='+' && LA4_0<='\uFFFF')) ) {
+                    alt4=1;
                 }
 
 
-                switch (alt2) {
+                switch (alt4) {
             	case 1 :
-            	    // InternalEtlLexer.g:120:52: .
+            	    // InternalEtlLexer.g:122:52: .
             	    {
             	    matchAny(); 
 
@@ -1286,7 +1362,7 @@ public class InternalEtlLexer extends Lexer {
             	    break;
 
             	default :
-            	    break loop2;
+            	    break loop4;
                 }
             } while (true);
 
@@ -1308,25 +1384,25 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:122:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // InternalEtlLexer.g:122:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalEtlLexer.g:124:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalEtlLexer.g:124:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // InternalEtlLexer.g:122:24: (~ ( ( '\\n' | '\\r' ) ) )*
-            loop3:
+            // InternalEtlLexer.g:124:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            loop5:
             do {
-                int alt3=2;
-                int LA3_0 = input.LA(1);
+                int alt5=2;
+                int LA5_0 = input.LA(1);
 
-                if ( ((LA3_0>='\u0000' && LA3_0<='\t')||(LA3_0>='\u000B' && LA3_0<='\f')||(LA3_0>='\u000E' && LA3_0<='\uFFFF')) ) {
-                    alt3=1;
+                if ( ((LA5_0>='\u0000' && LA5_0<='\t')||(LA5_0>='\u000B' && LA5_0<='\f')||(LA5_0>='\u000E' && LA5_0<='\uFFFF')) ) {
+                    alt5=1;
                 }
 
 
-                switch (alt3) {
+                switch (alt5) {
             	case 1 :
-            	    // InternalEtlLexer.g:122:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalEtlLexer.g:124:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -1342,31 +1418,31 @@ public class InternalEtlLexer extends Lexer {
             	    break;
 
             	default :
-            	    break loop3;
+            	    break loop5;
                 }
             } while (true);
 
-            // InternalEtlLexer.g:122:40: ( ( '\\r' )? '\\n' )?
-            int alt5=2;
-            int LA5_0 = input.LA(1);
+            // InternalEtlLexer.g:124:40: ( ( '\\r' )? '\\n' )?
+            int alt7=2;
+            int LA7_0 = input.LA(1);
 
-            if ( (LA5_0=='\n'||LA5_0=='\r') ) {
-                alt5=1;
+            if ( (LA7_0=='\n'||LA7_0=='\r') ) {
+                alt7=1;
             }
-            switch (alt5) {
+            switch (alt7) {
                 case 1 :
-                    // InternalEtlLexer.g:122:41: ( '\\r' )? '\\n'
+                    // InternalEtlLexer.g:124:41: ( '\\r' )? '\\n'
                     {
-                    // InternalEtlLexer.g:122:41: ( '\\r' )?
-                    int alt4=2;
-                    int LA4_0 = input.LA(1);
+                    // InternalEtlLexer.g:124:41: ( '\\r' )?
+                    int alt6=2;
+                    int LA6_0 = input.LA(1);
 
-                    if ( (LA4_0=='\r') ) {
-                        alt4=1;
+                    if ( (LA6_0=='\r') ) {
+                        alt6=1;
                     }
-                    switch (alt4) {
+                    switch (alt6) {
                         case 1 :
-                            // InternalEtlLexer.g:122:41: '\\r'
+                            // InternalEtlLexer.g:124:41: '\\r'
                             {
                             match('\r'); 
 
@@ -1398,47 +1474,47 @@ public class InternalEtlLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEtlLexer.g:124:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // InternalEtlLexer.g:124:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalEtlLexer.g:126:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalEtlLexer.g:126:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // InternalEtlLexer.g:124:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
-            int alt8=2;
-            int LA8_0 = input.LA(1);
+            // InternalEtlLexer.g:126:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            int alt10=2;
+            int LA10_0 = input.LA(1);
 
-            if ( (LA8_0=='\"') ) {
-                alt8=1;
+            if ( (LA10_0=='\"') ) {
+                alt10=1;
             }
-            else if ( (LA8_0=='\'') ) {
-                alt8=2;
+            else if ( (LA10_0=='\'') ) {
+                alt10=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 8, 0, input);
+                    new NoViableAltException("", 10, 0, input);
 
                 throw nvae;
             }
-            switch (alt8) {
+            switch (alt10) {
                 case 1 :
-                    // InternalEtlLexer.g:124:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalEtlLexer.g:126:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // InternalEtlLexer.g:124:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
-                    loop6:
+                    // InternalEtlLexer.g:126:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
+                    loop8:
                     do {
-                        int alt6=3;
-                        int LA6_0 = input.LA(1);
+                        int alt8=3;
+                        int LA8_0 = input.LA(1);
 
-                        if ( (LA6_0=='\\') ) {
-                            alt6=1;
+                        if ( (LA8_0=='\\') ) {
+                            alt8=1;
                         }
-                        else if ( ((LA6_0>='\u0000' && LA6_0<='!')||(LA6_0>='#' && LA6_0<='[')||(LA6_0>=']' && LA6_0<='\uFFFF')) ) {
-                            alt6=2;
+                        else if ( ((LA8_0>='\u0000' && LA8_0<='!')||(LA8_0>='#' && LA8_0<='[')||(LA8_0>=']' && LA8_0<='\uFFFF')) ) {
+                            alt8=2;
                         }
 
 
-                        switch (alt6) {
+                        switch (alt8) {
                     	case 1 :
-                    	    // InternalEtlLexer.g:124:21: '\\\\' .
+                    	    // InternalEtlLexer.g:126:21: '\\\\' .
                     	    {
                     	    match('\\'); 
                     	    matchAny(); 
@@ -1446,7 +1522,7 @@ public class InternalEtlLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalEtlLexer.g:124:28: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalEtlLexer.g:126:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -1462,7 +1538,7 @@ public class InternalEtlLexer extends Lexer {
                     	    break;
 
                     	default :
-                    	    break loop6;
+                    	    break loop8;
                         }
                     } while (true);
 
@@ -1471,26 +1547,26 @@ public class InternalEtlLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalEtlLexer.g:124:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalEtlLexer.g:126:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // InternalEtlLexer.g:124:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
-                    loop7:
+                    // InternalEtlLexer.g:126:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    loop9:
                     do {
-                        int alt7=3;
-                        int LA7_0 = input.LA(1);
+                        int alt9=3;
+                        int LA9_0 = input.LA(1);
 
-                        if ( (LA7_0=='\\') ) {
-                            alt7=1;
+                        if ( (LA9_0=='\\') ) {
+                            alt9=1;
                         }
-                        else if ( ((LA7_0>='\u0000' && LA7_0<='&')||(LA7_0>='(' && LA7_0<='[')||(LA7_0>=']' && LA7_0<='\uFFFF')) ) {
-                            alt7=2;
+                        else if ( ((LA9_0>='\u0000' && LA9_0<='&')||(LA9_0>='(' && LA9_0<='[')||(LA9_0>=']' && LA9_0<='\uFFFF')) ) {
+                            alt9=2;
                         }
 
 
-                        switch (alt7) {
+                        switch (alt9) {
                     	case 1 :
-                    	    // InternalEtlLexer.g:124:54: '\\\\' .
+                    	    // InternalEtlLexer.g:126:54: '\\\\' .
                     	    {
                     	    match('\\'); 
                     	    matchAny(); 
@@ -1498,7 +1574,7 @@ public class InternalEtlLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalEtlLexer.g:124:61: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalEtlLexer.g:126:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -1514,7 +1590,7 @@ public class InternalEtlLexer extends Lexer {
                     	    break;
 
                     	default :
-                    	    break loop7;
+                    	    break loop9;
                         }
                     } while (true);
 
@@ -1537,10 +1613,10 @@ public class InternalEtlLexer extends Lexer {
     // $ANTLR end "RULE_STRING"
 
     public void mTokens() throws RecognitionException {
-        // InternalEtlLexer.g:1:8: ( False | True | RULE_DOUBLE_SQUARE_OPEN | RULE_DOUBLE_SQUARE_CLOSE | RULE_TILDE | RULE_AT | RULE_ID | RULE_SCG | RULE_TOK | RULE_STR | RULE_INT | RULE_DEC | RULE_EQUIVALENT_TO | RULE_SUBTYPE_OF | RULE_TERM_STRING | RULE_REVERSED | RULE_TO | RULE_COMMA | RULE_CONJUNCTION | RULE_DISJUNCTION | RULE_EXCLUSION | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_COLON | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE | RULE_PLUS | RULE_DASH | RULE_CARET | RULE_DOT | RULE_WILDCARD | RULE_EQUAL | RULE_NOT_EQUAL | RULE_LT | RULE_GT | RULE_DBL_LT | RULE_DBL_GT | RULE_LT_EM | RULE_GT_EM | RULE_GTE | RULE_LTE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING )
-        int alt9=50;
-        alt9 = dfa9.predict(input);
-        switch (alt9) {
+        // InternalEtlLexer.g:1:8: ( False | True | RULE_DOUBLE_SQUARE_OPEN | RULE_DOUBLE_SQUARE_CLOSE | RULE_TILDE | RULE_ID | RULE_SCG | RULE_TOK | RULE_STR | RULE_INT | RULE_DEC | RULE_EQUIVALENT_TO | RULE_SUBTYPE_OF | RULE_SLOTNAME_STRING | RULE_TERM_STRING | RULE_REVERSED | RULE_TO | RULE_COMMA | RULE_CONJUNCTION | RULE_DISJUNCTION | RULE_EXCLUSION | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_COLON | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE | RULE_PLUS | RULE_DASH | RULE_CARET | RULE_DOT | RULE_WILDCARD | RULE_EQUAL | RULE_NOT_EQUAL | RULE_LT | RULE_GT | RULE_DBL_LT | RULE_DBL_GT | RULE_LT_EM | RULE_GT_EM | RULE_GTE | RULE_LTE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING )
+        int alt11=50;
+        alt11 = dfa11.predict(input);
+        switch (alt11) {
             case 1 :
                 // InternalEtlLexer.g:1:10: False
                 {
@@ -1577,315 +1653,315 @@ public class InternalEtlLexer extends Lexer {
                 }
                 break;
             case 6 :
-                // InternalEtlLexer.g:1:81: RULE_AT
-                {
-                mRULE_AT(); 
-
-                }
-                break;
-            case 7 :
-                // InternalEtlLexer.g:1:89: RULE_ID
+                // InternalEtlLexer.g:1:81: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
-            case 8 :
-                // InternalEtlLexer.g:1:97: RULE_SCG
+            case 7 :
+                // InternalEtlLexer.g:1:89: RULE_SCG
                 {
                 mRULE_SCG(); 
 
                 }
                 break;
-            case 9 :
-                // InternalEtlLexer.g:1:106: RULE_TOK
+            case 8 :
+                // InternalEtlLexer.g:1:98: RULE_TOK
                 {
                 mRULE_TOK(); 
 
                 }
                 break;
-            case 10 :
-                // InternalEtlLexer.g:1:115: RULE_STR
+            case 9 :
+                // InternalEtlLexer.g:1:107: RULE_STR
                 {
                 mRULE_STR(); 
 
                 }
                 break;
-            case 11 :
-                // InternalEtlLexer.g:1:124: RULE_INT
+            case 10 :
+                // InternalEtlLexer.g:1:116: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
-            case 12 :
-                // InternalEtlLexer.g:1:133: RULE_DEC
+            case 11 :
+                // InternalEtlLexer.g:1:125: RULE_DEC
                 {
                 mRULE_DEC(); 
 
                 }
                 break;
-            case 13 :
-                // InternalEtlLexer.g:1:142: RULE_EQUIVALENT_TO
+            case 12 :
+                // InternalEtlLexer.g:1:134: RULE_EQUIVALENT_TO
                 {
                 mRULE_EQUIVALENT_TO(); 
 
                 }
                 break;
-            case 14 :
-                // InternalEtlLexer.g:1:161: RULE_SUBTYPE_OF
+            case 13 :
+                // InternalEtlLexer.g:1:153: RULE_SUBTYPE_OF
                 {
                 mRULE_SUBTYPE_OF(); 
 
                 }
                 break;
+            case 14 :
+                // InternalEtlLexer.g:1:169: RULE_SLOTNAME_STRING
+                {
+                mRULE_SLOTNAME_STRING(); 
+
+                }
+                break;
             case 15 :
-                // InternalEtlLexer.g:1:177: RULE_TERM_STRING
+                // InternalEtlLexer.g:1:190: RULE_TERM_STRING
                 {
                 mRULE_TERM_STRING(); 
 
                 }
                 break;
             case 16 :
-                // InternalEtlLexer.g:1:194: RULE_REVERSED
+                // InternalEtlLexer.g:1:207: RULE_REVERSED
                 {
                 mRULE_REVERSED(); 
 
                 }
                 break;
             case 17 :
-                // InternalEtlLexer.g:1:208: RULE_TO
+                // InternalEtlLexer.g:1:221: RULE_TO
                 {
                 mRULE_TO(); 
 
                 }
                 break;
             case 18 :
-                // InternalEtlLexer.g:1:216: RULE_COMMA
+                // InternalEtlLexer.g:1:229: RULE_COMMA
                 {
                 mRULE_COMMA(); 
 
                 }
                 break;
             case 19 :
-                // InternalEtlLexer.g:1:227: RULE_CONJUNCTION
+                // InternalEtlLexer.g:1:240: RULE_CONJUNCTION
                 {
                 mRULE_CONJUNCTION(); 
 
                 }
                 break;
             case 20 :
-                // InternalEtlLexer.g:1:244: RULE_DISJUNCTION
+                // InternalEtlLexer.g:1:257: RULE_DISJUNCTION
                 {
                 mRULE_DISJUNCTION(); 
 
                 }
                 break;
             case 21 :
-                // InternalEtlLexer.g:1:261: RULE_EXCLUSION
+                // InternalEtlLexer.g:1:274: RULE_EXCLUSION
                 {
                 mRULE_EXCLUSION(); 
 
                 }
                 break;
             case 22 :
-                // InternalEtlLexer.g:1:276: RULE_ZERO
+                // InternalEtlLexer.g:1:289: RULE_ZERO
                 {
                 mRULE_ZERO(); 
 
                 }
                 break;
             case 23 :
-                // InternalEtlLexer.g:1:286: RULE_DIGIT_NONZERO
+                // InternalEtlLexer.g:1:299: RULE_DIGIT_NONZERO
                 {
                 mRULE_DIGIT_NONZERO(); 
 
                 }
                 break;
             case 24 :
-                // InternalEtlLexer.g:1:305: RULE_COLON
+                // InternalEtlLexer.g:1:318: RULE_COLON
                 {
                 mRULE_COLON(); 
 
                 }
                 break;
             case 25 :
-                // InternalEtlLexer.g:1:316: RULE_CURLY_OPEN
+                // InternalEtlLexer.g:1:329: RULE_CURLY_OPEN
                 {
                 mRULE_CURLY_OPEN(); 
 
                 }
                 break;
             case 26 :
-                // InternalEtlLexer.g:1:332: RULE_CURLY_CLOSE
+                // InternalEtlLexer.g:1:345: RULE_CURLY_CLOSE
                 {
                 mRULE_CURLY_CLOSE(); 
 
                 }
                 break;
             case 27 :
-                // InternalEtlLexer.g:1:349: RULE_ROUND_OPEN
+                // InternalEtlLexer.g:1:362: RULE_ROUND_OPEN
                 {
                 mRULE_ROUND_OPEN(); 
 
                 }
                 break;
             case 28 :
-                // InternalEtlLexer.g:1:365: RULE_ROUND_CLOSE
+                // InternalEtlLexer.g:1:378: RULE_ROUND_CLOSE
                 {
                 mRULE_ROUND_CLOSE(); 
 
                 }
                 break;
             case 29 :
-                // InternalEtlLexer.g:1:382: RULE_SQUARE_OPEN
+                // InternalEtlLexer.g:1:395: RULE_SQUARE_OPEN
                 {
                 mRULE_SQUARE_OPEN(); 
 
                 }
                 break;
             case 30 :
-                // InternalEtlLexer.g:1:399: RULE_SQUARE_CLOSE
+                // InternalEtlLexer.g:1:412: RULE_SQUARE_CLOSE
                 {
                 mRULE_SQUARE_CLOSE(); 
 
                 }
                 break;
             case 31 :
-                // InternalEtlLexer.g:1:417: RULE_PLUS
+                // InternalEtlLexer.g:1:430: RULE_PLUS
                 {
                 mRULE_PLUS(); 
 
                 }
                 break;
             case 32 :
-                // InternalEtlLexer.g:1:427: RULE_DASH
+                // InternalEtlLexer.g:1:440: RULE_DASH
                 {
                 mRULE_DASH(); 
 
                 }
                 break;
             case 33 :
-                // InternalEtlLexer.g:1:437: RULE_CARET
+                // InternalEtlLexer.g:1:450: RULE_CARET
                 {
                 mRULE_CARET(); 
 
                 }
                 break;
             case 34 :
-                // InternalEtlLexer.g:1:448: RULE_DOT
+                // InternalEtlLexer.g:1:461: RULE_DOT
                 {
                 mRULE_DOT(); 
 
                 }
                 break;
             case 35 :
-                // InternalEtlLexer.g:1:457: RULE_WILDCARD
+                // InternalEtlLexer.g:1:470: RULE_WILDCARD
                 {
                 mRULE_WILDCARD(); 
 
                 }
                 break;
             case 36 :
-                // InternalEtlLexer.g:1:471: RULE_EQUAL
+                // InternalEtlLexer.g:1:484: RULE_EQUAL
                 {
                 mRULE_EQUAL(); 
 
                 }
                 break;
             case 37 :
-                // InternalEtlLexer.g:1:482: RULE_NOT_EQUAL
+                // InternalEtlLexer.g:1:495: RULE_NOT_EQUAL
                 {
                 mRULE_NOT_EQUAL(); 
 
                 }
                 break;
             case 38 :
-                // InternalEtlLexer.g:1:497: RULE_LT
+                // InternalEtlLexer.g:1:510: RULE_LT
                 {
                 mRULE_LT(); 
 
                 }
                 break;
             case 39 :
-                // InternalEtlLexer.g:1:505: RULE_GT
+                // InternalEtlLexer.g:1:518: RULE_GT
                 {
                 mRULE_GT(); 
 
                 }
                 break;
             case 40 :
-                // InternalEtlLexer.g:1:513: RULE_DBL_LT
+                // InternalEtlLexer.g:1:526: RULE_DBL_LT
                 {
                 mRULE_DBL_LT(); 
 
                 }
                 break;
             case 41 :
-                // InternalEtlLexer.g:1:525: RULE_DBL_GT
+                // InternalEtlLexer.g:1:538: RULE_DBL_GT
                 {
                 mRULE_DBL_GT(); 
 
                 }
                 break;
             case 42 :
-                // InternalEtlLexer.g:1:537: RULE_LT_EM
+                // InternalEtlLexer.g:1:550: RULE_LT_EM
                 {
                 mRULE_LT_EM(); 
 
                 }
                 break;
             case 43 :
-                // InternalEtlLexer.g:1:548: RULE_GT_EM
+                // InternalEtlLexer.g:1:561: RULE_GT_EM
                 {
                 mRULE_GT_EM(); 
 
                 }
                 break;
             case 44 :
-                // InternalEtlLexer.g:1:559: RULE_GTE
+                // InternalEtlLexer.g:1:572: RULE_GTE
                 {
                 mRULE_GTE(); 
 
                 }
                 break;
             case 45 :
-                // InternalEtlLexer.g:1:568: RULE_LTE
+                // InternalEtlLexer.g:1:581: RULE_LTE
                 {
                 mRULE_LTE(); 
 
                 }
                 break;
             case 46 :
-                // InternalEtlLexer.g:1:577: RULE_HASH
+                // InternalEtlLexer.g:1:590: RULE_HASH
                 {
                 mRULE_HASH(); 
 
                 }
                 break;
             case 47 :
-                // InternalEtlLexer.g:1:587: RULE_WS
+                // InternalEtlLexer.g:1:600: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 48 :
-                // InternalEtlLexer.g:1:595: RULE_ML_COMMENT
+                // InternalEtlLexer.g:1:608: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 49 :
-                // InternalEtlLexer.g:1:611: RULE_SL_COMMENT
+                // InternalEtlLexer.g:1:624: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 50 :
-                // InternalEtlLexer.g:1:627: RULE_STRING
+                // InternalEtlLexer.g:1:640: RULE_STRING
                 {
                 mRULE_STRING(); 
 
@@ -1897,28 +1973,27 @@ public class InternalEtlLexer extends Lexer {
     }
 
 
-    protected DFA9 dfa9 = new DFA9(this);
-    static final String DFA9_eotS =
-        "\3\uffff\1\47\1\51\6\uffff\1\57\1\63\2\uffff\1\65\20\uffff\1\71\17\uffff\1\75\15\uffff";
-    static final String DFA9_eofS =
+    protected DFA11 dfa11 = new DFA11(this);
+    static final String DFA11_eotS =
+        "\3\uffff\1\47\1\51\5\uffff\1\57\1\63\3\uffff\1\65\20\uffff\1\71\17\uffff\1\75\15\uffff";
+    static final String DFA11_eofS =
         "\76\uffff";
-    static final String DFA9_minS =
-        "\1\11\1\uffff\1\122\1\133\1\135\2\uffff\1\144\1\143\2\uffff\1\75\1\41\2\uffff\1\56\20\uffff\1\41\2\uffff\1\52\14\uffff\1\74\15\uffff";
-    static final String DFA9_maxS =
-        "\1\176\1\uffff\1\162\1\133\1\135\2\uffff\1\156\1\164\2\uffff\2\75\2\uffff\1\56\20\uffff\1\76\2\uffff\1\57\14\uffff\1\74\15\uffff";
-    static final String DFA9_acceptS =
-        "\1\uffff\1\1\3\uffff\1\5\1\6\2\uffff\1\2\1\14\2\uffff\1\17\1\20\1\uffff\1\22\1\23\1\24\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\37\1\40\1\41\1\43\1\45\1\uffff\1\56\1\57\1\uffff\1\62\1\11\1\3\1\35\1\4\1\36\1\7\1\13\1\10\1\12\1\15\1\44\1\uffff\1\52\1\55\1\46\1\21\1\42\1\51\1\53\1\54\1\47\1\60\1\61\1\16\1\50";
-    static final String DFA9_specialS =
+    static final String DFA11_minS =
+        "\1\11\1\uffff\1\122\1\133\1\135\1\uffff\1\144\1\143\2\uffff\1\75\1\41\3\uffff\1\56\20\uffff\1\41\2\uffff\1\52\14\uffff\1\74\15\uffff";
+    static final String DFA11_maxS =
+        "\1\176\1\uffff\1\162\1\133\1\135\1\uffff\1\156\1\164\2\uffff\2\75\3\uffff\1\56\20\uffff\1\76\2\uffff\1\57\14\uffff\1\74\15\uffff";
+    static final String DFA11_acceptS =
+        "\1\uffff\1\1\3\uffff\1\5\2\uffff\1\2\1\13\2\uffff\1\16\1\17\1\20\1\uffff\1\22\1\23\1\24\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\37\1\40\1\41\1\43\1\45\1\uffff\1\56\1\57\1\uffff\1\62\1\10\1\3\1\35\1\4\1\36\1\6\1\12\1\7\1\11\1\14\1\44\1\uffff\1\52\1\55\1\46\1\21\1\42\1\51\1\53\1\54\1\47\1\60\1\61\1\15\1\50";
+    static final String DFA11_specialS =
         "\76\uffff}>";
-    static final String[] DFA9_transitionS = DFA9_transitionS_.DFA9_transitionS;
-    private static final class DFA9_transitionS_ {
-        static final String[] DFA9_transitionS = {
-                "\2\42\2\uffff\1\42\22\uffff\1\42\1\37\1\44\1\41\3\uffff\1\44\1\31\1\32\1\36\1\33\1\20\1\34\1\17\1\43\1\24\11\25\1\26\1\uffff\1\14\1\13\1\40\1\uffff\1\6\1\21\4\uffff\1\1\6\uffff\1\23\1\uffff\1\22\2\uffff\1\16\1\uffff\1\11\6\uffff\1\3\1\uffff\1\4\1\35\2\uffff\1\21\2\uffff\1\12\1\uffff\1\1\2\uffff\1\7\3\uffff\1\23\1\uffff\1\22\3\uffff\1\10\1\2\6\uffff\1\27\1\15\1\30\1\5",
+    static final String[] DFA11_transitionS = DFA11_transitionS_.DFA11_transitionS;
+    private static final class DFA11_transitionS_ {
+        static final String[] DFA11_transitionS = {
+                "\2\42\2\uffff\1\42\22\uffff\1\42\1\37\1\44\1\41\3\uffff\1\44\1\31\1\32\1\36\1\33\1\20\1\34\1\17\1\43\1\24\11\25\1\26\1\uffff\1\13\1\12\1\40\1\uffff\1\14\1\21\4\uffff\1\1\6\uffff\1\23\1\uffff\1\22\2\uffff\1\16\1\uffff\1\10\6\uffff\1\3\1\uffff\1\4\1\35\2\uffff\1\21\2\uffff\1\11\1\uffff\1\1\2\uffff\1\6\3\uffff\1\23\1\uffff\1\22\3\uffff\1\7\1\2\6\uffff\1\27\1\15\1\30\1\5",
                 "",
-                "\1\11\34\uffff\1\45\2\uffff\1\11",
+                "\1\10\34\uffff\1\45\2\uffff\1\10",
                 "\1\46",
                 "\1\50",
-                "",
                 "",
                 "\1\52\11\uffff\1\53",
                 "\1\54\20\uffff\1\55",
@@ -1926,6 +2001,7 @@ public class InternalEtlLexer extends Lexer {
                 "",
                 "\1\56",
                 "\1\61\32\uffff\1\60\1\62",
+                "",
                 "",
                 "",
                 "\1\64",
@@ -1978,37 +2054,37 @@ public class InternalEtlLexer extends Lexer {
         };
     }
 
-    static final short[] DFA9_eot = DFA.unpackEncodedString(DFA9_eotS);
-    static final short[] DFA9_eof = DFA.unpackEncodedString(DFA9_eofS);
-    static final char[] DFA9_min = DFA.unpackEncodedStringToUnsignedChars(DFA9_minS);
-    static final char[] DFA9_max = DFA.unpackEncodedStringToUnsignedChars(DFA9_maxS);
-    static final short[] DFA9_accept = DFA.unpackEncodedString(DFA9_acceptS);
-    static final short[] DFA9_special = DFA.unpackEncodedString(DFA9_specialS);
-    static final short[][] DFA9_transition;
+    static final short[] DFA11_eot = DFA.unpackEncodedString(DFA11_eotS);
+    static final short[] DFA11_eof = DFA.unpackEncodedString(DFA11_eofS);
+    static final char[] DFA11_min = DFA.unpackEncodedStringToUnsignedChars(DFA11_minS);
+    static final char[] DFA11_max = DFA.unpackEncodedStringToUnsignedChars(DFA11_maxS);
+    static final short[] DFA11_accept = DFA.unpackEncodedString(DFA11_acceptS);
+    static final short[] DFA11_special = DFA.unpackEncodedString(DFA11_specialS);
+    static final short[][] DFA11_transition;
 
     static {
-        int numStates = DFA9_transitionS.length;
-        DFA9_transition = new short[numStates][];
+        int numStates = DFA11_transitionS.length;
+        DFA11_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA9_transition[i] = DFA.unpackEncodedString(DFA9_transitionS[i]);
+            DFA11_transition[i] = DFA.unpackEncodedString(DFA11_transitionS[i]);
         }
     }
 
-    class DFA9 extends DFA {
+    class DFA11 extends DFA {
 
-        public DFA9(BaseRecognizer recognizer) {
+        public DFA11(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 9;
-            this.eot = DFA9_eot;
-            this.eof = DFA9_eof;
-            this.min = DFA9_min;
-            this.max = DFA9_max;
-            this.accept = DFA9_accept;
-            this.special = DFA9_special;
-            this.transition = DFA9_transition;
+            this.decisionNumber = 11;
+            this.eot = DFA11_eot;
+            this.eof = DFA11_eof;
+            this.min = DFA11_min;
+            this.max = DFA11_max;
+            this.accept = DFA11_accept;
+            this.special = DFA11_special;
+            this.transition = DFA11_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( False | True | RULE_DOUBLE_SQUARE_OPEN | RULE_DOUBLE_SQUARE_CLOSE | RULE_TILDE | RULE_AT | RULE_ID | RULE_SCG | RULE_TOK | RULE_STR | RULE_INT | RULE_DEC | RULE_EQUIVALENT_TO | RULE_SUBTYPE_OF | RULE_TERM_STRING | RULE_REVERSED | RULE_TO | RULE_COMMA | RULE_CONJUNCTION | RULE_DISJUNCTION | RULE_EXCLUSION | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_COLON | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE | RULE_PLUS | RULE_DASH | RULE_CARET | RULE_DOT | RULE_WILDCARD | RULE_EQUAL | RULE_NOT_EQUAL | RULE_LT | RULE_GT | RULE_DBL_LT | RULE_DBL_GT | RULE_LT_EM | RULE_GT_EM | RULE_GTE | RULE_LTE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING );";
+            return "1:1: Tokens : ( False | True | RULE_DOUBLE_SQUARE_OPEN | RULE_DOUBLE_SQUARE_CLOSE | RULE_TILDE | RULE_ID | RULE_SCG | RULE_TOK | RULE_STR | RULE_INT | RULE_DEC | RULE_EQUIVALENT_TO | RULE_SUBTYPE_OF | RULE_SLOTNAME_STRING | RULE_TERM_STRING | RULE_REVERSED | RULE_TO | RULE_COMMA | RULE_CONJUNCTION | RULE_DISJUNCTION | RULE_EXCLUSION | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_COLON | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE | RULE_PLUS | RULE_DASH | RULE_CARET | RULE_DOT | RULE_WILDCARD | RULE_EQUAL | RULE_NOT_EQUAL | RULE_LT | RULE_GT | RULE_DBL_LT | RULE_DBL_GT | RULE_LT_EM | RULE_GT_EM | RULE_GTE | RULE_LTE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING );";
         }
     }
  

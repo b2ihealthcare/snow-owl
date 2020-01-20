@@ -55,7 +55,10 @@
     <genClasses ecoreClass="Etl.ecore#//DecimalReplacementSlot">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//DecimalReplacementSlot/values"/>
     </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//Cardinality"/>
+    <genClasses ecoreClass="Etl.ecore#//EtlCardinality">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//EtlCardinality/min"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//EtlCardinality/max"/>
+    </genClasses>
     <genClasses ecoreClass="Etl.ecore#//StringValue">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//StringValue/value"/>
     </genClasses>

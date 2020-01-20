@@ -386,19 +386,17 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cConstraintAssignment_4_1 = (Assignment)cGroup_4.eContents().get(1);
 		private final RuleCall cConstraintExpressionConstraintParserRuleCall_4_1_0 = (RuleCall)cConstraintAssignment_4_1.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_2 = (RuleCall)cGroup_4.eContents().get(2);
-		private final Group cGroup_5 = (Group)cGroup.eContents().get(5);
-		private final RuleCall cATTerminalRuleCall_5_0 = (RuleCall)cGroup_5.eContents().get(0);
-		private final Assignment cNameAssignment_5_1 = (Assignment)cGroup_5.eContents().get(1);
-		private final RuleCall cNameSTRINGTerminalRuleCall_5_1_0 = (RuleCall)cNameAssignment_5_1.eContents().get(0);
+		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
+		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//ConceptReplacementSlot:
-		//	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT
-		//	name=STRING)? DOUBLE_SQUARE_CLOSE;
+		//	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+		//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT
-		//name=STRING)? DOUBLE_SQUARE_CLOSE
+		//{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+		//name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{ConceptReplacementSlot}
@@ -428,17 +426,11 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_2() { return cROUND_CLOSETerminalRuleCall_4_2; }
 		
-		//(AT name=STRING)?
-		public Group getGroup_5() { return cGroup_5; }
+		//name=SLOTNAME_STRING?
+		public Assignment getNameAssignment_5() { return cNameAssignment_5; }
 		
-		//AT
-		public RuleCall getATTerminalRuleCall_5_0() { return cATTerminalRuleCall_5_0; }
-		
-		//name=STRING
-		public Assignment getNameAssignment_5_1() { return cNameAssignment_5_1; }
-		
-		//STRING
-		public RuleCall getNameSTRINGTerminalRuleCall_5_1_0() { return cNameSTRINGTerminalRuleCall_5_1_0; }
+		//SLOTNAME_STRING
+		public RuleCall getNameSLOTNAME_STRINGTerminalRuleCall_5_0() { return cNameSLOTNAME_STRINGTerminalRuleCall_5_0; }
 		
 		//DOUBLE_SQUARE_CLOSE
 		public RuleCall getDOUBLE_SQUARE_CLOSETerminalRuleCall_6() { return cDOUBLE_SQUARE_CLOSETerminalRuleCall_6; }
@@ -455,19 +447,17 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cConstraintAssignment_4_1 = (Assignment)cGroup_4.eContents().get(1);
 		private final RuleCall cConstraintExpressionConstraintParserRuleCall_4_1_0 = (RuleCall)cConstraintAssignment_4_1.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_2 = (RuleCall)cGroup_4.eContents().get(2);
-		private final Group cGroup_5 = (Group)cGroup.eContents().get(5);
-		private final RuleCall cATTerminalRuleCall_5_0 = (RuleCall)cGroup_5.eContents().get(0);
-		private final Assignment cNameAssignment_5_1 = (Assignment)cGroup_5.eContents().get(1);
-		private final RuleCall cNameSTRINGTerminalRuleCall_5_1_0 = (RuleCall)cNameAssignment_5_1.eContents().get(0);
+		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
+		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//ExpressionReplacementSlot:
-		//	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT
-		//	name=STRING)? DOUBLE_SQUARE_CLOSE;
+		//	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+		//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT
-		//name=STRING)? DOUBLE_SQUARE_CLOSE
+		//{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+		//name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{ExpressionReplacementSlot}
@@ -497,17 +487,11 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_2() { return cROUND_CLOSETerminalRuleCall_4_2; }
 		
-		//(AT name=STRING)?
-		public Group getGroup_5() { return cGroup_5; }
+		//name=SLOTNAME_STRING?
+		public Assignment getNameAssignment_5() { return cNameAssignment_5; }
 		
-		//AT
-		public RuleCall getATTerminalRuleCall_5_0() { return cATTerminalRuleCall_5_0; }
-		
-		//name=STRING
-		public Assignment getNameAssignment_5_1() { return cNameAssignment_5_1; }
-		
-		//STRING
-		public RuleCall getNameSTRINGTerminalRuleCall_5_1_0() { return cNameSTRINGTerminalRuleCall_5_1_0; }
+		//SLOTNAME_STRING
+		public RuleCall getNameSLOTNAME_STRINGTerminalRuleCall_5_0() { return cNameSLOTNAME_STRINGTerminalRuleCall_5_0; }
 		
 		//DOUBLE_SQUARE_CLOSE
 		public RuleCall getDOUBLE_SQUARE_CLOSETerminalRuleCall_6() { return cDOUBLE_SQUARE_CLOSETerminalRuleCall_6; }
@@ -523,24 +507,20 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cROUND_OPENTerminalRuleCall_4_0 = (RuleCall)cGroup_4.eContents().get(0);
 		private final Assignment cTokensAssignment_4_1 = (Assignment)cGroup_4.eContents().get(1);
 		private final RuleCall cTokensSlotTokenParserRuleCall_4_1_0 = (RuleCall)cTokensAssignment_4_1.eContents().get(0);
-		private final Group cGroup_4_2 = (Group)cGroup_4.eContents().get(2);
-		private final RuleCall cWSTerminalRuleCall_4_2_0 = (RuleCall)cGroup_4_2.eContents().get(0);
-		private final Assignment cTokensAssignment_4_2_1 = (Assignment)cGroup_4_2.eContents().get(1);
-		private final RuleCall cTokensSlotTokenParserRuleCall_4_2_1_0 = (RuleCall)cTokensAssignment_4_2_1.eContents().get(0);
+		private final Assignment cTokensAssignment_4_2 = (Assignment)cGroup_4.eContents().get(2);
+		private final RuleCall cTokensSlotTokenParserRuleCall_4_2_0 = (RuleCall)cTokensAssignment_4_2.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_3 = (RuleCall)cGroup_4.eContents().get(3);
-		private final Group cGroup_5 = (Group)cGroup.eContents().get(5);
-		private final RuleCall cATTerminalRuleCall_5_0 = (RuleCall)cGroup_5.eContents().get(0);
-		private final Assignment cNameAssignment_5_1 = (Assignment)cGroup_5.eContents().get(1);
-		private final RuleCall cNameSTRINGTerminalRuleCall_5_1_0 = (RuleCall)cNameAssignment_5_1.eContents().get(0);
+		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
+		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//TokenReplacementSlot:
-		//	{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken (WS tokens+=SlotToken)* ROUND_CLOSE)?
-		//	(AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+		//	{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken tokens+=SlotToken* ROUND_CLOSE)?
+		//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken (WS tokens+=SlotToken)* ROUND_CLOSE)?
-		//(AT name=STRING)? DOUBLE_SQUARE_CLOSE
+		//{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken tokens+=SlotToken* ROUND_CLOSE)?
+		//name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{TokenReplacementSlot}
@@ -555,7 +535,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//TOK
 		public RuleCall getTOKTerminalRuleCall_3() { return cTOKTerminalRuleCall_3; }
 		
-		//(ROUND_OPEN tokens+=SlotToken (WS tokens+=SlotToken)* ROUND_CLOSE)?
+		//(ROUND_OPEN tokens+=SlotToken tokens+=SlotToken* ROUND_CLOSE)?
 		public Group getGroup_4() { return cGroup_4; }
 		
 		//ROUND_OPEN
@@ -567,32 +547,20 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//SlotToken
 		public RuleCall getTokensSlotTokenParserRuleCall_4_1_0() { return cTokensSlotTokenParserRuleCall_4_1_0; }
 		
-		//(WS tokens+=SlotToken)*
-		public Group getGroup_4_2() { return cGroup_4_2; }
-		
-		//WS
-		public RuleCall getWSTerminalRuleCall_4_2_0() { return cWSTerminalRuleCall_4_2_0; }
-		
-		//tokens+=SlotToken
-		public Assignment getTokensAssignment_4_2_1() { return cTokensAssignment_4_2_1; }
+		//tokens+=SlotToken*
+		public Assignment getTokensAssignment_4_2() { return cTokensAssignment_4_2; }
 		
 		//SlotToken
-		public RuleCall getTokensSlotTokenParserRuleCall_4_2_1_0() { return cTokensSlotTokenParserRuleCall_4_2_1_0; }
+		public RuleCall getTokensSlotTokenParserRuleCall_4_2_0() { return cTokensSlotTokenParserRuleCall_4_2_0; }
 		
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_3() { return cROUND_CLOSETerminalRuleCall_4_3; }
 		
-		//(AT name=STRING)?
-		public Group getGroup_5() { return cGroup_5; }
+		//name=SLOTNAME_STRING?
+		public Assignment getNameAssignment_5() { return cNameAssignment_5; }
 		
-		//AT
-		public RuleCall getATTerminalRuleCall_5_0() { return cATTerminalRuleCall_5_0; }
-		
-		//name=STRING
-		public Assignment getNameAssignment_5_1() { return cNameAssignment_5_1; }
-		
-		//STRING
-		public RuleCall getNameSTRINGTerminalRuleCall_5_1_0() { return cNameSTRINGTerminalRuleCall_5_1_0; }
+		//SLOTNAME_STRING
+		public RuleCall getNameSLOTNAME_STRINGTerminalRuleCall_5_0() { return cNameSLOTNAME_STRINGTerminalRuleCall_5_0; }
 		
 		//DOUBLE_SQUARE_CLOSE
 		public RuleCall getDOUBLE_SQUARE_CLOSETerminalRuleCall_6() { return cDOUBLE_SQUARE_CLOSETerminalRuleCall_6; }
@@ -603,18 +571,16 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Action cTemplateInformationSlotAction_0 = (Action)cGroup.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_OPENTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
 		private final Assignment cCardinalityAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cCardinalityCardinalityParserRuleCall_2_0 = (RuleCall)cCardinalityAssignment_2.eContents().get(0);
-		private final Group cGroup_3 = (Group)cGroup.eContents().get(3);
-		private final RuleCall cATTerminalRuleCall_3_0 = (RuleCall)cGroup_3.eContents().get(0);
-		private final Assignment cNameAssignment_3_1 = (Assignment)cGroup_3.eContents().get(1);
-		private final RuleCall cNameSTRINGTerminalRuleCall_3_1_0 = (RuleCall)cNameAssignment_3_1.eContents().get(0);
+		private final RuleCall cCardinalityEtlCardinalityParserRuleCall_2_0 = (RuleCall)cCardinalityAssignment_2.eContents().get(0);
+		private final Assignment cNameAssignment_3 = (Assignment)cGroup.eContents().get(3);
+		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_3_0 = (RuleCall)cNameAssignment_3.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_4 = (RuleCall)cGroup.eContents().get(4);
 		
 		//TemplateInformationSlot:
-		//	{TemplateInformationSlot} DOUBLE_SQUARE_OPEN cardinality=Cardinality? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+		//	{TemplateInformationSlot} DOUBLE_SQUARE_OPEN cardinality=EtlCardinality? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{TemplateInformationSlot} DOUBLE_SQUARE_OPEN cardinality=Cardinality? (AT name=STRING)? DOUBLE_SQUARE_CLOSE
+		//{TemplateInformationSlot} DOUBLE_SQUARE_OPEN cardinality=EtlCardinality? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{TemplateInformationSlot}
@@ -623,23 +589,17 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//DOUBLE_SQUARE_OPEN
 		public RuleCall getDOUBLE_SQUARE_OPENTerminalRuleCall_1() { return cDOUBLE_SQUARE_OPENTerminalRuleCall_1; }
 		
-		//cardinality=Cardinality?
+		//cardinality=EtlCardinality?
 		public Assignment getCardinalityAssignment_2() { return cCardinalityAssignment_2; }
 		
-		//Cardinality
-		public RuleCall getCardinalityCardinalityParserRuleCall_2_0() { return cCardinalityCardinalityParserRuleCall_2_0; }
+		//EtlCardinality
+		public RuleCall getCardinalityEtlCardinalityParserRuleCall_2_0() { return cCardinalityEtlCardinalityParserRuleCall_2_0; }
 		
-		//(AT name=STRING)?
-		public Group getGroup_3() { return cGroup_3; }
+		//name=SLOTNAME_STRING?
+		public Assignment getNameAssignment_3() { return cNameAssignment_3; }
 		
-		//AT
-		public RuleCall getATTerminalRuleCall_3_0() { return cATTerminalRuleCall_3_0; }
-		
-		//name=STRING
-		public Assignment getNameAssignment_3_1() { return cNameAssignment_3_1; }
-		
-		//STRING
-		public RuleCall getNameSTRINGTerminalRuleCall_3_1_0() { return cNameSTRINGTerminalRuleCall_3_1_0; }
+		//SLOTNAME_STRING
+		public RuleCall getNameSLOTNAME_STRINGTerminalRuleCall_3_0() { return cNameSLOTNAME_STRINGTerminalRuleCall_3_0; }
 		
 		//DOUBLE_SQUARE_CLOSE
 		public RuleCall getDOUBLE_SQUARE_CLOSETerminalRuleCall_4() { return cDOUBLE_SQUARE_CLOSETerminalRuleCall_4; }
@@ -681,19 +641,17 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cValuesAssignment_4_2 = (Assignment)cGroup_4.eContents().get(2);
 		private final RuleCall cValuesStringValueParserRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_3 = (RuleCall)cGroup_4.eContents().get(3);
-		private final Group cGroup_5 = (Group)cGroup.eContents().get(5);
-		private final RuleCall cATTerminalRuleCall_5_0 = (RuleCall)cGroup_5.eContents().get(0);
-		private final Assignment cNameAssignment_5_1 = (Assignment)cGroup_5.eContents().get(1);
-		private final RuleCall cNameSTRINGTerminalRuleCall_5_1_0 = (RuleCall)cNameAssignment_5_1.eContents().get(0);
+		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
+		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//StringReplacementSlot:
 		//	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue values+=StringValue* ROUND_CLOSE)?
-		//	(AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+		//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
 		//{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue values+=StringValue* ROUND_CLOSE)?
-		//(AT name=STRING)? DOUBLE_SQUARE_CLOSE
+		//name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{StringReplacementSlot}
@@ -729,17 +687,11 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_3() { return cROUND_CLOSETerminalRuleCall_4_3; }
 		
-		//(AT name=STRING)?
-		public Group getGroup_5() { return cGroup_5; }
+		//name=SLOTNAME_STRING?
+		public Assignment getNameAssignment_5() { return cNameAssignment_5; }
 		
-		//AT
-		public RuleCall getATTerminalRuleCall_5_0() { return cATTerminalRuleCall_5_0; }
-		
-		//name=STRING
-		public Assignment getNameAssignment_5_1() { return cNameAssignment_5_1; }
-		
-		//STRING
-		public RuleCall getNameSTRINGTerminalRuleCall_5_1_0() { return cNameSTRINGTerminalRuleCall_5_1_0; }
+		//SLOTNAME_STRING
+		public RuleCall getNameSLOTNAME_STRINGTerminalRuleCall_5_0() { return cNameSLOTNAME_STRINGTerminalRuleCall_5_0; }
 		
 		//DOUBLE_SQUARE_CLOSE
 		public RuleCall getDOUBLE_SQUARE_CLOSETerminalRuleCall_6() { return cDOUBLE_SQUARE_CLOSETerminalRuleCall_6; }
@@ -758,19 +710,17 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cValuesAssignment_4_2 = (Assignment)cGroup_4.eContents().get(2);
 		private final RuleCall cValuesIntegerValuesParserRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_3 = (RuleCall)cGroup_4.eContents().get(3);
-		private final Group cGroup_5 = (Group)cGroup.eContents().get(5);
-		private final RuleCall cATTerminalRuleCall_5_0 = (RuleCall)cGroup_5.eContents().get(0);
-		private final Assignment cNameAssignment_5_1 = (Assignment)cGroup_5.eContents().get(1);
-		private final RuleCall cNameSTRINGTerminalRuleCall_5_1_0 = (RuleCall)cNameAssignment_5_1.eContents().get(0);
+		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
+		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//IntegerReplacementSlot:
 		//	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues values+=IntegerValues*
-		//	ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+		//	ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
 		//{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues values+=IntegerValues*
-		//ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE
+		//ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{IntegerReplacementSlot}
@@ -806,17 +756,11 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_3() { return cROUND_CLOSETerminalRuleCall_4_3; }
 		
-		//(AT name=STRING)?
-		public Group getGroup_5() { return cGroup_5; }
+		//name=SLOTNAME_STRING?
+		public Assignment getNameAssignment_5() { return cNameAssignment_5; }
 		
-		//AT
-		public RuleCall getATTerminalRuleCall_5_0() { return cATTerminalRuleCall_5_0; }
-		
-		//name=STRING
-		public Assignment getNameAssignment_5_1() { return cNameAssignment_5_1; }
-		
-		//STRING
-		public RuleCall getNameSTRINGTerminalRuleCall_5_1_0() { return cNameSTRINGTerminalRuleCall_5_1_0; }
+		//SLOTNAME_STRING
+		public RuleCall getNameSLOTNAME_STRINGTerminalRuleCall_5_0() { return cNameSLOTNAME_STRINGTerminalRuleCall_5_0; }
 		
 		//DOUBLE_SQUARE_CLOSE
 		public RuleCall getDOUBLE_SQUARE_CLOSETerminalRuleCall_6() { return cDOUBLE_SQUARE_CLOSETerminalRuleCall_6; }
@@ -835,19 +779,17 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cValuesAssignment_4_2 = (Assignment)cGroup_4.eContents().get(2);
 		private final RuleCall cValuesDecimalValuesParserRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_3 = (RuleCall)cGroup_4.eContents().get(3);
-		private final Group cGroup_5 = (Group)cGroup.eContents().get(5);
-		private final RuleCall cATTerminalRuleCall_5_0 = (RuleCall)cGroup_5.eContents().get(0);
-		private final Assignment cNameAssignment_5_1 = (Assignment)cGroup_5.eContents().get(1);
-		private final RuleCall cNameSTRINGTerminalRuleCall_5_1_0 = (RuleCall)cNameAssignment_5_1.eContents().get(0);
+		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
+		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//DecimalReplacementSlot:
 		//	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues values+=DecimalValues*
-		//	ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+		//	ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
 		//{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues values+=DecimalValues*
-		//ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE
+		//ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{DecimalReplacementSlot}
@@ -883,66 +825,51 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_3() { return cROUND_CLOSETerminalRuleCall_4_3; }
 		
-		//(AT name=STRING)?
-		public Group getGroup_5() { return cGroup_5; }
+		//name=SLOTNAME_STRING?
+		public Assignment getNameAssignment_5() { return cNameAssignment_5; }
 		
-		//AT
-		public RuleCall getATTerminalRuleCall_5_0() { return cATTerminalRuleCall_5_0; }
-		
-		//name=STRING
-		public Assignment getNameAssignment_5_1() { return cNameAssignment_5_1; }
-		
-		//STRING
-		public RuleCall getNameSTRINGTerminalRuleCall_5_1_0() { return cNameSTRINGTerminalRuleCall_5_1_0; }
+		//SLOTNAME_STRING
+		public RuleCall getNameSLOTNAME_STRINGTerminalRuleCall_5_0() { return cNameSLOTNAME_STRINGTerminalRuleCall_5_0; }
 		
 		//DOUBLE_SQUARE_CLOSE
 		public RuleCall getDOUBLE_SQUARE_CLOSETerminalRuleCall_6() { return cDOUBLE_SQUARE_CLOSETerminalRuleCall_6; }
 	}
-	public class CardinalityElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.Cardinality");
+	public class EtlCardinalityElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.EtlCardinality");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cSQUARE_OPENTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final RuleCall cTILDETerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cMinAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cMinNonNegativeIntegerParserRuleCall_2_0 = (RuleCall)cMinAssignment_2.eContents().get(0);
-		private final RuleCall cTOTerminalRuleCall_3 = (RuleCall)cGroup.eContents().get(3);
-		private final Assignment cMaxAssignment_4 = (Assignment)cGroup.eContents().get(4);
-		private final RuleCall cMaxMaxValueParserRuleCall_4_0 = (RuleCall)cMaxAssignment_4.eContents().get(0);
-		private final RuleCall cSQUARE_CLOSETerminalRuleCall_5 = (RuleCall)cGroup.eContents().get(5);
+		private final RuleCall cTILDETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cMinAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cMinNonNegativeIntegerParserRuleCall_1_0 = (RuleCall)cMinAssignment_1.eContents().get(0);
+		private final RuleCall cTOTerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		private final Assignment cMaxAssignment_3 = (Assignment)cGroup.eContents().get(3);
+		private final RuleCall cMaxMaxValueParserRuleCall_3_0 = (RuleCall)cMaxAssignment_3.eContents().get(0);
 		
-		//@Override
-		//Cardinality:
-		//	SQUARE_OPEN TILDE? min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
+		//EtlCardinality:
+		//	TILDE? min=NonNegativeInteger TO max=MaxValue;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//// this is required to be compatible with IHTSDO's template format v0.2
-		//SQUARE_OPEN TILDE? min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE
+		//// XXX this is different to Ecl.Cardinality -> needed to remove square brackets and to add optional tilde (-> IHTSDO has template syntax v0.2)
+		//TILDE? min=NonNegativeInteger TO max=MaxValue
 		public Group getGroup() { return cGroup; }
 		
-		//// this is required to be compatible with IHTSDO's template format v0.2
-		//SQUARE_OPEN
-		public RuleCall getSQUARE_OPENTerminalRuleCall_0() { return cSQUARE_OPENTerminalRuleCall_0; }
-		
+		//// XXX this is different to Ecl.Cardinality -> needed to remove square brackets and to add optional tilde (-> IHTSDO has template syntax v0.2)
 		//TILDE?
-		public RuleCall getTILDETerminalRuleCall_1() { return cTILDETerminalRuleCall_1; }
+		public RuleCall getTILDETerminalRuleCall_0() { return cTILDETerminalRuleCall_0; }
 		
 		//min=NonNegativeInteger
-		public Assignment getMinAssignment_2() { return cMinAssignment_2; }
+		public Assignment getMinAssignment_1() { return cMinAssignment_1; }
 		
 		//NonNegativeInteger
-		public RuleCall getMinNonNegativeIntegerParserRuleCall_2_0() { return cMinNonNegativeIntegerParserRuleCall_2_0; }
+		public RuleCall getMinNonNegativeIntegerParserRuleCall_1_0() { return cMinNonNegativeIntegerParserRuleCall_1_0; }
 		
 		//TO
-		public RuleCall getTOTerminalRuleCall_3() { return cTOTerminalRuleCall_3; }
+		public RuleCall getTOTerminalRuleCall_2() { return cTOTerminalRuleCall_2; }
 		
 		//max=MaxValue
-		public Assignment getMaxAssignment_4() { return cMaxAssignment_4; }
+		public Assignment getMaxAssignment_3() { return cMaxAssignment_3; }
 		
 		//MaxValue
-		public RuleCall getMaxMaxValueParserRuleCall_4_0() { return cMaxMaxValueParserRuleCall_4_0; }
-		
-		//SQUARE_CLOSE
-		public RuleCall getSQUARE_CLOSETerminalRuleCall_5() { return cSQUARE_CLOSETerminalRuleCall_5; }
+		public RuleCall getMaxMaxValueParserRuleCall_3_0() { return cMaxMaxValueParserRuleCall_3_0; }
 	}
 	public class SlotTokenElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotToken");
@@ -1147,13 +1074,13 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
 		
 		//IntegerMinimumValue:
-		//	exclusive?=GT HASH value=Integer;
+		//	exclusive?=GT? HASH value=Integer;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//exclusive?=GT HASH value=Integer
+		//exclusive?=GT? HASH value=Integer
 		public Group getGroup() { return cGroup; }
 		
-		//exclusive?=GT
+		//exclusive?=GT?
 		public Assignment getExclusiveAssignment_0() { return cExclusiveAssignment_0; }
 		
 		//GT
@@ -1178,13 +1105,13 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
 		
 		//IntegerMaximumValue:
-		//	exclusive?=LT HASH value=Integer;
+		//	exclusive?=LT? HASH value=Integer;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//exclusive?=LT HASH value=Integer
+		//exclusive?=LT? HASH value=Integer
 		public Group getGroup() { return cGroup; }
 		
-		//exclusive?=LT
+		//exclusive?=LT?
 		public Assignment getExclusiveAssignment_0() { return cExclusiveAssignment_0; }
 		
 		//LT
@@ -1302,13 +1229,13 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
 		
 		//DecimalMinimumValue:
-		//	exclusive?=GT HASH value=Decimal;
+		//	exclusive?=GT? HASH value=Decimal;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//exclusive?=GT HASH value=Decimal
+		//exclusive?=GT? HASH value=Decimal
 		public Group getGroup() { return cGroup; }
 		
-		//exclusive?=GT
+		//exclusive?=GT?
 		public Assignment getExclusiveAssignment_0() { return cExclusiveAssignment_0; }
 		
 		//GT
@@ -1333,13 +1260,13 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
 		
 		//DecimalMaximumValue:
-		//	exclusive?=LT HASH value=Decimal;
+		//	exclusive?=LT? HASH value=Decimal;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//exclusive?=LT HASH value=Decimal
+		//exclusive?=LT? HASH value=Decimal
 		public Group getGroup() { return cGroup; }
 		
-		//exclusive?=LT
+		//exclusive?=LT?
 		public Assignment getExclusiveAssignment_0() { return cExclusiveAssignment_0; }
 		
 		//LT
@@ -1429,7 +1356,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	private final StringReplacementSlotElements pStringReplacementSlot;
 	private final IntegerReplacementSlotElements pIntegerReplacementSlot;
 	private final DecimalReplacementSlotElements pDecimalReplacementSlot;
-	private final CardinalityElements pCardinality;
+	private final EtlCardinalityElements pEtlCardinality;
 	private final SlotTokenElements pSlotToken;
 	private final StringValueElements pStringValue;
 	private final IntegerValuesElements pIntegerValues;
@@ -1456,6 +1383,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tDEC;
 	private final TerminalRule tEQUIVALENT_TO;
 	private final TerminalRule tSUBTYPE_OF;
+	private final TerminalRule tSLOTNAME_STRING;
 	
 	private final Grammar grammar;
 	
@@ -1481,7 +1409,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		this.pStringReplacementSlot = new StringReplacementSlotElements();
 		this.pIntegerReplacementSlot = new IntegerReplacementSlotElements();
 		this.pDecimalReplacementSlot = new DecimalReplacementSlotElements();
-		this.pCardinality = new CardinalityElements();
+		this.pEtlCardinality = new EtlCardinalityElements();
 		this.pSlotToken = new SlotTokenElements();
 		this.pStringValue = new StringValueElements();
 		this.pIntegerValues = new IntegerValuesElements();
@@ -1508,6 +1436,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		this.tDEC = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.DEC");
 		this.tEQUIVALENT_TO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.EQUIVALENT_TO");
 		this.tSUBTYPE_OF = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SUBTYPE_OF");
+		this.tSLOTNAME_STRING = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SLOTNAME_STRING");
 	}
 	
 	protected Grammar internalFindGrammar(GrammarProvider grammarProvider) {
@@ -1610,8 +1539,8 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//ConceptReplacementSlot:
-	//	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT
-	//	name=STRING)? DOUBLE_SQUARE_CLOSE;
+	//	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+	//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public ConceptReplacementSlotElements getConceptReplacementSlotAccess() {
 		return pConceptReplacementSlot;
 	}
@@ -1621,8 +1550,8 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//ExpressionReplacementSlot:
-	//	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (AT
-	//	name=STRING)? DOUBLE_SQUARE_CLOSE;
+	//	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+	//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public ExpressionReplacementSlotElements getExpressionReplacementSlotAccess() {
 		return pExpressionReplacementSlot;
 	}
@@ -1632,8 +1561,8 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//TokenReplacementSlot:
-	//	{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken (WS tokens+=SlotToken)* ROUND_CLOSE)?
-	//	(AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	//	{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken tokens+=SlotToken* ROUND_CLOSE)?
+	//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public TokenReplacementSlotElements getTokenReplacementSlotAccess() {
 		return pTokenReplacementSlot;
 	}
@@ -1643,7 +1572,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//TemplateInformationSlot:
-	//	{TemplateInformationSlot} DOUBLE_SQUARE_OPEN cardinality=Cardinality? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	//	{TemplateInformationSlot} DOUBLE_SQUARE_OPEN cardinality=EtlCardinality? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public TemplateInformationSlotElements getTemplateInformationSlotAccess() {
 		return pTemplateInformationSlot;
 	}
@@ -1664,7 +1593,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	
 	//StringReplacementSlot:
 	//	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue values+=StringValue* ROUND_CLOSE)?
-	//	(AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public StringReplacementSlotElements getStringReplacementSlotAccess() {
 		return pStringReplacementSlot;
 	}
@@ -1675,7 +1604,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	
 	//IntegerReplacementSlot:
 	//	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues values+=IntegerValues*
-	//	ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	//	ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public IntegerReplacementSlotElements getIntegerReplacementSlotAccess() {
 		return pIntegerReplacementSlot;
 	}
@@ -1686,7 +1615,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	
 	//DecimalReplacementSlot:
 	//	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues values+=DecimalValues*
-	//	ROUND_CLOSE)? (AT name=STRING)? DOUBLE_SQUARE_CLOSE;
+	//	ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public DecimalReplacementSlotElements getDecimalReplacementSlotAccess() {
 		return pDecimalReplacementSlot;
 	}
@@ -1695,15 +1624,14 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		return getDecimalReplacementSlotAccess().getRule();
 	}
 	
-	//@Override
-	//Cardinality:
-	//	SQUARE_OPEN TILDE? min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
-	public CardinalityElements getCardinalityAccess() {
-		return pCardinality;
+	//EtlCardinality:
+	//	TILDE? min=NonNegativeInteger TO max=MaxValue;
+	public EtlCardinalityElements getEtlCardinalityAccess() {
+		return pEtlCardinality;
 	}
 	
-	public ParserRule getCardinalityRule() {
-		return getCardinalityAccess().getRule();
+	public ParserRule getEtlCardinalityRule() {
+		return getEtlCardinalityAccess().getRule();
 	}
 	
 	//SlotToken:
@@ -1758,7 +1686,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//IntegerMinimumValue:
-	//	exclusive?=GT HASH value=Integer;
+	//	exclusive?=GT? HASH value=Integer;
 	public IntegerMinimumValueElements getIntegerMinimumValueAccess() {
 		return pIntegerMinimumValue;
 	}
@@ -1768,7 +1696,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//IntegerMaximumValue:
-	//	exclusive?=LT HASH value=Integer;
+	//	exclusive?=LT? HASH value=Integer;
 	public IntegerMaximumValueElements getIntegerMaximumValueAccess() {
 		return pIntegerMaximumValue;
 	}
@@ -1808,7 +1736,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//DecimalMinimumValue:
-	//	exclusive?=GT HASH value=Decimal;
+	//	exclusive?=GT? HASH value=Decimal;
 	public DecimalMinimumValueElements getDecimalMinimumValueAccess() {
 		return pDecimalMinimumValue;
 	}
@@ -1818,7 +1746,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//DecimalMaximumValue:
-	//	exclusive?=LT HASH value=Decimal;
+	//	exclusive?=LT? HASH value=Decimal;
 	public DecimalMaximumValueElements getDecimalMaximumValueAccess() {
 		return pDecimalMaximumValue;
 	}
@@ -1917,6 +1845,12 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	//	'<<<';
 	public TerminalRule getSUBTYPE_OFRule() {
 		return tSUBTYPE_OF;
+	}
+	
+	//terminal SLOTNAME_STRING:
+	//	AT (STRING | !('\\' | '"' | "'" | WS | AT | SQUARE_OPEN | SQUARE_CLOSE)*);
+	public TerminalRule getSLOTNAME_STRINGRule() {
+		return tSLOTNAME_STRING;
 	}
 	
 	//Script:
@@ -2152,7 +2086,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//EclAttributeGroup:
-	//	cardinality=super::Cardinality? CURLY_OPEN refinement=EclAttributeSet CURLY_CLOSE;
+	//	cardinality=Cardinality? CURLY_OPEN refinement=EclAttributeSet CURLY_CLOSE;
 	public EclGrammarAccess.EclAttributeGroupElements getEclAttributeGroupAccess() {
 		return gaEcl.getEclAttributeGroupAccess();
 	}
@@ -2212,13 +2146,23 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AttributeConstraint:
-	//	cardinality=super::Cardinality? reversed?=REVERSED? attribute=SubExpressionConstraint comparison=Comparison;
+	//	cardinality=Cardinality? reversed?=REVERSED? attribute=SubExpressionConstraint comparison=Comparison;
 	public EclGrammarAccess.AttributeConstraintElements getAttributeConstraintAccess() {
 		return gaEcl.getAttributeConstraintAccess();
 	}
 	
 	public ParserRule getAttributeConstraintRule() {
 		return getAttributeConstraintAccess().getRule();
+	}
+	
+	//Cardinality:
+	//	SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
+	public EclGrammarAccess.CardinalityElements getCardinalityAccess() {
+		return gaEcl.getCardinalityAccess();
+	}
+	
+	public ParserRule getCardinalityRule() {
+		return getCardinalityAccess().getRule();
 	}
 	
 	//Comparison:

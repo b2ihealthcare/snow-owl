@@ -36,7 +36,7 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 	protected AbstractElementAlias match_AndAttributeSet_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0;
 	protected AbstractElementAlias match_AndExpressionConstraint_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0;
 	protected AbstractElementAlias match_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0;
-	protected AbstractElementAlias match_Cardinality_TILDETerminalRuleCall_1_q;
+	protected AbstractElementAlias match_EtlCardinality_TILDETerminalRuleCall_0_q;
 	protected AbstractElementAlias match_ExpressionReplacementSlot_SCGTerminalRuleCall_3_q;
 	protected AbstractElementAlias match_ExpressionTemplate_EQUIVALENT_TOTerminalRuleCall_1_0_0_1_q;
 	protected AbstractElementAlias match_Refinement_COMMATerminalRuleCall_1_0_q;
@@ -47,7 +47,7 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 		match_AndAttributeSet_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getCOMMATerminalRuleCall_1_1_1()), new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getCONJUNCTIONTerminalRuleCall_1_1_0()));
 		match_AndExpressionConstraint_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCOMMATerminalRuleCall_1_1_1()), new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCONJUNCTIONTerminalRuleCall_1_1_0()));
 		match_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getCOMMATerminalRuleCall_1_0_1_1()), new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getCONJUNCTIONTerminalRuleCall_1_0_1_0()));
-		match_Cardinality_TILDETerminalRuleCall_1_q = new TokenAlias(false, true, grammarAccess.getCardinalityAccess().getTILDETerminalRuleCall_1());
+		match_EtlCardinality_TILDETerminalRuleCall_0_q = new TokenAlias(false, true, grammarAccess.getEtlCardinalityAccess().getTILDETerminalRuleCall_0());
 		match_ExpressionReplacementSlot_SCGTerminalRuleCall_3_q = new TokenAlias(false, true, grammarAccess.getExpressionReplacementSlotAccess().getSCGTerminalRuleCall_3());
 		match_ExpressionTemplate_EQUIVALENT_TOTerminalRuleCall_1_0_0_1_q = new TokenAlias(false, true, grammarAccess.getExpressionTemplateAccess().getEQUIVALENT_TOTerminalRuleCall_1_0_0_1());
 		match_Refinement_COMMATerminalRuleCall_1_0_q = new TokenAlias(false, true, grammarAccess.getRefinementAccess().getCOMMATerminalRuleCall_1_0());
@@ -55,9 +55,7 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (ruleCall.getRule() == grammarAccess.getATRule())
-			return getATToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getCARETRule())
+		if (ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCOLONRule())
 			return getCOLONToken(semanticObject, ruleCall, node);
@@ -135,19 +133,7 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getTOKToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getWILDCARDRule())
 			return getWILDCARDToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getWSRule())
-			return getWSToken(semanticObject, ruleCall, node);
 		return "";
-	}
-	
-	/**
-	 * terminal AT:
-	 * 	'@';
-	 */
-	protected String getATToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "@";
 	}
 	
 	/**
@@ -540,16 +526,6 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 		return "*";
 	}
 	
-	/**
-	 * terminal WS:
-	 * 	(' ' | '\t' | '\n' | '\r');
-	 */
-	protected String getWSToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return " ";
-	}
-	
 	@Override
 	protected void emitUnassignedTokens(EObject semanticObject, ISynTransition transition, INode fromNode, INode toNode) {
 		if (transition.getAmbiguousSyntaxes().isEmpty()) return;
@@ -562,8 +538,8 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 				emit_AndExpressionConstraint_COMMATerminalRuleCall_1_1_1_or_CONJUNCTIONTerminalRuleCall_1_1_0(semanticObject, getLastNavigableState(), syntaxNodes);
 			else if (match_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0.equals(syntax))
 				emit_AndRefinement_COMMATerminalRuleCall_1_0_1_1_or_CONJUNCTIONTerminalRuleCall_1_0_1_0(semanticObject, getLastNavigableState(), syntaxNodes);
-			else if (match_Cardinality_TILDETerminalRuleCall_1_q.equals(syntax))
-				emit_Cardinality_TILDETerminalRuleCall_1_q(semanticObject, getLastNavigableState(), syntaxNodes);
+			else if (match_EtlCardinality_TILDETerminalRuleCall_0_q.equals(syntax))
+				emit_EtlCardinality_TILDETerminalRuleCall_0_q(semanticObject, getLastNavigableState(), syntaxNodes);
 			else if (match_ExpressionReplacementSlot_SCGTerminalRuleCall_3_q.equals(syntax))
 				emit_ExpressionReplacementSlot_SCGTerminalRuleCall_3_q(semanticObject, getLastNavigableState(), syntaxNodes);
 			else if (match_ExpressionTemplate_EQUIVALENT_TOTerminalRuleCall_1_0_0_1_q.equals(syntax))
@@ -612,9 +588,9 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 	 *     TILDE?
 	 *
 	 * This ambiguous syntax occurs at:
-	 *     (rule start) SQUARE_OPEN (ambiguity) min=NonNegativeInteger
+	 *     (rule start) (ambiguity) min=NonNegativeInteger
 	 */
-	protected void emit_Cardinality_TILDETerminalRuleCall_1_q(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+	protected void emit_EtlCardinality_TILDETerminalRuleCall_0_q(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);
 	}
 	
@@ -623,9 +599,9 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 	 *     SCG?
 	 *
 	 * This ambiguous syntax occurs at:
-	 *     (rule start) DOUBLE_SQUARE_OPEN PLUS (ambiguity) AT name=STRING
 	 *     (rule start) DOUBLE_SQUARE_OPEN PLUS (ambiguity) DOUBLE_SQUARE_CLOSE (rule start)
 	 *     (rule start) DOUBLE_SQUARE_OPEN PLUS (ambiguity) ROUND_OPEN constraint=ExpressionConstraint
+	 *     (rule start) DOUBLE_SQUARE_OPEN PLUS (ambiguity) name=SLOTNAME_STRING
 	 */
 	protected void emit_ExpressionReplacementSlot_SCGTerminalRuleCall_3_q(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);

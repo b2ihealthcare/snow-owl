@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.etl.etl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EPackage;
@@ -655,14 +653,14 @@ public interface EtlPackage extends EPackage
   int DECIMAL_REPLACEMENT_SLOT_FEATURE_COUNT = CONCRETE_VALUE_REPLACEMENT_SLOT_FEATURE_COUNT + 1;
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.CardinalityImpl <em>Cardinality</em>}' class.
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.EtlCardinalityImpl <em>Cardinality</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.CardinalityImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getCardinality()
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlCardinalityImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getEtlCardinality()
    * @generated
    */
-  int CARDINALITY = 15;
+  int ETL_CARDINALITY = 15;
 
   /**
    * The feature id for the '<em><b>Min</b></em>' attribute.
@@ -671,7 +669,7 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CARDINALITY__MIN = EclPackage.CARDINALITY__MIN;
+  int ETL_CARDINALITY__MIN = 0;
 
   /**
    * The feature id for the '<em><b>Max</b></em>' attribute.
@@ -680,7 +678,7 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CARDINALITY__MAX = EclPackage.CARDINALITY__MAX;
+  int ETL_CARDINALITY__MAX = 1;
 
   /**
    * The number of structural features of the '<em>Cardinality</em>' class.
@@ -689,7 +687,7 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CARDINALITY_FEATURE_COUNT = EclPackage.CARDINALITY_FEATURE_COUNT + 0;
+  int ETL_CARDINALITY_FEATURE_COUNT = 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl <em>String Value</em>}' class.
@@ -1475,14 +1473,36 @@ public interface EtlPackage extends EPackage
   EReference getDecimalReplacementSlot_Values();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.Cardinality <em>Cardinality</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.EtlCardinality <em>Cardinality</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for class '<em>Cardinality</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.Cardinality
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlCardinality
    * @generated
    */
-  EClass getCardinality();
+  EClass getEtlCardinality();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.EtlCardinality#getMin <em>Min</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Min</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlCardinality#getMin()
+   * @see #getEtlCardinality()
+   * @generated
+   */
+  EAttribute getEtlCardinality_Min();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.EtlCardinality#getMax <em>Max</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Max</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlCardinality#getMax()
+   * @see #getEtlCardinality()
+   * @generated
+   */
+  EAttribute getEtlCardinality_Max();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.StringValue <em>String Value</em>}'.
@@ -2184,14 +2204,30 @@ public interface EtlPackage extends EPackage
     EReference DECIMAL_REPLACEMENT_SLOT__VALUES = eINSTANCE.getDecimalReplacementSlot_Values();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.CardinalityImpl <em>Cardinality</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.EtlCardinalityImpl <em>Cardinality</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.CardinalityImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getCardinality()
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlCardinalityImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getEtlCardinality()
      * @generated
      */
-    EClass CARDINALITY = eINSTANCE.getCardinality();
+    EClass ETL_CARDINALITY = eINSTANCE.getEtlCardinality();
+
+    /**
+     * The meta object literal for the '<em><b>Min</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute ETL_CARDINALITY__MIN = eINSTANCE.getEtlCardinality_Min();
+
+    /**
+     * The meta object literal for the '<em><b>Max</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute ETL_CARDINALITY__MAX = eINSTANCE.getEtlCardinality_Max();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl <em>String Value</em>}' class.

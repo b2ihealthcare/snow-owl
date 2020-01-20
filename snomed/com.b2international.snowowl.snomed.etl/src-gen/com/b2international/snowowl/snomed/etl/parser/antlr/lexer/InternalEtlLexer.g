@@ -33,7 +33,7 @@ RULE_DOUBLE_SQUARE_CLOSE : ']]';
 
 RULE_TILDE : '~';
 
-RULE_AT : '@';
+fragment RULE_AT : '@';
 
 RULE_ID : 'id';
 
@@ -50,6 +50,8 @@ RULE_DEC : 'dec';
 RULE_EQUIVALENT_TO : '===';
 
 RULE_SUBTYPE_OF : '<<<';
+
+RULE_SLOTNAME_STRING : RULE_AT (RULE_STRING|~(('\\'|'"'|'\''|RULE_WS|RULE_AT|RULE_SQUARE_OPEN|RULE_SQUARE_CLOSE))*);
 
 RULE_TERM_STRING : '|' ~('|')* '|';
 

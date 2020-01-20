@@ -25,6 +25,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
@@ -58,7 +59,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
 import com.b2international.snowowl.snomed.etl.etl.Attribute;
 import com.b2international.snowowl.snomed.etl.etl.AttributeGroup;
-import com.b2international.snowowl.snomed.etl.etl.Cardinality;
 import com.b2international.snowowl.snomed.etl.etl.ConceptReference;
 import com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue;
@@ -66,6 +66,7 @@ import com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue;
 import com.b2international.snowowl.snomed.etl.etl.DecimalRange;
 import com.b2international.snowowl.snomed.etl.etl.DecimalReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.DecimalValue;
+import com.b2international.snowowl.snomed.etl.etl.EtlCardinality;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.ExpressionTemplate;
@@ -151,6 +152,9 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case EclPackage.BOOLEAN_VALUE_NOT_EQUALS:
 				sequence_BooleanValueNotEquals(context, (BooleanValueNotEquals) semanticObject); 
+				return; 
+			case EclPackage.CARDINALITY:
+				sequence_Cardinality(context, (Cardinality) semanticObject); 
 				return; 
 			case EclPackage.CHILD_OF:
 				sequence_ChildOf(context, (ChildOf) semanticObject); 
@@ -278,9 +282,6 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 			case EtlPackage.ATTRIBUTE_GROUP:
 				sequence_AttributeGroup(context, (AttributeGroup) semanticObject); 
 				return; 
-			case EtlPackage.CARDINALITY:
-				sequence_Cardinality(context, (Cardinality) semanticObject); 
-				return; 
 			case EtlPackage.CONCEPT_REFERENCE:
 				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
 				return; 
@@ -301,6 +302,9 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case EtlPackage.DECIMAL_VALUE:
 				sequence_DecimalValue(context, (DecimalValue) semanticObject); 
+				return; 
+			case EtlPackage.ETL_CARDINALITY:
+				sequence_EtlCardinality(context, (EtlCardinality) semanticObject); 
 				return; 
 			case EtlPackage.EXPRESSION_REPLACEMENT_SLOT:
 				sequence_ExpressionReplacementSlot(context, (ExpressionReplacementSlot) semanticObject); 
@@ -375,27 +379,6 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     Cardinality returns Cardinality
-	 *
-	 * Constraint:
-	 *     (min=NonNegativeInteger max=MaxValue)
-	 */
-	protected void sequence_Cardinality(ISerializationContext context, Cardinality semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, EclPackage.Literals.CARDINALITY__MIN) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.CARDINALITY__MIN));
-			if (transientValues.isValueTransient(semanticObject, EclPackage.Literals.CARDINALITY__MAX) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.CARDINALITY__MAX));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getCardinalityAccess().getMinNonNegativeIntegerParserRuleCall_2_0(), semanticObject.getMin());
-		feeder.accept(grammarAccess.getCardinalityAccess().getMaxMaxValueParserRuleCall_4_0(), semanticObject.getMax());
-		feeder.finish();
-	}
-	
-	
-	/**
-	 * Contexts:
 	 *     AttributeValue returns ConceptReference
 	 *     ConceptReference returns ConceptReference
 	 *
@@ -413,7 +396,7 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     ConceptReferenceSlot returns ConceptReplacementSlot
 	 *
 	 * Constraint:
-	 *     (constraint=ExpressionConstraint? name=STRING?)
+	 *     (constraint=ExpressionConstraint? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_ConceptReplacementSlot(ISerializationContext context, ConceptReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -425,19 +408,10 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     DecimalMaximumValue returns DecimalMaximumValue
 	 *
 	 * Constraint:
-	 *     (exclusive?=LT value=Decimal)
+	 *     (exclusive?=LT? value=Decimal)
 	 */
 	protected void sequence_DecimalMaximumValue(ISerializationContext context, DecimalMaximumValue semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.DECIMAL_MAXIMUM_VALUE__EXCLUSIVE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.DECIMAL_MAXIMUM_VALUE__EXCLUSIVE));
-			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.DECIMAL_MAXIMUM_VALUE__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.DECIMAL_MAXIMUM_VALUE__VALUE));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getDecimalMaximumValueAccess().getExclusiveLTTerminalRuleCall_0_0(), semanticObject.isExclusive());
-		feeder.accept(grammarAccess.getDecimalMaximumValueAccess().getValueDecimalParserRuleCall_2_0(), semanticObject.getValue());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -446,19 +420,10 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     DecimalMinimumValue returns DecimalMinimumValue
 	 *
 	 * Constraint:
-	 *     (exclusive?=GT value=Decimal)
+	 *     (exclusive?=GT? value=Decimal)
 	 */
 	protected void sequence_DecimalMinimumValue(ISerializationContext context, DecimalMinimumValue semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.DECIMAL_MINIMUM_VALUE__EXCLUSIVE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.DECIMAL_MINIMUM_VALUE__EXCLUSIVE));
-			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.DECIMAL_MINIMUM_VALUE__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.DECIMAL_MINIMUM_VALUE__VALUE));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getDecimalMinimumValueAccess().getExclusiveGTTerminalRuleCall_0_0(), semanticObject.isExclusive());
-		feeder.accept(grammarAccess.getDecimalMinimumValueAccess().getValueDecimalParserRuleCall_2_0(), semanticObject.getValue());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -482,7 +447,7 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     DecimalReplacementSlot returns DecimalReplacementSlot
 	 *
 	 * Constraint:
-	 *     ((values+=DecimalValues values+=DecimalValues*)? name=STRING?)
+	 *     ((values+=DecimalValues values+=DecimalValues*)? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_DecimalReplacementSlot(ISerializationContext context, DecimalReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -511,11 +476,32 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
+	 *     EtlCardinality returns EtlCardinality
+	 *
+	 * Constraint:
+	 *     (min=NonNegativeInteger max=MaxValue)
+	 */
+	protected void sequence_EtlCardinality(ISerializationContext context, EtlCardinality semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.ETL_CARDINALITY__MIN) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.ETL_CARDINALITY__MIN));
+			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.ETL_CARDINALITY__MAX) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.ETL_CARDINALITY__MAX));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getEtlCardinalityAccess().getMinNonNegativeIntegerParserRuleCall_1_0(), semanticObject.getMin());
+		feeder.accept(grammarAccess.getEtlCardinalityAccess().getMaxMaxValueParserRuleCall_3_0(), semanticObject.getMax());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
 	 *     ExpressionReplacementSlot returns ExpressionReplacementSlot
 	 *     ConceptReferenceSlot returns ExpressionReplacementSlot
 	 *
 	 * Constraint:
-	 *     (constraint=ExpressionConstraint? name=STRING?)
+	 *     (constraint=ExpressionConstraint? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_ExpressionReplacementSlot(ISerializationContext context, ExpressionReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -551,19 +537,10 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     IntegerMaximumValue returns IntegerMaximumValue
 	 *
 	 * Constraint:
-	 *     (exclusive?=LT value=Integer)
+	 *     (exclusive?=LT? value=Integer)
 	 */
 	protected void sequence_IntegerMaximumValue(ISerializationContext context, IntegerMaximumValue semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.INTEGER_MAXIMUM_VALUE__EXCLUSIVE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.INTEGER_MAXIMUM_VALUE__EXCLUSIVE));
-			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.INTEGER_MAXIMUM_VALUE__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.INTEGER_MAXIMUM_VALUE__VALUE));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getIntegerMaximumValueAccess().getExclusiveLTTerminalRuleCall_0_0(), semanticObject.isExclusive());
-		feeder.accept(grammarAccess.getIntegerMaximumValueAccess().getValueIntegerParserRuleCall_2_0(), semanticObject.getValue());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -572,19 +549,10 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     IntegerMinimumValue returns IntegerMinimumValue
 	 *
 	 * Constraint:
-	 *     (exclusive?=GT value=Integer)
+	 *     (exclusive?=GT? value=Integer)
 	 */
 	protected void sequence_IntegerMinimumValue(ISerializationContext context, IntegerMinimumValue semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.INTEGER_MINIMUM_VALUE__EXCLUSIVE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.INTEGER_MINIMUM_VALUE__EXCLUSIVE));
-			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.INTEGER_MINIMUM_VALUE__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.INTEGER_MINIMUM_VALUE__VALUE));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getIntegerMinimumValueAccess().getExclusiveGTTerminalRuleCall_0_0(), semanticObject.isExclusive());
-		feeder.accept(grammarAccess.getIntegerMinimumValueAccess().getValueIntegerParserRuleCall_2_0(), semanticObject.getValue());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -608,7 +576,7 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     IntegerReplacementSlot returns IntegerReplacementSlot
 	 *
 	 * Constraint:
-	 *     ((values+=IntegerValues values+=IntegerValues*)? name=STRING?)
+	 *     ((values+=IntegerValues values+=IntegerValues*)? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_IntegerReplacementSlot(ISerializationContext context, IntegerReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -654,7 +622,7 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     StringReplacementSlot returns StringReplacementSlot
 	 *
 	 * Constraint:
-	 *     ((values+=StringValue values+=StringValue*)? name=STRING?)
+	 *     ((values+=StringValue values+=StringValue*)? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_StringReplacementSlot(ISerializationContext context, StringReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -698,7 +666,7 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     TemplateInformationSlot returns TemplateInformationSlot
 	 *
 	 * Constraint:
-	 *     (cardinality=Cardinality? name=STRING?)
+	 *     (cardinality=EtlCardinality? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_TemplateInformationSlot(ISerializationContext context, TemplateInformationSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -710,7 +678,7 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     TokenReplacementSlot returns TokenReplacementSlot
 	 *
 	 * Constraint:
-	 *     ((tokens+=SlotToken tokens+=SlotToken*)? name=STRING?)
+	 *     ((tokens+=SlotToken tokens+=SlotToken*)? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_TokenReplacementSlot(ISerializationContext context, TokenReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);

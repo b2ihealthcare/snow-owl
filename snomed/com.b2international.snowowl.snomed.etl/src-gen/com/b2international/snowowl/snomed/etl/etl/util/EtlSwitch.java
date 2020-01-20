@@ -200,11 +200,10 @@ public class EtlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EtlPackage.CARDINALITY:
+      case EtlPackage.ETL_CARDINALITY:
       {
-        Cardinality cardinality = (Cardinality)theEObject;
-        T result = caseCardinality(cardinality);
-        if (result == null) result = caseEcl_Cardinality(cardinality);
+        EtlCardinality etlCardinality = (EtlCardinality)theEObject;
+        T result = caseEtlCardinality(etlCardinality);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -562,7 +561,7 @@ public class EtlSwitch<T> extends Switch<T>
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseCardinality(Cardinality object)
+  public T caseEtlCardinality(EtlCardinality object)
   {
     return null;
   }
@@ -771,22 +770,6 @@ public class EtlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseConceptReference(ConceptReference object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Cardinality</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Cardinality</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseEcl_Cardinality(com.b2international.snowowl.snomed.ecl.ecl.Cardinality object)
   {
     return null;
   }

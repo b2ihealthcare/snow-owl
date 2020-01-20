@@ -41,12 +41,12 @@ public interface TemplateInformationSlot extends EObject
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Cardinality</em>' containment reference.
-   * @see #setCardinality(Cardinality)
+   * @see #setCardinality(EtlCardinality)
    * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getTemplateInformationSlot_Cardinality()
    * @model containment="true"
    * @generated
    */
-  Cardinality getCardinality();
+  EtlCardinality getCardinality();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.TemplateInformationSlot#getCardinality <em>Cardinality</em>}' containment reference.
@@ -56,7 +56,7 @@ public interface TemplateInformationSlot extends EObject
    * @see #getCardinality()
    * @generated
    */
-  void setCardinality(Cardinality value);
+  void setCardinality(EtlCardinality value);
 
   /**
    * Returns the value of the '<em><b>Name</b></em>' attribute.

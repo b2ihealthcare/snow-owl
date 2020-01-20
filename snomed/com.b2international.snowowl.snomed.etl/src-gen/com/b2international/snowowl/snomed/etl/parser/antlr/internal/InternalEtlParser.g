@@ -765,32 +765,26 @@ ruleConceptReplacementSlot returns [EObject current=null]
 			}
 		)?
 		(
-			this_AT_7=RULE_AT
-			{
-				newLeafNode(this_AT_7, grammarAccess.getConceptReplacementSlotAccess().getATTerminalRuleCall_5_0());
-			}
 			(
-				(
-					lv_name_8_0=RULE_STRING
-					{
-						newLeafNode(lv_name_8_0, grammarAccess.getConceptReplacementSlotAccess().getNameSTRINGTerminalRuleCall_5_1_0());
+				lv_name_7_0=RULE_SLOTNAME_STRING
+				{
+					newLeafNode(lv_name_7_0, grammarAccess.getConceptReplacementSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_5_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getConceptReplacementSlotRule());
 					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getConceptReplacementSlotRule());
-						}
-						setWithLastConsumed(
-							$current,
-							"name",
-							lv_name_8_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
-					}
-				)
+					setWithLastConsumed(
+						$current,
+						"name",
+						lv_name_7_0,
+						"com.b2international.snowowl.snomed.etl.Etl.SLOTNAME_STRING");
+				}
 			)
 		)?
-		this_DOUBLE_SQUARE_CLOSE_9=RULE_DOUBLE_SQUARE_CLOSE
+		this_DOUBLE_SQUARE_CLOSE_8=RULE_DOUBLE_SQUARE_CLOSE
 		{
-			newLeafNode(this_DOUBLE_SQUARE_CLOSE_9, grammarAccess.getConceptReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
+			newLeafNode(this_DOUBLE_SQUARE_CLOSE_8, grammarAccess.getConceptReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
 		}
 	)
 ;
@@ -865,32 +859,26 @@ ruleExpressionReplacementSlot returns [EObject current=null]
 			}
 		)?
 		(
-			this_AT_7=RULE_AT
-			{
-				newLeafNode(this_AT_7, grammarAccess.getExpressionReplacementSlotAccess().getATTerminalRuleCall_5_0());
-			}
 			(
-				(
-					lv_name_8_0=RULE_STRING
-					{
-						newLeafNode(lv_name_8_0, grammarAccess.getExpressionReplacementSlotAccess().getNameSTRINGTerminalRuleCall_5_1_0());
+				lv_name_7_0=RULE_SLOTNAME_STRING
+				{
+					newLeafNode(lv_name_7_0, grammarAccess.getExpressionReplacementSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_5_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getExpressionReplacementSlotRule());
 					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getExpressionReplacementSlotRule());
-						}
-						setWithLastConsumed(
-							$current,
-							"name",
-							lv_name_8_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
-					}
-				)
+					setWithLastConsumed(
+						$current,
+						"name",
+						lv_name_7_0,
+						"com.b2international.snowowl.snomed.etl.Etl.SLOTNAME_STRING");
+				}
 			)
 		)?
-		this_DOUBLE_SQUARE_CLOSE_9=RULE_DOUBLE_SQUARE_CLOSE
+		this_DOUBLE_SQUARE_CLOSE_8=RULE_DOUBLE_SQUARE_CLOSE
 		{
-			newLeafNode(this_DOUBLE_SQUARE_CLOSE_9, grammarAccess.getExpressionReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
+			newLeafNode(this_DOUBLE_SQUARE_CLOSE_8, grammarAccess.getExpressionReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
 		}
 	)
 ;
@@ -958,62 +946,50 @@ ruleTokenReplacementSlot returns [EObject current=null]
 				)
 			)
 			(
-				this_WS_6=RULE_WS
-				{
-					newLeafNode(this_WS_6, grammarAccess.getTokenReplacementSlotAccess().getWSTerminalRuleCall_4_2_0());
-				}
 				(
-					(
-						{
-							newCompositeNode(grammarAccess.getTokenReplacementSlotAccess().getTokensSlotTokenParserRuleCall_4_2_1_0());
+					{
+						newCompositeNode(grammarAccess.getTokenReplacementSlotAccess().getTokensSlotTokenParserRuleCall_4_2_0());
+					}
+					lv_tokens_6_0=ruleSlotToken
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getTokenReplacementSlotRule());
 						}
-						lv_tokens_7_0=ruleSlotToken
-						{
-							if ($current==null) {
-								$current = createModelElementForParent(grammarAccess.getTokenReplacementSlotRule());
-							}
-							add(
-								$current,
-								"tokens",
-								lv_tokens_7_0,
-								"com.b2international.snowowl.snomed.etl.Etl.SlotToken");
-							afterParserOrEnumRuleCall();
-						}
-					)
+						add(
+							$current,
+							"tokens",
+							lv_tokens_6_0,
+							"com.b2international.snowowl.snomed.etl.Etl.SlotToken");
+						afterParserOrEnumRuleCall();
+					}
 				)
 			)*
-			this_ROUND_CLOSE_8=RULE_ROUND_CLOSE
+			this_ROUND_CLOSE_7=RULE_ROUND_CLOSE
 			{
-				newLeafNode(this_ROUND_CLOSE_8, grammarAccess.getTokenReplacementSlotAccess().getROUND_CLOSETerminalRuleCall_4_3());
+				newLeafNode(this_ROUND_CLOSE_7, grammarAccess.getTokenReplacementSlotAccess().getROUND_CLOSETerminalRuleCall_4_3());
 			}
 		)?
 		(
-			this_AT_9=RULE_AT
-			{
-				newLeafNode(this_AT_9, grammarAccess.getTokenReplacementSlotAccess().getATTerminalRuleCall_5_0());
-			}
 			(
-				(
-					lv_name_10_0=RULE_STRING
-					{
-						newLeafNode(lv_name_10_0, grammarAccess.getTokenReplacementSlotAccess().getNameSTRINGTerminalRuleCall_5_1_0());
+				lv_name_8_0=RULE_SLOTNAME_STRING
+				{
+					newLeafNode(lv_name_8_0, grammarAccess.getTokenReplacementSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_5_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getTokenReplacementSlotRule());
 					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getTokenReplacementSlotRule());
-						}
-						setWithLastConsumed(
-							$current,
-							"name",
-							lv_name_10_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
-					}
-				)
+					setWithLastConsumed(
+						$current,
+						"name",
+						lv_name_8_0,
+						"com.b2international.snowowl.snomed.etl.Etl.SLOTNAME_STRING");
+				}
 			)
 		)?
-		this_DOUBLE_SQUARE_CLOSE_11=RULE_DOUBLE_SQUARE_CLOSE
+		this_DOUBLE_SQUARE_CLOSE_9=RULE_DOUBLE_SQUARE_CLOSE
 		{
-			newLeafNode(this_DOUBLE_SQUARE_CLOSE_11, grammarAccess.getTokenReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
+			newLeafNode(this_DOUBLE_SQUARE_CLOSE_9, grammarAccess.getTokenReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
 		}
 	)
 ;
@@ -1051,9 +1027,9 @@ ruleTemplateInformationSlot returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getTemplateInformationSlotAccess().getCardinalityCardinalityParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getTemplateInformationSlotAccess().getCardinalityEtlCardinalityParserRuleCall_2_0());
 				}
-				lv_cardinality_2_0=ruleCardinality
+				lv_cardinality_2_0=ruleEtlCardinality
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getTemplateInformationSlotRule());
@@ -1062,38 +1038,32 @@ ruleTemplateInformationSlot returns [EObject current=null]
 						$current,
 						"cardinality",
 						lv_cardinality_2_0,
-						"com.b2international.snowowl.snomed.etl.Etl.Cardinality");
+						"com.b2international.snowowl.snomed.etl.Etl.EtlCardinality");
 					afterParserOrEnumRuleCall();
 				}
 			)
 		)?
 		(
-			this_AT_3=RULE_AT
-			{
-				newLeafNode(this_AT_3, grammarAccess.getTemplateInformationSlotAccess().getATTerminalRuleCall_3_0());
-			}
 			(
-				(
-					lv_name_4_0=RULE_STRING
-					{
-						newLeafNode(lv_name_4_0, grammarAccess.getTemplateInformationSlotAccess().getNameSTRINGTerminalRuleCall_3_1_0());
+				lv_name_3_0=RULE_SLOTNAME_STRING
+				{
+					newLeafNode(lv_name_3_0, grammarAccess.getTemplateInformationSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_3_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getTemplateInformationSlotRule());
 					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getTemplateInformationSlotRule());
-						}
-						setWithLastConsumed(
-							$current,
-							"name",
-							lv_name_4_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
-					}
-				)
+					setWithLastConsumed(
+						$current,
+						"name",
+						lv_name_3_0,
+						"com.b2international.snowowl.snomed.etl.Etl.SLOTNAME_STRING");
+				}
 			)
 		)?
-		this_DOUBLE_SQUARE_CLOSE_5=RULE_DOUBLE_SQUARE_CLOSE
+		this_DOUBLE_SQUARE_CLOSE_4=RULE_DOUBLE_SQUARE_CLOSE
 		{
-			newLeafNode(this_DOUBLE_SQUARE_CLOSE_5, grammarAccess.getTemplateInformationSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_4());
+			newLeafNode(this_DOUBLE_SQUARE_CLOSE_4, grammarAccess.getTemplateInformationSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_4());
 		}
 	)
 ;
@@ -1239,32 +1209,26 @@ ruleStringReplacementSlot returns [EObject current=null]
 			}
 		)?
 		(
-			this_AT_8=RULE_AT
-			{
-				newLeafNode(this_AT_8, grammarAccess.getStringReplacementSlotAccess().getATTerminalRuleCall_5_0());
-			}
 			(
-				(
-					lv_name_9_0=RULE_STRING
-					{
-						newLeafNode(lv_name_9_0, grammarAccess.getStringReplacementSlotAccess().getNameSTRINGTerminalRuleCall_5_1_0());
+				lv_name_8_0=RULE_SLOTNAME_STRING
+				{
+					newLeafNode(lv_name_8_0, grammarAccess.getStringReplacementSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_5_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getStringReplacementSlotRule());
 					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getStringReplacementSlotRule());
-						}
-						setWithLastConsumed(
-							$current,
-							"name",
-							lv_name_9_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
-					}
-				)
+					setWithLastConsumed(
+						$current,
+						"name",
+						lv_name_8_0,
+						"com.b2international.snowowl.snomed.etl.Etl.SLOTNAME_STRING");
+				}
 			)
 		)?
-		this_DOUBLE_SQUARE_CLOSE_10=RULE_DOUBLE_SQUARE_CLOSE
+		this_DOUBLE_SQUARE_CLOSE_9=RULE_DOUBLE_SQUARE_CLOSE
 		{
-			newLeafNode(this_DOUBLE_SQUARE_CLOSE_10, grammarAccess.getStringReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
+			newLeafNode(this_DOUBLE_SQUARE_CLOSE_9, grammarAccess.getStringReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
 		}
 	)
 ;
@@ -1356,32 +1320,26 @@ ruleIntegerReplacementSlot returns [EObject current=null]
 			}
 		)?
 		(
-			this_AT_8=RULE_AT
-			{
-				newLeafNode(this_AT_8, grammarAccess.getIntegerReplacementSlotAccess().getATTerminalRuleCall_5_0());
-			}
 			(
-				(
-					lv_name_9_0=RULE_STRING
-					{
-						newLeafNode(lv_name_9_0, grammarAccess.getIntegerReplacementSlotAccess().getNameSTRINGTerminalRuleCall_5_1_0());
+				lv_name_8_0=RULE_SLOTNAME_STRING
+				{
+					newLeafNode(lv_name_8_0, grammarAccess.getIntegerReplacementSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_5_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getIntegerReplacementSlotRule());
 					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getIntegerReplacementSlotRule());
-						}
-						setWithLastConsumed(
-							$current,
-							"name",
-							lv_name_9_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
-					}
-				)
+					setWithLastConsumed(
+						$current,
+						"name",
+						lv_name_8_0,
+						"com.b2international.snowowl.snomed.etl.Etl.SLOTNAME_STRING");
+				}
 			)
 		)?
-		this_DOUBLE_SQUARE_CLOSE_10=RULE_DOUBLE_SQUARE_CLOSE
+		this_DOUBLE_SQUARE_CLOSE_9=RULE_DOUBLE_SQUARE_CLOSE
 		{
-			newLeafNode(this_DOUBLE_SQUARE_CLOSE_10, grammarAccess.getIntegerReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
+			newLeafNode(this_DOUBLE_SQUARE_CLOSE_9, grammarAccess.getIntegerReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
 		}
 	)
 ;
@@ -1473,45 +1431,39 @@ ruleDecimalReplacementSlot returns [EObject current=null]
 			}
 		)?
 		(
-			this_AT_8=RULE_AT
-			{
-				newLeafNode(this_AT_8, grammarAccess.getDecimalReplacementSlotAccess().getATTerminalRuleCall_5_0());
-			}
 			(
-				(
-					lv_name_9_0=RULE_STRING
-					{
-						newLeafNode(lv_name_9_0, grammarAccess.getDecimalReplacementSlotAccess().getNameSTRINGTerminalRuleCall_5_1_0());
+				lv_name_8_0=RULE_SLOTNAME_STRING
+				{
+					newLeafNode(lv_name_8_0, grammarAccess.getDecimalReplacementSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_5_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getDecimalReplacementSlotRule());
 					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getDecimalReplacementSlotRule());
-						}
-						setWithLastConsumed(
-							$current,
-							"name",
-							lv_name_9_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
-					}
-				)
+					setWithLastConsumed(
+						$current,
+						"name",
+						lv_name_8_0,
+						"com.b2international.snowowl.snomed.etl.Etl.SLOTNAME_STRING");
+				}
 			)
 		)?
-		this_DOUBLE_SQUARE_CLOSE_10=RULE_DOUBLE_SQUARE_CLOSE
+		this_DOUBLE_SQUARE_CLOSE_9=RULE_DOUBLE_SQUARE_CLOSE
 		{
-			newLeafNode(this_DOUBLE_SQUARE_CLOSE_10, grammarAccess.getDecimalReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
+			newLeafNode(this_DOUBLE_SQUARE_CLOSE_9, grammarAccess.getDecimalReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
 		}
 	)
 ;
 
-// Entry rule entryRuleCardinality
-entryRuleCardinality returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getCardinalityRule()); }
-	iv_ruleCardinality=ruleCardinality
-	{ $current=$iv_ruleCardinality.current; }
+// Entry rule entryRuleEtlCardinality
+entryRuleEtlCardinality returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getEtlCardinalityRule()); }
+	iv_ruleEtlCardinality=ruleEtlCardinality
+	{ $current=$iv_ruleEtlCardinality.current; }
 	EOF;
 
-// Rule Cardinality
-ruleCardinality returns [EObject current=null]
+// Rule EtlCardinality
+ruleEtlCardinality returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -1519,62 +1471,54 @@ ruleCardinality returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		this_SQUARE_OPEN_0=RULE_SQUARE_OPEN
-		{
-			newLeafNode(this_SQUARE_OPEN_0, grammarAccess.getCardinalityAccess().getSQUARE_OPENTerminalRuleCall_0());
-		}
 		(
-			this_TILDE_1=RULE_TILDE
+			this_TILDE_0=RULE_TILDE
 			{
-				newLeafNode(this_TILDE_1, grammarAccess.getCardinalityAccess().getTILDETerminalRuleCall_1());
+				newLeafNode(this_TILDE_0, grammarAccess.getEtlCardinalityAccess().getTILDETerminalRuleCall_0());
 			}
 		)?
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getCardinalityAccess().getMinNonNegativeIntegerParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getEtlCardinalityAccess().getMinNonNegativeIntegerParserRuleCall_1_0());
 				}
-				lv_min_2_0=ruleNonNegativeInteger
+				lv_min_1_0=ruleNonNegativeInteger
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getCardinalityRule());
+						$current = createModelElementForParent(grammarAccess.getEtlCardinalityRule());
 					}
 					set(
 						$current,
 						"min",
-						lv_min_2_0,
+						lv_min_1_0,
 						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
 		)
-		this_TO_3=RULE_TO
+		this_TO_2=RULE_TO
 		{
-			newLeafNode(this_TO_3, grammarAccess.getCardinalityAccess().getTOTerminalRuleCall_3());
+			newLeafNode(this_TO_2, grammarAccess.getEtlCardinalityAccess().getTOTerminalRuleCall_2());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getCardinalityAccess().getMaxMaxValueParserRuleCall_4_0());
+					newCompositeNode(grammarAccess.getEtlCardinalityAccess().getMaxMaxValueParserRuleCall_3_0());
 				}
-				lv_max_4_0=ruleMaxValue
+				lv_max_3_0=ruleMaxValue
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getCardinalityRule());
+						$current = createModelElementForParent(grammarAccess.getEtlCardinalityRule());
 					}
 					set(
 						$current,
 						"max",
-						lv_max_4_0,
+						lv_max_3_0,
 						"com.b2international.snowowl.snomed.ecl.Ecl.MaxValue");
 					afterParserOrEnumRuleCall();
 				}
 			)
 		)
-		this_SQUARE_CLOSE_5=RULE_SQUARE_CLOSE
-		{
-			newLeafNode(this_SQUARE_CLOSE_5, grammarAccess.getCardinalityAccess().getSQUARE_CLOSETerminalRuleCall_5());
-		}
 	)
 ;
 
@@ -1981,7 +1925,7 @@ ruleIntegerMinimumValue returns [EObject current=null]
 						"com.b2international.snowowl.snomed.ecl.Ecl.GT");
 				}
 			)
-		)
+		)?
 		this_HASH_1=RULE_HASH
 		{
 			newLeafNode(this_HASH_1, grammarAccess.getIntegerMinimumValueAccess().getHASHTerminalRuleCall_1());
@@ -2041,7 +1985,7 @@ ruleIntegerMaximumValue returns [EObject current=null]
 						"com.b2international.snowowl.snomed.ecl.Ecl.LT");
 				}
 			)
-		)
+		)?
 		this_HASH_1=RULE_HASH
 		{
 			newLeafNode(this_HASH_1, grammarAccess.getIntegerMaximumValueAccess().getHASHTerminalRuleCall_1());
@@ -2274,7 +2218,7 @@ ruleDecimalMinimumValue returns [EObject current=null]
 						"com.b2international.snowowl.snomed.ecl.Ecl.GT");
 				}
 			)
-		)
+		)?
 		this_HASH_1=RULE_HASH
 		{
 			newLeafNode(this_HASH_1, grammarAccess.getDecimalMinimumValueAccess().getHASHTerminalRuleCall_1());
@@ -2334,7 +2278,7 @@ ruleDecimalMaximumValue returns [EObject current=null]
 						"com.b2international.snowowl.snomed.ecl.Ecl.LT");
 				}
 			)
-		)
+		)?
 		this_HASH_1=RULE_HASH
 		{
 			newLeafNode(this_HASH_1, grammarAccess.getDecimalMaximumValueAccess().getHASHTerminalRuleCall_1());
@@ -3727,7 +3671,7 @@ ruleEclAttributeGroup returns [EObject current=null]
 						$current,
 						"cardinality",
 						lv_cardinality_0_0,
-						"com.b2international.snowowl.snomed.etl.Etl.Cardinality");
+						"com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4045,7 +3989,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"cardinality",
 						lv_cardinality_0_0,
-						"com.b2international.snowowl.snomed.etl.Etl.Cardinality");
+						"com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4106,6 +4050,75 @@ ruleAttributeConstraint returns [EObject current=null]
 				}
 			)
 		)
+	)
+;
+
+// Entry rule entryRuleCardinality
+entryRuleCardinality returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getCardinalityRule()); }
+	iv_ruleCardinality=ruleCardinality
+	{ $current=$iv_ruleCardinality.current; }
+	EOF;
+
+// Rule Cardinality
+ruleCardinality returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_SQUARE_OPEN_0=RULE_SQUARE_OPEN
+		{
+			newLeafNode(this_SQUARE_OPEN_0, grammarAccess.getCardinalityAccess().getSQUARE_OPENTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getCardinalityAccess().getMinNonNegativeIntegerParserRuleCall_1_0());
+				}
+				lv_min_1_0=ruleNonNegativeInteger
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getCardinalityRule());
+					}
+					set(
+						$current,
+						"min",
+						lv_min_1_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		this_TO_2=RULE_TO
+		{
+			newLeafNode(this_TO_2, grammarAccess.getCardinalityAccess().getTOTerminalRuleCall_2());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getCardinalityAccess().getMaxMaxValueParserRuleCall_3_0());
+				}
+				lv_max_3_0=ruleMaxValue
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getCardinalityRule());
+					}
+					set(
+						$current,
+						"max",
+						lv_max_3_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.MaxValue");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		this_SQUARE_CLOSE_4=RULE_SQUARE_CLOSE
+		{
+			newLeafNode(this_SQUARE_CLOSE_4, grammarAccess.getCardinalityAccess().getSQUARE_CLOSETerminalRuleCall_4());
+		}
 	)
 ;
 

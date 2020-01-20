@@ -92,7 +92,7 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
       case EtlPackage.STRING_REPLACEMENT_SLOT: return createStringReplacementSlot();
       case EtlPackage.INTEGER_REPLACEMENT_SLOT: return createIntegerReplacementSlot();
       case EtlPackage.DECIMAL_REPLACEMENT_SLOT: return createDecimalReplacementSlot();
-      case EtlPackage.CARDINALITY: return createCardinality();
+      case EtlPackage.ETL_CARDINALITY: return createEtlCardinality();
       case EtlPackage.STRING_VALUE: return createStringValue();
       case EtlPackage.INTEGER_VALUES: return createIntegerValues();
       case EtlPackage.INTEGER_VALUE: return createIntegerValue();
@@ -297,10 +297,10 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public Cardinality createCardinality()
+  public EtlCardinality createEtlCardinality()
   {
-    CardinalityImpl cardinality = new CardinalityImpl();
-    return cardinality;
+    EtlCardinalityImpl etlCardinality = new EtlCardinalityImpl();
+    return etlCardinality;
   }
 
   /**

@@ -163,9 +163,9 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
         return createDecimalReplacementSlotAdapter();
       }
       @Override
-      public Adapter caseCardinality(Cardinality object)
+      public Adapter caseEtlCardinality(EtlCardinality object)
       {
-        return createCardinalityAdapter();
+        return createEtlCardinalityAdapter();
       }
       @Override
       public Adapter caseStringValue(StringValue object)
@@ -231,11 +231,6 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
       public Adapter caseConceptReference(ConceptReference object)
       {
         return createConceptReferenceAdapter();
-      }
-      @Override
-      public Adapter caseEcl_Cardinality(com.b2international.snowowl.snomed.ecl.ecl.Cardinality object)
-      {
-        return createEcl_CardinalityAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -485,16 +480,16 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.Cardinality <em>Cardinality</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.EtlCardinality <em>Cardinality</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.Cardinality
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlCardinality
    * @generated
    */
-  public Adapter createCardinalityAdapter()
+  public Adapter createEtlCardinalityAdapter()
   {
     return null;
   }
@@ -690,21 +685,6 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createConceptReferenceAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Cardinality <em>Cardinality</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.Cardinality
-   * @generated
-   */
-  public Adapter createEcl_CardinalityAdapter()
   {
     return null;
   }

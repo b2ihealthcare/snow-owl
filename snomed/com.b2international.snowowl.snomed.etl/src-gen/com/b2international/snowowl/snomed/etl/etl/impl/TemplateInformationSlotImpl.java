@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.Cardinality;
+import com.b2international.snowowl.snomed.etl.etl.EtlCardinality;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.TemplateInformationSlot;
 
@@ -52,7 +52,7 @@ public class TemplateInformationSlotImpl extends MinimalEObjectImpl.Container im
    * @generated
    * @ordered
    */
-  protected Cardinality cardinality;
+  protected EtlCardinality cardinality;
 
   /**
    * The default value of the '{@link #getName() <em>Name</em>}' attribute.
@@ -101,7 +101,7 @@ public class TemplateInformationSlotImpl extends MinimalEObjectImpl.Container im
    * @generated
    */
   @Override
-  public Cardinality getCardinality()
+  public EtlCardinality getCardinality()
   {
     return cardinality;
   }
@@ -111,9 +111,9 @@ public class TemplateInformationSlotImpl extends MinimalEObjectImpl.Container im
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetCardinality(Cardinality newCardinality, NotificationChain msgs)
+  public NotificationChain basicSetCardinality(EtlCardinality newCardinality, NotificationChain msgs)
   {
-    Cardinality oldCardinality = cardinality;
+    EtlCardinality oldCardinality = cardinality;
     cardinality = newCardinality;
     if (eNotificationRequired())
     {
@@ -129,7 +129,7 @@ public class TemplateInformationSlotImpl extends MinimalEObjectImpl.Container im
    * @generated
    */
   @Override
-  public void setCardinality(Cardinality newCardinality)
+  public void setCardinality(EtlCardinality newCardinality)
   {
     if (newCardinality != cardinality)
     {
@@ -215,7 +215,7 @@ public class TemplateInformationSlotImpl extends MinimalEObjectImpl.Container im
     switch (featureID)
     {
       case EtlPackage.TEMPLATE_INFORMATION_SLOT__CARDINALITY:
-        setCardinality((Cardinality)newValue);
+        setCardinality((EtlCardinality)newValue);
         return;
       case EtlPackage.TEMPLATE_INFORMATION_SLOT__NAME:
         setName((String)newValue);
@@ -235,7 +235,7 @@ public class TemplateInformationSlotImpl extends MinimalEObjectImpl.Container im
     switch (featureID)
     {
       case EtlPackage.TEMPLATE_INFORMATION_SLOT__CARDINALITY:
-        setCardinality((Cardinality)null);
+        setCardinality((EtlCardinality)null);
         return;
       case EtlPackage.TEMPLATE_INFORMATION_SLOT__NAME:
         setName(NAME_EDEFAULT);

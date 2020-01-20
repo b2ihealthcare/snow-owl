@@ -15,9 +15,18 @@
  */
 package com.b2international.snowowl.snomed.etl;
 
+import org.eclipse.xtext.conversion.IValueConverterService;
+
+import com.b2international.snowowl.snomed.etl.converter.EtlValueConverterService;
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 public class EtlRuntimeModule extends AbstractEtlRuntimeModule {
+	
+	@Override
+	public Class<? extends IValueConverterService> bindIValueConverterService() {
+		return EtlValueConverterService.class;
+	}
+	
 }
