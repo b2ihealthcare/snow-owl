@@ -46,8 +46,10 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.model.CDOModelUtil;
 import org.eclipse.emf.cdo.common.model.CDOPackageUnit;
+import org.eclipse.emf.cdo.common.model.CDOType;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.CDORevisionFactory;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.common.revision.CDORevisionManager;
 import org.eclipse.emf.cdo.server.IRepository;
@@ -456,11 +458,21 @@ public enum HistoryInfoProvider {
 	
 	private static CDORevision removeManyValuedReferences(final CDORevision source) {
 
-		final CDORevision revisionCopy = source.copy();
+		final InternalCDORevision revision = (InternalCDORevision) source;
+		final InternalCDORevision revisionCopy = (InternalCDORevision) CDORevisionFactory.DEFAULT.createRevision(source.getEClass());
 
-		for (final EStructuralFeature ref : CDOModelUtil.getAllPersistentFeatures(revisionCopy.getEClass())) {
-			if (ref.isMany()) {
-				((InternalCDORevision) revisionCopy).setValue(ref, null);
+		revisionCopy.setID(revision.getID());
+		revisionCopy.setBranchPoint(revision.getBranch().getPoint(revision.getTimeStamp()));
+		revisionCopy.setRevised(revision.getRevised());
+		revisionCopy.setResourceID(revision.getResourceID());
+		revisionCopy.setContainerID(revision.getContainerID());
+		revisionCopy.setContainingFeatureID(revision.getContainingFeatureID());
+		// flags are not carried over
+		
+		for (final EStructuralFeature feature : CDOModelUtil.getAllPersistentFeatures(source.getEClass())) {
+			if (!feature.isMany()) {
+				final CDOType type = CDOModelUtil.getType(feature);
+				revisionCopy.setValue(feature, type.copyValue(revision.getValue(feature)));
 			}
 		}
 
