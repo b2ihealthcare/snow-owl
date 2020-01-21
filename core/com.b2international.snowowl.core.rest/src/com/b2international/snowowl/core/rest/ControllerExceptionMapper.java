@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -58,6 +59,12 @@ public class ControllerExceptionMapper {
 	    	}
 	    	return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	    }
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+	public @ResponseBody RestApiError handle(final HttpRequestMethodNotSupportedException e) {
+		return RestApiError.of(ApiError.Builder.of("Method " + e.getMethod() + " is not allowed").build()).build(HttpStatus.METHOD_NOT_ALLOWED.value());
 	}
 	
 	@ExceptionHandler
