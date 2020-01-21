@@ -15,17 +15,18 @@
  */
 package com.b2international.snowowl.snomed.etl.etl;
 
+import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Expression Replacement Slot</b></em>'.
+ * A representation of the model object '<em><b>Slot Integer</b></em>'.
  * <!-- end-user-doc -->
  *
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getExpressionReplacementSlot()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotInteger()
  * @model
  * @generated
  */
-public interface ExpressionReplacementSlot extends ConceptReplacementSlot
+public interface SlotInteger extends EObject
 {
-} // ExpressionReplacementSlot
+} // SlotInteger

@@ -135,11 +135,11 @@ public class EtlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EtlPackage.CONCEPT_REPLACEMENT_SLOT:
+      case EtlPackage.CONCEPT_ID_REPLACEMENT_SLOT:
       {
-        ConceptReplacementSlot conceptReplacementSlot = (ConceptReplacementSlot)theEObject;
-        T result = caseConceptReplacementSlot(conceptReplacementSlot);
-        if (result == null) result = caseConceptReferenceSlot(conceptReplacementSlot);
+        ConceptIdReplacementSlot conceptIdReplacementSlot = (ConceptIdReplacementSlot)theEObject;
+        T result = caseConceptIdReplacementSlot(conceptIdReplacementSlot);
+        if (result == null) result = caseConceptReplacementSlot(conceptIdReplacementSlot);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -147,7 +147,7 @@ public class EtlSwitch<T> extends Switch<T>
       {
         ExpressionReplacementSlot expressionReplacementSlot = (ExpressionReplacementSlot)theEObject;
         T result = caseExpressionReplacementSlot(expressionReplacementSlot);
-        if (result == null) result = caseConceptReferenceSlot(expressionReplacementSlot);
+        if (result == null) result = caseConceptReplacementSlot(expressionReplacementSlot);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -207,94 +207,10 @@ public class EtlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EtlPackage.STRING_VALUE:
+      case EtlPackage.CONCEPT_REPLACEMENT_SLOT:
       {
-        StringValue stringValue = (StringValue)theEObject;
-        T result = caseStringValue(stringValue);
-        if (result == null) result = caseAttributeValue(stringValue);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.INTEGER_VALUES:
-      {
-        IntegerValues integerValues = (IntegerValues)theEObject;
-        T result = caseIntegerValues(integerValues);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.INTEGER_VALUE:
-      {
-        IntegerValue integerValue = (IntegerValue)theEObject;
-        T result = caseIntegerValue(integerValue);
-        if (result == null) result = caseAttributeValue(integerValue);
-        if (result == null) result = caseIntegerValues(integerValue);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.INTEGER_RANGE:
-      {
-        IntegerRange integerRange = (IntegerRange)theEObject;
-        T result = caseIntegerRange(integerRange);
-        if (result == null) result = caseIntegerValues(integerRange);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.INTEGER_MINIMUM_VALUE:
-      {
-        IntegerMinimumValue integerMinimumValue = (IntegerMinimumValue)theEObject;
-        T result = caseIntegerMinimumValue(integerMinimumValue);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.INTEGER_MAXIMUM_VALUE:
-      {
-        IntegerMaximumValue integerMaximumValue = (IntegerMaximumValue)theEObject;
-        T result = caseIntegerMaximumValue(integerMaximumValue);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.DECIMAL_VALUES:
-      {
-        DecimalValues decimalValues = (DecimalValues)theEObject;
-        T result = caseDecimalValues(decimalValues);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.DECIMAL_VALUE:
-      {
-        DecimalValue decimalValue = (DecimalValue)theEObject;
-        T result = caseDecimalValue(decimalValue);
-        if (result == null) result = caseAttributeValue(decimalValue);
-        if (result == null) result = caseDecimalValues(decimalValue);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.DECIMAL_RANGE:
-      {
-        DecimalRange decimalRange = (DecimalRange)theEObject;
-        T result = caseDecimalRange(decimalRange);
-        if (result == null) result = caseDecimalValues(decimalRange);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.DECIMAL_MINIMUM_VALUE:
-      {
-        DecimalMinimumValue decimalMinimumValue = (DecimalMinimumValue)theEObject;
-        T result = caseDecimalMinimumValue(decimalMinimumValue);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE:
-      {
-        DecimalMaximumValue decimalMaximumValue = (DecimalMaximumValue)theEObject;
-        T result = caseDecimalMaximumValue(decimalMaximumValue);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case EtlPackage.CONCEPT_REFERENCE_SLOT:
-      {
-        ConceptReferenceSlot conceptReferenceSlot = (ConceptReferenceSlot)theEObject;
-        T result = caseConceptReferenceSlot(conceptReferenceSlot);
+        ConceptReplacementSlot conceptReplacementSlot = (ConceptReplacementSlot)theEObject;
+        T result = caseConceptReplacementSlot(conceptReplacementSlot);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -303,6 +219,104 @@ public class EtlSwitch<T> extends Switch<T>
         ConceptReference conceptReference = (ConceptReference)theEObject;
         T result = caseConceptReference(conceptReference);
         if (result == null) result = caseAttributeValue(conceptReference);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.STRING_VALUE:
+      {
+        StringValue stringValue = (StringValue)theEObject;
+        T result = caseStringValue(stringValue);
+        if (result == null) result = caseAttributeValue(stringValue);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.INTEGER_VALUE:
+      {
+        IntegerValue integerValue = (IntegerValue)theEObject;
+        T result = caseIntegerValue(integerValue);
+        if (result == null) result = caseAttributeValue(integerValue);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.DECIMAL_VALUE:
+      {
+        DecimalValue decimalValue = (DecimalValue)theEObject;
+        T result = caseDecimalValue(decimalValue);
+        if (result == null) result = caseAttributeValue(decimalValue);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_INTEGER:
+      {
+        SlotInteger slotInteger = (SlotInteger)theEObject;
+        T result = caseSlotInteger(slotInteger);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_INTEGER_VALUE:
+      {
+        SlotIntegerValue slotIntegerValue = (SlotIntegerValue)theEObject;
+        T result = caseSlotIntegerValue(slotIntegerValue);
+        if (result == null) result = caseSlotInteger(slotIntegerValue);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_INTEGER_RANGE:
+      {
+        SlotIntegerRange slotIntegerRange = (SlotIntegerRange)theEObject;
+        T result = caseSlotIntegerRange(slotIntegerRange);
+        if (result == null) result = caseSlotInteger(slotIntegerRange);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_INTEGER_MINIMUM_VALUE:
+      {
+        SlotIntegerMinimumValue slotIntegerMinimumValue = (SlotIntegerMinimumValue)theEObject;
+        T result = caseSlotIntegerMinimumValue(slotIntegerMinimumValue);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE:
+      {
+        SlotIntegerMaximumValue slotIntegerMaximumValue = (SlotIntegerMaximumValue)theEObject;
+        T result = caseSlotIntegerMaximumValue(slotIntegerMaximumValue);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_DECIMAL:
+      {
+        SlotDecimal slotDecimal = (SlotDecimal)theEObject;
+        T result = caseSlotDecimal(slotDecimal);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_DECIMAL_VALUE:
+      {
+        SlotDecimalValue slotDecimalValue = (SlotDecimalValue)theEObject;
+        T result = caseSlotDecimalValue(slotDecimalValue);
+        if (result == null) result = caseSlotDecimal(slotDecimalValue);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_DECIMAL_RANGE:
+      {
+        SlotDecimalRange slotDecimalRange = (SlotDecimalRange)theEObject;
+        T result = caseSlotDecimalRange(slotDecimalRange);
+        if (result == null) result = caseSlotDecimal(slotDecimalRange);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_DECIMAL_MINIMUM_VALUE:
+      {
+        SlotDecimalMinimumValue slotDecimalMinimumValue = (SlotDecimalMinimumValue)theEObject;
+        T result = caseSlotDecimalMinimumValue(slotDecimalMinimumValue);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EtlPackage.SLOT_DECIMAL_MAXIMUM_VALUE:
+      {
+        SlotDecimalMaximumValue slotDecimalMaximumValue = (SlotDecimalMaximumValue)theEObject;
+        T result = caseSlotDecimalMaximumValue(slotDecimalMaximumValue);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -423,17 +437,17 @@ public class EtlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Concept Replacement Slot</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Concept Id Replacement Slot</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Concept Replacement Slot</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Concept Id Replacement Slot</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseConceptReplacementSlot(ConceptReplacementSlot object)
+  public T caseConceptIdReplacementSlot(ConceptIdReplacementSlot object)
   {
     return null;
   }
@@ -567,6 +581,38 @@ public class EtlSwitch<T> extends Switch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>Concept Replacement Slot</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Concept Replacement Slot</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseConceptReplacementSlot(ConceptReplacementSlot object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Concept Reference</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Concept Reference</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseConceptReference(ConceptReference object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>String Value</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -578,22 +624,6 @@ public class EtlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseStringValue(StringValue object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Integer Values</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Integer Values</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseIntegerValues(IntegerValues object)
   {
     return null;
   }
@@ -615,70 +645,6 @@ public class EtlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Integer Range</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Integer Range</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseIntegerRange(IntegerRange object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Integer Minimum Value</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Integer Minimum Value</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseIntegerMinimumValue(IntegerMinimumValue object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Integer Maximum Value</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Integer Maximum Value</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseIntegerMaximumValue(IntegerMaximumValue object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Decimal Values</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Decimal Values</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseDecimalValues(DecimalValues object)
-  {
-    return null;
-  }
-
-  /**
    * Returns the result of interpreting the object as an instance of '<em>Decimal Value</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -695,81 +661,161 @@ public class EtlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Decimal Range</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Slot Integer</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Decimal Range</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Slot Integer</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseDecimalRange(DecimalRange object)
+  public T caseSlotInteger(SlotInteger object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Decimal Minimum Value</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Slot Integer Value</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Decimal Minimum Value</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Slot Integer Value</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseDecimalMinimumValue(DecimalMinimumValue object)
+  public T caseSlotIntegerValue(SlotIntegerValue object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Decimal Maximum Value</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Slot Integer Range</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Decimal Maximum Value</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Slot Integer Range</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseDecimalMaximumValue(DecimalMaximumValue object)
+  public T caseSlotIntegerRange(SlotIntegerRange object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Concept Reference Slot</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Slot Integer Minimum Value</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Concept Reference Slot</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Slot Integer Minimum Value</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseConceptReferenceSlot(ConceptReferenceSlot object)
+  public T caseSlotIntegerMinimumValue(SlotIntegerMinimumValue object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Concept Reference</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Slot Integer Maximum Value</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Concept Reference</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Slot Integer Maximum Value</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseConceptReference(ConceptReference object)
+  public T caseSlotIntegerMaximumValue(SlotIntegerMaximumValue object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Slot Decimal</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Slot Decimal</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseSlotDecimal(SlotDecimal object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Slot Decimal Value</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Slot Decimal Value</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseSlotDecimalValue(SlotDecimalValue object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Slot Decimal Range</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Slot Decimal Range</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseSlotDecimalRange(SlotDecimalRange object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Slot Decimal Minimum Value</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Slot Decimal Minimum Value</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseSlotDecimalMinimumValue(SlotDecimalMinimumValue object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Slot Decimal Maximum Value</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Slot Decimal Maximum Value</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseSlotDecimalMaximumValue(SlotDecimalMaximumValue object)
   {
     return null;
   }

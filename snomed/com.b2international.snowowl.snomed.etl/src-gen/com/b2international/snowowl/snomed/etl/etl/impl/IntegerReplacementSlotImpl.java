@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.etl.etl.impl;
 
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.IntegerReplacementSlot;
-import com.b2international.snowowl.snomed.etl.etl.IntegerValues;
+import com.b2international.snowowl.snomed.etl.etl.SlotInteger;
 
 import java.util.Collection;
 
@@ -54,7 +54,7 @@ public class IntegerReplacementSlotImpl extends ConcreteValueReplacementSlotImpl
    * @generated
    * @ordered
    */
-  protected EList<IntegerValues> values;
+  protected EList<SlotInteger> values;
 
   /**
    * <!-- begin-user-doc -->
@@ -83,11 +83,11 @@ public class IntegerReplacementSlotImpl extends ConcreteValueReplacementSlotImpl
    * @generated
    */
   @Override
-  public EList<IntegerValues> getValues()
+  public EList<SlotInteger> getValues()
   {
     if (values == null)
     {
-      values = new EObjectContainmentEList<IntegerValues>(IntegerValues.class, this, EtlPackage.INTEGER_REPLACEMENT_SLOT__VALUES);
+      values = new EObjectContainmentEList<SlotInteger>(SlotInteger.class, this, EtlPackage.INTEGER_REPLACEMENT_SLOT__VALUES);
     }
     return values;
   }
@@ -137,7 +137,7 @@ public class IntegerReplacementSlotImpl extends ConcreteValueReplacementSlotImpl
     {
       case EtlPackage.INTEGER_REPLACEMENT_SLOT__VALUES:
         getValues().clear();
-        getValues().addAll((Collection<? extends IntegerValues>)newValue);
+        getValues().addAll((Collection<? extends SlotInteger>)newValue);
         return;
     }
     super.eSet(featureID, newValue);

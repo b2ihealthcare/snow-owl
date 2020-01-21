@@ -15,54 +15,30 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-
-import java.math.BigDecimal;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue;
 
 import org.eclipse.emf.common.notify.Notification;
 
 import org.eclipse.emf.ecore.EClass;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Decimal Minimum Value</b></em>'.
+ * An implementation of the model object '<em><b>Slot Integer Value</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalMinimumValueImpl#isExclusive <em>Exclusive</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalMinimumValueImpl#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerValueImpl#getValue <em>Value</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implements DecimalMinimumValue
+public class SlotIntegerValueImpl extends SlotIntegerImpl implements SlotIntegerValue
 {
-  /**
-   * The default value of the '{@link #isExclusive() <em>Exclusive</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #isExclusive()
-   * @generated
-   * @ordered
-   */
-  protected static final boolean EXCLUSIVE_EDEFAULT = false;
-
-  /**
-   * The cached value of the '{@link #isExclusive() <em>Exclusive</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #isExclusive()
-   * @generated
-   * @ordered
-   */
-  protected boolean exclusive = EXCLUSIVE_EDEFAULT;
-
   /**
    * The default value of the '{@link #getValue() <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
@@ -71,7 +47,7 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
    * @generated
    * @ordered
    */
-  protected static final BigDecimal VALUE_EDEFAULT = null;
+  protected static final int VALUE_EDEFAULT = 0;
 
   /**
    * The cached value of the '{@link #getValue() <em>Value</em>}' attribute.
@@ -81,14 +57,14 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
    * @generated
    * @ordered
    */
-  protected BigDecimal value = VALUE_EDEFAULT;
+  protected int value = VALUE_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected DecimalMinimumValueImpl()
+  protected SlotIntegerValueImpl()
   {
     super();
   }
@@ -101,7 +77,7 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
   @Override
   protected EClass eStaticClass()
   {
-    return EtlPackage.Literals.DECIMAL_MINIMUM_VALUE;
+    return EtlPackage.Literals.SLOT_INTEGER_VALUE;
   }
 
   /**
@@ -110,32 +86,7 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
    * @generated
    */
   @Override
-  public boolean isExclusive()
-  {
-    return exclusive;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setExclusive(boolean newExclusive)
-  {
-    boolean oldExclusive = exclusive;
-    exclusive = newExclusive;
-    if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.DECIMAL_MINIMUM_VALUE__EXCLUSIVE, oldExclusive, exclusive));
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public BigDecimal getValue()
+  public int getValue()
   {
     return value;
   }
@@ -146,12 +97,12 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
    * @generated
    */
   @Override
-  public void setValue(BigDecimal newValue)
+  public void setValue(int newValue)
   {
-    BigDecimal oldValue = value;
+    int oldValue = value;
     value = newValue;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.DECIMAL_MINIMUM_VALUE__VALUE, oldValue, value));
+      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.SLOT_INTEGER_VALUE__VALUE, oldValue, value));
   }
 
   /**
@@ -164,9 +115,7 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_MINIMUM_VALUE__EXCLUSIVE:
-        return isExclusive();
-      case EtlPackage.DECIMAL_MINIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_INTEGER_VALUE__VALUE:
         return getValue();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -182,11 +131,8 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_MINIMUM_VALUE__EXCLUSIVE:
-        setExclusive((Boolean)newValue);
-        return;
-      case EtlPackage.DECIMAL_MINIMUM_VALUE__VALUE:
-        setValue((BigDecimal)newValue);
+      case EtlPackage.SLOT_INTEGER_VALUE__VALUE:
+        setValue((Integer)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -202,10 +148,7 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_MINIMUM_VALUE__EXCLUSIVE:
-        setExclusive(EXCLUSIVE_EDEFAULT);
-        return;
-      case EtlPackage.DECIMAL_MINIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_INTEGER_VALUE__VALUE:
         setValue(VALUE_EDEFAULT);
         return;
     }
@@ -222,10 +165,8 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_MINIMUM_VALUE__EXCLUSIVE:
-        return exclusive != EXCLUSIVE_EDEFAULT;
-      case EtlPackage.DECIMAL_MINIMUM_VALUE__VALUE:
-        return VALUE_EDEFAULT == null ? value != null : !VALUE_EDEFAULT.equals(value);
+      case EtlPackage.SLOT_INTEGER_VALUE__VALUE:
+        return value != VALUE_EDEFAULT;
     }
     return super.eIsSet(featureID);
   }
@@ -241,12 +182,10 @@ public class DecimalMinimumValueImpl extends MinimalEObjectImpl.Container implem
     if (eIsProxy()) return super.toString();
 
     StringBuilder result = new StringBuilder(super.toString());
-    result.append(" (exclusive: ");
-    result.append(exclusive);
-    result.append(", value: ");
+    result.append(" (value: ");
     result.append(value);
     result.append(')');
     return result.toString();
   }
 
-} //DecimalMinimumValueImpl
+} //SlotIntegerValueImpl

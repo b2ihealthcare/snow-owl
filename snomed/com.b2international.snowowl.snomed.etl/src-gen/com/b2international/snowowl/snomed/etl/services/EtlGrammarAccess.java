@@ -374,10 +374,10 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//ConcreteValueReplacementSlot
 		public RuleCall getConcreteValueReplacementSlotParserRuleCall_5() { return cConcreteValueReplacementSlotParserRuleCall_5; }
 	}
-	public class ConceptReplacementSlotElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.ConceptReplacementSlot");
+	public class ConceptIdReplacementSlotElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.ConceptIdReplacementSlot");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Action cConceptReplacementSlotAction_0 = (Action)cGroup.eContents().get(0);
+		private final Action cConceptIdReplacementSlotAction_0 = (Action)cGroup.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_OPENTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
 		private final RuleCall cPLUSTerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
 		private final RuleCall cIDTerminalRuleCall_3 = (RuleCall)cGroup.eContents().get(3);
@@ -390,17 +390,17 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
-		//ConceptReplacementSlot:
-		//	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+		//ConceptIdReplacementSlot:
+		//	{ConceptIdReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
 		//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+		//{ConceptIdReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
 		//name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
-		//{ConceptReplacementSlot}
-		public Action getConceptReplacementSlotAction_0() { return cConceptReplacementSlotAction_0; }
+		//{ConceptIdReplacementSlot}
+		public Action getConceptIdReplacementSlotAction_0() { return cConceptIdReplacementSlotAction_0; }
 		
 		//DOUBLE_SQUARE_OPEN
 		public RuleCall getDOUBLE_SQUARE_OPENTerminalRuleCall_1() { return cDOUBLE_SQUARE_OPENTerminalRuleCall_1; }
@@ -637,20 +637,20 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup_4 = (Group)cGroup.eContents().get(4);
 		private final RuleCall cROUND_OPENTerminalRuleCall_4_0 = (RuleCall)cGroup_4.eContents().get(0);
 		private final Assignment cValuesAssignment_4_1 = (Assignment)cGroup_4.eContents().get(1);
-		private final RuleCall cValuesStringValueParserRuleCall_4_1_0 = (RuleCall)cValuesAssignment_4_1.eContents().get(0);
+		private final RuleCall cValuesSTRINGTerminalRuleCall_4_1_0 = (RuleCall)cValuesAssignment_4_1.eContents().get(0);
 		private final Assignment cValuesAssignment_4_2 = (Assignment)cGroup_4.eContents().get(2);
-		private final RuleCall cValuesStringValueParserRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
+		private final RuleCall cValuesSTRINGTerminalRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_3 = (RuleCall)cGroup_4.eContents().get(3);
 		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
 		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//StringReplacementSlot:
-		//	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue values+=StringValue* ROUND_CLOSE)?
+		//	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=STRING values+=STRING* ROUND_CLOSE)?
 		//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue values+=StringValue* ROUND_CLOSE)?
+		//{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=STRING values+=STRING* ROUND_CLOSE)?
 		//name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
@@ -666,23 +666,23 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//STR
 		public RuleCall getSTRTerminalRuleCall_3() { return cSTRTerminalRuleCall_3; }
 		
-		//(ROUND_OPEN values+=StringValue values+=StringValue* ROUND_CLOSE)?
+		//(ROUND_OPEN values+=STRING values+=STRING* ROUND_CLOSE)?
 		public Group getGroup_4() { return cGroup_4; }
 		
 		//ROUND_OPEN
 		public RuleCall getROUND_OPENTerminalRuleCall_4_0() { return cROUND_OPENTerminalRuleCall_4_0; }
 		
-		//values+=StringValue
+		//values+=STRING
 		public Assignment getValuesAssignment_4_1() { return cValuesAssignment_4_1; }
 		
-		//StringValue
-		public RuleCall getValuesStringValueParserRuleCall_4_1_0() { return cValuesStringValueParserRuleCall_4_1_0; }
+		//STRING
+		public RuleCall getValuesSTRINGTerminalRuleCall_4_1_0() { return cValuesSTRINGTerminalRuleCall_4_1_0; }
 		
-		//values+=StringValue*
+		//values+=STRING*
 		public Assignment getValuesAssignment_4_2() { return cValuesAssignment_4_2; }
 		
-		//StringValue
-		public RuleCall getValuesStringValueParserRuleCall_4_2_0() { return cValuesStringValueParserRuleCall_4_2_0; }
+		//STRING
+		public RuleCall getValuesSTRINGTerminalRuleCall_4_2_0() { return cValuesSTRINGTerminalRuleCall_4_2_0; }
 		
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_3() { return cROUND_CLOSETerminalRuleCall_4_3; }
@@ -706,21 +706,21 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup_4 = (Group)cGroup.eContents().get(4);
 		private final RuleCall cROUND_OPENTerminalRuleCall_4_0 = (RuleCall)cGroup_4.eContents().get(0);
 		private final Assignment cValuesAssignment_4_1 = (Assignment)cGroup_4.eContents().get(1);
-		private final RuleCall cValuesIntegerValuesParserRuleCall_4_1_0 = (RuleCall)cValuesAssignment_4_1.eContents().get(0);
+		private final RuleCall cValuesSlotIntegerParserRuleCall_4_1_0 = (RuleCall)cValuesAssignment_4_1.eContents().get(0);
 		private final Assignment cValuesAssignment_4_2 = (Assignment)cGroup_4.eContents().get(2);
-		private final RuleCall cValuesIntegerValuesParserRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
+		private final RuleCall cValuesSlotIntegerParserRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_3 = (RuleCall)cGroup_4.eContents().get(3);
 		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
 		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//IntegerReplacementSlot:
-		//	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues values+=IntegerValues*
+		//	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=SlotInteger values+=SlotInteger*
 		//	ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues values+=IntegerValues*
-		//ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
+		//{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=SlotInteger values+=SlotInteger* ROUND_CLOSE)?
+		//name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{IntegerReplacementSlot}
@@ -735,23 +735,23 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//INT
 		public RuleCall getINTTerminalRuleCall_3() { return cINTTerminalRuleCall_3; }
 		
-		//(ROUND_OPEN values+=IntegerValues values+=IntegerValues* ROUND_CLOSE)?
+		//(ROUND_OPEN values+=SlotInteger values+=SlotInteger* ROUND_CLOSE)?
 		public Group getGroup_4() { return cGroup_4; }
 		
 		//ROUND_OPEN
 		public RuleCall getROUND_OPENTerminalRuleCall_4_0() { return cROUND_OPENTerminalRuleCall_4_0; }
 		
-		//values+=IntegerValues
+		//values+=SlotInteger
 		public Assignment getValuesAssignment_4_1() { return cValuesAssignment_4_1; }
 		
-		//IntegerValues
-		public RuleCall getValuesIntegerValuesParserRuleCall_4_1_0() { return cValuesIntegerValuesParserRuleCall_4_1_0; }
+		//SlotInteger
+		public RuleCall getValuesSlotIntegerParserRuleCall_4_1_0() { return cValuesSlotIntegerParserRuleCall_4_1_0; }
 		
-		//values+=IntegerValues*
+		//values+=SlotInteger*
 		public Assignment getValuesAssignment_4_2() { return cValuesAssignment_4_2; }
 		
-		//IntegerValues
-		public RuleCall getValuesIntegerValuesParserRuleCall_4_2_0() { return cValuesIntegerValuesParserRuleCall_4_2_0; }
+		//SlotInteger
+		public RuleCall getValuesSlotIntegerParserRuleCall_4_2_0() { return cValuesSlotIntegerParserRuleCall_4_2_0; }
 		
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_3() { return cROUND_CLOSETerminalRuleCall_4_3; }
@@ -775,21 +775,21 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup_4 = (Group)cGroup.eContents().get(4);
 		private final RuleCall cROUND_OPENTerminalRuleCall_4_0 = (RuleCall)cGroup_4.eContents().get(0);
 		private final Assignment cValuesAssignment_4_1 = (Assignment)cGroup_4.eContents().get(1);
-		private final RuleCall cValuesDecimalValuesParserRuleCall_4_1_0 = (RuleCall)cValuesAssignment_4_1.eContents().get(0);
+		private final RuleCall cValuesSlotDecimalParserRuleCall_4_1_0 = (RuleCall)cValuesAssignment_4_1.eContents().get(0);
 		private final Assignment cValuesAssignment_4_2 = (Assignment)cGroup_4.eContents().get(2);
-		private final RuleCall cValuesDecimalValuesParserRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
+		private final RuleCall cValuesSlotDecimalParserRuleCall_4_2_0 = (RuleCall)cValuesAssignment_4_2.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_4_3 = (RuleCall)cGroup_4.eContents().get(3);
 		private final Assignment cNameAssignment_5 = (Assignment)cGroup.eContents().get(5);
 		private final RuleCall cNameSLOTNAME_STRINGTerminalRuleCall_5_0 = (RuleCall)cNameAssignment_5.eContents().get(0);
 		private final RuleCall cDOUBLE_SQUARE_CLOSETerminalRuleCall_6 = (RuleCall)cGroup.eContents().get(6);
 		
 		//DecimalReplacementSlot:
-		//	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues values+=DecimalValues*
+		//	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=SlotDecimal values+=SlotDecimal*
 		//	ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues values+=DecimalValues*
-		//ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
+		//{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=SlotDecimal values+=SlotDecimal* ROUND_CLOSE)?
+		//name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE
 		public Group getGroup() { return cGroup; }
 		
 		//{DecimalReplacementSlot}
@@ -804,23 +804,23 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//DEC
 		public RuleCall getDECTerminalRuleCall_3() { return cDECTerminalRuleCall_3; }
 		
-		//(ROUND_OPEN values+=DecimalValues values+=DecimalValues* ROUND_CLOSE)?
+		//(ROUND_OPEN values+=SlotDecimal values+=SlotDecimal* ROUND_CLOSE)?
 		public Group getGroup_4() { return cGroup_4; }
 		
 		//ROUND_OPEN
 		public RuleCall getROUND_OPENTerminalRuleCall_4_0() { return cROUND_OPENTerminalRuleCall_4_0; }
 		
-		//values+=DecimalValues
+		//values+=SlotDecimal
 		public Assignment getValuesAssignment_4_1() { return cValuesAssignment_4_1; }
 		
-		//DecimalValues
-		public RuleCall getValuesDecimalValuesParserRuleCall_4_1_0() { return cValuesDecimalValuesParserRuleCall_4_1_0; }
+		//SlotDecimal
+		public RuleCall getValuesSlotDecimalParserRuleCall_4_1_0() { return cValuesSlotDecimalParserRuleCall_4_1_0; }
 		
-		//values+=DecimalValues*
+		//values+=SlotDecimal*
 		public Assignment getValuesAssignment_4_2() { return cValuesAssignment_4_2; }
 		
-		//DecimalValues
-		public RuleCall getValuesDecimalValuesParserRuleCall_4_2_0() { return cValuesDecimalValuesParserRuleCall_4_2_0; }
+		//SlotDecimal
+		public RuleCall getValuesSlotDecimalParserRuleCall_4_2_0() { return cValuesSlotDecimalParserRuleCall_4_2_0; }
 		
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_4_3() { return cROUND_CLOSETerminalRuleCall_4_3; }
@@ -870,6 +870,64 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		
 		//MaxValue
 		public RuleCall getMaxMaxValueParserRuleCall_3_0() { return cMaxMaxValueParserRuleCall_3_0; }
+	}
+	public class ConceptReplacementSlotElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.ConceptReplacementSlot");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cConceptIdReplacementSlotParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cExpressionReplacementSlotParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		//ConceptReplacementSlot:
+		//	ConceptIdReplacementSlot | ExpressionReplacementSlot;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//ConceptIdReplacementSlot | ExpressionReplacementSlot
+		public Alternatives getAlternatives() { return cAlternatives; }
+		
+		//ConceptIdReplacementSlot
+		public RuleCall getConceptIdReplacementSlotParserRuleCall_0() { return cConceptIdReplacementSlotParserRuleCall_0; }
+		
+		//ExpressionReplacementSlot
+		public RuleCall getExpressionReplacementSlotParserRuleCall_1() { return cExpressionReplacementSlotParserRuleCall_1; }
+	}
+	public class ConceptReferenceElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.ConceptReference");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final Assignment cSlotAssignment_0 = (Assignment)cAlternatives.eContents().get(0);
+		private final RuleCall cSlotConceptReplacementSlotParserRuleCall_0_0 = (RuleCall)cSlotAssignment_0.eContents().get(0);
+		private final Group cGroup_1 = (Group)cAlternatives.eContents().get(1);
+		private final Assignment cIdAssignment_1_0 = (Assignment)cGroup_1.eContents().get(0);
+		private final RuleCall cIdSnomedIdentifierParserRuleCall_1_0_0 = (RuleCall)cIdAssignment_1_0.eContents().get(0);
+		private final Assignment cTermAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
+		private final RuleCall cTermTERM_STRINGTerminalRuleCall_1_1_0 = (RuleCall)cTermAssignment_1_1.eContents().get(0);
+		
+		//ConceptReference:
+		//	slot=ConceptReplacementSlot | id=SnomedIdentifier term=TERM_STRING?;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//slot=ConceptReplacementSlot | id=SnomedIdentifier term=TERM_STRING?
+		public Alternatives getAlternatives() { return cAlternatives; }
+		
+		//slot=ConceptReplacementSlot
+		public Assignment getSlotAssignment_0() { return cSlotAssignment_0; }
+		
+		//ConceptReplacementSlot
+		public RuleCall getSlotConceptReplacementSlotParserRuleCall_0_0() { return cSlotConceptReplacementSlotParserRuleCall_0_0; }
+		
+		//id=SnomedIdentifier term=TERM_STRING?
+		public Group getGroup_1() { return cGroup_1; }
+		
+		//id=SnomedIdentifier
+		public Assignment getIdAssignment_1_0() { return cIdAssignment_1_0; }
+		
+		//SnomedIdentifier
+		public RuleCall getIdSnomedIdentifierParserRuleCall_1_0_0() { return cIdSnomedIdentifierParserRuleCall_1_0_0; }
+		
+		//term=TERM_STRING?
+		public Assignment getTermAssignment_1_1() { return cTermAssignment_1_1; }
+		
+		//TERM_STRING
+		public RuleCall getTermTERM_STRINGTerminalRuleCall_1_1_0() { return cTermTERM_STRINGTerminalRuleCall_1_1_0; }
 	}
 	public class SlotTokenElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotToken");
@@ -971,25 +1029,6 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//STRING
 		public RuleCall getValueSTRINGTerminalRuleCall_0() { return cValueSTRINGTerminalRuleCall_0; }
 	}
-	public class IntegerValuesElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.IntegerValues");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cIntegerValueParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cIntegerRangeParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		
-		//IntegerValues:
-		//	IntegerValue | IntegerRange;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//IntegerValue | IntegerRange
-		public Alternatives getAlternatives() { return cAlternatives; }
-		
-		//IntegerValue
-		public RuleCall getIntegerValueParserRuleCall_0() { return cIntegerValueParserRuleCall_0; }
-		
-		//IntegerRange
-		public RuleCall getIntegerRangeParserRuleCall_1() { return cIntegerRangeParserRuleCall_1; }
-	}
 	public class IntegerValueElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.IntegerValue");
 		private final Group cGroup = (Group)rule.eContents().get(1);
@@ -1001,9 +1040,11 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//	HASH value=Integer;
 		@Override public ParserRule getRule() { return rule; }
 		
+		//// this is used by SCG (and ECL) and can be negative or positive 
 		//HASH value=Integer
 		public Group getGroup() { return cGroup; }
 		
+		//// this is used by SCG (and ECL) and can be negative or positive 
 		//HASH
 		public RuleCall getHASHTerminalRuleCall_0() { return cHASHTerminalRuleCall_0; }
 		
@@ -1012,138 +1053,6 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		
 		//Integer
 		public RuleCall getValueIntegerParserRuleCall_1_0() { return cValueIntegerParserRuleCall_1_0; }
-	}
-	public class IntegerRangeElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.IntegerRange");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final Group cGroup_0 = (Group)cAlternatives.eContents().get(0);
-		private final Assignment cMinimumAssignment_0_0 = (Assignment)cGroup_0.eContents().get(0);
-		private final RuleCall cMinimumIntegerMinimumValueParserRuleCall_0_0_0 = (RuleCall)cMinimumAssignment_0_0.eContents().get(0);
-		private final RuleCall cTOTerminalRuleCall_0_1 = (RuleCall)cGroup_0.eContents().get(1);
-		private final Assignment cMaximumAssignment_0_2 = (Assignment)cGroup_0.eContents().get(2);
-		private final RuleCall cMaximumIntegerMaximumValueParserRuleCall_0_2_0 = (RuleCall)cMaximumAssignment_0_2.eContents().get(0);
-		private final Group cGroup_1 = (Group)cAlternatives.eContents().get(1);
-		private final RuleCall cTOTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
-		private final Assignment cMaximumAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
-		private final RuleCall cMaximumIntegerMaximumValueParserRuleCall_1_1_0 = (RuleCall)cMaximumAssignment_1_1.eContents().get(0);
-		
-		//IntegerRange:
-		//	minimum=IntegerMinimumValue TO maximum=IntegerMaximumValue? | TO maximum=IntegerMaximumValue;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//minimum=IntegerMinimumValue TO maximum=IntegerMaximumValue? | TO maximum=IntegerMaximumValue
-		public Alternatives getAlternatives() { return cAlternatives; }
-		
-		//minimum=IntegerMinimumValue TO maximum=IntegerMaximumValue?
-		public Group getGroup_0() { return cGroup_0; }
-		
-		//minimum=IntegerMinimumValue
-		public Assignment getMinimumAssignment_0_0() { return cMinimumAssignment_0_0; }
-		
-		//IntegerMinimumValue
-		public RuleCall getMinimumIntegerMinimumValueParserRuleCall_0_0_0() { return cMinimumIntegerMinimumValueParserRuleCall_0_0_0; }
-		
-		//TO
-		public RuleCall getTOTerminalRuleCall_0_1() { return cTOTerminalRuleCall_0_1; }
-		
-		//maximum=IntegerMaximumValue?
-		public Assignment getMaximumAssignment_0_2() { return cMaximumAssignment_0_2; }
-		
-		//IntegerMaximumValue
-		public RuleCall getMaximumIntegerMaximumValueParserRuleCall_0_2_0() { return cMaximumIntegerMaximumValueParserRuleCall_0_2_0; }
-		
-		//TO maximum=IntegerMaximumValue
-		public Group getGroup_1() { return cGroup_1; }
-		
-		//TO
-		public RuleCall getTOTerminalRuleCall_1_0() { return cTOTerminalRuleCall_1_0; }
-		
-		//maximum=IntegerMaximumValue
-		public Assignment getMaximumAssignment_1_1() { return cMaximumAssignment_1_1; }
-		
-		//IntegerMaximumValue
-		public RuleCall getMaximumIntegerMaximumValueParserRuleCall_1_1_0() { return cMaximumIntegerMaximumValueParserRuleCall_1_1_0; }
-	}
-	public class IntegerMinimumValueElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.IntegerMinimumValue");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cExclusiveAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cExclusiveGTTerminalRuleCall_0_0 = (RuleCall)cExclusiveAssignment_0.eContents().get(0);
-		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
-		
-		//IntegerMinimumValue:
-		//	exclusive?=GT? HASH value=Integer;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//exclusive?=GT? HASH value=Integer
-		public Group getGroup() { return cGroup; }
-		
-		//exclusive?=GT?
-		public Assignment getExclusiveAssignment_0() { return cExclusiveAssignment_0; }
-		
-		//GT
-		public RuleCall getExclusiveGTTerminalRuleCall_0_0() { return cExclusiveGTTerminalRuleCall_0_0; }
-		
-		//HASH
-		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
-		
-		//value=Integer
-		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
-		
-		//Integer
-		public RuleCall getValueIntegerParserRuleCall_2_0() { return cValueIntegerParserRuleCall_2_0; }
-	}
-	public class IntegerMaximumValueElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.IntegerMaximumValue");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cExclusiveAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cExclusiveLTTerminalRuleCall_0_0 = (RuleCall)cExclusiveAssignment_0.eContents().get(0);
-		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
-		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
-		
-		//IntegerMaximumValue:
-		//	exclusive?=LT? HASH value=Integer;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//exclusive?=LT? HASH value=Integer
-		public Group getGroup() { return cGroup; }
-		
-		//exclusive?=LT?
-		public Assignment getExclusiveAssignment_0() { return cExclusiveAssignment_0; }
-		
-		//LT
-		public RuleCall getExclusiveLTTerminalRuleCall_0_0() { return cExclusiveLTTerminalRuleCall_0_0; }
-		
-		//HASH
-		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
-		
-		//value=Integer
-		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
-		
-		//Integer
-		public RuleCall getValueIntegerParserRuleCall_2_0() { return cValueIntegerParserRuleCall_2_0; }
-	}
-	public class DecimalValuesElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.DecimalValues");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cDecimalValueParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cDecimalRangeParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		
-		//DecimalValues:
-		//	DecimalValue | DecimalRange;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//DecimalValue | DecimalRange
-		public Alternatives getAlternatives() { return cAlternatives; }
-		
-		//DecimalValue
-		public RuleCall getDecimalValueParserRuleCall_0() { return cDecimalValueParserRuleCall_0; }
-		
-		//DecimalRange
-		public RuleCall getDecimalRangeParserRuleCall_1() { return cDecimalRangeParserRuleCall_1; }
 	}
 	public class DecimalValueElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.DecimalValue");
@@ -1156,9 +1065,11 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//	HASH value=Decimal;
 		@Override public ParserRule getRule() { return rule; }
 		
+		//// this is used by SCG (and ECL) and can be negative or positive
 		//HASH value=Decimal
 		public Group getGroup() { return cGroup; }
 		
+		//// this is used by SCG (and ECL) and can be negative or positive
 		//HASH
 		public RuleCall getHASHTerminalRuleCall_0() { return cHASHTerminalRuleCall_0; }
 		
@@ -1168,71 +1079,115 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//Decimal
 		public RuleCall getValueDecimalParserRuleCall_1_0() { return cValueDecimalParserRuleCall_1_0; }
 	}
-	public class DecimalRangeElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.DecimalRange");
+	public class SlotIntegerElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotInteger");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cSlotIntegerRangeParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cSlotIntegerValueParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		//SlotInteger:
+		//	SlotIntegerRange | SlotIntegerValue;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//// this is a slot integer value which cannot be negative, the range must preceed the simple value in this definition
+		//SlotIntegerRange | SlotIntegerValue
+		public Alternatives getAlternatives() { return cAlternatives; }
+		
+		//// this is a slot integer value which cannot be negative, the range must preceed the simple value in this definition
+		//SlotIntegerRange
+		public RuleCall getSlotIntegerRangeParserRuleCall_0() { return cSlotIntegerRangeParserRuleCall_0; }
+		
+		//SlotIntegerValue
+		public RuleCall getSlotIntegerValueParserRuleCall_1() { return cSlotIntegerValueParserRuleCall_1; }
+	}
+	public class SlotIntegerValueElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotIntegerValue");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cHASHTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cValueAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cValueNonNegativeIntegerParserRuleCall_1_0 = (RuleCall)cValueAssignment_1.eContents().get(0);
+		
+		//SlotIntegerValue:
+		//	HASH value=NonNegativeInteger;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//HASH value=NonNegativeInteger
+		public Group getGroup() { return cGroup; }
+		
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_0() { return cHASHTerminalRuleCall_0; }
+		
+		//value=NonNegativeInteger
+		public Assignment getValueAssignment_1() { return cValueAssignment_1; }
+		
+		//NonNegativeInteger
+		public RuleCall getValueNonNegativeIntegerParserRuleCall_1_0() { return cValueNonNegativeIntegerParserRuleCall_1_0; }
+	}
+	public class SlotIntegerRangeElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotIntegerRange");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final Group cGroup_0 = (Group)cAlternatives.eContents().get(0);
 		private final Assignment cMinimumAssignment_0_0 = (Assignment)cGroup_0.eContents().get(0);
-		private final RuleCall cMinimumDecimalMinimumValueParserRuleCall_0_0_0 = (RuleCall)cMinimumAssignment_0_0.eContents().get(0);
+		private final RuleCall cMinimumSlotIntegerMinimumValueParserRuleCall_0_0_0 = (RuleCall)cMinimumAssignment_0_0.eContents().get(0);
 		private final RuleCall cTOTerminalRuleCall_0_1 = (RuleCall)cGroup_0.eContents().get(1);
 		private final Assignment cMaximumAssignment_0_2 = (Assignment)cGroup_0.eContents().get(2);
-		private final RuleCall cMaximumDecimalMaximumValueParserRuleCall_0_2_0 = (RuleCall)cMaximumAssignment_0_2.eContents().get(0);
+		private final RuleCall cMaximumSlotIntegerMaximumValueParserRuleCall_0_2_0 = (RuleCall)cMaximumAssignment_0_2.eContents().get(0);
 		private final Group cGroup_1 = (Group)cAlternatives.eContents().get(1);
 		private final RuleCall cTOTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
 		private final Assignment cMaximumAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
-		private final RuleCall cMaximumDecimalMaximumValueParserRuleCall_1_1_0 = (RuleCall)cMaximumAssignment_1_1.eContents().get(0);
+		private final RuleCall cMaximumSlotIntegerMaximumValueParserRuleCall_1_1_0 = (RuleCall)cMaximumAssignment_1_1.eContents().get(0);
 		
-		//DecimalRange:
-		//	minimum=DecimalMinimumValue TO maximum=DecimalMaximumValue? | TO maximum=DecimalMaximumValue;
+		//SlotIntegerRange:
+		//	minimum=SlotIntegerMinimumValue TO maximum=SlotIntegerMaximumValue? | TO maximum=SlotIntegerMaximumValue;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//minimum=DecimalMinimumValue TO maximum=DecimalMaximumValue? | TO maximum=DecimalMaximumValue
+		//minimum=SlotIntegerMinimumValue TO maximum=SlotIntegerMaximumValue? | TO maximum=SlotIntegerMaximumValue
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//minimum=DecimalMinimumValue TO maximum=DecimalMaximumValue?
+		//minimum=SlotIntegerMinimumValue TO maximum=SlotIntegerMaximumValue?
 		public Group getGroup_0() { return cGroup_0; }
 		
-		//minimum=DecimalMinimumValue
+		//minimum=SlotIntegerMinimumValue
 		public Assignment getMinimumAssignment_0_0() { return cMinimumAssignment_0_0; }
 		
-		//DecimalMinimumValue
-		public RuleCall getMinimumDecimalMinimumValueParserRuleCall_0_0_0() { return cMinimumDecimalMinimumValueParserRuleCall_0_0_0; }
+		//SlotIntegerMinimumValue
+		public RuleCall getMinimumSlotIntegerMinimumValueParserRuleCall_0_0_0() { return cMinimumSlotIntegerMinimumValueParserRuleCall_0_0_0; }
 		
 		//TO
 		public RuleCall getTOTerminalRuleCall_0_1() { return cTOTerminalRuleCall_0_1; }
 		
-		//maximum=DecimalMaximumValue?
+		//maximum=SlotIntegerMaximumValue?
 		public Assignment getMaximumAssignment_0_2() { return cMaximumAssignment_0_2; }
 		
-		//DecimalMaximumValue
-		public RuleCall getMaximumDecimalMaximumValueParserRuleCall_0_2_0() { return cMaximumDecimalMaximumValueParserRuleCall_0_2_0; }
+		//SlotIntegerMaximumValue
+		public RuleCall getMaximumSlotIntegerMaximumValueParserRuleCall_0_2_0() { return cMaximumSlotIntegerMaximumValueParserRuleCall_0_2_0; }
 		
-		//TO maximum=DecimalMaximumValue
+		//TO maximum=SlotIntegerMaximumValue
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//TO
 		public RuleCall getTOTerminalRuleCall_1_0() { return cTOTerminalRuleCall_1_0; }
 		
-		//maximum=DecimalMaximumValue
+		//maximum=SlotIntegerMaximumValue
 		public Assignment getMaximumAssignment_1_1() { return cMaximumAssignment_1_1; }
 		
-		//DecimalMaximumValue
-		public RuleCall getMaximumDecimalMaximumValueParserRuleCall_1_1_0() { return cMaximumDecimalMaximumValueParserRuleCall_1_1_0; }
+		//SlotIntegerMaximumValue
+		public RuleCall getMaximumSlotIntegerMaximumValueParserRuleCall_1_1_0() { return cMaximumSlotIntegerMaximumValueParserRuleCall_1_1_0; }
 	}
-	public class DecimalMinimumValueElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.DecimalMinimumValue");
+	public class SlotIntegerMinimumValueElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotIntegerMinimumValue");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Assignment cExclusiveAssignment_0 = (Assignment)cGroup.eContents().get(0);
 		private final RuleCall cExclusiveGTTerminalRuleCall_0_0 = (RuleCall)cExclusiveAssignment_0.eContents().get(0);
 		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
 		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		private final RuleCall cValueNonNegativeIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
 		
-		//DecimalMinimumValue:
-		//	exclusive?=GT? HASH value=Decimal;
+		//SlotIntegerMinimumValue:
+		//	exclusive?=GT? HASH value=NonNegativeInteger;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//exclusive?=GT? HASH value=Decimal
+		//exclusive?=GT? HASH value=NonNegativeInteger
 		public Group getGroup() { return cGroup; }
 		
 		//exclusive?=GT?
@@ -1244,26 +1199,26 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//HASH
 		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
 		
-		//value=Decimal
+		//value=NonNegativeInteger
 		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
 		
-		//Decimal
-		public RuleCall getValueDecimalParserRuleCall_2_0() { return cValueDecimalParserRuleCall_2_0; }
+		//NonNegativeInteger
+		public RuleCall getValueNonNegativeIntegerParserRuleCall_2_0() { return cValueNonNegativeIntegerParserRuleCall_2_0; }
 	}
-	public class DecimalMaximumValueElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.DecimalMaximumValue");
+	public class SlotIntegerMaximumValueElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotIntegerMaximumValue");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Assignment cExclusiveAssignment_0 = (Assignment)cGroup.eContents().get(0);
 		private final RuleCall cExclusiveLTTerminalRuleCall_0_0 = (RuleCall)cExclusiveAssignment_0.eContents().get(0);
 		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
 		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		private final RuleCall cValueNonNegativeIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
 		
-		//DecimalMaximumValue:
-		//	exclusive?=LT? HASH value=Decimal;
+		//SlotIntegerMaximumValue:
+		//	exclusive?=LT? HASH value=NonNegativeInteger;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//exclusive?=LT? HASH value=Decimal
+		//exclusive?=LT? HASH value=NonNegativeInteger
 		public Group getGroup() { return cGroup; }
 		
 		//exclusive?=LT?
@@ -1275,69 +1230,168 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		//HASH
 		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
 		
-		//value=Decimal
+		//value=NonNegativeInteger
 		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
 		
-		//Decimal
-		public RuleCall getValueDecimalParserRuleCall_2_0() { return cValueDecimalParserRuleCall_2_0; }
+		//NonNegativeInteger
+		public RuleCall getValueNonNegativeIntegerParserRuleCall_2_0() { return cValueNonNegativeIntegerParserRuleCall_2_0; }
 	}
-	public class ConceptReferenceSlotElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.ConceptReferenceSlot");
+	public class SlotDecimalElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotDecimal");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cConceptReplacementSlotParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cExpressionReplacementSlotParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cSlotDecimalRangeParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cSlotDecimalValueParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		
-		//ConceptReferenceSlot:
-		//	ConceptReplacementSlot | ExpressionReplacementSlot;
+		//SlotDecimal:
+		//	SlotDecimalRange | SlotDecimalValue;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//ConceptReplacementSlot | ExpressionReplacementSlot
+		//// this is a slot decimal value which cannot be negative, the range must preceed the simple value in this definition
+		//SlotDecimalRange | SlotDecimalValue
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//ConceptReplacementSlot
-		public RuleCall getConceptReplacementSlotParserRuleCall_0() { return cConceptReplacementSlotParserRuleCall_0; }
+		//// this is a slot decimal value which cannot be negative, the range must preceed the simple value in this definition
+		//SlotDecimalRange
+		public RuleCall getSlotDecimalRangeParserRuleCall_0() { return cSlotDecimalRangeParserRuleCall_0; }
 		
-		//ExpressionReplacementSlot
-		public RuleCall getExpressionReplacementSlotParserRuleCall_1() { return cExpressionReplacementSlotParserRuleCall_1; }
+		//SlotDecimalValue
+		public RuleCall getSlotDecimalValueParserRuleCall_1() { return cSlotDecimalValueParserRuleCall_1; }
 	}
-	public class ConceptReferenceElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.ConceptReference");
+	public class SlotDecimalValueElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotDecimalValue");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cHASHTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cValueAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cValueNonNegativeDecimalParserRuleCall_1_0 = (RuleCall)cValueAssignment_1.eContents().get(0);
+		
+		//SlotDecimalValue:
+		//	HASH value=NonNegativeDecimal;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//HASH value=NonNegativeDecimal
+		public Group getGroup() { return cGroup; }
+		
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_0() { return cHASHTerminalRuleCall_0; }
+		
+		//value=NonNegativeDecimal
+		public Assignment getValueAssignment_1() { return cValueAssignment_1; }
+		
+		//NonNegativeDecimal
+		public RuleCall getValueNonNegativeDecimalParserRuleCall_1_0() { return cValueNonNegativeDecimalParserRuleCall_1_0; }
+	}
+	public class SlotDecimalRangeElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotDecimalRange");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final Assignment cSlotAssignment_0 = (Assignment)cAlternatives.eContents().get(0);
-		private final RuleCall cSlotConceptReferenceSlotParserRuleCall_0_0 = (RuleCall)cSlotAssignment_0.eContents().get(0);
+		private final Group cGroup_0 = (Group)cAlternatives.eContents().get(0);
+		private final Assignment cMinimumAssignment_0_0 = (Assignment)cGroup_0.eContents().get(0);
+		private final RuleCall cMinimumSlotDecimalMinimumValueParserRuleCall_0_0_0 = (RuleCall)cMinimumAssignment_0_0.eContents().get(0);
+		private final RuleCall cTOTerminalRuleCall_0_1 = (RuleCall)cGroup_0.eContents().get(1);
+		private final Assignment cMaximumAssignment_0_2 = (Assignment)cGroup_0.eContents().get(2);
+		private final RuleCall cMaximumSlotDecimalMaximumValueParserRuleCall_0_2_0 = (RuleCall)cMaximumAssignment_0_2.eContents().get(0);
 		private final Group cGroup_1 = (Group)cAlternatives.eContents().get(1);
-		private final Assignment cIdAssignment_1_0 = (Assignment)cGroup_1.eContents().get(0);
-		private final RuleCall cIdSnomedIdentifierParserRuleCall_1_0_0 = (RuleCall)cIdAssignment_1_0.eContents().get(0);
-		private final Assignment cTermAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
-		private final RuleCall cTermTERM_STRINGTerminalRuleCall_1_1_0 = (RuleCall)cTermAssignment_1_1.eContents().get(0);
+		private final RuleCall cTOTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
+		private final Assignment cMaximumAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
+		private final RuleCall cMaximumSlotDecimalMaximumValueParserRuleCall_1_1_0 = (RuleCall)cMaximumAssignment_1_1.eContents().get(0);
 		
-		//ConceptReference:
-		//	slot=ConceptReferenceSlot | id=SnomedIdentifier term=TERM_STRING?;
+		//SlotDecimalRange:
+		//	minimum=SlotDecimalMinimumValue TO maximum=SlotDecimalMaximumValue? | TO maximum=SlotDecimalMaximumValue;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//slot=ConceptReferenceSlot | id=SnomedIdentifier term=TERM_STRING?
+		//minimum=SlotDecimalMinimumValue TO maximum=SlotDecimalMaximumValue? | TO maximum=SlotDecimalMaximumValue
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//slot=ConceptReferenceSlot
-		public Assignment getSlotAssignment_0() { return cSlotAssignment_0; }
+		//minimum=SlotDecimalMinimumValue TO maximum=SlotDecimalMaximumValue?
+		public Group getGroup_0() { return cGroup_0; }
 		
-		//ConceptReferenceSlot
-		public RuleCall getSlotConceptReferenceSlotParserRuleCall_0_0() { return cSlotConceptReferenceSlotParserRuleCall_0_0; }
+		//minimum=SlotDecimalMinimumValue
+		public Assignment getMinimumAssignment_0_0() { return cMinimumAssignment_0_0; }
 		
-		//id=SnomedIdentifier term=TERM_STRING?
+		//SlotDecimalMinimumValue
+		public RuleCall getMinimumSlotDecimalMinimumValueParserRuleCall_0_0_0() { return cMinimumSlotDecimalMinimumValueParserRuleCall_0_0_0; }
+		
+		//TO
+		public RuleCall getTOTerminalRuleCall_0_1() { return cTOTerminalRuleCall_0_1; }
+		
+		//maximum=SlotDecimalMaximumValue?
+		public Assignment getMaximumAssignment_0_2() { return cMaximumAssignment_0_2; }
+		
+		//SlotDecimalMaximumValue
+		public RuleCall getMaximumSlotDecimalMaximumValueParserRuleCall_0_2_0() { return cMaximumSlotDecimalMaximumValueParserRuleCall_0_2_0; }
+		
+		//TO maximum=SlotDecimalMaximumValue
 		public Group getGroup_1() { return cGroup_1; }
 		
-		//id=SnomedIdentifier
-		public Assignment getIdAssignment_1_0() { return cIdAssignment_1_0; }
+		//TO
+		public RuleCall getTOTerminalRuleCall_1_0() { return cTOTerminalRuleCall_1_0; }
 		
-		//SnomedIdentifier
-		public RuleCall getIdSnomedIdentifierParserRuleCall_1_0_0() { return cIdSnomedIdentifierParserRuleCall_1_0_0; }
+		//maximum=SlotDecimalMaximumValue
+		public Assignment getMaximumAssignment_1_1() { return cMaximumAssignment_1_1; }
 		
-		//term=TERM_STRING?
-		public Assignment getTermAssignment_1_1() { return cTermAssignment_1_1; }
+		//SlotDecimalMaximumValue
+		public RuleCall getMaximumSlotDecimalMaximumValueParserRuleCall_1_1_0() { return cMaximumSlotDecimalMaximumValueParserRuleCall_1_1_0; }
+	}
+	public class SlotDecimalMinimumValueElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotDecimalMinimumValue");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cExclusiveAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cExclusiveGTTerminalRuleCall_0_0 = (RuleCall)cExclusiveAssignment_0.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueNonNegativeDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
 		
-		//TERM_STRING
-		public RuleCall getTermTERM_STRINGTerminalRuleCall_1_1_0() { return cTermTERM_STRINGTerminalRuleCall_1_1_0; }
+		//SlotDecimalMinimumValue:
+		//	exclusive?=GT? HASH value=NonNegativeDecimal;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//exclusive?=GT? HASH value=NonNegativeDecimal
+		public Group getGroup() { return cGroup; }
+		
+		//exclusive?=GT?
+		public Assignment getExclusiveAssignment_0() { return cExclusiveAssignment_0; }
+		
+		//GT
+		public RuleCall getExclusiveGTTerminalRuleCall_0_0() { return cExclusiveGTTerminalRuleCall_0_0; }
+		
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+		
+		//value=NonNegativeDecimal
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+		
+		//NonNegativeDecimal
+		public RuleCall getValueNonNegativeDecimalParserRuleCall_2_0() { return cValueNonNegativeDecimalParserRuleCall_2_0; }
+	}
+	public class SlotDecimalMaximumValueElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.SlotDecimalMaximumValue");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cExclusiveAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cExclusiveLTTerminalRuleCall_0_0 = (RuleCall)cExclusiveAssignment_0.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueNonNegativeDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//SlotDecimalMaximumValue:
+		//	exclusive?=LT? HASH value=NonNegativeDecimal;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//exclusive?=LT? HASH value=NonNegativeDecimal
+		public Group getGroup() { return cGroup; }
+		
+		//exclusive?=LT?
+		public Assignment getExclusiveAssignment_0() { return cExclusiveAssignment_0; }
+		
+		//LT
+		public RuleCall getExclusiveLTTerminalRuleCall_0_0() { return cExclusiveLTTerminalRuleCall_0_0; }
+		
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+		
+		//value=NonNegativeDecimal
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+		
+		//NonNegativeDecimal
+		public RuleCall getValueNonNegativeDecimalParserRuleCall_2_0() { return cValueNonNegativeDecimalParserRuleCall_2_0; }
 	}
 	
 	
@@ -1348,7 +1402,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	private final AttributeGroupElements pAttributeGroup;
 	private final AttributeElements pAttribute;
 	private final AttributeValueElements pAttributeValue;
-	private final ConceptReplacementSlotElements pConceptReplacementSlot;
+	private final ConceptIdReplacementSlotElements pConceptIdReplacementSlot;
 	private final ExpressionReplacementSlotElements pExpressionReplacementSlot;
 	private final TokenReplacementSlotElements pTokenReplacementSlot;
 	private final TemplateInformationSlotElements pTemplateInformationSlot;
@@ -1357,20 +1411,22 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	private final IntegerReplacementSlotElements pIntegerReplacementSlot;
 	private final DecimalReplacementSlotElements pDecimalReplacementSlot;
 	private final EtlCardinalityElements pEtlCardinality;
+	private final ConceptReplacementSlotElements pConceptReplacementSlot;
+	private final ConceptReferenceElements pConceptReference;
 	private final SlotTokenElements pSlotToken;
 	private final StringValueElements pStringValue;
-	private final IntegerValuesElements pIntegerValues;
 	private final IntegerValueElements pIntegerValue;
-	private final IntegerRangeElements pIntegerRange;
-	private final IntegerMinimumValueElements pIntegerMinimumValue;
-	private final IntegerMaximumValueElements pIntegerMaximumValue;
-	private final DecimalValuesElements pDecimalValues;
 	private final DecimalValueElements pDecimalValue;
-	private final DecimalRangeElements pDecimalRange;
-	private final DecimalMinimumValueElements pDecimalMinimumValue;
-	private final DecimalMaximumValueElements pDecimalMaximumValue;
-	private final ConceptReferenceSlotElements pConceptReferenceSlot;
-	private final ConceptReferenceElements pConceptReference;
+	private final SlotIntegerElements pSlotInteger;
+	private final SlotIntegerValueElements pSlotIntegerValue;
+	private final SlotIntegerRangeElements pSlotIntegerRange;
+	private final SlotIntegerMinimumValueElements pSlotIntegerMinimumValue;
+	private final SlotIntegerMaximumValueElements pSlotIntegerMaximumValue;
+	private final SlotDecimalElements pSlotDecimal;
+	private final SlotDecimalValueElements pSlotDecimalValue;
+	private final SlotDecimalRangeElements pSlotDecimalRange;
+	private final SlotDecimalMinimumValueElements pSlotDecimalMinimumValue;
+	private final SlotDecimalMaximumValueElements pSlotDecimalMaximumValue;
 	private final TerminalRule tDOUBLE_SQUARE_OPEN;
 	private final TerminalRule tDOUBLE_SQUARE_CLOSE;
 	private final TerminalRule tTILDE;
@@ -1401,7 +1457,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		this.pAttributeGroup = new AttributeGroupElements();
 		this.pAttribute = new AttributeElements();
 		this.pAttributeValue = new AttributeValueElements();
-		this.pConceptReplacementSlot = new ConceptReplacementSlotElements();
+		this.pConceptIdReplacementSlot = new ConceptIdReplacementSlotElements();
 		this.pExpressionReplacementSlot = new ExpressionReplacementSlotElements();
 		this.pTokenReplacementSlot = new TokenReplacementSlotElements();
 		this.pTemplateInformationSlot = new TemplateInformationSlotElements();
@@ -1410,20 +1466,22 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		this.pIntegerReplacementSlot = new IntegerReplacementSlotElements();
 		this.pDecimalReplacementSlot = new DecimalReplacementSlotElements();
 		this.pEtlCardinality = new EtlCardinalityElements();
+		this.pConceptReplacementSlot = new ConceptReplacementSlotElements();
+		this.pConceptReference = new ConceptReferenceElements();
 		this.pSlotToken = new SlotTokenElements();
 		this.pStringValue = new StringValueElements();
-		this.pIntegerValues = new IntegerValuesElements();
 		this.pIntegerValue = new IntegerValueElements();
-		this.pIntegerRange = new IntegerRangeElements();
-		this.pIntegerMinimumValue = new IntegerMinimumValueElements();
-		this.pIntegerMaximumValue = new IntegerMaximumValueElements();
-		this.pDecimalValues = new DecimalValuesElements();
 		this.pDecimalValue = new DecimalValueElements();
-		this.pDecimalRange = new DecimalRangeElements();
-		this.pDecimalMinimumValue = new DecimalMinimumValueElements();
-		this.pDecimalMaximumValue = new DecimalMaximumValueElements();
-		this.pConceptReferenceSlot = new ConceptReferenceSlotElements();
-		this.pConceptReference = new ConceptReferenceElements();
+		this.pSlotInteger = new SlotIntegerElements();
+		this.pSlotIntegerValue = new SlotIntegerValueElements();
+		this.pSlotIntegerRange = new SlotIntegerRangeElements();
+		this.pSlotIntegerMinimumValue = new SlotIntegerMinimumValueElements();
+		this.pSlotIntegerMaximumValue = new SlotIntegerMaximumValueElements();
+		this.pSlotDecimal = new SlotDecimalElements();
+		this.pSlotDecimalValue = new SlotDecimalValueElements();
+		this.pSlotDecimalRange = new SlotDecimalRangeElements();
+		this.pSlotDecimalMinimumValue = new SlotDecimalMinimumValueElements();
+		this.pSlotDecimalMaximumValue = new SlotDecimalMaximumValueElements();
 		this.tDOUBLE_SQUARE_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.DOUBLE_SQUARE_OPEN");
 		this.tDOUBLE_SQUARE_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.DOUBLE_SQUARE_CLOSE");
 		this.tTILDE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.TILDE");
@@ -1538,15 +1596,15 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		return getAttributeValueAccess().getRule();
 	}
 	
-	//ConceptReplacementSlot:
-	//	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
+	//ConceptIdReplacementSlot:
+	//	{ConceptIdReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)?
 	//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
-	public ConceptReplacementSlotElements getConceptReplacementSlotAccess() {
-		return pConceptReplacementSlot;
+	public ConceptIdReplacementSlotElements getConceptIdReplacementSlotAccess() {
+		return pConceptIdReplacementSlot;
 	}
 	
-	public ParserRule getConceptReplacementSlotRule() {
-		return getConceptReplacementSlotAccess().getRule();
+	public ParserRule getConceptIdReplacementSlotRule() {
+		return getConceptIdReplacementSlotAccess().getRule();
 	}
 	
 	//ExpressionReplacementSlot:
@@ -1592,7 +1650,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//StringReplacementSlot:
-	//	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue values+=StringValue* ROUND_CLOSE)?
+	//	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=STRING values+=STRING* ROUND_CLOSE)?
 	//	name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public StringReplacementSlotElements getStringReplacementSlotAccess() {
 		return pStringReplacementSlot;
@@ -1603,7 +1661,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//IntegerReplacementSlot:
-	//	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues values+=IntegerValues*
+	//	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=SlotInteger values+=SlotInteger*
 	//	ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public IntegerReplacementSlotElements getIntegerReplacementSlotAccess() {
 		return pIntegerReplacementSlot;
@@ -1614,7 +1672,7 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//DecimalReplacementSlot:
-	//	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues values+=DecimalValues*
+	//	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=SlotDecimal values+=SlotDecimal*
 	//	ROUND_CLOSE)? name=SLOTNAME_STRING? DOUBLE_SQUARE_CLOSE;
 	public DecimalReplacementSlotElements getDecimalReplacementSlotAccess() {
 		return pDecimalReplacementSlot;
@@ -1632,6 +1690,26 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getEtlCardinalityRule() {
 		return getEtlCardinalityAccess().getRule();
+	}
+	
+	//ConceptReplacementSlot:
+	//	ConceptIdReplacementSlot | ExpressionReplacementSlot;
+	public ConceptReplacementSlotElements getConceptReplacementSlotAccess() {
+		return pConceptReplacementSlot;
+	}
+	
+	public ParserRule getConceptReplacementSlotRule() {
+		return getConceptReplacementSlotAccess().getRule();
+	}
+	
+	//ConceptReference:
+	//	slot=ConceptReplacementSlot | id=SnomedIdentifier term=TERM_STRING?;
+	public ConceptReferenceElements getConceptReferenceAccess() {
+		return pConceptReference;
+	}
+	
+	public ParserRule getConceptReferenceRule() {
+		return getConceptReferenceAccess().getRule();
 	}
 	
 	//SlotToken:
@@ -1655,16 +1733,6 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		return getStringValueAccess().getRule();
 	}
 	
-	//IntegerValues:
-	//	IntegerValue | IntegerRange;
-	public IntegerValuesElements getIntegerValuesAccess() {
-		return pIntegerValues;
-	}
-	
-	public ParserRule getIntegerValuesRule() {
-		return getIntegerValuesAccess().getRule();
-	}
-	
 	//IntegerValue:
 	//	HASH value=Integer;
 	public IntegerValueElements getIntegerValueAccess() {
@@ -1673,46 +1741,6 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getIntegerValueRule() {
 		return getIntegerValueAccess().getRule();
-	}
-	
-	//IntegerRange:
-	//	minimum=IntegerMinimumValue TO maximum=IntegerMaximumValue? | TO maximum=IntegerMaximumValue;
-	public IntegerRangeElements getIntegerRangeAccess() {
-		return pIntegerRange;
-	}
-	
-	public ParserRule getIntegerRangeRule() {
-		return getIntegerRangeAccess().getRule();
-	}
-	
-	//IntegerMinimumValue:
-	//	exclusive?=GT? HASH value=Integer;
-	public IntegerMinimumValueElements getIntegerMinimumValueAccess() {
-		return pIntegerMinimumValue;
-	}
-	
-	public ParserRule getIntegerMinimumValueRule() {
-		return getIntegerMinimumValueAccess().getRule();
-	}
-	
-	//IntegerMaximumValue:
-	//	exclusive?=LT? HASH value=Integer;
-	public IntegerMaximumValueElements getIntegerMaximumValueAccess() {
-		return pIntegerMaximumValue;
-	}
-	
-	public ParserRule getIntegerMaximumValueRule() {
-		return getIntegerMaximumValueAccess().getRule();
-	}
-	
-	//DecimalValues:
-	//	DecimalValue | DecimalRange;
-	public DecimalValuesElements getDecimalValuesAccess() {
-		return pDecimalValues;
-	}
-	
-	public ParserRule getDecimalValuesRule() {
-		return getDecimalValuesAccess().getRule();
 	}
 	
 	//DecimalValue:
@@ -1725,54 +1753,104 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		return getDecimalValueAccess().getRule();
 	}
 	
-	//DecimalRange:
-	//	minimum=DecimalMinimumValue TO maximum=DecimalMaximumValue? | TO maximum=DecimalMaximumValue;
-	public DecimalRangeElements getDecimalRangeAccess() {
-		return pDecimalRange;
+	//SlotInteger:
+	//	SlotIntegerRange | SlotIntegerValue;
+	public SlotIntegerElements getSlotIntegerAccess() {
+		return pSlotInteger;
 	}
 	
-	public ParserRule getDecimalRangeRule() {
-		return getDecimalRangeAccess().getRule();
+	public ParserRule getSlotIntegerRule() {
+		return getSlotIntegerAccess().getRule();
 	}
 	
-	//DecimalMinimumValue:
-	//	exclusive?=GT? HASH value=Decimal;
-	public DecimalMinimumValueElements getDecimalMinimumValueAccess() {
-		return pDecimalMinimumValue;
+	//SlotIntegerValue:
+	//	HASH value=NonNegativeInteger;
+	public SlotIntegerValueElements getSlotIntegerValueAccess() {
+		return pSlotIntegerValue;
 	}
 	
-	public ParserRule getDecimalMinimumValueRule() {
-		return getDecimalMinimumValueAccess().getRule();
+	public ParserRule getSlotIntegerValueRule() {
+		return getSlotIntegerValueAccess().getRule();
 	}
 	
-	//DecimalMaximumValue:
-	//	exclusive?=LT? HASH value=Decimal;
-	public DecimalMaximumValueElements getDecimalMaximumValueAccess() {
-		return pDecimalMaximumValue;
+	//SlotIntegerRange:
+	//	minimum=SlotIntegerMinimumValue TO maximum=SlotIntegerMaximumValue? | TO maximum=SlotIntegerMaximumValue;
+	public SlotIntegerRangeElements getSlotIntegerRangeAccess() {
+		return pSlotIntegerRange;
 	}
 	
-	public ParserRule getDecimalMaximumValueRule() {
-		return getDecimalMaximumValueAccess().getRule();
+	public ParserRule getSlotIntegerRangeRule() {
+		return getSlotIntegerRangeAccess().getRule();
 	}
 	
-	//ConceptReferenceSlot:
-	//	ConceptReplacementSlot | ExpressionReplacementSlot;
-	public ConceptReferenceSlotElements getConceptReferenceSlotAccess() {
-		return pConceptReferenceSlot;
+	//SlotIntegerMinimumValue:
+	//	exclusive?=GT? HASH value=NonNegativeInteger;
+	public SlotIntegerMinimumValueElements getSlotIntegerMinimumValueAccess() {
+		return pSlotIntegerMinimumValue;
 	}
 	
-	public ParserRule getConceptReferenceSlotRule() {
-		return getConceptReferenceSlotAccess().getRule();
+	public ParserRule getSlotIntegerMinimumValueRule() {
+		return getSlotIntegerMinimumValueAccess().getRule();
 	}
 	
-	//ConceptReference:
-	//	slot=ConceptReferenceSlot | id=SnomedIdentifier term=TERM_STRING?;
-	public ConceptReferenceElements getConceptReferenceAccess() {
-		return pConceptReference;
+	//SlotIntegerMaximumValue:
+	//	exclusive?=LT? HASH value=NonNegativeInteger;
+	public SlotIntegerMaximumValueElements getSlotIntegerMaximumValueAccess() {
+		return pSlotIntegerMaximumValue;
 	}
 	
-	public ParserRule getConceptReferenceRule() {
-		return getConceptReferenceAccess().getRule();
+	public ParserRule getSlotIntegerMaximumValueRule() {
+		return getSlotIntegerMaximumValueAccess().getRule();
+	}
+	
+	//SlotDecimal:
+	//	SlotDecimalRange | SlotDecimalValue;
+	public SlotDecimalElements getSlotDecimalAccess() {
+		return pSlotDecimal;
+	}
+	
+	public ParserRule getSlotDecimalRule() {
+		return getSlotDecimalAccess().getRule();
+	}
+	
+	//SlotDecimalValue:
+	//	HASH value=NonNegativeDecimal;
+	public SlotDecimalValueElements getSlotDecimalValueAccess() {
+		return pSlotDecimalValue;
+	}
+	
+	public ParserRule getSlotDecimalValueRule() {
+		return getSlotDecimalValueAccess().getRule();
+	}
+	
+	//SlotDecimalRange:
+	//	minimum=SlotDecimalMinimumValue TO maximum=SlotDecimalMaximumValue? | TO maximum=SlotDecimalMaximumValue;
+	public SlotDecimalRangeElements getSlotDecimalRangeAccess() {
+		return pSlotDecimalRange;
+	}
+	
+	public ParserRule getSlotDecimalRangeRule() {
+		return getSlotDecimalRangeAccess().getRule();
+	}
+	
+	//SlotDecimalMinimumValue:
+	//	exclusive?=GT? HASH value=NonNegativeDecimal;
+	public SlotDecimalMinimumValueElements getSlotDecimalMinimumValueAccess() {
+		return pSlotDecimalMinimumValue;
+	}
+	
+	public ParserRule getSlotDecimalMinimumValueRule() {
+		return getSlotDecimalMinimumValueAccess().getRule();
+	}
+	
+	//SlotDecimalMaximumValue:
+	//	exclusive?=LT? HASH value=NonNegativeDecimal;
+	public SlotDecimalMaximumValueElements getSlotDecimalMaximumValueAccess() {
+		return pSlotDecimalMaximumValue;
+	}
+	
+	public ParserRule getSlotDecimalMaximumValueRule() {
+		return getSlotDecimalMaximumValueAccess().getRule();
 	}
 	
 	//terminal DOUBLE_SQUARE_OPEN:

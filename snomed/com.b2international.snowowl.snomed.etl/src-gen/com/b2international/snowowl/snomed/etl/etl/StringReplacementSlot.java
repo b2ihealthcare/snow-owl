@@ -36,15 +36,15 @@ import org.eclipse.emf.common.util.EList;
 public interface StringReplacementSlot extends ConcreteValueReplacementSlot
 {
   /**
-   * Returns the value of the '<em><b>Values</b></em>' containment reference list.
-   * The list contents are of type {@link com.b2international.snowowl.snomed.etl.etl.StringValue}.
+   * Returns the value of the '<em><b>Values</b></em>' attribute list.
+   * The list contents are of type {@link java.lang.String}.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Values</em>' containment reference list.
+   * @return the value of the '<em>Values</em>' attribute list.
    * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getStringReplacementSlot_Values()
-   * @model containment="true"
+   * @model unique="false"
    * @generated
    */
-  EList<StringValue> getValues();
+  EList<String> getValues();
 
 } // StringReplacementSlot

@@ -15,18 +15,17 @@
  */
 package com.b2international.snowowl.snomed.etl.etl;
 
-import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Integer Values</b></em>'.
+ * A representation of the model object '<em><b>Concept Id Replacement Slot</b></em>'.
  * <!-- end-user-doc -->
  *
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerValues()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getConceptIdReplacementSlot()
  * @model
  * @generated
  */
-public interface IntegerValues extends EObject
+public interface ConceptIdReplacementSlot extends ConceptReplacementSlot
 {
-} // IntegerValues
+} // ConceptIdReplacementSlot

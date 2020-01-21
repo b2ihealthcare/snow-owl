@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-import com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue;
 
 import org.eclipse.emf.common.notify.Notification;
 
@@ -27,19 +27,19 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Integer Minimum Value</b></em>'.
+ * An implementation of the model object '<em><b>Slot Integer Maximum Value</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerMinimumValueImpl#isExclusive <em>Exclusive</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerMinimumValueImpl#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMaximumValueImpl#isExclusive <em>Exclusive</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMaximumValueImpl#getValue <em>Value</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implements IntegerMinimumValue
+public class SlotIntegerMaximumValueImpl extends MinimalEObjectImpl.Container implements SlotIntegerMaximumValue
 {
   /**
    * The default value of the '{@link #isExclusive() <em>Exclusive</em>}' attribute.
@@ -86,7 +86,7 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
    * <!-- end-user-doc -->
    * @generated
    */
-  protected IntegerMinimumValueImpl()
+  protected SlotIntegerMaximumValueImpl()
   {
     super();
   }
@@ -99,7 +99,7 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
   @Override
   protected EClass eStaticClass()
   {
-    return EtlPackage.Literals.INTEGER_MINIMUM_VALUE;
+    return EtlPackage.Literals.SLOT_INTEGER_MAXIMUM_VALUE;
   }
 
   /**
@@ -124,7 +124,7 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
     boolean oldExclusive = exclusive;
     exclusive = newExclusive;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.INTEGER_MINIMUM_VALUE__EXCLUSIVE, oldExclusive, exclusive));
+      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__EXCLUSIVE, oldExclusive, exclusive));
   }
 
   /**
@@ -149,7 +149,7 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
     int oldValue = value;
     value = newValue;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.INTEGER_MINIMUM_VALUE__VALUE, oldValue, value));
+      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__VALUE, oldValue, value));
   }
 
   /**
@@ -162,9 +162,9 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.INTEGER_MINIMUM_VALUE__EXCLUSIVE:
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__EXCLUSIVE:
         return isExclusive();
-      case EtlPackage.INTEGER_MINIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__VALUE:
         return getValue();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -180,10 +180,10 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.INTEGER_MINIMUM_VALUE__EXCLUSIVE:
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__EXCLUSIVE:
         setExclusive((Boolean)newValue);
         return;
-      case EtlPackage.INTEGER_MINIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__VALUE:
         setValue((Integer)newValue);
         return;
     }
@@ -200,10 +200,10 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.INTEGER_MINIMUM_VALUE__EXCLUSIVE:
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__EXCLUSIVE:
         setExclusive(EXCLUSIVE_EDEFAULT);
         return;
-      case EtlPackage.INTEGER_MINIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__VALUE:
         setValue(VALUE_EDEFAULT);
         return;
     }
@@ -220,9 +220,9 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.INTEGER_MINIMUM_VALUE__EXCLUSIVE:
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__EXCLUSIVE:
         return exclusive != EXCLUSIVE_EDEFAULT;
-      case EtlPackage.INTEGER_MINIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE__VALUE:
         return value != VALUE_EDEFAULT;
     }
     return super.eIsSet(featureID);
@@ -247,4 +247,4 @@ public class IntegerMinimumValueImpl extends MinimalEObjectImpl.Container implem
     return result.toString();
   }
 
-} //IntegerMinimumValueImpl
+} //SlotIntegerMaximumValueImpl

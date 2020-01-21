@@ -39,8 +39,8 @@ Attribute:
 AttributeValue:
 	ConceptReference | ROUND_OPEN SubExpression ROUND_CLOSE | StringValue | IntegerValue | DecimalValue | ConcreteValueReplacementSlot;
 
-ConceptReplacementSlot:
-	{ConceptReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+ConceptIdReplacementSlot:
+	{ConceptIdReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 ExpressionReplacementSlot:
 	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
@@ -55,16 +55,22 @@ ConcreteValueReplacementSlot:
 	StringReplacementSlot | IntegerReplacementSlot | DecimalReplacementSlot;
 
 StringReplacementSlot:
-	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=StringValue (values+=StringValue)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=STRING (values+=STRING)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 IntegerReplacementSlot:
-	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=IntegerValues (values+=IntegerValues)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=SlotInteger (values+=SlotInteger)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 DecimalReplacementSlot:
-	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=DecimalValues (values+=DecimalValues)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=SlotDecimal (values+=SlotDecimal)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
 
 EtlCardinality: // XXX this is different to Ecl.Cardinality -> needed to remove square brackets and to add optional tilde (-> IHTSDO has template syntax v0.2)
 	TILDE? min=NonNegativeInteger TO max=MaxValue;
+
+ConceptReplacementSlot:
+	ConceptIdReplacementSlot | ExpressionReplacementSlot;
+
+ConceptReference:
+	(slot=ConceptReplacementSlot) | (id=SnomedIdentifier (term=TERM_STRING)?);
 
 SlotToken:
 	EQUIVALENT_TO | SUBTYPE_OF |
@@ -76,41 +82,41 @@ SlotToken:
 StringValue:
 	value=STRING;
 
-IntegerValues:
-	IntegerValue | IntegerRange;
-
-IntegerValue:
+IntegerValue: // this is used by SCG (and ECL) and can be negative or positive 
 	HASH value=Integer;
 
-IntegerRange:
-	(minimum=IntegerMinimumValue TO (maximum=IntegerMaximumValue)?) | (TO maximum=IntegerMaximumValue);
-
-IntegerMinimumValue:
-	(exclusive?=GT)? HASH value=Integer;
-
-IntegerMaximumValue:
-	(exclusive?=LT)? HASH value=Integer;
-
-DecimalValues:
-	DecimalValue | DecimalRange;
-
-DecimalValue:
+DecimalValue: // this is used by SCG (and ECL) and can be negative or positive
 	HASH value=Decimal;
+	
+SlotInteger: // this is a slot integer value which cannot be negative, the range must preceed the simple value in this definition
+	SlotIntegerRange | SlotIntegerValue;
 
-DecimalRange:
-	(minimum=DecimalMinimumValue TO (maximum=DecimalMaximumValue)?) | (TO maximum=DecimalMaximumValue);
+SlotIntegerValue:
+	HASH value=NonNegativeInteger;
 
-DecimalMinimumValue:
-	(exclusive?=GT)? HASH value=Decimal;
+SlotIntegerRange:
+	(minimum=SlotIntegerMinimumValue TO (maximum=SlotIntegerMaximumValue)?) | (TO maximum=SlotIntegerMaximumValue);
 
-DecimalMaximumValue:
-	(exclusive?=LT)? HASH value=Decimal;
+SlotIntegerMinimumValue:
+	(exclusive?=GT)? HASH value=NonNegativeInteger;
 
-ConceptReferenceSlot:
-	ConceptReplacementSlot | ExpressionReplacementSlot;
+SlotIntegerMaximumValue:
+	(exclusive?=LT)? HASH value=NonNegativeInteger;
 
-ConceptReference:
-	(slot=ConceptReferenceSlot) | (id=SnomedIdentifier (term=TERM_STRING)?);
+SlotDecimal: // this is a slot decimal value which cannot be negative, the range must preceed the simple value in this definition
+	SlotDecimalRange | SlotDecimalValue;
+
+SlotDecimalValue:
+	HASH value=NonNegativeDecimal;
+
+SlotDecimalRange:
+	(minimum=SlotDecimalMinimumValue TO (maximum=SlotDecimalMaximumValue)?) | (TO maximum=SlotDecimalMaximumValue);
+
+SlotDecimalMinimumValue:
+	(exclusive?=GT)? HASH value=NonNegativeDecimal;
+
+SlotDecimalMaximumValue:
+	(exclusive?=LT)? HASH value=NonNegativeDecimal;
 
 terminal DOUBLE_SQUARE_OPEN:
 	'[[';

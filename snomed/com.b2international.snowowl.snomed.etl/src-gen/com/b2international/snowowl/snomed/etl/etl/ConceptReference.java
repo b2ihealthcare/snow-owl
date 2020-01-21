@@ -41,12 +41,12 @@ public interface ConceptReference extends AttributeValue
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Slot</em>' containment reference.
-   * @see #setSlot(ConceptReferenceSlot)
+   * @see #setSlot(ConceptReplacementSlot)
    * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getConceptReference_Slot()
    * @model containment="true"
    * @generated
    */
-  ConceptReferenceSlot getSlot();
+  ConceptReplacementSlot getSlot();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReference#getSlot <em>Slot</em>}' containment reference.
@@ -56,7 +56,7 @@ public interface ConceptReference extends AttributeValue
    * @see #getSlot()
    * @generated
    */
-  void setSlot(ConceptReferenceSlot value);
+  void setSlot(ConceptReplacementSlot value);
 
   /**
    * Returns the value of the '<em><b>Id</b></em>' attribute.

@@ -329,43 +329,6 @@ public interface EtlPackage extends EPackage
   int ATTRIBUTE_FEATURE_COUNT = 3;
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptReferenceSlotImpl <em>Concept Reference Slot</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.ConceptReferenceSlotImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getConceptReferenceSlot()
-   * @generated
-   */
-  int CONCEPT_REFERENCE_SLOT = 27;
-
-  /**
-   * The feature id for the '<em><b>Constraint</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int CONCEPT_REFERENCE_SLOT__CONSTRAINT = 0;
-
-  /**
-   * The feature id for the '<em><b>Name</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int CONCEPT_REFERENCE_SLOT__NAME = 1;
-
-  /**
-   * The number of structural features of the '<em>Concept Reference Slot</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int CONCEPT_REFERENCE_SLOT_FEATURE_COUNT = 2;
-
-  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptReplacementSlotImpl <em>Concept Replacement Slot</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -373,7 +336,7 @@ public interface EtlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getConceptReplacementSlot()
    * @generated
    */
-  int CONCEPT_REPLACEMENT_SLOT = 7;
+  int CONCEPT_REPLACEMENT_SLOT = 16;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -382,7 +345,7 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REPLACEMENT_SLOT__CONSTRAINT = CONCEPT_REFERENCE_SLOT__CONSTRAINT;
+  int CONCEPT_REPLACEMENT_SLOT__CONSTRAINT = 0;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -391,7 +354,7 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REPLACEMENT_SLOT__NAME = CONCEPT_REFERENCE_SLOT__NAME;
+  int CONCEPT_REPLACEMENT_SLOT__NAME = 1;
 
   /**
    * The number of structural features of the '<em>Concept Replacement Slot</em>' class.
@@ -400,7 +363,44 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REPLACEMENT_SLOT_FEATURE_COUNT = CONCEPT_REFERENCE_SLOT_FEATURE_COUNT + 0;
+  int CONCEPT_REPLACEMENT_SLOT_FEATURE_COUNT = 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptIdReplacementSlotImpl <em>Concept Id Replacement Slot</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.ConceptIdReplacementSlotImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getConceptIdReplacementSlot()
+   * @generated
+   */
+  int CONCEPT_ID_REPLACEMENT_SLOT = 7;
+
+  /**
+   * The feature id for the '<em><b>Constraint</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CONCEPT_ID_REPLACEMENT_SLOT__CONSTRAINT = CONCEPT_REPLACEMENT_SLOT__CONSTRAINT;
+
+  /**
+   * The feature id for the '<em><b>Name</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CONCEPT_ID_REPLACEMENT_SLOT__NAME = CONCEPT_REPLACEMENT_SLOT__NAME;
+
+  /**
+   * The number of structural features of the '<em>Concept Id Replacement Slot</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CONCEPT_ID_REPLACEMENT_SLOT_FEATURE_COUNT = CONCEPT_REPLACEMENT_SLOT_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ExpressionReplacementSlotImpl <em>Expression Replacement Slot</em>}' class.
@@ -419,7 +419,7 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EXPRESSION_REPLACEMENT_SLOT__CONSTRAINT = CONCEPT_REFERENCE_SLOT__CONSTRAINT;
+  int EXPRESSION_REPLACEMENT_SLOT__CONSTRAINT = CONCEPT_REPLACEMENT_SLOT__CONSTRAINT;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -428,7 +428,7 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EXPRESSION_REPLACEMENT_SLOT__NAME = CONCEPT_REFERENCE_SLOT__NAME;
+  int EXPRESSION_REPLACEMENT_SLOT__NAME = CONCEPT_REPLACEMENT_SLOT__NAME;
 
   /**
    * The number of structural features of the '<em>Expression Replacement Slot</em>' class.
@@ -437,7 +437,7 @@ public interface EtlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EXPRESSION_REPLACEMENT_SLOT_FEATURE_COUNT = CONCEPT_REFERENCE_SLOT_FEATURE_COUNT + 0;
+  int EXPRESSION_REPLACEMENT_SLOT_FEATURE_COUNT = CONCEPT_REPLACEMENT_SLOT_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.TokenReplacementSlotImpl <em>Token Replacement Slot</em>}' class.
@@ -561,7 +561,7 @@ public interface EtlPackage extends EPackage
   int STRING_REPLACEMENT_SLOT__NAME = CONCRETE_VALUE_REPLACEMENT_SLOT__NAME;
 
   /**
-   * The feature id for the '<em><b>Values</b></em>' containment reference list.
+   * The feature id for the '<em><b>Values</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -690,350 +690,6 @@ public interface EtlPackage extends EPackage
   int ETL_CARDINALITY_FEATURE_COUNT = 2;
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl <em>String Value</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getStringValue()
-   * @generated
-   */
-  int STRING_VALUE = 16;
-
-  /**
-   * The feature id for the '<em><b>Value</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int STRING_VALUE__VALUE = ATTRIBUTE_VALUE_FEATURE_COUNT + 0;
-
-  /**
-   * The number of structural features of the '<em>String Value</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int STRING_VALUE_FEATURE_COUNT = ATTRIBUTE_VALUE_FEATURE_COUNT + 1;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerValuesImpl <em>Integer Values</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerValuesImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerValues()
-   * @generated
-   */
-  int INTEGER_VALUES = 17;
-
-  /**
-   * The number of structural features of the '<em>Integer Values</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_VALUES_FEATURE_COUNT = 0;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerValueImpl <em>Integer Value</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerValueImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerValue()
-   * @generated
-   */
-  int INTEGER_VALUE = 18;
-
-  /**
-   * The feature id for the '<em><b>Value</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_VALUE__VALUE = ATTRIBUTE_VALUE_FEATURE_COUNT + 0;
-
-  /**
-   * The number of structural features of the '<em>Integer Value</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_VALUE_FEATURE_COUNT = ATTRIBUTE_VALUE_FEATURE_COUNT + 1;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerRangeImpl <em>Integer Range</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerRangeImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerRange()
-   * @generated
-   */
-  int INTEGER_RANGE = 19;
-
-  /**
-   * The feature id for the '<em><b>Minimum</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_RANGE__MINIMUM = INTEGER_VALUES_FEATURE_COUNT + 0;
-
-  /**
-   * The feature id for the '<em><b>Maximum</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_RANGE__MAXIMUM = INTEGER_VALUES_FEATURE_COUNT + 1;
-
-  /**
-   * The number of structural features of the '<em>Integer Range</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_RANGE_FEATURE_COUNT = INTEGER_VALUES_FEATURE_COUNT + 2;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerMinimumValueImpl <em>Integer Minimum Value</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerMinimumValueImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerMinimumValue()
-   * @generated
-   */
-  int INTEGER_MINIMUM_VALUE = 20;
-
-  /**
-   * The feature id for the '<em><b>Exclusive</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_MINIMUM_VALUE__EXCLUSIVE = 0;
-
-  /**
-   * The feature id for the '<em><b>Value</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_MINIMUM_VALUE__VALUE = 1;
-
-  /**
-   * The number of structural features of the '<em>Integer Minimum Value</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_MINIMUM_VALUE_FEATURE_COUNT = 2;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerMaximumValueImpl <em>Integer Maximum Value</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerMaximumValueImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerMaximumValue()
-   * @generated
-   */
-  int INTEGER_MAXIMUM_VALUE = 21;
-
-  /**
-   * The feature id for the '<em><b>Exclusive</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_MAXIMUM_VALUE__EXCLUSIVE = 0;
-
-  /**
-   * The feature id for the '<em><b>Value</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_MAXIMUM_VALUE__VALUE = 1;
-
-  /**
-   * The number of structural features of the '<em>Integer Maximum Value</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INTEGER_MAXIMUM_VALUE_FEATURE_COUNT = 2;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalValuesImpl <em>Decimal Values</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalValuesImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalValues()
-   * @generated
-   */
-  int DECIMAL_VALUES = 22;
-
-  /**
-   * The number of structural features of the '<em>Decimal Values</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_VALUES_FEATURE_COUNT = 0;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalValueImpl <em>Decimal Value</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalValueImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalValue()
-   * @generated
-   */
-  int DECIMAL_VALUE = 23;
-
-  /**
-   * The feature id for the '<em><b>Value</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_VALUE__VALUE = ATTRIBUTE_VALUE_FEATURE_COUNT + 0;
-
-  /**
-   * The number of structural features of the '<em>Decimal Value</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_VALUE_FEATURE_COUNT = ATTRIBUTE_VALUE_FEATURE_COUNT + 1;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalRangeImpl <em>Decimal Range</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalRangeImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalRange()
-   * @generated
-   */
-  int DECIMAL_RANGE = 24;
-
-  /**
-   * The feature id for the '<em><b>Minimum</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_RANGE__MINIMUM = DECIMAL_VALUES_FEATURE_COUNT + 0;
-
-  /**
-   * The feature id for the '<em><b>Maximum</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_RANGE__MAXIMUM = DECIMAL_VALUES_FEATURE_COUNT + 1;
-
-  /**
-   * The number of structural features of the '<em>Decimal Range</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_RANGE_FEATURE_COUNT = DECIMAL_VALUES_FEATURE_COUNT + 2;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalMinimumValueImpl <em>Decimal Minimum Value</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalMinimumValueImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalMinimumValue()
-   * @generated
-   */
-  int DECIMAL_MINIMUM_VALUE = 25;
-
-  /**
-   * The feature id for the '<em><b>Exclusive</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_MINIMUM_VALUE__EXCLUSIVE = 0;
-
-  /**
-   * The feature id for the '<em><b>Value</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_MINIMUM_VALUE__VALUE = 1;
-
-  /**
-   * The number of structural features of the '<em>Decimal Minimum Value</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_MINIMUM_VALUE_FEATURE_COUNT = 2;
-
-  /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalMaximumValueImpl <em>Decimal Maximum Value</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalMaximumValueImpl
-   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalMaximumValue()
-   * @generated
-   */
-  int DECIMAL_MAXIMUM_VALUE = 26;
-
-  /**
-   * The feature id for the '<em><b>Exclusive</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_MAXIMUM_VALUE__EXCLUSIVE = 0;
-
-  /**
-   * The feature id for the '<em><b>Value</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_MAXIMUM_VALUE__VALUE = 1;
-
-  /**
-   * The number of structural features of the '<em>Decimal Maximum Value</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DECIMAL_MAXIMUM_VALUE_FEATURE_COUNT = 2;
-
-  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptReferenceImpl <em>Concept Reference</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1041,7 +697,7 @@ public interface EtlPackage extends EPackage
    * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getConceptReference()
    * @generated
    */
-  int CONCEPT_REFERENCE = 28;
+  int CONCEPT_REFERENCE = 17;
 
   /**
    * The feature id for the '<em><b>Slot</b></em>' containment reference.
@@ -1078,6 +734,406 @@ public interface EtlPackage extends EPackage
    * @ordered
    */
   int CONCEPT_REFERENCE_FEATURE_COUNT = ATTRIBUTE_VALUE_FEATURE_COUNT + 3;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl <em>String Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getStringValue()
+   * @generated
+   */
+  int STRING_VALUE = 18;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int STRING_VALUE__VALUE = ATTRIBUTE_VALUE_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>String Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int STRING_VALUE_FEATURE_COUNT = ATTRIBUTE_VALUE_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerValueImpl <em>Integer Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerValue()
+   * @generated
+   */
+  int INTEGER_VALUE = 19;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE__VALUE = ATTRIBUTE_VALUE_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Integer Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_FEATURE_COUNT = ATTRIBUTE_VALUE_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalValueImpl <em>Decimal Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalValue()
+   * @generated
+   */
+  int DECIMAL_VALUE = 20;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE__VALUE = ATTRIBUTE_VALUE_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Decimal Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_FEATURE_COUNT = ATTRIBUTE_VALUE_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerImpl <em>Slot Integer</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotInteger()
+   * @generated
+   */
+  int SLOT_INTEGER = 21;
+
+  /**
+   * The number of structural features of the '<em>Slot Integer</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_FEATURE_COUNT = 0;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerValueImpl <em>Slot Integer Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotIntegerValue()
+   * @generated
+   */
+  int SLOT_INTEGER_VALUE = 22;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_VALUE__VALUE = SLOT_INTEGER_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Slot Integer Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_VALUE_FEATURE_COUNT = SLOT_INTEGER_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerRangeImpl <em>Slot Integer Range</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerRangeImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotIntegerRange()
+   * @generated
+   */
+  int SLOT_INTEGER_RANGE = 23;
+
+  /**
+   * The feature id for the '<em><b>Minimum</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_RANGE__MINIMUM = SLOT_INTEGER_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Maximum</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_RANGE__MAXIMUM = SLOT_INTEGER_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Slot Integer Range</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_RANGE_FEATURE_COUNT = SLOT_INTEGER_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMinimumValueImpl <em>Slot Integer Minimum Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMinimumValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotIntegerMinimumValue()
+   * @generated
+   */
+  int SLOT_INTEGER_MINIMUM_VALUE = 24;
+
+  /**
+   * The feature id for the '<em><b>Exclusive</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_MINIMUM_VALUE__EXCLUSIVE = 0;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_MINIMUM_VALUE__VALUE = 1;
+
+  /**
+   * The number of structural features of the '<em>Slot Integer Minimum Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_MINIMUM_VALUE_FEATURE_COUNT = 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMaximumValueImpl <em>Slot Integer Maximum Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMaximumValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotIntegerMaximumValue()
+   * @generated
+   */
+  int SLOT_INTEGER_MAXIMUM_VALUE = 25;
+
+  /**
+   * The feature id for the '<em><b>Exclusive</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_MAXIMUM_VALUE__EXCLUSIVE = 0;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_MAXIMUM_VALUE__VALUE = 1;
+
+  /**
+   * The number of structural features of the '<em>Slot Integer Maximum Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_INTEGER_MAXIMUM_VALUE_FEATURE_COUNT = 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalImpl <em>Slot Decimal</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimal()
+   * @generated
+   */
+  int SLOT_DECIMAL = 26;
+
+  /**
+   * The number of structural features of the '<em>Slot Decimal</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_FEATURE_COUNT = 0;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalValueImpl <em>Slot Decimal Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimalValue()
+   * @generated
+   */
+  int SLOT_DECIMAL_VALUE = 27;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_VALUE__VALUE = SLOT_DECIMAL_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Slot Decimal Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_VALUE_FEATURE_COUNT = SLOT_DECIMAL_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalRangeImpl <em>Slot Decimal Range</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalRangeImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimalRange()
+   * @generated
+   */
+  int SLOT_DECIMAL_RANGE = 28;
+
+  /**
+   * The feature id for the '<em><b>Minimum</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_RANGE__MINIMUM = SLOT_DECIMAL_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Maximum</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_RANGE__MAXIMUM = SLOT_DECIMAL_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Slot Decimal Range</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_RANGE_FEATURE_COUNT = SLOT_DECIMAL_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalMinimumValueImpl <em>Slot Decimal Minimum Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalMinimumValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimalMinimumValue()
+   * @generated
+   */
+  int SLOT_DECIMAL_MINIMUM_VALUE = 29;
+
+  /**
+   * The feature id for the '<em><b>Exclusive</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_MINIMUM_VALUE__EXCLUSIVE = 0;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_MINIMUM_VALUE__VALUE = 1;
+
+  /**
+   * The number of structural features of the '<em>Slot Decimal Minimum Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_MINIMUM_VALUE_FEATURE_COUNT = 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalMaximumValueImpl <em>Slot Decimal Maximum Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalMaximumValueImpl
+   * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimalMaximumValue()
+   * @generated
+   */
+  int SLOT_DECIMAL_MAXIMUM_VALUE = 30;
+
+  /**
+   * The feature id for the '<em><b>Exclusive</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_MAXIMUM_VALUE__EXCLUSIVE = 0;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_MAXIMUM_VALUE__VALUE = 1;
+
+  /**
+   * The number of structural features of the '<em>Slot Decimal Maximum Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SLOT_DECIMAL_MAXIMUM_VALUE_FEATURE_COUNT = 2;
 
 
   /**
@@ -1305,14 +1361,14 @@ public interface EtlPackage extends EPackage
   EClass getAttributeValue();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot <em>Concept Replacement Slot</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot <em>Concept Id Replacement Slot</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Concept Replacement Slot</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot
+   * @return the meta object for class '<em>Concept Id Replacement Slot</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot
    * @generated
    */
-  EClass getConceptReplacementSlot();
+  EClass getConceptIdReplacementSlot();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot <em>Expression Replacement Slot</em>}'.
@@ -1420,15 +1476,15 @@ public interface EtlPackage extends EPackage
   EClass getStringReplacementSlot();
 
   /**
-   * Returns the meta object for the containment reference list '{@link com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot#getValues <em>Values</em>}'.
+   * Returns the meta object for the attribute list '{@link com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot#getValues <em>Values</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for the containment reference list '<em>Values</em>'.
+   * @return the meta object for the attribute list '<em>Values</em>'.
    * @see com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot#getValues()
    * @see #getStringReplacementSlot()
    * @generated
    */
-  EReference getStringReplacementSlot_Values();
+  EAttribute getStringReplacementSlot_Values();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerReplacementSlot <em>Integer Replacement Slot</em>}'.
@@ -1505,311 +1561,36 @@ public interface EtlPackage extends EPackage
   EAttribute getEtlCardinality_Max();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.StringValue <em>String Value</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot <em>Concept Replacement Slot</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for class '<em>String Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.StringValue
+   * @return the meta object for class '<em>Concept Replacement Slot</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot
    * @generated
    */
-  EClass getStringValue();
+  EClass getConceptReplacementSlot();
 
   /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.StringValue#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.StringValue#getValue()
-   * @see #getStringValue()
-   * @generated
-   */
-  EAttribute getStringValue_Value();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerValues <em>Integer Values</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Integer Values</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerValues
-   * @generated
-   */
-  EClass getIntegerValues();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerValue <em>Integer Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Integer Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerValue
-   * @generated
-   */
-  EClass getIntegerValue();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.IntegerValue#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerValue#getValue()
-   * @see #getIntegerValue()
-   * @generated
-   */
-  EAttribute getIntegerValue_Value();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerRange <em>Integer Range</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Integer Range</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerRange
-   * @generated
-   */
-  EClass getIntegerRange();
-
-  /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.IntegerRange#getMinimum <em>Minimum</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Minimum</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerRange#getMinimum()
-   * @see #getIntegerRange()
-   * @generated
-   */
-  EReference getIntegerRange_Minimum();
-
-  /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.IntegerRange#getMaximum <em>Maximum</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Maximum</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerRange#getMaximum()
-   * @see #getIntegerRange()
-   * @generated
-   */
-  EReference getIntegerRange_Maximum();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue <em>Integer Minimum Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Integer Minimum Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue
-   * @generated
-   */
-  EClass getIntegerMinimumValue();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue#isExclusive <em>Exclusive</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Exclusive</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue#isExclusive()
-   * @see #getIntegerMinimumValue()
-   * @generated
-   */
-  EAttribute getIntegerMinimumValue_Exclusive();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue#getValue()
-   * @see #getIntegerMinimumValue()
-   * @generated
-   */
-  EAttribute getIntegerMinimumValue_Value();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue <em>Integer Maximum Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Integer Maximum Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue
-   * @generated
-   */
-  EClass getIntegerMaximumValue();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue#isExclusive <em>Exclusive</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Exclusive</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue#isExclusive()
-   * @see #getIntegerMaximumValue()
-   * @generated
-   */
-  EAttribute getIntegerMaximumValue_Exclusive();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue#getValue()
-   * @see #getIntegerMaximumValue()
-   * @generated
-   */
-  EAttribute getIntegerMaximumValue_Value();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValues <em>Decimal Values</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Decimal Values</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalValues
-   * @generated
-   */
-  EClass getDecimalValues();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue <em>Decimal Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Decimal Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalValue
-   * @generated
-   */
-  EClass getDecimalValue();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalValue#getValue()
-   * @see #getDecimalValue()
-   * @generated
-   */
-  EAttribute getDecimalValue_Value();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalRange <em>Decimal Range</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Decimal Range</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalRange
-   * @generated
-   */
-  EClass getDecimalRange();
-
-  /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.DecimalRange#getMinimum <em>Minimum</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Minimum</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalRange#getMinimum()
-   * @see #getDecimalRange()
-   * @generated
-   */
-  EReference getDecimalRange_Minimum();
-
-  /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.DecimalRange#getMaximum <em>Maximum</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Maximum</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalRange#getMaximum()
-   * @see #getDecimalRange()
-   * @generated
-   */
-  EReference getDecimalRange_Maximum();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue <em>Decimal Minimum Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Decimal Minimum Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue
-   * @generated
-   */
-  EClass getDecimalMinimumValue();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue#isExclusive <em>Exclusive</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Exclusive</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue#isExclusive()
-   * @see #getDecimalMinimumValue()
-   * @generated
-   */
-  EAttribute getDecimalMinimumValue_Exclusive();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue#getValue()
-   * @see #getDecimalMinimumValue()
-   * @generated
-   */
-  EAttribute getDecimalMinimumValue_Value();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue <em>Decimal Maximum Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Decimal Maximum Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue
-   * @generated
-   */
-  EClass getDecimalMaximumValue();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue#isExclusive <em>Exclusive</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Exclusive</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue#isExclusive()
-   * @see #getDecimalMaximumValue()
-   * @generated
-   */
-  EAttribute getDecimalMaximumValue_Exclusive();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue#getValue()
-   * @see #getDecimalMaximumValue()
-   * @generated
-   */
-  EAttribute getDecimalMaximumValue_Value();
-
-  /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot <em>Concept Reference Slot</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Concept Reference Slot</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot
-   * @generated
-   */
-  EClass getConceptReferenceSlot();
-
-  /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot#getConstraint <em>Constraint</em>}'.
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot#getConstraint <em>Constraint</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for the containment reference '<em>Constraint</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot#getConstraint()
-   * @see #getConceptReferenceSlot()
+   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot#getConstraint()
+   * @see #getConceptReplacementSlot()
    * @generated
    */
-  EReference getConceptReferenceSlot_Constraint();
+  EReference getConceptReplacementSlot_Constraint();
 
   /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot#getName <em>Name</em>}'.
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot#getName <em>Name</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for the attribute '<em>Name</em>'.
-   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot#getName()
-   * @see #getConceptReferenceSlot()
+   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot#getName()
+   * @see #getConceptReplacementSlot()
    * @generated
    */
-  EAttribute getConceptReferenceSlot_Name();
+  EAttribute getConceptReplacementSlot_Name();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReference <em>Concept Reference</em>}'.
@@ -1853,6 +1634,323 @@ public interface EtlPackage extends EPackage
    * @generated
    */
   EAttribute getConceptReference_Term();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.StringValue <em>String Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>String Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.StringValue
+   * @generated
+   */
+  EClass getStringValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.StringValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.StringValue#getValue()
+   * @see #getStringValue()
+   * @generated
+   */
+  EAttribute getStringValue_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerValue <em>Integer Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Integer Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.IntegerValue
+   * @generated
+   */
+  EClass getIntegerValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.IntegerValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.IntegerValue#getValue()
+   * @see #getIntegerValue()
+   * @generated
+   */
+  EAttribute getIntegerValue_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue <em>Decimal Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Decimal Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.DecimalValue
+   * @generated
+   */
+  EClass getDecimalValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.DecimalValue#getValue()
+   * @see #getDecimalValue()
+   * @generated
+   */
+  EAttribute getDecimalValue_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotInteger <em>Slot Integer</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Integer</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotInteger
+   * @generated
+   */
+  EClass getSlotInteger();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue <em>Slot Integer Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Integer Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue
+   * @generated
+   */
+  EClass getSlotIntegerValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue#getValue()
+   * @see #getSlotIntegerValue()
+   * @generated
+   */
+  EAttribute getSlotIntegerValue_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange <em>Slot Integer Range</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Integer Range</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange
+   * @generated
+   */
+  EClass getSlotIntegerRange();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange#getMinimum <em>Minimum</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Minimum</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange#getMinimum()
+   * @see #getSlotIntegerRange()
+   * @generated
+   */
+  EReference getSlotIntegerRange_Minimum();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange#getMaximum <em>Maximum</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Maximum</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange#getMaximum()
+   * @see #getSlotIntegerRange()
+   * @generated
+   */
+  EReference getSlotIntegerRange_Maximum();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue <em>Slot Integer Minimum Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Integer Minimum Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue
+   * @generated
+   */
+  EClass getSlotIntegerMinimumValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue#isExclusive <em>Exclusive</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Exclusive</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue#isExclusive()
+   * @see #getSlotIntegerMinimumValue()
+   * @generated
+   */
+  EAttribute getSlotIntegerMinimumValue_Exclusive();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue#getValue()
+   * @see #getSlotIntegerMinimumValue()
+   * @generated
+   */
+  EAttribute getSlotIntegerMinimumValue_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue <em>Slot Integer Maximum Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Integer Maximum Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue
+   * @generated
+   */
+  EClass getSlotIntegerMaximumValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue#isExclusive <em>Exclusive</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Exclusive</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue#isExclusive()
+   * @see #getSlotIntegerMaximumValue()
+   * @generated
+   */
+  EAttribute getSlotIntegerMaximumValue_Exclusive();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue#getValue()
+   * @see #getSlotIntegerMaximumValue()
+   * @generated
+   */
+  EAttribute getSlotIntegerMaximumValue_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimal <em>Slot Decimal</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Decimal</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimal
+   * @generated
+   */
+  EClass getSlotDecimal();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue <em>Slot Decimal Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Decimal Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue
+   * @generated
+   */
+  EClass getSlotDecimalValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue#getValue()
+   * @see #getSlotDecimalValue()
+   * @generated
+   */
+  EAttribute getSlotDecimalValue_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange <em>Slot Decimal Range</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Decimal Range</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange
+   * @generated
+   */
+  EClass getSlotDecimalRange();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange#getMinimum <em>Minimum</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Minimum</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange#getMinimum()
+   * @see #getSlotDecimalRange()
+   * @generated
+   */
+  EReference getSlotDecimalRange_Minimum();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange#getMaximum <em>Maximum</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Maximum</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange#getMaximum()
+   * @see #getSlotDecimalRange()
+   * @generated
+   */
+  EReference getSlotDecimalRange_Maximum();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue <em>Slot Decimal Minimum Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Decimal Minimum Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue
+   * @generated
+   */
+  EClass getSlotDecimalMinimumValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue#isExclusive <em>Exclusive</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Exclusive</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue#isExclusive()
+   * @see #getSlotDecimalMinimumValue()
+   * @generated
+   */
+  EAttribute getSlotDecimalMinimumValue_Exclusive();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue#getValue()
+   * @see #getSlotDecimalMinimumValue()
+   * @generated
+   */
+  EAttribute getSlotDecimalMinimumValue_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue <em>Slot Decimal Maximum Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Slot Decimal Maximum Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue
+   * @generated
+   */
+  EClass getSlotDecimalMaximumValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue#isExclusive <em>Exclusive</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Exclusive</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue#isExclusive()
+   * @see #getSlotDecimalMaximumValue()
+   * @generated
+   */
+  EAttribute getSlotDecimalMaximumValue_Exclusive();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue#getValue()
+   * @see #getSlotDecimalMaximumValue()
+   * @generated
+   */
+  EAttribute getSlotDecimalMaximumValue_Value();
 
   /**
    * Returns the factory that creates the instances of the model.
@@ -2060,14 +2158,14 @@ public interface EtlPackage extends EPackage
     EClass ATTRIBUTE_VALUE = eINSTANCE.getAttributeValue();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptReplacementSlotImpl <em>Concept Replacement Slot</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptIdReplacementSlotImpl <em>Concept Id Replacement Slot</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.ConceptReplacementSlotImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getConceptReplacementSlot()
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.ConceptIdReplacementSlotImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getConceptIdReplacementSlot()
      * @generated
      */
-    EClass CONCEPT_REPLACEMENT_SLOT = eINSTANCE.getConceptReplacementSlot();
+    EClass CONCEPT_ID_REPLACEMENT_SLOT = eINSTANCE.getConceptIdReplacementSlot();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ExpressionReplacementSlotImpl <em>Expression Replacement Slot</em>}' class.
@@ -2160,12 +2258,12 @@ public interface EtlPackage extends EPackage
     EClass STRING_REPLACEMENT_SLOT = eINSTANCE.getStringReplacementSlot();
 
     /**
-     * The meta object literal for the '<em><b>Values</b></em>' containment reference list feature.
+     * The meta object literal for the '<em><b>Values</b></em>' attribute list feature.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference STRING_REPLACEMENT_SLOT__VALUES = eINSTANCE.getStringReplacementSlot_Values();
+    EAttribute STRING_REPLACEMENT_SLOT__VALUES = eINSTANCE.getStringReplacementSlot_Values();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerReplacementSlotImpl <em>Integer Replacement Slot</em>}' class.
@@ -2230,244 +2328,14 @@ public interface EtlPackage extends EPackage
     EAttribute ETL_CARDINALITY__MAX = eINSTANCE.getEtlCardinality_Max();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl <em>String Value</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptReplacementSlotImpl <em>Concept Replacement Slot</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getStringValue()
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.ConceptReplacementSlotImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getConceptReplacementSlot()
      * @generated
      */
-    EClass STRING_VALUE = eINSTANCE.getStringValue();
-
-    /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute STRING_VALUE__VALUE = eINSTANCE.getStringValue_Value();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerValuesImpl <em>Integer Values</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerValuesImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerValues()
-     * @generated
-     */
-    EClass INTEGER_VALUES = eINSTANCE.getIntegerValues();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerValueImpl <em>Integer Value</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerValueImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerValue()
-     * @generated
-     */
-    EClass INTEGER_VALUE = eINSTANCE.getIntegerValue();
-
-    /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute INTEGER_VALUE__VALUE = eINSTANCE.getIntegerValue_Value();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerRangeImpl <em>Integer Range</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerRangeImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerRange()
-     * @generated
-     */
-    EClass INTEGER_RANGE = eINSTANCE.getIntegerRange();
-
-    /**
-     * The meta object literal for the '<em><b>Minimum</b></em>' containment reference feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EReference INTEGER_RANGE__MINIMUM = eINSTANCE.getIntegerRange_Minimum();
-
-    /**
-     * The meta object literal for the '<em><b>Maximum</b></em>' containment reference feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EReference INTEGER_RANGE__MAXIMUM = eINSTANCE.getIntegerRange_Maximum();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerMinimumValueImpl <em>Integer Minimum Value</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerMinimumValueImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerMinimumValue()
-     * @generated
-     */
-    EClass INTEGER_MINIMUM_VALUE = eINSTANCE.getIntegerMinimumValue();
-
-    /**
-     * The meta object literal for the '<em><b>Exclusive</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute INTEGER_MINIMUM_VALUE__EXCLUSIVE = eINSTANCE.getIntegerMinimumValue_Exclusive();
-
-    /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute INTEGER_MINIMUM_VALUE__VALUE = eINSTANCE.getIntegerMinimumValue_Value();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerMaximumValueImpl <em>Integer Maximum Value</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerMaximumValueImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerMaximumValue()
-     * @generated
-     */
-    EClass INTEGER_MAXIMUM_VALUE = eINSTANCE.getIntegerMaximumValue();
-
-    /**
-     * The meta object literal for the '<em><b>Exclusive</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute INTEGER_MAXIMUM_VALUE__EXCLUSIVE = eINSTANCE.getIntegerMaximumValue_Exclusive();
-
-    /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute INTEGER_MAXIMUM_VALUE__VALUE = eINSTANCE.getIntegerMaximumValue_Value();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalValuesImpl <em>Decimal Values</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalValuesImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalValues()
-     * @generated
-     */
-    EClass DECIMAL_VALUES = eINSTANCE.getDecimalValues();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalValueImpl <em>Decimal Value</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalValueImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalValue()
-     * @generated
-     */
-    EClass DECIMAL_VALUE = eINSTANCE.getDecimalValue();
-
-    /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute DECIMAL_VALUE__VALUE = eINSTANCE.getDecimalValue_Value();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalRangeImpl <em>Decimal Range</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalRangeImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalRange()
-     * @generated
-     */
-    EClass DECIMAL_RANGE = eINSTANCE.getDecimalRange();
-
-    /**
-     * The meta object literal for the '<em><b>Minimum</b></em>' containment reference feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EReference DECIMAL_RANGE__MINIMUM = eINSTANCE.getDecimalRange_Minimum();
-
-    /**
-     * The meta object literal for the '<em><b>Maximum</b></em>' containment reference feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EReference DECIMAL_RANGE__MAXIMUM = eINSTANCE.getDecimalRange_Maximum();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalMinimumValueImpl <em>Decimal Minimum Value</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalMinimumValueImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalMinimumValue()
-     * @generated
-     */
-    EClass DECIMAL_MINIMUM_VALUE = eINSTANCE.getDecimalMinimumValue();
-
-    /**
-     * The meta object literal for the '<em><b>Exclusive</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute DECIMAL_MINIMUM_VALUE__EXCLUSIVE = eINSTANCE.getDecimalMinimumValue_Exclusive();
-
-    /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute DECIMAL_MINIMUM_VALUE__VALUE = eINSTANCE.getDecimalMinimumValue_Value();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalMaximumValueImpl <em>Decimal Maximum Value</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalMaximumValueImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalMaximumValue()
-     * @generated
-     */
-    EClass DECIMAL_MAXIMUM_VALUE = eINSTANCE.getDecimalMaximumValue();
-
-    /**
-     * The meta object literal for the '<em><b>Exclusive</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute DECIMAL_MAXIMUM_VALUE__EXCLUSIVE = eINSTANCE.getDecimalMaximumValue_Exclusive();
-
-    /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute DECIMAL_MAXIMUM_VALUE__VALUE = eINSTANCE.getDecimalMaximumValue_Value();
-
-    /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptReferenceSlotImpl <em>Concept Reference Slot</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.ConceptReferenceSlotImpl
-     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getConceptReferenceSlot()
-     * @generated
-     */
-    EClass CONCEPT_REFERENCE_SLOT = eINSTANCE.getConceptReferenceSlot();
+    EClass CONCEPT_REPLACEMENT_SLOT = eINSTANCE.getConceptReplacementSlot();
 
     /**
      * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
@@ -2475,7 +2343,7 @@ public interface EtlPackage extends EPackage
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference CONCEPT_REFERENCE_SLOT__CONSTRAINT = eINSTANCE.getConceptReferenceSlot_Constraint();
+    EReference CONCEPT_REPLACEMENT_SLOT__CONSTRAINT = eINSTANCE.getConceptReplacementSlot_Constraint();
 
     /**
      * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
@@ -2483,7 +2351,7 @@ public interface EtlPackage extends EPackage
      * <!-- end-user-doc -->
      * @generated
      */
-    EAttribute CONCEPT_REFERENCE_SLOT__NAME = eINSTANCE.getConceptReferenceSlot_Name();
+    EAttribute CONCEPT_REPLACEMENT_SLOT__NAME = eINSTANCE.getConceptReplacementSlot_Name();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.ConceptReferenceImpl <em>Concept Reference</em>}' class.
@@ -2518,6 +2386,272 @@ public interface EtlPackage extends EPackage
      * @generated
      */
     EAttribute CONCEPT_REFERENCE__TERM = eINSTANCE.getConceptReference_Term();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl <em>String Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.StringValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getStringValue()
+     * @generated
+     */
+    EClass STRING_VALUE = eINSTANCE.getStringValue();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute STRING_VALUE__VALUE = eINSTANCE.getStringValue_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.IntegerValueImpl <em>Integer Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.IntegerValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getIntegerValue()
+     * @generated
+     */
+    EClass INTEGER_VALUE = eINSTANCE.getIntegerValue();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute INTEGER_VALUE__VALUE = eINSTANCE.getIntegerValue_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalValueImpl <em>Decimal Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.DecimalValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getDecimalValue()
+     * @generated
+     */
+    EClass DECIMAL_VALUE = eINSTANCE.getDecimalValue();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DECIMAL_VALUE__VALUE = eINSTANCE.getDecimalValue_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerImpl <em>Slot Integer</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotInteger()
+     * @generated
+     */
+    EClass SLOT_INTEGER = eINSTANCE.getSlotInteger();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerValueImpl <em>Slot Integer Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotIntegerValue()
+     * @generated
+     */
+    EClass SLOT_INTEGER_VALUE = eINSTANCE.getSlotIntegerValue();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_INTEGER_VALUE__VALUE = eINSTANCE.getSlotIntegerValue_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerRangeImpl <em>Slot Integer Range</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerRangeImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotIntegerRange()
+     * @generated
+     */
+    EClass SLOT_INTEGER_RANGE = eINSTANCE.getSlotIntegerRange();
+
+    /**
+     * The meta object literal for the '<em><b>Minimum</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference SLOT_INTEGER_RANGE__MINIMUM = eINSTANCE.getSlotIntegerRange_Minimum();
+
+    /**
+     * The meta object literal for the '<em><b>Maximum</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference SLOT_INTEGER_RANGE__MAXIMUM = eINSTANCE.getSlotIntegerRange_Maximum();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMinimumValueImpl <em>Slot Integer Minimum Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMinimumValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotIntegerMinimumValue()
+     * @generated
+     */
+    EClass SLOT_INTEGER_MINIMUM_VALUE = eINSTANCE.getSlotIntegerMinimumValue();
+
+    /**
+     * The meta object literal for the '<em><b>Exclusive</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_INTEGER_MINIMUM_VALUE__EXCLUSIVE = eINSTANCE.getSlotIntegerMinimumValue_Exclusive();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_INTEGER_MINIMUM_VALUE__VALUE = eINSTANCE.getSlotIntegerMinimumValue_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMaximumValueImpl <em>Slot Integer Maximum Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerMaximumValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotIntegerMaximumValue()
+     * @generated
+     */
+    EClass SLOT_INTEGER_MAXIMUM_VALUE = eINSTANCE.getSlotIntegerMaximumValue();
+
+    /**
+     * The meta object literal for the '<em><b>Exclusive</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_INTEGER_MAXIMUM_VALUE__EXCLUSIVE = eINSTANCE.getSlotIntegerMaximumValue_Exclusive();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_INTEGER_MAXIMUM_VALUE__VALUE = eINSTANCE.getSlotIntegerMaximumValue_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalImpl <em>Slot Decimal</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimal()
+     * @generated
+     */
+    EClass SLOT_DECIMAL = eINSTANCE.getSlotDecimal();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalValueImpl <em>Slot Decimal Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimalValue()
+     * @generated
+     */
+    EClass SLOT_DECIMAL_VALUE = eINSTANCE.getSlotDecimalValue();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_DECIMAL_VALUE__VALUE = eINSTANCE.getSlotDecimalValue_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalRangeImpl <em>Slot Decimal Range</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalRangeImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimalRange()
+     * @generated
+     */
+    EClass SLOT_DECIMAL_RANGE = eINSTANCE.getSlotDecimalRange();
+
+    /**
+     * The meta object literal for the '<em><b>Minimum</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference SLOT_DECIMAL_RANGE__MINIMUM = eINSTANCE.getSlotDecimalRange_Minimum();
+
+    /**
+     * The meta object literal for the '<em><b>Maximum</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference SLOT_DECIMAL_RANGE__MAXIMUM = eINSTANCE.getSlotDecimalRange_Maximum();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalMinimumValueImpl <em>Slot Decimal Minimum Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalMinimumValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimalMinimumValue()
+     * @generated
+     */
+    EClass SLOT_DECIMAL_MINIMUM_VALUE = eINSTANCE.getSlotDecimalMinimumValue();
+
+    /**
+     * The meta object literal for the '<em><b>Exclusive</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_DECIMAL_MINIMUM_VALUE__EXCLUSIVE = eINSTANCE.getSlotDecimalMinimumValue_Exclusive();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_DECIMAL_MINIMUM_VALUE__VALUE = eINSTANCE.getSlotDecimalMinimumValue_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalMaximumValueImpl <em>Slot Decimal Maximum Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalMaximumValueImpl
+     * @see com.b2international.snowowl.snomed.etl.etl.impl.EtlPackageImpl#getSlotDecimalMaximumValue()
+     * @generated
+     */
+    EClass SLOT_DECIMAL_MAXIMUM_VALUE = eINSTANCE.getSlotDecimalMaximumValue();
+
+    /**
+     * The meta object literal for the '<em><b>Exclusive</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_DECIMAL_MAXIMUM_VALUE__EXCLUSIVE = eINSTANCE.getSlotDecimalMaximumValue_Exclusive();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute SLOT_DECIMAL_MAXIMUM_VALUE__VALUE = eINSTANCE.getSlotDecimalMaximumValue_Value();
 
   }
 

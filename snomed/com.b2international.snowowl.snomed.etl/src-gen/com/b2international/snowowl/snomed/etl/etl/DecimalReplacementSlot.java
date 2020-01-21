@@ -37,7 +37,7 @@ public interface DecimalReplacementSlot extends ConcreteValueReplacementSlot
 {
   /**
    * Returns the value of the '<em><b>Values</b></em>' containment reference list.
-   * The list contents are of type {@link com.b2international.snowowl.snomed.etl.etl.DecimalValues}.
+   * The list contents are of type {@link com.b2international.snowowl.snomed.etl.etl.SlotDecimal}.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Values</em>' containment reference list.
@@ -45,6 +45,6 @@ public interface DecimalReplacementSlot extends ConcreteValueReplacementSlot
    * @model containment="true"
    * @generated
    */
-  EList<DecimalValues> getValues();
+  EList<SlotDecimal> getValues();
 
 } // DecimalReplacementSlot

@@ -697,15 +697,15 @@ ruleAttributeValue returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleConceptReplacementSlot
-entryRuleConceptReplacementSlot returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getConceptReplacementSlotRule()); }
-	iv_ruleConceptReplacementSlot=ruleConceptReplacementSlot
-	{ $current=$iv_ruleConceptReplacementSlot.current; }
+// Entry rule entryRuleConceptIdReplacementSlot
+entryRuleConceptIdReplacementSlot returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getConceptIdReplacementSlotRule()); }
+	iv_ruleConceptIdReplacementSlot=ruleConceptIdReplacementSlot
+	{ $current=$iv_ruleConceptIdReplacementSlot.current; }
 	EOF;
 
-// Rule ConceptReplacementSlot
-ruleConceptReplacementSlot returns [EObject current=null]
+// Rule ConceptIdReplacementSlot
+ruleConceptIdReplacementSlot returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -719,36 +719,36 @@ ruleConceptReplacementSlot returns [EObject current=null]
 			}
 			{
 				$current = forceCreateModelElement(
-					grammarAccess.getConceptReplacementSlotAccess().getConceptReplacementSlotAction_0(),
+					grammarAccess.getConceptIdReplacementSlotAccess().getConceptIdReplacementSlotAction_0(),
 					$current);
 			}
 		)
 		this_DOUBLE_SQUARE_OPEN_1=RULE_DOUBLE_SQUARE_OPEN
 		{
-			newLeafNode(this_DOUBLE_SQUARE_OPEN_1, grammarAccess.getConceptReplacementSlotAccess().getDOUBLE_SQUARE_OPENTerminalRuleCall_1());
+			newLeafNode(this_DOUBLE_SQUARE_OPEN_1, grammarAccess.getConceptIdReplacementSlotAccess().getDOUBLE_SQUARE_OPENTerminalRuleCall_1());
 		}
 		this_PLUS_2=RULE_PLUS
 		{
-			newLeafNode(this_PLUS_2, grammarAccess.getConceptReplacementSlotAccess().getPLUSTerminalRuleCall_2());
+			newLeafNode(this_PLUS_2, grammarAccess.getConceptIdReplacementSlotAccess().getPLUSTerminalRuleCall_2());
 		}
 		this_ID_3=RULE_ID
 		{
-			newLeafNode(this_ID_3, grammarAccess.getConceptReplacementSlotAccess().getIDTerminalRuleCall_3());
+			newLeafNode(this_ID_3, grammarAccess.getConceptIdReplacementSlotAccess().getIDTerminalRuleCall_3());
 		}
 		(
 			this_ROUND_OPEN_4=RULE_ROUND_OPEN
 			{
-				newLeafNode(this_ROUND_OPEN_4, grammarAccess.getConceptReplacementSlotAccess().getROUND_OPENTerminalRuleCall_4_0());
+				newLeafNode(this_ROUND_OPEN_4, grammarAccess.getConceptIdReplacementSlotAccess().getROUND_OPENTerminalRuleCall_4_0());
 			}
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getConceptReplacementSlotAccess().getConstraintExpressionConstraintParserRuleCall_4_1_0());
+						newCompositeNode(grammarAccess.getConceptIdReplacementSlotAccess().getConstraintExpressionConstraintParserRuleCall_4_1_0());
 					}
 					lv_constraint_5_0=ruleExpressionConstraint
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getConceptReplacementSlotRule());
+							$current = createModelElementForParent(grammarAccess.getConceptIdReplacementSlotRule());
 						}
 						set(
 							$current,
@@ -761,18 +761,18 @@ ruleConceptReplacementSlot returns [EObject current=null]
 			)
 			this_ROUND_CLOSE_6=RULE_ROUND_CLOSE
 			{
-				newLeafNode(this_ROUND_CLOSE_6, grammarAccess.getConceptReplacementSlotAccess().getROUND_CLOSETerminalRuleCall_4_2());
+				newLeafNode(this_ROUND_CLOSE_6, grammarAccess.getConceptIdReplacementSlotAccess().getROUND_CLOSETerminalRuleCall_4_2());
 			}
 		)?
 		(
 			(
 				lv_name_7_0=RULE_SLOTNAME_STRING
 				{
-					newLeafNode(lv_name_7_0, grammarAccess.getConceptReplacementSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_5_0());
+					newLeafNode(lv_name_7_0, grammarAccess.getConceptIdReplacementSlotAccess().getNameSLOTNAME_STRINGTerminalRuleCall_5_0());
 				}
 				{
 					if ($current==null) {
-						$current = createModelElement(grammarAccess.getConceptReplacementSlotRule());
+						$current = createModelElement(grammarAccess.getConceptIdReplacementSlotRule());
 					}
 					setWithLastConsumed(
 						$current,
@@ -784,7 +784,7 @@ ruleConceptReplacementSlot returns [EObject current=null]
 		)?
 		this_DOUBLE_SQUARE_CLOSE_8=RULE_DOUBLE_SQUARE_CLOSE
 		{
-			newLeafNode(this_DOUBLE_SQUARE_CLOSE_8, grammarAccess.getConceptReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
+			newLeafNode(this_DOUBLE_SQUARE_CLOSE_8, grammarAccess.getConceptIdReplacementSlotAccess().getDOUBLE_SQUARE_CLOSETerminalRuleCall_6());
 		}
 	)
 ;
@@ -1167,39 +1167,37 @@ ruleStringReplacementSlot returns [EObject current=null]
 			}
 			(
 				(
+					lv_values_5_0=RULE_STRING
 					{
-						newCompositeNode(grammarAccess.getStringReplacementSlotAccess().getValuesStringValueParserRuleCall_4_1_0());
+						newLeafNode(lv_values_5_0, grammarAccess.getStringReplacementSlotAccess().getValuesSTRINGTerminalRuleCall_4_1_0());
 					}
-					lv_values_5_0=ruleStringValue
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getStringReplacementSlotRule());
+							$current = createModelElement(grammarAccess.getStringReplacementSlotRule());
 						}
-						add(
+						addWithLastConsumed(
 							$current,
 							"values",
 							lv_values_5_0,
-							"com.b2international.snowowl.snomed.etl.Etl.StringValue");
-						afterParserOrEnumRuleCall();
+							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
 					}
 				)
 			)
 			(
 				(
+					lv_values_6_0=RULE_STRING
 					{
-						newCompositeNode(grammarAccess.getStringReplacementSlotAccess().getValuesStringValueParserRuleCall_4_2_0());
+						newLeafNode(lv_values_6_0, grammarAccess.getStringReplacementSlotAccess().getValuesSTRINGTerminalRuleCall_4_2_0());
 					}
-					lv_values_6_0=ruleStringValue
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getStringReplacementSlotRule());
+							$current = createModelElement(grammarAccess.getStringReplacementSlotRule());
 						}
-						add(
+						addWithLastConsumed(
 							$current,
 							"values",
 							lv_values_6_0,
-							"com.b2international.snowowl.snomed.etl.Etl.StringValue");
-						afterParserOrEnumRuleCall();
+							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
 					}
 				)
 			)*
@@ -1279,9 +1277,9 @@ ruleIntegerReplacementSlot returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getIntegerReplacementSlotAccess().getValuesIntegerValuesParserRuleCall_4_1_0());
+						newCompositeNode(grammarAccess.getIntegerReplacementSlotAccess().getValuesSlotIntegerParserRuleCall_4_1_0());
 					}
-					lv_values_5_0=ruleIntegerValues
+					lv_values_5_0=ruleSlotInteger
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getIntegerReplacementSlotRule());
@@ -1290,7 +1288,7 @@ ruleIntegerReplacementSlot returns [EObject current=null]
 							$current,
 							"values",
 							lv_values_5_0,
-							"com.b2international.snowowl.snomed.etl.Etl.IntegerValues");
+							"com.b2international.snowowl.snomed.etl.Etl.SlotInteger");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1298,9 +1296,9 @@ ruleIntegerReplacementSlot returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getIntegerReplacementSlotAccess().getValuesIntegerValuesParserRuleCall_4_2_0());
+						newCompositeNode(grammarAccess.getIntegerReplacementSlotAccess().getValuesSlotIntegerParserRuleCall_4_2_0());
 					}
-					lv_values_6_0=ruleIntegerValues
+					lv_values_6_0=ruleSlotInteger
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getIntegerReplacementSlotRule());
@@ -1309,7 +1307,7 @@ ruleIntegerReplacementSlot returns [EObject current=null]
 							$current,
 							"values",
 							lv_values_6_0,
-							"com.b2international.snowowl.snomed.etl.Etl.IntegerValues");
+							"com.b2international.snowowl.snomed.etl.Etl.SlotInteger");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1390,9 +1388,9 @@ ruleDecimalReplacementSlot returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getDecimalReplacementSlotAccess().getValuesDecimalValuesParserRuleCall_4_1_0());
+						newCompositeNode(grammarAccess.getDecimalReplacementSlotAccess().getValuesSlotDecimalParserRuleCall_4_1_0());
 					}
-					lv_values_5_0=ruleDecimalValues
+					lv_values_5_0=ruleSlotDecimal
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getDecimalReplacementSlotRule());
@@ -1401,7 +1399,7 @@ ruleDecimalReplacementSlot returns [EObject current=null]
 							$current,
 							"values",
 							lv_values_5_0,
-							"com.b2international.snowowl.snomed.etl.Etl.DecimalValues");
+							"com.b2international.snowowl.snomed.etl.Etl.SlotDecimal");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1409,9 +1407,9 @@ ruleDecimalReplacementSlot returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getDecimalReplacementSlotAccess().getValuesDecimalValuesParserRuleCall_4_2_0());
+						newCompositeNode(grammarAccess.getDecimalReplacementSlotAccess().getValuesSlotDecimalParserRuleCall_4_2_0());
 					}
-					lv_values_6_0=ruleDecimalValues
+					lv_values_6_0=ruleSlotDecimal
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getDecimalReplacementSlotRule());
@@ -1420,7 +1418,7 @@ ruleDecimalReplacementSlot returns [EObject current=null]
 							$current,
 							"values",
 							lv_values_6_0,
-							"com.b2international.snowowl.snomed.etl.Etl.DecimalValues");
+							"com.b2international.snowowl.snomed.etl.Etl.SlotDecimal");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1518,6 +1516,126 @@ ruleEtlCardinality returns [EObject current=null]
 					afterParserOrEnumRuleCall();
 				}
 			)
+		)
+	)
+;
+
+// Entry rule entryRuleConceptReplacementSlot
+entryRuleConceptReplacementSlot returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getConceptReplacementSlotRule()); }
+	iv_ruleConceptReplacementSlot=ruleConceptReplacementSlot
+	{ $current=$iv_ruleConceptReplacementSlot.current; }
+	EOF;
+
+// Rule ConceptReplacementSlot
+ruleConceptReplacementSlot returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getConceptReplacementSlotAccess().getConceptIdReplacementSlotParserRuleCall_0());
+		}
+		this_ConceptIdReplacementSlot_0=ruleConceptIdReplacementSlot
+		{
+			$current = $this_ConceptIdReplacementSlot_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getConceptReplacementSlotAccess().getExpressionReplacementSlotParserRuleCall_1());
+		}
+		this_ExpressionReplacementSlot_1=ruleExpressionReplacementSlot
+		{
+			$current = $this_ExpressionReplacementSlot_1.current;
+			afterParserOrEnumRuleCall();
+		}
+	)
+;
+
+// Entry rule entryRuleConceptReference
+entryRuleConceptReference returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getConceptReferenceRule()); }
+	iv_ruleConceptReference=ruleConceptReference
+	{ $current=$iv_ruleConceptReference.current; }
+	EOF;
+
+// Rule ConceptReference
+ruleConceptReference returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getConceptReferenceAccess().getSlotConceptReplacementSlotParserRuleCall_0_0());
+				}
+				lv_slot_0_0=ruleConceptReplacementSlot
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getConceptReferenceRule());
+					}
+					set(
+						$current,
+						"slot",
+						lv_slot_0_0,
+						"com.b2international.snowowl.snomed.etl.Etl.ConceptReplacementSlot");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		    |
+		(
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getConceptReferenceAccess().getIdSnomedIdentifierParserRuleCall_1_0_0());
+					}
+					lv_id_1_0=ruleSnomedIdentifier
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getConceptReferenceRule());
+						}
+						set(
+							$current,
+							"id",
+							lv_id_1_0,
+							"com.b2international.snowowl.snomed.ecl.Ecl.SnomedIdentifier");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+			(
+				(
+					lv_term_2_0=RULE_TERM_STRING
+					{
+						newLeafNode(lv_term_2_0, grammarAccess.getConceptReferenceAccess().getTermTERM_STRINGTerminalRuleCall_1_1_0());
+					}
+					{
+						if ($current==null) {
+							$current = createModelElement(grammarAccess.getConceptReferenceRule());
+						}
+						setWithLastConsumed(
+							$current,
+							"term",
+							lv_term_2_0,
+							"com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
+					}
+				)
+			)?
 		)
 	)
 ;
@@ -1719,48 +1837,6 @@ ruleStringValue returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleIntegerValues
-entryRuleIntegerValues returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getIntegerValuesRule()); }
-	iv_ruleIntegerValues=ruleIntegerValues
-	{ $current=$iv_ruleIntegerValues.current; }
-	EOF;
-
-// Rule IntegerValues
-ruleIntegerValues returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		{
-			/* */
-		}
-		{
-			newCompositeNode(grammarAccess.getIntegerValuesAccess().getIntegerValueParserRuleCall_0());
-		}
-		this_IntegerValue_0=ruleIntegerValue
-		{
-			$current = $this_IntegerValue_0.current;
-			afterParserOrEnumRuleCall();
-		}
-		    |
-		{
-			/* */
-		}
-		{
-			newCompositeNode(grammarAccess.getIntegerValuesAccess().getIntegerRangeParserRuleCall_1());
-		}
-		this_IntegerRange_1=ruleIntegerRange
-		{
-			$current = $this_IntegerRange_1.current;
-			afterParserOrEnumRuleCall();
-		}
-	)
-;
-
 // Entry rule entryRuleIntegerValue
 entryRuleIntegerValue returns [EObject current=null]:
 	{ newCompositeNode(grammarAccess.getIntegerValueRule()); }
@@ -1800,257 +1876,6 @@ ruleIntegerValue returns [EObject current=null]
 				}
 			)
 		)
-	)
-;
-
-// Entry rule entryRuleIntegerRange
-entryRuleIntegerRange returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getIntegerRangeRule()); }
-	iv_ruleIntegerRange=ruleIntegerRange
-	{ $current=$iv_ruleIntegerRange.current; }
-	EOF;
-
-// Rule IntegerRange
-ruleIntegerRange returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		(
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getIntegerRangeAccess().getMinimumIntegerMinimumValueParserRuleCall_0_0_0());
-					}
-					lv_minimum_0_0=ruleIntegerMinimumValue
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getIntegerRangeRule());
-						}
-						set(
-							$current,
-							"minimum",
-							lv_minimum_0_0,
-							"com.b2international.snowowl.snomed.etl.Etl.IntegerMinimumValue");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)
-			this_TO_1=RULE_TO
-			{
-				newLeafNode(this_TO_1, grammarAccess.getIntegerRangeAccess().getTOTerminalRuleCall_0_1());
-			}
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getIntegerRangeAccess().getMaximumIntegerMaximumValueParserRuleCall_0_2_0());
-					}
-					lv_maximum_2_0=ruleIntegerMaximumValue
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getIntegerRangeRule());
-						}
-						set(
-							$current,
-							"maximum",
-							lv_maximum_2_0,
-							"com.b2international.snowowl.snomed.etl.Etl.IntegerMaximumValue");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)?
-		)
-		    |
-		(
-			this_TO_3=RULE_TO
-			{
-				newLeafNode(this_TO_3, grammarAccess.getIntegerRangeAccess().getTOTerminalRuleCall_1_0());
-			}
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getIntegerRangeAccess().getMaximumIntegerMaximumValueParserRuleCall_1_1_0());
-					}
-					lv_maximum_4_0=ruleIntegerMaximumValue
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getIntegerRangeRule());
-						}
-						set(
-							$current,
-							"maximum",
-							lv_maximum_4_0,
-							"com.b2international.snowowl.snomed.etl.Etl.IntegerMaximumValue");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)
-		)
-	)
-;
-
-// Entry rule entryRuleIntegerMinimumValue
-entryRuleIntegerMinimumValue returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getIntegerMinimumValueRule()); }
-	iv_ruleIntegerMinimumValue=ruleIntegerMinimumValue
-	{ $current=$iv_ruleIntegerMinimumValue.current; }
-	EOF;
-
-// Rule IntegerMinimumValue
-ruleIntegerMinimumValue returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		(
-			(
-				lv_exclusive_0_0=RULE_GT
-				{
-					newLeafNode(lv_exclusive_0_0, grammarAccess.getIntegerMinimumValueAccess().getExclusiveGTTerminalRuleCall_0_0());
-				}
-				{
-					if ($current==null) {
-						$current = createModelElement(grammarAccess.getIntegerMinimumValueRule());
-					}
-					setWithLastConsumed(
-						$current,
-						"exclusive",
-						true,
-						"com.b2international.snowowl.snomed.ecl.Ecl.GT");
-				}
-			)
-		)?
-		this_HASH_1=RULE_HASH
-		{
-			newLeafNode(this_HASH_1, grammarAccess.getIntegerMinimumValueAccess().getHASHTerminalRuleCall_1());
-		}
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getIntegerMinimumValueAccess().getValueIntegerParserRuleCall_2_0());
-				}
-				lv_value_2_0=ruleInteger
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getIntegerMinimumValueRule());
-					}
-					set(
-						$current,
-						"value",
-						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
-	)
-;
-
-// Entry rule entryRuleIntegerMaximumValue
-entryRuleIntegerMaximumValue returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getIntegerMaximumValueRule()); }
-	iv_ruleIntegerMaximumValue=ruleIntegerMaximumValue
-	{ $current=$iv_ruleIntegerMaximumValue.current; }
-	EOF;
-
-// Rule IntegerMaximumValue
-ruleIntegerMaximumValue returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		(
-			(
-				lv_exclusive_0_0=RULE_LT
-				{
-					newLeafNode(lv_exclusive_0_0, grammarAccess.getIntegerMaximumValueAccess().getExclusiveLTTerminalRuleCall_0_0());
-				}
-				{
-					if ($current==null) {
-						$current = createModelElement(grammarAccess.getIntegerMaximumValueRule());
-					}
-					setWithLastConsumed(
-						$current,
-						"exclusive",
-						true,
-						"com.b2international.snowowl.snomed.ecl.Ecl.LT");
-				}
-			)
-		)?
-		this_HASH_1=RULE_HASH
-		{
-			newLeafNode(this_HASH_1, grammarAccess.getIntegerMaximumValueAccess().getHASHTerminalRuleCall_1());
-		}
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getIntegerMaximumValueAccess().getValueIntegerParserRuleCall_2_0());
-				}
-				lv_value_2_0=ruleInteger
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getIntegerMaximumValueRule());
-					}
-					set(
-						$current,
-						"value",
-						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
-	)
-;
-
-// Entry rule entryRuleDecimalValues
-entryRuleDecimalValues returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getDecimalValuesRule()); }
-	iv_ruleDecimalValues=ruleDecimalValues
-	{ $current=$iv_ruleDecimalValues.current; }
-	EOF;
-
-// Rule DecimalValues
-ruleDecimalValues returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		{
-			/* */
-		}
-		{
-			newCompositeNode(grammarAccess.getDecimalValuesAccess().getDecimalValueParserRuleCall_0());
-		}
-		this_DecimalValue_0=ruleDecimalValue
-		{
-			$current = $this_DecimalValue_0.current;
-			afterParserOrEnumRuleCall();
-		}
-		    |
-		{
-			/* */
-		}
-		{
-			newCompositeNode(grammarAccess.getDecimalValuesAccess().getDecimalRangeParserRuleCall_1());
-		}
-		this_DecimalRange_1=ruleDecimalRange
-		{
-			$current = $this_DecimalRange_1.current;
-			afterParserOrEnumRuleCall();
-		}
 	)
 ;
 
@@ -2096,15 +1921,99 @@ ruleDecimalValue returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleDecimalRange
-entryRuleDecimalRange returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getDecimalRangeRule()); }
-	iv_ruleDecimalRange=ruleDecimalRange
-	{ $current=$iv_ruleDecimalRange.current; }
+// Entry rule entryRuleSlotInteger
+entryRuleSlotInteger returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotIntegerRule()); }
+	iv_ruleSlotInteger=ruleSlotInteger
+	{ $current=$iv_ruleSlotInteger.current; }
 	EOF;
 
-// Rule DecimalRange
-ruleDecimalRange returns [EObject current=null]
+// Rule SlotInteger
+ruleSlotInteger returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getSlotIntegerAccess().getSlotIntegerRangeParserRuleCall_0());
+		}
+		this_SlotIntegerRange_0=ruleSlotIntegerRange
+		{
+			$current = $this_SlotIntegerRange_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getSlotIntegerAccess().getSlotIntegerValueParserRuleCall_1());
+		}
+		this_SlotIntegerValue_1=ruleSlotIntegerValue
+		{
+			$current = $this_SlotIntegerValue_1.current;
+			afterParserOrEnumRuleCall();
+		}
+	)
+;
+
+// Entry rule entryRuleSlotIntegerValue
+entryRuleSlotIntegerValue returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotIntegerValueRule()); }
+	iv_ruleSlotIntegerValue=ruleSlotIntegerValue
+	{ $current=$iv_ruleSlotIntegerValue.current; }
+	EOF;
+
+// Rule SlotIntegerValue
+ruleSlotIntegerValue returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_HASH_0=RULE_HASH
+		{
+			newLeafNode(this_HASH_0, grammarAccess.getSlotIntegerValueAccess().getHASHTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getSlotIntegerValueAccess().getValueNonNegativeIntegerParserRuleCall_1_0());
+				}
+				lv_value_1_0=ruleNonNegativeInteger
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getSlotIntegerValueRule());
+					}
+					set(
+						$current,
+						"value",
+						lv_value_1_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleSlotIntegerRange
+entryRuleSlotIntegerRange returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotIntegerRangeRule()); }
+	iv_ruleSlotIntegerRange=ruleSlotIntegerRange
+	{ $current=$iv_ruleSlotIntegerRange.current; }
+	EOF;
+
+// Rule SlotIntegerRange
+ruleSlotIntegerRange returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -2116,41 +2025,41 @@ ruleDecimalRange returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getDecimalRangeAccess().getMinimumDecimalMinimumValueParserRuleCall_0_0_0());
+						newCompositeNode(grammarAccess.getSlotIntegerRangeAccess().getMinimumSlotIntegerMinimumValueParserRuleCall_0_0_0());
 					}
-					lv_minimum_0_0=ruleDecimalMinimumValue
+					lv_minimum_0_0=ruleSlotIntegerMinimumValue
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getDecimalRangeRule());
+							$current = createModelElementForParent(grammarAccess.getSlotIntegerRangeRule());
 						}
 						set(
 							$current,
 							"minimum",
 							lv_minimum_0_0,
-							"com.b2international.snowowl.snomed.etl.Etl.DecimalMinimumValue");
+							"com.b2international.snowowl.snomed.etl.Etl.SlotIntegerMinimumValue");
 						afterParserOrEnumRuleCall();
 					}
 				)
 			)
 			this_TO_1=RULE_TO
 			{
-				newLeafNode(this_TO_1, grammarAccess.getDecimalRangeAccess().getTOTerminalRuleCall_0_1());
+				newLeafNode(this_TO_1, grammarAccess.getSlotIntegerRangeAccess().getTOTerminalRuleCall_0_1());
 			}
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getDecimalRangeAccess().getMaximumDecimalMaximumValueParserRuleCall_0_2_0());
+						newCompositeNode(grammarAccess.getSlotIntegerRangeAccess().getMaximumSlotIntegerMaximumValueParserRuleCall_0_2_0());
 					}
-					lv_maximum_2_0=ruleDecimalMaximumValue
+					lv_maximum_2_0=ruleSlotIntegerMaximumValue
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getDecimalRangeRule());
+							$current = createModelElementForParent(grammarAccess.getSlotIntegerRangeRule());
 						}
 						set(
 							$current,
 							"maximum",
 							lv_maximum_2_0,
-							"com.b2international.snowowl.snomed.etl.Etl.DecimalMaximumValue");
+							"com.b2international.snowowl.snomed.etl.Etl.SlotIntegerMaximumValue");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2160,23 +2069,23 @@ ruleDecimalRange returns [EObject current=null]
 		(
 			this_TO_3=RULE_TO
 			{
-				newLeafNode(this_TO_3, grammarAccess.getDecimalRangeAccess().getTOTerminalRuleCall_1_0());
+				newLeafNode(this_TO_3, grammarAccess.getSlotIntegerRangeAccess().getTOTerminalRuleCall_1_0());
 			}
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getDecimalRangeAccess().getMaximumDecimalMaximumValueParserRuleCall_1_1_0());
+						newCompositeNode(grammarAccess.getSlotIntegerRangeAccess().getMaximumSlotIntegerMaximumValueParserRuleCall_1_1_0());
 					}
-					lv_maximum_4_0=ruleDecimalMaximumValue
+					lv_maximum_4_0=ruleSlotIntegerMaximumValue
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getDecimalRangeRule());
+							$current = createModelElementForParent(grammarAccess.getSlotIntegerRangeRule());
 						}
 						set(
 							$current,
 							"maximum",
 							lv_maximum_4_0,
-							"com.b2international.snowowl.snomed.etl.Etl.DecimalMaximumValue");
+							"com.b2international.snowowl.snomed.etl.Etl.SlotIntegerMaximumValue");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2185,15 +2094,15 @@ ruleDecimalRange returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleDecimalMinimumValue
-entryRuleDecimalMinimumValue returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getDecimalMinimumValueRule()); }
-	iv_ruleDecimalMinimumValue=ruleDecimalMinimumValue
-	{ $current=$iv_ruleDecimalMinimumValue.current; }
+// Entry rule entryRuleSlotIntegerMinimumValue
+entryRuleSlotIntegerMinimumValue returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotIntegerMinimumValueRule()); }
+	iv_ruleSlotIntegerMinimumValue=ruleSlotIntegerMinimumValue
+	{ $current=$iv_ruleSlotIntegerMinimumValue.current; }
 	EOF;
 
-// Rule DecimalMinimumValue
-ruleDecimalMinimumValue returns [EObject current=null]
+// Rule SlotIntegerMinimumValue
+ruleSlotIntegerMinimumValue returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -2205,11 +2114,11 @@ ruleDecimalMinimumValue returns [EObject current=null]
 			(
 				lv_exclusive_0_0=RULE_GT
 				{
-					newLeafNode(lv_exclusive_0_0, grammarAccess.getDecimalMinimumValueAccess().getExclusiveGTTerminalRuleCall_0_0());
+					newLeafNode(lv_exclusive_0_0, grammarAccess.getSlotIntegerMinimumValueAccess().getExclusiveGTTerminalRuleCall_0_0());
 				}
 				{
 					if ($current==null) {
-						$current = createModelElement(grammarAccess.getDecimalMinimumValueRule());
+						$current = createModelElement(grammarAccess.getSlotIntegerMinimumValueRule());
 					}
 					setWithLastConsumed(
 						$current,
@@ -2221,23 +2130,23 @@ ruleDecimalMinimumValue returns [EObject current=null]
 		)?
 		this_HASH_1=RULE_HASH
 		{
-			newLeafNode(this_HASH_1, grammarAccess.getDecimalMinimumValueAccess().getHASHTerminalRuleCall_1());
+			newLeafNode(this_HASH_1, grammarAccess.getSlotIntegerMinimumValueAccess().getHASHTerminalRuleCall_1());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getDecimalMinimumValueAccess().getValueDecimalParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getSlotIntegerMinimumValueAccess().getValueNonNegativeIntegerParserRuleCall_2_0());
 				}
-				lv_value_2_0=ruleDecimal
+				lv_value_2_0=ruleNonNegativeInteger
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getDecimalMinimumValueRule());
+						$current = createModelElementForParent(grammarAccess.getSlotIntegerMinimumValueRule());
 					}
 					set(
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2245,15 +2154,15 @@ ruleDecimalMinimumValue returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleDecimalMaximumValue
-entryRuleDecimalMaximumValue returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getDecimalMaximumValueRule()); }
-	iv_ruleDecimalMaximumValue=ruleDecimalMaximumValue
-	{ $current=$iv_ruleDecimalMaximumValue.current; }
+// Entry rule entryRuleSlotIntegerMaximumValue
+entryRuleSlotIntegerMaximumValue returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotIntegerMaximumValueRule()); }
+	iv_ruleSlotIntegerMaximumValue=ruleSlotIntegerMaximumValue
+	{ $current=$iv_ruleSlotIntegerMaximumValue.current; }
 	EOF;
 
-// Rule DecimalMaximumValue
-ruleDecimalMaximumValue returns [EObject current=null]
+// Rule SlotIntegerMaximumValue
+ruleSlotIntegerMaximumValue returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -2265,11 +2174,11 @@ ruleDecimalMaximumValue returns [EObject current=null]
 			(
 				lv_exclusive_0_0=RULE_LT
 				{
-					newLeafNode(lv_exclusive_0_0, grammarAccess.getDecimalMaximumValueAccess().getExclusiveLTTerminalRuleCall_0_0());
+					newLeafNode(lv_exclusive_0_0, grammarAccess.getSlotIntegerMaximumValueAccess().getExclusiveLTTerminalRuleCall_0_0());
 				}
 				{
 					if ($current==null) {
-						$current = createModelElement(grammarAccess.getDecimalMaximumValueRule());
+						$current = createModelElement(grammarAccess.getSlotIntegerMaximumValueRule());
 					}
 					setWithLastConsumed(
 						$current,
@@ -2281,23 +2190,23 @@ ruleDecimalMaximumValue returns [EObject current=null]
 		)?
 		this_HASH_1=RULE_HASH
 		{
-			newLeafNode(this_HASH_1, grammarAccess.getDecimalMaximumValueAccess().getHASHTerminalRuleCall_1());
+			newLeafNode(this_HASH_1, grammarAccess.getSlotIntegerMaximumValueAccess().getHASHTerminalRuleCall_1());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getDecimalMaximumValueAccess().getValueDecimalParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getSlotIntegerMaximumValueAccess().getValueNonNegativeIntegerParserRuleCall_2_0());
 				}
-				lv_value_2_0=ruleDecimal
+				lv_value_2_0=ruleNonNegativeInteger
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getDecimalMaximumValueRule());
+						$current = createModelElementForParent(grammarAccess.getSlotIntegerMaximumValueRule());
 					}
 					set(
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2305,15 +2214,15 @@ ruleDecimalMaximumValue returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleConceptReferenceSlot
-entryRuleConceptReferenceSlot returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getConceptReferenceSlotRule()); }
-	iv_ruleConceptReferenceSlot=ruleConceptReferenceSlot
-	{ $current=$iv_ruleConceptReferenceSlot.current; }
+// Entry rule entryRuleSlotDecimal
+entryRuleSlotDecimal returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotDecimalRule()); }
+	iv_ruleSlotDecimal=ruleSlotDecimal
+	{ $current=$iv_ruleSlotDecimal.current; }
 	EOF;
 
-// Rule ConceptReferenceSlot
-ruleConceptReferenceSlot returns [EObject current=null]
+// Rule SlotDecimal
+ruleSlotDecimal returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -2325,11 +2234,11 @@ ruleConceptReferenceSlot returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getConceptReferenceSlotAccess().getConceptReplacementSlotParserRuleCall_0());
+			newCompositeNode(grammarAccess.getSlotDecimalAccess().getSlotDecimalRangeParserRuleCall_0());
 		}
-		this_ConceptReplacementSlot_0=ruleConceptReplacementSlot
+		this_SlotDecimalRange_0=ruleSlotDecimalRange
 		{
-			$current = $this_ConceptReplacementSlot_0.current;
+			$current = $this_SlotDecimalRange_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -2337,25 +2246,25 @@ ruleConceptReferenceSlot returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getConceptReferenceSlotAccess().getExpressionReplacementSlotParserRuleCall_1());
+			newCompositeNode(grammarAccess.getSlotDecimalAccess().getSlotDecimalValueParserRuleCall_1());
 		}
-		this_ExpressionReplacementSlot_1=ruleExpressionReplacementSlot
+		this_SlotDecimalValue_1=ruleSlotDecimalValue
 		{
-			$current = $this_ExpressionReplacementSlot_1.current;
+			$current = $this_SlotDecimalValue_1.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
 ;
 
-// Entry rule entryRuleConceptReference
-entryRuleConceptReference returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getConceptReferenceRule()); }
-	iv_ruleConceptReference=ruleConceptReference
-	{ $current=$iv_ruleConceptReference.current; }
+// Entry rule entryRuleSlotDecimalValue
+entryRuleSlotDecimalValue returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotDecimalValueRule()); }
+	iv_ruleSlotDecimalValue=ruleSlotDecimalValue
+	{ $current=$iv_ruleSlotDecimalValue.current; }
 	EOF;
 
-// Rule ConceptReference
-ruleConceptReference returns [EObject current=null]
+// Rule SlotDecimalValue
+ruleSlotDecimalValue returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -2363,64 +2272,237 @@ ruleConceptReference returns [EObject current=null]
 	leaveRule();
 }:
 	(
+		this_HASH_0=RULE_HASH
+		{
+			newLeafNode(this_HASH_0, grammarAccess.getSlotDecimalValueAccess().getHASHTerminalRuleCall_0());
+		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getConceptReferenceAccess().getSlotConceptReferenceSlotParserRuleCall_0_0());
+					newCompositeNode(grammarAccess.getSlotDecimalValueAccess().getValueNonNegativeDecimalParserRuleCall_1_0());
 				}
-				lv_slot_0_0=ruleConceptReferenceSlot
+				lv_value_1_0=ruleNonNegativeDecimal
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getConceptReferenceRule());
+						$current = createModelElementForParent(grammarAccess.getSlotDecimalValueRule());
 					}
 					set(
 						$current,
-						"slot",
-						lv_slot_0_0,
-						"com.b2international.snowowl.snomed.etl.Etl.ConceptReferenceSlot");
+						"value",
+						lv_value_1_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
 		)
-		    |
+	)
+;
+
+// Entry rule entryRuleSlotDecimalRange
+entryRuleSlotDecimalRange returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotDecimalRangeRule()); }
+	iv_ruleSlotDecimalRange=ruleSlotDecimalRange
+	{ $current=$iv_ruleSlotDecimalRange.current; }
+	EOF;
+
+// Rule SlotDecimalRange
+ruleSlotDecimalRange returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
 		(
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getConceptReferenceAccess().getIdSnomedIdentifierParserRuleCall_1_0_0());
+						newCompositeNode(grammarAccess.getSlotDecimalRangeAccess().getMinimumSlotDecimalMinimumValueParserRuleCall_0_0_0());
 					}
-					lv_id_1_0=ruleSnomedIdentifier
+					lv_minimum_0_0=ruleSlotDecimalMinimumValue
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getConceptReferenceRule());
+							$current = createModelElementForParent(grammarAccess.getSlotDecimalRangeRule());
 						}
 						set(
 							$current,
-							"id",
-							lv_id_1_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.SnomedIdentifier");
+							"minimum",
+							lv_minimum_0_0,
+							"com.b2international.snowowl.snomed.etl.Etl.SlotDecimalMinimumValue");
 						afterParserOrEnumRuleCall();
 					}
 				)
 			)
+			this_TO_1=RULE_TO
+			{
+				newLeafNode(this_TO_1, grammarAccess.getSlotDecimalRangeAccess().getTOTerminalRuleCall_0_1());
+			}
 			(
 				(
-					lv_term_2_0=RULE_TERM_STRING
 					{
-						newLeafNode(lv_term_2_0, grammarAccess.getConceptReferenceAccess().getTermTERM_STRINGTerminalRuleCall_1_1_0());
+						newCompositeNode(grammarAccess.getSlotDecimalRangeAccess().getMaximumSlotDecimalMaximumValueParserRuleCall_0_2_0());
 					}
+					lv_maximum_2_0=ruleSlotDecimalMaximumValue
 					{
 						if ($current==null) {
-							$current = createModelElement(grammarAccess.getConceptReferenceRule());
+							$current = createModelElementForParent(grammarAccess.getSlotDecimalRangeRule());
 						}
-						setWithLastConsumed(
+						set(
 							$current,
-							"term",
-							lv_term_2_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
+							"maximum",
+							lv_maximum_2_0,
+							"com.b2international.snowowl.snomed.etl.Etl.SlotDecimalMaximumValue");
+						afterParserOrEnumRuleCall();
 					}
 				)
 			)?
+		)
+		    |
+		(
+			this_TO_3=RULE_TO
+			{
+				newLeafNode(this_TO_3, grammarAccess.getSlotDecimalRangeAccess().getTOTerminalRuleCall_1_0());
+			}
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getSlotDecimalRangeAccess().getMaximumSlotDecimalMaximumValueParserRuleCall_1_1_0());
+					}
+					lv_maximum_4_0=ruleSlotDecimalMaximumValue
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getSlotDecimalRangeRule());
+						}
+						set(
+							$current,
+							"maximum",
+							lv_maximum_4_0,
+							"com.b2international.snowowl.snomed.etl.Etl.SlotDecimalMaximumValue");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleSlotDecimalMinimumValue
+entryRuleSlotDecimalMinimumValue returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotDecimalMinimumValueRule()); }
+	iv_ruleSlotDecimalMinimumValue=ruleSlotDecimalMinimumValue
+	{ $current=$iv_ruleSlotDecimalMinimumValue.current; }
+	EOF;
+
+// Rule SlotDecimalMinimumValue
+ruleSlotDecimalMinimumValue returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				lv_exclusive_0_0=RULE_GT
+				{
+					newLeafNode(lv_exclusive_0_0, grammarAccess.getSlotDecimalMinimumValueAccess().getExclusiveGTTerminalRuleCall_0_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getSlotDecimalMinimumValueRule());
+					}
+					setWithLastConsumed(
+						$current,
+						"exclusive",
+						true,
+						"com.b2international.snowowl.snomed.ecl.Ecl.GT");
+				}
+			)
+		)?
+		this_HASH_1=RULE_HASH
+		{
+			newLeafNode(this_HASH_1, grammarAccess.getSlotDecimalMinimumValueAccess().getHASHTerminalRuleCall_1());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getSlotDecimalMinimumValueAccess().getValueNonNegativeDecimalParserRuleCall_2_0());
+				}
+				lv_value_2_0=ruleNonNegativeDecimal
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getSlotDecimalMinimumValueRule());
+					}
+					set(
+						$current,
+						"value",
+						lv_value_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleSlotDecimalMaximumValue
+entryRuleSlotDecimalMaximumValue returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSlotDecimalMaximumValueRule()); }
+	iv_ruleSlotDecimalMaximumValue=ruleSlotDecimalMaximumValue
+	{ $current=$iv_ruleSlotDecimalMaximumValue.current; }
+	EOF;
+
+// Rule SlotDecimalMaximumValue
+ruleSlotDecimalMaximumValue returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				lv_exclusive_0_0=RULE_LT
+				{
+					newLeafNode(lv_exclusive_0_0, grammarAccess.getSlotDecimalMaximumValueAccess().getExclusiveLTTerminalRuleCall_0_0());
+				}
+				{
+					if ($current==null) {
+						$current = createModelElement(grammarAccess.getSlotDecimalMaximumValueRule());
+					}
+					setWithLastConsumed(
+						$current,
+						"exclusive",
+						true,
+						"com.b2international.snowowl.snomed.ecl.Ecl.LT");
+				}
+			)
+		)?
+		this_HASH_1=RULE_HASH
+		{
+			newLeafNode(this_HASH_1, grammarAccess.getSlotDecimalMaximumValueAccess().getHASHTerminalRuleCall_1());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getSlotDecimalMaximumValueAccess().getValueNonNegativeDecimalParserRuleCall_2_0());
+				}
+				lv_value_2_0=ruleNonNegativeDecimal
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getSlotDecimalMaximumValueRule());
+					}
+					set(
+						$current,
+						"value",
+						lv_value_2_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
+					afterParserOrEnumRuleCall();
+				}
+			)
 		)
 	)
 ;

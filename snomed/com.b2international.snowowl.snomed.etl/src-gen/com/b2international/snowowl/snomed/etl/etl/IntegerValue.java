@@ -32,7 +32,7 @@ package com.b2international.snowowl.snomed.etl.etl;
  * @model
  * @generated
  */
-public interface IntegerValue extends AttributeValue, IntegerValues
+public interface IntegerValue extends AttributeValue
 {
   /**
    * Returns the value of the '<em><b>Value</b></em>' attribute.

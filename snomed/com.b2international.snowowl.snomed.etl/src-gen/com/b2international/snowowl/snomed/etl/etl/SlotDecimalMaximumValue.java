@@ -15,26 +15,28 @@
  */
 package com.b2international.snowowl.snomed.etl.etl;
 
+import java.math.BigDecimal;
+
 import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Integer Maximum Value</b></em>'.
+ * A representation of the model object '<em><b>Slot Decimal Maximum Value</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue#isExclusive <em>Exclusive</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue#isExclusive <em>Exclusive</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue#getValue <em>Value</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerMaximumValue()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalMaximumValue()
  * @model
  * @generated
  */
-public interface IntegerMaximumValue extends EObject
+public interface SlotDecimalMaximumValue extends EObject
 {
   /**
    * Returns the value of the '<em><b>Exclusive</b></em>' attribute.
@@ -42,14 +44,14 @@ public interface IntegerMaximumValue extends EObject
    * <!-- end-user-doc -->
    * @return the value of the '<em>Exclusive</em>' attribute.
    * @see #setExclusive(boolean)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerMaximumValue_Exclusive()
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalMaximumValue_Exclusive()
    * @model
    * @generated
    */
   boolean isExclusive();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue#isExclusive <em>Exclusive</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue#isExclusive <em>Exclusive</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Exclusive</em>' attribute.
@@ -63,21 +65,21 @@ public interface IntegerMaximumValue extends EObject
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Value</em>' attribute.
-   * @see #setValue(int)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerMaximumValue_Value()
+   * @see #setValue(BigDecimal)
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalMaximumValue_Value()
    * @model
    * @generated
    */
-  int getValue();
+  BigDecimal getValue();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue#getValue <em>Value</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue#getValue <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Value</em>' attribute.
    * @see #getValue()
    * @generated
    */
-  void setValue(int value);
+  void setValue(BigDecimal value);
 
-} // IntegerMaximumValue
+} // SlotDecimalMaximumValue

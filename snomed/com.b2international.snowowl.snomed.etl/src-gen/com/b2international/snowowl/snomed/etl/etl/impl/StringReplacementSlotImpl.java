@@ -17,19 +17,14 @@ package com.b2international.snowowl.snomed.etl.etl.impl;
 
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot;
-import com.b2international.snowowl.snomed.etl.etl.StringValue;
 
 import java.util.Collection;
-
-import org.eclipse.emf.common.notify.NotificationChain;
 
 import org.eclipse.emf.common.util.EList;
 
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.InternalEObject;
 
-import org.eclipse.emf.ecore.util.EObjectContainmentEList;
-import org.eclipse.emf.ecore.util.InternalEList;
+import org.eclipse.emf.ecore.util.EDataTypeEList;
 
 /**
  * <!-- begin-user-doc -->
@@ -47,14 +42,14 @@ import org.eclipse.emf.ecore.util.InternalEList;
 public class StringReplacementSlotImpl extends ConcreteValueReplacementSlotImpl implements StringReplacementSlot
 {
   /**
-   * The cached value of the '{@link #getValues() <em>Values</em>}' containment reference list.
+   * The cached value of the '{@link #getValues() <em>Values</em>}' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @see #getValues()
    * @generated
    * @ordered
    */
-  protected EList<StringValue> values;
+  protected EList<String> values;
 
   /**
    * <!-- begin-user-doc -->
@@ -83,29 +78,13 @@ public class StringReplacementSlotImpl extends ConcreteValueReplacementSlotImpl 
    * @generated
    */
   @Override
-  public EList<StringValue> getValues()
+  public EList<String> getValues()
   {
     if (values == null)
     {
-      values = new EObjectContainmentEList<StringValue>(StringValue.class, this, EtlPackage.STRING_REPLACEMENT_SLOT__VALUES);
+      values = new EDataTypeEList<String>(String.class, this, EtlPackage.STRING_REPLACEMENT_SLOT__VALUES);
     }
     return values;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
-  {
-    switch (featureID)
-    {
-      case EtlPackage.STRING_REPLACEMENT_SLOT__VALUES:
-        return ((InternalEList<?>)getValues()).basicRemove(otherEnd, msgs);
-    }
-    return super.eInverseRemove(otherEnd, featureID, msgs);
   }
 
   /**
@@ -137,7 +116,7 @@ public class StringReplacementSlotImpl extends ConcreteValueReplacementSlotImpl 
     {
       case EtlPackage.STRING_REPLACEMENT_SLOT__VALUES:
         getValues().clear();
-        getValues().addAll((Collection<? extends StringValue>)newValue);
+        getValues().addAll((Collection<? extends String>)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -174,6 +153,23 @@ public class StringReplacementSlotImpl extends ConcreteValueReplacementSlotImpl 
         return values != null && !values.isEmpty();
     }
     return super.eIsSet(featureID);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public String toString()
+  {
+    if (eIsProxy()) return super.toString();
+
+    StringBuilder result = new StringBuilder(super.toString());
+    result.append(" (values: ");
+    result.append(values);
+    result.append(')');
+    return result.toString();
   }
 
 } //StringReplacementSlotImpl

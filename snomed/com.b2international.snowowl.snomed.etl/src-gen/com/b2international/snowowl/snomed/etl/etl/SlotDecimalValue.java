@@ -19,21 +19,21 @@ import java.math.BigDecimal;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Decimal Value</b></em>'.
+ * A representation of the model object '<em><b>Slot Decimal Value</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue#getValue <em>Value</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalValue()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalValue()
  * @model
  * @generated
  */
-public interface DecimalValue extends AttributeValue
+public interface SlotDecimalValue extends SlotDecimal
 {
   /**
    * Returns the value of the '<em><b>Value</b></em>' attribute.
@@ -41,14 +41,14 @@ public interface DecimalValue extends AttributeValue
    * <!-- end-user-doc -->
    * @return the value of the '<em>Value</em>' attribute.
    * @see #setValue(BigDecimal)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalValue_Value()
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalValue_Value()
    * @model
    * @generated
    */
   BigDecimal getValue();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue#getValue <em>Value</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue#getValue <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Value</em>' attribute.
@@ -57,4 +57,4 @@ public interface DecimalValue extends AttributeValue
    */
   void setValue(BigDecimal value);
 
-} // DecimalValue
+} // SlotDecimalValue

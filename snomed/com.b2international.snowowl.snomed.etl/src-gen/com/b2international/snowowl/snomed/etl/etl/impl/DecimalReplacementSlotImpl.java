@@ -16,8 +16,8 @@
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
 import com.b2international.snowowl.snomed.etl.etl.DecimalReplacementSlot;
-import com.b2international.snowowl.snomed.etl.etl.DecimalValues;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimal;
 
 import java.util.Collection;
 
@@ -54,7 +54,7 @@ public class DecimalReplacementSlotImpl extends ConcreteValueReplacementSlotImpl
    * @generated
    * @ordered
    */
-  protected EList<DecimalValues> values;
+  protected EList<SlotDecimal> values;
 
   /**
    * <!-- begin-user-doc -->
@@ -83,11 +83,11 @@ public class DecimalReplacementSlotImpl extends ConcreteValueReplacementSlotImpl
    * @generated
    */
   @Override
-  public EList<DecimalValues> getValues()
+  public EList<SlotDecimal> getValues()
   {
     if (values == null)
     {
-      values = new EObjectContainmentEList<DecimalValues>(DecimalValues.class, this, EtlPackage.DECIMAL_REPLACEMENT_SLOT__VALUES);
+      values = new EObjectContainmentEList<SlotDecimal>(SlotDecimal.class, this, EtlPackage.DECIMAL_REPLACEMENT_SLOT__VALUES);
     }
     return values;
   }
@@ -137,7 +137,7 @@ public class DecimalReplacementSlotImpl extends ConcreteValueReplacementSlotImpl
     {
       case EtlPackage.DECIMAL_REPLACEMENT_SLOT__VALUES:
         getValues().clear();
-        getValues().addAll((Collection<? extends DecimalValues>)newValue);
+        getValues().addAll((Collection<? extends SlotDecimal>)newValue);
         return;
     }
     super.eSet(featureID, newValue);

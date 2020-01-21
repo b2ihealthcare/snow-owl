@@ -18,65 +18,65 @@ package com.b2international.snowowl.snomed.etl.etl;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Integer Range</b></em>'.
+ * A representation of the model object '<em><b>Slot Integer Range</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.IntegerRange#getMinimum <em>Minimum</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.IntegerRange#getMaximum <em>Maximum</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange#getMinimum <em>Minimum</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange#getMaximum <em>Maximum</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerRange()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotIntegerRange()
  * @model
  * @generated
  */
-public interface IntegerRange extends IntegerValues
+public interface SlotIntegerRange extends SlotInteger
 {
   /**
    * Returns the value of the '<em><b>Minimum</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Minimum</em>' containment reference.
-   * @see #setMinimum(IntegerMinimumValue)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerRange_Minimum()
+   * @see #setMinimum(SlotIntegerMinimumValue)
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotIntegerRange_Minimum()
    * @model containment="true"
    * @generated
    */
-  IntegerMinimumValue getMinimum();
+  SlotIntegerMinimumValue getMinimum();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.IntegerRange#getMinimum <em>Minimum</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange#getMinimum <em>Minimum</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Minimum</em>' containment reference.
    * @see #getMinimum()
    * @generated
    */
-  void setMinimum(IntegerMinimumValue value);
+  void setMinimum(SlotIntegerMinimumValue value);
 
   /**
    * Returns the value of the '<em><b>Maximum</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Maximum</em>' containment reference.
-   * @see #setMaximum(IntegerMaximumValue)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerRange_Maximum()
+   * @see #setMaximum(SlotIntegerMaximumValue)
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotIntegerRange_Maximum()
    * @model containment="true"
    * @generated
    */
-  IntegerMaximumValue getMaximum();
+  SlotIntegerMaximumValue getMaximum();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.IntegerRange#getMaximum <em>Maximum</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange#getMaximum <em>Maximum</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Maximum</em>' containment reference.
    * @see #getMaximum()
    * @generated
    */
-  void setMaximum(IntegerMaximumValue value);
+  void setMaximum(SlotIntegerMaximumValue value);
 
-} // IntegerRange
+} // SlotIntegerRange

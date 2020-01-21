@@ -15,28 +15,26 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.DecimalValues;
+import com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 
 import org.eclipse.emf.ecore.EClass;
 
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
-
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Decimal Values</b></em>'.
+ * An implementation of the model object '<em><b>Concept Id Replacement Slot</b></em>'.
  * <!-- end-user-doc -->
  *
  * @generated
  */
-public class DecimalValuesImpl extends MinimalEObjectImpl.Container implements DecimalValues
+public class ConceptIdReplacementSlotImpl extends ConceptReplacementSlotImpl implements ConceptIdReplacementSlot
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected DecimalValuesImpl()
+  protected ConceptIdReplacementSlotImpl()
   {
     super();
   }
@@ -49,7 +47,7 @@ public class DecimalValuesImpl extends MinimalEObjectImpl.Container implements D
   @Override
   protected EClass eStaticClass()
   {
-    return EtlPackage.Literals.DECIMAL_VALUES;
+    return EtlPackage.Literals.CONCEPT_ID_REPLACEMENT_SLOT;
   }
 
-} //DecimalValuesImpl
+} //ConceptIdReplacementSlotImpl

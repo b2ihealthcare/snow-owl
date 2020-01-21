@@ -19,22 +19,22 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Integer Minimum Value</b></em>'.
+ * A representation of the model object '<em><b>Slot Integer Maximum Value</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue#isExclusive <em>Exclusive</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue#isExclusive <em>Exclusive</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue#getValue <em>Value</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerMinimumValue()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotIntegerMaximumValue()
  * @model
  * @generated
  */
-public interface IntegerMinimumValue extends EObject
+public interface SlotIntegerMaximumValue extends EObject
 {
   /**
    * Returns the value of the '<em><b>Exclusive</b></em>' attribute.
@@ -42,14 +42,14 @@ public interface IntegerMinimumValue extends EObject
    * <!-- end-user-doc -->
    * @return the value of the '<em>Exclusive</em>' attribute.
    * @see #setExclusive(boolean)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerMinimumValue_Exclusive()
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotIntegerMaximumValue_Exclusive()
    * @model
    * @generated
    */
   boolean isExclusive();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue#isExclusive <em>Exclusive</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue#isExclusive <em>Exclusive</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Exclusive</em>' attribute.
@@ -64,14 +64,14 @@ public interface IntegerMinimumValue extends EObject
    * <!-- end-user-doc -->
    * @return the value of the '<em>Value</em>' attribute.
    * @see #setValue(int)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getIntegerMinimumValue_Value()
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotIntegerMaximumValue_Value()
    * @model
    * @generated
    */
   int getValue();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue#getValue <em>Value</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue#getValue <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Value</em>' attribute.
@@ -80,4 +80,4 @@ public interface IntegerMinimumValue extends EObject
    */
   void setValue(int value);
 
-} // IntegerMinimumValue
+} // SlotIntegerMaximumValue

@@ -59,11 +59,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
 import com.b2international.snowowl.snomed.etl.etl.Attribute;
 import com.b2international.snowowl.snomed.etl.etl.AttributeGroup;
+import com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.ConceptReference;
-import com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot;
-import com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue;
-import com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue;
-import com.b2international.snowowl.snomed.etl.etl.DecimalRange;
 import com.b2international.snowowl.snomed.etl.etl.DecimalReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.DecimalValue;
 import com.b2international.snowowl.snomed.etl.etl.EtlCardinality;
@@ -71,12 +68,17 @@ import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.ExpressionTemplate;
 import com.b2international.snowowl.snomed.etl.etl.FocusConcept;
-import com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue;
-import com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue;
-import com.b2international.snowowl.snomed.etl.etl.IntegerRange;
 import com.b2international.snowowl.snomed.etl.etl.IntegerReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.IntegerValue;
 import com.b2international.snowowl.snomed.etl.etl.Refinement;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue;
 import com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.StringValue;
 import com.b2international.snowowl.snomed.etl.etl.SubExpression;
@@ -282,20 +284,11 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 			case EtlPackage.ATTRIBUTE_GROUP:
 				sequence_AttributeGroup(context, (AttributeGroup) semanticObject); 
 				return; 
+			case EtlPackage.CONCEPT_ID_REPLACEMENT_SLOT:
+				sequence_ConceptIdReplacementSlot(context, (ConceptIdReplacementSlot) semanticObject); 
+				return; 
 			case EtlPackage.CONCEPT_REFERENCE:
 				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
-				return; 
-			case EtlPackage.CONCEPT_REPLACEMENT_SLOT:
-				sequence_ConceptReplacementSlot(context, (ConceptReplacementSlot) semanticObject); 
-				return; 
-			case EtlPackage.DECIMAL_MAXIMUM_VALUE:
-				sequence_DecimalMaximumValue(context, (DecimalMaximumValue) semanticObject); 
-				return; 
-			case EtlPackage.DECIMAL_MINIMUM_VALUE:
-				sequence_DecimalMinimumValue(context, (DecimalMinimumValue) semanticObject); 
-				return; 
-			case EtlPackage.DECIMAL_RANGE:
-				sequence_DecimalRange(context, (DecimalRange) semanticObject); 
 				return; 
 			case EtlPackage.DECIMAL_REPLACEMENT_SLOT:
 				sequence_DecimalReplacementSlot(context, (DecimalReplacementSlot) semanticObject); 
@@ -315,15 +308,6 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 			case EtlPackage.FOCUS_CONCEPT:
 				sequence_FocusConcept(context, (FocusConcept) semanticObject); 
 				return; 
-			case EtlPackage.INTEGER_MAXIMUM_VALUE:
-				sequence_IntegerMaximumValue(context, (IntegerMaximumValue) semanticObject); 
-				return; 
-			case EtlPackage.INTEGER_MINIMUM_VALUE:
-				sequence_IntegerMinimumValue(context, (IntegerMinimumValue) semanticObject); 
-				return; 
-			case EtlPackage.INTEGER_RANGE:
-				sequence_IntegerRange(context, (IntegerRange) semanticObject); 
-				return; 
 			case EtlPackage.INTEGER_REPLACEMENT_SLOT:
 				sequence_IntegerReplacementSlot(context, (IntegerReplacementSlot) semanticObject); 
 				return; 
@@ -332,6 +316,30 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case EtlPackage.REFINEMENT:
 				sequence_Refinement(context, (Refinement) semanticObject); 
+				return; 
+			case EtlPackage.SLOT_DECIMAL_MAXIMUM_VALUE:
+				sequence_SlotDecimalMaximumValue(context, (SlotDecimalMaximumValue) semanticObject); 
+				return; 
+			case EtlPackage.SLOT_DECIMAL_MINIMUM_VALUE:
+				sequence_SlotDecimalMinimumValue(context, (SlotDecimalMinimumValue) semanticObject); 
+				return; 
+			case EtlPackage.SLOT_DECIMAL_RANGE:
+				sequence_SlotDecimalRange(context, (SlotDecimalRange) semanticObject); 
+				return; 
+			case EtlPackage.SLOT_DECIMAL_VALUE:
+				sequence_SlotDecimalValue(context, (SlotDecimalValue) semanticObject); 
+				return; 
+			case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE:
+				sequence_SlotIntegerMaximumValue(context, (SlotIntegerMaximumValue) semanticObject); 
+				return; 
+			case EtlPackage.SLOT_INTEGER_MINIMUM_VALUE:
+				sequence_SlotIntegerMinimumValue(context, (SlotIntegerMinimumValue) semanticObject); 
+				return; 
+			case EtlPackage.SLOT_INTEGER_RANGE:
+				sequence_SlotIntegerRange(context, (SlotIntegerRange) semanticObject); 
+				return; 
+			case EtlPackage.SLOT_INTEGER_VALUE:
+				sequence_SlotIntegerValue(context, (SlotIntegerValue) semanticObject); 
 				return; 
 			case EtlPackage.STRING_REPLACEMENT_SLOT:
 				sequence_StringReplacementSlot(context, (StringReplacementSlot) semanticObject); 
@@ -379,63 +387,26 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     AttributeValue returns ConceptReference
-	 *     ConceptReference returns ConceptReference
-	 *
-	 * Constraint:
-	 *     (slot=ConceptReferenceSlot | (id=SnomedIdentifier term=TERM_STRING?))
-	 */
-	protected void sequence_ConceptReference(ISerializationContext context, ConceptReference semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     ConceptReplacementSlot returns ConceptReplacementSlot
-	 *     ConceptReferenceSlot returns ConceptReplacementSlot
+	 *     ConceptIdReplacementSlot returns ConceptIdReplacementSlot
+	 *     ConceptReplacementSlot returns ConceptIdReplacementSlot
 	 *
 	 * Constraint:
 	 *     (constraint=ExpressionConstraint? name=SLOTNAME_STRING?)
 	 */
-	protected void sequence_ConceptReplacementSlot(ISerializationContext context, ConceptReplacementSlot semanticObject) {
+	protected void sequence_ConceptIdReplacementSlot(ISerializationContext context, ConceptIdReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
 	/**
 	 * Contexts:
-	 *     DecimalMaximumValue returns DecimalMaximumValue
+	 *     AttributeValue returns ConceptReference
+	 *     ConceptReference returns ConceptReference
 	 *
 	 * Constraint:
-	 *     (exclusive?=LT? value=Decimal)
+	 *     (slot=ConceptReplacementSlot | (id=SnomedIdentifier term=TERM_STRING?))
 	 */
-	protected void sequence_DecimalMaximumValue(ISerializationContext context, DecimalMaximumValue semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     DecimalMinimumValue returns DecimalMinimumValue
-	 *
-	 * Constraint:
-	 *     (exclusive?=GT? value=Decimal)
-	 */
-	protected void sequence_DecimalMinimumValue(ISerializationContext context, DecimalMinimumValue semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     DecimalValues returns DecimalRange
-	 *     DecimalRange returns DecimalRange
-	 *
-	 * Constraint:
-	 *     ((minimum=DecimalMinimumValue maximum=DecimalMaximumValue?) | maximum=DecimalMaximumValue)
-	 */
-	protected void sequence_DecimalRange(ISerializationContext context, DecimalRange semanticObject) {
+	protected void sequence_ConceptReference(ISerializationContext context, ConceptReference semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -447,7 +418,7 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	 *     DecimalReplacementSlot returns DecimalReplacementSlot
 	 *
 	 * Constraint:
-	 *     ((values+=DecimalValues values+=DecimalValues*)? name=SLOTNAME_STRING?)
+	 *     ((values+=SlotDecimal values+=SlotDecimal*)? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_DecimalReplacementSlot(ISerializationContext context, DecimalReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -457,7 +428,6 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     AttributeValue returns DecimalValue
-	 *     DecimalValues returns DecimalValue
 	 *     DecimalValue returns DecimalValue
 	 *
 	 * Constraint:
@@ -498,7 +468,7 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     ExpressionReplacementSlot returns ExpressionReplacementSlot
-	 *     ConceptReferenceSlot returns ExpressionReplacementSlot
+	 *     ConceptReplacementSlot returns ExpressionReplacementSlot
 	 *
 	 * Constraint:
 	 *     (constraint=ExpressionConstraint? name=SLOTNAME_STRING?)
@@ -534,49 +504,12 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
-	 *     IntegerMaximumValue returns IntegerMaximumValue
-	 *
-	 * Constraint:
-	 *     (exclusive?=LT? value=Integer)
-	 */
-	protected void sequence_IntegerMaximumValue(ISerializationContext context, IntegerMaximumValue semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     IntegerMinimumValue returns IntegerMinimumValue
-	 *
-	 * Constraint:
-	 *     (exclusive?=GT? value=Integer)
-	 */
-	protected void sequence_IntegerMinimumValue(ISerializationContext context, IntegerMinimumValue semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     IntegerValues returns IntegerRange
-	 *     IntegerRange returns IntegerRange
-	 *
-	 * Constraint:
-	 *     ((minimum=IntegerMinimumValue maximum=IntegerMaximumValue?) | maximum=IntegerMaximumValue)
-	 */
-	protected void sequence_IntegerRange(ISerializationContext context, IntegerRange semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
 	 *     AttributeValue returns IntegerReplacementSlot
 	 *     ConcreteValueReplacementSlot returns IntegerReplacementSlot
 	 *     IntegerReplacementSlot returns IntegerReplacementSlot
 	 *
 	 * Constraint:
-	 *     ((values+=IntegerValues values+=IntegerValues*)? name=SLOTNAME_STRING?)
+	 *     ((values+=SlotInteger values+=SlotInteger*)? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_IntegerReplacementSlot(ISerializationContext context, IntegerReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -586,7 +519,6 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	/**
 	 * Contexts:
 	 *     AttributeValue returns IntegerValue
-	 *     IntegerValues returns IntegerValue
 	 *     IntegerValue returns IntegerValue
 	 *
 	 * Constraint:
@@ -617,12 +549,124 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 	
 	/**
 	 * Contexts:
+	 *     SlotDecimalMaximumValue returns SlotDecimalMaximumValue
+	 *
+	 * Constraint:
+	 *     (exclusive?=LT? value=NonNegativeDecimal)
+	 */
+	protected void sequence_SlotDecimalMaximumValue(ISerializationContext context, SlotDecimalMaximumValue semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     SlotDecimalMinimumValue returns SlotDecimalMinimumValue
+	 *
+	 * Constraint:
+	 *     (exclusive?=GT? value=NonNegativeDecimal)
+	 */
+	protected void sequence_SlotDecimalMinimumValue(ISerializationContext context, SlotDecimalMinimumValue semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     SlotDecimal returns SlotDecimalRange
+	 *     SlotDecimalRange returns SlotDecimalRange
+	 *
+	 * Constraint:
+	 *     ((minimum=SlotDecimalMinimumValue maximum=SlotDecimalMaximumValue?) | maximum=SlotDecimalMaximumValue)
+	 */
+	protected void sequence_SlotDecimalRange(ISerializationContext context, SlotDecimalRange semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     SlotDecimal returns SlotDecimalValue
+	 *     SlotDecimalValue returns SlotDecimalValue
+	 *
+	 * Constraint:
+	 *     value=NonNegativeDecimal
+	 */
+	protected void sequence_SlotDecimalValue(ISerializationContext context, SlotDecimalValue semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.SLOT_DECIMAL_VALUE__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.SLOT_DECIMAL_VALUE__VALUE));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getSlotDecimalValueAccess().getValueNonNegativeDecimalParserRuleCall_1_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     SlotIntegerMaximumValue returns SlotIntegerMaximumValue
+	 *
+	 * Constraint:
+	 *     (exclusive?=LT? value=NonNegativeInteger)
+	 */
+	protected void sequence_SlotIntegerMaximumValue(ISerializationContext context, SlotIntegerMaximumValue semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     SlotIntegerMinimumValue returns SlotIntegerMinimumValue
+	 *
+	 * Constraint:
+	 *     (exclusive?=GT? value=NonNegativeInteger)
+	 */
+	protected void sequence_SlotIntegerMinimumValue(ISerializationContext context, SlotIntegerMinimumValue semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     SlotInteger returns SlotIntegerRange
+	 *     SlotIntegerRange returns SlotIntegerRange
+	 *
+	 * Constraint:
+	 *     ((minimum=SlotIntegerMinimumValue maximum=SlotIntegerMaximumValue?) | maximum=SlotIntegerMaximumValue)
+	 */
+	protected void sequence_SlotIntegerRange(ISerializationContext context, SlotIntegerRange semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     SlotInteger returns SlotIntegerValue
+	 *     SlotIntegerValue returns SlotIntegerValue
+	 *
+	 * Constraint:
+	 *     value=NonNegativeInteger
+	 */
+	protected void sequence_SlotIntegerValue(ISerializationContext context, SlotIntegerValue semanticObject) {
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, EtlPackage.Literals.SLOT_INTEGER_VALUE__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EtlPackage.Literals.SLOT_INTEGER_VALUE__VALUE));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getSlotIntegerValueAccess().getValueNonNegativeIntegerParserRuleCall_1_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
 	 *     AttributeValue returns StringReplacementSlot
 	 *     ConcreteValueReplacementSlot returns StringReplacementSlot
 	 *     StringReplacementSlot returns StringReplacementSlot
 	 *
 	 * Constraint:
-	 *     ((values+=StringValue values+=StringValue*)? name=SLOTNAME_STRING?)
+	 *     ((values+=STRING values+=STRING*)? name=SLOTNAME_STRING?)
 	 */
 	protected void sequence_StringReplacementSlot(ISerializationContext context, StringReplacementSlot semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);

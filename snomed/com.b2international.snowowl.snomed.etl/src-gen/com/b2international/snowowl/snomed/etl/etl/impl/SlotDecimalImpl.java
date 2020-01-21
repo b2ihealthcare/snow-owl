@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-import com.b2international.snowowl.snomed.etl.etl.IntegerValues;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimal;
 
 import org.eclipse.emf.ecore.EClass;
 
@@ -24,19 +24,19 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Integer Values</b></em>'.
+ * An implementation of the model object '<em><b>Slot Decimal</b></em>'.
  * <!-- end-user-doc -->
  *
  * @generated
  */
-public class IntegerValuesImpl extends MinimalEObjectImpl.Container implements IntegerValues
+public class SlotDecimalImpl extends MinimalEObjectImpl.Container implements SlotDecimal
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected IntegerValuesImpl()
+  protected SlotDecimalImpl()
   {
     super();
   }
@@ -49,7 +49,7 @@ public class IntegerValuesImpl extends MinimalEObjectImpl.Container implements I
   @Override
   protected EClass eStaticClass()
   {
-    return EtlPackage.Literals.INTEGER_VALUES;
+    return EtlPackage.Literals.SLOT_DECIMAL;
   }
 
-} //IntegerValuesImpl
+} //SlotDecimalImpl

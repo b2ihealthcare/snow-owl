@@ -84,7 +84,7 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
       case EtlPackage.ATTRIBUTE_GROUP: return createAttributeGroup();
       case EtlPackage.ATTRIBUTE: return createAttribute();
       case EtlPackage.ATTRIBUTE_VALUE: return createAttributeValue();
-      case EtlPackage.CONCEPT_REPLACEMENT_SLOT: return createConceptReplacementSlot();
+      case EtlPackage.CONCEPT_ID_REPLACEMENT_SLOT: return createConceptIdReplacementSlot();
       case EtlPackage.EXPRESSION_REPLACEMENT_SLOT: return createExpressionReplacementSlot();
       case EtlPackage.TOKEN_REPLACEMENT_SLOT: return createTokenReplacementSlot();
       case EtlPackage.TEMPLATE_INFORMATION_SLOT: return createTemplateInformationSlot();
@@ -93,19 +93,21 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
       case EtlPackage.INTEGER_REPLACEMENT_SLOT: return createIntegerReplacementSlot();
       case EtlPackage.DECIMAL_REPLACEMENT_SLOT: return createDecimalReplacementSlot();
       case EtlPackage.ETL_CARDINALITY: return createEtlCardinality();
-      case EtlPackage.STRING_VALUE: return createStringValue();
-      case EtlPackage.INTEGER_VALUES: return createIntegerValues();
-      case EtlPackage.INTEGER_VALUE: return createIntegerValue();
-      case EtlPackage.INTEGER_RANGE: return createIntegerRange();
-      case EtlPackage.INTEGER_MINIMUM_VALUE: return createIntegerMinimumValue();
-      case EtlPackage.INTEGER_MAXIMUM_VALUE: return createIntegerMaximumValue();
-      case EtlPackage.DECIMAL_VALUES: return createDecimalValues();
-      case EtlPackage.DECIMAL_VALUE: return createDecimalValue();
-      case EtlPackage.DECIMAL_RANGE: return createDecimalRange();
-      case EtlPackage.DECIMAL_MINIMUM_VALUE: return createDecimalMinimumValue();
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE: return createDecimalMaximumValue();
-      case EtlPackage.CONCEPT_REFERENCE_SLOT: return createConceptReferenceSlot();
+      case EtlPackage.CONCEPT_REPLACEMENT_SLOT: return createConceptReplacementSlot();
       case EtlPackage.CONCEPT_REFERENCE: return createConceptReference();
+      case EtlPackage.STRING_VALUE: return createStringValue();
+      case EtlPackage.INTEGER_VALUE: return createIntegerValue();
+      case EtlPackage.DECIMAL_VALUE: return createDecimalValue();
+      case EtlPackage.SLOT_INTEGER: return createSlotInteger();
+      case EtlPackage.SLOT_INTEGER_VALUE: return createSlotIntegerValue();
+      case EtlPackage.SLOT_INTEGER_RANGE: return createSlotIntegerRange();
+      case EtlPackage.SLOT_INTEGER_MINIMUM_VALUE: return createSlotIntegerMinimumValue();
+      case EtlPackage.SLOT_INTEGER_MAXIMUM_VALUE: return createSlotIntegerMaximumValue();
+      case EtlPackage.SLOT_DECIMAL: return createSlotDecimal();
+      case EtlPackage.SLOT_DECIMAL_VALUE: return createSlotDecimalValue();
+      case EtlPackage.SLOT_DECIMAL_RANGE: return createSlotDecimalRange();
+      case EtlPackage.SLOT_DECIMAL_MINIMUM_VALUE: return createSlotDecimalMinimumValue();
+      case EtlPackage.SLOT_DECIMAL_MAXIMUM_VALUE: return createSlotDecimalMaximumValue();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
@@ -201,10 +203,10 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public ConceptReplacementSlot createConceptReplacementSlot()
+  public ConceptIdReplacementSlot createConceptIdReplacementSlot()
   {
-    ConceptReplacementSlotImpl conceptReplacementSlot = new ConceptReplacementSlotImpl();
-    return conceptReplacementSlot;
+    ConceptIdReplacementSlotImpl conceptIdReplacementSlot = new ConceptIdReplacementSlotImpl();
+    return conceptIdReplacementSlot;
   }
 
   /**
@@ -309,10 +311,10 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public StringValue createStringValue()
+  public ConceptReplacementSlot createConceptReplacementSlot()
   {
-    StringValueImpl stringValue = new StringValueImpl();
-    return stringValue;
+    ConceptReplacementSlotImpl conceptReplacementSlot = new ConceptReplacementSlotImpl();
+    return conceptReplacementSlot;
   }
 
   /**
@@ -321,10 +323,22 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public IntegerValues createIntegerValues()
+  public ConceptReference createConceptReference()
   {
-    IntegerValuesImpl integerValues = new IntegerValuesImpl();
-    return integerValues;
+    ConceptReferenceImpl conceptReference = new ConceptReferenceImpl();
+    return conceptReference;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public StringValue createStringValue()
+  {
+    StringValueImpl stringValue = new StringValueImpl();
+    return stringValue;
   }
 
   /**
@@ -345,54 +359,6 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public IntegerRange createIntegerRange()
-  {
-    IntegerRangeImpl integerRange = new IntegerRangeImpl();
-    return integerRange;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public IntegerMinimumValue createIntegerMinimumValue()
-  {
-    IntegerMinimumValueImpl integerMinimumValue = new IntegerMinimumValueImpl();
-    return integerMinimumValue;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public IntegerMaximumValue createIntegerMaximumValue()
-  {
-    IntegerMaximumValueImpl integerMaximumValue = new IntegerMaximumValueImpl();
-    return integerMaximumValue;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public DecimalValues createDecimalValues()
-  {
-    DecimalValuesImpl decimalValues = new DecimalValuesImpl();
-    return decimalValues;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public DecimalValue createDecimalValue()
   {
     DecimalValueImpl decimalValue = new DecimalValueImpl();
@@ -405,10 +371,10 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public DecimalRange createDecimalRange()
+  public SlotInteger createSlotInteger()
   {
-    DecimalRangeImpl decimalRange = new DecimalRangeImpl();
-    return decimalRange;
+    SlotIntegerImpl slotInteger = new SlotIntegerImpl();
+    return slotInteger;
   }
 
   /**
@@ -417,10 +383,10 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public DecimalMinimumValue createDecimalMinimumValue()
+  public SlotIntegerValue createSlotIntegerValue()
   {
-    DecimalMinimumValueImpl decimalMinimumValue = new DecimalMinimumValueImpl();
-    return decimalMinimumValue;
+    SlotIntegerValueImpl slotIntegerValue = new SlotIntegerValueImpl();
+    return slotIntegerValue;
   }
 
   /**
@@ -429,10 +395,10 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public DecimalMaximumValue createDecimalMaximumValue()
+  public SlotIntegerRange createSlotIntegerRange()
   {
-    DecimalMaximumValueImpl decimalMaximumValue = new DecimalMaximumValueImpl();
-    return decimalMaximumValue;
+    SlotIntegerRangeImpl slotIntegerRange = new SlotIntegerRangeImpl();
+    return slotIntegerRange;
   }
 
   /**
@@ -441,10 +407,10 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public ConceptReferenceSlot createConceptReferenceSlot()
+  public SlotIntegerMinimumValue createSlotIntegerMinimumValue()
   {
-    ConceptReferenceSlotImpl conceptReferenceSlot = new ConceptReferenceSlotImpl();
-    return conceptReferenceSlot;
+    SlotIntegerMinimumValueImpl slotIntegerMinimumValue = new SlotIntegerMinimumValueImpl();
+    return slotIntegerMinimumValue;
   }
 
   /**
@@ -453,10 +419,70 @@ public class EtlFactoryImpl extends EFactoryImpl implements EtlFactory
    * @generated
    */
   @Override
-  public ConceptReference createConceptReference()
+  public SlotIntegerMaximumValue createSlotIntegerMaximumValue()
   {
-    ConceptReferenceImpl conceptReference = new ConceptReferenceImpl();
-    return conceptReference;
+    SlotIntegerMaximumValueImpl slotIntegerMaximumValue = new SlotIntegerMaximumValueImpl();
+    return slotIntegerMaximumValue;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public SlotDecimal createSlotDecimal()
+  {
+    SlotDecimalImpl slotDecimal = new SlotDecimalImpl();
+    return slotDecimal;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public SlotDecimalValue createSlotDecimalValue()
+  {
+    SlotDecimalValueImpl slotDecimalValue = new SlotDecimalValueImpl();
+    return slotDecimalValue;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public SlotDecimalRange createSlotDecimalRange()
+  {
+    SlotDecimalRangeImpl slotDecimalRange = new SlotDecimalRangeImpl();
+    return slotDecimalRange;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public SlotDecimalMinimumValue createSlotDecimalMinimumValue()
+  {
+    SlotDecimalMinimumValueImpl slotDecimalMinimumValue = new SlotDecimalMinimumValueImpl();
+    return slotDecimalMinimumValue;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public SlotDecimalMaximumValue createSlotDecimalMaximumValue()
+  {
+    SlotDecimalMaximumValueImpl slotDecimalMaximumValue = new SlotDecimalMaximumValueImpl();
+    return slotDecimalMaximumValue;
   }
 
   /**

@@ -21,22 +21,22 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Decimal Minimum Value</b></em>'.
+ * A representation of the model object '<em><b>Slot Decimal Minimum Value</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue#isExclusive <em>Exclusive</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue#isExclusive <em>Exclusive</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue#getValue <em>Value</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalMinimumValue()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalMinimumValue()
  * @model
  * @generated
  */
-public interface DecimalMinimumValue extends EObject
+public interface SlotDecimalMinimumValue extends EObject
 {
   /**
    * Returns the value of the '<em><b>Exclusive</b></em>' attribute.
@@ -44,14 +44,14 @@ public interface DecimalMinimumValue extends EObject
    * <!-- end-user-doc -->
    * @return the value of the '<em>Exclusive</em>' attribute.
    * @see #setExclusive(boolean)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalMinimumValue_Exclusive()
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalMinimumValue_Exclusive()
    * @model
    * @generated
    */
   boolean isExclusive();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue#isExclusive <em>Exclusive</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue#isExclusive <em>Exclusive</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Exclusive</em>' attribute.
@@ -66,14 +66,14 @@ public interface DecimalMinimumValue extends EObject
    * <!-- end-user-doc -->
    * @return the value of the '<em>Value</em>' attribute.
    * @see #setValue(BigDecimal)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalMinimumValue_Value()
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalMinimumValue_Value()
    * @model
    * @generated
    */
   BigDecimal getValue();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue#getValue <em>Value</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue#getValue <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Value</em>' attribute.
@@ -82,4 +82,4 @@ public interface DecimalMinimumValue extends EObject
    */
   void setValue(BigDecimal value);
 
-} // DecimalMinimumValue
+} // SlotDecimalMinimumValue

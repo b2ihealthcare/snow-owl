@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue;
 
 import java.math.BigDecimal;
 
@@ -25,44 +25,22 @@ import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.EClass;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Decimal Maximum Value</b></em>'.
+ * An implementation of the model object '<em><b>Slot Decimal Value</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalMaximumValueImpl#isExclusive <em>Exclusive</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalMaximumValueImpl#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotDecimalValueImpl#getValue <em>Value</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implements DecimalMaximumValue
+public class SlotDecimalValueImpl extends SlotDecimalImpl implements SlotDecimalValue
 {
-  /**
-   * The default value of the '{@link #isExclusive() <em>Exclusive</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #isExclusive()
-   * @generated
-   * @ordered
-   */
-  protected static final boolean EXCLUSIVE_EDEFAULT = false;
-
-  /**
-   * The cached value of the '{@link #isExclusive() <em>Exclusive</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #isExclusive()
-   * @generated
-   * @ordered
-   */
-  protected boolean exclusive = EXCLUSIVE_EDEFAULT;
-
   /**
    * The default value of the '{@link #getValue() <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
@@ -88,7 +66,7 @@ public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implem
    * <!-- end-user-doc -->
    * @generated
    */
-  protected DecimalMaximumValueImpl()
+  protected SlotDecimalValueImpl()
   {
     super();
   }
@@ -101,32 +79,7 @@ public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implem
   @Override
   protected EClass eStaticClass()
   {
-    return EtlPackage.Literals.DECIMAL_MAXIMUM_VALUE;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public boolean isExclusive()
-  {
-    return exclusive;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setExclusive(boolean newExclusive)
-  {
-    boolean oldExclusive = exclusive;
-    exclusive = newExclusive;
-    if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.DECIMAL_MAXIMUM_VALUE__EXCLUSIVE, oldExclusive, exclusive));
+    return EtlPackage.Literals.SLOT_DECIMAL_VALUE;
   }
 
   /**
@@ -151,7 +104,7 @@ public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implem
     BigDecimal oldValue = value;
     value = newValue;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.DECIMAL_MAXIMUM_VALUE__VALUE, oldValue, value));
+      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.SLOT_DECIMAL_VALUE__VALUE, oldValue, value));
   }
 
   /**
@@ -164,9 +117,7 @@ public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE__EXCLUSIVE:
-        return isExclusive();
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_DECIMAL_VALUE__VALUE:
         return getValue();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -182,10 +133,7 @@ public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE__EXCLUSIVE:
-        setExclusive((Boolean)newValue);
-        return;
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_DECIMAL_VALUE__VALUE:
         setValue((BigDecimal)newValue);
         return;
     }
@@ -202,10 +150,7 @@ public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE__EXCLUSIVE:
-        setExclusive(EXCLUSIVE_EDEFAULT);
-        return;
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_DECIMAL_VALUE__VALUE:
         setValue(VALUE_EDEFAULT);
         return;
     }
@@ -222,9 +167,7 @@ public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implem
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE__EXCLUSIVE:
-        return exclusive != EXCLUSIVE_EDEFAULT;
-      case EtlPackage.DECIMAL_MAXIMUM_VALUE__VALUE:
+      case EtlPackage.SLOT_DECIMAL_VALUE__VALUE:
         return VALUE_EDEFAULT == null ? value != null : !VALUE_EDEFAULT.equals(value);
     }
     return super.eIsSet(featureID);
@@ -241,12 +184,10 @@ public class DecimalMaximumValueImpl extends MinimalEObjectImpl.Container implem
     if (eIsProxy()) return super.toString();
 
     StringBuilder result = new StringBuilder(super.toString());
-    result.append(" (exclusive: ");
-    result.append(exclusive);
-    result.append(", value: ");
+    result.append(" (value: ");
     result.append(value);
     result.append(')');
     return result.toString();
   }
 
-} //DecimalMaximumValueImpl
+} //SlotDecimalValueImpl

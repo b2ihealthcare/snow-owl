@@ -33,7 +33,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//Attribute/value"/>
     </genClasses>
     <genClasses ecoreClass="Etl.ecore#//AttributeValue"/>
-    <genClasses ecoreClass="Etl.ecore#//ConceptReplacementSlot"/>
+    <genClasses ecoreClass="Etl.ecore#//ConceptIdReplacementSlot"/>
     <genClasses ecoreClass="Etl.ecore#//ExpressionReplacementSlot"/>
     <genClasses ecoreClass="Etl.ecore#//TokenReplacementSlot">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//TokenReplacementSlot/tokens"/>
@@ -47,7 +47,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//ConcreteValueReplacementSlot/name"/>
     </genClasses>
     <genClasses ecoreClass="Etl.ecore#//StringReplacementSlot">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//StringReplacementSlot/values"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//StringReplacementSlot/values"/>
     </genClasses>
     <genClasses ecoreClass="Etl.ecore#//IntegerReplacementSlot">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//IntegerReplacementSlot/values"/>
@@ -59,49 +59,55 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//EtlCardinality/min"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//EtlCardinality/max"/>
     </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//StringValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//StringValue/value"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//IntegerValues"/>
-    <genClasses ecoreClass="Etl.ecore#//IntegerValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//IntegerValue/value"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//IntegerRange">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//IntegerRange/minimum"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//IntegerRange/maximum"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//IntegerMinimumValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//IntegerMinimumValue/exclusive"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//IntegerMinimumValue/value"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//IntegerMaximumValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//IntegerMaximumValue/exclusive"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//IntegerMaximumValue/value"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//DecimalValues"/>
-    <genClasses ecoreClass="Etl.ecore#//DecimalValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//DecimalValue/value"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//DecimalRange">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//DecimalRange/minimum"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//DecimalRange/maximum"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//DecimalMinimumValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//DecimalMinimumValue/exclusive"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//DecimalMinimumValue/value"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//DecimalMaximumValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//DecimalMaximumValue/exclusive"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//DecimalMaximumValue/value"/>
-    </genClasses>
-    <genClasses ecoreClass="Etl.ecore#//ConceptReferenceSlot">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//ConceptReferenceSlot/constraint"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//ConceptReferenceSlot/name"/>
+    <genClasses ecoreClass="Etl.ecore#//ConceptReplacementSlot">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//ConceptReplacementSlot/constraint"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//ConceptReplacementSlot/name"/>
     </genClasses>
     <genClasses ecoreClass="Etl.ecore#//ConceptReference">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//ConceptReference/slot"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//ConceptReference/id"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//ConceptReference/term"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//StringValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//StringValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//IntegerValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//IntegerValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//DecimalValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//DecimalValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//SlotInteger"/>
+    <genClasses ecoreClass="Etl.ecore#//SlotIntegerValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotIntegerValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//SlotIntegerRange">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//SlotIntegerRange/minimum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//SlotIntegerRange/maximum"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//SlotIntegerMinimumValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotIntegerMinimumValue/exclusive"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotIntegerMinimumValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//SlotIntegerMaximumValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotIntegerMaximumValue/exclusive"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotIntegerMaximumValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//SlotDecimal"/>
+    <genClasses ecoreClass="Etl.ecore#//SlotDecimalValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotDecimalValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//SlotDecimalRange">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//SlotDecimalRange/minimum"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Etl.ecore#//SlotDecimalRange/maximum"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//SlotDecimalMinimumValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotDecimalMinimumValue/exclusive"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotDecimalMinimumValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Etl.ecore#//SlotDecimalMaximumValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotDecimalMaximumValue/exclusive"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Etl.ecore#//SlotDecimalMaximumValue/value"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

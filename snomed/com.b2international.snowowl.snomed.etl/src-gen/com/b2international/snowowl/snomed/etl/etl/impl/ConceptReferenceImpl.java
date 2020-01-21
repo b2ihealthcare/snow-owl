@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
 import com.b2international.snowowl.snomed.etl.etl.ConceptReference;
-import com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot;
+import com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -52,7 +52,7 @@ public class ConceptReferenceImpl extends AttributeValueImpl implements ConceptR
    * @generated
    * @ordered
    */
-  protected ConceptReferenceSlot slot;
+  protected ConceptReplacementSlot slot;
 
   /**
    * The default value of the '{@link #getId() <em>Id</em>}' attribute.
@@ -121,7 +121,7 @@ public class ConceptReferenceImpl extends AttributeValueImpl implements ConceptR
    * @generated
    */
   @Override
-  public ConceptReferenceSlot getSlot()
+  public ConceptReplacementSlot getSlot()
   {
     return slot;
   }
@@ -131,9 +131,9 @@ public class ConceptReferenceImpl extends AttributeValueImpl implements ConceptR
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetSlot(ConceptReferenceSlot newSlot, NotificationChain msgs)
+  public NotificationChain basicSetSlot(ConceptReplacementSlot newSlot, NotificationChain msgs)
   {
-    ConceptReferenceSlot oldSlot = slot;
+    ConceptReplacementSlot oldSlot = slot;
     slot = newSlot;
     if (eNotificationRequired())
     {
@@ -149,7 +149,7 @@ public class ConceptReferenceImpl extends AttributeValueImpl implements ConceptR
    * @generated
    */
   @Override
-  public void setSlot(ConceptReferenceSlot newSlot)
+  public void setSlot(ConceptReplacementSlot newSlot)
   {
     if (newSlot != slot)
     {
@@ -262,7 +262,7 @@ public class ConceptReferenceImpl extends AttributeValueImpl implements ConceptR
     switch (featureID)
     {
       case EtlPackage.CONCEPT_REFERENCE__SLOT:
-        setSlot((ConceptReferenceSlot)newValue);
+        setSlot((ConceptReplacementSlot)newValue);
         return;
       case EtlPackage.CONCEPT_REFERENCE__ID:
         setId((String)newValue);
@@ -285,7 +285,7 @@ public class ConceptReferenceImpl extends AttributeValueImpl implements ConceptR
     switch (featureID)
     {
       case EtlPackage.CONCEPT_REFERENCE__SLOT:
-        setSlot((ConceptReferenceSlot)null);
+        setSlot((ConceptReplacementSlot)null);
         return;
       case EtlPackage.CONCEPT_REFERENCE__ID:
         setId(ID_EDEFAULT);

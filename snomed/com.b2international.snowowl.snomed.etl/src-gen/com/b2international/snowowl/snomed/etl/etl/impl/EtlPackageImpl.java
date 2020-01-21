@@ -20,29 +20,31 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.etl.etl.Attribute;
 import com.b2international.snowowl.snomed.etl.etl.AttributeGroup;
 import com.b2international.snowowl.snomed.etl.etl.AttributeValue;
+import com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.ConceptReference;
-import com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot;
 import com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.ConcreteValueReplacementSlot;
-import com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue;
-import com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue;
-import com.b2international.snowowl.snomed.etl.etl.DecimalRange;
 import com.b2international.snowowl.snomed.etl.etl.DecimalReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.DecimalValue;
-import com.b2international.snowowl.snomed.etl.etl.DecimalValues;
 import com.b2international.snowowl.snomed.etl.etl.EtlCardinality;
 import com.b2international.snowowl.snomed.etl.etl.EtlFactory;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.ExpressionTemplate;
 import com.b2international.snowowl.snomed.etl.etl.FocusConcept;
-import com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue;
-import com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue;
-import com.b2international.snowowl.snomed.etl.etl.IntegerRange;
 import com.b2international.snowowl.snomed.etl.etl.IntegerReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.IntegerValue;
-import com.b2international.snowowl.snomed.etl.etl.IntegerValues;
 import com.b2international.snowowl.snomed.etl.etl.Refinement;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimal;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotInteger;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue;
 import com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.StringValue;
 import com.b2international.snowowl.snomed.etl.etl.SubExpression;
@@ -118,7 +120,7 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass conceptReplacementSlotEClass = null;
+  private EClass conceptIdReplacementSlotEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -181,14 +183,21 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass stringValueEClass = null;
+  private EClass conceptReplacementSlotEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass integerValuesEClass = null;
+  private EClass conceptReferenceEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass stringValueEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -202,34 +211,6 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass integerRangeEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass integerMinimumValueEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass integerMaximumValueEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass decimalValuesEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   private EClass decimalValueEClass = null;
 
   /**
@@ -237,35 +218,70 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass decimalRangeEClass = null;
+  private EClass slotIntegerEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass decimalMinimumValueEClass = null;
+  private EClass slotIntegerValueEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass decimalMaximumValueEClass = null;
+  private EClass slotIntegerRangeEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass conceptReferenceSlotEClass = null;
+  private EClass slotIntegerMinimumValueEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass conceptReferenceEClass = null;
+  private EClass slotIntegerMaximumValueEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass slotDecimalEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass slotDecimalValueEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass slotDecimalRangeEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass slotDecimalMinimumValueEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass slotDecimalMaximumValueEClass = null;
 
   /**
    * Creates an instance of the model <b>Package</b>, registered with
@@ -570,9 +586,9 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * @generated
    */
   @Override
-  public EClass getConceptReplacementSlot()
+  public EClass getConceptIdReplacementSlot()
   {
-    return conceptReplacementSlotEClass;
+    return conceptIdReplacementSlotEClass;
   }
 
   /**
@@ -691,9 +707,9 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * @generated
    */
   @Override
-  public EReference getStringReplacementSlot_Values()
+  public EAttribute getStringReplacementSlot_Values()
   {
-    return (EReference)stringReplacementSlotEClass.getEStructuralFeatures().get(0);
+    return (EAttribute)stringReplacementSlotEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -779,9 +795,9 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * @generated
    */
   @Override
-  public EClass getStringValue()
+  public EClass getConceptReplacementSlot()
   {
-    return stringValueEClass;
+    return conceptReplacementSlotEClass;
   }
 
   /**
@@ -790,9 +806,9 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * @generated
    */
   @Override
-  public EAttribute getStringValue_Value()
+  public EReference getConceptReplacementSlot_Constraint()
   {
-    return (EAttribute)stringValueEClass.getEStructuralFeatures().get(0);
+    return (EReference)conceptReplacementSlotEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -801,295 +817,9 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
    * @generated
    */
   @Override
-  public EClass getIntegerValues()
+  public EAttribute getConceptReplacementSlot_Name()
   {
-    return integerValuesEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getIntegerValue()
-  {
-    return integerValueEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getIntegerValue_Value()
-  {
-    return (EAttribute)integerValueEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getIntegerRange()
-  {
-    return integerRangeEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getIntegerRange_Minimum()
-  {
-    return (EReference)integerRangeEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getIntegerRange_Maximum()
-  {
-    return (EReference)integerRangeEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getIntegerMinimumValue()
-  {
-    return integerMinimumValueEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getIntegerMinimumValue_Exclusive()
-  {
-    return (EAttribute)integerMinimumValueEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getIntegerMinimumValue_Value()
-  {
-    return (EAttribute)integerMinimumValueEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getIntegerMaximumValue()
-  {
-    return integerMaximumValueEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getIntegerMaximumValue_Exclusive()
-  {
-    return (EAttribute)integerMaximumValueEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getIntegerMaximumValue_Value()
-  {
-    return (EAttribute)integerMaximumValueEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getDecimalValues()
-  {
-    return decimalValuesEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getDecimalValue()
-  {
-    return decimalValueEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getDecimalValue_Value()
-  {
-    return (EAttribute)decimalValueEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getDecimalRange()
-  {
-    return decimalRangeEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getDecimalRange_Minimum()
-  {
-    return (EReference)decimalRangeEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getDecimalRange_Maximum()
-  {
-    return (EReference)decimalRangeEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getDecimalMinimumValue()
-  {
-    return decimalMinimumValueEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getDecimalMinimumValue_Exclusive()
-  {
-    return (EAttribute)decimalMinimumValueEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getDecimalMinimumValue_Value()
-  {
-    return (EAttribute)decimalMinimumValueEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getDecimalMaximumValue()
-  {
-    return decimalMaximumValueEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getDecimalMaximumValue_Exclusive()
-  {
-    return (EAttribute)decimalMaximumValueEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getDecimalMaximumValue_Value()
-  {
-    return (EAttribute)decimalMaximumValueEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getConceptReferenceSlot()
-  {
-    return conceptReferenceSlotEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getConceptReferenceSlot_Constraint()
-  {
-    return (EReference)conceptReferenceSlotEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getConceptReferenceSlot_Name()
-  {
-    return (EAttribute)conceptReferenceSlotEClass.getEStructuralFeatures().get(1);
+    return (EAttribute)conceptReplacementSlotEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -1134,6 +864,336 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
   public EAttribute getConceptReference_Term()
   {
     return (EAttribute)conceptReferenceEClass.getEStructuralFeatures().get(2);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getStringValue()
+  {
+    return stringValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getStringValue_Value()
+  {
+    return (EAttribute)stringValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getIntegerValue()
+  {
+    return integerValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getIntegerValue_Value()
+  {
+    return (EAttribute)integerValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getDecimalValue()
+  {
+    return decimalValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getDecimalValue_Value()
+  {
+    return (EAttribute)decimalValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotInteger()
+  {
+    return slotIntegerEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotIntegerValue()
+  {
+    return slotIntegerValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotIntegerValue_Value()
+  {
+    return (EAttribute)slotIntegerValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotIntegerRange()
+  {
+    return slotIntegerRangeEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getSlotIntegerRange_Minimum()
+  {
+    return (EReference)slotIntegerRangeEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getSlotIntegerRange_Maximum()
+  {
+    return (EReference)slotIntegerRangeEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotIntegerMinimumValue()
+  {
+    return slotIntegerMinimumValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotIntegerMinimumValue_Exclusive()
+  {
+    return (EAttribute)slotIntegerMinimumValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotIntegerMinimumValue_Value()
+  {
+    return (EAttribute)slotIntegerMinimumValueEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotIntegerMaximumValue()
+  {
+    return slotIntegerMaximumValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotIntegerMaximumValue_Exclusive()
+  {
+    return (EAttribute)slotIntegerMaximumValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotIntegerMaximumValue_Value()
+  {
+    return (EAttribute)slotIntegerMaximumValueEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotDecimal()
+  {
+    return slotDecimalEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotDecimalValue()
+  {
+    return slotDecimalValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotDecimalValue_Value()
+  {
+    return (EAttribute)slotDecimalValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotDecimalRange()
+  {
+    return slotDecimalRangeEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getSlotDecimalRange_Minimum()
+  {
+    return (EReference)slotDecimalRangeEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getSlotDecimalRange_Maximum()
+  {
+    return (EReference)slotDecimalRangeEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotDecimalMinimumValue()
+  {
+    return slotDecimalMinimumValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotDecimalMinimumValue_Exclusive()
+  {
+    return (EAttribute)slotDecimalMinimumValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotDecimalMinimumValue_Value()
+  {
+    return (EAttribute)slotDecimalMinimumValueEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getSlotDecimalMaximumValue()
+  {
+    return slotDecimalMaximumValueEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotDecimalMaximumValue_Exclusive()
+  {
+    return (EAttribute)slotDecimalMaximumValueEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getSlotDecimalMaximumValue_Value()
+  {
+    return (EAttribute)slotDecimalMaximumValueEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -1195,7 +1255,7 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
 
     attributeValueEClass = createEClass(ATTRIBUTE_VALUE);
 
-    conceptReplacementSlotEClass = createEClass(CONCEPT_REPLACEMENT_SLOT);
+    conceptIdReplacementSlotEClass = createEClass(CONCEPT_ID_REPLACEMENT_SLOT);
 
     expressionReplacementSlotEClass = createEClass(EXPRESSION_REPLACEMENT_SLOT);
 
@@ -1211,7 +1271,7 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
     createEAttribute(concreteValueReplacementSlotEClass, CONCRETE_VALUE_REPLACEMENT_SLOT__NAME);
 
     stringReplacementSlotEClass = createEClass(STRING_REPLACEMENT_SLOT);
-    createEReference(stringReplacementSlotEClass, STRING_REPLACEMENT_SLOT__VALUES);
+    createEAttribute(stringReplacementSlotEClass, STRING_REPLACEMENT_SLOT__VALUES);
 
     integerReplacementSlotEClass = createEClass(INTEGER_REPLACEMENT_SLOT);
     createEReference(integerReplacementSlotEClass, INTEGER_REPLACEMENT_SLOT__VALUES);
@@ -1223,51 +1283,57 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
     createEAttribute(etlCardinalityEClass, ETL_CARDINALITY__MIN);
     createEAttribute(etlCardinalityEClass, ETL_CARDINALITY__MAX);
 
-    stringValueEClass = createEClass(STRING_VALUE);
-    createEAttribute(stringValueEClass, STRING_VALUE__VALUE);
-
-    integerValuesEClass = createEClass(INTEGER_VALUES);
-
-    integerValueEClass = createEClass(INTEGER_VALUE);
-    createEAttribute(integerValueEClass, INTEGER_VALUE__VALUE);
-
-    integerRangeEClass = createEClass(INTEGER_RANGE);
-    createEReference(integerRangeEClass, INTEGER_RANGE__MINIMUM);
-    createEReference(integerRangeEClass, INTEGER_RANGE__MAXIMUM);
-
-    integerMinimumValueEClass = createEClass(INTEGER_MINIMUM_VALUE);
-    createEAttribute(integerMinimumValueEClass, INTEGER_MINIMUM_VALUE__EXCLUSIVE);
-    createEAttribute(integerMinimumValueEClass, INTEGER_MINIMUM_VALUE__VALUE);
-
-    integerMaximumValueEClass = createEClass(INTEGER_MAXIMUM_VALUE);
-    createEAttribute(integerMaximumValueEClass, INTEGER_MAXIMUM_VALUE__EXCLUSIVE);
-    createEAttribute(integerMaximumValueEClass, INTEGER_MAXIMUM_VALUE__VALUE);
-
-    decimalValuesEClass = createEClass(DECIMAL_VALUES);
-
-    decimalValueEClass = createEClass(DECIMAL_VALUE);
-    createEAttribute(decimalValueEClass, DECIMAL_VALUE__VALUE);
-
-    decimalRangeEClass = createEClass(DECIMAL_RANGE);
-    createEReference(decimalRangeEClass, DECIMAL_RANGE__MINIMUM);
-    createEReference(decimalRangeEClass, DECIMAL_RANGE__MAXIMUM);
-
-    decimalMinimumValueEClass = createEClass(DECIMAL_MINIMUM_VALUE);
-    createEAttribute(decimalMinimumValueEClass, DECIMAL_MINIMUM_VALUE__EXCLUSIVE);
-    createEAttribute(decimalMinimumValueEClass, DECIMAL_MINIMUM_VALUE__VALUE);
-
-    decimalMaximumValueEClass = createEClass(DECIMAL_MAXIMUM_VALUE);
-    createEAttribute(decimalMaximumValueEClass, DECIMAL_MAXIMUM_VALUE__EXCLUSIVE);
-    createEAttribute(decimalMaximumValueEClass, DECIMAL_MAXIMUM_VALUE__VALUE);
-
-    conceptReferenceSlotEClass = createEClass(CONCEPT_REFERENCE_SLOT);
-    createEReference(conceptReferenceSlotEClass, CONCEPT_REFERENCE_SLOT__CONSTRAINT);
-    createEAttribute(conceptReferenceSlotEClass, CONCEPT_REFERENCE_SLOT__NAME);
+    conceptReplacementSlotEClass = createEClass(CONCEPT_REPLACEMENT_SLOT);
+    createEReference(conceptReplacementSlotEClass, CONCEPT_REPLACEMENT_SLOT__CONSTRAINT);
+    createEAttribute(conceptReplacementSlotEClass, CONCEPT_REPLACEMENT_SLOT__NAME);
 
     conceptReferenceEClass = createEClass(CONCEPT_REFERENCE);
     createEReference(conceptReferenceEClass, CONCEPT_REFERENCE__SLOT);
     createEAttribute(conceptReferenceEClass, CONCEPT_REFERENCE__ID);
     createEAttribute(conceptReferenceEClass, CONCEPT_REFERENCE__TERM);
+
+    stringValueEClass = createEClass(STRING_VALUE);
+    createEAttribute(stringValueEClass, STRING_VALUE__VALUE);
+
+    integerValueEClass = createEClass(INTEGER_VALUE);
+    createEAttribute(integerValueEClass, INTEGER_VALUE__VALUE);
+
+    decimalValueEClass = createEClass(DECIMAL_VALUE);
+    createEAttribute(decimalValueEClass, DECIMAL_VALUE__VALUE);
+
+    slotIntegerEClass = createEClass(SLOT_INTEGER);
+
+    slotIntegerValueEClass = createEClass(SLOT_INTEGER_VALUE);
+    createEAttribute(slotIntegerValueEClass, SLOT_INTEGER_VALUE__VALUE);
+
+    slotIntegerRangeEClass = createEClass(SLOT_INTEGER_RANGE);
+    createEReference(slotIntegerRangeEClass, SLOT_INTEGER_RANGE__MINIMUM);
+    createEReference(slotIntegerRangeEClass, SLOT_INTEGER_RANGE__MAXIMUM);
+
+    slotIntegerMinimumValueEClass = createEClass(SLOT_INTEGER_MINIMUM_VALUE);
+    createEAttribute(slotIntegerMinimumValueEClass, SLOT_INTEGER_MINIMUM_VALUE__EXCLUSIVE);
+    createEAttribute(slotIntegerMinimumValueEClass, SLOT_INTEGER_MINIMUM_VALUE__VALUE);
+
+    slotIntegerMaximumValueEClass = createEClass(SLOT_INTEGER_MAXIMUM_VALUE);
+    createEAttribute(slotIntegerMaximumValueEClass, SLOT_INTEGER_MAXIMUM_VALUE__EXCLUSIVE);
+    createEAttribute(slotIntegerMaximumValueEClass, SLOT_INTEGER_MAXIMUM_VALUE__VALUE);
+
+    slotDecimalEClass = createEClass(SLOT_DECIMAL);
+
+    slotDecimalValueEClass = createEClass(SLOT_DECIMAL_VALUE);
+    createEAttribute(slotDecimalValueEClass, SLOT_DECIMAL_VALUE__VALUE);
+
+    slotDecimalRangeEClass = createEClass(SLOT_DECIMAL_RANGE);
+    createEReference(slotDecimalRangeEClass, SLOT_DECIMAL_RANGE__MINIMUM);
+    createEReference(slotDecimalRangeEClass, SLOT_DECIMAL_RANGE__MAXIMUM);
+
+    slotDecimalMinimumValueEClass = createEClass(SLOT_DECIMAL_MINIMUM_VALUE);
+    createEAttribute(slotDecimalMinimumValueEClass, SLOT_DECIMAL_MINIMUM_VALUE__EXCLUSIVE);
+    createEAttribute(slotDecimalMinimumValueEClass, SLOT_DECIMAL_MINIMUM_VALUE__VALUE);
+
+    slotDecimalMaximumValueEClass = createEClass(SLOT_DECIMAL_MAXIMUM_VALUE);
+    createEAttribute(slotDecimalMaximumValueEClass, SLOT_DECIMAL_MAXIMUM_VALUE__EXCLUSIVE);
+    createEAttribute(slotDecimalMaximumValueEClass, SLOT_DECIMAL_MAXIMUM_VALUE__VALUE);
   }
 
   /**
@@ -1303,20 +1369,20 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
 
     // Add supertypes to classes
     subExpressionEClass.getESuperTypes().add(this.getAttributeValue());
-    conceptReplacementSlotEClass.getESuperTypes().add(this.getConceptReferenceSlot());
-    expressionReplacementSlotEClass.getESuperTypes().add(this.getConceptReferenceSlot());
+    conceptIdReplacementSlotEClass.getESuperTypes().add(this.getConceptReplacementSlot());
+    expressionReplacementSlotEClass.getESuperTypes().add(this.getConceptReplacementSlot());
     concreteValueReplacementSlotEClass.getESuperTypes().add(this.getAttributeValue());
     stringReplacementSlotEClass.getESuperTypes().add(this.getConcreteValueReplacementSlot());
     integerReplacementSlotEClass.getESuperTypes().add(this.getConcreteValueReplacementSlot());
     decimalReplacementSlotEClass.getESuperTypes().add(this.getConcreteValueReplacementSlot());
+    conceptReferenceEClass.getESuperTypes().add(this.getAttributeValue());
     stringValueEClass.getESuperTypes().add(this.getAttributeValue());
     integerValueEClass.getESuperTypes().add(this.getAttributeValue());
-    integerValueEClass.getESuperTypes().add(this.getIntegerValues());
-    integerRangeEClass.getESuperTypes().add(this.getIntegerValues());
     decimalValueEClass.getESuperTypes().add(this.getAttributeValue());
-    decimalValueEClass.getESuperTypes().add(this.getDecimalValues());
-    decimalRangeEClass.getESuperTypes().add(this.getDecimalValues());
-    conceptReferenceEClass.getESuperTypes().add(this.getAttributeValue());
+    slotIntegerValueEClass.getESuperTypes().add(this.getSlotInteger());
+    slotIntegerRangeEClass.getESuperTypes().add(this.getSlotInteger());
+    slotDecimalValueEClass.getESuperTypes().add(this.getSlotDecimal());
+    slotDecimalRangeEClass.getESuperTypes().add(this.getSlotDecimal());
 
     // Initialize classes and features; add operations and parameters
     initEClass(expressionTemplateEClass, ExpressionTemplate.class, "ExpressionTemplate", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -1347,7 +1413,7 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
 
     initEClass(attributeValueEClass, AttributeValue.class, "AttributeValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(conceptReplacementSlotEClass, ConceptReplacementSlot.class, "ConceptReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEClass(conceptIdReplacementSlotEClass, ConceptIdReplacementSlot.class, "ConceptIdReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(expressionReplacementSlotEClass, ExpressionReplacementSlot.class, "ExpressionReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -1363,63 +1429,69 @@ public class EtlPackageImpl extends EPackageImpl implements EtlPackage
     initEAttribute(getConcreteValueReplacementSlot_Name(), ecorePackage.getEString(), "name", null, 0, 1, ConcreteValueReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(stringReplacementSlotEClass, StringReplacementSlot.class, "StringReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getStringReplacementSlot_Values(), this.getStringValue(), null, "values", null, 0, -1, StringReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getStringReplacementSlot_Values(), ecorePackage.getEString(), "values", null, 0, -1, StringReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(integerReplacementSlotEClass, IntegerReplacementSlot.class, "IntegerReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getIntegerReplacementSlot_Values(), this.getIntegerValues(), null, "values", null, 0, -1, IntegerReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getIntegerReplacementSlot_Values(), this.getSlotInteger(), null, "values", null, 0, -1, IntegerReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(decimalReplacementSlotEClass, DecimalReplacementSlot.class, "DecimalReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getDecimalReplacementSlot_Values(), this.getDecimalValues(), null, "values", null, 0, -1, DecimalReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getDecimalReplacementSlot_Values(), this.getSlotDecimal(), null, "values", null, 0, -1, DecimalReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(etlCardinalityEClass, EtlCardinality.class, "EtlCardinality", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getEtlCardinality_Min(), ecorePackage.getEInt(), "min", null, 0, 1, EtlCardinality.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getEtlCardinality_Max(), ecorePackage.getEInt(), "max", null, 0, 1, EtlCardinality.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+    initEClass(conceptReplacementSlotEClass, ConceptReplacementSlot.class, "ConceptReplacementSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getConceptReplacementSlot_Constraint(), theEclPackage.getExpressionConstraint(), null, "constraint", null, 0, 1, ConceptReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getConceptReplacementSlot_Name(), ecorePackage.getEString(), "name", null, 0, 1, ConceptReplacementSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(conceptReferenceEClass, ConceptReference.class, "ConceptReference", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getConceptReference_Slot(), this.getConceptReplacementSlot(), null, "slot", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getConceptReference_Id(), ecorePackage.getEString(), "id", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getConceptReference_Term(), ecorePackage.getEString(), "term", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
     initEClass(stringValueEClass, StringValue.class, "StringValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getStringValue_Value(), ecorePackage.getEString(), "value", null, 0, 1, StringValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(integerValuesEClass, IntegerValues.class, "IntegerValues", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(integerValueEClass, IntegerValue.class, "IntegerValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getIntegerValue_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(integerRangeEClass, IntegerRange.class, "IntegerRange", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getIntegerRange_Minimum(), this.getIntegerMinimumValue(), null, "minimum", null, 0, 1, IntegerRange.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getIntegerRange_Maximum(), this.getIntegerMaximumValue(), null, "maximum", null, 0, 1, IntegerRange.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(integerMinimumValueEClass, IntegerMinimumValue.class, "IntegerMinimumValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getIntegerMinimumValue_Exclusive(), ecorePackage.getEBoolean(), "exclusive", null, 0, 1, IntegerMinimumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getIntegerMinimumValue_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerMinimumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(integerMaximumValueEClass, IntegerMaximumValue.class, "IntegerMaximumValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getIntegerMaximumValue_Exclusive(), ecorePackage.getEBoolean(), "exclusive", null, 0, 1, IntegerMaximumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getIntegerMaximumValue_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerMaximumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(decimalValuesEClass, DecimalValues.class, "DecimalValues", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
     initEClass(decimalValueEClass, DecimalValue.class, "DecimalValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getDecimalValue_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(decimalRangeEClass, DecimalRange.class, "DecimalRange", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getDecimalRange_Minimum(), this.getDecimalMinimumValue(), null, "minimum", null, 0, 1, DecimalRange.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getDecimalRange_Maximum(), this.getDecimalMaximumValue(), null, "maximum", null, 0, 1, DecimalRange.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(slotIntegerEClass, SlotInteger.class, "SlotInteger", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(decimalMinimumValueEClass, DecimalMinimumValue.class, "DecimalMinimumValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getDecimalMinimumValue_Exclusive(), ecorePackage.getEBoolean(), "exclusive", null, 0, 1, DecimalMinimumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getDecimalMinimumValue_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalMinimumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(slotIntegerValueEClass, SlotIntegerValue.class, "SlotIntegerValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getSlotIntegerValue_Value(), ecorePackage.getEInt(), "value", null, 0, 1, SlotIntegerValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(decimalMaximumValueEClass, DecimalMaximumValue.class, "DecimalMaximumValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getDecimalMaximumValue_Exclusive(), ecorePackage.getEBoolean(), "exclusive", null, 0, 1, DecimalMaximumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getDecimalMaximumValue_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalMaximumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(slotIntegerRangeEClass, SlotIntegerRange.class, "SlotIntegerRange", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getSlotIntegerRange_Minimum(), this.getSlotIntegerMinimumValue(), null, "minimum", null, 0, 1, SlotIntegerRange.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getSlotIntegerRange_Maximum(), this.getSlotIntegerMaximumValue(), null, "maximum", null, 0, 1, SlotIntegerRange.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(conceptReferenceSlotEClass, ConceptReferenceSlot.class, "ConceptReferenceSlot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getConceptReferenceSlot_Constraint(), theEclPackage.getExpressionConstraint(), null, "constraint", null, 0, 1, ConceptReferenceSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getConceptReferenceSlot_Name(), ecorePackage.getEString(), "name", null, 0, 1, ConceptReferenceSlot.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(slotIntegerMinimumValueEClass, SlotIntegerMinimumValue.class, "SlotIntegerMinimumValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getSlotIntegerMinimumValue_Exclusive(), ecorePackage.getEBoolean(), "exclusive", null, 0, 1, SlotIntegerMinimumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getSlotIntegerMinimumValue_Value(), ecorePackage.getEInt(), "value", null, 0, 1, SlotIntegerMinimumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(conceptReferenceEClass, ConceptReference.class, "ConceptReference", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getConceptReference_Slot(), this.getConceptReferenceSlot(), null, "slot", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getConceptReference_Id(), ecorePackage.getEString(), "id", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getConceptReference_Term(), ecorePackage.getEString(), "term", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(slotIntegerMaximumValueEClass, SlotIntegerMaximumValue.class, "SlotIntegerMaximumValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getSlotIntegerMaximumValue_Exclusive(), ecorePackage.getEBoolean(), "exclusive", null, 0, 1, SlotIntegerMaximumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getSlotIntegerMaximumValue_Value(), ecorePackage.getEInt(), "value", null, 0, 1, SlotIntegerMaximumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(slotDecimalEClass, SlotDecimal.class, "SlotDecimal", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(slotDecimalValueEClass, SlotDecimalValue.class, "SlotDecimalValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getSlotDecimalValue_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, SlotDecimalValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(slotDecimalRangeEClass, SlotDecimalRange.class, "SlotDecimalRange", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getSlotDecimalRange_Minimum(), this.getSlotDecimalMinimumValue(), null, "minimum", null, 0, 1, SlotDecimalRange.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getSlotDecimalRange_Maximum(), this.getSlotDecimalMaximumValue(), null, "maximum", null, 0, 1, SlotDecimalRange.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(slotDecimalMinimumValueEClass, SlotDecimalMinimumValue.class, "SlotDecimalMinimumValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getSlotDecimalMinimumValue_Exclusive(), ecorePackage.getEBoolean(), "exclusive", null, 0, 1, SlotDecimalMinimumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getSlotDecimalMinimumValue_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, SlotDecimalMinimumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(slotDecimalMaximumValueEClass, SlotDecimalMaximumValue.class, "SlotDecimalMaximumValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getSlotDecimalMaximumValue_Exclusive(), ecorePackage.getEBoolean(), "exclusive", null, 0, 1, SlotDecimalMaximumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getSlotDecimalMaximumValue_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, SlotDecimalMaximumValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     // Create resource
     createResource(eNS_URI);

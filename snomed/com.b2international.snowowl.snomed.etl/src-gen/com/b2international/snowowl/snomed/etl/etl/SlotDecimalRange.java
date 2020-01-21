@@ -18,65 +18,65 @@ package com.b2international.snowowl.snomed.etl.etl;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Decimal Range</b></em>'.
+ * A representation of the model object '<em><b>Slot Decimal Range</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.DecimalRange#getMinimum <em>Minimum</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.DecimalRange#getMaximum <em>Maximum</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange#getMinimum <em>Minimum</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange#getMaximum <em>Maximum</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalRange()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalRange()
  * @model
  * @generated
  */
-public interface DecimalRange extends DecimalValues
+public interface SlotDecimalRange extends SlotDecimal
 {
   /**
    * Returns the value of the '<em><b>Minimum</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Minimum</em>' containment reference.
-   * @see #setMinimum(DecimalMinimumValue)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalRange_Minimum()
+   * @see #setMinimum(SlotDecimalMinimumValue)
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalRange_Minimum()
    * @model containment="true"
    * @generated
    */
-  DecimalMinimumValue getMinimum();
+  SlotDecimalMinimumValue getMinimum();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.DecimalRange#getMinimum <em>Minimum</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange#getMinimum <em>Minimum</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Minimum</em>' containment reference.
    * @see #getMinimum()
    * @generated
    */
-  void setMinimum(DecimalMinimumValue value);
+  void setMinimum(SlotDecimalMinimumValue value);
 
   /**
    * Returns the value of the '<em><b>Maximum</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Maximum</em>' containment reference.
-   * @see #setMaximum(DecimalMaximumValue)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalRange_Maximum()
+   * @see #setMaximum(SlotDecimalMaximumValue)
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimalRange_Maximum()
    * @model containment="true"
    * @generated
    */
-  DecimalMaximumValue getMaximum();
+  SlotDecimalMaximumValue getMaximum();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.DecimalRange#getMaximum <em>Maximum</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange#getMaximum <em>Maximum</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Maximum</em>' containment reference.
    * @see #getMaximum()
    * @generated
    */
-  void setMaximum(DecimalMaximumValue value);
+  void setMaximum(SlotDecimalMaximumValue value);
 
-} // DecimalRange
+} // SlotDecimalRange

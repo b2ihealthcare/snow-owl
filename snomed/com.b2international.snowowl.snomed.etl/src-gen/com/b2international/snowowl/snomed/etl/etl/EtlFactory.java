@@ -99,13 +99,13 @@ public interface EtlFactory extends EFactory
   AttributeValue createAttributeValue();
 
   /**
-   * Returns a new object of class '<em>Concept Replacement Slot</em>'.
+   * Returns a new object of class '<em>Concept Id Replacement Slot</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Concept Replacement Slot</em>'.
+   * @return a new object of class '<em>Concept Id Replacement Slot</em>'.
    * @generated
    */
-  ConceptReplacementSlot createConceptReplacementSlot();
+  ConceptIdReplacementSlot createConceptIdReplacementSlot();
 
   /**
    * Returns a new object of class '<em>Expression Replacement Slot</em>'.
@@ -180,6 +180,24 @@ public interface EtlFactory extends EFactory
   EtlCardinality createEtlCardinality();
 
   /**
+   * Returns a new object of class '<em>Concept Replacement Slot</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Concept Replacement Slot</em>'.
+   * @generated
+   */
+  ConceptReplacementSlot createConceptReplacementSlot();
+
+  /**
+   * Returns a new object of class '<em>Concept Reference</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Concept Reference</em>'.
+   * @generated
+   */
+  ConceptReference createConceptReference();
+
+  /**
    * Returns a new object of class '<em>String Value</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -187,15 +205,6 @@ public interface EtlFactory extends EFactory
    * @generated
    */
   StringValue createStringValue();
-
-  /**
-   * Returns a new object of class '<em>Integer Values</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Integer Values</em>'.
-   * @generated
-   */
-  IntegerValues createIntegerValues();
 
   /**
    * Returns a new object of class '<em>Integer Value</em>'.
@@ -207,42 +216,6 @@ public interface EtlFactory extends EFactory
   IntegerValue createIntegerValue();
 
   /**
-   * Returns a new object of class '<em>Integer Range</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Integer Range</em>'.
-   * @generated
-   */
-  IntegerRange createIntegerRange();
-
-  /**
-   * Returns a new object of class '<em>Integer Minimum Value</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Integer Minimum Value</em>'.
-   * @generated
-   */
-  IntegerMinimumValue createIntegerMinimumValue();
-
-  /**
-   * Returns a new object of class '<em>Integer Maximum Value</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Integer Maximum Value</em>'.
-   * @generated
-   */
-  IntegerMaximumValue createIntegerMaximumValue();
-
-  /**
-   * Returns a new object of class '<em>Decimal Values</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Decimal Values</em>'.
-   * @generated
-   */
-  DecimalValues createDecimalValues();
-
-  /**
    * Returns a new object of class '<em>Decimal Value</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -252,49 +225,94 @@ public interface EtlFactory extends EFactory
   DecimalValue createDecimalValue();
 
   /**
-   * Returns a new object of class '<em>Decimal Range</em>'.
+   * Returns a new object of class '<em>Slot Integer</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Decimal Range</em>'.
+   * @return a new object of class '<em>Slot Integer</em>'.
    * @generated
    */
-  DecimalRange createDecimalRange();
+  SlotInteger createSlotInteger();
 
   /**
-   * Returns a new object of class '<em>Decimal Minimum Value</em>'.
+   * Returns a new object of class '<em>Slot Integer Value</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Decimal Minimum Value</em>'.
+   * @return a new object of class '<em>Slot Integer Value</em>'.
    * @generated
    */
-  DecimalMinimumValue createDecimalMinimumValue();
+  SlotIntegerValue createSlotIntegerValue();
 
   /**
-   * Returns a new object of class '<em>Decimal Maximum Value</em>'.
+   * Returns a new object of class '<em>Slot Integer Range</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Decimal Maximum Value</em>'.
+   * @return a new object of class '<em>Slot Integer Range</em>'.
    * @generated
    */
-  DecimalMaximumValue createDecimalMaximumValue();
+  SlotIntegerRange createSlotIntegerRange();
 
   /**
-   * Returns a new object of class '<em>Concept Reference Slot</em>'.
+   * Returns a new object of class '<em>Slot Integer Minimum Value</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Concept Reference Slot</em>'.
+   * @return a new object of class '<em>Slot Integer Minimum Value</em>'.
    * @generated
    */
-  ConceptReferenceSlot createConceptReferenceSlot();
+  SlotIntegerMinimumValue createSlotIntegerMinimumValue();
 
   /**
-   * Returns a new object of class '<em>Concept Reference</em>'.
+   * Returns a new object of class '<em>Slot Integer Maximum Value</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Concept Reference</em>'.
+   * @return a new object of class '<em>Slot Integer Maximum Value</em>'.
    * @generated
    */
-  ConceptReference createConceptReference();
+  SlotIntegerMaximumValue createSlotIntegerMaximumValue();
+
+  /**
+   * Returns a new object of class '<em>Slot Decimal</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Slot Decimal</em>'.
+   * @generated
+   */
+  SlotDecimal createSlotDecimal();
+
+  /**
+   * Returns a new object of class '<em>Slot Decimal Value</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Slot Decimal Value</em>'.
+   * @generated
+   */
+  SlotDecimalValue createSlotDecimalValue();
+
+  /**
+   * Returns a new object of class '<em>Slot Decimal Range</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Slot Decimal Range</em>'.
+   * @generated
+   */
+  SlotDecimalRange createSlotDecimalRange();
+
+  /**
+   * Returns a new object of class '<em>Slot Decimal Minimum Value</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Slot Decimal Minimum Value</em>'.
+   * @generated
+   */
+  SlotDecimalMinimumValue createSlotDecimalMinimumValue();
+
+  /**
+   * Returns a new object of class '<em>Slot Decimal Maximum Value</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Slot Decimal Maximum Value</em>'.
+   * @generated
+   */
+  SlotDecimalMaximumValue createSlotDecimalMaximumValue();
 
   /**
    * Returns the package supported by this factory.

@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue;
-import com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue;
-import com.b2international.snowowl.snomed.etl.etl.DecimalRange;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -30,19 +30,19 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Decimal Range</b></em>'.
+ * An implementation of the model object '<em><b>Slot Integer Range</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalRangeImpl#getMinimum <em>Minimum</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.DecimalRangeImpl#getMaximum <em>Maximum</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerRangeImpl#getMinimum <em>Minimum</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.impl.SlotIntegerRangeImpl#getMaximum <em>Maximum</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
+public class SlotIntegerRangeImpl extends SlotIntegerImpl implements SlotIntegerRange
 {
   /**
    * The cached value of the '{@link #getMinimum() <em>Minimum</em>}' containment reference.
@@ -52,7 +52,7 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
    * @generated
    * @ordered
    */
-  protected DecimalMinimumValue minimum;
+  protected SlotIntegerMinimumValue minimum;
 
   /**
    * The cached value of the '{@link #getMaximum() <em>Maximum</em>}' containment reference.
@@ -62,14 +62,14 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
    * @generated
    * @ordered
    */
-  protected DecimalMaximumValue maximum;
+  protected SlotIntegerMaximumValue maximum;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected DecimalRangeImpl()
+  protected SlotIntegerRangeImpl()
   {
     super();
   }
@@ -82,7 +82,7 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
   @Override
   protected EClass eStaticClass()
   {
-    return EtlPackage.Literals.DECIMAL_RANGE;
+    return EtlPackage.Literals.SLOT_INTEGER_RANGE;
   }
 
   /**
@@ -91,7 +91,7 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
    * @generated
    */
   @Override
-  public DecimalMinimumValue getMinimum()
+  public SlotIntegerMinimumValue getMinimum()
   {
     return minimum;
   }
@@ -101,13 +101,13 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetMinimum(DecimalMinimumValue newMinimum, NotificationChain msgs)
+  public NotificationChain basicSetMinimum(SlotIntegerMinimumValue newMinimum, NotificationChain msgs)
   {
-    DecimalMinimumValue oldMinimum = minimum;
+    SlotIntegerMinimumValue oldMinimum = minimum;
     minimum = newMinimum;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EtlPackage.DECIMAL_RANGE__MINIMUM, oldMinimum, newMinimum);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EtlPackage.SLOT_INTEGER_RANGE__MINIMUM, oldMinimum, newMinimum);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -119,20 +119,20 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
    * @generated
    */
   @Override
-  public void setMinimum(DecimalMinimumValue newMinimum)
+  public void setMinimum(SlotIntegerMinimumValue newMinimum)
   {
     if (newMinimum != minimum)
     {
       NotificationChain msgs = null;
       if (minimum != null)
-        msgs = ((InternalEObject)minimum).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EtlPackage.DECIMAL_RANGE__MINIMUM, null, msgs);
+        msgs = ((InternalEObject)minimum).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EtlPackage.SLOT_INTEGER_RANGE__MINIMUM, null, msgs);
       if (newMinimum != null)
-        msgs = ((InternalEObject)newMinimum).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EtlPackage.DECIMAL_RANGE__MINIMUM, null, msgs);
+        msgs = ((InternalEObject)newMinimum).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EtlPackage.SLOT_INTEGER_RANGE__MINIMUM, null, msgs);
       msgs = basicSetMinimum(newMinimum, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.DECIMAL_RANGE__MINIMUM, newMinimum, newMinimum));
+      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.SLOT_INTEGER_RANGE__MINIMUM, newMinimum, newMinimum));
   }
 
   /**
@@ -141,7 +141,7 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
    * @generated
    */
   @Override
-  public DecimalMaximumValue getMaximum()
+  public SlotIntegerMaximumValue getMaximum()
   {
     return maximum;
   }
@@ -151,13 +151,13 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetMaximum(DecimalMaximumValue newMaximum, NotificationChain msgs)
+  public NotificationChain basicSetMaximum(SlotIntegerMaximumValue newMaximum, NotificationChain msgs)
   {
-    DecimalMaximumValue oldMaximum = maximum;
+    SlotIntegerMaximumValue oldMaximum = maximum;
     maximum = newMaximum;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EtlPackage.DECIMAL_RANGE__MAXIMUM, oldMaximum, newMaximum);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM, oldMaximum, newMaximum);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -169,20 +169,20 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
    * @generated
    */
   @Override
-  public void setMaximum(DecimalMaximumValue newMaximum)
+  public void setMaximum(SlotIntegerMaximumValue newMaximum)
   {
     if (newMaximum != maximum)
     {
       NotificationChain msgs = null;
       if (maximum != null)
-        msgs = ((InternalEObject)maximum).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EtlPackage.DECIMAL_RANGE__MAXIMUM, null, msgs);
+        msgs = ((InternalEObject)maximum).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM, null, msgs);
       if (newMaximum != null)
-        msgs = ((InternalEObject)newMaximum).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EtlPackage.DECIMAL_RANGE__MAXIMUM, null, msgs);
+        msgs = ((InternalEObject)newMaximum).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM, null, msgs);
       msgs = basicSetMaximum(newMaximum, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.DECIMAL_RANGE__MAXIMUM, newMaximum, newMaximum));
+      eNotify(new ENotificationImpl(this, Notification.SET, EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM, newMaximum, newMaximum));
   }
 
   /**
@@ -195,9 +195,9 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_RANGE__MINIMUM:
+      case EtlPackage.SLOT_INTEGER_RANGE__MINIMUM:
         return basicSetMinimum(null, msgs);
-      case EtlPackage.DECIMAL_RANGE__MAXIMUM:
+      case EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM:
         return basicSetMaximum(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -213,9 +213,9 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_RANGE__MINIMUM:
+      case EtlPackage.SLOT_INTEGER_RANGE__MINIMUM:
         return getMinimum();
-      case EtlPackage.DECIMAL_RANGE__MAXIMUM:
+      case EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM:
         return getMaximum();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -231,11 +231,11 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_RANGE__MINIMUM:
-        setMinimum((DecimalMinimumValue)newValue);
+      case EtlPackage.SLOT_INTEGER_RANGE__MINIMUM:
+        setMinimum((SlotIntegerMinimumValue)newValue);
         return;
-      case EtlPackage.DECIMAL_RANGE__MAXIMUM:
-        setMaximum((DecimalMaximumValue)newValue);
+      case EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM:
+        setMaximum((SlotIntegerMaximumValue)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -251,11 +251,11 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_RANGE__MINIMUM:
-        setMinimum((DecimalMinimumValue)null);
+      case EtlPackage.SLOT_INTEGER_RANGE__MINIMUM:
+        setMinimum((SlotIntegerMinimumValue)null);
         return;
-      case EtlPackage.DECIMAL_RANGE__MAXIMUM:
-        setMaximum((DecimalMaximumValue)null);
+      case EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM:
+        setMaximum((SlotIntegerMaximumValue)null);
         return;
     }
     super.eUnset(featureID);
@@ -271,12 +271,12 @@ public class DecimalRangeImpl extends DecimalValuesImpl implements DecimalRange
   {
     switch (featureID)
     {
-      case EtlPackage.DECIMAL_RANGE__MINIMUM:
+      case EtlPackage.SLOT_INTEGER_RANGE__MINIMUM:
         return minimum != null;
-      case EtlPackage.DECIMAL_RANGE__MAXIMUM:
+      case EtlPackage.SLOT_INTEGER_RANGE__MAXIMUM:
         return maximum != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //DecimalRangeImpl
+} //SlotIntegerRangeImpl

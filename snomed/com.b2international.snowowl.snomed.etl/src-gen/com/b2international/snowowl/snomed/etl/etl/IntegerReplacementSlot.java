@@ -37,7 +37,7 @@ public interface IntegerReplacementSlot extends ConcreteValueReplacementSlot
 {
   /**
    * Returns the value of the '<em><b>Values</b></em>' containment reference list.
-   * The list contents are of type {@link com.b2international.snowowl.snomed.etl.etl.IntegerValues}.
+   * The list contents are of type {@link com.b2international.snowowl.snomed.etl.etl.SlotInteger}.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Values</em>' containment reference list.
@@ -45,6 +45,6 @@ public interface IntegerReplacementSlot extends ConcreteValueReplacementSlot
    * @model containment="true"
    * @generated
    */
-  EList<IntegerValues> getValues();
+  EList<SlotInteger> getValues();
 
 } // IntegerReplacementSlot

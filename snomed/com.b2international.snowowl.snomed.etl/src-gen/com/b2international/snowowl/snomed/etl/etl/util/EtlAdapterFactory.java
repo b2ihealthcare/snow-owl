@@ -123,9 +123,9 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
         return createAttributeValueAdapter();
       }
       @Override
-      public Adapter caseConceptReplacementSlot(ConceptReplacementSlot object)
+      public Adapter caseConceptIdReplacementSlot(ConceptIdReplacementSlot object)
       {
-        return createConceptReplacementSlotAdapter();
+        return createConceptIdReplacementSlotAdapter();
       }
       @Override
       public Adapter caseExpressionReplacementSlot(ExpressionReplacementSlot object)
@@ -168,14 +168,19 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
         return createEtlCardinalityAdapter();
       }
       @Override
+      public Adapter caseConceptReplacementSlot(ConceptReplacementSlot object)
+      {
+        return createConceptReplacementSlotAdapter();
+      }
+      @Override
+      public Adapter caseConceptReference(ConceptReference object)
+      {
+        return createConceptReferenceAdapter();
+      }
+      @Override
       public Adapter caseStringValue(StringValue object)
       {
         return createStringValueAdapter();
-      }
-      @Override
-      public Adapter caseIntegerValues(IntegerValues object)
-      {
-        return createIntegerValuesAdapter();
       }
       @Override
       public Adapter caseIntegerValue(IntegerValue object)
@@ -183,54 +188,59 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
         return createIntegerValueAdapter();
       }
       @Override
-      public Adapter caseIntegerRange(IntegerRange object)
-      {
-        return createIntegerRangeAdapter();
-      }
-      @Override
-      public Adapter caseIntegerMinimumValue(IntegerMinimumValue object)
-      {
-        return createIntegerMinimumValueAdapter();
-      }
-      @Override
-      public Adapter caseIntegerMaximumValue(IntegerMaximumValue object)
-      {
-        return createIntegerMaximumValueAdapter();
-      }
-      @Override
-      public Adapter caseDecimalValues(DecimalValues object)
-      {
-        return createDecimalValuesAdapter();
-      }
-      @Override
       public Adapter caseDecimalValue(DecimalValue object)
       {
         return createDecimalValueAdapter();
       }
       @Override
-      public Adapter caseDecimalRange(DecimalRange object)
+      public Adapter caseSlotInteger(SlotInteger object)
       {
-        return createDecimalRangeAdapter();
+        return createSlotIntegerAdapter();
       }
       @Override
-      public Adapter caseDecimalMinimumValue(DecimalMinimumValue object)
+      public Adapter caseSlotIntegerValue(SlotIntegerValue object)
       {
-        return createDecimalMinimumValueAdapter();
+        return createSlotIntegerValueAdapter();
       }
       @Override
-      public Adapter caseDecimalMaximumValue(DecimalMaximumValue object)
+      public Adapter caseSlotIntegerRange(SlotIntegerRange object)
       {
-        return createDecimalMaximumValueAdapter();
+        return createSlotIntegerRangeAdapter();
       }
       @Override
-      public Adapter caseConceptReferenceSlot(ConceptReferenceSlot object)
+      public Adapter caseSlotIntegerMinimumValue(SlotIntegerMinimumValue object)
       {
-        return createConceptReferenceSlotAdapter();
+        return createSlotIntegerMinimumValueAdapter();
       }
       @Override
-      public Adapter caseConceptReference(ConceptReference object)
+      public Adapter caseSlotIntegerMaximumValue(SlotIntegerMaximumValue object)
       {
-        return createConceptReferenceAdapter();
+        return createSlotIntegerMaximumValueAdapter();
+      }
+      @Override
+      public Adapter caseSlotDecimal(SlotDecimal object)
+      {
+        return createSlotDecimalAdapter();
+      }
+      @Override
+      public Adapter caseSlotDecimalValue(SlotDecimalValue object)
+      {
+        return createSlotDecimalValueAdapter();
+      }
+      @Override
+      public Adapter caseSlotDecimalRange(SlotDecimalRange object)
+      {
+        return createSlotDecimalRangeAdapter();
+      }
+      @Override
+      public Adapter caseSlotDecimalMinimumValue(SlotDecimalMinimumValue object)
+      {
+        return createSlotDecimalMinimumValueAdapter();
+      }
+      @Override
+      public Adapter caseSlotDecimalMaximumValue(SlotDecimalMaximumValue object)
+      {
+        return createSlotDecimalMaximumValueAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -360,16 +370,16 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot <em>Concept Replacement Slot</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot <em>Concept Id Replacement Slot</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot
+   * @see com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot
    * @generated
    */
-  public Adapter createConceptReplacementSlotAdapter()
+  public Adapter createConceptIdReplacementSlotAdapter()
   {
     return null;
   }
@@ -495,6 +505,36 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot <em>Concept Replacement Slot</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot
+   * @generated
+   */
+  public Adapter createConceptReplacementSlotAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReference <em>Concept Reference</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReference
+   * @generated
+   */
+  public Adapter createConceptReferenceAdapter()
+  {
+    return null;
+  }
+
+  /**
    * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.StringValue <em>String Value</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -505,21 +545,6 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createStringValueAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerValues <em>Integer Values</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerValues
-   * @generated
-   */
-  public Adapter createIntegerValuesAdapter()
   {
     return null;
   }
@@ -540,66 +565,6 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerRange <em>Integer Range</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerRange
-   * @generated
-   */
-  public Adapter createIntegerRangeAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue <em>Integer Minimum Value</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerMinimumValue
-   * @generated
-   */
-  public Adapter createIntegerMinimumValueAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue <em>Integer Maximum Value</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.IntegerMaximumValue
-   * @generated
-   */
-  public Adapter createIntegerMaximumValueAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValues <em>Decimal Values</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalValues
-   * @generated
-   */
-  public Adapter createDecimalValuesAdapter()
-  {
-    return null;
-  }
-
-  /**
    * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue <em>Decimal Value</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -615,76 +580,151 @@ public class EtlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalRange <em>Decimal Range</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotInteger <em>Slot Integer</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalRange
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotInteger
    * @generated
    */
-  public Adapter createDecimalRangeAdapter()
+  public Adapter createSlotIntegerAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue <em>Decimal Minimum Value</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue <em>Slot Integer Value</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalMinimumValue
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue
    * @generated
    */
-  public Adapter createDecimalMinimumValueAdapter()
+  public Adapter createSlotIntegerValueAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue <em>Decimal Maximum Value</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange <em>Slot Integer Range</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.DecimalMaximumValue
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange
    * @generated
    */
-  public Adapter createDecimalMaximumValueAdapter()
+  public Adapter createSlotIntegerRangeAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot <em>Concept Reference Slot</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue <em>Slot Integer Minimum Value</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReferenceSlot
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue
    * @generated
    */
-  public Adapter createConceptReferenceSlotAdapter()
+  public Adapter createSlotIntegerMinimumValueAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.ConceptReference <em>Concept Reference</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue <em>Slot Integer Maximum Value</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.etl.etl.ConceptReference
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue
    * @generated
    */
-  public Adapter createConceptReferenceAdapter()
+  public Adapter createSlotIntegerMaximumValueAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimal <em>Slot Decimal</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimal
+   * @generated
+   */
+  public Adapter createSlotDecimalAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue <em>Slot Decimal Value</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue
+   * @generated
+   */
+  public Adapter createSlotDecimalValueAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange <em>Slot Decimal Range</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange
+   * @generated
+   */
+  public Adapter createSlotDecimalRangeAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue <em>Slot Decimal Minimum Value</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue
+   * @generated
+   */
+  public Adapter createSlotDecimalMinimumValueAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue <em>Slot Decimal Maximum Value</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue
+   * @generated
+   */
+  public Adapter createSlotDecimalMaximumValueAdapter()
   {
     return null;
   }

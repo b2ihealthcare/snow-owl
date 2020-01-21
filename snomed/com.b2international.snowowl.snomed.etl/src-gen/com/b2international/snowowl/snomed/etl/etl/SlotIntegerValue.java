@@ -15,46 +15,45 @@
  */
 package com.b2international.snowowl.snomed.etl.etl;
 
-import java.math.BigDecimal;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Decimal Value</b></em>'.
+ * A representation of the model object '<em><b>Slot Integer Value</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue#getValue <em>Value</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalValue()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotIntegerValue()
  * @model
  * @generated
  */
-public interface DecimalValue extends AttributeValue
+public interface SlotIntegerValue extends SlotInteger
 {
   /**
    * Returns the value of the '<em><b>Value</b></em>' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Value</em>' attribute.
-   * @see #setValue(BigDecimal)
-   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalValue_Value()
+   * @see #setValue(int)
+   * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotIntegerValue_Value()
    * @model
    * @generated
    */
-  BigDecimal getValue();
+  int getValue();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.DecimalValue#getValue <em>Value</em>}' attribute.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue#getValue <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Value</em>' attribute.
    * @see #getValue()
    * @generated
    */
-  void setValue(BigDecimal value);
+  void setValue(int value);
 
-} // DecimalValue
+} // SlotIntegerValue

@@ -16,25 +16,27 @@
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-import com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.SlotInteger;
 
 import org.eclipse.emf.ecore.EClass;
 
+import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Expression Replacement Slot</b></em>'.
+ * An implementation of the model object '<em><b>Slot Integer</b></em>'.
  * <!-- end-user-doc -->
  *
  * @generated
  */
-public class ExpressionReplacementSlotImpl extends ConceptReplacementSlotImpl implements ExpressionReplacementSlot
+public class SlotIntegerImpl extends MinimalEObjectImpl.Container implements SlotInteger
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected ExpressionReplacementSlotImpl()
+  protected SlotIntegerImpl()
   {
     super();
   }
@@ -47,7 +49,7 @@ public class ExpressionReplacementSlotImpl extends ConceptReplacementSlotImpl im
   @Override
   protected EClass eStaticClass()
   {
-    return EtlPackage.Literals.EXPRESSION_REPLACEMENT_SLOT;
+    return EtlPackage.Literals.SLOT_INTEGER;
   }
 
-} //ExpressionReplacementSlotImpl
+} //SlotIntegerImpl

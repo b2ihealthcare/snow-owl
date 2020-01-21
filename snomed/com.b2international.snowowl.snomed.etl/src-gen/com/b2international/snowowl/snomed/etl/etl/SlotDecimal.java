@@ -19,14 +19,14 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Decimal Values</b></em>'.
+ * A representation of the model object '<em><b>Slot Decimal</b></em>'.
  * <!-- end-user-doc -->
  *
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getDecimalValues()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getSlotDecimal()
  * @model
  * @generated
  */
-public interface DecimalValues extends EObject
+public interface SlotDecimal extends EObject
 {
-} // DecimalValues
+} // SlotDecimal
