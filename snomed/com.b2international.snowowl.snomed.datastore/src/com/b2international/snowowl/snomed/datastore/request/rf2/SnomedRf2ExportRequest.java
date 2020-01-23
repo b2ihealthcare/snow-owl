@@ -60,6 +60,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
@@ -74,7 +75,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -110,7 +110,7 @@ import com.google.common.collect.Ordering;
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2ExportResult> {
+final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportResult> {
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
@@ -269,7 +269,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	}
 
 	@Override
-	public Rf2ExportResult execute(final RepositoryContext context) {
+	public ExportResult execute(final RepositoryContext context) {
 
 		// Step 1: check if the export reference branch is a working branch path descendant
 		final CodeSystemEntry referenceCodeSystem = validateCodeSystem();
@@ -334,7 +334,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			final FileRegistry fileRegistry = context.service(FileRegistry.class);
 			registerResult(fileRegistry, exportId, exportDirectory);
 			final String fileName = releaseDirectory.getFileName() + ".zip";
-			return new Rf2ExportResult(fileName, exportId);
+			return new ExportResult(fileName, exportId);
 			
 		} catch (final Exception e) {
 			throw new SnowowlRuntimeException("Failed to export terminology content to RF2.", e);

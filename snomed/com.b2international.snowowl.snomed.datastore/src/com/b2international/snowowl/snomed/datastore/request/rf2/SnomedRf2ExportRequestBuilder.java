@@ -21,10 +21,10 @@ import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
-import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
@@ -32,8 +32,8 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  * @since 5.7
  */
 public final class SnomedRf2ExportRequestBuilder 
-		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, Rf2ExportResult> 
-		implements RepositoryRequestBuilder<Rf2ExportResult> {
+		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, ExportResult> 
+		implements RepositoryRequestBuilder<ExportResult> {
 
 	private String userId;
 	private String codeSystem;
@@ -135,7 +135,7 @@ public final class SnomedRf2ExportRequestBuilder
 	}
 	
 	@Override
-	protected Request<RepositoryContext, Rf2ExportResult> doBuild() {
+	protected Request<RepositoryContext, ExportResult> doBuild() {
 		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
 		req.setUserId(userId);
 		req.setCodeSystem(codeSystem);
