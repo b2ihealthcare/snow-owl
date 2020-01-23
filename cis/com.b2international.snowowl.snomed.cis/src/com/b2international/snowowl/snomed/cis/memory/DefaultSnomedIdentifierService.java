@@ -211,21 +211,14 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
 		
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
-		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
-				SctId::isAssigned, 
-				SctId::isPublished))));
 		
-		final Map<String, SctId> assignedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, SctId::isAssigned));
+		final Map<String, SctId> sctIdsToPublish = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.not(SctId::isPublished)));
 		
-		for (final SctId sctId : assignedSctIds.values()) {
+		for (final SctId sctId : sctIdsToPublish.values()) {
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 		}
 		
-		putSctIds(assignedSctIds);
-		
-		if (!problemSctIds.isEmpty()) {
-			LOGGER.warn("Cannot publish the following component IDs because they are not assigned or already published: {}", problemSctIds);
-		}
+		putSctIds(sctIdsToPublish);
 		
 		return ImmutableMap.copyOf(sctIds);
 	}
