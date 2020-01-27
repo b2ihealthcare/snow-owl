@@ -217,24 +217,18 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final String ruleId = "666";
 		indexRule(ruleId);
 		
-		Function<SnomedDescriptionIndexEntry, SnomedRefSetMemberIndexEntry> languageRefsetMember = description -> {
-			return member(description.getId(), DESCRIPTION_NUMBER, Concepts.REFSET_LANGUAGE_TYPE_ES)
-					.referenceSetType(SnomedRefSetType.LANGUAGE)
-					.build();
-		};
-
 		// index concept with two FSNs in the same language refset
 		String concept1Id = generateConceptId();
 		SnomedDescriptionIndexEntry fsn1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 1 (tag)")
 				.conceptId(concept1Id)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
 				.build();
-		SnomedRefSetMemberIndexEntry fsn1Member = languageRefsetMember.apply(fsn1);
+		SnomedRefSetMemberIndexEntry fsn1Member = createLanguageRefsetMember(fsn1);
 		SnomedDescriptionIndexEntry fsn2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 2 (tag)")
 				.conceptId(concept1Id)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
 				.build();
-		SnomedRefSetMemberIndexEntry fsn2Member = languageRefsetMember.apply(fsn2);
+		SnomedRefSetMemberIndexEntry fsn2Member = createLanguageRefsetMember(fsn2);
 		SnomedConceptDocument c1 = concept(concept1Id)
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn1.getId(), fsn1.getTypeId(), fsn1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
@@ -247,12 +241,12 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
 				.conceptId(concept2Id)
 				.build();
-		SnomedRefSetMemberIndexEntry pt1Member = languageRefsetMember.apply(pt1);
+		SnomedRefSetMemberIndexEntry pt1Member = createLanguageRefsetMember(pt1);
 		SnomedDescriptionIndexEntry pt2 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 2")
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
 				.conceptId(concept2Id)
 				.build();
-		SnomedRefSetMemberIndexEntry pt2Member = languageRefsetMember.apply(pt2);
+		SnomedRefSetMemberIndexEntry pt2Member = createLanguageRefsetMember(pt2);
 		SnomedConceptDocument c2 = concept(concept2Id)
 				.preferredDescriptions(
 						ImmutableList.of(
@@ -266,12 +260,12 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.conceptId(concept3Id)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
 				.build();
-		SnomedRefSetMemberIndexEntry fsn3Member = languageRefsetMember.apply(fsn3);
+		SnomedRefSetMemberIndexEntry fsn3Member = createLanguageRefsetMember(fsn3);
 		SnomedDescriptionIndexEntry pt3 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 3")
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
 				.conceptId(concept3Id)
 				.build();
-		SnomedRefSetMemberIndexEntry pt3Member = languageRefsetMember.apply(pt3);
+		SnomedRefSetMemberIndexEntry pt3Member = createLanguageRefsetMember(pt3);
 		SnomedConceptDocument c3 = concept(concept3Id)
 				.preferredDescriptions(ImmutableList.of(
 						new SnomedDescriptionFragment(fsn3.getId(), fsn3.getTypeId(), fsn3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
@@ -284,6 +278,12 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c1.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c2.getId()));
+	}
+
+	private SnomedRefSetMemberIndexEntry createLanguageRefsetMember(SnomedDescriptionIndexEntry description) {
+			return member(description.getId(), DESCRIPTION_NUMBER, Concepts.REFSET_LANGUAGE_TYPE_ES)
+					.referenceSetType(SnomedRefSetType.LANGUAGE)
+					.build();
 	}
 	
 	@Test
