@@ -74,11 +74,15 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static String createNewConcept(IBranchPath conceptPath, String parentConceptId) {
-		Map<?, ?> conceptRequestBody = createConceptRequestBody(parentConceptId)
+		Map<String, ?> conceptRequestBody = createConceptRequestBody(parentConceptId)
 				.put("commitComment", "Created new concept")
 				.build();
 
-		return lastPathSegment(createComponent(conceptPath, SnomedComponentType.CONCEPT, conceptRequestBody)
+		return createNewConcept(conceptPath, conceptRequestBody); 
+	}
+	
+	public static String createNewConcept(IBranchPath conceptPath, Map<String, ?> requestBody) {
+		return lastPathSegment(createComponent(conceptPath, SnomedComponentType.CONCEPT, requestBody)
 				.statusCode(201)
 				.body(equalTo(""))
 				.extract().header("Location"));
@@ -89,7 +93,12 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap) {
+		return createConceptRequestBody(parentConceptId, moduleId, acceptabilityMap, true);
+	}
+	
+	public static Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap, boolean active) {
 		Map<?, ?> relationshipRequestBody = ImmutableMap.builder()
+				.put("active", active)
 				.put("moduleId", moduleId)
 				.put("typeId", Concepts.IS_A)
 				.put("destinationId", parentConceptId)
@@ -112,6 +121,7 @@ public abstract class SnomedRestFixtures {
 				.build();
 
 		Builder<String, Object> conceptRequestBody = ImmutableMap.<String, Object>builder()
+				.put("active", active)
 				.put("moduleId", moduleId)
 				.put("descriptions", ImmutableList.of(fsnRequestBody, ptRequestBody))
 				.put("relationships", ImmutableList.of(relationshipRequestBody));
@@ -365,8 +375,8 @@ public abstract class SnomedRestFixtures {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void reactivateConcept(IBranchPath conceptPath, String id) {
-		final Map<String, Object> concept = getComponent(conceptPath, SnomedComponentType.CONCEPT, id, "descriptions()", "relationships()")
+	public static void reactivateConcept(IBranchPath branch, String conceptId) {
+		final Map<String, Object> concept = getComponent(branch, SnomedComponentType.CONCEPT, conceptId, "descriptions()", "relationships()")
 				.statusCode(200)
 				.extract().as(Map.class);
 
@@ -376,11 +386,14 @@ public abstract class SnomedRestFixtures {
 		reactivationRequest.remove("associationTargets");
 		reactivationRequest.put("commitComment", "Reactivated concept");
 
+		// reactivate all relationships as well
 		final Map<String, Object> relationships = (Map<String, Object>) reactivationRequest.get("relationships");
 		final List<Map<String, Object>> relationshipItems = (List<Map<String, Object>>) relationships.get("items");
-		relationshipItems.get(0).put("active", true);
+		relationshipItems.forEach(relationship -> {
+			relationship.put("active", true);
+		});
 
-		updateComponent(conceptPath, SnomedComponentType.CONCEPT, id, reactivationRequest).statusCode(204);
+		updateComponent(branch, SnomedComponentType.CONCEPT, conceptId, reactivationRequest).statusCode(204);
 	}
 	
 	public static void changeCaseSignificance(IBranchPath descriptionPath, String descriptionId) {
