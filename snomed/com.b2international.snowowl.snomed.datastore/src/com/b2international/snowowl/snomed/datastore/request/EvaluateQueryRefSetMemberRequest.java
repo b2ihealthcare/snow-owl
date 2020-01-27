@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 		
 		final Map<String, SnomedConcept> conceptsToAdd = newHashMap();
 		final Collection<SnomedReferenceSetMember> membersToRemove = newHashSet();
-		final Map<String, String> conceptsToActivate = Maps.newHashMap();
+		final Collection<SnomedReferenceSetMember> conceptsToActivate = newHashSet();
 
 		// add all matching first
 		for (SnomedConcept matchedConcept : matchingConcepts.getItems()) {
@@ -114,13 +114,15 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 			final String referencedComponentId = currentMember.getReferencedComponent().getId();
 			if (conceptsToAdd.containsKey(referencedComponentId)) {
 				if (!currentMember.isActive()) {
-					// TODO fix reactivation label???
-					conceptsToActivate.put(referencedComponentId, referencedComponentId);
+					conceptsToAdd.remove(referencedComponentId);
+					conceptsToActivate.add(currentMember);
 				} else {
 					conceptsToAdd.remove(referencedComponentId);
 				}
 			} else {
-				membersToRemove.add(currentMember);
+				if (currentMember.isActive()) {
+					membersToRemove.add(currentMember);
+				}
 			}
 		}
 		
@@ -128,6 +130,13 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 		final Set<String> referencedConceptIds = newHashSet();
 		referencedConceptIds.addAll(conceptsToAdd.keySet());
 		referencedConceptIds.addAll(FluentIterable.from(membersToRemove).transform(new Function<SnomedReferenceSetMember, SnomedCoreComponent>() {
+			@Override
+			public SnomedCoreComponent apply(SnomedReferenceSetMember input) {
+				return input.getReferencedComponent();
+			}
+		}).transform(IComponent.ID_FUNCTION).toSet());
+		
+		referencedConceptIds.addAll(FluentIterable.from(conceptsToActivate).transform(new Function<SnomedReferenceSetMember, SnomedCoreComponent>() {
 			@Override
 			public SnomedCoreComponent apply(SnomedReferenceSetMember input) {
 				return input.getReferencedComponent();
@@ -162,10 +171,9 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 			changes.add(MemberChangeImpl.removed(concepts.get(memberToRemove.getReferencedComponent().getId()), memberToRemove.getId()));
 		}
 
-		// TODO reactivation???
-//		for (String id : conceptsToActivate.keySet()) {
-//			changes.add(new Diff(MemberChangeKind.ACTIVATE, id, conceptsToActivate.get(id)));
-//		}
+		for (SnomedReferenceSetMember conceptToActivate : conceptsToActivate) {
+			changes.add(MemberChangeImpl.changed(concepts.get(conceptToActivate.getReferencedComponent().getId()), conceptToActivate.getId()));
+		}
 		return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, changes);
 	}
 	

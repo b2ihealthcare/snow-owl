@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.core.domain;
 
 import java.util.UUID;
 
@@ -23,14 +23,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Holds the suggested filename for an export result, along with the identifier
  * in the file registry.
+ * 
+ * @since
  */
-public final class Rf2ExportResult {
+public final class ExportResult {
 
 	private final String name;
 	private final UUID registryId;
 
 	@JsonCreator
-	public Rf2ExportResult(
+	public ExportResult(
 			@JsonProperty("name") final String name, 
 			@JsonProperty("registryId") final UUID registryId) {
 

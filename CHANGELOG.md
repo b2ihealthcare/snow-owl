@@ -206,6 +206,22 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.24.0
+
+### API
+- Support filtering refset members by `mapPriority` (a0bff3d)
+
+### Bugs/Improvements
+- [index] Log the number of pending cluster tasks (959a088)
+- [index] fix query boosting issue (2de4841)
+- [core] Allow customization of component adjustment during publication (a0e6820)
+- [history] Ignore many-valued features altogether in HistoryInfoProvider (526d3e7)
+- [snomed] Fix incorrectly categorized query refset evaluation changes (#467)
+- [snomed] Fix incorrect parentage values when reactivating concept's relationships first then the concept in two different commits (5298252)
+- [cis] accept all SNOMED CT ID statuses when publishing them (c914c05)
+- [mrcm] Handle ECL expressions in attributes' concept set definitions in MRCM validation rules (0cc7b61)
+- [export] Create general ExportResult class (filename, UUID pair) (8265617)
+
 ## 6.23.0
 
 ### API

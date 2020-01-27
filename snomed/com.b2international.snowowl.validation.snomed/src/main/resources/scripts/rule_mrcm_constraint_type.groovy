@@ -50,21 +50,6 @@ def mrcmRules = SnomedRequests.prepareSearchConstraint()
 			? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate() instanceof SnomedRelationshipPredicate
 			: constraint.getPredicate() instanceof SnomedRelationshipPredicate})
 		.collect();
-		
-def typeMultimapBuilder = ImmutableMultimap.builder()
-
-for (SnomedConstraint constraint : mrcmRules) {
-	SnomedRelationshipPredicate predicate = constraint.getPredicate() instanceof SnomedCardinalityPredicate
-		? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate()
-		: constraint.getPredicate()
-	String typeId = predicate.getAttributeExpression()
-	
-	if (!typeId.equals(Concepts.IS_A)) {
-		typeMultimapBuilder.put(typeId, constraint)
-	}
-}
-
-Multimap<String, SnomedConstraint> mrcmRulesByAttributeType = typeMultimapBuilder.build()
 
 def getApplicableConcepts = { String conceptSetExpression ->
 	def expression = Expressions.builder()
@@ -83,6 +68,21 @@ def getApplicableConcepts = { String conceptSetExpression ->
 		.each({id -> conceptIds.add(id)})
 	return conceptIds
 }
+
+def typeMultimapBuilder = ImmutableMultimap.builder()
+for (SnomedConstraint constraint : mrcmRules) {
+	final SnomedRelationshipPredicate predicate = constraint.getPredicate() instanceof SnomedCardinalityPredicate
+			? ((SnomedCardinalityPredicate) constraint.getPredicate()).getPredicate()
+			: constraint.getPredicate()
+	
+	final String attributeExpression = predicate.getAttributeExpression()	
+	if (!Concepts.IS_A.equals(attributeExpression)) {		
+		getApplicableConcepts(attributeExpression).forEach({		
+			typeMultimapBuilder.put(it, constraint)		
+		})
+	}
+}
+Multimap<String, SnomedConstraint> mrcmRulesByAttributeType = typeMultimapBuilder.build()
 
 def getCachedApplicableConcepts = { String conceptSetExpression ->
 	return getApplicableConcepts(conceptSetExpression)
