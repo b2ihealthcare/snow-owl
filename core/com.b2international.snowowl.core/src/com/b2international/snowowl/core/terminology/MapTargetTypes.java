@@ -33,4 +33,7 @@ public final class MapTargetTypes {
 	public static final String EXTENDED_MAP = "EXTENDED_MAP";
 	public static final String QUERY = "QUERY";
 	
+	// XXX: Not really SNOMED CT reference set types
+	public static final String VALUE_SET = "VALUE_SET";
+	public static final String MAPPING_SET = "MAPPING_SET";
 }

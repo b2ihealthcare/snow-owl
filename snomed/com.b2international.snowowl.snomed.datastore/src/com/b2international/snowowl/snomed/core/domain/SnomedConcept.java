@@ -93,11 +93,14 @@ import com.google.common.collect.Multimap;
 		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION,
 		MapTargetTypes.ATTRIBUTE_VALUE,
 		MapTargetTypes.COMPLEX_MAP,
-		MapTargetTypes.EXTENDED_MAP
+		MapTargetTypes.EXTENDED_MAP,
+		// XXX: Not really SNOMED CT reference set types
+		MapTargetTypes.VALUE_SET,
+		MapTargetTypes.MAPPING_SET
 	},
 	supportedMapTargetTypes = {
-		"SIMPLE_MAP",
-		"SIMPLE_MAP_WITH_DESCRIPTION"
+		MapTargetTypes.SIMPLE_MAP,
+		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION
 	}
 )
 public final class SnomedConcept extends SnomedCoreComponent implements DefinitionStatusProvider {
