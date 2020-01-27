@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.identity.request.UserLoginRequest;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
@@ -63,7 +62,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 			user = User.SYSTEM;
 		} else if (Strings.isNullOrEmpty(authorizationToken)) {
 			// allow login requests in
-			if (requests.size() == 1 && Iterables.getOnlyElement(requests) instanceof UserLoginRequest) {
+			if (requests.size() == 1 && Iterables.getOnlyElement(requests).getClass().isAnnotationPresent(Unprotected.class)) {
 				user = User.SYSTEM;
 			} else {
 				// if there is authentication configured, but no authorization token found prevent execution and throw UnauthorizedException
