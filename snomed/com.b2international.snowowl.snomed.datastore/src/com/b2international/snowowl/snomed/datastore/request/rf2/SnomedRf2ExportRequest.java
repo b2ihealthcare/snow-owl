@@ -801,6 +801,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 	private <R> R execute(RepositoryContext context, String branch, Request<BranchContext, R> next) {
 		return new IndexReadRequest<>(new BranchRequest<>(branch, new RevisionIndexReadRequest<>(next))).execute(context);
 	}
+	
+	private static <R> R execute(RepositoryContext context, Request<RepositoryContext, R> next) {
+		return new IndexReadRequest<>(next).execute(context);
+	}
 
 	private void exportRelationships(final Path releaseDirectory, 
 			final RepositoryContext context, 
@@ -1038,38 +1042,35 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 	}
 
 	private static CodeSystemEntry getCodeSystem(final RepositoryContext context, final String shortName) {
-		return CodeSystemRequests.prepareSearchCodeSystem()
+		return execute(context, CodeSystemRequests.prepareSearchCodeSystem()
 				.one()
 				.filterById(shortName)
-				.build()
-				.execute(context)
+				.build())
 				.first()
 				.orElse(null);
 	}
 
 	private static Collection<CodeSystemVersionEntry> getCodeSystemVersions(final RepositoryContext context, final String shortName) {
-		return CodeSystemRequests.prepareSearchCodeSystemVersion()
+		return execute(context, CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
-				.build()
-				.execute(context)
+				.build())
 				.getItems();
 	}
 
 	private static Branch getBranch(final RepositoryContext context, final String path) {
-		return RepositoryRequests.branching()
+		return execute(context, RepositoryRequests.branching()
 				.prepareGet(path)
-				.build()
-				.execute(context);
+				.build());
 	}
 
 	private static Branches getBranches(final RepositoryContext context, final String parent, final Collection<String> paths) {
-		return RepositoryRequests.branching().prepareSearch()
+		return execute(context, RepositoryRequests.branching()
+				.prepareSearch()
 				.all()
 				.filterByParent(parent)
 				.filterByName(paths)
-				.build()
-				.execute(context);
+				.build());
 	}
 	
 	@Override
