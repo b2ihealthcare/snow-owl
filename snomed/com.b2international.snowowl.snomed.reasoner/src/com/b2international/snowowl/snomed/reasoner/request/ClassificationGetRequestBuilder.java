@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 
 /**
@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
  */
 public final class ClassificationGetRequestBuilder 
 		extends GetResourceRequestBuilder<ClassificationGetRequestBuilder, ClassificationSearchRequestBuilder, RepositoryContext, ClassificationTask> 
-		implements RepositoryIndexRequestBuilder<ClassificationTask> {
+		implements RepositoryRequestBuilder<ClassificationTask> {
 
 	ClassificationGetRequestBuilder(final String classificationId) {
 		super(new ClassificationGetRequest(classificationId));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.reasoner.request;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
 import com.b2international.snowowl.snomed.reasoner.request.EquivalentConceptSetSearchRequest.OptionKey;
 
@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.reasoner.request.EquivalentConceptSetS
  */
 public final class EquivalentConceptSetSearchRequestBuilder
 		extends SearchResourceRequestBuilder<EquivalentConceptSetSearchRequestBuilder, RepositoryContext, EquivalentConceptSets> 
-		implements RepositoryIndexRequestBuilder<EquivalentConceptSets> {
+		implements RepositoryRequestBuilder<EquivalentConceptSets> {
 
 	EquivalentConceptSetSearchRequestBuilder() {}
 

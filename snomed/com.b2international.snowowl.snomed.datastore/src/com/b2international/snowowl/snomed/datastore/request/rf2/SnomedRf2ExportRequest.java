@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,16 +49,15 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -799,13 +798,9 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 	}
 
 	private <R> R execute(RepositoryContext context, String branch, Request<BranchContext, R> next) {
-		return new IndexReadRequest<>(new BranchRequest<>(branch, new RevisionIndexReadRequest<>(next))).execute(context);
+		return new BranchRequest<>(branch, new RevisionIndexReadRequest<>(next)).execute(context);
 	}
 	
-	private static <R> R execute(RepositoryContext context, Request<RepositoryContext, R> next) {
-		return new IndexReadRequest<>(next).execute(context);
-	}
-
 	private void exportRelationships(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch,
@@ -1042,35 +1037,39 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 	}
 
 	private static CodeSystemEntry getCodeSystem(final RepositoryContext context, final String shortName) {
-		return execute(context, CodeSystemRequests.prepareSearchCodeSystem()
+		return CodeSystemRequests.prepareSearchCodeSystem()
 				.one()
 				.filterById(shortName)
-				.build())
+				.build()
+				.execute(context)
 				.first()
 				.orElse(null);
 	}
 
 	private static Collection<CodeSystemVersionEntry> getCodeSystemVersions(final RepositoryContext context, final String shortName) {
-		return execute(context, CodeSystemRequests.prepareSearchCodeSystemVersion()
+		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
-				.build())
+				.build()
+				.execute(context)
 				.getItems();
 	}
 
 	private static Branch getBranch(final RepositoryContext context, final String path) {
-		return execute(context, RepositoryRequests.branching()
+		return RepositoryRequests.branching()
 				.prepareGet(path)
-				.build());
+				.build()
+				.execute(context);
 	}
 
 	private static Branches getBranches(final RepositoryContext context, final String parent, final Collection<String> paths) {
-		return execute(context, RepositoryRequests.branching()
+		return RepositoryRequests.branching()
 				.prepareSearch()
 				.all()
 				.filterByParent(parent)
 				.filterByName(paths)
-				.build());
+				.build()
+				.execute(context);
 	}
 	
 	@Override
