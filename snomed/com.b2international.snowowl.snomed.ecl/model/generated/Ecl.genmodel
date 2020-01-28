@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
-    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg&#xA;&#xA;Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#xA;you may not use this file except in compliance with the License.&#xA;You may obtain a copy of the License at&#xA; *&#xA;     http://www.apache.org/licenses/LICENSE-2.0&#xA; *&#xA;Unless required by applicable law or agreed to in writing, software&#xA;distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#xA;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#xA;See the License for the specific language governing permissions and&#xA;limitations under the License."
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg&#xD;&#xA;&#xD;&#xA;Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#xD;&#xA;you may not use this file except in compliance with the License.&#xD;&#xA;You may obtain a copy of the License at&#xD;&#xA; *&#xD;&#xA;     http://www.apache.org/licenses/LICENSE-2.0&#xD;&#xA; *&#xD;&#xA;Unless required by applicable law or agreed to in writing, software&#xD;&#xA;distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#xD;&#xA;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#xD;&#xA;See the License for the specific language governing permissions and&#xD;&#xA;limitations under the License."
     modelDirectory="/com.b2international.snowowl.snomed.ecl/src-gen" modelPluginID="com.b2international.snowowl.snomed.ecl"
     forceOverwrite="true" modelName="Ecl" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    complianceLevel="6.0" copyrightFields="false" runtimeVersion="2.14">
+    complianceLevel="6.0" copyrightFields="false" runtimeVersion="2.17">
   <genPackages prefix="Ecl" basePackage="com.b2international.snowowl.snomed.ecl" disposableProviderFactory="true"
       fileExtensions="ecl" ecorePackage="Ecl.ecore#/">
     <genClasses ecoreClass="Ecl.ecore#//Script">
@@ -31,18 +31,18 @@
     <genClasses ecoreClass="Ecl.ecore#//MemberOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//MemberOf/constraint"/>
     </genClasses>
-    <genClasses ecoreClass="Ecl.ecore#//ConceptReference">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//ConceptReference/id"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//ConceptReference/term"/>
+    <genClasses ecoreClass="Ecl.ecore#//EclConceptReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//EclConceptReference/id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//EclConceptReference/term"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//Any"/>
-    <genClasses ecoreClass="Ecl.ecore#//Refinement"/>
+    <genClasses ecoreClass="Ecl.ecore#//EclRefinement"/>
     <genClasses ecoreClass="Ecl.ecore#//NestedRefinement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//NestedRefinement/nested"/>
     </genClasses>
-    <genClasses ecoreClass="Ecl.ecore#//AttributeGroup">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AttributeGroup/cardinality"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AttributeGroup/refinement"/>
+    <genClasses ecoreClass="Ecl.ecore#//EclAttributeGroup">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//EclAttributeGroup/cardinality"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//EclAttributeGroup/refinement"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//AttributeConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AttributeConstraint/cardinality"/>

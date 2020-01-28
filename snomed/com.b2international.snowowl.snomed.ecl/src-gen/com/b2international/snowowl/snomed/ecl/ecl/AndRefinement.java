@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,23 +33,19 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface AndRefinement extends Refinement
+public interface AndRefinement extends EclRefinement
 {
   /**
    * Returns the value of the '<em><b>Left</b></em>' containment reference.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Left</em>' containment reference isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Left</em>' containment reference.
-   * @see #setLeft(Refinement)
+   * @see #setLeft(EclRefinement)
    * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getAndRefinement_Left()
    * @model containment="true"
    * @generated
    */
-  Refinement getLeft();
+  EclRefinement getLeft();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.AndRefinement#getLeft <em>Left</em>}' containment reference.
@@ -59,23 +55,19 @@ public interface AndRefinement extends Refinement
    * @see #getLeft()
    * @generated
    */
-  void setLeft(Refinement value);
+  void setLeft(EclRefinement value);
 
   /**
    * Returns the value of the '<em><b>Right</b></em>' containment reference.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Right</em>' containment reference isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Right</em>' containment reference.
-   * @see #setRight(Refinement)
+   * @see #setRight(EclRefinement)
    * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getAndRefinement_Right()
    * @model containment="true"
    * @generated
    */
-  Refinement getRight();
+  EclRefinement getRight();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.AndRefinement#getRight <em>Right</em>}' containment reference.
@@ -85,6 +77,6 @@ public interface AndRefinement extends Refinement
    * @see #getRight()
    * @generated
    */
-  void setRight(Refinement value);
+  void setRight(EclRefinement value);
 
 } // AndRefinement

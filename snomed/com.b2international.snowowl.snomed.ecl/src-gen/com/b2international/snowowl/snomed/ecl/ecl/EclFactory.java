@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public interface EclFactory extends EFactory
    * @return a new object of class '<em>Concept Reference</em>'.
    * @generated
    */
-  ConceptReference createConceptReference();
+  EclConceptReference createEclConceptReference();
 
   /**
    * Returns a new object of class '<em>Any</em>'.
@@ -141,7 +141,7 @@ public interface EclFactory extends EFactory
    * @return a new object of class '<em>Refinement</em>'.
    * @generated
    */
-  Refinement createRefinement();
+  EclRefinement createEclRefinement();
 
   /**
    * Returns a new object of class '<em>Nested Refinement</em>'.
@@ -159,7 +159,7 @@ public interface EclFactory extends EFactory
    * @return a new object of class '<em>Attribute Group</em>'.
    * @generated
    */
-  AttributeGroup createAttributeGroup();
+  EclAttributeGroup createEclAttributeGroup();
 
   /**
    * Returns a new object of class '<em>Attribute Constraint</em>'.

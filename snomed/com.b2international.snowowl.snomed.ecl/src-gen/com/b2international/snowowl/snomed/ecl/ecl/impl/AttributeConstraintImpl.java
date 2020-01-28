@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class AttributeConstraintImpl extends RefinementImpl implements AttributeConstraint
+public class AttributeConstraintImpl extends EclRefinementImpl implements AttributeConstraint
 {
   /**
    * The cached value of the '{@link #getCardinality() <em>Cardinality</em>}' containment reference.
@@ -123,6 +123,7 @@ public class AttributeConstraintImpl extends RefinementImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Cardinality getCardinality()
   {
     return cardinality;
@@ -150,6 +151,7 @@ public class AttributeConstraintImpl extends RefinementImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setCardinality(Cardinality newCardinality)
   {
     if (newCardinality != cardinality)
@@ -171,6 +173,7 @@ public class AttributeConstraintImpl extends RefinementImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public boolean isReversed()
   {
     return reversed;
@@ -181,6 +184,7 @@ public class AttributeConstraintImpl extends RefinementImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setReversed(boolean newReversed)
   {
     boolean oldReversed = reversed;
@@ -194,6 +198,7 @@ public class AttributeConstraintImpl extends RefinementImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ExpressionConstraint getAttribute()
   {
     return attribute;
@@ -221,6 +226,7 @@ public class AttributeConstraintImpl extends RefinementImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setAttribute(ExpressionConstraint newAttribute)
   {
     if (newAttribute != attribute)
@@ -242,6 +248,7 @@ public class AttributeConstraintImpl extends RefinementImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Comparison getComparison()
   {
     return comparison;
@@ -269,6 +276,7 @@ public class AttributeConstraintImpl extends RefinementImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setComparison(Comparison newComparison)
   {
     if (newComparison != comparison)

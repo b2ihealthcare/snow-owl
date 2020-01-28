@@ -22,7 +22,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
@@ -30,7 +29,9 @@ import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
+import com.b2international.snowowl.snomed.ecl.ecl.EclRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
@@ -40,7 +41,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 
 /** 
  * @since 5.4
@@ -56,8 +56,8 @@ public class SnomedEclRewriter {
 	public <T extends EObject> T rewrite(T eclObject) {
 		if (eclObject instanceof ExpressionConstraint) {
 			return (T) rewriteExpression((ExpressionConstraint) eclObject);
-		} else if (eclObject instanceof Refinement) {
-			return (T) rewriteRefinement((Refinement) eclObject);
+		} else if (eclObject instanceof EclRefinement) {
+			return (T) rewriteRefinement((EclRefinement) eclObject);
 		} else if (eclObject instanceof Comparison) {
 			return (T) rewriteComparison((Comparison) eclObject);
 		} else {
@@ -170,44 +170,44 @@ public class SnomedEclRewriter {
 	
 	// REFINEMENT hierarchy
 	
-	private Refinement rewriteRefinement(Refinement it) {
+	private EclRefinement rewriteRefinement(EclRefinement it) {
 		if (it instanceof AndRefinement) {
 			return rewriteRefinement((AndRefinement) it);
 		} else if (it instanceof OrRefinement) {
 			return rewriteRefinement((OrRefinement) it);
 		} else if (it instanceof NestedRefinement) {
 			return rewriteRefinement((NestedRefinement) it);
-		} else if (it instanceof AttributeGroup) {
-			return rewriteRefinement((AttributeGroup) it);
+		} else if (it instanceof EclAttributeGroup) {
+			return rewriteRefinement((EclAttributeGroup) it);
 		} else if (it instanceof AttributeConstraint) {
 			return rewriteRefinement((AttributeConstraint) it);
 		}
 		return it;
 	}
 	
-	private Refinement rewriteRefinement(AndRefinement it) {
+	private EclRefinement rewriteRefinement(AndRefinement it) {
 		it.setLeft(rewrite(it.getLeft()));
 		it.setRight(rewrite(it.getRight()));
 		return it;
 	}
 	
-	private Refinement rewriteRefinement(OrRefinement it) {
+	private EclRefinement rewriteRefinement(OrRefinement it) {
 		it.setLeft(rewrite(it.getLeft()));
 		it.setRight(rewrite(it.getRight()));
 		return it;
 	}
 	
-	private Refinement rewriteRefinement(NestedRefinement it) {
+	private EclRefinement rewriteRefinement(NestedRefinement it) {
 		it.setNested(rewrite(it.getNested()));
 		return it;
 	}
 	
-	private Refinement rewriteRefinement(AttributeGroup it) {
+	private EclRefinement rewriteRefinement(EclAttributeGroup it) {
 		it.setRefinement(rewriteRefinement(it.getRefinement()));
 		return it;
 	}
 	
-	private Refinement rewriteRefinement(AttributeConstraint it) {
+	private EclRefinement rewriteRefinement(AttributeConstraint it) {
 		it.setComparison(rewrite(it.getComparison()));
 		return it;
 	}

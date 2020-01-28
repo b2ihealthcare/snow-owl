@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,10 +55,6 @@ public enum Domain implements Enumerator
   /**
    * The '<em><b>CONCEPT</b></em>' literal value.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of '<em><b>CONCEPT</b></em>' literal object isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @see #CONCEPT
    * @model literal="Concept"
@@ -70,10 +66,6 @@ public enum Domain implements Enumerator
   /**
    * The '<em><b>DESCRIPTION</b></em>' literal value.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of '<em><b>DESCRIPTION</b></em>' literal object isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @see #DESCRIPTION
    * @model literal="Description"
@@ -202,6 +194,7 @@ public enum Domain implements Enumerator
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public int getValue()
   {
     return value;
@@ -212,6 +205,7 @@ public enum Domain implements Enumerator
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public String getName()
   {
     return name;
@@ -222,6 +216,7 @@ public enum Domain implements Enumerator
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public String getLiteral()
   {
     return literal;

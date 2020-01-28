@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,6 @@ Active : ('A'|'a')('C'|'c')('T'|'t')('I'|'i')('V'|'v')('E'|'e');
 
 TypeId : ('T'|'t')('Y'|'y')('P'|'p')('E'|'e')('I'|'i')('D'|'d');
 
-MINUS : ('M'|'m')('I'|'i')('N'|'n')('U'|'u')('S'|'s');
-
 Exact : ('E'|'e')('X'|'x')('A'|'a')('C'|'c')('T'|'t');
 
 False : ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
@@ -57,12 +55,6 @@ Term : ('T'|'t')('E'|'e')('R'|'r')('M'|'m');
 
 True : ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
 
-AND : ('A'|'a')('N'|'n')('D'|'d');
-
-OR : ('O'|'o')('R'|'r');
-
-Comma : ',';
-
 RULE_OPEN_DOUBLE_BRACES : '{{';
 
 RULE_CLOSE_DOUBLE_BRACES : '}}';
@@ -72,6 +64,14 @@ RULE_TERM_STRING : '|' ~('|')* '|';
 RULE_REVERSED : 'R';
 
 RULE_TO : '..';
+
+RULE_COMMA : ',';
+
+RULE_CONJUNCTION : ('a'|'A') ('n'|'N') ('d'|'D');
+
+RULE_DISJUNCTION : ('o'|'O') ('r'|'R');
+
+RULE_EXCLUSION : ('m'|'M') ('i'|'I') ('n'|'N') ('u'|'U') ('s'|'S');
 
 RULE_ZERO : '0';
 
@@ -96,8 +96,6 @@ RULE_PLUS : '+';
 RULE_DASH : '-';
 
 RULE_CARET : '^';
-
-RULE_NOT : '!';
 
 RULE_DOT : '.';
 

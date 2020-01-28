@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,6 +101,7 @@ public class ModuleFilterImpl extends PropertyFilterImpl implements ModuleFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Domain getDomain()
   {
     return domain;
@@ -111,6 +112,7 @@ public class ModuleFilterImpl extends PropertyFilterImpl implements ModuleFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setDomain(Domain newDomain)
   {
     Domain oldDomain = domain;
@@ -124,6 +126,7 @@ public class ModuleFilterImpl extends PropertyFilterImpl implements ModuleFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ExpressionConstraint getModuleId()
   {
     return moduleId;
@@ -151,6 +154,7 @@ public class ModuleFilterImpl extends PropertyFilterImpl implements ModuleFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setModuleId(ExpressionConstraint newModuleId)
   {
     if (newModuleId != moduleId)
@@ -269,7 +273,7 @@ public class ModuleFilterImpl extends PropertyFilterImpl implements ModuleFilter
   {
     if (eIsProxy()) return super.toString();
 
-    StringBuffer result = new StringBuffer(super.toString());
+    StringBuilder result = new StringBuilder(super.toString());
     result.append(" (domain: ");
     result.append(domain);
     result.append(')');
