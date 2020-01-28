@@ -62,7 +62,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 			user = User.SYSTEM;
 		} else if (Strings.isNullOrEmpty(authorizationToken)) {
 			// allow login requests in
-			if (requests.size() == 1 && Iterables.getOnlyElement(requests).getClass().isAnnotationPresent(Unprotected.class)) {
+			if (requests.stream().allMatch(req -> req.getClass().isAnnotationPresent(Unprotected.class))) {
 				user = User.SYSTEM;
 			} else {
 				// if there is authentication configured, but no authorization token found prevent execution and throw UnauthorizedException
