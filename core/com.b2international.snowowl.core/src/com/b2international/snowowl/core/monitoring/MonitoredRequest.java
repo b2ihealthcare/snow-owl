@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.monitoring;
 
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +25,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
@@ -48,15 +52,18 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 		} finally {
 			final Tags tags = Tags.of("context", getContextId());
 			tags.and("context", DEFAULT_CONTEXT_ID);
-			responseTimeSample.stop(registry.timer("request_time", tags));
-			LOG.info(getMessage(context));
+			final long responseTime = responseTimeSample.stop(registry.timer("response_time", tags));
+			final Map<String, Object> additionalInfo = ImmutableMap.of("metrics", ImmutableMap.of("responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)));
+			LOG.info(getMessage(context, additionalInfo));
 		}
 	}
 
-	private String getMessage(ServiceProvider context) {
+	private String getMessage(ServiceProvider context, final Map<String, Object> additionalInfo) {
 		try {
 			final ObjectMapper mapper = context.service(ObjectMapper.class);
-			return mapper.writeValueAsString(next());
+			final Map<String, Object> body = mapper.convertValue(next(), Map.class);
+			body.putAll(additionalInfo);
+			return mapper.writeValueAsString(body);
 		} catch (Throwable e) {
 			return "Unable to get request description: " + e.getMessage();
 		}
