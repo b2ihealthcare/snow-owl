@@ -1,6 +1,30 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.3.0
+
+### Changes from 6.x stream since 7.2.0 release
+
+All changes from the `6.x` stream (the 6.24.0 release) have been merged into the `7.3.0` release. See changelog entry `6.24.0` for details.
+
+### Core
+- Support unprotected API routes/requests (d07e6c2, 2e5166a)
+  * `GET /admin/info` and `POST /admin/login` are unprotected routes
+- Add back `responseTime` property (unit is milliseconds) to request log (57b913d)
+
+### SNOMED CT
+- SNOMED CT computable languages are now supported (#470)
+  * [ETL 1.0](http://snomed.org/etl)
+  * [SCG 2.3.1](http://snomed.org/scg)
+
+### FHIR
+- Exclude mapping members by default from ConceptMap responses (0ed6b1c, 14a1ad5, 67d1e03, 376391a, )
+
+### Bugs/Improvements
+- [core] simplify raw index read requests in Java API (5214922)
+- [jobs] reduce memory requirements of job clean up (b43d658)
+- [log] improve error logging from failed API requests, omit Broken pipe errors (edbc7f9)
+
 ## 7.2.0
 
 ### Changes from 6.x stream since 7.1.0 release
