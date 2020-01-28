@@ -14,7 +14,4 @@ Require-Bundle: com.b2international.commons,
  com.b2international.snowowl.core.rest,
  com.b2international.snowowl.snomed.common,
  com.b2international.snowowl.snomed.datastore,
- com.b2international.snowowl.snomed.dsl,
- com.b2international.snowowl.snomed.semanticengine,
- com.b2international.snowowl.snomed.semanticengine.simpleast,
  com.b2international.snowowl.snomed.reasoner
