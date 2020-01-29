@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.identity.domain.Permission;
@@ -118,14 +117,14 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.prepareGetClassification(classificationId)
 				.build();
 		
-		final ClassificationTask classification = new IndexReadRequest<>(classificationRequest).execute(context);
+		final ClassificationTask classification = classificationRequest.execute(context);
 		final String branchPath = classification.getBranch();
 		
 		final Request<RepositoryContext, Branch> branchRequest = RepositoryRequests.branching()
 				.prepareGet(branchPath)
 				.build();
 		
-		final Branch branch = new IndexReadRequest<>(branchRequest).execute(context);
+		final Branch branch = branchRequest.execute(context);
 
 		if (!SAVEABLE_STATUSES.contains(classification.getStatus())) {
 			throw new BadRequestException("Classification '%s' is not in the expected state to start saving changes.", classificationId);

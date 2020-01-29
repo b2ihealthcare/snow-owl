@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.snomed.core.feature"
       label="Snow Owl SNOMED CT Core"
-      version="7.3.0.qualifier"
+      version="7.4.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -84,6 +84,20 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.semanticweb.elk"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.snowowl.snomed.etl"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.snowowl.snomed.scg"
          download-size="0"
          install-size="0"
          version="0.0.0"

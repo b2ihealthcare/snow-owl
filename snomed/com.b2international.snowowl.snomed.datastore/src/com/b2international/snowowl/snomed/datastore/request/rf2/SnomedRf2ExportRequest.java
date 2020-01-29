@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -57,7 +58,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -65,7 +65,6 @@ import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -100,7 +99,7 @@ import com.google.common.collect.Ordering;
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2ExportResult>, RepositoryAccessControl {
+final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportResult>, RepositoryAccessControl {
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
@@ -251,7 +250,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	}
 
 	@Override
-	public Rf2ExportResult execute(final RepositoryContext context) {
+	public ExportResult execute(final RepositoryContext context) {
 
 		// Step 1: check if the export reference branch is a working branch path descendant
 		final CodeSystemEntry referenceCodeSystem = validateCodeSystem(context);
@@ -316,7 +315,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			final AttachmentRegistry fileRegistry = context.service(AttachmentRegistry.class);
 			registerResult(fileRegistry, exportId, exportDirectory);
 			final String fileName = releaseDirectory.getFileName() + ".zip";
-			return new Rf2ExportResult(fileName, exportId);
+			return new ExportResult(fileName, exportId);
 			
 		} catch (final Exception e) {
 			throw new SnowowlRuntimeException("Failed to export terminology content to RF2.", e);
@@ -799,9 +798,9 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	}
 
 	private <R> R execute(RepositoryContext context, String branch, Request<BranchContext, R> next) {
-		return new IndexReadRequest<>(new BranchRequest<>(branch, new RevisionIndexReadRequest<>(next))).execute(context);
+		return new BranchRequest<>(branch, new RevisionIndexReadRequest<>(next)).execute(context);
 	}
-
+	
 	private void exportRelationships(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch,
@@ -1064,7 +1063,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	}
 
 	private static Branches getBranches(final RepositoryContext context, final String parent, final Collection<String> paths) {
-		return RepositoryRequests.branching().prepareSearch()
+		return RepositoryRequests.branching()
+				.prepareSearch()
 				.all()
 				.filterByParent(parent)
 				.filterByName(paths)

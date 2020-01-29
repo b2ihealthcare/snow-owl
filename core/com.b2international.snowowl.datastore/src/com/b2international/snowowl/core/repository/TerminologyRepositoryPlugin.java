@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,9 +111,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	protected void afterRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 	}
 
-	protected TerminologyRepositoryInitializer getTerminologyRepositoryInitializer() {
-		return null;
-	}
+	protected abstract TerminologyRepositoryInitializer getTerminologyRepositoryInitializer();
 	
 	/**
 	 * Subclasses may override and provide a custom precommit hook to be installed on the underlying repository. {@link BaseRepositoryPreCommitHook}

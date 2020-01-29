@@ -87,19 +87,19 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//SubQuery"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Disjunction" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="DisjunctionFilter" eSuperTypes="#//Filter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Filter"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Filter"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Conjunction" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="ConjunctionFilter" eSuperTypes="#//Filter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Filter"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Filter"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Exclusion" eSuperTypes="#//Filter">
+  <eClassifiers xsi:type="ecore:EClass" name="ExclusionFilter" eSuperTypes="#//Filter">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//PropertyFilter"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//PropertyFilter"

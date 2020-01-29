@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,8 @@ public interface RevisionIndexRequestBuilder<R> extends RequestBuilder<BranchCon
 	default AsyncRequest<R> build(String repositoryId, String branch) {
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
-				new IndexReadRequest<>(
-					new BranchRequest<>(branch, 
-						new RevisionIndexReadRequest<>(build())
-					)
+				new BranchRequest<>(branch, 
+					new RevisionIndexReadRequest<>(build())
 				)
 			)
 		);

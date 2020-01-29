@@ -22,11 +22,11 @@ import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
+import com.b2international.snowowl.snomed.ecl.ecl.EclRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 
 /**
  * This class contains custom validation rules. 
@@ -102,7 +102,7 @@ public class EclValidator extends AbstractEclValidator {
 		return parent.getClass() != child.getClass() && (child instanceof AndExpressionConstraint || child instanceof OrExpressionConstraint || child instanceof ExclusionExpressionConstraint);
 	}
 
-	private boolean isAmbiguous(Refinement parent, Refinement child) {
+	private boolean isAmbiguous(EclRefinement parent, EclRefinement child) {
 		return parent.getClass() != child.getClass() && (child instanceof AndRefinement || child instanceof OrRefinement);
 	}
 	

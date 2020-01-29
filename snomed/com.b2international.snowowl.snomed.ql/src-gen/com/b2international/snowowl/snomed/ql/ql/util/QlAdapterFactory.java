@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,19 +188,19 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createQueryExclusionAdapter();
       }
       @Override
-      public Adapter caseDisjunction(Disjunction object)
+      public Adapter caseDisjunctionFilter(DisjunctionFilter object)
       {
-        return createDisjunctionAdapter();
+        return createDisjunctionFilterAdapter();
       }
       @Override
-      public Adapter caseConjunction(Conjunction object)
+      public Adapter caseConjunctionFilter(ConjunctionFilter object)
       {
-        return createConjunctionAdapter();
+        return createConjunctionFilterAdapter();
       }
       @Override
-      public Adapter caseExclusion(Exclusion object)
+      public Adapter caseExclusionFilter(ExclusionFilter object)
       {
-        return createExclusionAdapter();
+        return createExclusionFilterAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -525,46 +525,46 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Disjunction <em>Disjunction</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter <em>Disjunction Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.Disjunction
+   * @see com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter
    * @generated
    */
-  public Adapter createDisjunctionAdapter()
+  public Adapter createDisjunctionFilterAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Conjunction <em>Conjunction</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter <em>Conjunction Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.Conjunction
+   * @see com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter
    * @generated
    */
-  public Adapter createConjunctionAdapter()
+  public Adapter createConjunctionFilterAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.Exclusion <em>Exclusion</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.ql.ExclusionFilter <em>Exclusion Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.ql.Exclusion
+   * @see com.b2international.snowowl.snomed.ql.ql.ExclusionFilter
    * @generated
    */
-  public Adapter createExclusionAdapter()
+  public Adapter createExclusionFilterAdapter()
   {
     return null;
   }

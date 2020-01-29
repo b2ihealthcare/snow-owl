@@ -100,7 +100,7 @@ def getOWLRelationships = { SnomedReferenceSetMember owlMember ->
 }
 
 if (params.isUnpublishedOnly) {
-	SnomedRelationshipSearchRequestBuilder  requestBuilder = SnomedRequests.prepareSearchRelationship()
+	SnomedRelationshipSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchRelationship()
 			.filterByActive(true)
 			.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 			.all()
@@ -133,7 +133,7 @@ if (params.isUnpublishedOnly) {
 			SnomedRelationshipPredicate predicate = getPredicate(constraint)
 			
 			def predicateCharType = predicate.getCharacteristicTypeId()
-			if (predicate.getAttributeExpression().equals(typeId) && (Strings.isNullOrEmpty(predicateCharType) || charTypeId.equals(predicateCharType))) {
+			if (getApplicableConcepts(predicate.getAttributeExpression()).contains(typeId) && (Strings.isNullOrEmpty(predicateCharType) || charTypeId.equals(predicateCharType))) {
 				if (!getApplicableConcepts(predicate.getRangeExpression()).contains(destinationId)) {
 					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
 				}
@@ -158,15 +158,15 @@ if (params.isUnpublishedOnly) {
 				def charType = predicate.getCharacteristicTypeId()
 				return Concepts.STATED_RELATIONSHIP == charType || Strings.isNullOrEmpty(charType)
 			}).collect(Collectors.toSet())
-						
-			for (SnomedRelationshipPredicate predicate : applicableRulePredicates) {
-				for (SnomedOWLRelationshipDocument relationship : getOWLRelationships(owlAxiomMember)) {
-					if (relationship.getTypeId().equals(predicate.getAttributeExpression()) && 
-						!getApplicableConcepts(predicate.getRangeExpression()).contains(relationship.getDestinationId())) {
-						issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, owlAxiomMember.getId()))
-					}
+			
+		for (SnomedRelationshipPredicate predicate : applicableRulePredicates) {
+			for (SnomedOWLRelationshipDocument relationship : getOWLRelationships(owlAxiomMember)) {
+				if (getApplicableConcepts(predicate.getAttributeExpression()).contains(relationship.getTypeId()) &&
+					!getApplicableConcepts(predicate.getRangeExpression()).contains(relationship.getDestinationId())) {
+					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, owlAxiomMember.getId()))
 				}
 			}
+		}
 	}
 	
 } else {
@@ -183,7 +183,7 @@ if (params.isUnpublishedOnly) {
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRelationshipIndexEntry.Expressions.active())
 					.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(domain))
-					.filter(SnomedRelationshipIndexEntry.Expressions.typeId(attributeExpression))
+					.filter(SnomedRelationshipIndexEntry.Expressions.typeIds(getApplicableConcepts(attributeExpression)))
 					.mustNot(SnomedRelationshipIndexEntry.Expressions.destinationIds(getApplicableConcepts(rangeExpression)))
 
 			if (!Strings.isNullOrEmpty(charType)) {
@@ -220,7 +220,7 @@ if (params.isUnpublishedOnly) {
 		Set<String> domain = getApplicableConcepts(domainExpression)
 		
 		for (SnomedRelationshipPredicate predicate : applicableMrcmRulePredicates) {
-			def attribute = Lists.newArrayList(predicate.getAttributeExpression())
+			def attribute = getApplicableConcepts(predicate.getAttributeExpression())
 			def range = getApplicableConcepts(predicate.getRangeExpression())
 			
 			final ExpressionBuilder expressionBuilder = Expressions.builder()

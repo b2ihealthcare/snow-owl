@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.b2international.index.Doc;
 import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
@@ -136,7 +137,13 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	<T> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
 
 	/**
-	 * Clears the entire content of the repository this context belongs to.
+	 * Stages all indexed instances of {@link Revision} and subclasses for deletion
+	 * that are currently returned by a "match all" query using
+	 * {@link RevisionIndex}.
+	 * <p>
+	 * Documents not under revision control should be removed separately, along with
+	 * any code system versions and corresponding version branches, if a complete
+	 * clear operation is needed.
 	 */
 	void clearContents();
 

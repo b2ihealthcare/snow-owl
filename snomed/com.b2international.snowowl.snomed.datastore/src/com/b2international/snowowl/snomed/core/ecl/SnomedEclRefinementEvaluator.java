@@ -100,11 +100,11 @@ final class SnomedEclRefinementEvaluator {
 		this.expressionForm = focusConcepts.getExpressionForm();
 	}
 	
-	public Promise<Expression> evaluate(BranchContext context, Refinement refinement) {
+	public Promise<Expression> evaluate(BranchContext context, EclRefinement refinement) {
 		return refinementDispatcher.invoke(context, refinement);
 	}
 	
-	protected Promise<Expression> eval(BranchContext context, Refinement refinement) {
+	protected Promise<Expression> eval(BranchContext context, EclRefinement refinement) {
 		return SnomedEclEvaluationRequest.throwUnsupported(refinement); 
 	}
 	
@@ -175,7 +175,7 @@ final class SnomedEclRefinementEvaluator {
 	 * Handles evaluation of attribute refinements with groups
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.2+Refinements
 	 */
-	protected Promise<Expression> eval(final BranchContext context, AttributeGroup group) {
+	protected Promise<Expression> eval(final BranchContext context, EclAttributeGroup group) {
 		final Cardinality cardinality = group.getCardinality();
 		final boolean isUnbounded = cardinality == null ? true : cardinality.getMax() == UNBOUNDED_CARDINALITY;
 		final long min = cardinality == null ? 1 : cardinality.getMin();
@@ -205,11 +205,11 @@ final class SnomedEclRefinementEvaluator {
 	/**
 	 * Evaluates refinement parts inside attribute group based refinements.
 	 */
-	protected Promise<Collection<Property>> evaluateGroup(BranchContext context, Range<Long> groupCardinality, Refinement refinement) {
+	protected Promise<Collection<Property>> evaluateGroup(BranchContext context, Range<Long> groupCardinality, EclRefinement refinement) {
 		return groupRefinementDispatcher.invoke(context, groupCardinality, refinement);
 	}
 	
-	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final Refinement refinement) {
+	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final EclRefinement refinement) {
 		return SnomedEclEvaluationRequest.throwUnsupported(refinement);
 	}
 

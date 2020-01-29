@@ -64,7 +64,6 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
@@ -652,18 +651,16 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				.build();
 		
-		new RepositoryRequest<>(SnomedDatastoreActivator.REPOSITORY_UUID, new IndexReadRequest<>(
-			context -> {
-				ApplicationContext.getServiceForClass(RepositoryManager.class)
-					.get(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.service(RevisionIndex.class)
-					.prepareCommit(branchPath.getPath())
-					.stageNew(member)
-					.withContext(context)
-					.commit(ApplicationContext.getServiceForClass(TimestampProvider.class).getTimestamp(), "test", "Added duplicate language reference set member to " + descriptionId);
-				return null;
-			}
-		)).execute(ApplicationContext.getServiceForClass(Environment.class));
+		new RepositoryRequest<>(SnomedDatastoreActivator.REPOSITORY_UUID, context -> {
+			ApplicationContext.getServiceForClass(RepositoryManager.class)
+				.get(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.service(RevisionIndex.class)
+				.prepareCommit(branchPath.getPath())
+				.stageNew(member)
+				.withContext(context)
+				.commit(ApplicationContext.getServiceForClass(TimestampProvider.class).getTimestamp(), "test", "Added duplicate language reference set member to " + descriptionId);
+			return null;
+		}).execute(ApplicationContext.getServiceForClass(Environment.class));
 		
 		// Check the acceptability map; the description should be acceptable in the UK reference set
 		SnomedDescription description = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)

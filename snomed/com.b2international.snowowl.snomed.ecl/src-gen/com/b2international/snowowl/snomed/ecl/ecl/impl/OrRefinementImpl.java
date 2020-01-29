@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
+import com.b2international.snowowl.snomed.ecl.ecl.EclRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -41,7 +41,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class OrRefinementImpl extends RefinementImpl implements OrRefinement
+public class OrRefinementImpl extends EclRefinementImpl implements OrRefinement
 {
   /**
    * The cached value of the '{@link #getLeft() <em>Left</em>}' containment reference.
@@ -51,7 +51,7 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
    * @generated
    * @ordered
    */
-  protected Refinement left;
+  protected EclRefinement left;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -61,7 +61,7 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
    * @generated
    * @ordered
    */
-  protected Refinement right;
+  protected EclRefinement right;
 
   /**
    * <!-- begin-user-doc -->
@@ -89,7 +89,8 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public Refinement getLeft()
+  @Override
+  public EclRefinement getLeft()
   {
     return left;
   }
@@ -99,9 +100,9 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetLeft(Refinement newLeft, NotificationChain msgs)
+  public NotificationChain basicSetLeft(EclRefinement newLeft, NotificationChain msgs)
   {
-    Refinement oldLeft = left;
+    EclRefinement oldLeft = left;
     left = newLeft;
     if (eNotificationRequired())
     {
@@ -116,7 +117,8 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setLeft(Refinement newLeft)
+  @Override
+  public void setLeft(EclRefinement newLeft)
   {
     if (newLeft != left)
     {
@@ -137,7 +139,8 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public Refinement getRight()
+  @Override
+  public EclRefinement getRight()
   {
     return right;
   }
@@ -147,9 +150,9 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRight(Refinement newRight, NotificationChain msgs)
+  public NotificationChain basicSetRight(EclRefinement newRight, NotificationChain msgs)
   {
-    Refinement oldRight = right;
+    EclRefinement oldRight = right;
     right = newRight;
     if (eNotificationRequired())
     {
@@ -164,7 +167,8 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRight(Refinement newRight)
+  @Override
+  public void setRight(EclRefinement newRight)
   {
     if (newRight != right)
     {
@@ -227,10 +231,10 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
     switch (featureID)
     {
       case EclPackage.OR_REFINEMENT__LEFT:
-        setLeft((Refinement)newValue);
+        setLeft((EclRefinement)newValue);
         return;
       case EclPackage.OR_REFINEMENT__RIGHT:
-        setRight((Refinement)newValue);
+        setRight((EclRefinement)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -247,10 +251,10 @@ public class OrRefinementImpl extends RefinementImpl implements OrRefinement
     switch (featureID)
     {
       case EclPackage.OR_REFINEMENT__LEFT:
-        setLeft((Refinement)null);
+        setLeft((EclRefinement)null);
         return;
       case EclPackage.OR_REFINEMENT__RIGHT:
-        setRight((Refinement)null);
+        setRight((EclRefinement)null);
         return;
     }
     super.eUnset(featureID);

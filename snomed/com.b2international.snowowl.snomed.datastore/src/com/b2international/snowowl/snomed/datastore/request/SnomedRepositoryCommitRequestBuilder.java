@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.HealthCheckingRequest;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
@@ -54,11 +53,9 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
 				new HealthCheckingRequest<>(
-					new IndexReadRequest<>(
-						new BranchRequest<>(branch,
-							new RevisionIndexReadRequest<>(
-								build()
-							)
+					new BranchRequest<>(branch,
+						new RevisionIndexReadRequest<>(
+							build()
 						)
 					),
 					allowedHealthstates()

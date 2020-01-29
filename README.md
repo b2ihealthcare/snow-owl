@@ -3,7 +3,7 @@
 Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 
 [![build status](https://img.shields.io/travis/b2ihealthcare/snow-owl/7.x.svg?style=flat-square)](https://travis-ci.org/b2ihealthcare/snow-owl)
-[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.2.0)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.3.0)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE)
@@ -18,10 +18,10 @@ Features include:
     * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
-    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, Reference Sets, OWL 2 EL/DL support, experimental Query Language)
+    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, experimental Query Language)
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
 * Various set of APIs
-    * SNOMED CT API (RESTful and native JAVA API)
+    * SNOMED CT API (RESTful and native Java API)
     * FHIR API
     * CIS API
 * Highly extensible and configurable
@@ -32,16 +32,16 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.2.0/snow-owl-oss-7.2.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.2.0/snow-owl-oss-7.2.0.zip.sha512)
-* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.2.0/snow-owl-oss-7.2.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.2.0/snow-owl-oss-7.2.0.tar.gz.sha512) 
-* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.2.0/snow-owl-oss-7.2.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.2.0/snow-owl-oss-7.2.0.rpm.sha512)
-* [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.2.0/snow-owl-oss-7.2.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.2.0/snow-owl-oss-7.2.0.deb.sha512)
+* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.zip.sha512)
+* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.tar.gz.sha512) 
+* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.rpm.sha512)
+* [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.deb.sha512)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.2.0).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.3.0).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
@@ -53,6 +53,7 @@ Once you have downloaded the appropriate package:
 
 * Run `bin/snowowl.sh` on unix, or `bin/snowowl.bat` on windows
 * Run `curl http://localhost:8080/snowowl/admin/info`
+* Navigate to `http://localhost:8080/snowowl`
 * See [SNOMED CT API docs](https://docs.b2i.sg/snow-owl/api/snomed), [FHIR API docs](https://docs.b2i.sg/snow-owl/api/fhir)
 
 # Learn Snow Owl
@@ -115,7 +116,7 @@ Make sure you have the following preferences enabled/disabled.
 4. Wait until Eclipse resolves the target platform (click on the `Resolve` button if it refuses to do so) and then click on `Set as Active Target platform`
 5. Wait until the build is complete and you have no compile errors
 6. Launch `snow-owl-oss` launch configuration in the Run Configurations menu
-7. Navigate to `http://localhost:8080/snowowl/snomed-ct/v3`
+7. Navigate to `http://localhost:8080/snowowl`
 
 # Contributing
 

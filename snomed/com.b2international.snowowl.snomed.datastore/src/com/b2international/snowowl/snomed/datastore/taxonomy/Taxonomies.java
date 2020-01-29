@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.destinationIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.sourceIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -130,21 +131,34 @@ public final class Taxonomies {
 		}
 	}
 
-	private static TaxonomyGraphStatus updateTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, TaxonomyGraph graphToUpdate, String characteristicTypeId) {
+	private static TaxonomyGraphStatus updateTaxonomy(RevisionSearcher searcher, 
+			SnomedOWLExpressionConverter expressionConverter, 
+			StagingArea staging, 
+			TaxonomyGraph graphToUpdate, 
+			String characteristicTypeId) throws IOException {
+
 		LOGGER.trace("Processing changes taxonomic information.");
 		
 		staging.getNewObjects(SnomedRelationshipIndexEntry.class)
 			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
 			.forEach(newRelationship -> updateEdge(newRelationship, graphToUpdate));
 		
+		final Set<String> relationshipsToExcludeFromReactivatedConcepts = newHashSet();
+		
 		staging.getChangedRevisions(SnomedRelationshipIndexEntry.class)
 			.map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision)
 			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
-			.forEach(dirtyRelationship -> updateEdge(dirtyRelationship, graphToUpdate));
+			.forEach(dirtyRelationship -> {
+				relationshipsToExcludeFromReactivatedConcepts.add(dirtyRelationship.getId());
+				updateEdge(dirtyRelationship, graphToUpdate);
+			});
 		
 		staging.getRemovedObjects(SnomedRelationshipIndexEntry.class)
 			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
-			.forEach(relationship -> graphToUpdate.removeEdge(relationship.getId()));
+			.forEach(relationship -> {
+				relationshipsToExcludeFromReactivatedConcepts.add(relationship.getId());
+				graphToUpdate.removeEdge(relationship.getId());
+			});
 		
 		if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
 			staging.getNewObjects(SnomedRefSetMemberIndexEntry.class)
@@ -169,6 +183,8 @@ public final class Taxonomies {
 		staging.getRemovedObjects(SnomedConceptDocument.class)
 			.forEach(concept -> graphToUpdate.removeNode(concept.getId()));
 		
+		final Set<String> conceptWithPossibleMissingRelationships = newHashSet();
+		
 		staging.getChangedRevisions(SnomedConceptDocument.class, Collections.singleton(SnomedConceptDocument.Fields.ACTIVE))
 			.forEach(diff -> {
 				final RevisionPropertyDiff propDiff = diff.getRevisionPropertyDiff(SnomedConceptDocument.Fields.ACTIVE);
@@ -178,8 +194,30 @@ public final class Taxonomies {
 				if (!oldValue && newValue) {
 					// make sure the node is part of the new tree
 					graphToUpdate.addNode(conceptId);
+					conceptWithPossibleMissingRelationships.add(conceptId);
 				}
 			});
+		
+		if (!conceptWithPossibleMissingRelationships.isEmpty()) {
+			Hits<String[]> possibleMissingRelationships = searcher.search(Query.select(String[].class)
+					.from(SnomedRelationshipIndexEntry.class)
+					.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+					.where(Expressions.builder()
+							.filter(SnomedRelationshipIndexEntry.Expressions.active())
+							.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
+							.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
+							.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(conceptWithPossibleMissingRelationships))
+							.mustNot(SnomedRelationshipIndexEntry.Expressions.ids(relationshipsToExcludeFromReactivatedConcepts))
+							.build()
+					)
+					.limit(Integer.MAX_VALUE)
+					.build());
+			
+			for (String[] relationship : possibleMissingRelationships) {
+				graphToUpdate.addNode(relationship[2]);
+				graphToUpdate.addEdge(relationship[0], Long.parseLong(relationship[1]), new long[] { Long.parseLong(relationship[2]) });
+			}
+		}
 		
 		LOGGER.trace("Rebuilding taxonomic information based on the changes.");
 		return graphToUpdate.update();

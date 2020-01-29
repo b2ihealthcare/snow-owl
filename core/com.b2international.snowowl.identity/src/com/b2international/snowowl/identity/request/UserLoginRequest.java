@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.JWTGenerator;
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.2
  */
+@Unprotected
 public final class UserLoginRequest implements Request<ServiceProvider, Token> {
 
 	@NotEmpty

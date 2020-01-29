@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
@@ -34,9 +35,15 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.LockedException;
+import com.b2international.index.Hits;
+import com.b2international.index.Index;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
+import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Operation;
 import com.b2international.index.revision.Revision;
@@ -153,6 +160,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	private String getObjectId(Object component) {
 		if (component instanceof CodeSystemEntry) {
 			return ((CodeSystemEntry) component).getShortName();
+		} else if (component instanceof CodeSystemVersionEntry) { 
+			return ((CodeSystemVersionEntry) component).getVersionId();
 		} else if (component instanceof Revision) {
 			return ((Revision) component).getId();
 		}
@@ -163,7 +172,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		return Tuples.<String, Class<?>>pair(componentId, type);
 	}
 	
-	private <T> Iterable<T> fetchComponents(Set<String> componentIds, Class<T> type) {
+	private <T> Iterable<T> fetchComponents(Collection<String> componentIds, Class<T> type) {
 		try {
 			if (Revision.class.isAssignableFrom(type)) {
 				return service(RevisionSearcher.class).get(type, componentIds);
@@ -341,7 +350,34 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 
 	@Override
 	public void clearContents() {
-		throw new UnsupportedOperationException("Not implemented yet");
+		final Index index = service(Index.class);
+		final IndexAdmin indexAdmin = index.admin();
+		final Mappings mappings = indexAdmin.mappings();
+		
+		final Stream<Class<?>> revisionTypes = mappings.getTypes()
+			.stream()
+			.filter(t -> Revision.class.isAssignableFrom(t));
+		
+		revisionTypes.forEach(type -> {
+
+			final Query<String> idQuery = Query.select(String.class)
+				.from(type)
+				.fields(Revision.Fields.ID)
+				.where(Expressions.matchAll())
+				.scroll()
+				.build();
+			
+			final RevisionSearcher revisionSearcher = service(RevisionSearcher.class);
+			final Iterable<Hits<String>> batches = revisionSearcher.scroll(idQuery);
+			
+			for (final Hits<String> ids : batches) {
+				final Iterable<?> revisions = fetchComponents(ids.getHits(), type);
+				revisions.forEach(rev -> {
+					final String revisionId = ((Revision) rev).getId();
+					staging.stageRemove(revisionId, rev);	
+				});
+			}
+		});
 	}
 	
 	private static DatastoreLockContext createLockContext(String userId, String parentContextDescription) {
