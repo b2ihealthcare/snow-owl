@@ -21,6 +21,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +32,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
-import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
@@ -127,20 +128,32 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private Expressions() {
 		}
 
+		private static Iterable<Long> toLongValues(Collection<String> values) {
+			final Set<Long> result = newHashSetWithExpectedSize(values.size());
+			for (String value : values) {
+				try {
+					result.add(Long.valueOf(value));
+				} catch (NumberFormatException e) {
+					throw new BadRequestException("'%s' value is not a valid SNOMED CT identifier", value);
+				}
+			}
+			return result;
+		}
+		
 		public static Expression parents(Collection<String> parentIds) {
-			return matchAnyLong(Fields.PARENTS, StringToLongFunction.copyOf(parentIds));
+			return matchAnyLong(Fields.PARENTS, toLongValues(parentIds));
 		}
 
 		public static Expression ancestors(Collection<String> ancestorIds) {
-			return matchAnyLong(Fields.ANCESTORS, StringToLongFunction.copyOf(ancestorIds));
+			return matchAnyLong(Fields.ANCESTORS, toLongValues(ancestorIds));
 		}
 
 		public static Expression statedParents(Collection<String> statedParentIds) {
-			return matchAnyLong(Fields.STATED_PARENTS, StringToLongFunction.copyOf(statedParentIds));
+			return matchAnyLong(Fields.STATED_PARENTS, toLongValues(statedParentIds));
 		}
 		
 		public static Expression statedAncestors(Collection<String> statedAncestorIds) {
-			return matchAnyLong(Fields.STATED_ANCESTORS, StringToLongFunction.copyOf(statedAncestorIds));
+			return matchAnyLong(Fields.STATED_ANCESTORS, toLongValues(statedAncestorIds));
 		}
 		
 		public static Expression primitive() {
