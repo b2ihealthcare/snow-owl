@@ -26,7 +26,6 @@ jobs:
           command: |
             echo "${ARTIFACTORY_USER_RW}" | sha512sum
             echo "${ARTIFACTORY_PWD_RW}" | sha512sum
-            exit
             echo "$CIRCLE_SHA1" > .commit-keyId
             docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
