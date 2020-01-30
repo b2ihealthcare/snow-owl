@@ -122,6 +122,18 @@
           key="/instance/org.eclipse.egit.core/core_defaultRepositoryDir"
           value="${installation.location}/git"/>
     </setupTask>
+    <setupTask
+        xsi:type="setup:CompoundTask"
+        name="org.eclipse.jdt.ui">
+      <setupTask
+          xsi:type="setup:PreferenceTask"
+          key="/instance/org.eclipse.jdt.ui/org.eclipse.jdt.ui.ondemandthreshold"
+          value="10"/>
+      <setupTask
+          xsi:type="setup:PreferenceTask"
+          key="/instance/org.eclipse.jdt.ui/org.eclipse.jdt.ui.staticondemandthreshold"
+          value="10"/>
+    </setupTask>
   </setupTask>
   <setupTask
       xsi:type="git:GitCloneTask"
