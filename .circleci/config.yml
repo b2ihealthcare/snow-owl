@@ -24,6 +24,7 @@ jobs:
       - run:
           name: Build prerequisites
           command: |
+            echo "${ARTIFACTORY_URL}"
             echo "${ARTIFACTORY_USER_RW}" | sha512sum
             echo "${ARTIFACTORY_PWD_RW}" | sha512sum
             echo "$CIRCLE_SHA1" > .commit-keyId
