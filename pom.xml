@@ -57,12 +57,12 @@
         <module>commons</module>
         <module>core</module>
         <module>fhir</module>
-        <module>net4j</module>
+        <!--        <module>net4j</module>-->
         <module>snomed</module>
-        <module>cis</module>
-        <module>tests</module>
-        <module>releng</module>
-        <module>dist</module>
+        <!--        <module>cis</module>-->
+        <!--        <module>tests</module>-->
+        <!--        <module>releng</module>-->
+        <!--        <module>dist</module>-->
     </modules>
 
     <repositories>
@@ -898,9 +898,9 @@
                     <version>${tycho.version}</version>
                     <configuration>
                         <failIfNoTests>false</failIfNoTests>
-<!--                        <includes>-->
-<!--                            <include>**/*Test*.java</include>-->
-<!--                        </includes>-->
+                        <!--                        <includes>-->
+                        <!--                            <include>**/*Test*.java</include>-->
+                        <!--                        </includes>-->
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
