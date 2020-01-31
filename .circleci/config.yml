@@ -37,10 +37,10 @@ jobs:
             docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
             apk add --no-cache make=4.2.1-r0 openjdk8
+      - deploy:
+          name: Deploy
+          command: ./mvnw clean install deploy
       - save_cache:
           paths:
             - ~/.m2
           key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-      - deploy:
-          name: Deploy
-          command: ./mvnw clean install deploy
