@@ -898,9 +898,9 @@
                     <version>${tycho.version}</version>
                     <configuration>
                         <failIfNoTests>false</failIfNoTests>
-                        <includes>
-                            <include>**/*Test*.java</include>
-                        </includes>
+<!--                        <includes>-->
+<!--                            <include>**/*Test*.java</include>-->
+<!--                        </includes>-->
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
