@@ -939,20 +939,20 @@
         </pluginManagement>
     </build>
 
-    <!--    <profiles>-->
-    <!--        <profile>-->
-    <!--            <id>docs</id>-->
-    <!--            <activation>-->
-    <!--                <property>-->
-    <!--                    <name>docs</name>-->
-    <!--                    <value>true</value>-->
-    <!--                </property>-->
-    <!--            </activation>-->
-    <!--            <modules>-->
-    <!--                <module>documentation</module>-->
-    <!--            </modules>-->
-    <!--        </profile>-->
-    <!--    </profiles>-->
+        <profiles>
+            <profile>
+                <id>docs</id>
+                <activation>
+                    <property>
+                        <name>docs</name>
+                        <value>true</value>
+                    </property>
+                </activation>
+                <modules>
+                    <module>documentation</module>
+                </modules>
+            </profile>
+        </profiles>
 
     <distributionManagement>
         <repository>
