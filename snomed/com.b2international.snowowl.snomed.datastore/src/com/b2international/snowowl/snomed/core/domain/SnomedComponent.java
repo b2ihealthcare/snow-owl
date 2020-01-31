@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public abstract class SnomedComponent extends BaseComponent {
 
 	/**
+	 * @since 7.4
+	 */
+	public static abstract class Expand {
+		public static final String MODULE = "module";
+	}
+
+	/**
 	 * @since 6.16
 	 */
 	public static abstract class Fields extends BaseComponent.Fields {
@@ -49,6 +56,8 @@ public abstract class SnomedComponent extends BaseComponent {
 	private String moduleId;
 	private String iconId;
 	private Float score;
+	
+	private SnomedConcept module;
 
 	/**
 	 * Returns the component's current status as a boolean value.
@@ -94,6 +103,13 @@ public abstract class SnomedComponent extends BaseComponent {
 	public Float getScore() {
 		return score;
 	}
+	
+	/**
+	 * @return the expanded module of a SNOMED CT Concept
+	 */
+	public SnomedConcept getModule() {
+		return module;
+	}
 
 	public void setActive(final Boolean active) {
 		this.active = active;
@@ -114,6 +130,10 @@ public abstract class SnomedComponent extends BaseComponent {
 	
 	public void setScore(Float score) {
 		this.score = score;
+	}
+	
+	public void setModule(SnomedConcept module) {
+		this.module = module;
 	}
 	
 	/**

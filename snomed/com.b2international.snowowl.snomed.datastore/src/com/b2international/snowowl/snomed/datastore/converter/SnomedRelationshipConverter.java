@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		
 		final Set<String> relationshipIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
 		new MembersExpander(context(), expand(), locales()).expand(results, relationshipIds);
+		new ModuleExpander(context(), expand(), locales()).expand(results);
 		if (expand().containsKey(SnomedRelationship.Expand.SOURCE)) {
 			final Options sourceOptions = expand().get(SnomedRelationship.Expand.SOURCE, Options.class);
 			final Set<String> sourceConceptIds = FluentIterable.from(results).transform(new Function<SnomedRelationship, String>() {
