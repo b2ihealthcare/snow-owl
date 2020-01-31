@@ -31,7 +31,7 @@ jobs:
             docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
             apk add --no-cache make=4.2.1-r0 nodejs openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-            npm install -g npm@6.13.6
+            npm install -g npm
       - restore_cache:
           keys:
             # when lock file changes, use increasingly general patterns to restore cache
