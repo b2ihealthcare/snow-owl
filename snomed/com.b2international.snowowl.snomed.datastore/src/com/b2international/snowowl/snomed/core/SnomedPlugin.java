@@ -40,7 +40,6 @@ import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -120,7 +119,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	@Override
 	protected ComponentDeletionPolicy getComponentDeletionPolicy() {
 		return CompositeComponentDeletionPolicy.builder()
-				.withPolicy(SnomedComponent.class, doc -> !((SnomedDocument) doc).isReleased())
+				.withPolicy(SnomedDocument.class, doc -> !((SnomedDocument) doc).isReleased())
 				.build();
 	}
 	
