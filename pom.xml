@@ -79,13 +79,13 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <id>babylon-central</id>
+            <id>artifactory-releases</id>
             <name>remote-repos</name>
             <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
         </repository>
         <repository>
             <snapshots/>
-            <id>babylon-snapshots</id>
+            <id>artifactory-snapshots</id>
             <name>remote-repos</name>
             <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
         </repository>
@@ -120,13 +120,13 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <id>babylon-central</id>
+            <id>artifactory-releases</id>
             <name>remote-repos</name>
             <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
         </pluginRepository>
         <pluginRepository>
             <snapshots/>
-            <id>babylon-snapshots</id>
+            <id>artifactory-snapshots</id>
             <name>remote-repos</name>
             <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
         </pluginRepository>
