@@ -36,7 +36,7 @@ jobs:
             echo "$CIRCLE_SHA1" > .commit-keyId
             docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
-            apk add --no-cache make=4.2.1-r0 openjdk8
+            apk add --no-cache make=4.2.1-r0 openjdk11-jre
       - run:
           name: Build
           command: ./mvnw clean install
