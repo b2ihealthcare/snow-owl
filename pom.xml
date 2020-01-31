@@ -898,9 +898,9 @@
                     <version>${tycho.version}</version>
                     <configuration>
                         <failIfNoTests>false</failIfNoTests>
-<!--                        <includes>-->
-<!--                            <include>**/*Test*.java</include>-->
-<!--                        </includes>-->
+                        <!--                        <includes>-->
+                        <!--                            <include>**/*Test*.java</include>-->
+                        <!--                        </includes>-->
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
@@ -939,20 +939,20 @@
         </pluginManagement>
     </build>
 
-        <profiles>
-            <profile>
-                <id>docs</id>
-                <activation>
-                    <property>
-                        <name>docs</name>
-                        <value>true</value>
-                    </property>
-                </activation>
-                <modules>
-                    <module>documentation</module>
-                </modules>
-            </profile>
-        </profiles>
+    <profiles>
+        <profile>
+            <id>docs</id>
+            <activation>
+                <property>
+                    <name>docs</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>documentation</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <distributionManagement>
         <repository>
