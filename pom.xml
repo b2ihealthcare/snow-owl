@@ -66,22 +66,47 @@
     </modules>
 
     <repositories>
+
         <repository>
-            <id>artifactory-releases</id>
-            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>artifactory-snapshots</id>
-            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
             <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
+                <enabled>false</enabled>
             </snapshots>
+            <id>maven-central</id>
+            <name>remote-repos</name>
+            <url>https://repo.maven.apache.org/maven2</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>babylon-central</id>
+            <name>remote-repos</name>
+            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
+        </repository>
+        <repository>
+            <snapshots />
+            <id>babylon-snapshots</id>
+            <name>remote-repos</name>
+            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>babylon-central</id>
+            <name>remote-repos</name>
+            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
+        </pluginRepository>
+        <pluginRepository>
+            <snapshots />
+            <id>babylon-snapshots</id>
+            <name>remote-repos</name>
+            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
+        </pluginRepository>
+    </pluginRepositories>
+
         <repository>
             <id>protege-mvn-repo</id>
             <url>https://b2ihealthcare.github.io/protege/</url>
