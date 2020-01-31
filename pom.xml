@@ -939,31 +939,31 @@
         </pluginManagement>
     </build>
 
-    <profiles>
-        <profile>
-            <id>docs</id>
-            <activation>
-                <property>
-                    <name>docs</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>documentation</module>
-            </modules>
-        </profile>
-    </profiles>
+<!--    <profiles>-->
+<!--        <profile>-->
+<!--            <id>docs</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>docs</name>-->
+<!--                    <value>true</value>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <modules>-->
+<!--                <module>documentation</module>-->
+<!--            </modules>-->
+<!--        </profile>-->
+<!--    </profiles>-->
 
-    <distributionManagement>
-        <repository>
-            <id>artifactory-releases</id>
-            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>artifactory-snapshots</id>
-            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+<!--    <distributionManagement>-->
+<!--        <repository>-->
+<!--            <id>artifactory-releases</id>-->
+<!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
+<!--        </repository>-->
+<!--        <snapshotRepository>-->
+<!--            <id>artifactory-snapshots</id>-->
+<!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
+<!--        </snapshotRepository>-->
+<!--    </distributionManagement>-->
 
     <scm>
         <url>https://github.com/babylonhealth/snow-owl</url>
