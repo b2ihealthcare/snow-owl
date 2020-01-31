@@ -145,6 +145,20 @@ public final class RepositoryBuilder {
 				configurer.getAdditionalMappings().forEach(mappings::putMapping);
 			});
 		
+		if (deletionPolicy instanceof CompositeComponentDeletionPolicy) {
+			
+			CompositeComponentDeletionPolicy compositePolicy = (CompositeComponentDeletionPolicy) deletionPolicy;
+			
+			repositoryConfigurers.forEach(configurer -> {
+				configurer.getComponentDeletionPolicies().forEach( (clazz, predicate) -> {
+					if (!compositePolicy.getDeletionPolicies().containsKey(clazz)) {
+						compositePolicy.getDeletionPolicies().put(clazz, predicate);
+					}
+				});
+			});
+			
+		}
+		
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, mergeMaxResults, env, mappings, log);
 		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
 		repository.bind(ComponentDeletionPolicy.class, deletionPolicy);
