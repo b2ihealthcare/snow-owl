@@ -954,16 +954,16 @@
 <!--        </profile>-->
 <!--    </profiles>-->
 
-<!--    <distributionManagement>-->
-<!--        <repository>-->
-<!--            <id>artifactory-releases</id>-->
-<!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
-<!--        </repository>-->
-<!--        <snapshotRepository>-->
-<!--            <id>artifactory-snapshots</id>-->
-<!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
-<!--        </snapshotRepository>-->
-<!--    </distributionManagement>-->
+    <distributionManagement>
+        <repository>
+            <id>artifactory-releases</id>
+            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>artifactory-snapshots</id>
+            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <scm>
         <url>https://github.com/babylonhealth/snow-owl</url>
