@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,10 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -81,7 +79,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			Concepts.REFSET_SIMILAR_TO_ASSOCIATION,
 			Concepts.REFSET_WAS_A_ASSOCIATION);
 
-	private DefinitionStatus definitionStatus;
+	private String definitionStatusId;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
@@ -95,8 +93,8 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		super(componentId);
 	}
 	
-	void setDefinitionStatus(DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	void setDefinitionStatusId(String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 	}
 	
 	void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
@@ -255,11 +253,11 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		final String newDefinitionStatusId;
 		if (!newOwlAxiomExpressions.isEmpty()) {
 			// Calculate the definition status
-			newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newOwlAxiomExpressions).getConceptId();
+			newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newOwlAxiomExpressions);
 		} else {
-			if (definitionStatus == null) return false;
+			if (definitionStatusId == null) return false;
 			
-			final String incomingDefinitionStatusId = definitionStatus.getConceptId();
+			final String incomingDefinitionStatusId = definitionStatusId;
 			newDefinitionStatusId = incomingDefinitionStatusId;
 		}
 		

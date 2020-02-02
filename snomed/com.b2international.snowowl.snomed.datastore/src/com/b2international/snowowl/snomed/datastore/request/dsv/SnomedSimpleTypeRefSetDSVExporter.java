@@ -518,7 +518,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						break;
 
 					case DEFINITION_STATUS: 
-						dataRow.add(concept.getDefinitionStatus().toString());
+						dataRow.add(concept.getDefinitionStatusId());
 						break;
 
 					default:

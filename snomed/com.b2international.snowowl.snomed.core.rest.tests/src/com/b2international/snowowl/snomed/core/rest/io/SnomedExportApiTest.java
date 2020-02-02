@@ -80,7 +80,6 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -513,7 +512,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				conceptEffectiveTime, 
 				"1", 
 				Concepts.MODULE_SCT_CORE, 
-				DefinitionStatus.PRIMITIVE.getConceptId());
+				Concepts.PRIMITIVE);
 
 		String descriptionLine = TAB_JOINER.join(descriptionId, 
 				"", 
@@ -725,12 +724,12 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-			.body("definitionStatus", equalTo(DefinitionStatus.PRIMITIVE.name()));
+			.body("definitionStatusId", equalTo(Concepts.PRIMITIVE));
 		
 		changeToDefining(branchPath, conceptId);
 		
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-			.body("definitionStatus", equalTo(DefinitionStatus.FULLY_DEFINED.name()));
+			.body("definitionStatusId", equalTo(Concepts.FULLY_DEFINED));
 		
 		// create new version
 		final String newVersionEffectiveTime = "20170302";
@@ -1111,7 +1110,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final String exportId = getExportId(createExport(config));
 		final File exportArchive = getExportFile(exportId);
 	
-		String conceptLine = TAB_JOINER.join(conceptId, "", "1", Concepts.MODULE_SCT_CORE, DefinitionStatus.PRIMITIVE.getConceptId());
+		String conceptLine = TAB_JOINER.join(conceptId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.PRIMITIVE);
 		
 		String statedLine = TAB_JOINER.join(statedRelationshipId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.ROOT_CONCEPT, Concepts.NAMESPACE_ROOT,
 				"0", Concepts.PART_OF, CharacteristicType.STATED_RELATIONSHIP.getConceptId(), Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -34,7 +33,7 @@ import com.google.common.collect.ImmutableListMultimap;
  */
 public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 
-	private DefinitionStatus definitionStatus;
+	private String definitionStatusId;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private Map<AssociationType, List<String>> associationTargets;
 	private InactivationIndicator inactivationIndicator;
@@ -42,16 +41,16 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	private SnomedRelationships relationships;
 	private SnomedReferenceSetMembers members;
 
-	public DefinitionStatus getDefinitionStatus() {
-		return definitionStatus;
+	public String getDefinitionStatusId() {
+		return definitionStatusId;
 	}
 
 	public SubclassDefinitionStatus getSubclassDefinitionStatus() {
 		return subclassDefinitionStatus;
 	}
 
-	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	public void setDefinitionStatusId(final String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 	}
 
 	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {
@@ -133,7 +132,7 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 				.setActive(isActive())
 				.setModuleId(getModuleId())
 				.setAssociationTargets(targets == null ? null : targets.build())
-				.setDefinitionStatus(getDefinitionStatus())
+				.setDefinitionStatusId(getDefinitionStatusId())
 				.setInactivationIndicator(getInactivationIndicator())
 				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
 				.setMembers(getMembers())

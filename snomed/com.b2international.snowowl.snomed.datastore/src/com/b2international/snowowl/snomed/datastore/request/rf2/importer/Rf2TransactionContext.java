@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -370,7 +370,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withActive(concept.isActive())
 					.withEffectiveTime(concept.getEffectiveTime())
 					.withModule(concept.getModuleId())
-					.withDefinitionStatus(concept.getDefinitionStatus())
+					.withDefinitionStatusId(concept.getDefinitionStatusId())
 					.withExhaustive(concept.getSubclassDefinitionStatus().isExhaustive());
 		} else if (component instanceof SnomedDescription) { 
 			SnomedDescription description = (SnomedDescription) component;

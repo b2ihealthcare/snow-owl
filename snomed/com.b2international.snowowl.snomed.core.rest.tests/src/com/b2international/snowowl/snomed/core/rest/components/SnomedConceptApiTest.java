@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,6 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
@@ -1000,7 +999,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		assertNotNull(conceptWithAxiomMember);
 		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
-		assertEquals(DefinitionStatus.PRIMITIVE, conceptWithAxiomMember.getDefinitionStatus()); 
+		assertEquals(Concepts.PRIMITIVE, conceptWithAxiomMember.getDefinitionStatusId()); 
 	}
 	
 	@Test
@@ -1030,7 +1029,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		assertNotNull(conceptWithAxiomMember);
 		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
-		assertEquals(DefinitionStatus.FULLY_DEFINED, conceptWithAxiomMember.getDefinitionStatus()); 
+		assertEquals(Concepts.FULLY_DEFINED, conceptWithAxiomMember.getDefinitionStatusId()); 
 	}
 
 	@Test
@@ -1059,7 +1058,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		assertNotNull(conceptWithAxiomMember);
 		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
-		assertEquals(DefinitionStatus.PRIMITIVE, conceptWithAxiomMember.getDefinitionStatus()); 
+		assertEquals(Concepts.PRIMITIVE, conceptWithAxiomMember.getDefinitionStatusId()); 
 	}
 	
 	@Test
@@ -1078,7 +1077,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.getSync();
 		
 		assertNotNull(concept);
-		assertEquals(DefinitionStatus.PRIMITIVE, concept.getDefinitionStatus()); 
+		assertEquals(Concepts.PRIMITIVE, concept.getDefinitionStatusId()); 
 	}
 	
 	@Test
@@ -1087,7 +1086,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		// Update the definition status on concept
 		Map<?, ?> updateRequestBody = ImmutableMap.<String, Object>builder()
-				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("definitionStatusId", Concepts.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status of concept to fully defined")
 				.build();
 
@@ -1095,7 +1094,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		// Verify change of definition status on concept
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "").statusCode(200)
-			.body("definitionStatus", equalTo(DefinitionStatus.FULLY_DEFINED.toString()));
+			.body("definitionStatusId", equalTo(Concepts.FULLY_DEFINED));
 	}
 	
 	@Test
@@ -1104,7 +1103,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		// Update the definition status on concept
 		final Map<?, ?> definitionStatusUpdateRequestBody = ImmutableMap.<String, Object>builder()
-				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("definitionStatusId", Concepts.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status of concept to fully defined")
 				.build();
 
@@ -1126,7 +1125,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
 				.put("members", SnomedReferenceSetMembers.of(changedMembers))
-				.put("definitionStatus", DefinitionStatus.PRIMITIVE)
+				.put("definitionStatusId", Concepts.PRIMITIVE)
 				.put("commitComment", "Add new reference set member via concept update")
 				.build();
 
@@ -1139,7 +1138,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertEquals(1, updatedConcept.getMembers().getTotal());
 		
 		// Verify that definition status is still fully defined
-		assertEquals(DefinitionStatus.FULLY_DEFINED, updatedConcept.getDefinitionStatus());
+		assertEquals(Concepts.FULLY_DEFINED, updatedConcept.getDefinitionStatusId());
 	}
 	
 	@Test
@@ -1174,7 +1173,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertEquals(1, updatedConcept.getMembers().getTotal());
 		
 		// Verify that definition status was updated to FULLY DEFINED
-		assertEquals(DefinitionStatus.FULLY_DEFINED, updatedConcept.getDefinitionStatus());
+		assertEquals(Concepts.FULLY_DEFINED, updatedConcept.getDefinitionStatusId());
 	}
 	
 	@Test
@@ -1183,7 +1182,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		// Update the definition status on concept
 		final Map<?, ?> definitionStatusUpdateRequestBody = ImmutableMap.<String, Object>builder()
-				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("definitionStatusId", Concepts.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status of concept to fully defined")
 				.build();
 
@@ -1216,7 +1215,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertEquals(1, updatedConcept.getMembers().getTotal());
 		
 		// Verify that definition status was updated to FULLY DEFINED
-		assertEquals(DefinitionStatus.PRIMITIVE, updatedConcept.getDefinitionStatus());
+		assertEquals(Concepts.PRIMITIVE, updatedConcept.getDefinitionStatusId());
 	}
 	
 	@Test

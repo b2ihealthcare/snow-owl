@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
@@ -69,7 +68,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	private SnomedRefSetCreateRequest refSetRequest;
 
 	@NotNull
-	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
+	private String definitionStatusId = Concepts.PRIMITIVE;
 	
 	@NotNull
 	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
@@ -80,8 +79,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
 	}
 	
-	void setDefinitionStatus(DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	void setDefinitionStatusId(String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 	}
 	
 	void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
@@ -120,16 +119,16 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 
 	private SnomedConceptDocument convertConcept(final TransactionContext context) {
-		final DefinitionStatus newDefinitionStatus;
+		final String newDefinitionStatusId;
 		final Set<String> newAxiomExpressions = getOwlAxiomExpressions();
 
 		if (!newAxiomExpressions.isEmpty()) {
-			newDefinitionStatus = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newAxiomExpressions);
+			newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newAxiomExpressions);
 		} else {
-			if (definitionStatus == null) {
+			if (definitionStatusId == null) {
 				throw new BadRequestException("No axiom members or definition status was set for concept");
 			}
-			newDefinitionStatus = definitionStatus;
+			newDefinitionStatusId = definitionStatusId;
 		}
 		
 		try {
@@ -138,7 +137,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 					.withId(conceptId)
 					.withActive(isActive())
 					.withModule(getModuleId())
-					.withDefinitionStatus(newDefinitionStatus)
+					.withDefinitionStatusId(newDefinitionStatusId)
 					.withExhaustive(subclassDefinitionStatus.isExhaustive())
 					.build(context);
 		} catch (final ComponentNotFoundException e) {

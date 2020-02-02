@@ -47,7 +47,16 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
@@ -90,7 +99,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 	protected SnomedConcept toResource(final SnomedConceptDocument input) {
 		final SnomedConcept result = new SnomedConcept();
 		result.setActive(input.isActive());
-		result.setDefinitionStatus(toDefinitionStatus(input.isPrimitive()));
+		result.setDefinitionStatusId(toDefinitionStatus(input.isPrimitive()));
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
 		result.setId(input.getId());
 		result.setModuleId(input.getModuleId());
@@ -147,6 +156,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		expandInactivationProperties(results, conceptIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, conceptIds);
 		new ModuleExpander(context(), expand(), locales()).expand(results);
+		expandDefinitionStatus(results);
 		
 		expandPreferredTerm(results, conceptIds);
 		expandFullySpecifiedName(results, conceptIds);
@@ -167,6 +177,28 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			results.forEach(concept -> {
 				concept.setPreferredDescriptions(null);
 			});
+		}
+	}
+
+	private void expandDefinitionStatus(List<SnomedConcept> results) {
+		if (!expand().containsKey(SnomedConcept.Expand.DEFINITION_STATUS)) {
+			return;
+		}
+		
+		Set<String> definitionStatusIds = results.stream()
+				.map(SnomedConcept::getDefinitionStatusId)
+				.collect(Collectors.toSet());
+		
+		Map<String, SnomedConcept> definitionStatusesById = SnomedRequests.prepareSearchConcept()
+			.filterByIds(definitionStatusIds)
+			.setLimit(definitionStatusIds.size())
+			.build()
+			.execute(context())
+			.stream()
+			.collect(Collectors.toMap(SnomedConcept::getId, c -> c));
+		
+		for (SnomedConcept result : results) {
+			result.setDefinitionStatus(definitionStatusesById.get(result.getDefinitionStatusId()));
 		}
 	}
 
@@ -534,8 +566,8 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		}
 	}
 
-	private DefinitionStatus toDefinitionStatus(final boolean primitive) {
-		return primitive ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED;
+	private String toDefinitionStatus(final boolean primitive) {
+		return primitive ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED;
 	}
 
 	private SubclassDefinitionStatus toSubclassDefinitionStatus(final boolean exhaustive) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,16 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeCaseSignificance;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeRelationshipGroup;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createInactiveConcept;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewDescription;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSetMember;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewTextDefinition;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.merge;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 
@@ -44,7 +53,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
@@ -60,7 +68,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	private static void rebaseConceptDeletionOverChange(IBranchPath parentPath, IBranchPath childPath, String conceptId) {
 		final Map<?, ?> changeOnParent = ImmutableMap.builder()
-				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("definitionStatusId", Concepts.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status on parent")
 				.build();
 
@@ -415,7 +423,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		rebaseConceptDeletionOverChange(branchPath, a, conceptId);
 
 		// Concept should still be present on parent, and deleted on child
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200).body("definitionStatus", equalTo(DefinitionStatus.FULLY_DEFINED.name()));
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200).body("definitionStatusId", equalTo(Concepts.FULLY_DEFINED));
 		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
 	}
 
@@ -681,7 +689,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		createBranch(a).statusCode(201);
 
 		final Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("definitionStatusId", Concepts.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status on child")
 				.build();
 

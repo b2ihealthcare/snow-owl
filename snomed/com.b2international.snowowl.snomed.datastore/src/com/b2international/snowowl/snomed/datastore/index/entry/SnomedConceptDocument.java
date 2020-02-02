@@ -254,7 +254,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.released(input.isReleased())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.iconId(input.getIconId())
-				.primitive(input.getDefinitionStatus().isPrimitive())
+				.primitive(input.isPrimitive())
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
 				.parents(PrimitiveSets.newLongOpenHashSet(input.getParentIds()))
 				.ancestors(PrimitiveSets.newLongOpenHashSet(input.getAncestorIds()))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -205,7 +204,7 @@ public final class ReasonerTaxonomyBuilder {
 			final Collection<String> definedConceptIds = newArrayListWithCapacity(chunk.size());
 			for (SnomedConcept concept : chunk) {
 				conceptIds.add(concept.getId());
-				if (!concept.getDefinitionStatus().isPrimitive()) {
+				if (!concept.isPrimitive()) {
 					definedConceptIds.add(concept.getId());
 				}
 			}
@@ -415,10 +414,9 @@ public final class ReasonerTaxonomyBuilder {
 		entering("Registering active concept flags (exhaustive, fully defined) using concept ID stream");
 
 		Stream<SnomedConcept> filteredConcepts = concepts.filter(c -> {
-			final boolean fullyDefined = DefinitionStatus.FULLY_DEFINED.equals(c.getDefinitionStatus());
 			final boolean exhaustive = SubclassDefinitionStatus.DISJOINT_SUBCLASSES.equals(c.getSubclassDefinitionStatus());
 			return c.isActive() 
-					&& (fullyDefined || exhaustive)
+					&& (!c.isPrimitive() || exhaustive)
 					&& !excludedModuleIds.contains(c.getModuleId());
 		});
 
