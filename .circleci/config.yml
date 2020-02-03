@@ -34,5 +34,9 @@ jobs:
             npm install -g npm
       - run:
           name: Build and deploy
-          command: ./mvnw -s .circleci/settings.xml /
-                   --projects commons,core,snomed clean install deploy:deploy -DskipTests
+          command: >
+            ./mvnw -s .circleci/settings.xml
+            --projects commons,core,snomed
+            clean install
+            deploy:deploy
+            -DskipTests
