@@ -32,19 +32,7 @@ jobs:
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
             apk add --no-cache make=4.2.1-r0 nodejs openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
             npm install -g npm
-      - restore_cache:
-          keys:
-            # when lock file changes, use increasingly general patterns to restore cache
-            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-            - maven-repo-v1-{{ .Branch }}-
-            - maven-repo-v1-
       - run:
-          name: Build
-          command: ./mvnw --projects commons,core,snomed clean install -DskipTests
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-      - deploy:
-          name: Deploy
-          command: ./mvnw -s .circleci/settings.xml deploy:deploy -DskipTests
+          name: Build and deploy
+          command: ./mvnw -s .circleci/settings.xml /
+                   --projects commons,core,snomed clean install deploy:deploy -DskipTests
