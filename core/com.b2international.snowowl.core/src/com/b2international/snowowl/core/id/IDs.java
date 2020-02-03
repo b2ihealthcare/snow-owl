@@ -25,7 +25,7 @@ import org.elasticsearch.common.UUIDs;
 public class IDs {
 
 	/**
-	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index asprimary key. 
+	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index as primary key. 
 	 * @return
 	 * @see UUIDs
 	 */
