@@ -10,10 +10,11 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.mockito;bundle-version="2.13.0";visibility:=reexport,
  org.apache.commons.lang;bundle-version="2.6.0",
  com.b2international.restassured-all;bundle-version="[3.2.0,3.3.0)";visibility:=reexport,
- com.b2international.snowowl.snomed.reasoner,
+ com.b2international.snowowl.datastore;visibility:=reexport,
  com.b2international.snowowl.test.dependencies;visibility:=reexport,
  com.b2international.snowowl.snomed.common;visibility:=reexport,
- org.eclipse.xtext.xbase.lib
+ com.b2international.snowowl.snomed.datastore,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.18.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Import-Package: ch.qos.logback.classic;version="1.2.3",

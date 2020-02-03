@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.test.commons.rest;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -34,49 +33,55 @@ import io.restassured.response.ValidatableResponse;
  * 
  * @since 2.0
  */
-public abstract class SnomedBranchingRestRequests {
+public final class RepositoryBranchRestRequests {
 
-	public static ValidatableResponse createBranch(IBranchPath branchPath) {
+	private final String apiBaseUrl;
+
+	public RepositoryBranchRestRequests(String apiBaseUrl) {
+		this.apiBaseUrl = apiBaseUrl;
+	}
+	
+	public ValidatableResponse createBranch(IBranchPath branchPath) {
 		return createBranch(branchPath, ImmutableMap.of());
 	}
 
-	public static ValidatableResponse createBranch(IBranchPath branchPath, Map<?, ?> metadata) {
+	public ValidatableResponse createBranch(IBranchPath branchPath, Map<?, ?> metadata) {
 		Map<?, ?> requestBody = ImmutableMap.<String, Object> builder()
 				.put("parent", branchPath.getParentPath())
 				.put("name", branchPath.lastSegment())
 				.put("metadata", metadata)
 				.build();
 
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+		return givenAuthenticatedRequest(apiBaseUrl)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.post("/branches")
 				.then();
 	}
 
-	public static ValidatableResponse getBranch(IBranchPath branchPath) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+	public ValidatableResponse getBranch(IBranchPath branchPath) {
+		return givenAuthenticatedRequest(apiBaseUrl)
 				.get("/branches/{path}", branchPath.getPath())
 				.then();
 	}
 
-	public static ValidatableResponse getAllBranches() {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+	public ValidatableResponse getAllBranches() {
+		return givenAuthenticatedRequest(apiBaseUrl)
 				.get("/branches?limit=" + Integer.MAX_VALUE)
 				.then();
 	}
 
-	public static ValidatableResponse getBranchChildren(IBranchPath branchPath) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+	public ValidatableResponse getBranchChildren(IBranchPath branchPath) {
+		return givenAuthenticatedRequest(apiBaseUrl)
 				.get("/branches/{path}/children", branchPath.getParentPath())
 				.then();
 	}
 
-	public static void createBranchRecursively(IBranchPath branchPath) {
+	public void createBranchRecursively(IBranchPath branchPath) {
 		createBranchRecursively(branchPath, ImmutableMap.of());
 	}
 
-	public static void createBranchRecursively(IBranchPath branchPath, Map<?, ?> metadata) {
+	public void createBranchRecursively(IBranchPath branchPath, Map<?, ?> metadata) {
 		IBranchPath currentPath = branchPath;
 		ValidatableResponse response = getBranch(currentPath);
 		List<String> segmentsToCreate = newArrayList();
@@ -99,23 +104,20 @@ public abstract class SnomedBranchingRestRequests {
 		}
 	}
 
-	public static ValidatableResponse updateBranch(IBranchPath branchPath, Map<?, ?> metadata) {
+	public ValidatableResponse updateBranch(IBranchPath branchPath, Map<?, ?> metadata) {
 		Map<?, ?> requestBody = ImmutableMap.of("metadata", metadata);
 
-		return givenAuthenticatedRequest(SCT_API)
+		return givenAuthenticatedRequest(apiBaseUrl)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.put("/branches/{path}", branchPath.getPath())
 				.then();
 	}
 
-	public static ValidatableResponse deleteBranch(IBranchPath branchPath) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+	public ValidatableResponse deleteBranch(IBranchPath branchPath) {
+		return givenAuthenticatedRequest(apiBaseUrl)
 				.delete("/branches/{path}", branchPath.getPath())
 				.then();
 	}
 
-	private SnomedBranchingRestRequests() {
-		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
-	}
 }

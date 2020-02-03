@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.branch;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -34,7 +33,6 @@ import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
-import com.b2international.snowowl.snomed.core.rest.domain.CreateReviewRequest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -47,12 +45,14 @@ import io.swagger.annotations.ApiResponses;
  * @since 4.2
  */
 @Api(value = "Branches", description = "Branches", tags = "branches")
-@RestController
 @RequestMapping(value="/reviews", produces={AbstractRestService.JSON_MEDIA_TYPE})
-public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
+public abstract class RepositoryBranchReviewRestService extends AbstractRestService {
 
-	public SnomedBranchReviewRestService() {
+	private final String repositoryId;
+
+	public RepositoryBranchReviewRestService(String repositoryId) {
 		super(Review.Fields.ALL);
+		this.repositoryId = repositoryId;
 	}
 	
 	@ApiOperation(
@@ -67,7 +67,7 @@ public class SnomedBranchReviewRestService extends AbstractSnomedRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public Promise<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
 		ApiValidation.checkInput(request);
-		final UriComponentsBuilder linkTo = MvcUriComponentsBuilder.fromController(SnomedBranchReviewRestService.class);
+		final UriComponentsBuilder linkTo = MvcUriComponentsBuilder.fromController(RepositoryBranchReviewRestService.class);
 		return RepositoryRequests
 			.reviews()
 			.prepareCreate()

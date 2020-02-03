@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,49 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest.domain;
+package com.b2international.snowowl.core.rest.branch;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.annotations.ApiParam;
+
 /**
- * @since 7.0
+ * @since 4.1
  */
-public final class SnomedCompareRestRequest {
-	
+public class MergeRestRequest {
+
 	@ApiParam(required = true)
+	@JsonProperty
 	@NotEmpty
-	private String baseBranch;
-	
+	private String source;
+
 	@ApiParam(required = true)
+	@JsonProperty
 	@NotEmpty
-	private String compareBranch;
+	private String target;
+
+	@ApiParam(required = false)
+	@JsonProperty
+	private String commitComment;
 	
 	@ApiParam(required = false)
-	private int limit = 50;
-	
-	public String getBaseBranch() {
-		return baseBranch;
-	}
-	
-	public void setBaseBranch(String baseBranch) {
-		this.baseBranch = baseBranch;
-	}
-	
-	public String getCompareBranch() {
-		return compareBranch;
-	}
-	
-	public void setCompareBranch(String compareBranch) {
-		this.compareBranch = compareBranch;
-	}
-	
-	public int getLimit() {
-		return limit;
-	}
-	
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
+	@JsonProperty
+	private String reviewId;
 
+	public String getCommitComment() {
+		return commitComment;
+	}
+	
+	public String getReviewId() {
+		return reviewId;
+	}
+	
+	public String getSource() {
+		return source;
+	}
+	
+	public String getTarget() {
+		return target;
+	}
+	
 }

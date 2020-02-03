@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class FhirApiConfig extends BaseApiConfig {
 			getApiBaseUrl(), 
 			"fhir", 
 			"1.0", 
-			"Snow Owl® FHIR API", 
+			"FHIR API", 
 			"https://b2i.sg/", 
 			"support@b2i.sg", 
 			"API License", 

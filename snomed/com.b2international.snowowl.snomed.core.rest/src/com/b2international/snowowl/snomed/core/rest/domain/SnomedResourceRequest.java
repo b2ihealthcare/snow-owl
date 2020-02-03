@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,49 +15,27 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.b2international.snowowl.core.rest.domain.ResourceRequest;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
-public class ChangeRequest<T> {
+/**
+ * @since 1.0
+ * @param <T> - the actual resource request body
+ */
+public final class SnomedResourceRequest<T> extends ResourceRequest<T> {
 
-	private T change;
-	private String commitComment;
 	private String defaultModuleId;
-
-	@JsonUnwrapped
-	public T getChange() {
-		return change;
-	}
-
-	public String getCommitComment() {
-		return commitComment;
-	}
 
 	public String getDefaultModuleId() {
 		return defaultModuleId;
 	}
 
-	public void setChange(final T change) {
-		this.change = change;
-	}
-
-	public void setCommitComment(final String commitComment) {
-		this.commitComment = commitComment;
-	}
-	
 	public void setDefaultModuleId(final String defaultModuleId) {
 		this.defaultModuleId = defaultModuleId;
 	}
 
 	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("ChangeRequest [change=");
-		builder.append(change);
-		builder.append(", commitComment=");
-		builder.append(commitComment);
-		builder.append(", defaultModuleId=");
-		builder.append(defaultModuleId);
-		builder.append("]");
-		return builder.toString();
+	protected void doToString(ToStringHelper toStringHelper) {
+		toStringHelper.add("defaultModuleId", defaultModuleId);
 	}
 }

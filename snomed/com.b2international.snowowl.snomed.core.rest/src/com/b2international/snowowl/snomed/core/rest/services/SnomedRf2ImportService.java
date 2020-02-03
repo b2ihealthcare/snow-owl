@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedImportConfiguration;
-import com.b2international.snowowl.snomed.core.rest.exceptions.SnomedImportConfigurationNotFoundException;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -82,7 +81,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 
 		final ISnomedImportConfiguration configuration = configurationMapping.get(importId);
 		if (null == configuration) {
-			throw new SnomedImportConfigurationNotFoundException(importId);
+			throw new NotFoundException("SNOMED CT import configuration", importId.toString());
 		}
 		
 		return configuration;

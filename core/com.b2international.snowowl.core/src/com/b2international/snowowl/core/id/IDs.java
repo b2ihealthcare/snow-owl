@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest.domain;
+package com.b2international.snowowl.core.id;
+
+import org.elasticsearch.common.UUIDs;
 
 /**
- * @since 7.0
+ * Class to use to generate decentralized random UUIDs. 
+ * 
+ * @since 7.3
  */
-public class SnomedConceptMini {
+public class IDs {
 
-	private String id;
-	private String fsn;
-	
-	public SnomedConceptMini(String id) {
-		this(id, id);
-	}
-	
-	public SnomedConceptMini(String id, String fsn) {
-		this.id = id;
-		this.fsn = fsn;
-	}
-
-	public void setFsn(String fsn) {
-		this.fsn = fsn;
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public String getFsn() {
-		return fsn;
+	/**
+	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index as primary key. 
+	 * @return
+	 * @see UUIDs
+	 */
+	public static final String base64UUID() {
+		return UUIDs.base64UUID();
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
 
@@ -493,7 +492,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {
 
-		ValidatableResponse response = SnomedBranchingRestRequests.getBranch(branch);
+		ValidatableResponse response = branching.getBranch(branch);
 
 		String baseTimestamp = response.extract().jsonPath().getString("baseTimestamp");
 		String headTimestamp = response.extract().jsonPath().getString("headTimestamp");
@@ -505,7 +504,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 		importArchive(importArchiveFileName, branch, createVersions, Rf2ReleaseType.DELTA);
 
-		ValidatableResponse response2 = SnomedBranchingRestRequests.getBranch(branch);
+		ValidatableResponse response2 = branching.getBranch(branch);
 
 		String baseTimestampAfterImport = response2.extract().jsonPath().getString("baseTimestamp");
 		String headTimestampAfterImport = response2.extract().jsonPath().getString("headTimestamp");

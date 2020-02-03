@@ -96,8 +96,8 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
-	public void add(Object o) {
-		getDelegate().add(o);
+	public String add(Object o) {
+		return getDelegate().add(o);
 	}
 	
 	@Override

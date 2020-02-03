@@ -15,16 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
+import com.b2international.snowowl.core.rest.branch.RepositoryBranchRestService;
 
 /**
  * @since 7.3
  */
-public abstract class AbstractSnomedApiTest extends AbstractApiTest {
+@RestController
+public class SnomedRepositoryBranchRestService extends RepositoryBranchRestService {
 
-	@Override
-	protected String getApiBaseUrl() {
-		return SnomedApiTestConstants.SCT_API;
+	public SnomedRepositoryBranchRestService() {
+		super(SnomedApiConfig.REPOSITORY_ID);
 	}
-	
+
 }

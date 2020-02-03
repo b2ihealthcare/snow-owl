@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.branches;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewDescription;
@@ -89,7 +88,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createRegularReview() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		String reviewId = getReviewJobId(createReview(a, branchPath));
 		
@@ -104,7 +103,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		String deletedConceptId = createNewConcept(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		String newConceptId = createNewConcept(a);
 		createNewRelationship(a);
@@ -126,7 +125,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		String deletedConceptId = createNewConcept(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		String newConceptId = createNewConcept(branchPath);
 		createNewRelationship(branchPath);
@@ -148,7 +147,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		inactivateDescription(branchPath, descriptionId);
 
@@ -165,7 +164,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		String relationshipId = createNewRelationship(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		inactivateRelationship(branchPath, relationshipId);
 
@@ -181,12 +180,12 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void reviewAfterParentRebase() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 		
 		String deletedConceptId = createNewConcept(a);
 		
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranch(b).statusCode(201);
+		branching.createBranch(b).statusCode(201);
 
 		deleteComponent(a, SnomedComponentType.CONCEPT, deletedConceptId, false).statusCode(204);
 		String newConcept1Id = createNewConcept(a); 
@@ -216,12 +215,12 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void reviewAfterParentMerge() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 		
 		String deletedConceptId = createNewConcept(a);
 		
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranch(b).statusCode(201);
+		branching.createBranch(b).statusCode(201);
 
 		deleteComponent(a, SnomedComponentType.CONCEPT, deletedConceptId, false).statusCode(204);
 		String newConcept1Id = createNewConcept(a); 
@@ -254,7 +253,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void deleteReviewAndChanges() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		String reviewId = getReviewJobId(createReview(a, branchPath));
 		waitForReviewJob(reviewId).body("status", equalTo(ReviewStatus.CURRENT.name()));
@@ -269,7 +268,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void setReviewStale() throws Exception {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		String reviewId = getReviewJobId(createReview(a, branchPath));
 		waitForReviewJob(reviewId).body("status", equalTo(ReviewStatus.CURRENT.name()));
@@ -285,9 +284,9 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void setReviewStaleAfterParentRebase() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranch(b).statusCode(201);
+		branching.createBranch(b).statusCode(201);
 
 		createNewConcept(branchPath);
 

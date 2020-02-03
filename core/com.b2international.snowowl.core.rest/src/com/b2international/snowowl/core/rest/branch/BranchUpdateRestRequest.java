@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.branch;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.commons.options.Metadata;
 
 /**
  * @since 5.0
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface BranchBase {
-	String value() default Branch.MAIN_PATH;
-	boolean isolateTests() default true;
+public class BranchUpdateRestRequest {
+
+	private Metadata metadata;
+	
+	public Metadata getMetadata() {
+		return metadata;
+	}
+	
+	public void setMetadata(Metadata metadata) {
+		this.metadata = metadata;
+	}
+	
 }

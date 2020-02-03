@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.branch;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.UUID;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -34,7 +40,6 @@ import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.snomed.core.rest.domain.MergeRestRequest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -46,12 +51,14 @@ import io.swagger.annotations.ApiResponses;
  * @since 4.1
  */
 @Api(value = "Branches", description = "Branches", tags = "branches")
-@RestController
 @RequestMapping(value="/merges", produces={AbstractRestService.JSON_MEDIA_TYPE})
-public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
+public abstract class RepositoryBranchMergeRestService extends AbstractRestService {
 	
-	public SnomedBranchMergingRestService() {
+	private final String repositoryId;
+
+	public RepositoryBranchMergeRestService(String repositoryId) {
 		super(Collections.emptySet());
+		this.repositoryId = repositoryId;
 	}
 	
 	@ApiOperation(
@@ -96,8 +103,7 @@ public class SnomedBranchMergingRestService extends AbstractSnomedRestService {
 			.buildAsync()
 			.execute(getBus());
 		
-		final URI linkUri = MvcUriComponentsBuilder.fromController(SnomedBranchMergingRestService.class).pathSegment(jobId).build().toUri();
-		return ResponseEntity.accepted().location(linkUri).build();
+		return ResponseEntity.accepted().location(getResourceLocationURI(jobId)).build();
 	}
 	
 	@ApiOperation(

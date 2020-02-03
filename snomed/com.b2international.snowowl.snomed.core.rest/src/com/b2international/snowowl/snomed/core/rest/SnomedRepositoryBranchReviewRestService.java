@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest.domain;
+package com.b2international.snowowl.snomed.core.rest;
+
+import org.springframework.web.bind.annotation.RestController;
+
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
+import com.b2international.snowowl.core.rest.branch.RepositoryBranchReviewRestService;
 
 /**
- * @since 1.0
+ * @since 7.3
  */
-public class SnomedIdentifierResponse {
+@RestController
+public class SnomedRepositoryBranchReviewRestService extends RepositoryBranchReviewRestService {
 
-	private String id;
-	
-	public SnomedIdentifierResponse(String id) {
-		this.id = id;
+	public SnomedRepositoryBranchReviewRestService() {
+		super(SnomedApiConfig.REPOSITORY_ID);
 	}
 
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
 }

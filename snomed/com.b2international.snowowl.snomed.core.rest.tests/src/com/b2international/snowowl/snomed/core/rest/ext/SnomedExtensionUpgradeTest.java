@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.updateCodeSystem;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
@@ -49,8 +48,8 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -58,10 +57,10 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.core.rest.BranchBase;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.test.commons.rest.BranchBase;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -80,12 +79,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v1";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);		
+		branching.createBranch(targetPath).statusCode(201);		
 
 		merge(branchPath, targetPath, "Upgraded B2i extension to v1.").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
@@ -106,12 +105,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v2";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);		
+		branching.createBranch(targetPath).statusCode(201);		
 
 		String conceptId = createNewConcept(branchPath);
 
@@ -136,12 +135,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v3";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);		
+		branching.createBranch(targetPath).statusCode(201);		
 
 		String conceptId = createNewConcept(targetPath);
 
@@ -167,12 +166,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v4";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);		
+		branching.createBranch(targetPath).statusCode(201);		
 
 		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("id", "476216051000154119") // Description of Date-time reference set
@@ -228,12 +227,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		
 		// upgrade extension to latest INT version
 		
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		
 		merge(branchPath, targetPath, "Upgraded B2i extension to v10").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
@@ -298,12 +297,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		
 		// upgrade extension to new INT version
 		
-		IBranchPath newTargetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath newTargetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				newIntversionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(newTargetPath).statusCode(201);
+		branching.createBranch(newTargetPath).statusCode(201);
 		
 		merge(targetPath, newTargetPath, "Upgraded B2i extension to v11").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
@@ -381,12 +380,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v5";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 		
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		
 		// create INT concept with same ID but different description and relationship IDs on version branch
 		
@@ -504,12 +503,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v6";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 		
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		
 		// create INT description with same ID but with slightly different properties
 		
@@ -596,12 +595,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v9";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 		
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		
 		// create INT relationship with same ID but with slightly different properties
 		
@@ -702,12 +701,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v7";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 		
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 	
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		
 		// create INT concept with same ID but different description and relationship IDs on version branch
 		
@@ -849,12 +848,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v8";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 		
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 	
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		
 		// create INT concept with same ID but different description and relationship IDs on version branch
 		
@@ -1057,12 +1056,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v13";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 		
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 	
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		
 		// create INT concept with same ID on version branch
 		
@@ -1378,12 +1377,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String versionId = "v12";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
 		
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
 				Branch.MAIN_PATH, 
 				versionId, 
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 	
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		
 		// create INT concept with same ID on version branch
 		

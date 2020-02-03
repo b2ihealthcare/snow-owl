@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.core.rest.branch;
 
 import java.net.URI;
 import java.util.List;
@@ -21,19 +21,23 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
-import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.snomed.core.rest.domain.BranchUpdateRestRequest;
-import com.b2international.snowowl.snomed.core.rest.domain.CreateBranchRestRequest;
 import com.google.common.collect.ImmutableList;
 
 import io.swagger.annotations.Api;
@@ -46,12 +50,14 @@ import io.swagger.annotations.ApiResponses;
  * @since 4.1
  */
 @Api(value = "Branches", description = "Branches", tags = "branches")
-@RestController
 @RequestMapping(value="/branches", produces={AbstractRestService.JSON_MEDIA_TYPE})
-public class SnomedBranchingRestService extends AbstractSnomedRestService {
+public abstract class RepositoryBranchRestService extends AbstractRestService {
 
-	public SnomedBranchingRestService() {
+	private final String repositoryId;
+
+	public RepositoryBranchRestService(String repositoryId) {
 		super(Branch.Fields.ALL);
+		this.repositoryId = repositoryId;
 	}
 	
 	@ApiOperation(
@@ -66,7 +72,7 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public Promise<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRestRequest request) {
 		ApiValidation.checkInput(request);
-		final URI location = getBranchLocationHeader(request.path());
+		final URI location = getResourceLocationURI(request.path());
 		return RepositoryRequests
 					.branching()
 					.prepareCreate()
@@ -207,10 +213,6 @@ public class SnomedBranchingRestService extends AbstractSnomedRestService {
 					.build(repositoryId)
 					.execute(getBus())
 					.then(success -> ResponseEntity.noContent().build());
-	}
-	
-	private URI getBranchLocationHeader(String branchPath) {
-		return MvcUriComponentsBuilder.fromController(SnomedBranchingRestService.class).pathSegment(branchPath).build().toUri();
 	}
 	
 }

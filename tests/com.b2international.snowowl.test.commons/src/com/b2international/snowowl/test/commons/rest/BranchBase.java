@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.test.commons.rest;
 
-import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import com.b2international.snowowl.core.branch.Branch;
 
 /**
- * @since 7.3
+ * @since 5.0
  */
-public abstract class AbstractSnomedApiTest extends AbstractApiTest {
-
-	@Override
-	protected String getApiBaseUrl() {
-		return SnomedApiTestConstants.SCT_API;
-	}
-	
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BranchBase {
+	String value() default Branch.MAIN_PATH;
+	boolean isolateTests() default true;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.commons.exceptions.*;
+import com.b2international.commons.platform.PlatformUtil;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Throwables;
 
@@ -50,9 +52,19 @@ public class ControllerExceptionMapper {
 		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
-	    	LOG.trace("Exception during request processing", ex);
+	    	if (PlatformUtil.isDevVersion()) {
+	    		LOG.error("Exception during request processing", ex);
+	    	} else {
+	    		LOG.trace("Exception during request processing", ex);
+	    	}
 	    	return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	    }
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+	public @ResponseBody RestApiError handle(final HttpRequestMethodNotSupportedException e) {
+		return RestApiError.of(ApiError.Builder.of("Method " + e.getMethod() + " is not allowed").build()).build(HttpStatus.METHOD_NOT_ALLOWED.value());
 	}
 	
 	@ExceptionHandler
@@ -72,7 +84,11 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
 	public @ResponseBody RestApiError handle(RequestTimeoutException ex) {
-		LOG.trace("Timeout during request processing", ex);
+		if (PlatformUtil.isDevVersion()) {
+    		LOG.error("Timeout during request processing", ex);
+    	} else {
+    		LOG.trace("Timeout during request processing", ex);
+    	}
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
 	}
 	

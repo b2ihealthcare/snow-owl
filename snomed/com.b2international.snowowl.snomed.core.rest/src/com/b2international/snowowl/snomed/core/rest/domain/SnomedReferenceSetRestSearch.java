@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,31 +15,24 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
 
+import io.swagger.annotations.ApiParam;
 
 /**
- * @since 1.0
+ * @since 7.3
  */
-public class SnomedIdentifierRequest {
+public final class SnomedReferenceSetRestSearch extends ResourceRestSearch {
 
-	private ComponentCategory type;
-	private String namespace;
+	@ApiParam(value = "The reference set type to match")
+	private String[] refSetTypes;
 	
-	public ComponentCategory getType() {
-		return type;
+	public String[] getRefSetTypes() {
+		return refSetTypes;
 	}
 	
-	public void setType(ComponentCategory componentCategory) {
-		this.type = componentCategory;
-	}
-	
-	public String getNamespace() {
-		return namespace;
-	}
-	
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
+	public void setRefSetTypes(String[] refSetTypes) {
+		this.refSetTypes = refSetTypes;
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest.codesystem;
+package com.b2international.snowowl.core.rest.domain;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
+ * @since 1.0
  */
-public class ChangeRequest<T> {
+public class ResourceRequest<T> {
 
 	private T change;
 	private String commitComment;
@@ -42,13 +45,13 @@ public class ChangeRequest<T> {
 	}
 
 	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("ChangeRequest [change=");
-		builder.append(change);
-		builder.append(", commitComment=");
-		builder.append(commitComment);
-		builder.append("]");
-		return builder.toString();
+	public final String toString() {
+		ToStringHelper toStringHelper = MoreObjects.toStringHelper(getClass()).add("change", change).add("commitComment", commitComment);
+		doToString(toStringHelper);
+		return toStringHelper.toString();
 	}
+
+	protected void doToString(ToStringHelper toStringHelper) {
+	}
+	
 }

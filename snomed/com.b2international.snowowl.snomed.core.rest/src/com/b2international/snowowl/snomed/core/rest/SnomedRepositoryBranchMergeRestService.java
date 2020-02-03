@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest.domain;
+package com.b2international.snowowl.snomed.core.rest;
 
-import com.b2international.commons.options.Metadata;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
+import com.b2international.snowowl.core.rest.branch.RepositoryBranchMergeRestService;
 
 /**
- * @since 5.0
+ * @since 7.3
  */
-public class BranchUpdateRestRequest {
+@RestController
+public class SnomedRepositoryBranchMergeRestService extends RepositoryBranchMergeRestService {
 
-	private Metadata metadata;
-	
-	public Metadata getMetadata() {
-		return metadata;
+	public SnomedRepositoryBranchMergeRestService() {
+		super(SnomedApiConfig.REPOSITORY_ID);
 	}
-	
-	public void setMetadata(Metadata metadata) {
-		this.metadata = metadata;
-	}
-	
+
 }
