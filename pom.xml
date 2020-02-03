@@ -75,20 +75,20 @@
             <name>remote-repos</name>
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
-<!--        <repository>-->
-<!--            <snapshots>-->
-<!--                <enabled>false</enabled>-->
-<!--            </snapshots>-->
-<!--            <id>artifactory-releases</id>-->
-<!--            <name>remote-repos</name>-->
-<!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
-<!--        </repository>-->
-<!--        <repository>-->
-<!--            <snapshots/>-->
-<!--            <id>artifactory-snapshots</id>-->
-<!--            <name>remote-repos</name>-->
-<!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
-<!--        </repository>-->
+        <!--        <repository>-->
+        <!--            <snapshots>-->
+        <!--                <enabled>false</enabled>-->
+        <!--            </snapshots>-->
+        <!--            <id>artifactory-releases</id>-->
+        <!--            <name>remote-repos</name>-->
+        <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
+        <!--        </repository>-->
+        <!--        <repository>-->
+        <!--            <snapshots/>-->
+        <!--            <id>artifactory-snapshots</id>-->
+        <!--            <name>remote-repos</name>-->
+        <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
+        <!--        </repository>-->
 
         <repository>
             <id>protege-mvn-repo</id>
@@ -115,22 +115,22 @@
             </snapshots>
         </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>artifactory-releases</id>
-            <name>remote-repos</name>
-            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <snapshots/>
-            <id>artifactory-snapshots</id>
-            <name>remote-repos</name>
-            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
-        </pluginRepository>
-    </pluginRepositories>
+    <!--    <pluginRepositories>-->
+    <!--        <pluginRepository>-->
+    <!--            <snapshots>-->
+    <!--                <enabled>false</enabled>-->
+    <!--            </snapshots>-->
+    <!--            <id>artifactory-releases</id>-->
+    <!--            <name>remote-repos</name>-->
+    <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
+    <!--        </pluginRepository>-->
+    <!--        <pluginRepository>-->
+    <!--            <snapshots/>-->
+    <!--            <id>artifactory-snapshots</id>-->
+    <!--            <name>remote-repos</name>-->
+    <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
+    <!--        </pluginRepository>-->
+    <!--    </pluginRepositories>-->
     <dependencies>
         <!-- Add new dependencies here at the end of the dependency list -->
         <dependency>
