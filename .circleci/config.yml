@@ -35,4 +35,7 @@ jobs:
       - run:
           name: Build and deploy
           command: >
-            ./mvnw -s .circleci/settings.xml deploy -DskipTests
+            ./mvnw -s .circleci/settings.xml deploy
+            -DskipTests
+            -Dtycho.localArtifacts=ignore
+
