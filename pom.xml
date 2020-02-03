@@ -66,30 +66,6 @@
     </modules>
 
     <repositories>
-
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>maven-central</id>
-            <name>remote-repos</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-        <!--        <repository>-->
-        <!--            <snapshots>-->
-        <!--                <enabled>false</enabled>-->
-        <!--            </snapshots>-->
-        <!--            <id>artifactory-releases</id>-->
-        <!--            <name>remote-repos</name>-->
-        <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
-        <!--        </repository>-->
-        <!--        <repository>-->
-        <!--            <snapshots/>-->
-        <!--            <id>artifactory-snapshots</id>-->
-        <!--            <name>remote-repos</name>-->
-        <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
-        <!--        </repository>-->
-
         <repository>
             <id>protege-mvn-repo</id>
             <url>https://b2ihealthcare.github.io/protege/</url>
@@ -115,22 +91,7 @@
             </snapshots>
         </repository>
     </repositories>
-    <!--    <pluginRepositories>-->
-    <!--        <pluginRepository>-->
-    <!--            <snapshots>-->
-    <!--                <enabled>false</enabled>-->
-    <!--            </snapshots>-->
-    <!--            <id>artifactory-releases</id>-->
-    <!--            <name>remote-repos</name>-->
-    <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
-    <!--        </pluginRepository>-->
-    <!--        <pluginRepository>-->
-    <!--            <snapshots/>-->
-    <!--            <id>artifactory-snapshots</id>-->
-    <!--            <name>remote-repos</name>-->
-    <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
-    <!--        </pluginRepository>-->
-    <!--    </pluginRepositories>-->
+
     <dependencies>
         <!-- Add new dependencies here at the end of the dependency list -->
         <dependency>
@@ -645,27 +606,27 @@
                 <version>${tycho.version}</version>
                 <extensions>true</extensions>
             </plugin>
-            <!--            <plugin>-->
-            <!--                <groupId>org.eclipse.tycho</groupId>-->
-            <!--                <artifactId>tycho-packaging-plugin</artifactId>-->
-            <!--                <configuration>-->
-            <!--                    <strictBinIncludes>false</strictBinIncludes>-->
-            <!--                    <strictVersions>false</strictVersions>-->
-            <!--                </configuration>-->
-            <!--            </plugin>-->
-            <!--            <plugin>-->
-            <!--                <groupId>org.eclipse.tycho</groupId>-->
-            <!--                <artifactId>tycho-source-plugin</artifactId>-->
-            <!--                <version>${tycho.version}</version>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <id>plugin-source</id>-->
-            <!--                        <goals>-->
-            <!--                            <goal>plugin-source</goal>-->
-            <!--                        </goals>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--            </plugin>-->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-packaging-plugin</artifactId>
+                <configuration>
+                    <strictBinIncludes>false</strictBinIncludes>
+                    <strictVersions>false</strictVersions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-source-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <executions>
+                    <execution>
+                        <id>plugin-source</id>
+                        <goals>
+                            <goal>plugin-source</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
@@ -694,7 +655,7 @@
                         <filter>
                             <type>p2-installable-unit</type>
                             <id>org.eclipse.equinox.servletbridge.extensionbundle</id>
-                            <removeAll/>
+                            <removeAll />
                         </filter>
                         <filter>
                             <type>eclipse-plugin</type>
@@ -801,7 +762,7 @@
                         <filter>
                             <type>p2-installable-unit</type>
                             <id>org.slf4j.api</id>
-                            <removeAll/>
+                            <removeAll />
                         </filter>
                     </filters>
                     <environments>
@@ -840,19 +801,19 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <!--            <plugin>-->
-            <!--                <groupId>org.eclipse.tycho</groupId>-->
-            <!--                <artifactId>tycho-p2-publisher-plugin</artifactId>-->
-            <!--                <version>${tycho.version}</version>-->
-            <!--                <configuration>-->
-            <!--                    <publishArtifacts>true</publishArtifacts>-->
-            <!--                </configuration>-->
-            <!--            </plugin>-->
-            <!--            <plugin>-->
-            <!--                <groupId>org.eclipse.tycho</groupId>-->
-            <!--                <artifactId>tycho-versions-plugin</artifactId>-->
-            <!--                <version>${tycho.version}</version>-->
-            <!--            </plugin>-->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-publisher-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <publishArtifacts>true</publishArtifacts>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-versions-plugin</artifactId>
+                <version>${tycho.version}</version>
+            </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -898,30 +859,30 @@
                     <version>${tycho.version}</version>
                     <configuration>
                         <failIfNoTests>false</failIfNoTests>
-                        <!--                        <includes>-->
-                        <!--                            <include>**/*Test*.java</include>-->
-                        <!--                        </includes>-->
+                        <includes>
+                            <include>**/*Test*.java</include>
+                        </includes>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
-                <!--                <plugin>-->
-                <!--                    <groupId>org.eclipse.tycho</groupId>-->
-                <!--                    <artifactId>tycho-packaging-plugin</artifactId>-->
-                <!--                    <version>${tycho.version}</version>-->
-                <!--                    <dependencies>-->
-                <!--                        <dependency>-->
-                <!--                            <groupId>org.eclipse.tycho.extras</groupId>-->
-                <!--                            <artifactId>tycho-buildtimestamp-jgit</artifactId>-->
-                <!--                            <version>${tycho-extras.version}</version>-->
-                <!--                        </dependency>-->
-                <!--                    </dependencies>-->
-                <!--                    <configuration>-->
-                <!--                        <timestampProvider>jgit</timestampProvider>-->
-                <!--                        <jgit.ignore>-->
-                <!--                            pom.xml-->
-                <!--                        </jgit.ignore>-->
-                <!--                    </configuration>-->
-                <!--                </plugin>-->
+                <plugin>
+                    <groupId>org.eclipse.tycho</groupId>
+                    <artifactId>tycho-packaging-plugin</artifactId>
+                    <version>${tycho.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.eclipse.tycho.extras</groupId>
+                            <artifactId>tycho-buildtimestamp-jgit</artifactId>
+                            <version>${tycho-extras.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <timestampProvider>jgit</timestampProvider>
+                        <jgit.ignore>
+                            pom.xml
+                        </jgit.ignore>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.eclipse.tycho</groupId>
                     <artifactId>tycho-p2-repository-plugin</artifactId>
@@ -935,34 +896,6 @@
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.3</version>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                </plugin>
-<!--                <plugin>-->
-<!--                    <groupId>org.jfrog.buildinfo</groupId>-->
-<!--                    <artifactId>artifactory-maven-plugin</artifactId>-->
-<!--                    <version>2.6.1</version>-->
-<!--                    <inherited>false</inherited>-->
-<!--                    <executions>-->
-<!--                        <execution>-->
-<!--                            <id>build-info</id>-->
-<!--                            <goals>-->
-<!--                                <goal>publish</goal>-->
-<!--                            </goals>-->
-<!--                            <configuration>-->
-<!--                                <publisher>-->
-<!--                                    <contextUrl>https://artifactory.ops.babylontech.co.uk/artifactory</contextUrl>-->
-<!--                                    <username>{env.ARTIFACTORY_USER_RW}</username>-->
-<!--                                    <password>{env.ARTIFACTORY_PWD_RW}</password>-->
-<!--                                    <repoKey>artifactory-releases</repoKey>-->
-<!--                                    <snapshotRepoKey>artifactory-snapshots</snapshotRepoKey>-->
-<!--                                </publisher>-->
-<!--                            </configuration>-->
-<!--                        </execution>-->
-<!--                    </executions>-->
-<!--                </plugin>-->
             </plugins>
         </pluginManagement>
     </build>
