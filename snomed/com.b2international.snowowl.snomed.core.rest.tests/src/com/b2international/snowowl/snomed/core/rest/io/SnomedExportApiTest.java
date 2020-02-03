@@ -134,7 +134,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		Set<String> existingFiles = newHashSet();
 		
-		try (FileSystem fs = FileSystems.newFileSystem(exportArchive.toPath(), null)) {
+		try (FileSystem fs = FileSystems.newFileSystem(exportArchive.toPath(), (ClassLoader) null)) {
 			for (Path path : fs.getRootDirectories()) {
 				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 					@Override
@@ -167,7 +167,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	
 		Multimap<String, Pair<Boolean, String>> resultMap = ArrayListMultimap.create();
 
-		try (FileSystem fs = FileSystems.newFileSystem(exportArchive.toPath(), null)) {
+		try (FileSystem fs = FileSystems.newFileSystem(exportArchive.toPath(), (ClassLoader) null)) {
 			for (Path path : fs.getRootDirectories()) {
 				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 					@Override
