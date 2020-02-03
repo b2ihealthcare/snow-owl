@@ -44,7 +44,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * Adds the given {@link Object} to this transaction context as a completely new object. 
 	 * 
 	 * @param obj - the object to persist and add to the repository
-	 * @return the identifier if the given object is an instanceof of {@link Revision} or <code>null</code> if the object is not a {@link Revision}.
+	 * @return the identifier of the object if it is an instanceof of any of the following classes: {@link Revision} / {@link CodeSystemEntry} / {@link CodeSystemVersionEntry} or <code>null</code> in any other cases.
 	 */
 	String add(Object obj);
 	
