@@ -840,19 +840,19 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <!--            <plugin>-->
-            <!--                <groupId>org.eclipse.tycho</groupId>-->
-            <!--                <artifactId>tycho-p2-publisher-plugin</artifactId>-->
-            <!--                <version>${tycho.version}</version>-->
-            <!--                <configuration>-->
-            <!--                    <publishArtifacts>true</publishArtifacts>-->
-            <!--                </configuration>-->
-            <!--            </plugin>-->
-            <!--            <plugin>-->
-            <!--                <groupId>org.eclipse.tycho</groupId>-->
-            <!--                <artifactId>tycho-versions-plugin</artifactId>-->
-            <!--                <version>${tycho.version}</version>-->
-            <!--            </plugin>-->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-publisher-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <publishArtifacts>true</publishArtifacts>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-versions-plugin</artifactId>
+                <version>${tycho.version}</version>
+            </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -940,29 +940,6 @@
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>3.0.0-M1</version>
                 </plugin>
-                <!--                <plugin>-->
-                <!--                    <groupId>org.jfrog.buildinfo</groupId>-->
-                <!--                    <artifactId>artifactory-maven-plugin</artifactId>-->
-                <!--                    <version>2.6.1</version>-->
-                <!--                    <inherited>false</inherited>-->
-                <!--                    <executions>-->
-                <!--                        <execution>-->
-                <!--                            <id>build-info</id>-->
-                <!--                            <goals>-->
-                <!--                                <goal>publish</goal>-->
-                <!--                            </goals>-->
-                <!--                            <configuration>-->
-                <!--                                <publisher>-->
-                <!--                                    <contextUrl>https://artifactory.ops.babylontech.co.uk/artifactory</contextUrl>-->
-                <!--                                    <username>{env.ARTIFACTORY_USER_RW}</username>-->
-                <!--                                    <password>{env.ARTIFACTORY_PWD_RW}</password>-->
-                <!--                                    <repoKey>artifactory-releases</repoKey>-->
-                <!--                                    <snapshotRepoKey>artifactory-snapshots</snapshotRepoKey>-->
-                <!--                                </publisher>-->
-                <!--                            </configuration>-->
-                <!--                        </execution>-->
-                <!--                    </executions>-->
-                <!--                </plugin>-->
             </plugins>
         </pluginManagement>
     </build>
