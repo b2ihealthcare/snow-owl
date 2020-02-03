@@ -40,7 +40,7 @@ jobs:
             - maven-repo-v1-
       - run:
           name: Build
-          command: ./mvnw --projects commons,core,snomed clean package -DskipTests
+          command: ./mvnw --projects commons,core,snomed clean install -DskipTests
       - save_cache:
           paths:
             - ~/.m2
