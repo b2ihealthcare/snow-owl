@@ -37,5 +37,5 @@ jobs:
           command: >
             ./mvnw -s .circleci/settings.xml
             --projects commons,core,snomed
-            --also-make-dependents install deploy:deploy
+            --also-make --also-make-dependents install deploy:deploy
             -DskipTests
