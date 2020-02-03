@@ -40,7 +40,7 @@ jobs:
             - maven-repo-v1-
       - run:
           name: Build
-          command: ./mvnw --projects commons,core,fhir,snomed --also-make-dependents clean install
+          command: ./mvnw --projects commons,core,fhir,snomed --also-make clean install release
       - save_cache:
           paths:
             - ~/.m2
