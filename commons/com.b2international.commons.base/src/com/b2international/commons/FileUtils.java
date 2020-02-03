@@ -40,6 +40,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 
@@ -48,6 +49,13 @@ public final class FileUtils {
 	private static final int DEFAULT_BUFFER_SIZE = 4096;
 
 	public static final String TEMP_DIR_PROPERTY = "java.io.tmpdir";
+	
+	private static final char[] INVALID_RESOURCE_CHARACTERS = { '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0' };
+	
+	public static final CharMatcher INVALID_RESOURCE_MATCHER = CharMatcher.whitespace()
+			.or(CharMatcher.anyOf(String.valueOf(INVALID_RESOURCE_CHARACTERS)))
+			.or(CharMatcher.javaIsoControl())
+			.precomputed();
 
 	public static String readToString(final File file) throws IOException {
 		return readToString(new FileReader(file));
