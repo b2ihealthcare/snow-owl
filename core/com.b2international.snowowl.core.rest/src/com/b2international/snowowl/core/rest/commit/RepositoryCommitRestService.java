@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.rest.commit;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,6 +63,10 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 			@RequestParam(value="author", required=false)
 			final String author,
 			
+			@ApiParam(value = "The identifier(s) to match")
+			@RequestParam(value="id", required=false)
+			final Set<String> id,
+			
 			@ApiParam(value = "Affected component identifier to match")
 			@RequestParam(value="affectedComponentId", required=false)
 			final String affectedComponentId,
@@ -104,6 +109,7 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 		return RepositoryRequests
 					.commitInfos()
 					.prepareSearchCommitInfo()
+					.filterByIds(id)
 					.filterByAuthor(author)
 					.filterByAffectedComponent(affectedComponentId)
 					.filterByComment(comment)
