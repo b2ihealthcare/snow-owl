@@ -47,4 +47,4 @@ jobs:
           key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
       - deploy:
           name: Deploy
-          command: ./mvnw deploy
+          command: ./mvnw deploy:deploy
