@@ -36,6 +36,5 @@ jobs:
           name: Build and deploy
           command: >
             ./mvnw -s .circleci/settings.xml
-            --projects commons,core,snomed,releng,tests
-            --also-make --also-make-dependents install deploy:deploy
+            --also-make --also-make-dependents deploy
             -DskipTests
