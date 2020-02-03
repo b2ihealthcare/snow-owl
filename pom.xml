@@ -639,220 +639,220 @@
 
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.eclipse.tycho</groupId>-->
-<!--                <artifactId>tycho-maven-plugin</artifactId>-->
-<!--                <version>${tycho.version}</version>-->
-<!--                <extensions>true</extensions>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.eclipse.tycho</groupId>-->
-<!--                <artifactId>tycho-packaging-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <strictBinIncludes>false</strictBinIncludes>-->
-<!--                    <strictVersions>false</strictVersions>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.eclipse.tycho</groupId>-->
-<!--                <artifactId>tycho-source-plugin</artifactId>-->
-<!--                <version>${tycho.version}</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>plugin-source</id>-->
-<!--                        <goals>-->
-<!--                            <goal>plugin-source</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.eclipse.tycho</groupId>-->
-<!--                <artifactId>target-platform-configuration</artifactId>-->
-<!--                <version>${tycho.version}</version>-->
-<!--                <configuration>-->
-<!--                    <resolver>p2</resolver>-->
-<!--                    <pomDependencies>consider</pomDependencies>-->
-<!--                    <target>-->
-<!--                        <artifact>-->
-<!--                            <groupId>${project.groupId}</groupId>-->
-<!--                            <artifactId>target-platform</artifactId>-->
-<!--                            <version>${project.version}</version>-->
-<!--                        </artifact>-->
-<!--                    </target>-->
-<!--                    <filters>-->
-<!--                        <filter>-->
-<!--                            <type>eclipse-plugin</type>-->
-<!--                            <id>org.eclipse.osgi</id>-->
-<!--                            <restrictTo>-->
-<!--                                <versionRange>[3.13.0,3.15.0]</versionRange>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        &lt;!&ndash; work around Equinox bug 348045 &ndash;&gt;-->
-<!--                        &lt;!&ndash; Removes the extension bundle from the available bundles for the-->
-<!--                            javax.servlet package &ndash;&gt;-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>org.eclipse.equinox.servletbridge.extensionbundle</id>-->
-<!--                            <removeAll/>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>eclipse-plugin</type>-->
-<!--                            <id>org.codehaus.groovy</id>-->
-<!--                            <restrictTo>-->
-<!--                                <versionRange>${groovy.version}</versionRange>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>eclipse-plugin</type>-->
-<!--                            <id>com.google.guava</id>-->
-<!--                            <restrictTo>-->
-<!--                                <versionRange>${guava.versionRange}</versionRange>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        &lt;!&ndash; Restrict SLF4J version &ndash;&gt;-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>slf4j.api</id>-->
-<!--                            <restrictTo>-->
-<!--                                <versionRange>${slf4j.version}</versionRange>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>ch.qos.logback.classic</id>-->
-<!--                            <restrictTo>-->
-<!--                                <versionRange>${logback.versionRange}</versionRange>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>ch.qos.logback.core</id>-->
-<!--                            <restrictTo>-->
-<!--                                <versionRange>${logback.versionRange}</versionRange>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        &lt;!&ndash; Restrict Jackson bundles to the selected version &ndash;&gt;-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>com.fasterxml.jackson.core.jackson-annotations</id>-->
-<!--                            <restrictTo>-->
-<!--                                <version>${jackson.version}</version>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>com.fasterxml.jackson.core.jackson-core</id>-->
-<!--                            <restrictTo>-->
-<!--                                <version>${jackson.version}</version>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>com.fasterxml.jackson.core.jackson-databind</id>-->
-<!--                            <restrictTo>-->
-<!--                                <version>${jackson.databind.version}</version>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-yaml</id>-->
-<!--                            <restrictTo>-->
-<!--                                <version>${jackson.version}</version>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-cbor</id>-->
-<!--                            <restrictTo>-->
-<!--                                <version>${jackson.version}</version>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-csv</id>-->
-<!--                            <restrictTo>-->
-<!--                                <version>${jackson.version}</version>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-xml</id>-->
-<!--                            <restrictTo>-->
-<!--                                <version>${jackson.version}</version>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-afterburner</id>-->
-<!--                            <restrictTo>-->
-<!--                                <version>${jackson.version}</version>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        &lt;!&ndash; Restrict Apache Commons Collections to versions above and including-->
-<!--                            3.2.2 &ndash;&gt;-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>org.apache.commons.collections</id>-->
-<!--                            <restrictTo>-->
-<!--                                <versionRange>${commons.collections.versionRange}</versionRange>-->
-<!--                            </restrictTo>-->
-<!--                        </filter>-->
-<!--                        <filter>-->
-<!--                            <type>p2-installable-unit</type>-->
-<!--                            <id>org.slf4j.api</id>-->
-<!--                            <removeAll/>-->
-<!--                        </filter>-->
-<!--                    </filters>-->
-<!--                    <environments>-->
-<!--                        <environment>-->
-<!--                            <os>linux</os>-->
-<!--                            <ws>gtk</ws>-->
-<!--                            <arch>x86_64</arch>-->
-<!--                        </environment>-->
-<!--                        <environment>-->
-<!--                            <os>win32</os>-->
-<!--                            <ws>win32</ws>-->
-<!--                            <arch>x86_64</arch>-->
-<!--                        </environment>-->
-<!--                    </environments>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.eclipse.tycho</groupId>-->
-<!--                <artifactId>tycho-p2-director-plugin</artifactId>-->
-<!--                <version>${tycho.version}</version>-->
-<!--                <dependencies>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.codehaus.plexus</groupId>-->
-<!--                        <artifactId>plexus-archiver</artifactId>-->
-<!--                        <version>2.4.4</version>-->
-<!--                        <exclusions>-->
-<!--                            <exclusion>-->
-<!--                                <groupId>org.codehaus.plexus</groupId>-->
-<!--                                <artifactId>plexus-component-api</artifactId>-->
-<!--                            </exclusion>-->
-<!--                            <exclusion>-->
-<!--                                <groupId>org.codehaus.plexus</groupId>-->
-<!--                                <artifactId>plexus-container-default</artifactId>-->
-<!--                            </exclusion>-->
-<!--                        </exclusions>-->
-<!--                    </dependency>-->
-<!--                </dependencies>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.eclipse.tycho</groupId>-->
-<!--                <artifactId>tycho-p2-publisher-plugin</artifactId>-->
-<!--                <version>${tycho.version}</version>-->
-<!--                <configuration>-->
-<!--                    <publishArtifacts>true</publishArtifacts>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.eclipse.tycho</groupId>-->
-<!--                <artifactId>tycho-versions-plugin</artifactId>-->
-<!--                <version>${tycho.version}</version>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.eclipse.tycho</groupId>-->
+            <!--                <artifactId>tycho-maven-plugin</artifactId>-->
+            <!--                <version>${tycho.version}</version>-->
+            <!--                <extensions>true</extensions>-->
+            <!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.eclipse.tycho</groupId>-->
+            <!--                <artifactId>tycho-packaging-plugin</artifactId>-->
+            <!--                <configuration>-->
+            <!--                    <strictBinIncludes>false</strictBinIncludes>-->
+            <!--                    <strictVersions>false</strictVersions>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.eclipse.tycho</groupId>-->
+            <!--                <artifactId>tycho-source-plugin</artifactId>-->
+            <!--                <version>${tycho.version}</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>plugin-source</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>plugin-source</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.eclipse.tycho</groupId>-->
+            <!--                <artifactId>target-platform-configuration</artifactId>-->
+            <!--                <version>${tycho.version}</version>-->
+            <!--                <configuration>-->
+            <!--                    <resolver>p2</resolver>-->
+            <!--                    <pomDependencies>consider</pomDependencies>-->
+            <!--                    <target>-->
+            <!--                        <artifact>-->
+            <!--                            <groupId>${project.groupId}</groupId>-->
+            <!--                            <artifactId>target-platform</artifactId>-->
+            <!--                            <version>${project.version}</version>-->
+            <!--                        </artifact>-->
+            <!--                    </target>-->
+            <!--                    <filters>-->
+            <!--                        <filter>-->
+            <!--                            <type>eclipse-plugin</type>-->
+            <!--                            <id>org.eclipse.osgi</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <versionRange>[3.13.0,3.15.0]</versionRange>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        &lt;!&ndash; work around Equinox bug 348045 &ndash;&gt;-->
+            <!--                        &lt;!&ndash; Removes the extension bundle from the available bundles for the-->
+            <!--                            javax.servlet package &ndash;&gt;-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>org.eclipse.equinox.servletbridge.extensionbundle</id>-->
+            <!--                            <removeAll/>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>eclipse-plugin</type>-->
+            <!--                            <id>org.codehaus.groovy</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <versionRange>${groovy.version}</versionRange>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>eclipse-plugin</type>-->
+            <!--                            <id>com.google.guava</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <versionRange>${guava.versionRange}</versionRange>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        &lt;!&ndash; Restrict SLF4J version &ndash;&gt;-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>slf4j.api</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <versionRange>${slf4j.version}</versionRange>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>ch.qos.logback.classic</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <versionRange>${logback.versionRange}</versionRange>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>ch.qos.logback.core</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <versionRange>${logback.versionRange}</versionRange>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        &lt;!&ndash; Restrict Jackson bundles to the selected version &ndash;&gt;-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>com.fasterxml.jackson.core.jackson-annotations</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <version>${jackson.version}</version>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>com.fasterxml.jackson.core.jackson-core</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <version>${jackson.version}</version>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>com.fasterxml.jackson.core.jackson-databind</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <version>${jackson.databind.version}</version>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-yaml</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <version>${jackson.version}</version>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-cbor</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <version>${jackson.version}</version>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-csv</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <version>${jackson.version}</version>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-xml</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <version>${jackson.version}</version>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>com.fasterxml.jackson.dataformat.jackson-dataformat-afterburner</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <version>${jackson.version}</version>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        &lt;!&ndash; Restrict Apache Commons Collections to versions above and including-->
+            <!--                            3.2.2 &ndash;&gt;-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>org.apache.commons.collections</id>-->
+            <!--                            <restrictTo>-->
+            <!--                                <versionRange>${commons.collections.versionRange}</versionRange>-->
+            <!--                            </restrictTo>-->
+            <!--                        </filter>-->
+            <!--                        <filter>-->
+            <!--                            <type>p2-installable-unit</type>-->
+            <!--                            <id>org.slf4j.api</id>-->
+            <!--                            <removeAll/>-->
+            <!--                        </filter>-->
+            <!--                    </filters>-->
+            <!--                    <environments>-->
+            <!--                        <environment>-->
+            <!--                            <os>linux</os>-->
+            <!--                            <ws>gtk</ws>-->
+            <!--                            <arch>x86_64</arch>-->
+            <!--                        </environment>-->
+            <!--                        <environment>-->
+            <!--                            <os>win32</os>-->
+            <!--                            <ws>win32</ws>-->
+            <!--                            <arch>x86_64</arch>-->
+            <!--                        </environment>-->
+            <!--                    </environments>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.eclipse.tycho</groupId>-->
+            <!--                <artifactId>tycho-p2-director-plugin</artifactId>-->
+            <!--                <version>${tycho.version}</version>-->
+            <!--                <dependencies>-->
+            <!--                    <dependency>-->
+            <!--                        <groupId>org.codehaus.plexus</groupId>-->
+            <!--                        <artifactId>plexus-archiver</artifactId>-->
+            <!--                        <version>2.4.4</version>-->
+            <!--                        <exclusions>-->
+            <!--                            <exclusion>-->
+            <!--                                <groupId>org.codehaus.plexus</groupId>-->
+            <!--                                <artifactId>plexus-component-api</artifactId>-->
+            <!--                            </exclusion>-->
+            <!--                            <exclusion>-->
+            <!--                                <groupId>org.codehaus.plexus</groupId>-->
+            <!--                                <artifactId>plexus-container-default</artifactId>-->
+            <!--                            </exclusion>-->
+            <!--                        </exclusions>-->
+            <!--                    </dependency>-->
+            <!--                </dependencies>-->
+            <!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.eclipse.tycho</groupId>-->
+            <!--                <artifactId>tycho-p2-publisher-plugin</artifactId>-->
+            <!--                <version>${tycho.version}</version>-->
+            <!--                <configuration>-->
+            <!--                    <publishArtifacts>true</publishArtifacts>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.eclipse.tycho</groupId>-->
+            <!--                <artifactId>tycho-versions-plugin</artifactId>-->
+            <!--                <version>${tycho.version}</version>-->
+            <!--            </plugin>-->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -868,20 +868,20 @@
         </plugins>
         <pluginManagement>
             <plugins>
-<!--                <plugin>-->
-<!--                    <groupId>org.eclipse.tycho</groupId>-->
-<!--                    <artifactId>tycho-compiler-plugin</artifactId>-->
-<!--                    <version>${tycho.version}</version>-->
-<!--                    <configuration>-->
-<!--                        <useProjectSettings>false</useProjectSettings>-->
-<!--                        <source>11</source>-->
-<!--                        <target>11</target>-->
-<!--                        <excludeResources>-->
-<!--                            <excludeResource>**/*.groovy</excludeResource>-->
-<!--                            <excludeResource>**/*.xtend</excludeResource>-->
-<!--                        </excludeResources>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
+                <plugin>
+                    <groupId>org.eclipse.tycho</groupId>
+                    <artifactId>tycho-compiler-plugin</artifactId>
+                    <version>${tycho.version}</version>
+                    <configuration>
+                        <useProjectSettings>false</useProjectSettings>
+                        <source>11</source>
+                        <target>11</target>
+                        <excludeResources>
+                            <excludeResource>**/*.groovy</excludeResource>
+                            <excludeResource>**/*.xtend</excludeResource>
+                        </excludeResources>
+                    </configuration>
+                </plugin>
                 <!-- Maven compiler plugin definition needed for Groovy compiler -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -904,32 +904,32 @@
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
-<!--                <plugin>-->
-<!--                    <groupId>org.eclipse.tycho</groupId>-->
-<!--                    <artifactId>tycho-packaging-plugin</artifactId>-->
-<!--                    <version>${tycho.version}</version>-->
-<!--                    <dependencies>-->
-<!--                        <dependency>-->
-<!--                            <groupId>org.eclipse.tycho.extras</groupId>-->
-<!--                            <artifactId>tycho-buildtimestamp-jgit</artifactId>-->
-<!--                            <version>${tycho-extras.version}</version>-->
-<!--                        </dependency>-->
-<!--                    </dependencies>-->
-<!--                    <configuration>-->
-<!--                        <timestampProvider>jgit</timestampProvider>-->
-<!--                        <jgit.ignore>-->
-<!--                            pom.xml-->
-<!--                        </jgit.ignore>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.eclipse.tycho</groupId>-->
-<!--                    <artifactId>tycho-p2-repository-plugin</artifactId>-->
-<!--                    <version>${tycho.version}</version>-->
-<!--                    <configuration>-->
-<!--                        <includeAllDependencies>true</includeAllDependencies>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
+                <!--                <plugin>-->
+                <!--                    <groupId>org.eclipse.tycho</groupId>-->
+                <!--                    <artifactId>tycho-packaging-plugin</artifactId>-->
+                <!--                    <version>${tycho.version}</version>-->
+                <!--                    <dependencies>-->
+                <!--                        <dependency>-->
+                <!--                            <groupId>org.eclipse.tycho.extras</groupId>-->
+                <!--                            <artifactId>tycho-buildtimestamp-jgit</artifactId>-->
+                <!--                            <version>${tycho-extras.version}</version>-->
+                <!--                        </dependency>-->
+                <!--                    </dependencies>-->
+                <!--                    <configuration>-->
+                <!--                        <timestampProvider>jgit</timestampProvider>-->
+                <!--                        <jgit.ignore>-->
+                <!--                            pom.xml-->
+                <!--                        </jgit.ignore>-->
+                <!--                    </configuration>-->
+                <!--                </plugin>-->
+                <!--                <plugin>-->
+                <!--                    <groupId>org.eclipse.tycho</groupId>-->
+                <!--                    <artifactId>tycho-p2-repository-plugin</artifactId>-->
+                <!--                    <version>${tycho.version}</version>-->
+                <!--                    <configuration>-->
+                <!--                        <includeAllDependencies>true</includeAllDependencies>-->
+                <!--                    </configuration>-->
+                <!--                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
