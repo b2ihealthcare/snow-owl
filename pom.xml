@@ -844,10 +844,9 @@
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-p2-publisher-plugin</artifactId>
                 <version>${tycho.version}</version>
-                <deployableFeature>true</deployableFeature>
-                <configuration>
-                    <publishArtifacts>true</publishArtifacts>
-                </configuration>
+<!--                <configuration>-->
+<!--                    <publishArtifacts>true</publishArtifacts>-->
+<!--                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
