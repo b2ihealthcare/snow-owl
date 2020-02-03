@@ -37,6 +37,5 @@ jobs:
           command: >
             ./mvnw -s .circleci/settings.xml
             --projects commons,core,snomed
-            clean install
-            deploy:deploy
+            clean deploy
             -DskipTests
