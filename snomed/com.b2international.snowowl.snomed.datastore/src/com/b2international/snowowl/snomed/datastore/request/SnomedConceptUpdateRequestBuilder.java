@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.List;
 
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -33,7 +32,7 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedConceptUpdateRequestBuilder, SnomedConceptUpdateRequest> {
 
-	private DefinitionStatus definitionStatus;
+	private String definitionStatusId;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private Multimap<AssociationType, String> associationTargets;
 	private InactivationIndicator inactivationIndicator;
@@ -56,8 +55,8 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		return getSelf();
 	}
 	
-	public SnomedConceptUpdateRequestBuilder setDefinitionStatus(DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	public SnomedConceptUpdateRequestBuilder setDefinitionStatusId(String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 		return getSelf();
 	}
 	
@@ -94,7 +93,7 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 	@Override
 	protected void init(SnomedConceptUpdateRequest req) {
 		super.init(req);
-		req.setDefinitionStatus(definitionStatus);
+		req.setDefinitionStatusId(definitionStatusId);
 		req.setSubclassDefinitionStatus(subclassDefinitionStatus);
 		req.setAssociationTargets(associationTargets);
 		req.setInactivationIndicator(inactivationIndicator);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public abstract class BaseApiConfig {
 							new SecurityReference("basic", new AuthorizationScope[0]),
 							new SecurityReference("bearer", new AuthorizationScope[0])
 						))
-						.build()
+					.build()
 				))
 				.useDefaultResponseMessages(false)
 				.ignoredParameterTypes(Principal.class)
@@ -110,7 +110,9 @@ public abstract class BaseApiConfig {
 			        )
 				)
 				.groupName(apiGroup)
-	            .select().paths(paths).build()
+	            .select()
+	            	.paths(paths)
+	            	.build()
 	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
 	

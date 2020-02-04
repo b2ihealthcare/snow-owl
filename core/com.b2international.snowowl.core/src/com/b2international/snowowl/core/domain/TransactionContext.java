@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
  * Represents an ongoing transaction to the underlying repository. The transaction can commit all aggregated changes up to a given point using the {@link #commit() commit method}. 
  * The changes can be new, changed and deleted objects. 
  * An object is basically a POJO with a {@link Doc} annotation, so the underlying repository will recognize and treat them properly during {@link #commit()}. 
- * If the given Object is an instance of {@link Revision} then it will be treated as a {@link Revision} will be persisted on the branch available via {@link #branch()}.
+ * If the given Object is an instance of {@link Revision} then it will be treated as a {@link Revision} and it will be persisted on the branch available via {@link #branch()}.
  * 
  * @since 4.5
  */
@@ -44,8 +44,9 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * Adds the given {@link Object} to this transaction context as a completely new object. 
 	 * 
 	 * @param obj - the object to persist and add to the repository
+	 * @return the identifier of the object if it is an instanceof of any of the following classes: {@link Revision} / {@link CodeSystemEntry} / {@link CodeSystemVersionEntry} or <code>null</code> in any other cases.
 	 */
-	void add(Object obj);
+	String add(Object obj);
 	
 	/**
 	 * @param oldVersion

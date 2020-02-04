@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.commit;
 
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AUTHOR;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.BRANCH;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.COMMENT;
@@ -62,7 +62,7 @@ public final class CommitInfoSearchRequestBuilder
 	}
 	
 	public CommitInfoSearchRequestBuilder filterByAffectedComponent(final String affectedComponentId) {
-		return addOption(AFFECTED_COMPONENT, affectedComponentId);
+		return addOption(AFFECTED_COMPONENT_ID, affectedComponentId);
 	}
 
 	@Override

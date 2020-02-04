@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 	protected void expand(List<SnomedReferenceSetMember> results) {
 		expandReferencedComponent(results);
 		expandTargetComponent(results);
+		new ModuleExpander(context(), expand(), locales()).expand(results);
 	}
 
 	private void expandTargetComponent(List<SnomedReferenceSetMember> results) {
@@ -97,7 +98,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 			
 			for (ComponentCategory category : targetComponentIdsByCategory.keySet()) {
 				final Collection<String> targetComponentIds = targetComponentIdsByCategory.get(category);
-				final Map<String,? extends SnomedCoreComponent> componentsById = Maps.uniqueIndex(getComponents(category, targetComponentIds, expandOptions.get("expand", Options.class)), IComponent.ID_FUNCTION);
+				final Map<String, ? extends SnomedCoreComponent> componentsById = Maps.uniqueIndex(getComponents(category, targetComponentIds, expandOptions.get("expand", Options.class)), IComponent::getId);
 				for (String targetComponentId : targetComponentIds) {
 					final SnomedCoreComponent targetComponent = componentsById.get(targetComponentId);
 					if (targetComponent != null) {

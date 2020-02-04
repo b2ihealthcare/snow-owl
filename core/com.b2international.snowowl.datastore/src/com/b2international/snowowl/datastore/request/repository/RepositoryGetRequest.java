@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.request.GetResourceRequest;
 /**
  * @since 5.8
  */
-class RepositoryGetRequest extends GetResourceRequest<RepositorySearchRequestBuilder, ServiceProvider, RepositoryInfo> {
+final class RepositoryGetRequest extends GetResourceRequest<RepositorySearchRequestBuilder, ServiceProvider, RepositoryInfo> {
 
 	RepositoryGetRequest(String id) {
 		super(id);

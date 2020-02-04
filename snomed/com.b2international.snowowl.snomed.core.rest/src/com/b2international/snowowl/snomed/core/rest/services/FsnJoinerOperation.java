@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public abstract class FsnJoinerOperation<T> {
 	}
 
 	private Map<String, SnomedDescription> initDescriptionsByConcept(Iterable<SnomedConcept> conceptEntries) {
-		final Set<String> conceptIds = FluentIterable.from(conceptEntries).transform(IComponent.ID_FUNCTION).toSet();
+		final Set<String> conceptIds = FluentIterable.from(conceptEntries).transform(IComponent::getId).toSet();
 		return descriptionService.getFullySpecifiedNames(conceptIds, locales);
 	}
 

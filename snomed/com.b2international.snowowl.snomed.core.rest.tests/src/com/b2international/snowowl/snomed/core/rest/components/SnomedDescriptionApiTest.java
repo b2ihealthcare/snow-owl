@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranchRecursively;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
@@ -594,7 +593,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void createDescriptionOnNestedBranch() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranchRecursively(b);
+		branching.createBranchRecursively(b);
 
 		String descriptionId = createNewDescription(b);
 
@@ -615,7 +614,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranchRecursively(b);
+		branching.createBranchRecursively(b);
 
 		// New description on nested branch resets the concept's version to 1 again
 		createNewDescription(b, conceptId);

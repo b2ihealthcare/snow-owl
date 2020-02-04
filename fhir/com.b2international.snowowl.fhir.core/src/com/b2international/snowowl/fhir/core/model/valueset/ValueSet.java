@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Lists;
 
 import io.swagger.annotations.ApiModel;
 
@@ -67,8 +66,7 @@ public class ValueSet extends MetadataResource {
 	
 	//at least one compose or expansion should exist
 	@Valid
-	@JsonProperty("compose")
-	private final Collection<Compose> composeParts;
+	private final Compose compose;
 	
 	@Valid
 	@JsonProperty
@@ -80,18 +78,18 @@ public class ValueSet extends MetadataResource {
 			final Uri url, final Identifier identifier, final String version, final String name, final String title, Code status, final Date date, String publisher, 
 			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
 			final Collection<CodeableConcept> jurisdictions, final Boolean immutable, final String purpose, final String copyright,
-			final Collection<Compose> composeParts, final Expansion expansion) {
+			final Compose compose, final Expansion expansion) {
 		
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts,
 				description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.immutable = immutable;
-		this.composeParts = composeParts;
+		this.compose = compose;
 		this.expansion = expansion;
 	}
 	
-	public Collection<Compose> getComposeParts() {
-		return composeParts;
+	public Compose getCompose() {
+		return compose;
 	}
 	
 	public static Builder builder(String valueSetId) {
@@ -101,7 +99,7 @@ public class ValueSet extends MetadataResource {
 	public static class Builder extends MetadataResource.Builder<Builder, ValueSet> {
 
 		private Boolean immutable;
-		private Collection<Compose> composeParts = Lists.newArrayList();
+		private Compose compose;
 		private Expansion expansion;
 		
 		public Builder(String valueSetId) {
@@ -113,8 +111,8 @@ public class ValueSet extends MetadataResource {
 			return getSelf();
 		}
 		
-		public Builder addCompose(final Compose compose) {
-			this.composeParts.add(compose);
+		public Builder compose(final Compose compose) {
+			this.compose = compose;
 			return getSelf();
 		}
 		
@@ -138,7 +136,7 @@ public class ValueSet extends MetadataResource {
 			
 			return new ValueSet(id, meta, implicitRules, language, text, url, identifier, version, name, 
 					title, status, date, publisher, contacts, description, usageContexts, jurisdictions, immutable, 
-					purpose, copyright, composeParts, expansion);
+					purpose, copyright, compose, expansion);
 		}
 	}
 		

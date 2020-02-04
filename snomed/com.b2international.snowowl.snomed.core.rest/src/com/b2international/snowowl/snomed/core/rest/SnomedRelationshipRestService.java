@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -30,10 +28,10 @@ import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRestUpdate;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 import io.swagger.annotations.Api;
@@ -150,7 +148,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Relationship parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedRelationshipRestInput> body,
+			final SnomedResourceRequest<SnomedRelationshipRestInput> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -165,7 +163,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
 				
-		return ResponseEntity.created(getRelationshipLocation(branchPath, createdRelationshipId)).build();
+		return ResponseEntity.created(getResourceLocationURI(branchPath, createdRelationshipId)).build();
 	}
 
 	@ApiOperation(
@@ -212,7 +210,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Update Relationship parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedRelationshipRestUpdate> body,
+			final SnomedResourceRequest<SnomedRelationshipRestUpdate> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -275,7 +273,4 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 
-	private URI getRelationshipLocation(final String branchPath, final String relationshipId) {
-		return MvcUriComponentsBuilder.fromController(SnomedRelationshipRestService.class).pathSegment(branchPath, relationshipId).build().toUri();
-	}
 }

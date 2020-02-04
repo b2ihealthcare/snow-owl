@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,23 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.*;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.ATTRIBUTE_CARDINALITY;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.ATTRIBUTE_IN_GROUP_CARDINALITY;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.ATTRIBUTE_RULE;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.CONTENT_TYPE_ID;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.DOMAIN_CONSTRAINT;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.DOMAIN_ID;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_PRECOORDINATION;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.EDITORIAL_GUIDE_REFERENCE;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.OWL_AXIOM_1;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.OWL_ONTOLOGY_1;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.PARENT_DOMAIN;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_CONSTRAINT;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_REFINEMENT;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.RANGE_CONSTRAINT;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.RULE_REFSET_ID;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.RULE_STRENGTH_ID;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.searchComponent;
@@ -43,7 +59,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
@@ -411,7 +426,7 @@ public abstract class SnomedRestFixtures {
 
 	public static void changeToDefining(IBranchPath conceptPath, String conceptId) {
 		Map<?, ?> conceptUpdateRequest = ImmutableMap.builder()
-				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("definitionStatusId", Concepts.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status on concept")
 				.build();
 
@@ -562,6 +577,16 @@ public abstract class SnomedRestFixtures {
 					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexMapRule")
 					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexMapAdvice")
 					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
+					.build();
+		case COMPLEX_BLOCK_MAP:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexBlockMapTarget")
+					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 0)
+					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 0)
+					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexBlockMapRule")
+					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexBlockMapAdvice")
+					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
+					.put(SnomedRf2Headers.FIELD_MAP_BLOCK, 1)
 					.build();
 		case DESCRIPTION_TYPE:
 			return ImmutableMap.<String, Object>builder()

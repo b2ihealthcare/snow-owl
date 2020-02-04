@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	/**
 	 * @since 6.16
 	 */
-	public static abstract class Expand {
+	public static abstract class Expand extends SnomedComponent.Expand {
 		public static final String REFERRING_MEMBERS = "members";
 	}
 	

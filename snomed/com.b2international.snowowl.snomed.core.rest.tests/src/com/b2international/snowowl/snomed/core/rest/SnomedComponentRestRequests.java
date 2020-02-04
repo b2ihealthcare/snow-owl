@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,15 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.COMMA_JOINER;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
 
-import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -33,9 +32,6 @@ import io.restassured.response.ValidatableResponse;
  * @since 2.0
  */
 public abstract class SnomedComponentRestRequests {
-
-	private static final Joiner COMMA_JOINER = Joiner.on(",");
-	private static final String JSON_UTF8 = ContentType.JSON.withCharset(Charsets.UTF_8);
 
 	public static ValidatableResponse createComponent(IBranchPath branchPath, SnomedComponentType type, Map<?, ?> requestBody) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)

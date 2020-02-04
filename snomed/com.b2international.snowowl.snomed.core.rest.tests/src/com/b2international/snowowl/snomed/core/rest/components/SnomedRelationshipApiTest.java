@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranchRecursively;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
@@ -325,7 +324,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	public void createRelationshipOnNestedBranch() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranchRecursively(b);
+		branching.createBranchRecursively(b);
 
 		String relationshipId = createNewRelationship(b);
 
@@ -352,7 +351,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranchRecursively(b);
+		branching.createBranchRecursively(b);
 
 		// New relationship on nested branch resets the concept's version to 1 again
 		createNewRelationship(b, conceptId, Concepts.PART_OF, Concepts.NAMESPACE_ROOT);

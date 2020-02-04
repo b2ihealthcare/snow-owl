@@ -50,7 +50,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		COMMENT,
 		TIME_STAMP_FROM,
 		TIME_STAMP_TO,
-		AFFECTED_COMPONENT
+		AFFECTED_COMPONENT_ID
 		
 	}
 	
@@ -127,8 +127,8 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	}
 	
 	private void addAffectedComponentClause(final ExpressionBuilder builder) {
-		if (containsKey(OptionKey.AFFECTED_COMPONENT)) {
-			final String affectedComponentId = getString(OptionKey.AFFECTED_COMPONENT);
+		if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
+			final String affectedComponentId = getString(OptionKey.AFFECTED_COMPONENT_ID);
 			builder.filter(affectedObject(affectedComponentId));
 		}
 	}

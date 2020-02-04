@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.rest.components;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.*;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
-import static org.hamcrest.CoreMatchers.*;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConcreteDomainParentConcept;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConcreteDomainRefSet;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSetMember;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.junit.Test;
 

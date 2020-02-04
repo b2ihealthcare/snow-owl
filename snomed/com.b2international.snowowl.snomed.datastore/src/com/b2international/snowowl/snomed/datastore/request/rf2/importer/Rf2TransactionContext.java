@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,8 +96,8 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
-	public void add(Object o) {
-		getDelegate().add(o);
+	public String add(Object o) {
+		return getDelegate().add(o);
 	}
 	
 	@Override
@@ -370,7 +370,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withActive(concept.isActive())
 					.withEffectiveTime(concept.getEffectiveTime())
 					.withModule(concept.getModuleId())
-					.withDefinitionStatus(concept.getDefinitionStatus())
+					.withDefinitionStatusId(concept.getDefinitionStatusId())
 					.withExhaustive(concept.getSubclassDefinitionStatus().isExhaustive());
 		} else if (component instanceof SnomedDescription) { 
 			SnomedDescription description = (SnomedDescription) component;
@@ -431,6 +431,16 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 						.withMapCategoryId((String) properties.get(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID))
 						.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
 						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
+				break;
+			case COMPLEX_BLOCK_MAP:
+				builder = SnomedComponents.newComplexBlockMapMember()
+						.withGroup((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP))
+						.withPriority((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_PRIORITY))
+						.withMapAdvice((String) properties.get(SnomedRf2Headers.FIELD_MAP_ADVICE))
+						.withCorrelationId((String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID))
+						.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
+						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET))
+						.withBlock((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_BLOCK));
 				break;
 			case LANGUAGE: 
 				builder = SnomedComponents.newLanguageMember()

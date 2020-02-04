@@ -123,10 +123,10 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 	)
 	private final class SnowOwlCommand extends BaseCommand {
 		
-		@Option(names = {"-v", "--version"}, versionHelp = true, description = "Show this help message and exit.")
+		@Option(names = {"-v", "--version"}, versionHelp = true, description = "Print version information and exit.")
 		boolean versionInfoRequested;
 
-		@Option(names = {"-h", "--help"}, usageHelp = true, description = "Print version information and exit.")
+		@Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
 		boolean usageHelpRequested;
 		
 		@Override

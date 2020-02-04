@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -63,6 +64,8 @@ import com.google.common.collect.Multimap;
  * <li>{@code statedAncestors(direct:true|false)} - returns the all or the only the direct ancestors of the concept based on the stated tree.</li>
  * <li>{@code members()} - returns the reference set members referencing this component</li>
  * <li>{@code preferredDescriptions()} - expands the preferred descriptions for each matching concept</li>
+ * <li>{@code module()} - expands the module concept of the concept</li>
+ * <li>{@code definitionStatus()} - expands the definition status concept of the concept</li>
  * </ul>
  * 
  * The number of expanded fields can be controlled with the {@code limit:} directive.
@@ -103,7 +106,7 @@ import com.google.common.collect.Multimap;
 		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION
 	}
 )
-public final class SnomedConcept extends SnomedCoreComponent implements DefinitionStatusProvider {
+public final class SnomedConcept extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = 1L;
 
@@ -126,6 +129,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		public static final String FULLY_SPECIFIED_NAME = "fsn";
 		public static final String PREFERRED_TERM = "pt";
 		public static final Object PREFERRED_DESCRIPTIONS = "preferredDescriptions";
+		public static final Object DEFINITION_STATUS = "definitionStatus";
 
 	}
 	
@@ -182,7 +186,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		return ancestors;
 	};
 
-	private DefinitionStatus definitionStatus;
+	private SnomedConcept definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
@@ -214,18 +218,12 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 	}
 	
-	/**
-	 * @deprecated - get the definitionStatusId from {@link #getDefinitionStatusId()} method
-	 */
-	@JsonProperty
-	@Override
-	public DefinitionStatus getDefinitionStatus() {
+	public SnomedConcept getDefinitionStatus() {
 		return definitionStatus;
 	}
 	
-	@JsonProperty
 	public String getDefinitionStatusId() {
-		return definitionStatus == null ? null : definitionStatus.getConceptId();
+		return getDefinitionStatus() == null ? null : getDefinitionStatus().getId();
 	}
 
 	/**
@@ -422,13 +420,12 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		return statedParentIds == null ? null : Arrays.stream(statedParentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 	
-	@JsonIgnore
-	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
+	public void setDefinitionStatus(final SnomedConcept definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}
 	
 	public void setDefinitionStatusId(final String definitionStatusId) {
-		this.definitionStatus = DefinitionStatus.getByConceptId(definitionStatusId);
+		setDefinitionStatus(new SnomedConcept(definitionStatusId));
 	}
 
 	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {
@@ -542,6 +539,11 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	public SnomedReferenceSet getReferenceSet() {
 		return referenceSet;
 	}
+
+	@JsonIgnore
+	public boolean isPrimitive() {
+		return Concepts.PRIMITIVE.equals(getDefinitionStatusId());
+	}
 	
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(String containerId) {
@@ -550,7 +552,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 				.addMembers(getMembers())
 				.addRelationships(getRelationships())
 				.addDescriptions(getDescriptions())
-				.setDefinitionStatus(getDefinitionStatus())
+				.setDefinitionStatusId(getDefinitionStatusId())
 				.setId(getId())
 				.setModuleId(getModuleId())
 				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
@@ -562,7 +564,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		return SnomedRequests.prepareUpdateConcept(getId())
 				.setActive(isActive())
 				.setAssociationTargets(getAssociationTargets())
-				.setDefinitionStatus(getDefinitionStatus())
+				.setDefinitionStatusId(getDefinitionStatusId())
 				.setInactivationIndicator(getInactivationIndicator())
 				.setModuleId(getModuleId())
 				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
@@ -585,8 +587,8 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		builder.append(getId());
 		builder.append(", isReleased()=");
 		builder.append(isReleased());
-		builder.append(", getDefinitionStatus()=");
-		builder.append(getDefinitionStatus());
+		builder.append(", getDefinitionStatusId()=");
+		builder.append(getDefinitionStatusId());
 		builder.append(", getSubclassDefinitionStatus()=");
 		builder.append(getSubclassDefinitionStatus());
 		builder.append(", getInactivationIndicator()=");
@@ -596,4 +598,5 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		builder.append("]");
 		return builder.toString();
 	}
+
 }

@@ -29,6 +29,7 @@ import org.hamcrest.CoreMatchers;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.test.commons.json.JsonExtensions;
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -51,6 +52,9 @@ import io.restassured.specification.RequestSpecification;
  */
 public class RestExtensions {
 
+	public static final Joiner COMMA_JOINER = Joiner.on(",");
+	public static final String JSON_UTF8 = ContentType.JSON.withCharset(Charsets.UTF_8);
+	
 	// HTTP and REST API
 	private static final AtomicBoolean INITIALIZE_ONCE = new AtomicBoolean(false); 
 	public static final String CONTEXT = "snowowl";
@@ -198,6 +202,12 @@ public class RestExtensions {
 
 	public static Response putJson(String api, Map<String, ?> json, String...segments) {
 		return withJson(givenAuthenticatedRequest(api), json).put(asPath(Arrays.asList(segments)));
+	}
+
+	public static String assertCreated(ValidatableResponse response) {
+		return lastPathSegment(response.statusCode(201)
+				.extract()
+				.header("Location"));
 	}
 	
 }
