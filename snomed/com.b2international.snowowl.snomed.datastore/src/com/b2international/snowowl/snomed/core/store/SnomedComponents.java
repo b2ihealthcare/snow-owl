@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,5 +182,14 @@ public class SnomedComponents {
 	 */
 	public static SnomedMRCMModuleScopeReferenceSetMemberBuilder newMRCMModuleScopeReferenceSetMember() {
 		return new SnomedMRCMModuleScopeReferenceSetMemberBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedComplexBlockMapReferenceSetMemberBuilder SNOMED CT Complex Block Map Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedComplexBlockMapReferenceSetMemberBuilder newComplexBlockMapMember() {
+		return new SnomedComplexBlockMapReferenceSetMemberBuilder();
 	}
 }
