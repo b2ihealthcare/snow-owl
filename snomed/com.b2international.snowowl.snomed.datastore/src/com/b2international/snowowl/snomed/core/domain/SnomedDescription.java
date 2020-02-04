@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	private CaseSignificance caseSignificance;
 	private DescriptionInactivationIndicator inactivationIndicator;
 	private Map<String, Acceptability> acceptabilityMap;
+	private List<AcceptabilityMembership> acceptabilities;
 	private Multimap<AssociationType, String> associationTargets;
 	private SnomedConcept concept;
 	private SnomedConcept type;
@@ -208,9 +209,19 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	 * Returns language reference set member acceptability values for this description, keyed by language reference set identifier.
 	 * 
 	 * @return all acceptability values from each available language refset for this description
+	 * @deprecated - expand {@link #getAcceptabilities()} instead of relying on {@link #getAcceptabilityMap()}
 	 */
 	public Map<String, Acceptability> getAcceptabilityMap() {
 		return acceptabilityMap;
+	}
+	
+	/**
+	 * Returns language reference set member acceptability values for this description, keyed by language reference set identifier.
+	 * 
+	 * @return all acceptability values from each available language refset for this description
+	 */
+	public List<AcceptabilityMembership> getAcceptabilities() {
+		return acceptabilities;
 	}
 	
 	/**
@@ -287,9 +298,14 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		this.caseSignificance = caseSignificance;
 	}
 
+	@Deprecated
 	@JsonProperty("acceptability")
 	public void setAcceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
 		this.acceptabilityMap = acceptabilityMap;
+	}
+	
+	public void setAcceptabilities(List<AcceptabilityMembership> acceptabilities) {
+		this.acceptabilities = acceptabilities;
 	}
 	
 	public void setInactivationIndicator(final DescriptionInactivationIndicator descriptionInactivationIndicator) {

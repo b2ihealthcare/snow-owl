@@ -15,15 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.AcceptabilityMembership;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
@@ -85,6 +89,69 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 		new ModuleExpander(context(), expand(), locales()).expand(results);
 		expandConcept(results, descriptionIds);
 		expandType(results, descriptionIds);
+		expandAcceptabilities(results);
+	}
+	
+	private void expandAcceptabilities(List<SnomedDescription> results) {
+		if (!expand().containsKey("acceptabilities")) {
+			return;
+		}
+		
+		// expand the acceptability objects first
+		for (SnomedDescription result : results) {
+			if (!CompareUtils.isEmpty(result.getAcceptabilityMap())) {
+				List<AcceptabilityMembership> acceptabilities = result.getAcceptabilityMap().entrySet().stream()
+						.map(entry -> new AcceptabilityMembership(entry.getKey(), entry.getValue().getConceptId()))
+						.sorted()
+						.collect(Collectors.toList());
+				result.setAcceptabilities(acceptabilities);
+			} else {
+				result.setAcceptabilities(Collections.emptyList());
+			}
+		}
+
+		// additional expansions supported inside the acceptabilities() expand
+		final Options expandOptions = expand().get("acceptabilities", Options.class).getOptions("expand");
+		
+		if (expandOptions.containsKey("acceptability")) {
+			final Options acceptabilityExpand = expandOptions.get("acceptability", Options.class);
+			final Set<String> acceptabilityIds = results.stream().flatMap(d -> d.getAcceptabilities().stream().map(AcceptabilityMembership::getAcceptabilityId)).collect(Collectors.toSet());
+			final Map<String, SnomedConcept> acceptabilitiesById = SnomedRequests.prepareSearchConcept()
+				.filterByIds(acceptabilityIds)
+				.setLimit(acceptabilityIds.size())
+				.setExpand(acceptabilityExpand.getOptions("expand"))
+				.setLocales(locales())
+				.build()
+				.execute(context())
+				.stream()
+				.collect(Collectors.toMap(SnomedConcept::getId, c -> c));
+			for (SnomedDescription result : results) {
+				result.getAcceptabilities().forEach(acceptabilityMembership -> {
+					acceptabilityMembership.setAcceptability(acceptabilitiesById.get(acceptabilityMembership.getAcceptabilityId()));
+				});
+			}
+		}
+		
+		if (expandOptions.containsKey("languageRefSet")) {
+			final Options languageRefSetExpand = expandOptions.get("languageRefSet", Options.class);
+			final Set<String> languageRefSetIds = results.stream().flatMap(d -> d.getAcceptabilities().stream().map(AcceptabilityMembership::getLanguageRefSetId)).collect(Collectors.toSet());
+			final Map<String, SnomedConcept> languageRefSetsById = SnomedRequests.prepareSearchConcept()
+				.filterByIds(languageRefSetIds)
+				.setLimit(languageRefSetIds.size())
+				.setExpand(languageRefSetExpand.getOptions("expand"))
+				.setLocales(locales())
+				.build()
+				.execute(context())
+				.stream()
+				.collect(Collectors.toMap(SnomedConcept::getId, c -> c));
+			for (SnomedDescription result : results) {
+				result.getAcceptabilities().forEach(acceptabilityMembership -> {
+					acceptabilityMembership.setLanguageRefSet(languageRefSetsById.get(acceptabilityMembership.getLanguageRefSetId()));
+				});
+			}
+		}
+		
+		
 	}
 
 	private void expandConcept(List<SnomedDescription> results, final Set<String> descriptionIds) {
