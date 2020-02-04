@@ -187,7 +187,6 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	};
 
 	private SnomedConcept definitionStatus;
-	private String definitionStatusId;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
@@ -224,7 +223,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	}
 	
 	public String getDefinitionStatusId() {
-		return definitionStatusId;
+		return getDefinitionStatus().getId();
 	}
 
 	/**
@@ -426,7 +425,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	}
 	
 	public void setDefinitionStatusId(final String definitionStatusId) {
-		this.definitionStatusId = definitionStatusId;
+		setDefinitionStatus(new SnomedConcept(definitionStatusId));
 	}
 
 	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {
