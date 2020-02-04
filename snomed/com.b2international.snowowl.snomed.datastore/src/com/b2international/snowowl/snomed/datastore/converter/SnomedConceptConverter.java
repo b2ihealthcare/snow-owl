@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
-import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
@@ -47,16 +46,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
@@ -150,7 +140,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			return;
 		}
 		
-		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
+		final Set<String> conceptIds = FluentIterable.from(results).transform(SnomedConcept::getId).toSet();
 		
 		expandReferenceSet(results);
 		expandInactivationProperties(results, conceptIds);
@@ -461,7 +451,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 						.build().execute(context());
 				
 				final Map<String, SnomedConcept> descendantsById = newHashMap();
-				descendantsById.putAll(Maps.uniqueIndex(descendants, ID_FUNCTION));
+				descendantsById.putAll(Maps.uniqueIndex(descendants, SnomedConcept::getId));
 				for (SnomedConcept concept : results) {
 					final Collection<String> descendantIds = descendantsByAncestor.get(concept.getId());
 					final List<SnomedConcept> currentDescendants = FluentIterable.from(descendantIds).skip(offset).limit(limit).transform(Functions.forMap(descendantsById)).toList();
@@ -542,7 +532,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 					.build().execute(context());
 			
 			final Map<String, SnomedConcept> ancestorsById = newHashMap();
-			ancestorsById.putAll(Maps.uniqueIndex(ancestors, ID_FUNCTION));
+			ancestorsById.putAll(Maps.uniqueIndex(ancestors, SnomedConcept::getId));
 			for (SnomedConcept concept : results) {
 				final Collection<String> ancestorIds = ancestorsByDescendant.get(concept.getId());
 				final List<SnomedConcept> conceptAncestors = FluentIterable.from(ancestorIds).skip(offset).limit(limit).transform(Functions.forMap(ancestorsById)).toList();

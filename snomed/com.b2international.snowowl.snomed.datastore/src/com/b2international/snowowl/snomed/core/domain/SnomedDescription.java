@@ -50,6 +50,7 @@ import com.google.common.collect.Multimap;
  * <ul>
  * <li>{@code type()} - returns the concept representing the type of the description</li>
  * <li>{@code members()} - returns the reference set members referencing this component</li>
+ * <li>{@code acceptabilities()} - returns the acceptability membership for this description</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 
@@ -206,12 +207,12 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	/**
 	 * Returns language reference set member acceptability values for this description, keyed by language reference set identifier.
 	 * 
-	 * @return the acceptability map for this description
+	 * @return all acceptability values from each available language refset for this description
 	 */
 	public Map<String, Acceptability> getAcceptabilityMap() {
 		return acceptabilityMap;
 	}
-
+	
 	/**
 	 * Returns the inactivation indicator (if any) of the description that can be used to identify the reason why the
 	 * current description has been deactivated.

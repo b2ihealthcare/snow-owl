@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
-import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +22,6 @@ import java.util.Set;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
@@ -36,7 +33,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -82,7 +78,7 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 			return;
 		}
 		
-		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
+		final Set<String> descriptionIds = FluentIterable.from(results).transform(SnomedDescription::getId).toSet();
 		
 		expandInactivationProperties(results, descriptionIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
@@ -94,17 +90,12 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 	private void expandConcept(List<SnomedDescription> results, final Set<String> descriptionIds) {
 		if (expand().containsKey("concept")) {
 			final Options expandOptions = expand().get("concept", Options.class);
-			final Set<String> conceptIds = FluentIterable.from(results)
-					.transform(new Function<SnomedDescription, String>() {
-						@Override public String apply(SnomedDescription input) { return input.getConceptId(); }
-					})
-					.toSet();
+			final Set<String> conceptIds = FluentIterable.from(results).transform(SnomedDescription::getConceptId).toSet();
 			
 			final Map<String, SnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
 			
 			for (SnomedDescription description : results) {
-				final SnomedConcept concept = conceptsById.get(description.getConceptId());
-				((SnomedDescription) description).setConcept(concept);
+				((SnomedDescription) description).setConcept(conceptsById.get(description.getConceptId()));
 			}
 		}
 	}
@@ -112,17 +103,12 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 	private void expandType(List<SnomedDescription> results, final Set<String> descriptionIds) {
 		if (expand().containsKey("type")) {
 			final Options expandOptions = expand().get("type", Options.class);
-			final Set<String> conceptIds = FluentIterable.from(results)
-					.transform(new Function<SnomedDescription, String>() {
-						@Override public String apply(SnomedDescription input) { return input.getTypeId(); }
-					})
-					.toSet();
+			final Set<String> typeIds = FluentIterable.from(results).transform(SnomedDescription::getTypeId).toSet();
 			
-			final Map<String, SnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
+			final Map<String, SnomedConcept> typesById = getConceptMap(expandOptions, typeIds);
 			
 			for (SnomedDescription description : results) {
-				final SnomedConcept type = conceptsById.get(description.getTypeId());
-				((SnomedDescription) description).setType(type);
+				((SnomedDescription) description).setType(typesById.get(description.getTypeId()));
 			}
 		}
 	}
@@ -137,8 +123,7 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 			.build()
 			.execute(context());
 		
-		final Map<String, SnomedConcept> conceptsById = Maps.uniqueIndex(types, ID_FUNCTION);
-		return conceptsById;
+		return Maps.uniqueIndex(types, SnomedConcept::getId);
 	}
 
 	private void expandInactivationProperties(List<SnomedDescription> results, final Set<String> descriptionIds) {

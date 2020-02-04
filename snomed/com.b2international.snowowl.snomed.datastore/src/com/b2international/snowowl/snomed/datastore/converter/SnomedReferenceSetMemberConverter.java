@@ -98,7 +98,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 			
 			for (ComponentCategory category : targetComponentIdsByCategory.keySet()) {
 				final Collection<String> targetComponentIds = targetComponentIdsByCategory.get(category);
-				final Map<String,? extends SnomedCoreComponent> componentsById = Maps.uniqueIndex(getComponents(category, targetComponentIds, expandOptions.get("expand", Options.class)), IComponent.ID_FUNCTION);
+				final Map<String, ? extends SnomedCoreComponent> componentsById = Maps.uniqueIndex(getComponents(category, targetComponentIds, expandOptions.get("expand", Options.class)), IComponent::getId);
 				for (String targetComponentId : targetComponentIds) {
 					final SnomedCoreComponent targetComponent = componentsById.get(targetComponentId);
 					if (targetComponent != null) {
