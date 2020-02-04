@@ -175,6 +175,8 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			return;
 		}
 		
+		final Options definitionStatusExpand = expand().getOptions(SnomedConcept.Expand.DEFINITION_STATUS).getOptions("expand");
+		
 		Set<String> definitionStatusIds = results.stream()
 				.map(SnomedConcept::getDefinitionStatusId)
 				.collect(Collectors.toSet());
@@ -182,6 +184,8 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		Map<String, SnomedConcept> definitionStatusesById = SnomedRequests.prepareSearchConcept()
 			.filterByIds(definitionStatusIds)
 			.setLimit(definitionStatusIds.size())
+			.setExpand(definitionStatusExpand)
+			.setLocales(locales())
 			.build()
 			.execute(context())
 			.stream()
