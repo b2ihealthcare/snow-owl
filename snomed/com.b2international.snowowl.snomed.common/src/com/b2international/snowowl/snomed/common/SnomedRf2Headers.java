@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,6 +120,9 @@ public abstract class SnomedRf2Headers {
 	public static final String FIELD_MRCM_ATTRIBUTE_RULE = "attributeRule";
 	
 	public static final String FIELD_MRCM_RULE_REFSET_ID = "mrcmRuleRefsetId";
+	
+	// Field used in "complex map with map block" reference sets
+	public static final String FIELD_MAP_BLOCK = "mapBlock";
 	
 	public static final String ATTRIBUTE_DESCRIPTION = "attributeDescription";
 	public static final String ATTRIBUTE_TYPE = "attributeType";
@@ -380,6 +383,21 @@ public abstract class SnomedRf2Headers {
 		ATTRIBUTE_TYPE,
 		ATTRIBUTE_ORDER
 	};
+	
+	public static final String[] COMPLEX_BLOCK_MAP_TYPE_HEADER = new String[] {
+			FIELD_ID, 
+			FIELD_EFFECTIVE_TIME, 
+			FIELD_ACTIVE, 
+			FIELD_MODULE_ID, 
+			FIELD_REFSET_ID, 
+			FIELD_REFERENCED_COMPONENT_ID,
+			FIELD_MAP_GROUP, 
+			FIELD_MAP_PRIORITY, 
+			FIELD_MAP_RULE, 
+			FIELD_MAP_ADVICE, 
+			FIELD_MAP_TARGET, 
+			FIELD_CORRELATION_ID,
+			FIELD_MAP_BLOCK };
 	
 	private SnomedRf2Headers() {
 		// Prevent instantiation

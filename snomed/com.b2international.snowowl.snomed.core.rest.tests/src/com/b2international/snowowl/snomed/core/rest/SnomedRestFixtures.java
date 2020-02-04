@@ -578,6 +578,16 @@ public abstract class SnomedRestFixtures {
 					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexMapAdvice")
 					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
 					.build();
+		case COMPLEX_BLOCK_MAP:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexBlockMapTarget")
+					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 0)
+					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 0)
+					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexBlockMapRule")
+					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexBlockMapAdvice")
+					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
+					.put(SnomedRf2Headers.FIELD_MAP_BLOCK, 1)
+					.build();
 		case DESCRIPTION_TYPE:
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, Concepts.ROOT_CONCEPT)

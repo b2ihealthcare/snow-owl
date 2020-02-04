@@ -432,6 +432,16 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 						.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
 						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
 				break;
+			case COMPLEX_BLOCK_MAP:
+				builder = SnomedComponents.newComplexBlockMapMember()
+						.withGroup((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP))
+						.withPriority((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_PRIORITY))
+						.withMapAdvice((String) properties.get(SnomedRf2Headers.FIELD_MAP_ADVICE))
+						.withCorrelationId((String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID))
+						.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
+						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET))
+						.withBlock((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_BLOCK));
+				break;
 			case LANGUAGE: 
 				builder = SnomedComponents.newLanguageMember()
 						.withAcceptability(Acceptability.getByConceptId((String) properties.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)));

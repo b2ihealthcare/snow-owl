@@ -69,6 +69,7 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				}, 
 			//  Concrete data type reference sets are tested separately 
 			{ 	SnomedRefSetType.COMPLEX_MAP					},
+			{ 	SnomedRefSetType.COMPLEX_BLOCK_MAP				},
 			{ 	SnomedRefSetType.DESCRIPTION_TYPE				}, 
 			{ 	SnomedRefSetType.EXTENDED_MAP					},
 			{ 	SnomedRefSetType.LANGUAGE						},

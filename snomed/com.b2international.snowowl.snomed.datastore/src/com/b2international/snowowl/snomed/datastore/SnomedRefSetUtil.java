@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.COMPLEX_MAP;
-import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.EXTENDED_MAP;
-import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP;
-import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -100,6 +97,7 @@ public abstract class SnomedRefSetUtil {
 						SnomedRefSetType.SIMPLE_MAP,
 						SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
 						SnomedRefSetType.COMPLEX_MAP,
+						SnomedRefSetType.COMPLEX_BLOCK_MAP,
 						SnomedRefSetType.EXTENDED_MAP)
 			.putAll(SnomedRF2Folder.METADATA, 
 						SnomedRefSetType.MRCM_DOMAIN,
@@ -187,6 +185,8 @@ public abstract class SnomedRefSetUtil {
 				return SnomedRefSetType.SIMPLE;
 			case Concepts.REFSET_COMPLEX_MAP_TYPE: 
 				return SnomedRefSetType.COMPLEX_MAP;
+			case Concepts.REFSET_COMPLEX_BLOCK_MAP_TYPE: 
+				return SnomedRefSetType.COMPLEX_BLOCK_MAP;
 			case Concepts.EXTENDED_MAP_TYPE: 
 				return SnomedRefSetType.EXTENDED_MAP;
 			case Concepts.REFSET_DESCRIPTION_TYPE: 
@@ -218,7 +218,9 @@ public abstract class SnomedRefSetUtil {
 	 * @return {@code true} if the reference set type is complex or extended map type, otherwise returns with {@code false}.
 	 */
 	public static boolean isComplexMapping(final SnomedRefSetType type) {
-		return COMPLEX_MAP.equals(type) || EXTENDED_MAP.equals(type);
+		return COMPLEX_MAP.equals(type) 
+				|| COMPLEX_BLOCK_MAP.equals(type)
+				|| EXTENDED_MAP.equals(type);
 	}
 	
 	/**
@@ -230,6 +232,7 @@ public abstract class SnomedRefSetUtil {
 		return SIMPLE_MAP.equals(type) 
 				|| SIMPLE_MAP_WITH_DESCRIPTION.equals(type)
 				|| COMPLEX_MAP.equals(type)
+				|| COMPLEX_BLOCK_MAP.equals(type)
 				|| EXTENDED_MAP.equals(type);
 	}
 	
@@ -249,6 +252,7 @@ public abstract class SnomedRefSetUtil {
 			case SIMPLE_MAP_WITH_DESCRIPTION: return "Simple map type with map target description";
 			case SIMPLE: return "Simple type reference set";
 			case COMPLEX_MAP: return "Complex map type reference set";
+			case COMPLEX_BLOCK_MAP: return "Complex map with map block type reference set";
 			case EXTENDED_MAP: return "Extended map type reference set";
 			case DESCRIPTION_TYPE: return "Description type reference set";
 			case ASSOCIATION: return "Association type reference set";
@@ -288,6 +292,8 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_SIMPLE_TYPE;
 			case COMPLEX_MAP:
 				return Concepts.REFSET_COMPLEX_MAP_TYPE;
+			case COMPLEX_BLOCK_MAP:
+				return Concepts.REFSET_COMPLEX_BLOCK_MAP_TYPE;
 			case DESCRIPTION_TYPE:
 				return Concepts.REFSET_DESCRIPTION_TYPE;
 			case CONCRETE_DATA_TYPE:
