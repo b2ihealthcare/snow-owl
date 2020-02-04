@@ -223,7 +223,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	}
 	
 	public String getDefinitionStatusId() {
-		return getDefinitionStatus().getId();
+		return getDefinitionStatus() == null ? null : getDefinitionStatus().getId();
 	}
 
 	/**
