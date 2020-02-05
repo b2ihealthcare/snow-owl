@@ -51,7 +51,7 @@ final class Rf2ComplexBlockMapRefSetContentType implements Rf2RefSetContentType 
 				.put(FIELD_MAP_ADVICE, values[9]) 
 				.put(FIELD_MAP_TARGET, values[10])
 				.put(FIELD_CORRELATION_ID, values[11])
-				.put(FIELD_MAP_BLOCK, values[12])
+				.put(FIELD_MAP_BLOCK, Integer.parseInt(values[12]))
 				.build()
 		);
 	}
