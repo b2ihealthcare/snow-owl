@@ -840,7 +840,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setIdFromNamespace(namespace)
 				.setAcceptability(description.getAcceptabilityMap())
 				.setActive(true)
-				.setCaseSignificance(description.getCaseSignificance())
+				.setCaseSignificanceId(description.getCaseSignificanceId())
 				.setConceptId(description.getConceptId())
 				.setLanguageCode(description.getLanguageCode())
 				.setModuleId(moduleId)

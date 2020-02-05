@@ -111,7 +111,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	private String term;
 	private String semanticTag;
 	private String languageCode;
-	private CaseSignificance caseSignificance;
+	private SnomedConcept caseSignificance;
 	private DescriptionInactivationIndicator inactivationIndicator;
 	private Map<String, Acceptability> acceptabilityMap;
 	private List<AcceptabilityMembership> acceptabilities;
@@ -196,13 +196,22 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	}
 
 	/**
-	 * Returns the description's case significance attribute, indicating whether character case within the term should
+	 * Returns the description's case significance concept, indicating whether character case within the term should
 	 * be preserved or is interchangeable.
 	 * 
-	 * @return the case significance of this description
+	 * @return the case significance concept of this description
 	 */
-	public CaseSignificance getCaseSignificance() {
+	public SnomedConcept getCaseSignificance() {
 		return caseSignificance;
+	}
+	
+	/**
+	 * Returns the identifier of the description's case significance concept.
+	 * 
+	 * @return the identifier of the case significance concept of this description
+	 */
+	public String getCaseSignificanceId() {
+		return getCaseSignificance() == null ? null : getCaseSignificance().getId();
 	}
 
 	/**
@@ -294,7 +303,11 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		this.languageCode = languageCode;
 	}
 
-	public void setCaseSignificance(final CaseSignificance caseSignificance) {
+	public void setCaseSignificanceId(final String caseSignificanceId) {
+		setCaseSignificance(new SnomedConcept(caseSignificanceId));
+	}
+	
+	public void setCaseSignificance(final SnomedConcept caseSignificance) {
 		this.caseSignificance = caseSignificance;
 	}
 
@@ -334,7 +347,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 			.setAcceptability(getAcceptabilityMap())
 			.setActive(isActive())
 			.setAssociationTargets(getAssociationTargets())
-			.setCaseSignificance(getCaseSignificance())
+			.setCaseSignificanceId(getCaseSignificanceId())
 			.setInactivationIndicator(getInactivationIndicator())
 			.setModuleId(getModuleId())
 			.setTypeId(getTypeId())
@@ -348,7 +361,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		return SnomedRequests.prepareNewDescription()
 			.setActive(isActive())
 			.setAcceptability(getAcceptabilityMap())
-			.setCaseSignificance(getCaseSignificance())
+			.setCaseSignificanceId(getCaseSignificanceId())
 			// ensure that the description's conceptId property is the right one
 			.setConceptId(conceptId)
 			.setInactivationIndicator(inactivationIndicator)

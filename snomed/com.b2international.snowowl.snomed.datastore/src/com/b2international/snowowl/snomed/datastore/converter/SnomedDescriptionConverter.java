@@ -29,7 +29,6 @@ import com.b2international.snowowl.datastore.request.BaseRevisionResourceConvert
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AcceptabilityMembership;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -60,7 +59,7 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 		final SnomedDescription result = new SnomedDescription();
 		result.setAcceptabilityMap(input.getAcceptabilityMap());
 		result.setActive(input.isActive());
-		result.setCaseSignificance(toCaseSignificance(input.getCaseSignificanceId()));
+		result.setCaseSignificanceId(input.getCaseSignificanceId());
 		result.setConceptId(input.getConceptId());
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
 		result.setId(input.getId());
@@ -209,7 +208,4 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 		}
 	}
 
-	private CaseSignificance toCaseSignificance(final String caseSignificanceId) {
-		return CaseSignificance.getByConceptId(caseSignificanceId);
-	}
 }

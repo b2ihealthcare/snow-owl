@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ extends BaseResourceConverter<DescriptionChangeDocument, DescriptionChange, Desc
 						final SnomedDescription expandedDescription = descriptionsById.get(descriptionId);
 	
 						reasonerDescription.setAcceptabilityMap(expandedDescription.getAcceptabilityMap());
-						reasonerDescription.setCaseSignificance(expandedDescription.getCaseSignificance());
+						reasonerDescription.setCaseSignificanceId(expandedDescription.getCaseSignificanceId());
 						// reasonerDescription.setConcept(...) is already set earlier (or expanded)
 						reasonerDescription.setLanguageCode(expandedDescription.getLanguageCode());
 						// reasonerMember.setReleased(...) is already set
@@ -203,7 +203,7 @@ extends BaseResourceConverter<DescriptionChangeDocument, DescriptionChange, Desc
 							final SnomedDescription expandedDescription = descriptionsById.get(descriptionId);
 	
 							reasonerDescription.setAcceptabilityMap(expandedDescription.getAcceptabilityMap());
-							reasonerDescription.setCaseSignificance(expandedDescription.getCaseSignificance());
+							reasonerDescription.setCaseSignificanceId(expandedDescription.getCaseSignificanceId());
 							reasonerDescription.setConcept(expandedDescription.getConcept());
 							reasonerDescription.setLanguageCode(expandedDescription.getLanguageCode());
 							// reasonerMember.setReleased(...) is already set

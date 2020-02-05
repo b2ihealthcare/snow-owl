@@ -77,7 +77,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -521,7 +520,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				"en",
 				Concepts.SYNONYM, 
 				"Description term", 
-				CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId());
+				Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE);
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 
@@ -696,10 +695,10 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final File exportArchive = getExportFile(exportId);
 		
 		String textDefinitionLine = getComponentLine(ImmutableList.<String> of(textDefinitionId, versionEffectiveTime, "1", MODULE_SCT_CORE, conceptId, "en",
-				Concepts.TEXT_DEFINITION, "Description term", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId()));
+				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
 		
 		String unpublishedTextDefinitionLine = getComponentLine(ImmutableList.<String> of(unpublishedTextDefinitionId, "", "1", MODULE_SCT_CORE, conceptId, "en",
-				Concepts.TEXT_DEFINITION, "Description term", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId()));
+				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
 
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 				
@@ -980,7 +979,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
 		
 		Map<?, ?> caseSignificanceChangeRequestBody = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("caseSignificance", Concepts.ENTIRE_TERM_CASE_SENSITIVE)
 				.put("commitComment", "Updated description case significance")
 				.build();
 		Map<?, ?> acceptabilityChangeRequestBody = ImmutableMap.builder()
@@ -1022,17 +1021,17 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final File exportArchive = getExportFile(exportId);
 	
 		String descriptionLineA = createDescriptionLine(descriptionIdA, "", conceptId, "en", Concepts.SYNONYM, DEFAULT_TERM,
-				CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId());
+				Concepts.ENTIRE_TERM_CASE_SENSITIVE);
 		String descriptionLineB = createDescriptionLine(descriptionIdB, "", conceptId, "da", Concepts.SYNONYM, DEFAULT_TERM,
-				CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId());
+				Concepts.ENTIRE_TERM_CASE_SENSITIVE);
 		String descriptionLineC = createDescriptionLine(descriptionIdC, versionEffectiveTime, conceptId, "en", Concepts.SYNONYM, DEFAULT_TERM);
 
 		String descriptionLineD = createDescriptionLine(descriptionIdD, versionEffectiveTime, conceptId, "da", Concepts.SYNONYM, DEFAULT_TERM);
 
 		String descriptionLineE = createDescriptionLine(descriptionIdE, "", conceptId, "en", Concepts.SYNONYM, DEFAULT_TERM,
-				CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId());
+				Concepts.ENTIRE_TERM_CASE_SENSITIVE);
 		String descriptionLineF = createDescriptionLine(descriptionIdF, "", conceptId, "da", Concepts.SYNONYM, DEFAULT_TERM,
-				CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId());
+				Concepts.ENTIRE_TERM_CASE_SENSITIVE);
 
 		String languageMemberLineA = createLanguageRefsetMemberLine(branchPath, descriptionIdA, "", Concepts.REFSET_LANGUAGE_TYPE_UK,
 				Acceptability.PREFERRED.getConceptId());
@@ -1351,7 +1350,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private static String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term) {
-		return createDescriptionLine(id, effectiveTime, conceptId, languageCode, type, term, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId());
+		return createDescriptionLine(id, effectiveTime, conceptId, languageCode, type, term, Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE);
 	}
 	
 	private static String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term, String caseSignificance) {

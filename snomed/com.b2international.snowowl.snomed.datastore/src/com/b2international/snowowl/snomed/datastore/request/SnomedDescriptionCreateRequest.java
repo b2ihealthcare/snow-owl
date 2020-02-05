@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -51,7 +50,7 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 	private String languageCode;
 
 	@NotNull
-	private CaseSignificance caseSignificance;
+	private String caseSignificanceId;
 
 	@NotEmpty
 	private Map<String, Acceptability> acceptability;
@@ -61,63 +60,51 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 	SnomedDescriptionCreateRequest() {
 	}
 	
-	public String getConceptId() {
+	String getConceptId() {
 		return conceptId;
 	}
-
-	public String getTypeId() {
+	
+	String getTypeId() {
 		return typeId;
 	}
 
-	public String getTerm() {
-		return term;
-	}
-
-	public String getLanguageCode() {
-		return languageCode;
-	}
-
-	public CaseSignificance getCaseSignificance() {
-		return caseSignificance;
-	}
-
-	public Map<String, Acceptability> getAcceptability() {
+	Map<String, Acceptability> getAcceptability() {
 		return acceptability;
 	}
-
-	public void setConceptId(final String conceptId) {
+	
+	void setConceptId(final String conceptId) {
 		this.conceptId = conceptId;
 	}
 
-	public void setTypeId(final String typeId) {
+	void setTypeId(final String typeId) {
 		this.typeId = typeId;
 	}
 
-	public void setTerm(final String term) {
+	void setTerm(final String term) {
 		this.term = term;
 	}
 
-	public void setLanguageCode(final String languageCode) {
+	void setLanguageCode(final String languageCode) {
 		this.languageCode = languageCode;
 	}
 
-	public void setCaseSignificance(final CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
+	void setCaseSignificanceId(final String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 	}
 
-	public void setAcceptability(final Map<String, Acceptability> acceptability) {
+	void setAcceptability(final Map<String, Acceptability> acceptability) {
 		this.acceptability = acceptability;
 	}
 	
-	public void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
+	void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
 		this.inactivationIndicator = inactivationIndicator;
 	}
 	
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		Builder<String> result = ImmutableSet.<String>builder()
-				.add(caseSignificance.getConceptId())
-				.add(getTypeId());
+				.add(caseSignificanceId)
+				.add(typeId);
 		
 		acceptability.forEach((refSetId, acceptability) -> {
 			result.add(refSetId);
@@ -127,8 +114,8 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 		if (getModuleId() != null) {
 			result.add(getModuleId());
 		}
-		if (getConceptId() != null) {
-			result.add(getConceptId());
+		if (conceptId != null) {
+			result.add(conceptId);
 		}
 		return result.build();
 	}
@@ -141,11 +128,11 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 				.withId(descriptionId)
 				.withActive(isActive())
 				.withModule(getModuleId())
-				.withCaseSignificance(getCaseSignificance())
-				.withTerm(getTerm())
-				.withType(getTypeId())
-				.withLanguageCode(getLanguageCode())
-				.withConcept(getConceptId())
+				.withCaseSignificanceId(caseSignificanceId)
+				.withTerm(term)
+				.withType(typeId)
+				.withLanguageCode(languageCode)
+				.withConcept(conceptId)
 				.build(context);
 			
 			new SnomedDescriptionAcceptabilityUpdateRequest(description, acceptability, true)

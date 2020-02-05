@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 
 /**
@@ -83,16 +81,15 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	}
 
 	/**
-	 * Filter descriptions by their case significance value.
+	 * Filter descriptions by their case significance value.  This method accepts ECL values as caseSignificanceFilter.
 	 * 
-	 * @param caseSignificance
+	 * @param caseSignificanceId
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByCaseSignificance(Iterable)
-	 * @see #filterByCaseSignificance(String)
-	 * @see SnomedDescription#getCaseSignificance()
+	 * @see SnomedDescription#getCaseSignificanceId()
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(CaseSignificance caseSignificance) {
-		return filterByCaseSignificance(caseSignificance.getConceptId());
+	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(String caseSignificanceId) {
+		return addOption(OptionKey.CASE_SIGNIFICANCE, caseSignificanceId);
 	}
 	
 	/**
@@ -100,25 +97,11 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * 
 	 * @param caseSignificances
 	 * @return <code>this</code> search request builder, for method chaining
-	 * @see #filterByCaseSignificance(CaseSignificance)
 	 * @see #filterByCaseSignificance(String)
-	 * @see SnomedDescription#getCaseSignificance()
+	 * @see SnomedDescription#getCaseSignificanceId()
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(Iterable<CaseSignificance> caseSignificances) {
-		return addOption(OptionKey.CASE_SIGNIFICANCE, FluentIterable.from(caseSignificances).transform(CaseSignificance::getConceptId).toSet());
-	}
-	
-	/**
-	 * Filter descriptions by their case significance value. This method accepts ECL values as caseSignificanceFilter.
-	 * 
-	 * @param caseSignificanceFilter
-	 * @return <code>this</code> search request builder, for method chaining
-	 * @see #filterByCaseSignificance(CaseSignificance)
-	 * @see #filterByCaseSignificance(String)
-	 * @see SnomedDescription#getCaseSignificance()
-	 */
-	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(String caseSignificanceFilter) {
-		return addOption(OptionKey.CASE_SIGNIFICANCE, caseSignificanceFilter);
+	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(Iterable<String> caseSignificanceIds) {
+		return addOption(OptionKey.CASE_SIGNIFICANCE, caseSignificanceIds);
 	}
 	
 	/**

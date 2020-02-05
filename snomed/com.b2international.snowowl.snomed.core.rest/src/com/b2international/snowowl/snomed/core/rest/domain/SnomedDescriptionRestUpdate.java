@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -31,7 +30,7 @@ import com.google.common.collect.ImmutableListMultimap;
  */
 public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpdate {
 
-	private CaseSignificance caseSignificance;
+	private String caseSignificanceId;
 	private Map<String, Acceptability> acceptability;
 	private DescriptionInactivationIndicator inactivationIndicator;
 	private Map<AssociationType, List<String>> associationTargets;
@@ -39,8 +38,8 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 	private String term;
 	private String languageCode;
 
-	public CaseSignificance getCaseSignificance() {
-		return caseSignificance;
+	public String getCaseSignificanceId() {
+		return caseSignificanceId;
 	}
 
 	public Map<String, Acceptability> getAcceptability() {
@@ -67,8 +66,8 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 		return typeId;
 	}
 
-	public void setCaseSignificance(final CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
+	public void setCaseSignificance(final String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 	}
 
 	public void setAcceptability(final Map<String, Acceptability> acceptability) {
@@ -109,7 +108,7 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 			.setModuleId(getModuleId())
 			.setAssociationTargets(targets == null ? null : targets.build())
 			.setInactivationIndicator(getInactivationIndicator())
-			.setCaseSignificance(getCaseSignificance())
+			.setCaseSignificanceId(getCaseSignificanceId())
 			.setAcceptability(getAcceptability())
 			.setTypeId(getTypeId())
 			.setTerm(getTerm())

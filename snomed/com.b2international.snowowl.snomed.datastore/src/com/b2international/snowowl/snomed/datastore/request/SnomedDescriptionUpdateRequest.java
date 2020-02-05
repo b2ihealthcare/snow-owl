@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -28,11 +25,9 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -43,7 +38,7 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateRequest {
 
-	private CaseSignificance caseSignificance;
+	private String caseSignificanceId;
 	private Map<String, Acceptability> acceptability;
 	private DescriptionInactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
@@ -64,8 +59,8 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		this.associationTargets = associationTargets;
 	}
 	
-	void setCaseSignificance(CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
+	void setCaseSignificanceId(String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 	}
 	
 	void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
@@ -91,7 +86,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 
 		boolean changed = false;
 		changed |= updateModule(context, description, updatedDescription);
-		changed |= updateCaseSignificance(context, description, updatedDescription, caseSignificance);
+		changed |= updateCaseSignificanceId(context, description, updatedDescription, caseSignificanceId);
 		changed |= updateTypeId(context, description, updatedDescription);
 		changed |= updateTerm(context, description, updatedDescription);
 		changed |= updateLanguageCode(context, description, updatedDescription);
@@ -184,13 +179,12 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		inactivationUpdateRequest.execute(context);
 	}
 
-	private boolean updateCaseSignificance(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description, final CaseSignificance newCaseSignificance) {
-		if (null == newCaseSignificance) {
+	private boolean updateCaseSignificanceId(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description, final String newCaseSignificanceId) {
+		if (null == newCaseSignificanceId) {
 			return false;
 		}
 
 		final String existingCaseSignificanceId = original.getCaseSignificanceId();
-		final String newCaseSignificanceId = newCaseSignificance.getConceptId();
 		if (!existingCaseSignificanceId.equals(newCaseSignificanceId)) {
 			description.caseSignificanceId(context.lookup(newCaseSignificanceId, SnomedConceptDocument.class).getId());
 			return true;
@@ -246,8 +240,8 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		if (inactivationIndicator != null) {
 			ids.add(inactivationIndicator.getConceptId());
 		}
-		if (caseSignificance != null) {
-			ids.add(caseSignificance.getConceptId());
+		if (caseSignificanceId != null) {
+			ids.add(caseSignificanceId);
 		}
 		if (associationTargets != null && !associationTargets.isEmpty()) {
 			associationTargets.entries().forEach(entry -> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.active(input.isActive())
 				.typeId(input.getTypeId())
 				.conceptId(input.getConceptId())
-				.caseSignificanceId(input.getCaseSignificance().getConceptId())
+				.caseSignificanceId(input.getCaseSignificanceId())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 		
 		// TODO add back scoring
@@ -129,23 +129,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	
 		return builder;
 	}
-	
-//	public static Builder builder(Description description) {
-//		String id = description.getId();
-//		return builder()
-//				.storageKey(CDOIDUtils.asLong(description.cdoID()))
-//				.id(id) 
-//				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
-//				.term(description.getTerm())
-//				.moduleId(description.getModule().getId())
-//				.released(description.isReleased()) 
-//				.active(description.isActive()) 
-//				.typeId(description.getType().getId()) 
-//				.caseSignificanceId(description.getCaseSignificance().getId()) 
-//				.conceptId(description.getConcept().getId())
-//				.languageCode(description.getLanguageCode())
-//				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
-//	}
 	
 	/**
 	 * Creates a new {@link Builder} from the given {@link SnomedDescriptionIndexEntry}. The acceptability map is not copied over to the

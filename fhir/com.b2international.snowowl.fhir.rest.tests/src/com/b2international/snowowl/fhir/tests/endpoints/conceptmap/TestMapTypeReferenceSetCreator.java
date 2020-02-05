@@ -31,7 +31,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -260,7 +259,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setLanguageCode("en")
 			.setTypeId(type)
 			.setTerm(term)
-			.setCaseSignificance(CaseSignificance.CASE_INSENSITIVE)
+			.setCaseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 			.setAcceptability(ImmutableMap.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
 	}
 
