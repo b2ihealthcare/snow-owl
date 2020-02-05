@@ -46,7 +46,6 @@ import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -307,7 +306,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true)
-				.filterByCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId())
+				.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 				.filterBySource(concept.getId())
 				.filterByType(relationshipTypeIds)
 				.build(getRepositoryId(), branchPath)

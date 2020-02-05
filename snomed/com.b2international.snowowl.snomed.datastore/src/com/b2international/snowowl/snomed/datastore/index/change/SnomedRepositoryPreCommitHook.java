@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -88,10 +87,10 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final Set<String> inferredSourceIds = Sets.newHashSet();
 		final Set<String> inferredDestinationIds = Sets.newHashSet();
 		
-		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.STATED_RELATIONSHIP);
-		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), CharacteristicType.STATED_RELATIONSHIP);
-		collectIds(inferredSourceIds, inferredDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.INFERRED_RELATIONSHIP);
-		collectIds(inferredSourceIds, inferredDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), CharacteristicType.INFERRED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), Concepts.STATED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), Concepts.STATED_RELATIONSHIP);
+		collectIds(inferredSourceIds, inferredDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), Concepts.INFERRED_RELATIONSHIP);
+		collectIds(inferredSourceIds, inferredDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), Concepts.INFERRED_RELATIONSHIP);
 		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRefSetMemberIndexEntry.class), expressionConverter);
 		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision), expressionConverter);
 		
@@ -240,10 +239,10 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		throw new UnsupportedOperationException("Unsupported revision document: " + revision);
 	}
 	
-	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, CharacteristicType characteristicType) {
+	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, String characteristicTypeId) {
 		newRelationships
 			.filter(newRelationship -> Concepts.IS_A.equals(newRelationship.getTypeId()))
-			.filter(newRelationship -> newRelationship.getCharacteristicTypeId().equals(characteristicType.getConceptId()))
+			.filter(newRelationship -> newRelationship.getCharacteristicTypeId().equals(characteristicTypeId))
 			.forEach(newRelationship -> {
 				sourceIds.add(newRelationship.getSourceId());
 				destinationIds.add(newRelationship.getDestinationId());

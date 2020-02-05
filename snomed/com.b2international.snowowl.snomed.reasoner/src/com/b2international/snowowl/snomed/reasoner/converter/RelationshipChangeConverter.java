@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -105,7 +104,7 @@ public final class RelationshipChangeConverter
 				 */
 				relationship.setGroup(entry.getGroup());
 				relationship.setUnionGroup(entry.getUnionGroup());
-				relationship.setCharacteristicType(CharacteristicType.getByConceptId(entry.getCharacteristicTypeId()));
+				relationship.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 				
 				/*
 				 * Inferred IS A relationships have even more stored information, which we set on the response object.
@@ -257,7 +256,7 @@ public final class RelationshipChangeConverter
 						if (!inferredOnly) {
 							final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
 
-							reasonerRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
+							reasonerRelationship.setCharacteristicTypeId(expandedRelationship.getCharacteristicTypeId());
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 							// reasonerRelationship.setGroup(...) is already set
@@ -273,7 +272,7 @@ public final class RelationshipChangeConverter
 						if (!inferredOnly) {
 							final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
 
-							reasonerRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
+							reasonerRelationship.setCharacteristicTypeId(expandedRelationship.getCharacteristicTypeId());
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 							reasonerRelationship.setGroup(expandedRelationship.getGroup());

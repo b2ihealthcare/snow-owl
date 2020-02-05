@@ -52,7 +52,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -803,7 +802,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			String conceptId = createNewConcept(branchPath, parentId);
 			conceptIds.add(conceptId);
 			// Need to add an inferred IS A counterpart, as query evaluation uses inferred relationships
-			createNewRelationship(branchPath, conceptId, Concepts.IS_A, parentId, CharacteristicType.INFERRED_RELATIONSHIP);
+			createNewRelationship(branchPath, conceptId, Concepts.IS_A, parentId, Concepts.INFERRED_RELATIONSHIP);
 		}
 
 		final Map<?, ?> memberRequest = ImmutableMap.<String, Object>builder()
@@ -827,7 +826,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		// Add a new concept that matches the query, then sync again
 		String extraConceptId = createNewConcept(branchPath, parentId);
 		conceptIds.add(extraConceptId);
-		createNewRelationship(branchPath, extraConceptId, Concepts.IS_A, parentId, CharacteristicType.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, extraConceptId, Concepts.IS_A, parentId, Concepts.INFERRED_RELATIONSHIP);
 
 		executeSyncAction(memberId);
 		checkReferencedComponentIds(conceptIds, simpleRefSetId);

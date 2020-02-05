@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -312,7 +312,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 				.prepareSearchRelationship()
 				.all()
 				.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-				.filterByCharacteristicType(expandOptions.containsKey("characteristicType") ? expandOptions.getString("characteristicType") : null)
+				.filterByCharacteristicType(expandOptions.containsKey("characteristicTypeId") ? expandOptions.getString("characteristicTypeId") : null)
 				.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
 				.filterByDestination(expandOptions.containsKey("destinationId") ? expandOptions.getCollection("destinationId", String.class) : null)
 				.filterBySource(conceptIds)
@@ -344,7 +344,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
 			.filterBySource(expandOptions.containsKey("sourceId") ? expandOptions.getCollection("sourceId", String.class) : null)
 			.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
-			.filterByCharacteristicType(expandOptions.containsKey("characteristicType") ? expandOptions.getString("characteristicType") : null)
+			.filterByCharacteristicType(expandOptions.containsKey("characteristicTypeId") ? expandOptions.getString("characteristicTypeId") : null)
 			.filterByDestination(conceptIds)
 			.setExpand(expandOptions.get("expand", Options.class))
 			.setLocales(locales())

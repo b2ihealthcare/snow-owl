@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
  */
 public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedRelationshipCreateRequestBuilder> {
 
-	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	private String destinationId;
 	private String sourceId;
 	private boolean destinationNegated;
@@ -49,8 +49,8 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 		return getSelf();
 	}
 	
-	public SnomedRelationshipCreateRequestBuilder setCharacteristicType(CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	public SnomedRelationshipCreateRequestBuilder setCharacteristicTypeId(String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 		return getSelf();
 	}
 	
@@ -82,7 +82,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	@Override
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedRelationshipCreateRequest req = (SnomedRelationshipCreateRequest) request;
-		req.setCharacteristicType(characteristicType);
+		req.setCharacteristicTypeId(characteristicTypeId);
 		req.setDestinationId(destinationId);
 		req.setSourceId(sourceId);
 		req.setDestinationNegated(destinationNegated);

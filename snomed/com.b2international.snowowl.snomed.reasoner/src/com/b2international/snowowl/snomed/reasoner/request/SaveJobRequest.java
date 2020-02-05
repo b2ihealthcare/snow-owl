@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -714,14 +713,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
-		final CharacteristicType characteristicType = relationship.getCharacteristicType();
+		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final RelationshipModifier modifier = relationship.getModifier();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
 				sourceId, typeId, destinationId, destinationNegated,
-				characteristicType, group, unionGroup, modifier);
+				characteristicTypeId, group, unionGroup, modifier);
 	}
 
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
@@ -732,14 +731,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
-		final CharacteristicType characteristicType = relationship.getCharacteristicType();
+		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final RelationshipModifier modifier = relationship.getModifier();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
 				sourceId, typeId, destinationId, destinationNegated,
-				characteristicType, group, unionGroup, modifier);
+				characteristicTypeId, group, unionGroup, modifier);
 	}
 
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
@@ -748,7 +747,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final String typeId, 
 			final String destinationId, 
 			final boolean destinationNegated,
-			final CharacteristicType characteristicType, 
+			final String characteristicTypeId, 
 			final int group, 
 			final int unionGroup,
 			final RelationshipModifier modifier) {
@@ -760,7 +759,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setIdFromNamespace(namespace)
 				.setTypeId(typeId)
 				.setActive(true)
-				.setCharacteristicType(characteristicType)
+				.setCharacteristicTypeId(characteristicTypeId)
 				.setSourceId(sourceId)
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)

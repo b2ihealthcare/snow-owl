@@ -23,7 +23,6 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -31,7 +30,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
@@ -50,7 +48,7 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 	protected SnomedRelationship toResource(final SnomedRelationshipIndexEntry input) {
 		final SnomedRelationship result = new SnomedRelationship();
 		result.setActive(input.isActive());
-		result.setCharacteristicType(toCharacteristicType(input.getCharacteristicTypeId()));
+		result.setCharacteristicTypeId(input.getCharacteristicTypeId());
 		result.setDestinationNegated(input.isDestinationNegated());
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
 		result.setId(input.getId());
@@ -150,14 +148,6 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		}
 	}
 	
-	private CharacteristicType toCharacteristicType(final String characteristicTypeId) {
-		if (Strings.isNullOrEmpty(characteristicTypeId)) {
-			return null;
-		} else {
-			return CharacteristicType.getByConceptId(characteristicTypeId);
-		}
-	}
-
 	private RelationshipModifier toRelationshipModifier(final boolean universal) {
 		return universal ? RelationshipModifier.UNIVERSAL : RelationshipModifier.EXISTENTIAL;
 	}

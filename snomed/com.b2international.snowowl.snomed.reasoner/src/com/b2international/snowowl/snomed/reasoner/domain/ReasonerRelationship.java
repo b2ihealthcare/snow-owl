@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,7 +38,7 @@ public final class ReasonerRelationship implements Serializable {
 	private Boolean destinationNegated;
 	private Integer group;
 	private Integer unionGroup;
-	private CharacteristicType characteristicType;
+	private String characteristicTypeId;
 	private RelationshipModifier modifier;
 	private SnomedConcept source;
 	private SnomedConcept destination;
@@ -144,8 +143,8 @@ public final class ReasonerRelationship implements Serializable {
 	 * 
 	 * @return the relationship's characteristic type
 	 */
-	public CharacteristicType getCharacteristicType() {
-		return characteristicType;
+	public String getCharacteristicTypeId() {
+		return characteristicTypeId;
 	}
 
 	/**
@@ -196,8 +195,8 @@ public final class ReasonerRelationship implements Serializable {
 		this.unionGroup = unionGroup;
 	}
 
-	public void setCharacteristicType(final CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	public void setCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 	}
 
 	public void setModifier(final RelationshipModifier modifier) {
@@ -217,8 +216,8 @@ public final class ReasonerRelationship implements Serializable {
 		builder.append(group);
 		builder.append(", unionGroup=");
 		builder.append(unionGroup);
-		builder.append(", characteristicType=");
-		builder.append(characteristicType);
+		builder.append(", characteristicTypeId=");
+		builder.append(characteristicTypeId);
 		builder.append(", modifier=");
 		builder.append(modifier);
 		builder.append(", source=");

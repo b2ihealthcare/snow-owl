@@ -40,7 +40,6 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -195,8 +194,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	
 	private void convertRelationships(final TransactionContext context, String conceptId) {
 		if (!relationships.isEmpty()) {
-			final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet();
-			requiredRelationships.add(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
+			final Set<Pair<String, String>> requiredRelationships = newHashSet();
+			requiredRelationships.add(Tuples.pair(Concepts.IS_A, Concepts.STATED_RELATIONSHIP));
 			
 			for (final SnomedRelationshipCreateRequest relationshipRequest : relationships) {
 				relationshipRequest.setSourceId(conceptId);
@@ -207,7 +206,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 				
 				relationshipRequest.execute(context);
 				
-				requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicType()));
+				requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicTypeId()));
 			}
 			
 			if (!requiredRelationships.isEmpty()) {

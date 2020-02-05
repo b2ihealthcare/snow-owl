@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
@@ -67,16 +66,15 @@ public final class Taxonomies {
 	}
 	
 	public static Taxonomy inferred(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, LongCollection conceptIds, boolean checkCycles) {
-		return buildTaxonomy(searcher, expressionConverter, staging, conceptIds, CharacteristicType.INFERRED_RELATIONSHIP, checkCycles);
+		return buildTaxonomy(searcher, expressionConverter, staging, conceptIds, Concepts.INFERRED_RELATIONSHIP, checkCycles);
 	}
 	
 	public static Taxonomy stated(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, LongCollection conceptIds, boolean checkCycles) {
-		return buildTaxonomy(searcher, expressionConverter, staging, conceptIds, CharacteristicType.STATED_RELATIONSHIP, checkCycles);
+		return buildTaxonomy(searcher, expressionConverter, staging, conceptIds, Concepts.STATED_RELATIONSHIP, checkCycles);
 	}
 
-	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
+	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, LongCollection conceptIds, String characteristicTypeId, boolean checkCycles) {
 		try {
-			final String characteristicTypeId = characteristicType.getConceptId();
 			Collection<Object[]> isaStatements = getStatements(searcher, conceptIds, characteristicTypeId, true);
 			
 			final TaxonomyGraph oldTaxonomy = new TaxonomyGraph(conceptIds.size(), isaStatements.size());

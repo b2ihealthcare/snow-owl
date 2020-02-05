@@ -39,7 +39,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
@@ -215,8 +214,8 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				.setModuleId(MODULE_B2I_EXTENSION.equals(identifierConceptId) ? MODULE_SCT_CORE : MODULE_B2I_EXTENSION) // workaround to be able to set the module for the B2i module concept
 				.addDescription(createDescription(identifierConceptId, fsnTerm, FULLY_SPECIFIED_NAME, Acceptability.PREFERRED))
 				.addDescription(createDescription(identifierConceptId, ptTerm, SYNONYM, Acceptability.PREFERRED))
-				.addRelationship(createIsaRelationship(identifierConceptId, parent, CharacteristicType.STATED_RELATIONSHIP))
-				.addRelationship(createIsaRelationship(identifierConceptId, parent, CharacteristicType.INFERRED_RELATIONSHIP));
+				.addRelationship(createIsaRelationship(identifierConceptId, parent, Concepts.STATED_RELATIONSHIP))
+				.addRelationship(createIsaRelationship(identifierConceptId, parent, Concepts.INFERRED_RELATIONSHIP));
 	}
 	
 	private SnomedDescriptionCreateRequestBuilder createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability) {
@@ -232,7 +231,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				.setAcceptability(ImmutableMap.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, acceptability));
 	}
 	
-	private SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType) {
+	private SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String source, final String destination, final String characteristicTypeId) {
 		return SnomedRequests.prepareNewRelationship() 
 			.setIdFromNamespace(B2I_NAMESPACE)
 			.setActive(true)
@@ -240,7 +239,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			.setSourceId(source)
 			.setDestinationId(destination)
 			.setTypeId(IS_A)
-			.setCharacteristicType(characteristicType)
+			.setCharacteristicTypeId(characteristicTypeId)
 			.setModifier(RelationshipModifier.EXISTENTIAL);
 	}
 	

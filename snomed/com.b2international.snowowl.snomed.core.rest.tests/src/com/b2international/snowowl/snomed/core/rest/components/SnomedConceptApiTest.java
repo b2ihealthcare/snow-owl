@@ -69,7 +69,15 @@ import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -237,9 +245,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		String conceptWithReferenceToInactivatedConcept = createNewConcept(branchPath);
 		String conceptToInactivate = createNewConcept(branchPath);
 		// and an inbound relationship to the inactivated concept
-		String inboundStatedRelationshipId = createNewRelationship(branchPath, conceptWithReferenceToInactivatedConcept, Concepts.PART_OF, conceptToInactivate, CharacteristicType.STATED_RELATIONSHIP);
+		String inboundStatedRelationshipId = createNewRelationship(branchPath, conceptWithReferenceToInactivatedConcept, Concepts.PART_OF, conceptToInactivate, Concepts.STATED_RELATIONSHIP);
 		// and an outbound inferred relationships, which will be reactivated along with the concept
-		String outboundInferredRelationshipId = createNewRelationship(branchPath, conceptToInactivate, Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+		String outboundInferredRelationshipId = createNewRelationship(branchPath, conceptToInactivate, Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 
 		// Inactivate the concept with the relationship is pointing to
 		Map<?, ?> inactivationBody = ImmutableMap.<String, Object>builder()
@@ -764,7 +772,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		SnomedRelationship newRelationship = new SnomedRelationship();
 		newRelationship.setId(reserveComponentId(null, ComponentCategory.RELATIONSHIP));
 		newRelationship.setActive(true);
-		newRelationship.setCharacteristicType(CharacteristicType.STATED_RELATIONSHIP);
+		newRelationship.setCharacteristicTypeId(Concepts.STATED_RELATIONSHIP);
 		newRelationship.setTypeId(Concepts.PART_OF);
 		newRelationship.setDestinationId(Concepts.NAMESPACE_ROOT);
 		newRelationship.setModuleId(Concepts.MODULE_SCT_CORE);

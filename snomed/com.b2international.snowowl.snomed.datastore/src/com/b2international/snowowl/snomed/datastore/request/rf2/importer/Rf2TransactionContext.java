@@ -45,7 +45,6 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -394,7 +393,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withSource(relationship.getSourceId())
 					.withType(relationship.getTypeId())
 					.withDestination(relationship.getDestinationId())
-					.withCharacteristicType(relationship.getCharacteristicType())
+					.withCharacteristicTypeId(relationship.getCharacteristicTypeId())
 					.withGroup(relationship.getGroup())
 					.withUnionGroup(relationship.getUnionGroup())
 					.withDestinationNegated(false)
@@ -500,7 +499,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 				break;
 			case CONCRETE_DATA_TYPE:
 				builder = SnomedComponents.newConcreteDomainReferenceSetMember()
-						.withCharacteristicType(CharacteristicType.getByConceptId((String) properties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)))
+						.withCharacteristicTypeId((String) properties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))
 						.withGroup(Integer.parseInt((String) properties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)))
 						.withTypeId((String) properties.get(SnomedRf2Headers.FIELD_TYPE_ID))
 						.withSerializedValue((String) properties.get(SnomedRf2Headers.FIELD_VALUE));

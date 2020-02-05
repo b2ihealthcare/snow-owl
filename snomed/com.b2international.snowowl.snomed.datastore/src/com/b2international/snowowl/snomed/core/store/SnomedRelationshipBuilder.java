@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -27,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  */
 public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<SnomedRelationshipBuilder, SnomedRelationshipIndexEntry.Builder, SnomedRelationshipIndexEntry> {
 
-	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	private RelationshipModifier modifier = RelationshipModifier.EXISTENTIAL;
 	private String type;
 	private String source;
@@ -39,12 +38,12 @@ public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<Snom
 	/**
 	 * Specifies the characteristic type of the new SNOMED CT Relationship.
 	 * 
-	 * @param characteristicType
+	 * @param characteristicTypeId
 	 *            - the characteristic type to use
 	 * @return
 	 */
-	public final SnomedRelationshipBuilder withCharacteristicType(CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	public final SnomedRelationshipBuilder withCharacteristicTypeId(String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 		return getSelf();
 	}
 
@@ -147,7 +146,7 @@ public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<Snom
 	@Override
 	public void init(SnomedRelationshipIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.characteristicTypeId(context.lookup(characteristicType.getConceptId(), SnomedConceptDocument.class).getId());
+		component.characteristicTypeId(context.lookup(characteristicTypeId, SnomedConceptDocument.class).getId());
 		component.modifierId(context.lookup(modifier.getConceptId(), SnomedConceptDocument.class).getId());
 		component.typeId(context.lookup(type, SnomedConceptDocument.class).getId());
 		if (source != null) {

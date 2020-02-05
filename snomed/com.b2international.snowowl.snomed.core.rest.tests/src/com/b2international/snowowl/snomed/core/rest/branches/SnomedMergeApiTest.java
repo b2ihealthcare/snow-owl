@@ -41,7 +41,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
@@ -770,7 +769,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		branching.createBranch(a).statusCode(201);
 		
 		// create a new outbound relationship
-		final String newOutboundRelationshipFromDeletedConcept = createNewRelationship(branchPath, deletedConcept, Concepts.FINDING_SITE, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+		final String newOutboundRelationshipFromDeletedConcept = createNewRelationship(branchPath, deletedConcept, Concepts.FINDING_SITE, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		// delete destination concept on child branch
 		deleteComponent(a, SnomedComponentType.CONCEPT, deletedConcept, false);
@@ -794,7 +793,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		branching.createBranch(a).statusCode(201);
 		
 		// create a new relationship to newly created destination concept on parent branch
-		final String newInboundRelationshipToDeletedConcept = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, deletedConcept, CharacteristicType.INFERRED_RELATIONSHIP);
+		final String newInboundRelationshipToDeletedConcept = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, deletedConcept, Concepts.INFERRED_RELATIONSHIP);
 		
 		// delete destination concept on child branch
 		deleteComponent(a, SnomedComponentType.CONCEPT, deletedConcept, false);
@@ -817,8 +816,8 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		branching.createBranch(a).statusCode(201);
 		
 		// create a new relationship to newly created destination concept on parent branch
-		final String newInboundRelationshipToDeletedConcept = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, deletedConcept, CharacteristicType.INFERRED_RELATIONSHIP);
-		final String newOutboundRelationshipFromDeletedConcept = createNewRelationship(branchPath, deletedConcept, Concepts.FINDING_SITE, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+		final String newInboundRelationshipToDeletedConcept = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, deletedConcept, Concepts.INFERRED_RELATIONSHIP);
+		final String newOutboundRelationshipFromDeletedConcept = createNewRelationship(branchPath, deletedConcept, Concepts.FINDING_SITE, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		// delete destination concept on child branch
 		deleteComponent(a, SnomedComponentType.CONCEPT, deletedConcept, false);
