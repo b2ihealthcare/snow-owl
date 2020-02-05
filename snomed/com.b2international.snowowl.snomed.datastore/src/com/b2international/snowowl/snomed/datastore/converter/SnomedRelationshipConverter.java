@@ -77,8 +77,48 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		expandSource(results);
 		expandDestination(results);
 		expandType(results);
+		expandCharacteristicType(results);
+		expandModifier(results);
 	}
 
+	private void expandCharacteristicType(List<SnomedRelationship> results) {
+		if (expand().containsKey(SnomedRelationship.Expand.CHARACTERISTIC_TYPE)) {
+			final Options characteristicTypeOptions = expand().get(SnomedRelationship.Expand.CHARACTERISTIC_TYPE, Options.class);
+			final Set<String> characteristicTypeConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getCharacteristicTypeId).toSet();
+			final SnomedConcepts typeConcepts = SnomedRequests
+				.prepareSearchConcept()
+				.filterByIds(characteristicTypeConceptIds)
+				.setLimit(characteristicTypeConceptIds.size())
+				.setExpand(characteristicTypeOptions.get("expand", Options.class))
+				.setLocales(locales())
+				.build()
+				.execute(context());
+			final Map<String, SnomedConcept> characteristicTypesById = Maps.uniqueIndex(typeConcepts, SnomedConcept::getId);
+			for (SnomedRelationship relationship : results) {
+				((SnomedRelationship) relationship).setCharacteristicType(characteristicTypesById.get(relationship.getCharacteristicTypeId()));
+			}
+		}
+	}
+	
+	private void expandModifier(List<SnomedRelationship> results) {
+		if (expand().containsKey(SnomedRelationship.Expand.MODIFIER)) {
+			final Options modifierOptions = expand().get(SnomedRelationship.Expand.MODIFIER, Options.class);
+			final Set<String> modifierIds = FluentIterable.from(results).transform(SnomedRelationship::getModifierId).toSet();
+			final SnomedConcepts typeConcepts = SnomedRequests
+				.prepareSearchConcept()
+				.filterByIds(modifierIds)
+				.setLimit(modifierIds.size())
+				.setExpand(modifierOptions.get("expand", Options.class))
+				.setLocales(locales())
+				.build()
+				.execute(context());
+			final Map<String, SnomedConcept> modifiersById = Maps.uniqueIndex(typeConcepts, SnomedConcept::getId);
+			for (SnomedRelationship relationship : results) {
+				((SnomedRelationship) relationship).setModifier(modifiersById.get(relationship.getModifierId()));
+			}
+		}
+	}
+	
 	private void expandType(List<SnomedRelationship> results) {
 		if (expand().containsKey(SnomedRelationship.Expand.TYPE)) {
 			final Options typeOptions = expand().get(SnomedRelationship.Expand.TYPE, Options.class);

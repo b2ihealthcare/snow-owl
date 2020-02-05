@@ -76,6 +76,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		public static final String SOURCE = "source";
 		public static final String TYPE = "type";
 		public static final String DESTINATION = "destination";
+		public static final String CHARACTERISTIC_TYPE = "characteristicType";
+		public static final String MODIFIER = "modifier";
 	}
 
  /*
