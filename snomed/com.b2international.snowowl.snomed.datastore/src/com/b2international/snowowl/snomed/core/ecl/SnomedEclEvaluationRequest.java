@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
+import static com.b2international.index.revision.Revision.Fields.ID;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Fields.ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.google.common.collect.Sets.newHashSet;
@@ -32,6 +32,7 @@ import javax.validation.constraints.NotNull;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.MatchNone;
@@ -42,27 +43,11 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.ecl.Ecl;
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.Any;
-import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
-import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
-import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
-import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -125,10 +110,10 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	/**
-	 * Handles ConceptReference/Self simple expression constraints
+	 * Handles EclConceptReference/Self simple expression constraints
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
-	protected Promise<Expression> eval(BranchContext context, ConceptReference concept) {
+	protected Promise<Expression> eval(BranchContext context, EclConceptReference concept) {
 		return Promise.immediate(id(concept.getId()));
 	}
 	
@@ -138,8 +123,8 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, MemberOf memberOf) {
 		final ExpressionConstraint inner = memberOf.getConstraint();
-		if (inner instanceof ConceptReference) {
-			final ConceptReference concept = (ConceptReference) inner;
+		if (inner instanceof EclConceptReference) {
+			final EclConceptReference concept = (EclConceptReference) inner;
 			return Promise.immediate(activeMemberOf(concept.getId()));
 		} else if (inner instanceof Any) {
 			return Promise.immediate(Expressions.exists(ACTIVE_MEMBER_OF));
@@ -451,5 +436,5 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	/*package*/ static Function<Set<String>, Expression> matchIdsOrNone() {
 		return ids -> ids.isEmpty() ? Expressions.matchNone() : ids(ids);
 	}
-
+	
 }

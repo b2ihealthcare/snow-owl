@@ -1,8 +1,0 @@
-243796009 | situation with explicit context | :
-{ 246090004 | associated finding | = (404684003 | Clinical finding | :
-{ 255234002 | after | = <233546007 | Cannulation of vascular fistula, graft or prosthetic device | }
-)
-, 408729009 | finding context | = <<410515003 | known present |
-, 408731000 | temporal context | = <<410584005 | Current - specified |
-, 408732007 | subject relationship context | =410604004 | Subject of record |
-}

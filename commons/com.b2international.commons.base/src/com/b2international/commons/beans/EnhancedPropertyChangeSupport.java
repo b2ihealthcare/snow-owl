@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ public class EnhancedPropertyChangeSupport extends PropertyChangeSupport impleme
 		super(sourceBean);
 	}
 
-	/** @param listened add this listener if it is not yet added */
+	/**
+	 * @param listener add this listener if it is not yet added 
+	 */
     public synchronized void addPropertyChangeListener(
     		PropertyChangeListener listener) {
 
@@ -52,8 +54,10 @@ public class EnhancedPropertyChangeSupport extends PropertyChangeSupport impleme
 		super.addPropertyChangeListener(listener);
     }
     
-	/**@param propertyName name of property to listen to 
-	 * @param listened add this listener if it is not yet added to this property */
+	/**
+	 * @param propertyName name of property to listen to 
+	 * @param listener add this listener if it is not yet added to this property 
+	 */
     public synchronized void addPropertyChangeListener(
             String propertyName,
             PropertyChangeListener listener) {
@@ -69,6 +73,7 @@ public class EnhancedPropertyChangeSupport extends PropertyChangeSupport impleme
     /**
       * Fire an existing PropertyChangeEvent to any registered listeners. Nothing happens if
       * there are no listeners, not even <code>equals()</code>.
+      * @param evt
       */
     public void firePropertyChange(PropertyChangeEvent evt) {
     	if(hasListeners(evt.getPropertyName())) {

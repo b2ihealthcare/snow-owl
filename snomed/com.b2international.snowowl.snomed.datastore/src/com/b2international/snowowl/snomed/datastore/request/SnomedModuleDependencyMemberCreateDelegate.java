@@ -15,15 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.core.store.SnomedModuleDependencyReferenceSetMemberBuilder;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
 
 /**
@@ -36,7 +36,7 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MODULE_DEPENDENCY);
 		checkReferencedComponent(refSet);
 
@@ -77,8 +77,7 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 			}
 		}
 
-			
-		return builder.addTo(context).getUuid();
+		return builder.addTo(context).getId();
 	}
 
 }

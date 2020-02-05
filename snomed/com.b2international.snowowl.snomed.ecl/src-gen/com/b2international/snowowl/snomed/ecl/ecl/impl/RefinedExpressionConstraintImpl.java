@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
+import com.b2international.snowowl.snomed.ecl.ecl.EclRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -62,7 +62,7 @@ public class RefinedExpressionConstraintImpl extends ExpressionConstraintImpl im
    * @generated
    * @ordered
    */
-  protected Refinement refinement;
+  protected EclRefinement refinement;
 
   /**
    * <!-- begin-user-doc -->
@@ -90,6 +90,7 @@ public class RefinedExpressionConstraintImpl extends ExpressionConstraintImpl im
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ExpressionConstraint getConstraint()
   {
     return constraint;
@@ -117,6 +118,7 @@ public class RefinedExpressionConstraintImpl extends ExpressionConstraintImpl im
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setConstraint(ExpressionConstraint newConstraint)
   {
     if (newConstraint != constraint)
@@ -138,7 +140,8 @@ public class RefinedExpressionConstraintImpl extends ExpressionConstraintImpl im
    * <!-- end-user-doc -->
    * @generated
    */
-  public Refinement getRefinement()
+  @Override
+  public EclRefinement getRefinement()
   {
     return refinement;
   }
@@ -148,9 +151,9 @@ public class RefinedExpressionConstraintImpl extends ExpressionConstraintImpl im
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRefinement(Refinement newRefinement, NotificationChain msgs)
+  public NotificationChain basicSetRefinement(EclRefinement newRefinement, NotificationChain msgs)
   {
-    Refinement oldRefinement = refinement;
+    EclRefinement oldRefinement = refinement;
     refinement = newRefinement;
     if (eNotificationRequired())
     {
@@ -165,7 +168,8 @@ public class RefinedExpressionConstraintImpl extends ExpressionConstraintImpl im
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRefinement(Refinement newRefinement)
+  @Override
+  public void setRefinement(EclRefinement newRefinement)
   {
     if (newRefinement != refinement)
     {
@@ -231,7 +235,7 @@ public class RefinedExpressionConstraintImpl extends ExpressionConstraintImpl im
         setConstraint((ExpressionConstraint)newValue);
         return;
       case EclPackage.REFINED_EXPRESSION_CONSTRAINT__REFINEMENT:
-        setRefinement((Refinement)newValue);
+        setRefinement((EclRefinement)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -251,7 +255,7 @@ public class RefinedExpressionConstraintImpl extends ExpressionConstraintImpl im
         setConstraint((ExpressionConstraint)null);
         return;
       case EclPackage.REFINED_EXPRESSION_CONSTRAINT__REFINEMENT:
-        setRefinement((Refinement)null);
+        setRefinement((EclRefinement)null);
         return;
     }
     super.eUnset(featureID);

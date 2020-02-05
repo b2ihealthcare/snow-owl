@@ -1,0 +1,95 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>com.b2international.snowowl.snomed.core.rest.tests</artifactId>
+	<packaging>eclipse-test-plugin</packaging>
+
+	<parent>
+		<groupId>com.b2international.snowowl</groupId>
+		<artifactId>snomed-parent</artifactId>
+		<version>7.4.0-SNAPSHOT</version>
+	</parent>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho.version}</version>
+				<configuration>
+					<dependency-resolution>
+						<extraRequirements>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.jetty.osgi.boot</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>ch.qos.logback.classic</id>
+								<versionRange>${logback.versionRange}</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>ch.qos.logback.core</id>
+								<versionRange>${logback.versionRange}</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.snowowl.identity.file</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.collections.fastutil</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.sun.el</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.semanticweb.elk</id>
+								<versionRange>[0.4.3,0.4.4)</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.snowowl.snomed.core.rest</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+						</extraRequirements>
+					</dependency-resolution>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<configuration>
+					<useUIThread>false</useUIThread>
+					<argLine>${tycho.testArgLine} -Xms2g -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
+					<includes>
+						<include>**/AllSnomedApiTests.java</include>
+					</includes>
+					<trimStackTrace>false</trimStackTrace>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<profiles>
+		<profile>
+      		<id>so_server_site</id>
+      		<repositories>
+      			<repository>
+        			<id>so_server_site</id>
+        			<url>${nexus.url}/content/repositories/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.update/${project.version}/com.b2international.snowowl.server.update-${project.version}.zip-unzip/</url>
+        			<layout>p2</layout>
+     			</repository>
+      		</repositories>
+    	</profile>
+	</profiles>
+
+</project>

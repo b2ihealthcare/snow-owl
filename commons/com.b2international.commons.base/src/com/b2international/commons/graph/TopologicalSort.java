@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,9 +71,11 @@ public class TopologicalSort<N, E extends DirectedEdge<N>> {
 	 */
 	private Set<N> getNodesWithoutOutgoingEdges() {
 		ImmutableSet.Builder<N> builder = ImmutableSet.builder();
-		for (N node : directedGraph.getNodes()) {
+		Set<N> nodes = directedGraph.getNodes();
+		Set<E> edges = directedGraph.getEdges();
+		for (N node : nodes) {
 			boolean foundOutgoingEdge = false;
-			for (E edge : directedGraph.getEdges()) {
+			for (E edge : edges) {
 				if (edge.getSource().equals(node)) {
 					foundOutgoingEdge = true;
 					break;
@@ -90,7 +92,8 @@ public class TopologicalSort<N, E extends DirectedEdge<N>> {
 	 */
 	private Set<N> getIncomingEdgeSourceNodes(N node) {
 		ImmutableSet.Builder<N> builder = ImmutableSet.builder();
-		for (E edge : directedGraph.getEdges()) {
+		Set<E> edges = directedGraph.getEdges();
+		for (E edge : edges) {
 			if (edge.getDestination().equals(node)) {
 				builder.add(edge.getSource());
 			}

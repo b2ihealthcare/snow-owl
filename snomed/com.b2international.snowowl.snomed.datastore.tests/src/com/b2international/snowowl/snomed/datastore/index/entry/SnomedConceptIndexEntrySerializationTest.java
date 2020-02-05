@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -64,10 +64,9 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L))
 				.build();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, concept);
-		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
-		assertEquals(null, actual.getNamespace());
+		indexRevision(RevisionBranch.MAIN_PATH, concept);
+		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, Concepts.ROOT_CONCEPT);
+		assertEquals("", actual.getNamespace());
 		assertDocEquals(concept, actual);
 	}
 	
@@ -87,14 +86,12 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(-1L))
 				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L))
 				.refSetType(SnomedRefSetType.ASSOCIATION)
-				.refSetStorageKey(STORAGE_KEY1)
 				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.mapTargetComponentType(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
 				.build();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, concept);
-		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, concept);
+		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, Concepts.ROOT_CONCEPT);
 		assertDocEquals(concept, actual);
 	}
 

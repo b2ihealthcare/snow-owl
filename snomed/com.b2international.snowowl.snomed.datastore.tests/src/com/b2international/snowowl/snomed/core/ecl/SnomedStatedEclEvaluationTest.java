@@ -39,7 +39,7 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
@@ -71,7 +71,6 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 	
 	@Before
 	public void setup() {
-		super.setup();
 		SnomedCoreConfiguration config = new SnomedCoreConfiguration();
 		config.setConcreteDomainSupported(true);
 		
@@ -115,8 +114,10 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 	}
 	
 	private void generateTestHierarchy() {
-		indexRevision(MAIN, nextStorageKey(), concept(STATED_CONCEPT).statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(ROOT_CONCEPT))).build());
-		indexRevision(MAIN, nextStorageKey(), relationship(STATED_CONCEPT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, Concepts.STATED_RELATIONSHIP).group(1).build());
+		indexRevision(MAIN, 
+			concept(STATED_CONCEPT).statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(ROOT_CONCEPT))).build(),
+			relationship(STATED_CONCEPT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, Concepts.STATED_RELATIONSHIP).group(1).build()
+		);
 	}
 	
 	private Expression descendantsOrSelfOf(String...conceptIds) {

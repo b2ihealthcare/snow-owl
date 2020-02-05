@@ -24,12 +24,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.snomed.cis.rest.exceptions.UnauthorizedException;
-import com.b2international.snowowl.snomed.cis.rest.model.CisError;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.JWTVerifier;
+import com.b2international.commons.exceptions.UnauthorizedException;
+import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.identity.Credentials;
+import com.b2international.snowowl.identity.Token;
+import com.b2international.snowowl.identity.request.UserRequests;
 import com.b2international.snowowl.snomed.cis.rest.model.EmptyJsonResponse;
 import com.b2international.snowowl.snomed.cis.rest.model.UserData;
-import com.b2international.snowowl.snomed.cis.client.Credentials;
-import com.b2international.snowowl.snomed.cis.client.Token;
 import com.google.common.base.Strings;
 
 import io.swagger.annotations.Api;
@@ -44,26 +48,31 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Authentication", description="Authentication", tags = { "Authentication" })
 @RestController
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
-public class CisAuthenticationService {
+public class CisAuthenticationService extends AbstractRestService {
 
 	@Autowired
-	private CisAuthenticationProvider auth;
+	private JWTVerifier jwtVerifier;
 	
 	@ApiOperation(value="Creates a session, obtaining a token for next operations.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = CisError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+		@ApiResponse(code = 400, message = "Error", response = RestApiError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value="/login")
 	public Token login(
 			@ApiParam(value = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
-		return new Token(auth.login(credentials));
+		return UserRequests.prepareLogin()
+				.setUsername(credentials.getUsername())
+				.setPassword(credentials.getPassword())
+				.buildAsync()
+				.execute(getBus())
+				.getSync();
 	}
 	
 	@ApiOperation(value="Closes a session, identified by the token.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = CisError.class)
+		@ApiResponse(code = 400, message = "Error", response = RestApiError.class)
 	})
 	@PostMapping(value="/logout")
 	public ResponseEntity<EmptyJsonResponse> logout(
@@ -73,17 +82,17 @@ public class CisAuthenticationService {
 		return new ResponseEntity<>(new EmptyJsonResponse(), HttpStatus.OK);
 	}
 	
-	@ApiOperation(value = "Validates a token, checking if it' assigned to a current session, and retrieves user data.")
+	@ApiOperation(value = "Validates a token, checking if it's assigned to a current session, and retrieves user data.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = CisError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = CisError.class)
+		@ApiResponse(code = 400, message = "Error", response = RestApiError.class),
+		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value="/authenticate")
 	public UserData authenticate(
 			@ApiParam(value = "The security access token.", required = true)
 			@RequestBody 
 			Token token) {
-		String username = auth.verify(token.getToken());
+		String username = verify(token.getToken());
 		if (Strings.isNullOrEmpty(username)) {
 			throw new UnauthorizedException("Token does not validate.");
 		} else {
@@ -92,5 +101,15 @@ public class CisAuthenticationService {
 			return userData;
 		}
 	}
+
+	private String verify(String token) {
+		try {
+		    return jwtVerifier.verify(token).getSubject();
+		} catch (JWTVerificationException exception){
+		    // Invalid signature/claims
+			return null;
+		}
+	}
+
 	
 }

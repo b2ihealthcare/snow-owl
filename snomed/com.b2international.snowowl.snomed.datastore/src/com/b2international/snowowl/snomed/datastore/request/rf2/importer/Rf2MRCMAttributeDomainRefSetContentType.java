@@ -27,14 +27,16 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.5
  */
-public class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContentType {
+final class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
@@ -74,6 +76,31 @@ public class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContent
 	@Override
 	public String[] getHeaderColumns() {
 		return MRCM_ATTRIBUTE_DOMAIN_HEADER;
+	}
+
+	@Override
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String grouped = values[7];
+		final String domainId = values[6];
+		final String attributeCardinality = values[8];
+		final String attributeInGroupCardinality = values[9];
+		final String ruleStrenghtId = values[10];
+		final String contentTypeId = values[11];
+		
+		if (Strings.isNullOrEmpty(grouped)) {
+			reporter.error("Grouped field was empty for membwder '%s'", memberId);
+		}
+		
+		if (Strings.isNullOrEmpty(attributeCardinality)) {
+			reporter.error("AttributeCardinality field was empty for member '%s'", memberId);
+		}
+		
+		if (Strings.isNullOrEmpty(attributeInGroupCardinality)) {
+			reporter.error("AttributeInGroupCardinality field was empty for member '%s'", memberId);
+		}
+		
+		validateConceptIds(reporter, domainId, ruleStrenghtId, contentTypeId);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Date;
 
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -30,6 +31,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @since 4.0
  */
 public abstract class SnomedComponent extends BaseComponent {
+
+	/**
+	 * @since 7.4
+	 */
+	public static abstract class Expand {
+		public static final String MODULE = "module";
+	}
 
 	/**
 	 * @since 6.16
@@ -48,6 +56,8 @@ public abstract class SnomedComponent extends BaseComponent {
 	private String moduleId;
 	private String iconId;
 	private Float score;
+	
+	private SnomedConcept module;
 
 	/**
 	 * Returns the component's current status as a boolean value.
@@ -63,7 +73,7 @@ public abstract class SnomedComponent extends BaseComponent {
 	 * 
 	 * @return the component's effective time
 	 */
-	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
+	@JsonFormat(shape=Shape.STRING, pattern=DateFormats.SHORT, timezone="UTC")
 	public Date getEffectiveTime() {
 		return effectiveTime;
 	}
@@ -93,12 +103,19 @@ public abstract class SnomedComponent extends BaseComponent {
 	public Float getScore() {
 		return score;
 	}
+	
+	/**
+	 * @return the expanded module of a SNOMED CT Concept
+	 */
+	public SnomedConcept getModule() {
+		return module;
+	}
 
 	public void setActive(final Boolean active) {
 		this.active = active;
 	}
 
-	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
+	@JsonFormat(shape=Shape.STRING, pattern = DateFormats.SHORT, timezone="UTC")
 	public void setEffectiveTime(final Date effectiveTime) {
 		this.effectiveTime = effectiveTime;
 	}
@@ -113,6 +130,10 @@ public abstract class SnomedComponent extends BaseComponent {
 	
 	public void setScore(Float score) {
 		this.score = score;
+	}
+	
+	public void setModule(SnomedConcept module) {
+		this.module = module;
 	}
 	
 	/**

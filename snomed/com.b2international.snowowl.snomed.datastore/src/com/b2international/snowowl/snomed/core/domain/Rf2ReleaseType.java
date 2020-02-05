@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public enum Rf2ReleaseType {
 	/**
 	 * Returns with the RF2 release type identified by the specified value.
 	 * 
-	 * @param value
+	 * @param name
 	 *            the value of the release type
 	 * @return the release type, never <code>null</code>
 	 */

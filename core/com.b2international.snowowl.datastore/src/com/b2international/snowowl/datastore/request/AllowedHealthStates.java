@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ public interface AllowedHealthStates {
 	 * 	eg.: to allow maintenance related requests to be executed against a non-green {@link Repository}.
 	 * @return an array of {@link Repository.Health} statuses.
 	 */
-	default Repository.Health[] allowedHealthstates() {
-		return new Repository.Health[] { RepositoryInfo.Health.GREEN, RepositoryInfo.Health.YELLOW };
+	default RepositoryInfo.Health[] allowedHealthstates() {
+		return new RepositoryInfo.Health[] { RepositoryInfo.Health.GREEN, RepositoryInfo.Health.YELLOW };
 	}
 	
 }

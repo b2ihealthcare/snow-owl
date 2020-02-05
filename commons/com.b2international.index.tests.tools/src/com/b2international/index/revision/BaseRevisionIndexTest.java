@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,37 +15,31 @@
  */
 package com.b2international.index.revision;
 
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 
-import com.b2international.index.DefaultIndex;
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
+import com.b2international.index.IndexResource;
 import com.b2international.index.IndexClient;
 import com.b2international.index.Indexes;
 import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
 import com.b2international.index.util.Reflections;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Ordering;
 
 /**
  * @since 4.7
@@ -53,114 +47,71 @@ import com.google.common.collect.Ordering;
 public abstract class BaseRevisionIndexTest {
 	
 	protected static final String MAIN = RevisionBranch.MAIN_PATH;
-	protected static final long STORAGE_KEY1 = 1L;
-	protected static final long STORAGE_KEY2 = 2L;
+	protected static final String STORAGE_KEY1 = "1";
+	protected static final String STORAGE_KEY2 = "2";
 	
-	// XXX start from 3 to take the two constant values above into account
 	private AtomicLong storageKeys = new AtomicLong(3);
-	private ObjectMapper mapper;
-	private Mappings mappings;
-	private Index rawIndex;
-	private RevisionIndex index;
-	private Map<String, RevisionBranch> branches = newHashMap();
-	private AtomicLong clock = new AtomicLong(0L);
-	private AtomicInteger segmentIds = new AtomicInteger(0);
-	private RevisionBranchProvider branchProvider = new RevisionBranchProvider() {
-		@Override
-		public RevisionBranch getBranch(String branchPath) {
-			return branches.get(branchPath);
-		}
-		
-		@Override
-		public RevisionBranch getParentBranch(String branchPath) {
-			final RevisionBranch branch = branches.get(branchPath);
-			final Set<Integer> segments = newHashSet(branch.segments());
-			segments.remove(branch.segmentId());
-			return new RevisionBranch(branchPath.substring(0, branchPath.lastIndexOf(RevisionBranch.SEPARATOR)), Ordering.natural().max(segments), segments);
-		}
-	};
 	
-	private int nextSegmentId() {
-		return segmentIds.getAndIncrement();
-	}
+	private final Collection<Hooks.Hook> hooks = newArrayListWithCapacity(2);
 	
-	protected final long nextStorageKey() {
-		return storageKeys.getAndIncrement();
-	}
-	
-	@Before
-	public void setup() {
-		// initially the MAIN is only one segment long
-		final Set<Integer> segments = newHashSet();
-		final int initialSegment = nextSegmentId();
-		segments.add(initialSegment);
-		branches.put(MAIN, new RevisionBranch(MAIN, initialSegment, segments));
-		
-		mapper = new ObjectMapper();
-		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		configureMapper(mapper);
-		mappings = new Mappings(getTypes());
-		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
-		index = new DefaultRevisionIndex(rawIndex, branchProvider);
-		index.admin().create();
-	}
+	@Rule
+	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper);
 
 	@After
-	public void teardown() {
-		if (index != null) {
-			index.admin().delete();
-		}
+	public void after() {
+		hooks.forEach(index().hooks()::removeHook);
 	}
 	
-	protected final ObjectMapper getMapper() {
-		return mapper;
+	/**
+	 * Subclasses may override to provide additional mappings for the underlying index.
+	 * @return
+	 */
+	protected Collection<Class<?>> getTypes() {
+		return Collections.emptySet();
 	}
 	
 	protected void configureMapper(ObjectMapper mapper) {
 	}
 	
-	protected String createBranch(String parent, String child) {
-		RevisionBranch parentBranch = branches.get(parent);
-		if (parentBranch == null) {
-			throw new IllegalArgumentException("Parent could not be found at path: " + parent);
-		}
-		final String path = String.format("%s/%s", parent, child);
-		// register child with new segment ID
-		final int initialSegment = nextSegmentId();
-		final Set<Integer> segments = newHashSet();
-		// add parent segments
-		segments.add(initialSegment);
-		segments.addAll(parentBranch.segments());
-		branches.put(path, new RevisionBranch(path, initialSegment, segments));
-		// reregister parent branch with updated segment information
-		final int newParentSegment = nextSegmentId();
-		final Set<Integer> newParentSegments = newHashSet();
-		newParentSegments.add(newParentSegment);
-		newParentSegments.addAll(parentBranch.segments());
-		branches.put(parent, new RevisionBranch(parent, newParentSegment, newParentSegments));
-		return path;
+	protected final String nextId() {
+		return Long.toString(storageKeys.getAndIncrement());
 	}
 	
-	protected final long currentTime() {
-		return clock.incrementAndGet();
+	protected String createBranch(String parent, String child) {
+		return branching().createBranch(parent, child, new MetadataImpl());
+	}
+	
+	protected long currentTime() {
+		return ((DefaultRevisionBranching) branching()).currentTime();
 	}
 
 	protected final RevisionIndex index() {
-		return index;
+		return index.getRevisionIndex();
 	}
 	
 	protected final Index rawIndex() {
-		return rawIndex;
+		return index.getIndex();
 	}
 	
-	/**
-	 * Returns the document types used by this test case.
-	 * @return
-	 */
-	protected abstract Collection<Class<?>> getTypes();
+	protected final ObjectMapper getMapper() {
+		return index.getMapper();
+	}
 	
-	private final IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings) {
-		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings);
+	protected BaseRevisionBranching branching() {
+		return index().branching();
+	}
+	
+	protected RevisionBranch getMainBranch() {
+		return getBranch(MAIN);
+	}
+	
+	protected final void withHook(Hooks.Hook hook) {
+		hooks.add(hook);
+		index().hooks().addHook(hook);
+	}
+	
+	protected RevisionBranch getBranch(String branchPath) {
+		return branching().getBranch(branchPath);
 	}
 	
 	protected final void indexDocument(final String key, final Object doc) {
@@ -171,37 +122,45 @@ public abstract class BaseRevisionIndexTest {
 		});
 	}
 	
-	protected final <T extends Revision> T getRevision(final String branch, final Class<T> type, final long storageKey) {
-		return index().read(branch, new RevisionIndexRead<T>() {
-			@Override
-			public T execute(RevisionSearcher index) throws IOException {
-				return index.get(type, storageKey);
-			}
-		});
+	protected final <T extends Revision> T getRevision(final String branch, final Class<T> type, final String key) {
+		return index().read(branch, index -> index.get(type, key));
 	}
 	
-	protected final void indexRevision(final String branchPath, final long storageKey, final Revision data) {
-		final long commitTimestamp = currentTime();
-		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
-			@Override
-			public Void execute(RevisionWriter index) throws IOException {
-				index.put(storageKey, data);
-				index.commit();
-				return null;
-			}
-		});
+	protected final void indexRevision(final String branchPath, final Revision... revisions) {
+		commit(branchPath, Arrays.asList(revisions));
 	}
 	
-	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final long storageKey) {
+	protected final void indexChange(final String branchPath, final Revision oldRevision, final Revision newRevision) {
 		final long commitTimestamp = currentTime();
-		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
-			@Override
-			public Void execute(RevisionWriter index) throws IOException {
-				index.remove(type, storageKey);
-				index.commit();
-				return null;
-			}
-		});
+		index().prepareCommit(branchPath)
+			.stageChange(oldRevision, newRevision)
+			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
+			.getTimestamp();
+	}
+	
+	protected final void indexRemove(final String branchPath, final Revision...removedRevisions) {
+		final long commitTimestamp = currentTime();
+		StagingArea staging = index().prepareCommit(branchPath);
+		Arrays.asList(removedRevisions).forEach(staging::stageRemove);
+		staging
+			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
+			.getTimestamp();
+	}
+
+	protected final long commit(final String branchPath, final Collection<Revision> newRevisions) {
+		final long commitTimestamp = currentTime();
+		StagingArea staging = index().prepareCommit(branchPath);
+		newRevisions.forEach(rev -> staging.stageNew(rev.getId(), rev));
+		return staging
+				.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
+				.getTimestamp();
+	}
+	
+	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final String key) {
+		final long commitTimestamp = currentTime();
+		StagingArea staging = index().prepareCommit(branchPath);
+		staging.stageRemove(key, getRevision(branchPath, type, key));
+		staging.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
 	}
 	
 	protected final <T> Hits<T> search(final String branchPath, final Query<T> query) {
@@ -214,14 +173,12 @@ public abstract class BaseRevisionIndexTest {
 	
 	protected void assertDocEquals(Object expected, Object actual) {
 		assertNotNull("Actual document is missing from index", actual);
-		for (Field f : mappings.getMapping(expected.getClass()).getFields()) {
-			if (Revision.REPLACED_INS.equals(f.getName()) 
-					|| Revision.SEGMENT_ID.equals(f.getName())
-					|| Revision.COMMIT_TIMESTAMP.equals(f.getName()) 
-					|| Revision.BRANCH_PATH.equals(f.getName()) 
-					|| Revision.STORAGE_KEY.equals(f.getName()) 
+		for (Field f : index.getIndex().admin().mappings().getMapping(expected.getClass()).getFields()) {
+			if (Revision.Fields.CREATED.equals(f.getName()) 
+					|| Revision.Fields.REVISED.equals(f.getName())
+					|| DocumentMapping._ID.equals(f.getName())
 					|| WithScore.SCORE.equals(f.getName())
-					|| DocumentMapping._ID.equals(f.getName())) {
+					) {
 				// skip revision fields from equality check
 				continue;
 			}

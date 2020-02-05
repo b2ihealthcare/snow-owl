@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 4.5
  */
-public final class SnomedLanguageReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedLanguageReferenceSetMemberBuilder, SnomedLanguageRefSetMember> {
+public final class SnomedLanguageReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedLanguageReferenceSetMemberBuilder> {
 
 	private Acceptability acceptability = Acceptability.ACCEPTABLE;
 
@@ -42,20 +40,9 @@ public final class SnomedLanguageReferenceSetMemberBuilder extends SnomedMemberB
 	}
 
 	@Override
-	protected SnomedLanguageRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
-	}
-
-	@Override
-	public void init(SnomedLanguageRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setAcceptabilityId(acceptability.getConceptId());
+		component.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, acceptability.getConceptId());
 	}
 	
-	@Override
-	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedLanguageRefSetMember component) {
-		Description description = context.lookup(component.getReferencedComponentId(), Description.class);
-		description.getLanguageRefSetMembers().add(component);
-	}
-
 }

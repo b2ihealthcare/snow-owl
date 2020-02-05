@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
  */
-public final class SnomedComplexMapReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedComplexMapReferenceSetMemberBuilder, SnomedComplexMapRefSetMember> {
+public final class SnomedComplexMapReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedComplexMapReferenceSetMemberBuilder> {
 
 	private String mapTargetId;
 	private String mapTargetDescription;
@@ -74,21 +74,17 @@ public final class SnomedComplexMapReferenceSetMemberBuilder extends SnomedMembe
 	}
 
 	@Override
-	protected SnomedComplexMapRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedComplexMapRefSetMember();
-	}
-
-	@Override
-	public void init(SnomedComplexMapRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setMapTargetComponentId(mapTargetId);
-		component.setMapTargetComponentDescription(mapTargetDescription);
-		component.setMapRule(mapRule);
-		component.setMapAdvice(mapAdvice);
-		component.setMapGroup(group);
-		component.setMapPriority(priority);
-		component.setCorrelationId(correlationId);
-		component.setMapCategoryId(mapCategoryId);
+		component
+			.field(SnomedRf2Headers.FIELD_MAP_TARGET, mapTargetId)
+			.field(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, mapTargetDescription)
+			.field(SnomedRf2Headers.FIELD_MAP_RULE, mapRule)
+			.field(SnomedRf2Headers.FIELD_MAP_ADVICE, mapAdvice)
+			.field(SnomedRf2Headers.FIELD_MAP_GROUP, group)
+			.field(SnomedRf2Headers.FIELD_MAP_PRIORITY, priority)
+			.field(SnomedRf2Headers.FIELD_CORRELATION_ID, correlationId)
+			.field(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, mapCategoryId);
 	}
 
 }

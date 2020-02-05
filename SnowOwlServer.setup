@@ -5,11 +5,70 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:git="http://www.eclipse.org/oomph/setup/git/1.0"
     xmlns:jdt="http://www.eclipse.org/oomph/setup/jdt/1.0"
+    xmlns:pde="http://www.eclipse.org/oomph/setup/pde/1.0"
+    xmlns:projects="http://www.eclipse.org/oomph/setup/projects/1.0"
     xmlns:setup="http://www.eclipse.org/oomph/setup/1.0"
     xmlns:setup.p2="http://www.eclipse.org/oomph/setup/p2/1.0"
-    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore"
+    xsi:schemaLocation="http://www.eclipse.org/oomph/setup/git/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Git.ecore http://www.eclipse.org/oomph/setup/jdt/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/JDT.ecore http://www.eclipse.org/oomph/setup/pde/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/PDE.ecore http://www.eclipse.org/oomph/setup/projects/1.0 http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/models/Projects.ecore"
     name="com.b2international.snowowl"
     label="Snow Owl Terminology Server">
+  <setupTask
+      xsi:type="jdt:JRETask"
+      version="JavaSE-11"
+      location="${jre.location-11}"/>
+  <setupTask
+      xsi:type="setup:EclipseIniTask"
+      option="-Xmx"
+      value="1500m"
+      vm="true"/>
+  <setupTask
+      xsi:type="setup:EclipseIniTask"
+      option="-Doomph.redirection.snow.owl"
+      value="=https://raw.githubusercontent.com/b2ihealthcare/snow-owl/7.x/SnowOwlServer.setup->${git.clone.b2ihealthcare.snowowl.location|uri}/SnowOwlServer.setup"
+      vm="true"/>
+  <setupTask
+      xsi:type="setup.p2:P2Task"
+      label="Xtext and Xtend">
+    <requirement
+        name="org.eclipse.emf.mwe2.language.sdk.feature.group"
+        versionRange="[2.10.0,2.11.0)"/>
+    <requirement
+        name="org.eclipse.xtend.sdk.feature.group"
+        versionRange="[2.18.0,2.19.0)"/>
+    <requirement
+        name="org.eclipse.xtext.sdk.feature.group"
+        versionRange="[2.18.0,2.19.0)"/>
+    <repository
+        url="http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/"/>
+    <description></description>
+  </setupTask>
+  <setupTask
+      xsi:type="setup.p2:P2Task"
+      label="Groovy">
+    <requirement
+        name="org.codehaus.groovy.eclipse.feature.feature.group"
+        versionRange="[3.5.0,3.6.0)"/>
+    <requirement
+        name="org.codehaus.groovy.m2eclipse.feature.feature.group"
+        versionRange="[3.5.0,3.6.0)"/>
+    <requirement
+        name="org.codehaus.groovy24.feature.feature.group"
+        versionRange="[3.5.0,3.6.0)"/>
+    <repository
+        url="https://dist.springsource.org/snapshot/GRECLIPSE/e4.12"/>
+  </setupTask>
+  <setupTask
+      xsi:type="setup.p2:P2Task"
+      label="Maven build helpers">
+    <requirement
+        name="org.sonatype.m2e.buildhelper.feature.feature.group"/>
+    <requirement
+        name="org.sonatype.tycho.m2e.feature.feature.group"/>
+    <repository
+        url="http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-buildhelper/0.15.0/N/0.15.0.201207090124/"/>
+    <repository
+        url="http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-tycho/0.8.1/N/0.8.1.201704211436/"/>
+  </setupTask>
   <setupTask
       xsi:type="setup:CompoundTask"
       name="User Preferences">
@@ -47,57 +106,38 @@
           key="/instance/org.eclipse.m2e.core/eclipse.m2.problem.notCoveredMojoExecution"
           value="warning"/>
     </setupTask>
-  </setupTask>
-  <setupTask
-      xsi:type="jdt:JRETask"
-      version="JavaSE-1.8"
-      location="${jre.location-1.8}"/>
-  <setupTask
-      xsi:type="setup:EclipseIniTask"
-      option="-Xmx"
-      value="1024m"
-      vm="true"/>
-  <setupTask
-      xsi:type="setup:EclipseIniTask"
-      option="-Doomph.redirection.snow.owl"
-      value="=https://raw.githubusercontent.com/b2ihealthcare/snow-owl/develop/SnowOwlServer.setup->${git.clone.location|uri}/SnowOwlServer.setup"
-      vm="true"/>
-  <setupTask
-      xsi:type="setup:VariableTask"
-      name="eclipse.target.platform"
-      defaultValue="Neon"
-      storageURI="scope://Workspace"/>
-  <setupTask
-      xsi:type="setup.p2:P2Task">
-    <requirement
-        name="org.eclipse.emf.mwe2.language.sdk.feature.group"
-        versionRange="[2.9.0,3.0.0)"/>
-    <requirement
-        name="org.eclipse.xtend.sdk.feature.group"
-        versionRange="[2.11.0,2.13.0)"/>
-    <requirement
-        name="org.eclipse.xtext.sdk.feature.group"
-        versionRange="[2.11.0,2.13.0)"/>
-    <requirement
-        name="org.eclipse.m2e.feature.feature.group"/>
-    <requirement
-        name="org.eclipse.m2e.logback.feature.feature.group"/>
-    <requirement
-        name="org.sonatype.tycho.m2e.feature.feature.group"/>
-    <requirement
-        name="org.sonatype.m2e.buildhelper.feature.feature.group"/>
-    <repository
-        url="http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/"/>
-    <repository
-        url="http://download.eclipse.org/technology/m2e/releases"/>
-    <repository
-        url="http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-tycho/0.8.0/N/0.8.0.201409231215/"/>
-    <repository
-        url="http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-buildhelper/0.15.0/N/0.15.0.201207090124/"/>
+    <setupTask
+        xsi:type="setup:CompoundTask"
+        name="org.codehaus.groovy.eclipse.compilerResolver">
+      <setupTask
+          xsi:type="setup:PreferenceTask"
+          key="/instance/org.codehaus.groovy.eclipse.compilerResolver/groovy.compiler.level"
+          value="24"/>
+    </setupTask>
+    <setupTask
+        xsi:type="setup:CompoundTask"
+        name="org.eclipse.egit.core">
+      <setupTask
+          xsi:type="setup:PreferenceTask"
+          key="/instance/org.eclipse.egit.core/core_defaultRepositoryDir"
+          value="${installation.location}/git"/>
+    </setupTask>
+    <setupTask
+        xsi:type="setup:CompoundTask"
+        name="org.eclipse.jdt.ui">
+      <setupTask
+          xsi:type="setup:PreferenceTask"
+          key="/instance/org.eclipse.jdt.ui/org.eclipse.jdt.ui.ondemandthreshold"
+          value="10"/>
+      <setupTask
+          xsi:type="setup:PreferenceTask"
+          key="/instance/org.eclipse.jdt.ui/org.eclipse.jdt.ui.staticondemandthreshold"
+          value="10"/>
+    </setupTask>
   </setupTask>
   <setupTask
       xsi:type="git:GitCloneTask"
-      id="git.clone"
+      id="git.clone.b2ihealthcare.snowowl"
       remoteURI="b2ihealthcare/snow-owl">
     <annotation
         source="http://www.eclipse.org/oomph/setup/InducedChoices">
@@ -114,9 +154,72 @@
         <value>remoteURI</value>
       </detail>
     </annotation>
+    <configSections
+        name="core">
+      <properties
+          key="autocrlf"
+          value="input"/>
+    </configSections>
     <description>${scope.project.label}</description>
   </setupTask>
-  <stream name="5.x"/>
+  <setupTask
+      xsi:type="projects:ProjectsImportTask"
+      id="import.targets">
+    <sourceLocator
+        rootFolder="${git.clone.b2ihealthcare.snowowl.location}"/>
+    <sourceLocator
+        rootFolder="${git.clone.b2ihealthcare.snowowl.location}/releng"/>
+    <sourceLocator
+        rootFolder="${git.clone.b2ihealthcare.snowowl.location}/releng/target-platform"/>
+    <description>Target platform projects only</description>
+  </setupTask>
+  <setupTask
+      xsi:type="projects:ProjectsBuildTask"
+      id="build.targets"
+      refresh="true"
+      clean="true"/>
+  <setupTask
+      xsi:type="setup:TextModifyTask"
+      id="modify.tp.change"
+      excludedTriggers="BOOTSTRAP"
+      successor="modify.tp.restore"
+      url="${git.clone.b2ihealthcare.snowowl.location|uri}/releng/target-platform/target-platform-local.target">
+    <modification
+        pattern="(Snow Owl Target Platform Definition)">
+      <substitution>Snow Owl Target Platform Definition (local)</substitution>
+    </modification>
+    <description>Temporarily rename target platform so it can be selected by unique name</description>
+  </setupTask>
+  <setupTask
+      xsi:type="pde:TargetPlatformTask"
+      name="Snow Owl Target Platform Definition (local)">
+    <description></description>
+  </setupTask>
+  <setupTask
+      xsi:type="setup:TextModifyTask"
+      id="modify.tp.restore"
+      excludedTriggers="BOOTSTRAP"
+      url="${git.clone.b2ihealthcare.snowowl.location|uri}/releng/target-platform/target-platform-local.target">
+    <modification
+        pattern="(Snow Owl Target Platform Definition \(local\))">
+      <substitution>Snow Owl Target Platform Definition</substitution>
+    </modification>
+    <description>Restore target platform name to original, to avoid confusion (it will be overwritten anyways)</description>
+  </setupTask>
+  <setupTask
+      xsi:type="projects:ProjectsImportTask"
+      id="import.projects">
+    <sourceLocator
+        rootFolder="${git.clone.b2ihealthcare.snowowl.location}"
+        locateNestedProjects="true"/>
+    <description>Remaining projects</description>
+  </setupTask>
+  <setupTask
+      xsi:type="projects:ProjectsBuildTask"
+      id="build.projects"
+      refresh="true"
+      clean="true"/>
+  <stream name="7.x"/>
   <logicalProjectContainer
       xsi:type="setup:ProjectCatalog"
       href="index:/org.eclipse.setup#//@projectCatalogs[name='com.github']"/>

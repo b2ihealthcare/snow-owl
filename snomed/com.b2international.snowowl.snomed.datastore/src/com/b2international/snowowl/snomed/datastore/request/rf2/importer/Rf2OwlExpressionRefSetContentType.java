@@ -20,16 +20,18 @@ import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.OWL_EXP
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.5
  */
-public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
+final class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
@@ -38,6 +40,8 @@ public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 			component.setType(SnomedRefSetType.OWL_AXIOM);
 		} else if (Concepts.REFSET_OWL_ONTOLOGY.equals(component.getReferenceSetId())) {
 			component.setType(SnomedRefSetType.OWL_ONTOLOGY);
+		} else {
+			throw new UnsupportedOperationException("Unrecognized OWL Reference Set " + component.getReferenceSetId());
 		}
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
@@ -60,6 +64,16 @@ public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 	@Override
 	public String[] getHeaderColumns() {
 		return OWL_EXPRESSION_HEADER;
+	}
+
+	@Override
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String owlExpression = values[6];
+		
+		if (Strings.isNullOrEmpty(owlExpression)) {
+			reporter.error("Owl expression field was empty for '%s'", memberId);
+		}
 	}
 
 }

@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.constraint;
 
 import java.util.Objects;
 
-import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,22 @@
  */
 package com.b2international.index.revision;
 
+import java.util.List;
+
 /**
  * @since 5.0
  */
 interface InternalRevisionIndex extends RevisionIndex {
 
-	<T> T read(RevisionBranch branch, RevisionIndexRead<T> read);
+	<T> T read(RevisionBranchRef branch, RevisionIndexRead<T> read);
+	
+	/**
+	 * Returns all commits that changed the given identifier or any of its related components.
+	 * @param id
+	 * @return
+	 */
+	List<Commit> history(String id);
+
+	RevisionCompare compare(RevisionBranchRef base, RevisionBranchRef compare, int limit);
 	
 }

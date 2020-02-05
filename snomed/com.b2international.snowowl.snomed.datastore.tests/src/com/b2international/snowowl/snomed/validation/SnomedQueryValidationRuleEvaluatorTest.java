@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.validation;
 
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
 import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.description;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +53,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -116,7 +117,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	
 	@Before
 	public void setup() {
-		super.setup();
 		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), getMapper(), new Mappings(ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class));
 		repository = new ValidationRepository(index);
 		context = TestBranchContext.on(MAIN)
@@ -140,7 +140,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	
 	@After
 	public void teardown() {
-		super.teardown();
 		repository.dispose();
 	}
 	
@@ -148,8 +147,10 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	public void conceptRuleEclSingleConcept() throws Exception {
 		final String concept1 = RandomSnomedIdentiferGenerator.generateConceptId();
 		final String concept2 = RandomSnomedIdentiferGenerator.generateConceptId();
-		indexRevision(MAIN, STORAGE_KEY1, concept(concept1).build());
-		indexRevision(MAIN, STORAGE_KEY2, concept(concept2).build());
+		indexRevision(MAIN, 
+			concept(concept1).build(),
+			concept(concept2).build()
+		);
 		
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "concept")
@@ -169,9 +170,12 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		final String concept1 = RandomSnomedIdentiferGenerator.generateConceptId();
 		final String concept2 = RandomSnomedIdentiferGenerator.generateConceptId();
 		final String concept3 = RandomSnomedIdentiferGenerator.generateConceptId();
-		indexRevision(MAIN, STORAGE_KEY1, concept(concept1).moduleId(Concepts.MODULE_B2I_EXTENSION).build());
-		indexRevision(MAIN, STORAGE_KEY2, concept(concept2).active(false).moduleId(Concepts.MODULE_B2I_EXTENSION).build());
-		indexRevision(MAIN, nextStorageKey(), concept(concept3).active(false).moduleId(Concepts.MODULE_SCT_CORE).build());
+		
+		indexRevision(MAIN, 
+			concept(concept1).moduleId(Concepts.MODULE_B2I_EXTENSION).build(),
+			concept(concept2).active(false).moduleId(Concepts.MODULE_B2I_EXTENSION).build(),
+			concept(concept3).active(false).moduleId(Concepts.MODULE_SCT_CORE).build()
+		);
 		
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "concept")
@@ -192,8 +196,14 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		final String description1 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final String description2 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		
-		indexRevision(MAIN, STORAGE_KEY1, description(description1, Concepts.SYNONYM, "Minor heart attack").build());
-		indexRevision(MAIN, STORAGE_KEY2, description(description2, Concepts.SYNONYM, "Clinical finding").build());
+		indexRevision(MAIN, 
+			description(description1, Concepts.SYNONYM, "Minor heart attack")
+				.conceptId(generateConceptId())
+				.build(),
+			description(description2, Concepts.SYNONYM, "Clinical finding")
+				.conceptId(generateConceptId())
+				.build()
+		);
 		
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "description")
@@ -212,8 +222,14 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		final String description1 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final String description2 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		
-		indexRevision(MAIN, STORAGE_KEY1, description(description1, Concepts.SYNONYM, "Minor heart attack").build());
-		indexRevision(MAIN, STORAGE_KEY2, description(description2, Concepts.SYNONYM, "Clinical finding (finding)").build());
+		indexRevision(MAIN, 
+			description(description1, Concepts.SYNONYM, "Minor heart attack")
+				.conceptId(generateConceptId())
+				.build(),
+			description(description2, Concepts.SYNONYM, "Clinical finding (finding)")
+				.conceptId(generateConceptId())
+				.build()
+		);
 		
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "description")
@@ -231,16 +247,20 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	public void descriptionAcceptableInAndPreferredIn() throws Exception {
 		final String description1 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final String description2 = RandomSnomedIdentiferGenerator.generateDescriptionId();
-		final String langRefSet1 = RandomSnomedIdentiferGenerator.generateConceptId();
+		final String langRefSet1 = generateConceptId();
 		final String langRefSet2 = RandomSnomedIdentiferGenerator.generateConceptId();
 		
-		indexRevision(MAIN, STORAGE_KEY1, description(description1, Concepts.SYNONYM, "Minor heart attack")
+		indexRevision(MAIN, 
+			description(description1, Concepts.SYNONYM, "Minor heart attack")
+				.conceptId(generateConceptId())
 				.acceptableIn(ImmutableSet.of(langRefSet1))
 				.preferredIn(ImmutableSet.of(langRefSet2))
-				.build());
-		indexRevision(MAIN, STORAGE_KEY2, description(description2, Concepts.SYNONYM, "Clinical finding (finding)")
+				.build(),
+			description(description2, Concepts.SYNONYM, "Clinical finding (finding)")
+				.conceptId(generateConceptId())
 				.acceptableIn(ImmutableSet.of(langRefSet1))
-				.build());
+				.build()
+		);
 		
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "description")

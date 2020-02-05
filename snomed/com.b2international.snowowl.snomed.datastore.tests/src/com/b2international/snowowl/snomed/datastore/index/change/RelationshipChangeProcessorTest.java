@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -42,28 +37,32 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 
 	@Test
 	public void newRelationship() throws Exception {
-		final Relationship relationship = createRandomRelationship();
-		registerNew(relationship);
+		final SnomedRelationshipIndexEntry relationship = createRandomRelationship();
+		stageNew(relationship);
 		
 		process(processor);
 		
-		final SnomedRelationshipIndexEntry expected = SnomedRelationshipIndexEntry.builder(relationship).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
-		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
 	@Test
-	public void changedRelationship() throws Exception {
-		final Relationship relationship = createRandomRelationship();
-		registerDirty(relationship);
-		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()), SnomedRelationshipIndexEntry.builder(relationship).build());
+	public void changedRelationshipGroup() throws Exception {
+		final SnomedRelationshipIndexEntry relationship = createRandomRelationship();
+		initRevisions(relationship);
+		
+		stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship)
+				.group(relationship.getGroup() + 1)
+				.build());
 		
 		process(processor);
 		
-		final SnomedRelationshipIndexEntry expected = SnomedRelationshipIndexEntry.builder(relationship).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final SnomedRelationshipIndexEntry expected = SnomedRelationshipIndexEntry
+				.builder(relationship)
+				.group(relationship.getGroup() + 1)
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -71,26 +70,27 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void detachedRelationship() throws Exception {
-		final CDOID deletedRelationshipStorageKey = nextStorageKeyAsCDOID();
-		registerDetached(deletedRelationshipStorageKey, SnomedPackage.Literals.RELATIONSHIP);
+		final SnomedRelationshipIndexEntry relationship = createRandomRelationship();
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(relationship).build());
+		
+		stageRemove(relationship);
 		
 		process(processor);
 		
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getChangedMappings().size());
-		assertEquals(1, processor.getDeletions().size());
+		assertEquals(0, processor.getDeletions().size());
 	}
 	
 	@Test
 	public void addNewMemberToExistingRelationship() {
-		final Relationship relationship = createRandomRelationship();
+		final SnomedRelationshipIndexEntry relationship = createRandomRelationship();
 		final String referringRefSetId = generateConceptId();
-		final SnomedRefSetMember member = createSimpleMember(relationship.getId(), referringRefSetId);
+		final SnomedRefSetMemberIndexEntry member = simpleMember(relationship.getId(), referringRefSetId);
 		
-		registerExistingObject(relationship);
-		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship).build());
-		registerNew(member);
+		initRevisions(relationship);
+
+		stageNew(member);
 		
 		process(processor);
 		
@@ -100,7 +100,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -108,20 +108,19 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void deleteMemberOfExistingRelationship() {
-		final Relationship relationship = createRandomRelationship();
+		final SnomedRelationshipIndexEntry relationship = createRandomRelationship();
 		final String referringRefSetId = generateConceptId();
-		final SnomedRefSetMember member = createSimpleMember(relationship.getId(), referringRefSetId);
-		
-		registerExistingObject(relationship);
-		registerExistingObject(member);
-		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship)
-					.memberOf(ImmutableList.of(referringRefSetId))
-					.activeMemberOf(ImmutableList.of(referringRefSetId))
-					.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), 
-				SnomedRefSetMemberIndexEntry.builder(member).build());
-		registerDetached(member.cdoID(), member.eClass());
+		final SnomedRefSetMemberIndexEntry member = simpleMember(relationship.getId(), referringRefSetId);
+
+		initRevisions(
+			SnomedRelationshipIndexEntry.builder(relationship)
+				.memberOf(ImmutableList.of(referringRefSetId))
+				.activeMemberOf(ImmutableList.of(referringRefSetId))
+			.build(),
+			member
+		);
+
+		stageRemove(member);
 		
 		process(processor);
 		
@@ -129,7 +128,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 				.builder(relationship)
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -137,25 +136,22 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void deleteOneMemberFromMultipleMembersOfRelationship() {
-		final Relationship relationship = createRandomRelationship();
+		final SnomedRelationshipIndexEntry relationship = createRandomRelationship();
 		final String referringRefSetId = generateConceptId();
 		
-		final SnomedRefSetMember member1 = createSimpleMember(relationship.getId(), referringRefSetId);
-		final SnomedRefSetMember member2 = createSimpleMember(relationship.getId(), referringRefSetId);
+		final SnomedRefSetMemberIndexEntry member1 = simpleMember(relationship.getId(), referringRefSetId);
+		final SnomedRefSetMemberIndexEntry member2 = simpleMember(relationship.getId(), referringRefSetId);
 		
-		registerExistingObject(relationship);
-		registerExistingObject(member1);
-		registerExistingObject(member2);
-		
-		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship)
-					.memberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
-					.activeMemberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
-					.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
-		
-		registerDetached(member1.cdoID(), member1.eClass());
+		initRevisions(
+			SnomedRelationshipIndexEntry.builder(relationship)
+				.memberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
+				.activeMemberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
+			.build(),
+			member1,
+			member2
+		);
+
+		stageRemove(member1);
 		
 		process(processor);
 		
@@ -165,7 +161,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());

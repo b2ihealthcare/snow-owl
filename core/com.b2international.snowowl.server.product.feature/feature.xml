@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.server.product.feature"
       label="Snow Owl Server"
-      version="6.25.0.qualifier"
+      version="7.4.0.qualifier"
       provider-name="B2i Healthcare">
 
      <description url="http://b2i.sg">
@@ -10,7 +10,7 @@ Snow Owl Terminology Server product feature.
 Visit us at http://b2i.sg
    </description>
 
-   <copyright>Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg</copyright>
+   <copyright>Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg</copyright>
 
    <requires>
       <import feature="com.b2international.snowowl.server.core.feature" version="3.9.0.qualifier"/>

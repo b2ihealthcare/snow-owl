@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.status.Statuses;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -104,7 +102,7 @@ public class ApplicationContext {
 		if (instance == null) {
 			synchronized (ApplicationContext.class) {
 				if (instance == null) {
-					instance = new ApplicationContext();
+					instance = new ApplicationContext(); // lgtm[java/unsafe-double-checked-locking]
 				}
 			}
 		}
@@ -166,27 +164,34 @@ public class ApplicationContext {
 		Preconditions.checkNotNull(service, "Service for " + serviceInterface.getSimpleName() + " service cannot be null.");
 		return service;
 	}
-	
-	
+
+	/**
+	 * Registers a service for the given serviceInterface. Fires all {@link IServiceChangeListener}s attached to this application context. If the same
+	 * instance is already registered to the serviceInterface then this method does nothing.
+	 * 
+	 * @param <T>
+	 * @param serviceInterface
+	 * @param implementation
+	 */
 	public <T> void registerService(final Class<T> serviceInterface, final T implementation) {
-		
 		Preconditions.checkNotNull(implementation, "Registering service for " + serviceInterface.getSimpleName() + " is prohibited with unspecified implementation.");
 		
 		final ServiceRegistryEntry<T> entry = getServiceEntry(serviceInterface);
 		final T oldImplementation = entry.implementation;
-		entry.implementation = implementation;
-		// notify listeners
-		for (final Iterator<IServiceChangeListener<T>> ir = new CopyOnWriteArrayList<IServiceChangeListener<T>>(entry.listeners).iterator(); ir.hasNext(); /**/) {
-			final IServiceChangeListener<T> listener = ir.next();
-			listener.serviceChanged(oldImplementation, implementation);
+		if (oldImplementation != implementation) {
+			entry.implementation = implementation;
+			// notify listeners
+			for (final Iterator<IServiceChangeListener<T>> ir = new CopyOnWriteArrayList<IServiceChangeListener<T>>(entry.listeners).iterator(); ir.hasNext(); /**/) {
+				final IServiceChangeListener<T> listener = ir.next();
+				listener.serviceChanged(oldImplementation, implementation);
+			}
+			
+			// dispose old registered implementation
+			if (oldImplementation instanceof IDisposableService && !((IDisposableService) oldImplementation).isDisposed()) {
+				((IDisposableService)oldImplementation).dispose();
+			}
+			LOGGER.debug(MessageFormat.format("Registered service {0} for interface {1}.", implementation.getClass().getName(), serviceInterface.getName()));
 		}
-		
-		// dispose old registered implementation
-		if (oldImplementation instanceof IDisposableService && !((IDisposableService) oldImplementation).isDisposed()) {
-			((IDisposableService)oldImplementation).dispose();
-		}
-		
-		LOGGER.debug(MessageFormat.format("Registered service {0} for interface {1}.", implementation.getClass().getName(), serviceInterface.getName()));
 	}
 	
 	/**
@@ -256,32 +261,10 @@ public class ApplicationContext {
 					((IDisposableService) ((ServiceRegistryEntry<?>) service).implementation).dispose();
 
 				} catch (final Exception e) {
-					CoreActivator.logError("Error while disposing service " + service.getClass().getCanonicalName(), e);
+					LOGGER.error("Error while disposing service " + service.getClass().getCanonicalName(), e);
 				}
 			}
 		}
-	}
-	
-	private static final String IS_SERVER_MODE_KEY = "serverMode";
-	private static final String VIRGO_KERNEL_HOME_KEY = "org.eclipse.virgo.kernel.home";
-	
-	private final Supplier<Boolean> serverFlagSupplier = Suppliers.memoize(new Supplier<Boolean>() {
-		@Override public Boolean get() {
-			if (null != Platform.getProduct()) {
-				// equinox based server
-				return Boolean.parseBoolean(Platform.getProduct().getProperty(IS_SERVER_MODE_KEY));
-			}
-			// when running junit plugin tests, the product is null, and no virgo kernel
-			return System.getProperty(VIRGO_KERNEL_HOME_KEY) != null; 
-		};
-	}); 
-
-	/**
-	 * Returns {@code true} if the application for the current application context is running in server mode. Otherwise, returns {@code false}.
-	 * @return {@code true} if the application is running in server mode, otherwise {@code false}.
-	 */
-	public boolean isServerMode() {
-		return serverFlagSupplier.get();
 	}
 	
 	/**
@@ -312,9 +295,8 @@ public class ApplicationContext {
 	
 	/**
 	 * Convenience method for handling generic exceptions. 
-	 * 
-	 * @param exception
-	 * @param errorMessage
+	 * @param bundle
+	 * @param status
 	 */
 	public static void handleErrorStatus(final Bundle bundle, final IStatus status) {
 		final MultiStatus multiStatus = getServiceInfo(bundle, status.getException());

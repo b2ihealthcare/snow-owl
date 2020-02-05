@@ -16,19 +16,14 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Annotatable;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 4.6
  */
-public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedConcreteDomainReferenceSetMemberBuilder, SnomedConcreteDataTypeRefSetMember> {
+public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedConcreteDomainReferenceSetMemberBuilder> {
 
 	private int group;
 	private String typeId;
@@ -56,33 +51,13 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 	}
 	
 	@Override
-	protected SnomedConcreteDataTypeRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
-	}
-
-	@Override
-	public void init(SnomedConcreteDataTypeRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setGroup(group);
-		component.setTypeId(typeId);
-		component.setSerializedValue(serializedValue);
-		component.setCharacteristicTypeId(characteristicType.getConceptId());
+		component
+			.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, group)
+			.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)
+			.field(SnomedRf2Headers.FIELD_VALUE, serializedValue)
+			.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicType.getConceptId());
 	}
 
-	@Override
-	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedConcreteDataTypeRefSetMember component) {
-		Annotatable annotatable = getAnnotatable(context, component.getReferencedComponentId(), component.getReferencedComponentType());
-		annotatable.getConcreteDomainRefSetMembers().add(component);
-	}
-
-	private Annotatable getAnnotatable(TransactionContext context, String referencedComponentId, short referencedComponentType) {
-		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-			return context.lookup(referencedComponentId, Concept.class);
-		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-			return context.lookup(referencedComponentId, Relationship.class);
-		default:
-			throw new IllegalStateException("Unexpected referenced component type '" + referencedComponentType + "'.");
-		}
-	}
 }

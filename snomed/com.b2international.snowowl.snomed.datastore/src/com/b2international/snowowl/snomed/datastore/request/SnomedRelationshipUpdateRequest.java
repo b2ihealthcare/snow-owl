@@ -15,20 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -36,8 +35,6 @@ import com.google.common.collect.ImmutableSet.Builder;
  * @since 4.5
  */
 public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdateRequest {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRelationshipUpdateRequest.class);
 
 	@Min(0)
 	@Max(Integer.MAX_VALUE)
@@ -82,101 +79,105 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final Relationship relationship = context.lookup(getComponentId(), Relationship.class);
+		final SnomedRelationshipIndexEntry relationship = context.lookup(getComponentId(), SnomedRelationshipIndexEntry.class);
+		final SnomedRelationshipIndexEntry.Builder updatedRelationship = SnomedRelationshipIndexEntry.builder(relationship);
 
 		boolean changed = false;
-		changed |= updateStatus(context, relationship);
-		changed |= updateModule(context, relationship);
-		changed |= updateGroup(group, relationship, context);
-		changed |= updateUnionGroup(unionGroup, relationship, context);
-		changed |= updateCharacteristicType(characteristicType, relationship, context);
-		changed |= updateModifier(modifier, relationship, context);
-		changed |= updateDestinationId(context, relationship);
-		changed |= updateTypeId(context, relationship);
+		changed |= updateStatus(context, relationship, updatedRelationship);
+		changed |= updateModule(context, relationship, updatedRelationship);
+		changed |= updateGroup(group, relationship, updatedRelationship, context);
+		changed |= updateUnionGroup(unionGroup, relationship, updatedRelationship, context);
+		changed |= updateCharacteristicType(characteristicType, relationship, updatedRelationship, context);
+		changed |= updateModifier(modifier, relationship, updatedRelationship, context);
+		changed |= updateDestinationId(context, relationship, updatedRelationship);
+		changed |= updateTypeId(context, relationship, updatedRelationship);
 
-		if (changed && relationship.isSetEffectiveTime()) {
-			relationship.unsetEffectiveTime();
+		if (changed) {
+			if (relationship.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+				updatedRelationship.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			}
+			context.update(relationship, updatedRelationship.build());
 		}
 		
 		return changed;
 	}
 	
-	private boolean updateTypeId(TransactionContext context, Relationship relationship) {
+	private boolean updateTypeId(TransactionContext context, SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship) {
 		if (null == typeId) {
 			return false;
 		}
 		
-		if (!relationship.getType().getId().equals(typeId)) {
-			checkUpdateOnReleased(relationship, SnomedRf2Headers.FIELD_TYPE_ID, typeId);
-			relationship.setType(context.lookup(typeId, Concept.class));
+		if (!original.getTypeId().equals(typeId)) {
+			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_TYPE_ID, typeId);
+			relationship.typeId(context.lookup(typeId, SnomedConceptDocument.class).getId());
 			return true;
 		}
 		
 		return false;
 	}
 	
-	private boolean updateDestinationId(TransactionContext context, Relationship relationship) {
+	private boolean updateDestinationId(TransactionContext context, SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship) {
 		if (null == destinationId) {
 			return false;
 		}
 		
-		if (!relationship.getDestination().getId().equals(destinationId)) {
-			checkUpdateOnReleased(relationship, SnomedRf2Headers.FIELD_DESTINATION_ID, destinationId);
-			relationship.setDestination(context.lookup(destinationId, Concept.class));
+		if (!original.getDestinationId().equals(destinationId)) {
+			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_DESTINATION_ID, destinationId);
+			relationship.destinationId(context.lookup(destinationId, SnomedConceptDocument.class).getId());
 			return true;
 		}
 		
 		return false;
 	}
 
-	private boolean updateGroup(final Integer newGroup, final Relationship relationship, final TransactionContext context) {
+	private boolean updateGroup(final Integer newGroup, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
 		if (null == newGroup) {
 			return false;
 		}
 
-		if (relationship.getGroup() != newGroup) {
-			relationship.setGroup(newGroup);
+		if (!Objects.equals(original.getGroup(), newGroup)) {
+			relationship.group(newGroup);
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private boolean updateUnionGroup(final Integer newUnionGroup, final Relationship relationship, final TransactionContext context) {
+	private boolean updateUnionGroup(final Integer newUnionGroup, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
 		if (null == newUnionGroup) {
 			return false;
 		}
 
-		if (relationship.getUnionGroup() != newUnionGroup) {
-			relationship.setUnionGroup(newUnionGroup);
+		if (!Objects.equals(original.getUnionGroup(), newUnionGroup)) {
+			relationship.unionGroup(newUnionGroup);
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private boolean updateCharacteristicType(final CharacteristicType newCharacteristicType, final Relationship relationship, final TransactionContext context) {
+	private boolean updateCharacteristicType(final CharacteristicType newCharacteristicType, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
 		if (null == newCharacteristicType) {
 			return false;
 		}
 
-		final CharacteristicType currentCharacteristicType = CharacteristicType.getByConceptId(relationship.getCharacteristicType().getId());
+		final CharacteristicType currentCharacteristicType = original.getCharacteristicType();
 		if (!currentCharacteristicType.equals(newCharacteristicType)) {
-			relationship.setCharacteristicType(context.lookup(newCharacteristicType.getConceptId(), Concept.class));
+			relationship.characteristicTypeId(context.lookup(newCharacteristicType.getConceptId(), SnomedConceptDocument.class).getId());
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private boolean updateModifier(final RelationshipModifier newModifier, final Relationship relationship, final TransactionContext context) {
+	private boolean updateModifier(final RelationshipModifier newModifier, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
 		if (null == newModifier) {
 			return false;
 		}
 
-		final RelationshipModifier currentModifier = RelationshipModifier.getByConceptId(relationship.getModifier().getId());
+		final RelationshipModifier currentModifier = RelationshipModifier.getByConceptId(original.getModifierId());
 		if (!currentModifier.equals(newModifier)) {
-			relationship.setModifier(context.lookup(newModifier.getConceptId(), Concept.class));
+			relationship.modifierId(context.lookup(newModifier.getConceptId(), SnomedConceptDocument.class).getId());
 			return true;
 		} else {
 			return false;

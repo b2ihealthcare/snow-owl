@@ -24,14 +24,16 @@ import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.MRCM_AT
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.5
  */
-public class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentType {
+final class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
@@ -68,6 +70,25 @@ public class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentT
 	@Override
 	public String[] getHeaderColumns() {
 		return MRCM_ATTRIBUTE_RANGE_HEADER;
+	}
+
+	@Override
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String rangeConstraint = values[6];
+		final String attributeRule = values[7];
+		final String ruleStrenghtId = values[8];
+		final String contentTypeId = values[9];
+		
+		if (Strings.isNullOrEmpty(rangeConstraint)) {
+			reporter.error("Range constraint field was empty for '%s'", memberId);
+		}
+		
+		if (Strings.isNullOrEmpty(attributeRule)) {
+			reporter.warning("Attribute Rule field was empty for '%s'", memberId);
+		}
+		
+		validateConceptIds(reporter, ruleStrenghtId, contentTypeId);
 	}
 
 }

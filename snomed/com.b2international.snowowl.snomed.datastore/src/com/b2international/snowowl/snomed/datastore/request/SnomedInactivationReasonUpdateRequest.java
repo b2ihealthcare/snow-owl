@@ -15,20 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Inactivatable;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Updates the inactivation reason on the {@link Inactivatable} component specified by identifier.
@@ -66,24 +67,20 @@ import com.google.common.collect.ImmutableList;
  * and its effective time is restored to the original value if the final state matches the most recently versioned 
  * state.
  * 
- * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
  */
-final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Component> implements Request<TransactionContext, Void> {
+final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpdateRequest {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedInactivationReasonUpdateRequest.class);
 
 	private static final String CLEAR = "";
 
-	private final String componentId;
-	private final Class<C> componentType;
 	private final String inactivationRefSetId;
-	
 	private String inactivationValueId;
 
-	SnomedInactivationReasonUpdateRequest(final String componentId, final Class<C> componentType, final String inactivationRefSetId) {
-		this.componentId = componentId;
-		this.componentType = componentType;
+	
+	SnomedInactivationReasonUpdateRequest(final SnomedComponentDocument componentToUpdate, final String inactivationRefSetId) {
+		super(componentToUpdate);
 		this.inactivationRefSetId = inactivationRefSetId;
 	}
 
@@ -92,154 +89,88 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 	}
 
 	@Override
-	public Void execute(final TransactionContext context) {
+	protected boolean canUpdate(TransactionContext context) {
 		// Null leaves inactivation reason unchanged, empty string clears existing inactivation reason
-		if (null == inactivationValueId) {
-			return null;
-		} else {
-			final C inactivatable = context.lookup(componentId, componentType);
-			updateInactivationReason(context, inactivatable);
-			return null;
-		}
+		return inactivationValueId != null;
 	}
-
-	private void updateInactivationReason(final TransactionContext context, final C component) {
-		final List<SnomedAttributeValueRefSetMember> existingMembers = ImmutableList.copyOf(component.getInactivationIndicatorRefSetMembers());
-		final ModuleIdProvider moduleIdSupplier = context.service(ModuleIdProvider.class);
-		boolean firstMemberProcessed = false;
+	
+	@Override
+	protected String getMemberType() {
+		return "Attribute-value";
+	}
+	
+	@Override
+	protected void doExecute(TransactionContext context, SnomedComponentDocument componentToUpdate) {
+		final List<SnomedReferenceSetMember> existingMembers = newArrayList(
+			SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByReferencedComponent(componentToUpdate.getId())
+				.filterByRefSet(inactivationRefSetId)
+				.build()
+				.execute(context)
+				.getItems()
+		);
+		boolean firstMemberFound = false;
 		
 		// Check if there is at least one existing member
-		for (SnomedAttributeValueRefSetMember existingMember : existingMembers) {
+		for (SnomedReferenceSetMember existingMember : existingMembers) {
 			
-			if (firstMemberProcessed) {
-				// If we got through the first iteration, any remaining members can be removed or deactivated
-				
-				final boolean changed = removeOrDeactivate(context, existingMember);
-				// If the member needs inactivation, place it in the supplied module
-				if (changed) {
-					updateModule(context, existingMember, moduleIdSupplier.apply(component));
-					unsetEffectiveTime(existingMember);
-				}
-				
-			} else if (existingMember.getValueId().equals(inactivationValueId)) {
-				// Exact match, just make sure that the member is active
+			final SnomedRefSetMemberIndexEntry.Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
+			final SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
+			
+			if (firstMemberFound) {
+				// If we got through the first iteration, all other members can be removed
+				removeOrDeactivate(context, existingMember, updatedMember);
+				context.update(oldRevision, updatedMember.build());
+				continue;
+			}
+			
+			boolean changed = false;
+			final String existingValueId = (String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID);
+			if (Objects.equals(existingValueId, inactivationValueId)) {
 
-				final boolean changed = ensureMemberActive(context, existingMember);
-				// If the member status needs to be changed back to active, place it in the supplied module
-				if (changed) {
-					updateModule(context, existingMember, moduleIdSupplier.apply(component));
-					unsetEffectiveTime(existingMember);
-				}
+				// Exact match, just make sure that the member is active
+				changed = ensureMemberActive(context, existingMember, updatedMember);
 
 			} else if (!CLEAR.equals(inactivationValueId)) {
 				// Re-use this member, if the intention was not to remove the existing value
 
 				if (LOG.isDebugEnabled()) { 
 					LOG.debug("Changing attribute-value member {} with value identifier from {} to {}.", 
-							existingMember.getUuid(), 
-							existingMember.getValueId(), 
+							existingMember.getId(), 
+							existingValueId, 
 							inactivationValueId);
 				}
 
 				// Change inactivation value, set status to active if needed, place it in the supplied module
-				existingMember.setValueId(inactivationValueId);
-				ensureMemberActive(context, existingMember);
-				updateModule(context, existingMember, moduleIdSupplier.apply(component));
-				unsetEffectiveTime(existingMember);
-				
+				ensureMemberActive(context, existingMember, updatedMember);
+				updatedMember.field(SnomedRf2Headers.FIELD_VALUE_ID, inactivationValueId);
+				updateModule(context, existingMember, updatedMember, context.service(ModuleIdProvider.class).apply(componentToUpdate));
+				unsetEffectiveTime(existingMember, updatedMember);
+				changed = true;
 			} else /* if (CLEAR.equals(inactivationValueId) */ {
 				// Inactivation value is set to "no reason given", so remove or inactivate the member
-				
-				final boolean changed = removeOrDeactivate(context, existingMember);
 				// If the member needs inactivation, place it in the supplied module
-				if (changed) {
-					updateModule(context, existingMember, moduleIdSupplier.apply(component));
-					unsetEffectiveTime(existingMember);
-				}
+				changed = removeOrDeactivate(context, existingMember, updatedMember);
 			}
 
+			// If we get to the end of this loop, the first member has been processed
+			if (changed) {
+				context.update(oldRevision, updatedMember.build());
+			}
 			// By the end of this loop, the first member has been processed
-			firstMemberProcessed = true;
+			firstMemberFound = true;
 		}
 
-		// If there weren't any members, and the value is not "no reason given", add a new member
-		if (!firstMemberProcessed && !CLEAR.equals(inactivationValueId)) {
-
-			final SnomedAttributeValueRefSetMember member = SnomedComponents.newAttributeValueMember()
-					.withReferencedComponent(componentId)
-					.withRefSet(inactivationRefSetId)
-					.withModule(moduleIdSupplier.apply(component))
-					.withValueId(inactivationValueId)
-					.addTo(context);
-
-			component.getInactivationIndicatorRefSetMembers().add(member);
+		// Add the new member if the intention was not to remove the existing value (which had already happened if so)
+		if (!firstMemberFound && !CLEAR.equals(inactivationValueId)) {
+			SnomedComponents.newAttributeValueMember()
+				.withReferencedComponent(componentToUpdate.getId())
+				.withRefSet(inactivationRefSetId)
+				.withModule(context.service(ModuleIdProvider.class).apply(componentToUpdate))
+				.withValueId(inactivationValueId)
+				.addTo(context);
 		}
 	}
-
-	private boolean ensureMemberActive(final TransactionContext context, final SnomedAttributeValueRefSetMember existingMember) {
-
-		if (!existingMember.isActive()) {
-
-			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating attribute-value member {}.", existingMember.getUuid()); }
-			existingMember.setActive(true);
-			return true;
-
-		} else {
-			
-			if (LOG.isDebugEnabled()) { LOG.debug("Attribute-value member {} already active, not updating.", existingMember.getUuid()); }
-			return false;
-		}
-	}
-
-	private boolean removeOrDeactivate(final TransactionContext context, final SnomedAttributeValueRefSetMember existingMember) {
-
-		if (!existingMember.isReleased()) {
-
-			if (LOG.isDebugEnabled()) { LOG.debug("Removing attribute-value member {}.", existingMember.getUuid()); }
-			SnomedModelExtensions.remove(existingMember);
-			return false;
-
-		} else if (existingMember.isActive()) {
-
-			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating attribute-value member {}.", existingMember.getUuid()); }
-			existingMember.setActive(false);
-			return true;
-
-		} else {
-			
-			if (LOG.isDebugEnabled()) { LOG.debug("Attribute-value member {} already inactive, not updating.", existingMember.getUuid()); }
-			return false;
-		}
-	}
-
-	private boolean updateModule(final TransactionContext context, final SnomedAttributeValueRefSetMember existingMember, String moduleId) {
-
-		if (!existingMember.getModuleId().equals(moduleId)) {
-			
-			if (LOG.isDebugEnabled()) { 
-				LOG.debug("Changing attribute-value member {} module from {} to {}.", 
-					existingMember.getUuid(),
-					existingMember.getModuleId(),
-					moduleId); 
-			}
-			
-			existingMember.setModuleId(moduleId);
-			return true;
-			
-		} else {
-			
-			if (LOG.isDebugEnabled()) { LOG.debug("Attribute-value member {} already in the expected module, not updating.", existingMember.getUuid()); }
-			return false;
-		}
-	}
-
-	private void unsetEffectiveTime(final SnomedAttributeValueRefSetMember existingMember) {
-
-		if (existingMember.isSetEffectiveTime()) {
-			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on attribute-value member {}.", existingMember.getUuid()); }
-			existingMember.unsetEffectiveTime();
-		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on attribute-value member {} already unset, not updating.", existingMember.getUuid()); }
-		}
-	}
+	
 }

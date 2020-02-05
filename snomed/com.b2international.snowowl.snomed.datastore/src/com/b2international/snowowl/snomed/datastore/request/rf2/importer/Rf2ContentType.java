@@ -16,21 +16,29 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 
 /**
+ * Represents the content type found in RF2 files.
+ * 
  * @param <T>
  */
 public interface Rf2ContentType<T extends SnomedComponent> {
 
-	default void register(String[] values, Rf2EffectiveTimeSlice slice) {
+	default void register(String[] values, Rf2EffectiveTimeSlice slice, Rf2ValidationIssueReporter reporter) {
 		final String containerId = getContainerId(values);
-		slice.register(containerId, getType(), values);
+		slice.register(containerId, this, values, reporter);
 		slice.registerDependencies(getDependentComponentId(values), getDependencies(values));
 	}
 
@@ -40,16 +48,67 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 
 	default T resolve(String[] values) {
 		final T component = create();
-		component.setId(values[0]);
-		component.setEffectiveTime(EffectiveTimes.parse(values[1], DateFormats.SHORT));
-		component.setActive(BooleanUtils.valueOf(values[2]));
-		component.setModuleId(values[3]);
+		final String componentId = values[0];
+		final String effectiveTime = values[1];
+		final boolean isActive = BooleanUtils.valueOf(values[2]);
+		final String moduleId = values[3];
+		
+		component.setId(componentId);
+		if (!Strings.isNullOrEmpty(effectiveTime)) {
+			component.setEffectiveTime(EffectiveTimes.parse(values[1], DateFormats.SHORT));
+		}
+		component.setActive(isActive);
+		component.setModuleId(moduleId);
 		resolve(component, values);
 		return component;
 	}
 
 	default boolean canResolve(String[] header) {
 		return Arrays.equals(getHeaderColumns(), header);
+	}
+	
+	default void validate(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String isActive = values[2];
+		final String moduleId = values[3];
+		
+		if (values.length != getHeaderColumns().length) {
+			reporter.error(Rf2ValidationDefects.INCORRECT_COLUMN_NUMBER.getLabel());
+		}
+		
+		if (Strings.isNullOrEmpty(isActive)) {
+			reporter.error(Rf2ValidationDefects.MISSING_ACTIVE_FLAG.getLabel());
+		}
+		
+		validateConceptIds(reporter, moduleId);
+		validateByContentType(reporter, values);
+	}
+	
+	default void validateConceptIds(Rf2ValidationIssueReporter reporter, String...idsToValidate) {
+		final List<String> ids = Arrays.asList(idsToValidate);
+		for (String id : ids) {
+			try {
+				validateByComponentCategory(id, reporter, ComponentCategory.CONCEPT);
+			} catch (IllegalArgumentException e) {
+				reporter.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
+				// ignore exception
+			}
+		}
+	}
+	
+	default void validateByComponentCategory(String id, Rf2ValidationIssueReporter reporter, ComponentCategory expectedCategory) {
+		validateId(id, reporter);
+		final ComponentCategory componentCategory = SnomedIdentifiers.getComponentCategory(id);
+		if (componentCategory != expectedCategory) {
+			reporter.error(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel());
+		}
+	}
+	
+	default void validateId(String id, Rf2ValidationIssueReporter reporter) {
+		try {
+			SnomedIdentifiers.validate(id);
+		} catch (IllegalArgumentException e) {
+			reporter.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
+		}
 	}
 	
 	LongSet getDependencies(String[] values);
@@ -59,6 +118,8 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 	String getContainerId(String[] values);
 
 	void resolve(T component, String[] values);
+	
+	void validateByContentType(Rf2ValidationIssueReporter reporter, String[] values);
 
 	T create();
 

@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.core.request;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -46,16 +48,18 @@ public abstract class GetResourceRequest<SB extends SearchResourceRequestBuilder
 	
 	@Override
 	public R execute(final C context) {
-		return createSearchRequestBuilder()
+		CollectionResource<R> items = createSearchRequestBuilder()
 			.setLimit(2)
 			.setFields(fields())
 			.setLocales(locales())
 			.setExpand(expand())
 			.filterById(id)
 			.build()
-			.execute(context)
+			.execute(context);
+		checkState(items.getItems().size() <= 1, "Multiple documents found for '%s'.", id);
+		return items
 			.first()
 			.orElseThrow(() -> new NotFoundException(StringUtils.splitCamelCaseAndCapitalize(getReturnType().getSimpleName()), id));
 	}
-
+	
 }

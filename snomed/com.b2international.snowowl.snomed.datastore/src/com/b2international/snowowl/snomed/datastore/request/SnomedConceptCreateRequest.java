@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,22 +33,22 @@ import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.collections.PrimitiveSets;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -65,25 +65,22 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	
 	private List<SnomedRelationshipCreateRequest> relationships = Collections.emptyList();
 	
-	private List<SnomedRefSetMemberCreateRequest> members = Collections.emptyList();
-	
 	private SnomedRefSetCreateRequest refSetRequest;
 
 	@NotNull
-	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
+	private String definitionStatusId = Concepts.PRIMITIVE;
 	
 	@NotNull
 	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 
-	SnomedConceptCreateRequest() {
-	}
+	SnomedConceptCreateRequest() {}
 	
 	void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
 	}
 	
-	void setDefinitionStatus(DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	void setDefinitionStatusId(String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 	}
 	
 	void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
@@ -94,10 +91,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		this.relationships = ImmutableList.copyOf(relationships);
 	}
 	
-	void setMembers(final List<SnomedRefSetMemberCreateRequest> members) {
-		this.members = ImmutableList.copyOf(members);
-	}
-	
 	void setRefSet(SnomedRefSetCreateRequest refSet) {
 		this.refSetRequest = refSet;
 	}
@@ -105,17 +98,16 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		return ImmutableSet.<String>builder()
-				.add(getModuleId())
+				.addAll(super.getRequiredComponentIds(context))
 				.addAll(ImmutableList.of(Concepts.FULLY_DEFINED, Concepts.PRIMITIVE))
 				.addAll(descriptions.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
 				.addAll(relationships.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
-				.addAll(members.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
 				.build();
 	}
 
 	@Override
 	public String execute(TransactionContext context) {
-		final Concept concept = convertConcept(context);
+		final SnomedConceptDocument concept = convertConcept(context);
 		context.add(concept);
 
 		convertDescriptions(context, concept.getId());
@@ -126,17 +118,17 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		return concept.getId();
 	}
 
-	private Concept convertConcept(final TransactionContext context) {
-		final DefinitionStatus newDefinitionStatus;
+	private SnomedConceptDocument convertConcept(final TransactionContext context) {
+		final String newDefinitionStatusId;
 		final Set<String> newAxiomExpressions = getOwlAxiomExpressions();
 
 		if (!newAxiomExpressions.isEmpty()) {
-			newDefinitionStatus = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newAxiomExpressions);
+			newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newAxiomExpressions);
 		} else {
-			if (definitionStatus == null) {
+			if (definitionStatusId == null) {
 				throw new BadRequestException("No axiom members or definition status was set for concept");
 			}
-			newDefinitionStatus = definitionStatus;
+			newDefinitionStatusId = definitionStatusId;
 		}
 		
 		try {
@@ -145,7 +137,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 					.withId(conceptId)
 					.withActive(isActive())
 					.withModule(getModuleId())
-					.withDefinitionStatus(newDefinitionStatus)
+					.withDefinitionStatusId(newDefinitionStatusId)
 					.withExhaustive(subclassDefinitionStatus.isExhaustive())
 					.build(context);
 		} catch (final ComponentNotFoundException e) {
@@ -154,7 +146,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 
 	private Set<String> getOwlAxiomExpressions() {
-		return Optional.ofNullable(members).map(Collection::stream).orElseGet(Stream::empty)
+		return Optional.ofNullable(members()).map(Collection::stream).orElseGet(Stream::empty)
 			.filter(req -> req.hasProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 			.map(req -> req.getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 			.collect(Collectors.toSet());
@@ -202,33 +194,25 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 	
 	private void convertRelationships(final TransactionContext context, String conceptId) {
-		final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
-		
-		for (final SnomedRelationshipCreateRequest relationshipRequest : relationships) {
-			relationshipRequest.setSourceId(conceptId);
+		if (!relationships.isEmpty()) {
+			final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet();
+			requiredRelationships.add(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
 			
-			if (null == relationshipRequest.getModuleId()) {
-				relationshipRequest.setModuleId(getModuleId());
+			for (final SnomedRelationshipCreateRequest relationshipRequest : relationships) {
+				relationshipRequest.setSourceId(conceptId);
+				
+				if (null == relationshipRequest.getModuleId()) {
+					relationshipRequest.setModuleId(getModuleId());
+				}
+				
+				relationshipRequest.execute(context);
+				
+				requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicType()));
 			}
 			
-			relationshipRequest.execute(context);
-			
-			requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicType()));
-		}
-		
-		if (!requiredRelationships.isEmpty()) {
-			throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
-		}
-	}
-	
-	private void convertMembers(final TransactionContext context, final String conceptId) {
-		for (final SnomedRefSetMemberCreateRequest memberRequest : members) {
-			memberRequest.setReferencedComponentId(conceptId);
-			if (null == memberRequest.getModuleId()) {
-				memberRequest.setModuleId(getModuleId());
+			if (!requiredRelationships.isEmpty()) {
+				throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
 			}
-			
-			memberRequest.execute(context);
 		}
 	}
 	
@@ -276,8 +260,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 	
 	@Override
-	public Collection<SnomedCoreComponentCreateRequest> getNestedRequests() {
-		return ImmutableList.<SnomedCoreComponentCreateRequest>builder()
+	public Collection<Request<?, ?>> getNestedRequests() {
+		return ImmutableList.<Request<?, ?>>builder()
 			.add(this)
 			.addAll(descriptions)
 			.addAll(relationships)

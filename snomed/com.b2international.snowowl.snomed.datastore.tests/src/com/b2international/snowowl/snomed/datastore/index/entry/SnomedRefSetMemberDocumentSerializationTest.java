@@ -31,16 +31,15 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.ecl.EclParser;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -82,9 +81,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 			.referenceSetType(SnomedRefSetType.ASSOCIATION)
 			.build();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
@@ -97,9 +95,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MAP_TARGET, "A01")
 				.build();
 			
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
@@ -114,9 +111,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				.build();
 			
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
@@ -130,9 +126,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(SnomedRf2Headers.FIELD_VALUE, "TEST")
 				.build();
 			
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("TEST", actual.getValue());
 		assertDocEquals(member, actual);
 		
@@ -145,7 +140,6 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMDomainMemberWithAllFields() throws Exception {
-		
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
@@ -158,9 +152,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference")
 				.build();
 			
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("domainConstraint", actual.getDomainConstraint());
 		assertEquals("parentDomain", actual.getParentDomain());
 		assertEquals("proximalPrimitiveConstraint", actual.getProximalPrimitiveConstraint());
@@ -173,7 +166,6 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMDomainMemberWithMandatoryFields() throws Exception {
-		
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
@@ -183,9 +175,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
 				.build();
 			
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("domainConstraint", actual.getDomainConstraint());
 		assertEquals("proximalPrimitiveConstraint", actual.getProximalPrimitiveConstraint());
 		assertEquals("domainTemplateForPrecoordination", actual.getDomainTemplateForPrecoordination());
@@ -204,7 +195,6 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMAttributeDomainMember() throws Exception {
-		
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
@@ -216,9 +206,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
 				.build();
 			
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(Concepts.ROOT_CONCEPT, actual.getDomainId());
 		assertEquals(Boolean.TRUE, actual.isGrouped());
 		assertEquals("attributeCardinality", actual.getAttributeCardinality());
@@ -230,7 +219,6 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMAttributeRangeMember() throws Exception {
-		
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
 				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
@@ -240,9 +228,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
 				.build();
 			
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("rangeConstraint", actual.getRangeConstraint());
 		assertEquals("attributeRule", actual.getAttributeRule());
 		assertEquals(Concepts.ROOT_CONCEPT, actual.getRuleStrengthId());
@@ -252,16 +239,14 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	
 	@Test
 	public void indexMRCMModuleScopeMember() throws Exception {
-		
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_MRCM_MODULE_SCOPE)
 				.referenceSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
 				.field(Fields.MRCM_RULE_REFSET_ID, "mrcmRuleRefsetId")
 				.build();
 			
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals("mrcmRuleRefsetId", actual.getMrcmRuleRefsetId());
 		assertDocEquals(member, actual);
 	}
@@ -281,9 +266,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
 				.build();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(owlExpression, actual.getOwlExpression());
 		assertEquals(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.ROOT_CONCEPT, 0)), actual.getClassAxiomRelationships());
 		assertThat(actual.getGciAxiomRelationships()).isEmpty();
@@ -294,9 +278,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void indexOWLAxiomMember_UngroupedProperties() throws Exception {
 		final SnomedRefSetMemberIndexEntry member = createClassAxiomMember();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(
 			// expected
 			ImmutableList.of(
@@ -342,9 +325,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.gciAxiomRelationships(owlRelationships.getGciAxiomRelationships())
 				.build();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(owlExpression, actual.getOwlExpression());
 		assertEquals(
 			// expected
@@ -366,9 +348,8 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void indexOWLAxiomMember_GCIAxiom() throws Exception {
 		final SnomedRefSetMemberIndexEntry member = createGciAxiomMember();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertThat(actual.getClassAxiomRelationships()).isEmpty();
 		assertEquals(
 			// expected
@@ -389,8 +370,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void searchByOwlExpressionConcept_TypeId() throws Exception {
 		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
 		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, gciAxiomMember);
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY2, classAxiomMember);
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
 
 		Hits<SnomedRefSetMemberIndexEntry> hits = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept("272741003"))
@@ -404,8 +384,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void searchByOwlExpression_TypeId() throws Exception {
 		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
 		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, gciAxiomMember);
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY2, classAxiomMember);
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
 
 		Hits<SnomedRefSetMemberIndexEntry> hits = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(singleton("272741003")))
@@ -419,8 +398,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void searchByOwlExpression_DestinationId() throws Exception {
 		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
 		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, gciAxiomMember);
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY2, classAxiomMember);
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
 
 		Hits<SnomedRefSetMemberIndexEntry> hits = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionDestination(singleton("441862004")))
@@ -434,8 +412,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void searchByOwlExpressionConcept_DestinationId() throws Exception {
 		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
 		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, gciAxiomMember);
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY2, classAxiomMember);
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
 
 		Hits<SnomedRefSetMemberIndexEntry> hits = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept("441862004"))
@@ -449,8 +426,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void searchByOwlExpressionGCI() throws Exception {
 		final SnomedRefSetMemberIndexEntry gciAxiomMember = createGciAxiomMember();
 		SnomedRefSetMemberIndexEntry classAxiomMember = createClassAxiomMember();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, gciAxiomMember);
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY2, classAxiomMember);
+		indexRevision(RevisionBranch.MAIN_PATH, gciAxiomMember, classAxiomMember);
 		
 		Hits<SnomedRefSetMemberIndexEntry> gciAxioms = search(MAIN, Query.select(SnomedRefSetMemberIndexEntry.class).where(SnomedRefSetMemberIndexEntry.Expressions.gciAxiom(true))
 				.build());

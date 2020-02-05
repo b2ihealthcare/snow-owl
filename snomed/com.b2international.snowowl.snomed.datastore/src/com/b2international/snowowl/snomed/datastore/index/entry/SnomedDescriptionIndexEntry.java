@@ -24,7 +24,7 @@ import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.matchTextRegexp;
 import static com.b2international.index.query.Expressions.scriptScore;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -39,15 +39,13 @@ import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.Normalizers;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -56,7 +54,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -65,17 +63,20 @@ import com.google.common.collect.Maps;
 /**
  * A transfer object representing a SNOMED CT description.
  */
-@Doc
+@Doc(
+	type="description",
+	revisionHash = { 
+		SnomedDocument.Fields.ACTIVE, 
+		SnomedDocument.Fields.EFFECTIVE_TIME, 
+		SnomedDocument.Fields.MODULE_ID, 
+		SnomedDocument.Fields.RELEASED,
+		SnomedDescriptionIndexEntry.Fields.TYPE_ID,
+		SnomedDescriptionIndexEntry.Fields.TERM,
+		SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
+	}
+)
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
 @Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
-@RevisionHash({ 
-	SnomedDocument.Fields.ACTIVE, 
-	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID, 
-	SnomedDescriptionIndexEntry.Fields.TYPE_ID,
-	SnomedDescriptionIndexEntry.Fields.TERM,
-	SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
-})
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
@@ -102,9 +103,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	public static Builder builder(final SnomedDescription input) {
 		String id = input.getId();
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(input.getTerm()) 
 				.moduleId(input.getModuleId())
 				.languageCode(input.getLanguageCode())
@@ -131,22 +130,22 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		return builder;
 	}
 	
-	public static Builder builder(Description description) {
-		String id = description.getId();
-		return builder()
-				.storageKey(CDOIDUtils.asLong(description.cdoID()))
-				.id(id) 
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
-				.term(description.getTerm())
-				.moduleId(description.getModule().getId())
-				.released(description.isReleased()) 
-				.active(description.isActive()) 
-				.typeId(description.getType().getId()) 
-				.caseSignificanceId(description.getCaseSignificance().getId()) 
-				.conceptId(description.getConcept().getId())
-				.languageCode(description.getLanguageCode())
-				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
-	}
+//	public static Builder builder(Description description) {
+//		String id = description.getId();
+//		return builder()
+//				.storageKey(CDOIDUtils.asLong(description.cdoID()))
+//				.id(id) 
+//				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
+//				.term(description.getTerm())
+//				.moduleId(description.getModule().getId())
+//				.released(description.isReleased()) 
+//				.active(description.isActive()) 
+//				.typeId(description.getType().getId()) 
+//				.caseSignificanceId(description.getCaseSignificance().getId()) 
+//				.conceptId(description.getConcept().getId())
+//				.languageCode(description.getLanguageCode())
+//				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+//	}
 	
 	/**
 	 * Creates a new {@link Builder} from the given {@link SnomedDescriptionIndexEntry}. The acceptability map is not copied over to the
@@ -158,9 +157,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	public static Builder builder(SnomedDescriptionIndexEntry doc) {
 		String id = doc.getId();
 		return builder()
-				.storageKey(doc.getStorageKey())
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(doc.getTerm())
 				.moduleId(doc.getModuleId())
 				.released(doc.isReleased())
@@ -169,7 +166,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.caseSignificanceId(doc.getCaseSignificanceId())
 				.conceptId(doc.getConceptId())
 				.languageCode(doc.getLanguageCode())
-				.effectiveTime(doc.getEffectiveTime());
+				.effectiveTime(doc.getEffectiveTime())
+				.acceptabilityMap(doc.getAcceptabilityMap());
 	}
 	
 	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<SnomedDescription> descriptions) {
@@ -294,7 +292,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedDescriptionIndexEntry> {
 
 		private String term;
 		private String conceptId;
@@ -302,8 +300,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private String typeId;
 		private String typeLabel;
 		private String caseSignificanceId;
-		private Set<String> acceptableIn = newHashSet();
-		private Set<String> preferredIn = newHashSet();
+		private Set<String> acceptableIn = newHashSetWithExpectedSize(2);
+		private Set<String> preferredIn = newHashSetWithExpectedSize(2);
 		private String semanticTag;
 
 		@JsonCreator
@@ -375,6 +373,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public Builder acceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
+			this.acceptableIn = newHashSetWithExpectedSize(2);
+			this.preferredIn = newHashSetWithExpectedSize(2);
 			for (Entry<String, Acceptability> entry : acceptabilityMap.entrySet()) {
 				acceptability(entry.getKey(), entry.getValue());
 			}
@@ -405,15 +405,9 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					caseSignificanceId,
 					preferredIn, 
 					acceptableIn,
-					namespace,
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
-			doc.setBranchPath(branchPath);
-			doc.setCommitTimestamp(commitTimestamp);
-			doc.setStorageKey(storageKey);
-			doc.setReplacedIns(replacedIns);
-			doc.setSegmentId(segmentId);
 			return doc;
 		}
 	}
@@ -447,7 +441,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			final String typeLabel,
 			final String caseSignificanceId,
 			final Set<String> preferredIn, final Set<String> acceptableIn,
-			final String namespace,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets) {
 		
@@ -458,7 +451,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				released,
 				active,
 				effectiveTime,
-				namespace,
 				referringRefSets,
 				referringMappingRefSets);
 		
@@ -473,8 +465,13 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	@Override
-	public String getContainerId() {
-		return getConceptId();
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
+	}
+	
+	@Override
+	protected ObjectId getContainerId() {
+		return ObjectId.of(SnomedConceptDocument.class, getConceptId());
 	}
 	
 	@Override

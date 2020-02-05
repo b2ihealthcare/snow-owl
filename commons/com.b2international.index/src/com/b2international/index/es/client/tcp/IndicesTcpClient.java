@@ -25,6 +25,8 @@ import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
+import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.IndicesAdminClient;
 
@@ -69,6 +71,11 @@ public final class IndicesTcpClient implements IndicesClient {
 	@Override
 	public AcknowledgedResponse updateMapping(PutMappingRequest req) throws IOException {
 		return EsTcpClient.execute(client.putMapping(req));
+	}
+	
+	@Override
+	public GetSettingsResponse settings(GetSettingsRequest req) throws IOException {
+		return EsTcpClient.execute(client.getSettings(req));
 	}
 
 }

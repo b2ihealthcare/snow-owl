@@ -38,9 +38,11 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.SetOntologyID;
 
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomyBuilder;
@@ -51,7 +53,7 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFact
 /**
  * @since 7.0
  */
-final class OntologyExportRequest implements Request<BranchContext, String> {
+final class OntologyExportRequest implements Request<BranchContext, String>, BranchAccessControl {
 
 	private static final int PIPE_SIZE = 8192;
 
@@ -110,7 +112,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 			});
 			
 			final OWLDocumentFormat documentFormat = getOWLDocumentFormat();
-			final FileRegistry fileRegistry = context.service(FileRegistry.class);
+			final AttachmentRegistry fileRegistry = context.service(AttachmentRegistry.class);
 
 			final UUID id = UUID.randomUUID();
 			final PipedOutputStream os = new PipedOutputStream();
@@ -158,4 +160,10 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 			default: throw new IllegalStateException("Unexpected export type '" + exportType + "'.");
 		}
 	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.CLASSIFY;
+	}
+
 }

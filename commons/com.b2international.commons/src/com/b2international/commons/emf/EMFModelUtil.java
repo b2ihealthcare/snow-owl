@@ -62,16 +62,17 @@ public class EMFModelUtil {
 	 * Loads the resource specified by the {@link URI} as model, and returns the
 	 * root {@link EObject} element.
 	 * 
-	 * @param filePath
+	 * @param uri
+	 * @param resourceSet
 	 * @return the root {@link EObject} element, or <code>null</code> if the
 	 *         resource was empty.
 	 * @throws IllegalArgumentException
 	 *             - if either of the specified input was invalid.
 	 */
-	public static final EObject load(URI uri, ResourceSet resSet) {
+	public static final EObject load(URI uri, ResourceSet resourceSet) {
 		checkArgument(uri != null, "URI must be specified");
-		checkArgument(resSet != null, "ResourceSet must be specified");
-		final Resource resource = resSet.getResource(uri, true);
+		checkArgument(resourceSet != null, "ResourceSet must be specified");
+		final Resource resource = resourceSet.getResource(uri, true);
 		if (resource.getContents() != null && !resource.getContents().isEmpty()) {
 			return resource.getContents().get(0);
 		}

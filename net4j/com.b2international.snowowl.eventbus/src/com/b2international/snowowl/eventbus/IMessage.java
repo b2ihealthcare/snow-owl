@@ -15,12 +15,30 @@
  */
 package com.b2international.snowowl.eventbus;
 
+import java.util.Map;
+
 /**
  * Represents a message to be send/receive over/from the {@link IEventBus}.
  *
  * @since 3.1
  */
 public interface IMessage {
+
+	/**
+	 * Default tag for messages.
+	 */
+	String DEFAULT_TAG = "event";
+	
+	/**
+	 * Tag for response messages.
+	 */
+	String REPLY_TAG = "reply";
+	
+	/**
+	 * @return the current headers {@link Map} or an empty {@link Map}.
+	 * @since 7.2
+	 */
+	Map<String, String> headers();
 
 	/**
 	 * Returns the body of this {@link IMessage}, can be used for simple types
@@ -77,6 +95,14 @@ public interface IMessage {
 	 * @param message
 	 */
 	void reply(Object message);
+	
+	/**
+	 * Replies with the given message and sets the given headers as response headers
+	 *
+	 * @param message
+	 * @param headers
+	 */
+	void reply(Object message, Map<String, String> headers);
 
 	/**
 	 * Returns a failure message to the replyAddress.
@@ -91,7 +117,12 @@ public interface IMessage {
 	 * @param address
 	 */
 	void setAddress(String address);
-
+	
+	/**
+	 * @return the tag associated with this message.
+	 */
+	String tag();
+	
 	/**
 	 * Returns <code>true</code> if the original message was successfully
 	 * delivered to the address, <code>false</code> if some error happened, in

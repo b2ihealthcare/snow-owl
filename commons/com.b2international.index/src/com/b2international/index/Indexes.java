@@ -18,6 +18,10 @@ package com.b2international.index;
 import java.util.Collections;
 import java.util.Map;
 
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataHolder;
+import com.b2international.commons.options.MetadataHolderMixin;
+import com.b2international.commons.options.MetadataMixin;
 import com.b2international.index.decimal.DecimalModule;
 import com.b2international.index.es.EsIndexClientFactory;
 import com.b2international.index.mapping.Mappings;
@@ -51,8 +55,10 @@ public class Indexes {
 	}
 	
 	private static ObjectMapper configure(ObjectMapper mapper) {
-		return mapper.copy()
+		return mapper
 				.registerModule(new DecimalModule())
+				.addMixIn(Metadata.class, MetadataMixin.class)
+				.addMixIn(MetadataHolder.class, MetadataHolderMixin.class)
 				.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 	}
 	

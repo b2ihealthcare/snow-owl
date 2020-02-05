@@ -17,8 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -30,8 +29,7 @@ final class SnomedExtendedMapMemberUpdateDelegate extends SnomedRefSetMemberUpda
 	}
 
 	@Override
-	boolean execute(SnomedRefSetMember member, TransactionContext context) {
-		SnomedComplexMapRefSetMember concreteDomainMember = (SnomedComplexMapRefSetMember) member;
+	boolean execute(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
 		String newMapTargetId = getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET);
 		Integer newGroup = getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class);
 		Integer newPriority = getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class);
@@ -42,38 +40,38 @@ final class SnomedExtendedMapMemberUpdateDelegate extends SnomedRefSetMemberUpda
 
 		boolean changed = false;
 
-		if (newMapTargetId != null && !newMapTargetId.equals(concreteDomainMember.getMapTargetComponentId())) {
-			concreteDomainMember.setMapTargetComponentId(newMapTargetId);
+		if (newMapTargetId != null && !newMapTargetId.equals(original.getMapTarget())) {
+			member.field(SnomedRf2Headers.FIELD_MAP_TARGET, newMapTargetId);
 			changed |= true;
 		}
 
-		if (newGroup != null && newGroup.intValue() != concreteDomainMember.getMapGroup()) {
-			concreteDomainMember.setMapGroup(newGroup);
+		if (newGroup != null && newGroup.intValue() != original.getMapGroup()) {
+			member.field(SnomedRf2Headers.FIELD_MAP_GROUP, newGroup);
 			changed |= true;
 		}
 
-		if (newPriority != null && newPriority.intValue() != concreteDomainMember.getMapPriority()) {
-			concreteDomainMember.setMapPriority(newPriority);
+		if (newPriority != null && newPriority.intValue() != original.getMapPriority()) {
+			member.field(SnomedRf2Headers.FIELD_MAP_PRIORITY, newPriority);
 			changed |= true;
 		}
 
-		if (newMapRule != null && !newMapRule.equals(concreteDomainMember.getMapRule())) {
-			concreteDomainMember.setMapRule(newMapRule);
+		if (newMapRule != null && !newMapRule.equals(original.getMapRule())) {
+			member.field(SnomedRf2Headers.FIELD_MAP_RULE, newMapRule);
 			changed |= true;
 		}
 
-		if (newMapAdvice != null && !newMapAdvice.equals(concreteDomainMember.getMapAdvice())) {
-			concreteDomainMember.setMapAdvice(newMapAdvice);
+		if (newMapAdvice != null && !newMapAdvice.equals(original.getMapAdvice())) {
+			member.field(SnomedRf2Headers.FIELD_MAP_ADVICE, newMapAdvice);
 			changed |= true;
 		}
 
-		if (newCorrelationId != null && !newCorrelationId.equals(concreteDomainMember.getCorrelationId())) {
-			concreteDomainMember.setCorrelationId(newCorrelationId);
+		if (newCorrelationId != null && !newCorrelationId.equals(original.getCorrelationId())) {
+			member.field(SnomedRf2Headers.FIELD_CORRELATION_ID, newCorrelationId);
 			changed |= true;
 		}
 
-		if (newMapCategoryId != null && !newMapCategoryId.equals(concreteDomainMember.getMapCategoryId())) {
-			concreteDomainMember.setMapCategoryId(newMapCategoryId);
+		if (newMapCategoryId != null && !newMapCategoryId.equals(original.getMapCategoryId())) {
+			member.field(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, newMapCategoryId);
 			changed |= true;
 		}
 

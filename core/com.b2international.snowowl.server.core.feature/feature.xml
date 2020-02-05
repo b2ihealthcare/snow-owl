@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.server.core.feature"
       label="Snow Owl Common Server Core"
-      version="6.25.0.qualifier"
+      version="7.4.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -11,7 +11,7 @@ Visit us at http://b2i.sg
    </description>
 
    <copyright>
-      Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+      Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
    </copyright>
 
    <license url="http://www.example.com/license">
@@ -51,25 +51,10 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.b2international.snowowl.datastore.server"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="com.b2international.snowowl.snomed.common"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.logging.logbackconfiguration"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
          unpack="false"/>
 
    <plugin
@@ -81,19 +66,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.snowowl.rpc"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.dependencies"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="com.b2international.snowowl.server.console"
          download-size="0"
          install-size="0"
          version="0.0.0"

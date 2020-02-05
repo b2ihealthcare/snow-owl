@@ -60,12 +60,7 @@ public abstract class OntologyChangeWriter<T extends Serializable> extends Ontol
 	protected abstract void indexChange(final String conceptId, final T subject, final ChangeNature nature);
 
 	protected void indexChange(final Object doc) {
-		try {
-			writer.put(UUID.randomUUID().toString(), doc);
-		} catch (IOException ignored) {
-			// TODO: remove throws clause from Writer#put method (done on 7.x)
-		}
-
+		writer.put(UUID.randomUUID().toString(), doc);
 		writeOps++;
 		if (writeOps > WRITES_PER_COMMIT) {
 			try {

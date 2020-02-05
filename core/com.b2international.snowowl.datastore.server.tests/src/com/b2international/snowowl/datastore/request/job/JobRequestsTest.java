@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.util.Collection;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -28,19 +30,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.SystemNotification;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,8 +57,9 @@ public class JobRequestsTest {
 	private ServiceProvider context;
 	private RemoteJobTracker tracker;
 	private IEventBus bus;
-	private final Collection<RemoteJobNotification> notifications = newArrayList();
 	private ObjectMapper mapper;
+	
+	private final BlockingQueue<RemoteJobNotification> notifications = new ArrayBlockingQueue<>(100);
 
 	@Before
 	public void setup() {
@@ -69,7 +72,11 @@ public class JobRequestsTest {
 				.bind(RemoteJobTracker.class, tracker)
 				.build();
 		this.bus.registerHandler(SystemNotification.ADDRESS, message -> {
-			notifications.add(message.body(RemoteJobNotification.class));
+			try {
+				notifications.offer(message.body(RemoteJobNotification.class), 1, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				throw new RuntimeException();
+			}
 		});
 	}
 	
@@ -93,12 +100,15 @@ public class JobRequestsTest {
 	
 	@Test
 	public void scheduleAndCancel() throws Exception {
+		CyclicBarrier barrier = new CyclicBarrier(2);
 		final String jobId = schedule("scheduleAndCancel", context -> {
 			// wait 1000 ms, then throw cancelled if monitor is cancelled or return the result, so the main thread have time to actually initiate the cancel request
 			final IProgressMonitor monitor = context.service(IProgressMonitor.class);
+			
 			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
+				Thread.sleep(50);
+				barrier.await();
+			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 			if (monitor.isCanceled()) {
@@ -107,6 +117,8 @@ public class JobRequestsTest {
 			return RESULT;
 		});
 		cancel(jobId);
+		barrier.await();
+		
 		final RemoteJobEntry entry = waitDone(jobId);
 		assertEquals(RemoteJobState.CANCELED, entry.getState());
 		assertNull(entry.getResult());
@@ -186,13 +198,30 @@ public class JobRequestsTest {
 	}
 
 	private void verifyJobEvents(String jobId, int expectedAdded, int expectedChanged, int expectedRemoved) {
-		long actualAdded = notifications.stream().filter(RemoteJobNotification::isAdded).count();
-		long actualChanged = notifications.stream().filter(RemoteJobNotification::isChanged).count();
-		long actualRemoved = notifications.stream().filter(RemoteJobNotification::isRemoved).count();
+		int numberOfNotificationsToExpect = expectedAdded + expectedChanged + expectedRemoved;
 		
-		assertEquals(expectedAdded, actualAdded);
-		assertEquals(expectedChanged, actualChanged);
-		assertEquals(expectedRemoved, actualRemoved);
+		for (int i = 0; i < numberOfNotificationsToExpect; i++) {
+			try {
+				RemoteJobNotification notification = notifications.poll(5, TimeUnit.SECONDS);
+				if (notification == null) {
+					// did not receive a notification in time, fail the test
+					fail("No notification has arrived but still expecting '" + (numberOfNotificationsToExpect - i) + "' notifications.");
+				}
+				if (RemoteJobNotification.isAdded(notification)) {
+					expectedAdded--;
+				} else if (RemoteJobNotification.isChanged(notification)) {
+					expectedChanged--;
+				} else if (RemoteJobNotification.isRemoved(notification)) {
+					expectedRemoved--;;
+				}
+			} catch (InterruptedException e) {
+				throw new RuntimeException();
+			}
+		}
+
+		assertEquals(String.format("Expecting '%s' ADDED notifications to arrive", expectedAdded), 0, expectedAdded);
+		assertEquals(String.format("Expecting '%s' CHANGED notifications to arrive", expectedChanged), 0, expectedChanged);
+		assertEquals(String.format("Expecting '%s' REMOVED notifications to arrive", expectedRemoved), 0, expectedRemoved);
 	}
 
 	private RemoteJobEntry waitDone(final String jobId) {

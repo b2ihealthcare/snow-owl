@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.datastore.request.compare.CompareResult;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -57,7 +58,6 @@ public final class CompareResultsDsvExporter {
 	private final Path outputPath;
 	private final CompareResult compareResults;
 	private final BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction;
-	private final Function<IComponent, String> componentTypeResolver;
 	private final Function<IComponent, String> labelResolver;
 	private final BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent;
 	private final char delimiter;
@@ -69,7 +69,6 @@ public final class CompareResultsDsvExporter {
 			Path outputPath,
 			CompareResult compareResults, 
 			BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction,
-			Function<IComponent, String> componentTypeResolver,
 			Function<IComponent, String> labelResolver,
 			BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent,
 			char delimiter
@@ -80,7 +79,6 @@ public final class CompareResultsDsvExporter {
 			this.outputPath = outputPath;
 			this.compareResults = compareResults;
 			this.fetcherFunction = fetcherFunction;
-			this.componentTypeResolver = componentTypeResolver;
 			this.labelResolver = labelResolver;
 			this.getCompareResultsOfComponent = getCompareResultsOfComponent;
 			this.delimiter = delimiter;
@@ -212,7 +210,7 @@ public final class CompareResultsDsvExporter {
 		
 		public CompareData(IComponent component, String attribute, String from, String to) {
 			this.component = component;
-			this.componentType = componentTypeResolver.apply(component);
+			this.componentType = TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(component.getTerminologyComponentId()).name();
 			this.label = labelResolver.apply(component);
 			this.changeKind = ChangeKind.UPDATED;
 			this.attribute = attribute;
@@ -225,7 +223,7 @@ public final class CompareResultsDsvExporter {
 			
 			this.changeKind = changeKind;
 			this.component = component;
-			this.componentType = componentTypeResolver.apply(component);
+			this.componentType = TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(component.getTerminologyComponentId()).name();
 			this.label = labelResolver.apply(component);
 			
 		}

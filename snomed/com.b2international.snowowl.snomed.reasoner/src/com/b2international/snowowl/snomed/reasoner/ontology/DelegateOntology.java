@@ -54,14 +54,14 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdMap;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdMultimap;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.AbstractIterator;
@@ -194,7 +194,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		}
 	}
 
-	private final class SubPropertyAxiomIterator<R extends OWLPropertyRange, P extends OWLPropertyExpression, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
+	private final class SubPropertyOfAxiomIterator<R extends OWLPropertyRange, P extends OWLPropertyExpression, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
 		private final long attributeRootId;
 		private final LongIterator childIterator;
 		private final LongFunction<P> propertyFactory;
@@ -203,11 +203,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		private long childId = -1L;
 		private LongIterator parentIterator;
 
-		public SubPropertyAxiomIterator(final long attributeRootId,
+		public SubPropertyOfAxiomIterator(final long attributeRootId,
 				final LongIterator childIterator,
 				final LongFunction<P> propertyFactory,
 				final BiFunction<P, P, A> subPropertyAxiomFactory) {
-
 			this.attributeRootId = attributeRootId;
 			this.childIterator = childIterator;
 			this.propertyFactory = propertyFactory;
@@ -634,14 +633,14 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	////////////////////////////////////////////
 	
 	private Iterator<OWLSubObjectPropertyOfAxiom> objectAttributeSubPropertyOfAxioms() {
-		return new SubPropertyAxiomIterator<>(objectAttributeId, 
+		return new SubPropertyOfAxiomIterator<>(objectAttributeId, 
 				objectAttributeIdIterator(), 
 				this::getConceptObjectProperty, 
 				this::getOWLSubObjectPropertyOfAxiom);
 	}
 
 	private Iterator<OWLSubObjectPropertyOfAxiom> dataAttributeSubPropertyOfAxioms() {
-		return new SubPropertyAxiomIterator<>(dataAttributeId, 
+		return new SubPropertyOfAxiomIterator<>(dataAttributeId, 
 				dataAttributeIdIterator(), 
 				this::getConceptObjectProperty, 
 				this::getOWLSubObjectPropertyOfAxiom);
@@ -791,7 +790,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		final Set<OWLClassExpression> intersection = Sets.newHashSet();
 		final LongSet superTypeIds = taxonomy.getStatedAncestors()
 				.getDestinations(conceptId, true);
-		
+
 		for (final LongIterator itr = superTypeIds.iterator(); itr.hasNext(); /* empty */) {
 			final long parentId = itr.next();
 			addParent(parentId, intersection);
@@ -875,7 +874,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 			.forEachOrdered(ug -> addUnionGroup(ug, groupIntersection));
 
 		if (group.getKey() > 0) {
-			
+
 			// CD members should only be considered in non-zero groups
 			taxonomy.getStatedConcreteDomainMembers()
 				.get(Long.toString(conceptId))

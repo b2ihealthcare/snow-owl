@@ -1,0 +1,5 @@
+#This file is needed to prevent git from omitting this folder that would cause build issues/compile errors.
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore

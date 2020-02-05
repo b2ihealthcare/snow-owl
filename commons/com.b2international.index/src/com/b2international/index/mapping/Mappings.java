@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,10 @@ public final class Mappings {
 	}
 	
 	public Mappings(Collection<Class<?>> types) {
-		checkArgument(!types.isEmpty(), "At least one document type should be specified");
 		final Multiset<String> duplicates = HashMultiset.create();
 		for (Class<?> type : ImmutableSet.copyOf(types)) {
 			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping
-			DocumentMapping mapping = new DocumentMapping(type);
-			mappingsByType.put(type, mapping);
+			DocumentMapping mapping = putMapping(type);
 			duplicates.add(mapping.typeAsString());
 		}
 		for (Entry<String> duplicate : duplicates.entrySet()) {
@@ -57,6 +55,16 @@ public final class Mappings {
 		}
 	}
 	
+	public Collection<Class<?>> getTypes() {
+		return ImmutableSet.copyOf(mappingsByType.keySet());
+	}
+	
+	public DocumentMapping putMapping(Class<?> type) {
+		final DocumentMapping mapping = new DocumentMapping(type);
+		mappingsByType.put(type, mapping);
+		return mapping;
+	}
+
 	public Collection<DocumentMapping> getMappings() {
 		return ImmutableList.copyOf(mappingsByType.values());
 	}

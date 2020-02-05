@@ -24,6 +24,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -31,11 +34,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
-import com.b2international.snowowl.core.events.metrics.Metrics;
-import com.b2international.snowowl.core.events.metrics.Timer;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.TransactionalRequest;
@@ -98,10 +96,10 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 			final Multimap<ComponentCategory, SnomedComponentCreateRequest> componentCreateRequests = getComponentCreateRequests(next());
 
 			if (!componentCreateRequests.isEmpty()) {
-				final Timer idGenerationTimer = context.service(Metrics.class).timer("idGeneration");
+//				final MeterRegistry registry = context.service(MeterRegistry.class);
+//				final Sample idGenerationSample = Timer.start(registry);
 
 				try {
-					idGenerationTimer.start();
 
 					for (final ComponentCategory category : componentCreateRequests.keySet()) {
 						final Class<? extends SnomedDocument> documentClass = getDocumentClass(category);
@@ -152,7 +150,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 					}
 
 				} finally {
-					idGenerationTimer.stop();
+//					idGenerationSample.stop(registry.timer("idGenerationTime"));
 				}
 			}
 
@@ -180,7 +178,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 			collectComponentCreateRequests(((TransactionalRequest) request).getNext(), resultBuilder);
 		} else if (request instanceof BaseSnomedComponentCreateRequest) {
 			final BaseSnomedComponentCreateRequest createRequest = (BaseSnomedComponentCreateRequest) request;
-			for (SnomedCoreComponentCreateRequest nestedRequest : createRequest.getNestedRequests()) {
+			for (SnomedCoreComponentCreateRequest nestedRequest : Iterables.filter(createRequest.getNestedRequests(), SnomedCoreComponentCreateRequest.class)) {
 				ComponentCategory category = getComponentCategory(nestedRequest);
 				resultBuilder.put(category, (BaseSnomedComponentCreateRequest) nestedRequest);
 				// XXX: we could recurse here, but only concept creation requests have actual nested requests at the moment

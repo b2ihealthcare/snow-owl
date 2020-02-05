@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,58 +15,44 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.eclipse.emf.ecore.EStructuralFeature;
+import javax.annotation.Nullable;
 
 import com.b2international.commons.collect.LongSets;
-import com.b2international.index.Hits;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.ComponentUtils;
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
+import com.b2international.index.revision.StagingArea;
+import com.b2international.index.revision.StagingArea.RevisionDiff;
+import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -77,27 +63,26 @@ import com.google.common.collect.Ordering;
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
-	private static final Set<EStructuralFeature> ALLOWED_CONCEPT_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
-			.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
-			.add(SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME)
-			.add(SnomedPackage.Literals.COMPONENT__RELEASED)
-			.add(SnomedPackage.Literals.COMPONENT__MODULE)
-			.add(SnomedPackage.Literals.CONCEPT__DEFINITION_STATUS)
-			.add(SnomedPackage.Literals.CONCEPT__EXHAUSTIVE)
-			.add(SnomedPackage.Literals.CONCEPT__DESCRIPTIONS)
+	private static final Set<String> ALLOWED_DESCRIPTION_CHANGE_FEATURES = ImmutableSet.<String>builder()
+			.add(SnomedDescriptionIndexEntry.Fields.ACTIVE)
+			.add(SnomedDescriptionIndexEntry.Fields.TERM)
+			.add(SnomedDescriptionIndexEntry.Fields.TYPE_ID)
 			.build();
-	private static final Set<EStructuralFeature> ALLOWED_DESCRIPTION_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
-			.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
-			.add(SnomedPackage.Literals.DESCRIPTION__TERM)
-			.add(SnomedPackage.Literals.DESCRIPTION__TYPE)
-			.add(SnomedPackage.Literals.DESCRIPTION__LANGUAGE_REF_SET_MEMBERS)
-			.build();
-	private static final Set<EStructuralFeature> ALLOWED_LANG_MEMBER_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
-			.add(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE)
-			.add(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID)
+	private static final Set<String> ALLOWED_LANG_MEMBER_CHANGE_FEATURES = ImmutableSet.<String>builder()
+			.add(SnomedRefSetMemberIndexEntry.Fields.ACTIVE)
+			.add(SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID)
 			.build();
 	
-	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = Ordering.natural().onResultOf(SnomedDescriptionFragment::getStorageKey);
+	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = Ordering.natural()
+			.onResultOf((SnomedDescriptionFragment description) -> {
+				if (Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
+					return 0;
+				} else if (Concepts.SYNONYM.equals(description.getTypeId())) {
+					return 1;
+				} else {
+					return description.getId();
+				}
+			});
 	
 	private final DoiData doiData;
 	private final IconIdUpdater iconId;
@@ -121,117 +106,162 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	}
 	
 	@Override
-	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
-		// process concept deletions first
-		deleteRevisions(SnomedConceptDocument.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT));
+	public void process(StagingArea staging, RevisionSearcher searcher) throws IOException {
 		// collect member changes
-		this.referringRefSets = HashMultimap.create(memberChangeProcessor.process(commitChangeSet, searcher));
+		this.referringRefSets = HashMultimap.create(memberChangeProcessor.process(staging, searcher));
 
-		// collect new and dirty reference sets
-		final Map<String, SnomedRefSet> newAndDirtyRefSetsById = newHashMap(FluentIterable.from(Iterables.concat(commitChangeSet.getNewComponents(), commitChangeSet.getDirtyComponents()))
-				.filter(SnomedRefSet.class)
-				.uniqueIndex(new Function<SnomedRefSet, String>() {
-					@Override
-					public String apply(SnomedRefSet input) {
-						return input.getIdentifierId();
-					}
-				}));
-		// collect deleted reference sets
-		final Set<Long> deletedRefSets = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET)));
+		final Multimap<String, SnomedDescriptionFragment> newDescriptionFragmentsByConcept = HashMultimap.create();
+		
+		staging.getNewObjects(SnomedDescriptionIndexEntry.class)
+			.filter(SnomedDescriptionIndexEntry::isActive)
+			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
+			.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
+			.forEach(description -> newDescriptionFragmentsByConcept.put(description.getConceptId(), toDescriptionFragment(description)));
 		
 		// index new concepts
-		for (final Concept concept : commitChangeSet.getNewComponents(Concept.class)) {
+		staging.getNewObjects(SnomedConceptDocument.class).forEach(concept -> {
 			final String id = concept.getId();
 			final Builder doc = SnomedConceptDocument.builder().id(id);
 			update(doc, concept, null);
-			SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
-			if (refSet != null) {
-				doc.refSet(refSet);
-			}
-			doc.preferredDescriptions(toDescriptionFragments(concept));
-			indexNewRevision(concept.cdoID(), doc.build());
-		}
+			// in case of a new concept, all of its descriptions should be part of the staging area as well
+			doc.preferredDescriptions(newDescriptionFragmentsByConcept.removeAll(id)
+					.stream()
+					.sorted(DESCRIPTION_FRAGMENT_ORDER)
+					.collect(Collectors.toList()));
+			stageNew(doc.build());
+		});
 		
-		// collect dirty concepts for reindex
-		final Map<String, Concept> dirtyConceptsById = Maps.uniqueIndex(commitChangeSet.getDirtyComponents(Concept.class), Concept::getId);
+		// collect dirty concepts that require additional properties to be set for index
+		final Map<String, RevisionDiff> dirtyConceptDiffsById = Maps.uniqueIndex(staging.getChangedRevisions(SnomedConceptDocument.class).collect(Collectors.toList()), diff -> diff.newRevision.getId());
 		
-		final Set<String> dirtyConceptIds = collectDirtyConceptIds(searcher, commitChangeSet);
+		final Set<String> dirtyConceptIds = collectDirtyConceptIds(staging);
 		
-		final Multimap<String, Description> dirtyDescriptionsByConcept = Multimaps.index(getDirtyDescriptions(commitChangeSet), d -> d.getConcept().getId());
+		// remaining new/dirty/detached descriptions should be properly processed for preferredDescriptions field
+		final Map<String, SnomedDescriptionIndexEntry> affectedDescriptionsById = getDescriptionDocuments(staging, searcher);
+		final Multimap<String, SnomedDescriptionIndexEntry> affectedDescriptionsByConcept = Multimaps.index(affectedDescriptionsById.values(), SnomedDescriptionIndexEntry::getConceptId);
+		dirtyConceptIds.addAll(affectedDescriptionsByConcept.keySet());
 		
-		// remaining new and dirty reference sets should be connected to a non-new concept, so add them here
-		dirtyConceptIds.addAll(newAndDirtyRefSetsById.keySet());
-		dirtyConceptIds.addAll(dirtyDescriptionsByConcept.keySet());
+		// remove all new/detached concept IDs, we've already processed them
+		dirtyConceptIds.removeAll(staging.getRemovedObjects(SnomedConceptDocument.class).map(SnomedConceptDocument::getId).collect(Collectors.toSet()));
+		dirtyConceptIds.removeAll(staging.getNewObjects(SnomedConceptDocument.class).map(SnomedConceptDocument::getId).collect(Collectors.toSet()));
 		
 		if (!dirtyConceptIds.isEmpty()) {
+			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			// fetch all dirty concept documents by their ID
+			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
+					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConceptDocument.class, id)))
+					.collect(Collectors.toSet());
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
-					.where(SnomedConceptDocument.Expressions.ids(dirtyConceptIds))
-					.limit(dirtyConceptIds.size())
+					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
+					.limit(missingCurrentConceptIds.size())
 					.build();
-			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.uniqueIndex(searcher.search(query), ComponentUtils.<String>getIdFunction());
+			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.search(query), IComponent::getId));
+			dirtyConceptIds.stream()
+				.map(id -> ObjectId.of(SnomedConceptDocument.class, id))
+				.filter(changedRevisions::containsKey)
+				.map(changedRevisions::get)
+				.map(diff -> (SnomedConceptDocument) diff.oldRevision)
+				.forEach(doc -> currentConceptDocumentsById.put(doc.getId(), doc));
 			
 			// update dirty concepts
 			for (final String id : dirtyConceptIds) {
-				final Concept concept = dirtyConceptsById.get(id);
+				final SnomedConceptDocument concept = dirtyConceptDiffsById.containsKey(id) ? (SnomedConceptDocument) dirtyConceptDiffsById.get(id).newRevision : null;
 				final SnomedConceptDocument currentDoc = currentConceptDocumentsById.get(id);
 				if (currentDoc == null) {
 					throw new IllegalStateException("Current concept revision should not be null for: " + id);
 				}
+				
 				final Builder doc = SnomedConceptDocument.builder(currentDoc);
 				update(doc, concept, currentDoc);
-				SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
-				if (refSet != null) {
-					doc.refSet(refSet);
-				}
-				// clear refset props when deleting refset
-				if (deletedRefSets.contains(currentDoc.getRefSetStorageKey())) {
-					doc.clearRefSet();
-				}
 				
-				if (concept != null) {
-					doc.preferredDescriptions(toDescriptionFragments(concept));
-				} else {
-					Collection<Description> dirtyDescriptions = dirtyDescriptionsByConcept.get(id);
-					if (!dirtyDescriptions.isEmpty()) {
-						Map<String, SnomedDescriptionFragment> newDescriptions = newHashMap(Maps.uniqueIndex(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
-						for (Description dirtyDescription : dirtyDescriptions) {
-							newDescriptions.remove(dirtyDescription.getId());
-							if (dirtyDescription.isActive() && !getPreferredLanguageMembers(dirtyDescription).isEmpty()) {
-								newDescriptions.put(dirtyDescription.getId(), toDescriptionFragment(dirtyDescription));
+				final Collection<SnomedDescriptionIndexEntry> affectedDescriptions = affectedDescriptionsByConcept.get(id);
+				if (!affectedDescriptions.isEmpty()) {
+					final Map<String, SnomedDescriptionFragment> updatedPreferredDescriptions = newHashMap(Maps.uniqueIndex(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
+					
+					// add new/dirty fragments if they are preferred and active terms
+					for (SnomedDescriptionIndexEntry affectedDescription : affectedDescriptions) {
+						if (staging.isNew(affectedDescription) || staging.isChanged(affectedDescription)) {
+							updatedPreferredDescriptions.remove(affectedDescription.getId());
+							if (affectedDescription.isActive() && !getPreferredLanguageMembers(affectedDescription).isEmpty()) {
+								updatedPreferredDescriptions.put(affectedDescription.getId(), toDescriptionFragment(affectedDescription));
 							}
 						}
-						doc.preferredDescriptions(newDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
-					} else {
-						doc.preferredDescriptions(currentDoc.getPreferredDescriptions());
 					}
+					
+					// remove deleted descriptions
+					for (SnomedDescriptionIndexEntry affectedDescription : affectedDescriptions) {
+						if (staging.isRemoved(affectedDescription)) {
+							updatedPreferredDescriptions.remove(affectedDescription.getId());
+						}
+					}
+					
+					doc.preferredDescriptions(updatedPreferredDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
+				} else {
+					doc.preferredDescriptions(currentDoc.getPreferredDescriptions());
 				}
 				
-				if (concept != null) {
-					indexChangedRevision(concept.cdoID(), doc.build());				
-				} else {
-					indexChangedRevision(currentDoc.getStorageKey(), doc.build());
-				}
+				stageChange(currentDoc, doc.build());
 			}
 		}
 	}
 	
-	private Iterable<Description> getDirtyDescriptions(ICDOCommitChangeSet commitChangeSet) {
-		final Set<Description> dirtyDescriptions = newHashSet();
-		// add dirty descriptions from transaction
-		FluentIterable
-			.from(commitChangeSet.getDirtyComponents(Description.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES))
-			.filter(desc -> !Concepts.TEXT_DEFINITION.equals(desc.getType().getId()))
-			.copyInto(dirtyDescriptions);
-		// register descriptions as dirty for each dirty lang. member
-		FluentIterable
-			.from(commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class, ALLOWED_LANG_MEMBER_CHANGE_FEATURES))
-			.transform(SnomedLanguageRefSetMember::eContainer)
-			.filter(Description.class)
-			.filter(desc -> !Concepts.TEXT_DEFINITION.equals(desc.getType().getId()))
-			.copyInto(dirtyDescriptions);
+	private Map<String, SnomedDescriptionIndexEntry> getDescriptionDocuments(StagingArea staging, RevisionSearcher searcher) throws IOException {
+		final Map<String, SnomedDescriptionIndexEntry> descriptions = newHashMap();
 		
-		return dirtyDescriptions;
+		// add all new descriptions from tx
+		staging
+			.getNewObjects(SnomedDescriptionIndexEntry.class)
+			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
+			.forEach(description -> descriptions.put(description.getId(), description));
+		
+		// add dirty descriptions with relevant changes from tx
+		staging
+			// XXX accepts only relevant property changes, lang member detection should take care about acceptability changes
+			.getChangedRevisions(SnomedDescriptionIndexEntry.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES) 
+			.map(diff -> (SnomedDescriptionIndexEntry) diff.newRevision)
+			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
+			.forEach(description -> descriptions.put(description.getId(), description));
+		
+		// add detached descriptions
+		staging.getRemovedObjects(SnomedDescriptionIndexEntry.class)
+			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
+			.forEach(description -> descriptions.put(description.getId(), description));
+	
+		// gather descriptions for each new, dirty, detached lang. members
+		final Set<String> descriptionsToLoad = newHashSet();
+		
+		staging.getNewObjects(SnomedRefSetMemberIndexEntry.class)
+			.map(member -> member.getReferencedComponentId())
+			.forEach(descriptionsToLoad::add);
+		
+		staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class, ALLOWED_LANG_MEMBER_CHANGE_FEATURES)
+			.map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision)
+			.map(member -> member.getReferencedComponentId())
+			.forEach(descriptionsToLoad::add);
+		
+		staging.getRemovedObjects(SnomedRefSetMemberIndexEntry.class)
+			.map(member -> member.getReferencedComponentId())
+			.forEach(descriptionsToLoad::add);
+		
+		descriptionsToLoad.removeAll(descriptions.keySet());
+		
+		// add all descriptions that are present in the tx because of acceptabilityId prop change
+		staging.getChangedRevisions(SnomedDescriptionIndexEntry.class) 
+			.map(diff -> (SnomedDescriptionIndexEntry) diff.newRevision)
+			.filter(description -> descriptionsToLoad.remove(description.getId())) // XXX removes already dirty description from the toLoad set
+			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
+			.forEach(description -> descriptions.put(description.getId(), description));
+		
+		if (!descriptionsToLoad.isEmpty()) {
+			searcher.get(SnomedDescriptionIndexEntry.class, descriptionsToLoad)
+				.forEach(description -> {
+					if (!Concepts.TEXT_DEFINITION.equals(description.getTypeId())) {
+						descriptions.put(description.getId(), description);
+					}
+				});
+		}
+		
+		return descriptions;
 	}
 
 	/*
@@ -242,17 +272,22 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	 * but there can be a dirty concept if a property changed on it.
 	 * We will use whatever we actually have locally to compute the new revision.
 	 */
-	private void update(SnomedConceptDocument.Builder doc, Concept concept, SnomedConceptDocument currentVersion) {
-		final String id = concept != null ? concept.getId() : currentVersion.getId();
+	private void update(SnomedConceptDocument.Builder doc, @Nullable SnomedConceptDocument newOrDirtyRevision, SnomedConceptDocument cleanRevision) {
+		checkArgument(newOrDirtyRevision != null || cleanRevision != null, "Either the newOrDirtyRevision is null or the cleanRevision but not both");
+
+		final String id = newOrDirtyRevision != null ? newOrDirtyRevision.getId() : cleanRevision.getId();
 		final long idLong = Long.parseLong(id);
-		final boolean active = concept != null ? concept.isActive() : currentVersion.isActive();
+		final boolean active = newOrDirtyRevision != null ? newOrDirtyRevision.isActive() : cleanRevision.isActive();
 		
 		doc.active(active)
-			.released(concept != null ? concept.isReleased() : currentVersion.isReleased())
-			.effectiveTime(concept != null ? getEffectiveTime(concept) : currentVersion.getEffectiveTime())
-			.moduleId(concept != null ? concept.getModule().getId() : currentVersion.getModuleId())
-			.exhaustive(concept != null ? concept.isExhaustive() : currentVersion.isExhaustive())
-			.primitive(concept != null ? concept.isPrimitive() : currentVersion.isPrimitive())
+			.released(newOrDirtyRevision != null ? newOrDirtyRevision.isReleased() : cleanRevision.isReleased())
+			.effectiveTime(newOrDirtyRevision != null ? newOrDirtyRevision.getEffectiveTime() : cleanRevision.getEffectiveTime())
+			.moduleId(newOrDirtyRevision != null ? newOrDirtyRevision.getModuleId() : cleanRevision.getModuleId())
+			.exhaustive(newOrDirtyRevision != null ? newOrDirtyRevision.isExhaustive() : cleanRevision.isExhaustive())
+			.primitive(newOrDirtyRevision != null ? newOrDirtyRevision.isPrimitive() : cleanRevision.isPrimitive())
+			.refSetType(newOrDirtyRevision != null ? newOrDirtyRevision.getRefSetType() : cleanRevision.getRefSetType())
+			.referencedComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getReferencedComponentType() : cleanRevision.getReferencedComponentType())
+			.mapTargetComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getMapTargetComponentType() : cleanRevision.getMapTargetComponentType())
 			.doi(doiData.getDoiScore(id));
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
@@ -270,61 +305,34 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			inferred.update(id, doc);
 		}
 		
-		final Collection<String> currentMemberOf = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getMemberOf();
-		final Collection<String> currentActiveMemberOf = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getActiveMemberOf();
+		final Collection<String> currentMemberOf = cleanRevision == null ? Collections.emptySet() : cleanRevision.getMemberOf();
+		final Collection<String> currentActiveMemberOf = cleanRevision == null ? Collections.emptySet() : cleanRevision.getActiveMemberOf();
 		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
 	}
 
-	private List<SnomedDescriptionFragment> toDescriptionFragments(Concept concept) {
-		return concept.getDescriptions()
-				.stream()
-				.filter(Description::isActive)
-				.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getType().getId()))
-				.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
-				.map(this::toDescriptionFragment)
-				.sorted(DESCRIPTION_FRAGMENT_ORDER)
-				.collect(Collectors.toList());
-	}
-	
-	private Set<String> getPreferredLanguageMembers(Description description) {
-		return description.getLanguageRefSetMembers()
+	private Set<String> getPreferredLanguageMembers(SnomedDescriptionIndexEntry description) {
+		return description.getAcceptabilityMap().entrySet()
 			.stream()
-			.filter(SnomedLanguageRefSetMember::isActive)
-			.filter(member -> Acceptability.PREFERRED.getConceptId().equals(member.getAcceptabilityId()))
-			.map(SnomedRefSetMember::getRefSetIdentifierId)
+			.filter(entry -> Acceptability.PREFERRED == entry.getValue())
+			.map(entry -> entry.getKey())
 			.collect(Collectors.toSet());
 	}
 	
-	private SnomedDescriptionFragment toDescriptionFragment(Description description) {
+	private SnomedDescriptionFragment toDescriptionFragment(SnomedDescriptionIndexEntry description) {
 		return new SnomedDescriptionFragment(
 			description.getId(), 
-			CDOIDUtil.getLong(description.cdoID()),
-			description.getType().getId(), 
+			description.getTypeId(), 
 			description.getTerm(), 
 			ImmutableList.copyOf(getPreferredLanguageMembers(description))
 		);
 	}
 
-	private long getEffectiveTime(Concept concept) {
-		return concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME;
-	}
-
-	private Set<String> collectDirtyConceptIds(final RevisionSearcher searcher, final ICDOCommitChangeSet commitChangeSet) throws IOException {
+	private Set<String> collectDirtyConceptIds(final StagingArea staging) throws IOException {
 		final Set<String> dirtyConceptIds = newHashSet();
 		
-		// collect relevant concept changes
-		FluentIterable
-			.from(commitChangeSet.getDirtyComponents(Concept.class, ALLOWED_CONCEPT_CHANGE_FEATURES))
-			.transform(Concept::getId)
-			.copyInto(dirtyConceptIds);
-
-		// collect dirty concepts due to change in hierarchy
+		// collect dirty concepts due to change in memberships
 		dirtyConceptIds.addAll(referringRefSets.keySet());
-//		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, inferredTaxonomy));
-//		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, statedTaxonomy));
 		
 		// collect inferred taxonomy changes
 		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getNewEdges(), inferredTaxonomy.getNewTaxonomy()));
@@ -335,28 +343,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getChangedEdges(), statedTaxonomy.getNewTaxonomy()));
 		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDetachedEdges(), statedTaxonomy.getOldTaxonomy()));
 
-		// collect detached reference sets where the concept itself hasn't been detached
-		Collection<CDOID> detachedRefSets = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
-		Set<Long> detachedRefSetStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(detachedRefSets));
-		Collection<CDOID> detachedConcepts = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
-		Set<Long> detachedConceptStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(detachedConcepts));
-		
-		final Query<String> query = Query.select(String.class)
-				.from(SnomedConceptDocument.class)
-				.fields(RevisionDocument.Fields.ID)
-				.where(Expressions.builder()
-						.filter(SnomedConceptDocument.Expressions.refSetStorageKeys(detachedRefSetStorageKeys))
-						.mustNot(Expressions.matchAnyLong(Revision.STORAGE_KEY, detachedConceptStorageKeys))
-						.build())
-				.limit(detachedRefSets.size())
-				.build();
-
-		final Hits<String> hits = searcher.search(query);
-		dirtyConceptIds.addAll(hits.getHits());
-		
-		// remove all new concept IDs
-		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(Concept::getId).toSet());
-		
 		return dirtyConceptIds;
 	}
 	
@@ -369,67 +355,5 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		}
 		return ids;
 	}
-
-//	private Collection<String> getAffectedConcepts(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, Taxonomy taxonomy) throws IOException {
-//		final Set<String> affectedConceptIds = newHashSet();
-//		final ISnomedTaxonomyBuilder newTaxonomy = taxonomy.getNewTaxonomy();
-//		final ISnomedTaxonomyBuilder oldTaxonomy = taxonomy.getOldTaxonomy();
-//		// process new/reactivated relationships
-//		final LongIterator it = taxonomy.getNewEdges().iterator();
-//		while (it.hasNext()) {
-//			final String relationshipId = Long.toString(it.next());
-//			final String sourceNodeId = newTaxonomy.getSourceNodeId(relationshipId);
-//			affectedConceptIds.add(sourceNodeId);
-//			// add all descendants
-//			affectedConceptIds.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
-//		}
-//		
-//		// process detached/inactivated relationships
-//		final LongIterator detachedIt = taxonomy.getDetachedEdges().iterator();
-//		final Map<String, String> oldSourceConceptIconIds = getSourceConceptIconIds(searcher, oldTaxonomy, taxonomy.getDetachedEdges());
-//		while (detachedIt.hasNext()) {
-//			final String relationshipId = Long.toString(detachedIt.next());
-//			final String sourceNodeId = oldTaxonomy.getSourceNodeId(relationshipId);
-//			// if concept still exists a relationship became inactive or deleted
-//			if (newTaxonomy.containsNode(sourceNodeId)) {
-//				final LongSet allAncestorNodeIds = newTaxonomy.getAllAncestorNodeIds(sourceNodeId);
-//				final String oldIconId = oldSourceConceptIconIds.get(sourceNodeId);
-//				if (!allAncestorNodeIds.contains(Long.parseLong(oldIconId))) {
-//					affectedConceptIds.add(sourceNodeId);
-//					// add all descendants
-//					affectedConceptIds.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
-//				}
-//			} else {
-//				affectedConceptIds.add(sourceNodeId);
-//				affectedConceptIds.addAll(LongSets.toStringSet(oldTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
-//			}
-//		}
-//		
-//		return affectedConceptIds;
-//	}
-//	
-//	private Map<String, String> getSourceConceptIconIds(RevisionSearcher searcher, ISnomedTaxonomyBuilder oldTaxonomy, LongSet detachedRelationshipIds) throws IOException {
-//		final LongIterator it = detachedRelationshipIds.iterator();
-//		final Collection<String> sourceNodeIds = newHashSetWithExpectedSize(detachedRelationshipIds.size());
-//		while (it.hasNext()) {
-//			final String relationshipId = Long.toString(it.next());
-//			sourceNodeIds.add(oldTaxonomy.getSourceNodeId(relationshipId)); 
-//		}
-//		
-//		if (sourceNodeIds.isEmpty()) {
-//			return Collections.emptyMap();
-//		} else {
-//			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
-//					.where(SnomedDocument.Expressions.ids(sourceNodeIds))
-//					.limit(sourceNodeIds.size())
-//					.build();
-//			final Hits<SnomedConceptDocument> hits = searcher.search(query);
-//			final Map<String, String> iconsByIds = newHashMapWithExpectedSize(hits.getTotal());
-//			for (SnomedConceptDocument hit : hits) {
-//				iconsByIds.put(hit.getId(), hit.getIconId());
-//			}
-//			return iconsByIds;
-//		}
-// 	}
 
 }

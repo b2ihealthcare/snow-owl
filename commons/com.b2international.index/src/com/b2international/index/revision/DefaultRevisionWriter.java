@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 
+import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
@@ -38,67 +39,104 @@ import com.google.common.collect.Sets;
  */
 public class DefaultRevisionWriter implements RevisionWriter {
 
-	private final RevisionBranch branch;
-	private final long commitTimestamp;
+	private final RevisionBranchRef branch;
+	
 	private final Writer index;
 	private final RevisionSearcher searcher;
 	
-	private final Map<Class<? extends Revision>, Collection<Long>> revisionUpdates = newHashMap();
+	private final BaseRevisionBranching branching;
+	private final RevisionBranchPoint created;
+	private final RevisionBranchPoint revised;
+	
+	private final Map<Class<?>, Set<String>> revisionUpdates = newHashMap();
 
-	public DefaultRevisionWriter(final RevisionBranch branch, long commitTimestamp, Writer index, RevisionSearcher searcher) {
+	public DefaultRevisionWriter(
+			final BaseRevisionBranching branching,
+			final RevisionBranchRef branch,
+			long commitTimestamp,
+			Writer index, 
+			RevisionSearcher searcher) {
+		this.branching = branching;
 		this.branch = branch;
-		this.commitTimestamp = commitTimestamp;
 		this.index = index;
 		this.searcher = searcher;
+		this.created = new RevisionBranchPoint(branch.branchId(), commitTimestamp);
+		this.revised = new RevisionBranchPoint(branch.branchId(), Long.MAX_VALUE);
 	}
 
 	@Override
-	public void put(long storageKey, Revision object) throws IOException {
-		checkArgument(storageKey > 0, "StorageKey cannot be negative or zero");
-		if (!revisionUpdates.containsKey(object.getClass())) {
-			revisionUpdates.put(object.getClass(), Sets.<Long>newHashSet());
-		}
-		final Collection<Long> revisionsToUpdate = revisionUpdates.get(object.getClass());
-		// prevent duplicated revisions
-		checkArgument(!revisionsToUpdate.contains(storageKey), "duplicate revision %s", storageKey);
-		revisionsToUpdate.add(storageKey);
-		
-		object.setBranchPath(branch.path());
-		object.setCommitTimestamp(commitTimestamp);
-		object.setStorageKey(storageKey);
-		object.setSegmentId(branch.segmentId());
-		index.put(generateRevisionId(), object);
-	}
-
-	@Override
-	public void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException {
-		for (Entry<Long, Revision> doc : revisionsByStorageKey.entrySet()) {
-			put(doc.getKey(), doc.getValue());
+	public void put(String key, Object object) {
+		if (object instanceof Revision) {
+			Revision rev = (Revision) object;
+			final Class<? extends Revision> type = rev.getClass();
+			if (!revisionUpdates.containsKey(type)) {
+				revisionUpdates.put(type, Sets.<String>newHashSet());
+			}
+			final Collection<String> revisionsToUpdate = revisionUpdates.get(type);
+			// prevent duplicated revisions
+			checkArgument(!revisionsToUpdate.contains(key), "duplicate revision %s", key);
+			revisionsToUpdate.add(key);
+			
+			rev.setCreated(created);
+			index.put(generateRevisionId(), rev);
+		} else {
+			index.put(key, object);
 		}
 	}
 
 	@Override
-	public void remove(Class<? extends Revision> type, long storageKey) throws IOException {
-		remove(type, Collections.singleton(storageKey));
+	public <T> void putAll(Map<String, T> objectsByKey) {
+		objectsByKey.forEach(this::put);
 	}
 	
 	@Override
-	public void remove(Class<? extends Revision> type, Collection<Long> storageKeys) throws IOException {
-		removeAll(ImmutableMap.<Class<? extends Revision>, Collection<Long>>of(type, storageKeys));
+	public <T> void bulkUpdate(BulkUpdate<T> update) {
+		index.bulkUpdate(update);
+	}
+	
+	@Override
+	public <T> void bulkDelete(BulkDelete<T> delete) {
+		index.bulkDelete(delete);
 	}
 
 	@Override
-	public void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType) throws IOException {
-		for (Class<? extends Revision> type : storageKeysByType.keySet()) {
-			final Collection<Long> storageKeysToUpdate = storageKeysByType.get(type);
-			if (!storageKeysToUpdate.isEmpty()) {
+	public void remove(Class<?> type, String key) {
+		remove(type, Collections.singleton(key));
+	}
+	
+	@Override
+	public void remove(Class<?> type, Set<String> keysToRemove) {
+		removeAll(ImmutableMap.of(type, keysToRemove));
+	}
+	
+	@Override
+	public void removeAll(Map<Class<?>, Set<String>> keysByType) {
+		final String oldRevised = revised.toIpAddress();
+		final String newRevised = created.toIpAddress();
+		for (Class<?> type : keysByType.keySet()) {
+			setRevised(type, keysByType.get(type), oldRevised, newRevised, branch);
+		}
+	}
+
+	@Override
+	public void setRevised(Class<?> type, Set<String> keysToUpdate, RevisionBranchRef branchToUpdate) {
+		final String oldRevised = new RevisionBranchPoint(branch.branchId(), Long.MAX_VALUE).toIpAddress();
+		final String newRevised = created.toIpAddress();
+		setRevised(type, keysToUpdate, oldRevised, newRevised, branchToUpdate);
+	}
+	
+	private void setRevised(Class<?> type, Set<String> keysToUpdate, final String oldRevised, final String newRevised, RevisionBranchRef branchToUpdate) {
+		if (Revision.class.isAssignableFrom(type)) {
+			if (!keysToUpdate.isEmpty()) {
 				final Expression filter = Expressions.builder()
-							.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate))
-							.filter(Revision.branchFilter(branch))
-							.build();
-				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, DocumentMapping._ID, Revision.UPDATE_REPLACED_INS, ImmutableMap.of("segmentId", branch.segmentId()));
+						.filter(Expressions.matchAny(Revision.Fields.ID, keysToUpdate))
+						.filter(branchToUpdate.toRevisionFilter())
+						.build();
+				final BulkUpdate<Revision> update = new BulkUpdate<Revision>((Class<? extends Revision>) type, filter, DocumentMapping._ID, Revision.UPDATE_REVISED, ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised));
 				index.bulkUpdate(update);
 			}
+		} else {
+			index.remove(type, keysToUpdate);
 		}
 	}
 
@@ -107,6 +145,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		// before commit, mark all previous revisions as replaced
 		removeAll(revisionUpdates);
 		index.commit();
+		branching.sendChangeEvent(branch());
 	}
 
 	@Override
@@ -117,11 +156,6 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	@Override
 	public RevisionSearcher searcher() {
 		return searcher;
-	}
-	
-	@Override
-	public Writer writer() {
-		return index;
 	}
 	
 	private String generateRevisionId() {

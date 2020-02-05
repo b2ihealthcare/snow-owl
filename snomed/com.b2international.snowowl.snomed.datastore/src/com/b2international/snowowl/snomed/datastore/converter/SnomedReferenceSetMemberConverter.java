@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -74,6 +74,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 	protected void expand(List<SnomedReferenceSetMember> results) {
 		expandReferencedComponent(results);
 		expandTargetComponent(results);
+		new ModuleExpander(context(), expand(), locales()).expand(results);
 	}
 
 	private void expandTargetComponent(List<SnomedReferenceSetMember> results) {
@@ -97,7 +98,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 			
 			for (ComponentCategory category : targetComponentIdsByCategory.keySet()) {
 				final Collection<String> targetComponentIds = targetComponentIdsByCategory.get(category);
-				final Map<String,? extends SnomedCoreComponent> componentsById = Maps.uniqueIndex(getComponents(category, targetComponentIds, expandOptions.get("expand", Options.class)), IComponent.ID_FUNCTION);
+				final Map<String, ? extends SnomedCoreComponent> componentsById = Maps.uniqueIndex(getComponents(category, targetComponentIds, expandOptions.get("expand", Options.class)), IComponent::getId);
 				for (String targetComponentId : targetComponentIds) {
 					final SnomedCoreComponent targetComponent = componentsById.get(targetComponentId);
 					if (targetComponent != null) {
@@ -117,13 +118,13 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		case CONCEPT: return SnomedRequests.prepareSearchConcept().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
 		case DESCRIPTION: return SnomedRequests.prepareSearchDescription().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
 		case RELATIONSHIP: return SnomedRequests.prepareSearchRelationship().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
-		default: throw new NotImplementedException("Not implemented non core target component expansion", category);
+		default: throw new NotImplementedException("Not implemented non core target component expansion: '%s'", category);
 		}
 	}
 
 	private void expandReferencedComponent(List<SnomedReferenceSetMember> results) {
-		if (expand().containsKey("referencedComponent")) {
-			Options expandOptions = expand().get("referencedComponent", Options.class);
+		if (expand().containsKey(SnomedReferenceSetMember.Expand.REFERENCED_COMPONENT)) {
+			Options expandOptions = expand().get(SnomedReferenceSetMember.Expand.REFERENCED_COMPONENT, Options.class);
 			
 			final Multimap<String, SnomedReferenceSetMember> referencedComponentIdToMemberMap = collectReferencedComponentIds(results);
 			final Multimap<ComponentCategory, String> componentCategoryToIdMap = collectReferencedComponentCategories(referencedComponentIdToMemberMap);
@@ -196,7 +197,6 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 	@Override
 	protected SnomedReferenceSetMember toResource(SnomedRefSetMemberIndexEntry entry) {
 		final SnomedReferenceSetMember member = new SnomedReferenceSetMember();
-		member.setStorageKey(entry.getStorageKey());
 		member.setId(entry.getId());
 		member.setEffectiveTime(toEffectiveTime(entry.getEffectiveTime()));
 		member.setReleased(entry.isReleased());

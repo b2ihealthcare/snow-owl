@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,12 @@ import java.io.InputStream;
 public interface MrcmImporter {
 
 	/**
-	 * Imports the given MRCM file impersonating a user given with the user name argument.
+	 * Imports the given MRCM file impersonating a user given with the user name
+	 * argument.
 	 * 
-	 * @param userName
-	 *            the user name.
-	 * @param mrcmFile
-	 *            the MRCM file to process and import.
+	 * @param authorizationToken - the authorization token to authenticate the user
+	 * @param source - the MRCM file to process and import.
 	 */
-	void doImport(String user, InputStream source);
+	void doImport(String authorizationToken, InputStream source);
 
 }

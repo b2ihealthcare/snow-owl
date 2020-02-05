@@ -31,20 +31,20 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.base.MoreObjects;
 import com.google.common.primitives.Longs;
 
 /**
- * CDO independent representation of a {@link CodeSystemVersion}.
+ * @since 5.0
  */
-@Doc
+@Doc(type = "codesystemversion")
 @JsonDeserialize(builder = CodeSystemVersionEntry.Builder.class)
 public final class CodeSystemVersionEntry implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Unique terminology component identifier for versions.
@@ -96,9 +96,9 @@ public final class CodeSystemVersionEntry implements Serializable {
 		public static final String DESCRIPTION = "description";
 		public static final String VERSION_ID = "versionId";
 		public static final String LATEST_UPDATE_DATE = "latestUpdateDate";
-		public static final String STORAGE_KEY = "storageKey";
 		public static final String REPOSITORY_UUID = "repositoryUuid";
 		public static final String CODE_SYSTEM_SHORT_NAME = "codeSystemShortName";
+		public static final String PARENT_BRANCH_PATH = "parentBranchPath";
 	}
 
 	public static class Expressions {
@@ -115,24 +115,18 @@ public final class CodeSystemVersionEntry implements Serializable {
 			return matchRange(Fields.IMPORT_DATE, from, to);
 		}
 		
+		public static Expression effectiveDate(Date effectiveDate) {
+			return exactMatch(Fields.EFFECTIVE_DATE, EffectiveTimes.getEffectiveTime(effectiveDate));
+		}
+
+		public static Expression parentBranchPath(String parentBranchPath) {
+			return exactMatch(Fields.PARENT_BRANCH_PATH, parentBranchPath);
+		}
+		
 	}
 	
 	public static Builder builder() {
 		return new Builder();
-	}
-	
-	public static Builder builder(CodeSystemVersion version) {
-		final String codeSystemShortName = version.getCodeSystem().getShortName();
-		return builder()
-				.storageKey(CDOIDUtils.asLong(version.cdoID()))
-				.versionId(version.getVersionId())
-				.description(version.getDescription())
-				.effectiveDate(EffectiveTimes.getEffectiveTime(version.getEffectiveDate()))
-				.importDate(Dates.getTime(version.getImportDate()))
-				.latestUpdateDate(EffectiveTimes.getEffectiveTime(version.getLastUpdateDate()))
-				.repositoryUuid(version.getCodeSystem().getRepositoryUuid())
-				.codeSystemShortName(codeSystemShortName)
-				.parentBranchPath(version.getParentBranchPath());
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
@@ -144,7 +138,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 		private String versionId;
 		private long latestUpdateDate;
 		private boolean patched;
-		private long storageKey;
 		private String repositoryUuid;
 		private String codeSystemShortName;
 		private String parentBranchPath = Branch.MAIN_PATH;
@@ -179,11 +172,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 			return this;
 		}
 		
-		public Builder storageKey(long storageKey) {
-			this.storageKey = storageKey;
-			return this;
-		}
-		
 		public Builder versionId(String versionId) {
 			this.versionId = versionId;
 			return this;
@@ -201,8 +189,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 		
 		public CodeSystemVersionEntry build() {
 			return new CodeSystemVersionEntry(importDate, effectiveDate, latestUpdateDate, description, versionId, parentBranchPath, 
-					patched, storageKey,
-					repositoryUuid, codeSystemShortName);
+					patched, repositoryUuid, codeSystemShortName);
 		}
 		
 	}
@@ -214,13 +201,13 @@ public final class CodeSystemVersionEntry implements Serializable {
 	private final long latestUpdateDate;
 	private final String parentBranchPath;
 	private boolean patched;
-	private final long storageKey;
 	private final String repositoryUuid;
 	private final String codeSystemShortName;
 	
 	private CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
-			final String description, final String versionId, final String parentBranchPath, final boolean patched, final long storageKey, final String repositoryUuid, 
+			final String description, final String versionId, final String parentBranchPath, final boolean patched, final String repositoryUuid, 
 			final String codeSystemShortName) {
+		
 		this.importDate = importDate;
 		this.effectiveDate = effectiveDate;
 		this.latestUpdateDate = latestUpdateDate;
@@ -230,7 +217,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 		this.versionId = versionId;
 		this.parentBranchPath = parentBranchPath;
 		this.patched = patched;
-		this.storageKey = storageKey;
 	}
 	
 	/**
@@ -301,14 +287,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 	}
 
 	/**
-	 * Returns with the unique storage key of the version.
-	 * @return the storage key.
-	 */
-	public long getStorageKey() {
-		return storageKey;
-	}
-
-	/**
 	 * Returns with the UUID of the repository where the current version belongs to. 
 	 */
 	public String getRepositoryUuid() {
@@ -325,10 +303,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 	}
 	
 	/**
-	 * Returns {@code true} if the version is a fake {@link ICodeSystemVersion} implementation
-	 * representing the HEAD in the repository.
-	 * @param version the version to check.
-	 * @return {@code true} if the argument is the latest version, otherwise {@code false}
+	 * @return {@code true} if this version represents the HEAD in the repository.
 	 */
 	@JsonIgnore
 	public boolean isLatestVersion() {
@@ -356,7 +331,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 
 	@Override
 	public String toString() {
-		return new StringBuilder(versionId).append(patched ? "*" : "").toString();
+		return MoreObjects.toStringHelper(getClass())
+				.add("codeSystemShortName", codeSystemShortName)
+				.add("versionId", versionId)
+				.toString();
 	}
 	
 }

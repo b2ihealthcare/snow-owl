@@ -10,8 +10,8 @@ import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.terminology.ComponentCategory
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType
 import com.google.common.collect.Lists
 
 final RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
@@ -42,7 +42,7 @@ final Aggregation<String> memberAggregation = searcher
 memberAggregation.getBuckets().entrySet().each({entry ->
 	entry.getValue().getHits().forEach({referencedComponentId -> 
 		final ComponentCategory referencedComponentCategory = SnomedIdentifiers.getComponentCategory(referencedComponentId)
-		final ComponentIdentifier affectedComponent 
+		ComponentIdentifier affectedComponent = ComponentIdentifier.UNKOWN
 		switch(referencedComponentCategory) {
 			case ComponentCategory.CONCEPT:
 				affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, referencedComponentId);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -59,19 +61,13 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
-import com.b2international.index.Analyzers;
-import com.b2international.index.BulkDelete;
-import com.b2international.index.BulkOperation;
-import com.b2international.index.BulkUpdate;
-import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexException;
-import com.b2international.index.Keyword;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,7 +75,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Primitives;
@@ -90,7 +85,6 @@ import com.google.common.primitives.Primitives;
 public final class EsIndexAdmin implements IndexAdmin {
 
 	private static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE);
-	
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
 	private static final int BATCHS_SIZE = 10_000;
 	
@@ -129,7 +123,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public boolean exists() {
 		try {
-			return client().indices().exists(getAllIndexes());
+			return client().indices().exists(indices());
 		} catch (Exception e) {
 			throw new IndexException("Couldn't check the existence of all ES indices.", e);
 		}
@@ -222,18 +216,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				}
 			}
 		}
-		
- 		// wait until the cluster processes each index create request
-		waitForYellowHealth(getAllIndexes());
+		// wait until the cluster processes each index create request
+		waitForYellowHealth(indices());
 		log.info("'{}' indexes are ready.", name);
-	}
-
-	private String[] getAllIndexes() {
-		return mappings.getMappings()
-				.stream()
-				.map(this::getTypeIndex)
-				.distinct()
-				.toArray(String[]::new);
 	}
 
 	private Map<String, Object> createIndexSettings() throws IOException {
@@ -286,7 +271,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				try {
 					response = client().cluster().health(req);
 					currentTime = System.currentTimeMillis();
-					if (!response.isTimedOut()) {
+					if (response != null && !response.isTimedOut()) {
 						break; 
 					}
 				} catch (Exception e) {
@@ -317,11 +302,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 				prop.put("dynamic", "true");
 				properties.put(property, prop);
 				continue;
-			} else if (mapping.isNestedMapping(fieldType)) {
+			} else if (fieldType.isAnnotationPresent(Doc.class)) {
+				Doc annotation = fieldType.getAnnotation(Doc.class);
 				// this is a nested document type create a nested mapping
 				final Map<String, Object> prop = newHashMap();
-				prop.put("type", "nested");
-				prop.putAll(toProperties(mapping.getNestedMapping(fieldType)));
+				prop.put("type", annotation.nested() ? "nested" : "object");
+				prop.put("enabled", annotation.index() ? true : false);
+				prop.putAll(toProperties(new DocumentMapping(fieldType)));
 				properties.put(property, prop);
 			} else {
 				final Map<String, Object> prop = newHashMap();
@@ -429,6 +416,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			fieldProperties.put("type", "long");
 		} else if (Boolean.class.isAssignableFrom(Primitives.wrap(fieldType))) {
 			fieldProperties.put("type", "boolean");
+		} else if (fieldType.isAnnotationPresent(IP.class)) {
+			fieldProperties.put("type", "ip");
 		} else {
 			// Any other type will result in a sub-object that only appears in _source
 			fieldProperties.put("type", "object");
@@ -452,8 +441,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 
 	@Override
-	public <T> void clear(Class<T> type) {
-		// TODO remove all documents matching the given type, based on mappings
+	public void clear(Collection<Class<?>> types) {
+		if (CompareUtils.isEmpty(types)) {
+			return;
+		}
+		
+		final Set<DocumentMapping> typesToRefresh = Collections.synchronizedSet(newHashSetWithExpectedSize(types.size()));
+		
+		for (Class<?> type : types) {
+			bulkDelete(new BulkDelete<>(type, Expressions.matchAll()), typesToRefresh);
+		}
+		
+		refresh(typesToRefresh);
 	}
 
 	@Override
@@ -480,6 +479,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 //		waitForYellowHealth();
 	}
 	
+	@Override
 	public String getTypeIndex(DocumentMapping mapping) {
 		if (mapping.getParent() != null) {
 			return String.format("%s%s-%s", prefix, name, mapping.getParent().typeAsString());
@@ -488,6 +488,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 	}
 	
+	@Override
 	public EsClient client() {
 		return client;
 	}
@@ -514,7 +515,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 						.indices()
 						.refresh(refreshRequest);
 				if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
-					log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), refreshResponse.getStatus());
+					log.error("Index refresh request of '{}' returned with status {}", Arrays.toString(indicesToRefresh), refreshResponse.getStatus());
 				}
 				
 			} catch (Exception e) {

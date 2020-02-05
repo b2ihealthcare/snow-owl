@@ -29,8 +29,7 @@ public abstract class BaseComponent implements IComponent {
 		public static final String RELEASED = "released";
 		
 	}
-	
-	private long storageKey;
+
 	private String id;
 	private Boolean released;
 	
@@ -44,24 +43,12 @@ public abstract class BaseComponent implements IComponent {
 		return released;
 	}
 	
-	@Override
-	public final long getStorageKey() {
-		return storageKey;
-	}
-
 	public final void setId(final String id) {
 		this.id = id;
 	}
 
 	public final void setReleased(final boolean released) {
 		this.released = released;
-	}
-	
-	/**
-	 * @deprecated - see {@link IComponent#getStorageKey()}
-	 */
-	public final void setStorageKey(long storageKey) {
-		this.storageKey = storageKey;
 	}
 	
 }

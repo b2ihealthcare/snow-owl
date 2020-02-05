@@ -9,65 +9,43 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>6.25.0-SNAPSHOT</version>
+		<version>7.4.0-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
-		<!-- SNOMED CT API modules -->
-		<module>com.b2international.snowowl.snomed.api</module>
-		<module>com.b2international.snowowl.snomed.api.impl</module>
-		<module>com.b2international.snowowl.snomed.api.rest</module>
-		<module>com.b2international.snowowl.snomed.api.rest.tests</module>
-		<module>com.b2international.snowowl.snomed.api.feature</module>
-		<module>com.b2international.snowowl.snomed.api.rest.feature</module>
-		
-		<!-- SNOMED CT Models -->
-		<module>com.b2international.snowowl.snomed.model</module>
-		<module>com.b2international.snowowl.snomed.refset.model</module>
+		<!-- SNOMED CT REST API modules -->
+		<module>com.b2international.snowowl.snomed.core.rest</module>
+		<module>com.b2international.snowowl.snomed.core.rest.tests</module>
+		<module>com.b2international.snowowl.snomed.core.rest.feature</module>
 		
 		<!-- SNOMED CT Core modules -->
 		<module>com.b2international.snowowl.snomed.icons</module>
 		<module>com.b2international.snowowl.snomed.common</module>
 		<module>com.b2international.snowowl.snomed.datastore</module>
 		<module>com.b2international.snowowl.snomed.datastore.tests</module>
-		<module>com.b2international.snowowl.snomed.datastore.server</module>
 		
 		<!-- SNOMED CT Classification Support -->
 		<module>com.b2international.snowowl.snomed.reasoner</module>
 		<module>com.b2international.snowowl.snomed.reasoner.tests</module>
 		
-		<!-- SNOMED CT MRCM Support -->
-		<module>com.b2international.snowowl.snomed.mrcm.model</module>
-		
-		<!-- SNOMED CT Import-Export -->
-		<module>com.b2international.snowowl.snomed.importer</module>
-		<module>com.b2international.snowowl.snomed.importer.rf2</module>
-		
 		<!-- SNOMED CT DSLs -->
-		<module>com.b2international.snowowl.snomed.dsl</module>
+		<module>com.b2international.snowowl.snomed.scg</module>
+		<module>com.b2international.snowowl.snomed.scg.tests</module>
 		<module>com.b2international.snowowl.snomed.ecl</module>
-		<module>com.b2international.snowowl.snomed.ql</module>
 		<module>com.b2international.snowowl.snomed.ecl.tests</module>
+		<module>com.b2international.snowowl.snomed.ql</module>
+		<module>com.b2international.snowowl.snomed.ql.tests</module>
+		<module>com.b2international.snowowl.snomed.etl</module>
+		<module>com.b2international.snowowl.snomed.etl.tests</module>
 		
 		<!-- SNOMED CT Core Features -->
 		<module>com.b2international.snowowl.snomed.core.feature</module>
 		
 		<!-- SNOMED CT Generic Validation Rules -->
 		<module>com.b2international.snowowl.validation.snomed</module>
+		
+		<!-- SNOMED CT FHIR API Support -->
+		<module>com.b2international.snowowl.snomed.fhir</module>
 	</modules>
-	
-	<profiles>
-		<profile>
-      		<id>extras</id>
-      		<modules>
-				<!-- SNOMED CT SemanticEngine -->
-				<module>com.b2international.snowowl.snomed.semanticengine</module>
-				<module>com.b2international.snowowl.snomed.semanticengine.test</module>
-				<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module>
-				<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module>
-				<module>com.b2international.snowowl.snomed.scg</module>
-      		</modules>
-    	</profile>
-	</profiles>
 	
 </project>

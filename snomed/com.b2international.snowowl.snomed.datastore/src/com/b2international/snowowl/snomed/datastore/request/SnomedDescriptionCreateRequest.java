@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,13 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -137,7 +137,7 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 	public String execute(TransactionContext context) {
 		try {
 			final String descriptionId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
-			final Description description = SnomedComponents.newDescription()
+			final SnomedDescriptionIndexEntry description = SnomedComponents.newDescription()
 				.withId(descriptionId)
 				.withActive(isActive())
 				.withModule(getModuleId())
@@ -148,16 +148,15 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 				.withConcept(getConceptId())
 				.build(context);
 			
-			final SnomedDescriptionAcceptabilityUpdateRequest acceptabilityUpdate = new SnomedDescriptionAcceptabilityUpdateRequest();
-			acceptabilityUpdate.setAcceptability(acceptability);
-			acceptabilityUpdate.setDescriptionId(description.getId());
-			acceptabilityUpdate.execute(context);
+			new SnomedDescriptionAcceptabilityUpdateRequest(description, acceptability, true)
+				.execute(context);
+			
+			// FIXME: Acceptability updates and member create requests can overlap
+			convertMembers(context, descriptionId);
+			context.add(description);
 			
 			if (inactivationIndicator != null) {
-				final SnomedInactivationReasonUpdateRequest<Description> inactivationUpdate =  new SnomedInactivationReasonUpdateRequest<>(
-						description.getId(), 
-						Description.class, 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
+				final SnomedInactivationReasonUpdateRequest inactivationUpdate =  new SnomedInactivationReasonUpdateRequest(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
 				inactivationUpdate.setInactivationValueId(inactivationIndicator.getConceptId());
 				inactivationUpdate.execute(context);
 			}

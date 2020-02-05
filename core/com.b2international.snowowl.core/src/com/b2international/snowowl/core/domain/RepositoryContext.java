@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import org.slf4j.Logger;
+
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -33,6 +35,12 @@ public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
 	 * @return
 	 */
 	SnowOwlConfiguration config();
+	
+	/**
+	 * Returns the {@link Logger} instance associated with the underlying repository.
+	 * @return
+	 */
+	Logger log();
 	
 	@Override
 	default DelegatingContext.Builder<? extends RepositoryContext> inject() {

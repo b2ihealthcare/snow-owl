@@ -17,23 +17,20 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
-public class SnomedMRCMDomainMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
+final class SnomedMRCMDomainMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
 
 	SnomedMRCMDomainMemberUpdateDelegate(final SnomedRefSetMemberUpdateRequest request) {
 		super(request);
 	}
 
 	@Override
-	boolean execute(final SnomedRefSetMember member, final TransactionContext context) {
-
-		final SnomedMRCMDomainRefSetMember domainMember = (SnomedMRCMDomainRefSetMember) member;
+	boolean execute(final SnomedRefSetMemberIndexEntry original, final SnomedRefSetMemberIndexEntry.Builder member, final TransactionContext context) {
 		final String domainConstraint = getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT);
 		final String parentDomain = getProperty(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN);
 		final String proximalPrimitiveConstraint = getProperty(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT);
@@ -44,38 +41,38 @@ public class SnomedMRCMDomainMemberUpdateDelegate extends SnomedRefSetMemberUpda
 
 		boolean changed = false;
 
-		if (!Strings.isNullOrEmpty(domainConstraint) && !domainConstraint.equals(domainMember.getDomainConstraint())) {
-			domainMember.setDomainConstraint(domainConstraint);
+		if (!Strings.isNullOrEmpty(domainConstraint) && !domainConstraint.equals(original.getDomainConstraint())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, domainConstraint);
 			changed |= true;
 		}
 
-		if (parentDomain != null && !parentDomain.equals(domainMember.getParentDomain())) {
-			domainMember.setParentDomain(parentDomain);
+		if (parentDomain != null && !parentDomain.equals(original.getParentDomain())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, parentDomain);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(proximalPrimitiveConstraint) && !proximalPrimitiveConstraint.equals(domainMember.getProximalPrimitiveConstraint())) {
-			domainMember.setProximalPrimitiveConstraint(proximalPrimitiveConstraint);
+		if (!Strings.isNullOrEmpty(proximalPrimitiveConstraint) && !proximalPrimitiveConstraint.equals(original.getProximalPrimitiveConstraint())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, proximalPrimitiveConstraint);
 			changed |= true;
 		}
 
-		if (proximalPrimitiveRefinement != null && !proximalPrimitiveRefinement.equals(domainMember.getProximalPrimitiveRefinement())) {
-			domainMember.setProximalPrimitiveRefinement(proximalPrimitiveRefinement);
+		if (proximalPrimitiveRefinement != null && !proximalPrimitiveRefinement.equals(original.getProximalPrimitiveRefinement())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, proximalPrimitiveRefinement);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(domainTemplateForPrecoordination) && !domainTemplateForPrecoordination.equals(domainMember.getDomainTemplateForPrecoordination())) {
-			domainMember.setDomainTemplateForPrecoordination(domainTemplateForPrecoordination);
+		if (!Strings.isNullOrEmpty(domainTemplateForPrecoordination) && !domainTemplateForPrecoordination.equals(original.getDomainTemplateForPrecoordination())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, domainTemplateForPrecoordination);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(domainTemplateForPostcoordination) && !domainTemplateForPostcoordination.equals(domainMember.getDomainTemplateForPostcoordination())) {
-			domainMember.setDomainTemplateForPostcoordination(domainTemplateForPostcoordination);
+		if (!Strings.isNullOrEmpty(domainTemplateForPostcoordination) && !domainTemplateForPostcoordination.equals(original.getDomainTemplateForPostcoordination())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, domainTemplateForPostcoordination);
 			changed |= true;
 		}
 
-		if (editorialGuideReference != null && !editorialGuideReference.equals(domainMember.getEditorialGuideReference())) {
-			domainMember.setEditorialGuideReference(editorialGuideReference);
+		if (editorialGuideReference != null && !editorialGuideReference.equals(original.getEditorialGuideReference())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, editorialGuideReference);
 			changed |= true;
 		}
 

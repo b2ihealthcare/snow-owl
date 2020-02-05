@@ -1,0 +1,9 @@
+Package: [[artifactId]]
+Version: [[version]]
+Priority: optional
+Architecture: all
+Depends: shadow-utils
+Maintainer: B2i Healthcare <support@b2i.sg>
+Description: [[name]]
+Distribution: stable
+Section: web

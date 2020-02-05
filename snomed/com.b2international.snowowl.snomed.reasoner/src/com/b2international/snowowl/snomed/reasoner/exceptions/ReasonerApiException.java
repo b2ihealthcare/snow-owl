@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.exceptions;
 
-import com.b2international.snowowl.core.exceptions.ApiException;
+import com.b2international.commons.exceptions.ApiException;
 
 /**
  * @since 7.0

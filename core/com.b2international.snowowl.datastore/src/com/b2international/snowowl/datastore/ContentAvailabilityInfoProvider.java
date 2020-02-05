@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.datastore;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * Represents a provider that supplies information about the underlying
@@ -27,9 +28,10 @@ public interface ContentAvailabilityInfoProvider {
 	/**
 	 * Returns with {@code true} if the underlying content is available. 
 	 * Otherwise returns with {@code false}. 
+	 * @param bus 
 	 * @return {@code true} if the content is available.
 	 */
-	boolean isAvailable();
+	boolean isAvailable(IEventBus bus);
 	
 	/**
 	 * Returns with the repository UUID for the current provider.
@@ -41,12 +43,12 @@ public interface ContentAvailabilityInfoProvider {
 	/**Null implementation.*/
 	ContentAvailabilityInfoProvider NULL_IMPL = new ContentAvailabilityInfoProvider() {
 		@Override
-		public boolean isAvailable() {
+		public boolean isAvailable(IEventBus bus) {
 			return false;
 		}
 		@Override
 		public String getRepositoryUuid() {
-			return CoreTerminologyBroker.UNSPECIFIED;
+			return TerminologyRegistry.UNSPECIFIED;
 		}
 	}; 
 	

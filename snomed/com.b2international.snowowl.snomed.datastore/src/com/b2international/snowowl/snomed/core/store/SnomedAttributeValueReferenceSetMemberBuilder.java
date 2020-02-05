@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Inactivatable;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 4.5
  */
-public final class SnomedAttributeValueReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedAttributeValueReferenceSetMemberBuilder, SnomedAttributeValueRefSetMember> {
+public final class SnomedAttributeValueReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedAttributeValueReferenceSetMemberBuilder> {
 
 	private String valueId;
 	
@@ -38,35 +32,9 @@ public final class SnomedAttributeValueReferenceSetMemberBuilder extends SnomedM
 	}
 	
 	@Override
-	protected SnomedAttributeValueRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedAttributeValueRefSetMember();
-	}
-	
-	@Override
-	public void init(SnomedAttributeValueRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setValueId(valueId);
+		component.field(SnomedRf2Headers.FIELD_VALUE_ID, valueId);
 	}
 	
-	@Override
-	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedAttributeValueRefSetMember component) {
-		if (refSet instanceof SnomedStructuralRefSet) {
-			Inactivatable inactivatable = getInactivatable(context, component.getReferencedComponentId(), component.getReferencedComponentType());
-			inactivatable.getInactivationIndicatorRefSetMembers().add(component);
-		} else {
-			super.addToList(context, refSet, component);
-		}
-	}
-
-	private Inactivatable getInactivatable(TransactionContext context, String referencedComponentId, short referencedComponentType) {
-		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-			return context.lookup(referencedComponentId, Concept.class);
-		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-			return context.lookup(referencedComponentId, Description.class);
-		default:
-			throw new IllegalStateException("Unexpected referenced component type '" + referencedComponentType + "'.");
-		}
-	}
-
 }

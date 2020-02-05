@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.junit.Test;
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
@@ -49,8 +49,9 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 	
 	@Test
 	public void indexRelationship() throws Exception {
+		String id = RandomSnomedIdentiferGenerator.generateRelationshipId();
 		final SnomedRelationshipIndexEntry relationship = SnomedRelationshipIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
+				.id(id)
 				.active(true)
 				.released(true)
 				.effectiveTime(new Date().getTime())
@@ -64,10 +65,9 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 				.group(1)
 				.unionGroup(1)
 				.build();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, relationship);
-		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
-		assertEquals(null, actual.getNamespace());
+		indexRevision(RevisionBranch.MAIN_PATH, relationship);
+		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, id);
+		assertEquals("", actual.getNamespace());
 		assertDocEquals(relationship, actual);
 	}
 	

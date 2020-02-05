@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.datastore;
 
-import static com.b2international.commons.platform.Extensions.getExtensions;
+import static com.b2international.commons.extension.Extensions.getExtensions;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
@@ -38,12 +39,12 @@ public enum ContentAvailabilityInfoManager {
 	 * @param repositoryUuid the unique repository UUID to check the content availability. 
 	 * @return {@code true} if the content is available.
 	 */
-	public boolean isAvailable(final String repositoryUuid) {
+	public boolean isAvailable(IEventBus bus, final String repositoryUuid) {
 		return Iterables.find(getExtensions(EXTENSION_POINT_ID, ContentAvailabilityInfoProvider.class), new Predicate<ContentAvailabilityInfoProvider>() {
 			public boolean apply(final ContentAvailabilityInfoProvider provider) {
 				return checkNotNull(repositoryUuid, "repositoryUuid").equals(provider.getRepositoryUuid());
 			}
-		}, ContentAvailabilityInfoProvider.NULL_IMPL).isAvailable();
+		}, ContentAvailabilityInfoProvider.NULL_IMPL).isAvailable(bus);
 	}
 	
 }

@@ -51,13 +51,10 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /**
- * @since 6.11 (originally introduced on 7.0)
+ * @since 7.0
  */
 public final class ConcreteDomainChangeConverter 
 		extends BaseResourceConverter<ConcreteDomainChangeDocument, ConcreteDomainChange, ConcreteDomainChanges> {
-
-	// TODO: this constant is moved to SnomedReferenceSetMember.Expand on 7.x 
-	private static final String REFERENCED_COMPONENT = "referencedComponent";
 
 	public ConcreteDomainChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -138,13 +135,13 @@ public final class ConcreteDomainChangeConverter
 		final boolean inferredOnly = expandOptions.getBoolean("inferredOnly");
 
 		final Options cdMemberExpandOptions = expandOptions.getOptions("expand");
-		final Options referencedComponentOptions = cdMemberExpandOptions.getOptions(REFERENCED_COMPONENT);
+		final Options referencedComponentOptions = cdMemberExpandOptions.getOptions(SnomedReferenceSetMember.Expand.REFERENCED_COMPONENT);
 		
 		/*
 		 * Remove this option from the member expand options map, so that member search
 		 * does not expand the referenced component again
 		 */
-		final boolean needsReferencedComponent = cdMemberExpandOptions.keySet().remove(REFERENCED_COMPONENT);
+		final boolean needsReferencedComponent = cdMemberExpandOptions.keySet().remove(SnomedReferenceSetMember.Expand.REFERENCED_COMPONENT);
 
 		for (final String branch : itemsByBranch.keySet()) {
 			final Collection<ConcreteDomainChange> itemsForCurrentBranch = itemsByBranch.get(branch);

@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ public class AttributeComparisonImpl extends ComparisonImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ExpressionConstraint getConstraint()
   {
     return constraint;
@@ -105,6 +106,7 @@ public class AttributeComparisonImpl extends ComparisonImpl implements Attribute
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setConstraint(ExpressionConstraint newConstraint)
   {
     if (newConstraint != constraint)

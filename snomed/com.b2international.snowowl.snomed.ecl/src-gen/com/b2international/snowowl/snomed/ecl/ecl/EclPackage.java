@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -313,14 +313,14 @@ public interface EclPackage extends EPackage
   int MEMBER_OF_FEATURE_COUNT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 1;
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl <em>Concept Reference</em>}' class.
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclConceptReferenceImpl <em>Concept Reference</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getConceptReference()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclConceptReferenceImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getEclConceptReference()
    * @generated
    */
-  int CONCEPT_REFERENCE = 9;
+  int ECL_CONCEPT_REFERENCE = 9;
 
   /**
    * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -329,7 +329,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REFERENCE__ID = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 0;
+  int ECL_CONCEPT_REFERENCE__ID = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Term</b></em>' attribute.
@@ -338,7 +338,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REFERENCE__TERM = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 1;
+  int ECL_CONCEPT_REFERENCE__TERM = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Concept Reference</em>' class.
@@ -347,7 +347,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REFERENCE_FEATURE_COUNT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 2;
+  int ECL_CONCEPT_REFERENCE_FEATURE_COUNT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AnyImpl <em>Any</em>}' class.
@@ -369,14 +369,14 @@ public interface EclPackage extends EPackage
   int ANY_FEATURE_COUNT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 0;
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl <em>Refinement</em>}' class.
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclRefinementImpl <em>Refinement</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinement()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclRefinementImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getEclRefinement()
    * @generated
    */
-  int REFINEMENT = 11;
+  int ECL_REFINEMENT = 11;
 
   /**
    * The number of structural features of the '<em>Refinement</em>' class.
@@ -385,7 +385,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int REFINEMENT_FEATURE_COUNT = 0;
+  int ECL_REFINEMENT_FEATURE_COUNT = 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedRefinementImpl <em>Nested Refinement</em>}' class.
@@ -404,7 +404,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int NESTED_REFINEMENT__NESTED = REFINEMENT_FEATURE_COUNT + 0;
+  int NESTED_REFINEMENT__NESTED = ECL_REFINEMENT_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Nested Refinement</em>' class.
@@ -413,17 +413,17 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int NESTED_REFINEMENT_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 1;
+  int NESTED_REFINEMENT_FEATURE_COUNT = ECL_REFINEMENT_FEATURE_COUNT + 1;
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl <em>Attribute Group</em>}' class.
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclAttributeGroupImpl <em>Attribute Group</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeGroup()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclAttributeGroupImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getEclAttributeGroup()
    * @generated
    */
-  int ATTRIBUTE_GROUP = 13;
+  int ECL_ATTRIBUTE_GROUP = 13;
 
   /**
    * The feature id for the '<em><b>Cardinality</b></em>' containment reference.
@@ -432,7 +432,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_GROUP__CARDINALITY = REFINEMENT_FEATURE_COUNT + 0;
+  int ECL_ATTRIBUTE_GROUP__CARDINALITY = ECL_REFINEMENT_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Refinement</b></em>' containment reference.
@@ -441,7 +441,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_GROUP__REFINEMENT = REFINEMENT_FEATURE_COUNT + 1;
+  int ECL_ATTRIBUTE_GROUP__REFINEMENT = ECL_REFINEMENT_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Attribute Group</em>' class.
@@ -450,7 +450,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_GROUP_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 2;
+  int ECL_ATTRIBUTE_GROUP_FEATURE_COUNT = ECL_REFINEMENT_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeConstraintImpl <em>Attribute Constraint</em>}' class.
@@ -469,7 +469,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_CONSTRAINT__CARDINALITY = REFINEMENT_FEATURE_COUNT + 0;
+  int ATTRIBUTE_CONSTRAINT__CARDINALITY = ECL_REFINEMENT_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Reversed</b></em>' attribute.
@@ -478,7 +478,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_CONSTRAINT__REVERSED = REFINEMENT_FEATURE_COUNT + 1;
+  int ATTRIBUTE_CONSTRAINT__REVERSED = ECL_REFINEMENT_FEATURE_COUNT + 1;
 
   /**
    * The feature id for the '<em><b>Attribute</b></em>' containment reference.
@@ -487,7 +487,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_CONSTRAINT__ATTRIBUTE = REFINEMENT_FEATURE_COUNT + 2;
+  int ATTRIBUTE_CONSTRAINT__ATTRIBUTE = ECL_REFINEMENT_FEATURE_COUNT + 2;
 
   /**
    * The feature id for the '<em><b>Comparison</b></em>' containment reference.
@@ -496,7 +496,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_CONSTRAINT__COMPARISON = REFINEMENT_FEATURE_COUNT + 3;
+  int ATTRIBUTE_CONSTRAINT__COMPARISON = ECL_REFINEMENT_FEATURE_COUNT + 3;
 
   /**
    * The number of structural features of the '<em>Attribute Constraint</em>' class.
@@ -505,7 +505,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_CONSTRAINT_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 4;
+  int ATTRIBUTE_CONSTRAINT_FEATURE_COUNT = ECL_REFINEMENT_FEATURE_COUNT + 4;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.CardinalityImpl <em>Cardinality</em>}' class.
@@ -1344,7 +1344,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int OR_REFINEMENT__LEFT = REFINEMENT_FEATURE_COUNT + 0;
+  int OR_REFINEMENT__LEFT = ECL_REFINEMENT_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Right</b></em>' containment reference.
@@ -1353,7 +1353,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int OR_REFINEMENT__RIGHT = REFINEMENT_FEATURE_COUNT + 1;
+  int OR_REFINEMENT__RIGHT = ECL_REFINEMENT_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Or Refinement</em>' class.
@@ -1362,7 +1362,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int OR_REFINEMENT_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 2;
+  int OR_REFINEMENT_FEATURE_COUNT = ECL_REFINEMENT_FEATURE_COUNT + 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AndRefinementImpl <em>And Refinement</em>}' class.
@@ -1381,7 +1381,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int AND_REFINEMENT__LEFT = REFINEMENT_FEATURE_COUNT + 0;
+  int AND_REFINEMENT__LEFT = ECL_REFINEMENT_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Right</b></em>' containment reference.
@@ -1390,7 +1390,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int AND_REFINEMENT__RIGHT = REFINEMENT_FEATURE_COUNT + 1;
+  int AND_REFINEMENT__RIGHT = ECL_REFINEMENT_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>And Refinement</em>' class.
@@ -1399,7 +1399,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int AND_REFINEMENT_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 2;
+  int AND_REFINEMENT_FEATURE_COUNT = ECL_REFINEMENT_FEATURE_COUNT + 2;
 
 
   /**
@@ -1581,36 +1581,36 @@ public interface EclPackage extends EPackage
   EReference getMemberOf_Constraint();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference <em>Concept Reference</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference <em>Concept Reference</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for class '<em>Concept Reference</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.ConceptReference
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference
    * @generated
    */
-  EClass getConceptReference();
+  EClass getEclConceptReference();
 
   /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getId <em>Id</em>}'.
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference#getId <em>Id</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for the attribute '<em>Id</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getId()
-   * @see #getConceptReference()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference#getId()
+   * @see #getEclConceptReference()
    * @generated
    */
-  EAttribute getConceptReference_Id();
+  EAttribute getEclConceptReference_Id();
 
   /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getTerm <em>Term</em>}'.
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference#getTerm <em>Term</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for the attribute '<em>Term</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getTerm()
-   * @see #getConceptReference()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference#getTerm()
+   * @see #getEclConceptReference()
    * @generated
    */
-  EAttribute getConceptReference_Term();
+  EAttribute getEclConceptReference_Term();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.Any <em>Any</em>}'.
@@ -1623,14 +1623,14 @@ public interface EclPackage extends EPackage
   EClass getAny();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement <em>Refinement</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.EclRefinement <em>Refinement</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for class '<em>Refinement</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.Refinement
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclRefinement
    * @generated
    */
-  EClass getRefinement();
+  EClass getEclRefinement();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement <em>Nested Refinement</em>}'.
@@ -1654,36 +1654,36 @@ public interface EclPackage extends EPackage
   EReference getNestedRefinement_Nested();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup <em>Attribute Group</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup <em>Attribute Group</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for class '<em>Attribute Group</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup
    * @generated
    */
-  EClass getAttributeGroup();
+  EClass getEclAttributeGroup();
 
   /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getCardinality <em>Cardinality</em>}'.
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup#getCardinality <em>Cardinality</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for the containment reference '<em>Cardinality</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getCardinality()
-   * @see #getAttributeGroup()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup#getCardinality()
+   * @see #getEclAttributeGroup()
    * @generated
    */
-  EReference getAttributeGroup_Cardinality();
+  EReference getEclAttributeGroup_Cardinality();
 
   /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getRefinement <em>Refinement</em>}'.
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup#getRefinement <em>Refinement</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for the containment reference '<em>Refinement</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getRefinement()
-   * @see #getAttributeGroup()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup#getRefinement()
+   * @see #getEclAttributeGroup()
    * @generated
    */
-  EReference getAttributeGroup_Refinement();
+  EReference getEclAttributeGroup_Refinement();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint <em>Attribute Constraint</em>}'.
@@ -2591,14 +2591,14 @@ public interface EclPackage extends EPackage
     EReference MEMBER_OF__CONSTRAINT = eINSTANCE.getMemberOf_Constraint();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl <em>Concept Reference</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclConceptReferenceImpl <em>Concept Reference</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getConceptReference()
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclConceptReferenceImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getEclConceptReference()
      * @generated
      */
-    EClass CONCEPT_REFERENCE = eINSTANCE.getConceptReference();
+    EClass ECL_CONCEPT_REFERENCE = eINSTANCE.getEclConceptReference();
 
     /**
      * The meta object literal for the '<em><b>Id</b></em>' attribute feature.
@@ -2606,7 +2606,7 @@ public interface EclPackage extends EPackage
      * <!-- end-user-doc -->
      * @generated
      */
-    EAttribute CONCEPT_REFERENCE__ID = eINSTANCE.getConceptReference_Id();
+    EAttribute ECL_CONCEPT_REFERENCE__ID = eINSTANCE.getEclConceptReference_Id();
 
     /**
      * The meta object literal for the '<em><b>Term</b></em>' attribute feature.
@@ -2614,7 +2614,7 @@ public interface EclPackage extends EPackage
      * <!-- end-user-doc -->
      * @generated
      */
-    EAttribute CONCEPT_REFERENCE__TERM = eINSTANCE.getConceptReference_Term();
+    EAttribute ECL_CONCEPT_REFERENCE__TERM = eINSTANCE.getEclConceptReference_Term();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AnyImpl <em>Any</em>}' class.
@@ -2627,14 +2627,14 @@ public interface EclPackage extends EPackage
     EClass ANY = eINSTANCE.getAny();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl <em>Refinement</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclRefinementImpl <em>Refinement</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinement()
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclRefinementImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getEclRefinement()
      * @generated
      */
-    EClass REFINEMENT = eINSTANCE.getRefinement();
+    EClass ECL_REFINEMENT = eINSTANCE.getEclRefinement();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedRefinementImpl <em>Nested Refinement</em>}' class.
@@ -2655,14 +2655,14 @@ public interface EclPackage extends EPackage
     EReference NESTED_REFINEMENT__NESTED = eINSTANCE.getNestedRefinement_Nested();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl <em>Attribute Group</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.EclAttributeGroupImpl <em>Attribute Group</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeGroup()
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclAttributeGroupImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getEclAttributeGroup()
      * @generated
      */
-    EClass ATTRIBUTE_GROUP = eINSTANCE.getAttributeGroup();
+    EClass ECL_ATTRIBUTE_GROUP = eINSTANCE.getEclAttributeGroup();
 
     /**
      * The meta object literal for the '<em><b>Cardinality</b></em>' containment reference feature.
@@ -2670,7 +2670,7 @@ public interface EclPackage extends EPackage
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference ATTRIBUTE_GROUP__CARDINALITY = eINSTANCE.getAttributeGroup_Cardinality();
+    EReference ECL_ATTRIBUTE_GROUP__CARDINALITY = eINSTANCE.getEclAttributeGroup_Cardinality();
 
     /**
      * The meta object literal for the '<em><b>Refinement</b></em>' containment reference feature.
@@ -2678,7 +2678,7 @@ public interface EclPackage extends EPackage
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference ATTRIBUTE_GROUP__REFINEMENT = eINSTANCE.getAttributeGroup_Refinement();
+    EReference ECL_ATTRIBUTE_GROUP__REFINEMENT = eINSTANCE.getEclAttributeGroup_Refinement();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeConstraintImpl <em>Attribute Constraint</em>}' class.

@@ -20,10 +20,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
-import com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SingletonDefinitionFragment;
 import com.google.common.base.Strings;
 
 /**
@@ -49,23 +46,8 @@ public final class SnomedSingletonDefinition extends SnomedConceptSetDefinition 
 	}
 
 	@Override
-	public SingletonConceptSetDefinition createModel() {
-		return MrcmFactory.eINSTANCE.createSingletonConceptSetDefinition();
-	}
-
-	@Override
-	public SingletonConceptSetDefinition applyChangesTo(final ConceptModelComponent existingModel) {
-		final SingletonConceptSetDefinition updatedModel = (existingModel instanceof SingletonConceptSetDefinition)
-				? (SingletonConceptSetDefinition) existingModel
-				: createModel();
-
-		updatedModel.setActive(isActive());
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setConceptId(getConceptId());
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setUuid(getId());
-
-		return updatedModel;
+	public SingletonDefinitionFragment createModel() {
+		return new SingletonDefinitionFragment(getId(), isActive(), getEffectiveTime(), getAuthor(), conceptId);
 	}
 
 	@Override

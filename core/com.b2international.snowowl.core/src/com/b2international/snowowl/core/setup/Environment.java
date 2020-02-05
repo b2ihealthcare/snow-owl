@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.setup;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
@@ -23,10 +23,9 @@ import org.osgi.service.prefs.PreferencesService;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.CoreActivator;
+import com.b2international.snowowl.core.Mode;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
-import com.b2international.snowowl.core.config.ClientPreferences;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.google.inject.Provider;
 
 /**
@@ -35,95 +34,66 @@ import com.google.inject.Provider;
 public final class Environment implements ServiceProvider {
 
 	private final ApplicationContext context = ApplicationContext.getInstance();
-
 	private final IManagedContainer container = IPluginContainer.INSTANCE;
-
-	private final File homeDirectory;
 	
-	private File configDirectory;
-	private File resourcesDirectory;
-
-	public Environment(final Bootstrap bootstrap, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
-		this.homeDirectory = homeDirectory;
-		initializeEnvironmentDirectories(configuration);
-		final PreferencesService preferences = PlatformUtil.getPreferencesService(bootstrap.getBundleContext());
+	private final Path homePath;
+	private final Path configPath;
+	private final Path dataPath;
+	
+	public Environment(final Path homePath, final Path configPath, final Path dataPath) throws Exception {
+		this.homePath = homePath;
+		this.configPath = configPath;
+		this.dataPath = dataPath; 
+		// intialize global services based on the environment
+		final PreferencesService preferences = PlatformUtil.getPreferencesService(CoreActivator.getContext());
 		services().registerService(PreferencesService.class, preferences);
-		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(getConfigDirectory()));
-		services().registerService(SnowOwlConfiguration.class, configuration);
-		final ClientPreferences cdoClientConfiguration = new ClientPreferences(preferences);
-		services().registerService(ClientPreferences.class, cdoClientConfiguration);
+		services().registerService(Environment.class, this);
 	}
 	
-	private void initializeEnvironmentDirectories(SnowOwlConfiguration configuration) throws Exception {
-		// TODO check if the configuration uses an absolute path
-		this.configDirectory = createDirectory(homeDirectory, configuration.getConfigurationDirectory());
-		this.resourcesDirectory = createDirectory(homeDirectory, configuration.getResourceDirectory());
-		// set resolved directory paths to configuration
-		configuration.setInstallationDirectory(this.homeDirectory.getAbsolutePath());
-		configuration.setConfigurationDirectory(this.configDirectory.getAbsolutePath());
-		configuration.setResourceDirectory(this.resourcesDirectory.getAbsolutePath());
-	}
-
 	/**
-	 * Returns the {@link ApplicationContext} instance to register/retrieve
-	 * services.
-	 * 
-	 * @return
+	 * @return the currently loaded list of {@link Plugin}s via a {@link Plugins} instance
+	 */
+	public Plugins plugins() {
+		return service(Plugins.class);
+	}
+	
+	/**
+	 * @return the {@link ApplicationContext} instance to register/retrieve services.
 	 */
 	public ApplicationContext services() {
 		return context;
 	}
 
 	/**
-	 * Returns the {@link IManagedContainer} to register Net4J and CDO services.
-	 * 
-	 * @return
+	 * @return the {@link IManagedContainer} to register Net4J and CDO services.
 	 */
 	public IManagedContainer container() {
 		return container;
 	}
 
 	/**
-	 * Returns the global {@link FileBasedPreferencesService}.
-	 * 
-	 * @return
+	 * @return the home directory path.
 	 */
-	public FileBasedPreferencesService filePreferences() {
-		return service(FileBasedPreferencesService.class);
+	public Path getHomePath() {
+		return homePath;
 	}
 
 	/**
-	 * Returns the current HOME directory.
-	 * 
-	 * @return
+	 * @return the configuration directory path.
 	 */
-	public File getHomeDirectory() {
-		return homeDirectory;
+	public Path getConfigPath() {
+		return configPath;
 	}
 
 	/**
-	 * Returns the config directory location.
-	 * 
-	 * @return
+	 * @return the data directory path.
 	 */
-	public File getConfigDirectory() {
-		return configDirectory;
+	public Path getDataPath() {
+		return dataPath;
 	}
 
 	/**
-	 * Returns the data directory location.
-	 * 
-	 * @return
-	 */
-	public File getDataDirectory() {
-		return resourcesDirectory;
-	}
-
-	/**
-	 * Returns the {@link PreferencesService} from the
-	 * {@link ApplicationContext}.
-	 * 
-	 * @return
+	 * @return the {@link PreferencesService} from the {@link ApplicationContext}.
 	 */
 	public PreferencesService preferences() {
 		return services().getServiceChecked(PreferencesService.class);
@@ -145,41 +115,14 @@ public final class Environment implements ServiceProvider {
 	}
 
 	/**
-	 * Returns if Snow Owl running in embedded mode or not.
-	 * 
-	 * @return
-	 */
-	public boolean isEmbedded() {
-		return service(ClientPreferences.class).isClientEmbedded();
-	}
-
-	/**
-	 * Returns <code>true</code> if Snow Owl is running on a client environment.
-	 * 
-	 * @return
-	 */
-	public boolean isClient() {
-		return !isServer();
-	}
-
-	/**
-	 * Returns <code>true</code> if Snow Owl is running on a server environment.
-	 * 
-	 * @return
+	 * @return <code>true</code> if Snow Owl is running in {@link Mode#SERVER} mode, and <code>false</code> if it is running in {@link Mode#CLIENT} mode.
 	 */
 	public boolean isServer() {
-		return services().isServerMode();
-	}
-
-	private File createDirectory(File parent, String path) throws Exception {
-		return createDirectory(new File(parent, path));
-	}
-	
-	private File createDirectory(File directory) {
-		if (!directory.exists()) {
-			directory.mkdirs();
+		final Mode mode = services().getService(Mode.class);
+		if (mode == null) {
+			throw new UnsupportedOperationException("This method will only return valid value after a successful bootstrap phase.");
 		}
-		return directory;
+		return service(Mode.class) == Mode.SERVER;
 	}
 
 }

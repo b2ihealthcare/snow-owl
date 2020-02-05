@@ -21,13 +21,15 @@ import org.eclipse.core.runtime.jobs.ILock;
 import org.eclipse.core.runtime.jobs.Job;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.7
@@ -43,7 +45,6 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	private final String id;
 	
 	@JsonProperty
-	@NotEmpty
 	private final String user;
 	
 	@JsonProperty
@@ -76,7 +77,13 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 			if (remoteJobsWithId.length > 0) {
 				throw new BadRequestException("Multiple remote jobs scheduled with identifier '%s'.", id);
 			} else {
-				RemoteJob job = new RemoteJob(id, description, user, context, request, autoClean);
+				final String userId;
+				if (Strings.isNullOrEmpty(user)) {
+					userId = context.service(User.class).getUsername();
+				} else {
+					userId = user;
+				}
+				RemoteJob job = new RemoteJob(id, description, userId, context, request, autoClean);
 				job.setSystem(true);
 				if (schedulingRule != null) {
 					job.setRule(schedulingRule);
@@ -89,5 +96,5 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 			SCHEDULE_LOCK.release();
 		}
 	}
-
+	
 }

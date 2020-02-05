@@ -20,11 +20,13 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.solr.common.util.JavaBinCodec;
 import org.elasticsearch.ElasticsearchException;
@@ -51,12 +53,12 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import com.b2international.collections.PrimitiveCollection;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.Scroll;
 import com.b2international.index.SearchContextMissingException;
+import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
 import com.b2international.index.aggregations.Aggregation;
@@ -66,9 +68,11 @@ import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,7 +86,7 @@ import com.google.common.primitives.Ints;
 /**
  * @since 5.10
  */
-public class EsDocumentSearcher implements DocSearcher {
+public class EsDocumentSearcher implements Searcher {
 
 	private static final List<String> STORED_FIELDS_ID_ONLY = ImmutableList.of("_id");
 	private static final List<String> STORED_FIELDS_NONE = ImmutableList.of("_none_");
@@ -100,12 +104,8 @@ public class EsDocumentSearcher implements DocSearcher {
 	}
 
 	@Override
-	public void close() throws Exception {
-		// nothing to do
-	}
-
-	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
+		checkArgument(!Strings.isNullOrEmpty(key), "Key cannot be empty");
 		final DocumentMapping mapping = admin.mappings().getMapping(type);
 		final GetRequest req = new GetRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
 				.fetchSourceContext(FetchSourceContext.FETCH_SOURCE);
@@ -117,6 +117,11 @@ public class EsDocumentSearcher implements DocSearcher {
 		} else {
 			return null;
 		}
+	}
+	
+	@Override
+	public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
+		return search(Query.select(type).where(Expressions.matchAny(DocumentMapping._ID, keys)).limit(Iterables.size(keys)).build());
 	}
 
 	@Override
@@ -340,7 +345,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			final byte[] tokenBytes = baos.toByteArray();
 			return Base64.getUrlEncoder().encodeToString(tokenBytes);
 		} catch (IOException e) {
-			throw new FormattedRuntimeException("Couldn't encode searchAfter paramaters to a token.", e);
+			throw new FormattedRuntimeException("Couldn't encode searchAfter parameters to a token.", e);
 		}
 	}
 
@@ -353,11 +358,10 @@ public class EsDocumentSearcher implements DocSearcher {
 				.getUrlDecoder()
 				.decode(searchAfterToken);
 		
-		try (final ByteArrayInputStream bais = new ByteArrayInputStream(decodedToken)) {
+		try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decodedToken))) {
 			JavaBinCodec codec = new JavaBinCodec();
-			List<Object> obj = (List<Object>) codec.unmarshal(bais);
+			List<?> obj = (List<?>) codec.unmarshal(dis);
 			codec.close();
-			
 			return obj.toArray();
 		} catch (final IOException e) {
 			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
@@ -405,19 +409,16 @@ public class EsDocumentSearcher implements DocSearcher {
 		} else {
 			items.add(sortBy);
 		}
-		
-		final int idSortIdx = Iterables.indexOf(items, item -> {
-			return (item instanceof SortByField) && DocumentMapping._ID.equals(((SortByField) item).getField());
-		});
 
-		if (idSortIdx >= 0 && items.size() > 1) {
-			// Remove all sort conditions after _id, as these values should be unique
-			for (int i = items.size() - 1; i > idSortIdx; i--) {
-				items.remove(i);
-			}
-		} else {
-			// Add _id as a tie-breaker to the end
-			items.add(SortBy.DOC_ID);
+		Optional<SortByField> existingDocIdSort = items.stream()
+			.filter(SortByField.class::isInstance)
+			.map(SortByField.class::cast)
+			.filter(field -> DocumentMapping._ID.equals(field.getField()))
+			.findFirst();
+		
+		if (!existingDocIdSort.isPresent()) {
+			// add _id field as tiebreaker if not defined in the original SortBy
+			items.add(SortBy.field(DocumentMapping._ID, Order.DESC));
 		}
 		
 		return Iterables.filter(items, SortBy.class);

@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,9 +133,9 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createMemberOfAdapter();
       }
       @Override
-      public Adapter caseConceptReference(ConceptReference object)
+      public Adapter caseEclConceptReference(EclConceptReference object)
       {
-        return createConceptReferenceAdapter();
+        return createEclConceptReferenceAdapter();
       }
       @Override
       public Adapter caseAny(Any object)
@@ -143,9 +143,9 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createAnyAdapter();
       }
       @Override
-      public Adapter caseRefinement(Refinement object)
+      public Adapter caseEclRefinement(EclRefinement object)
       {
-        return createRefinementAdapter();
+        return createEclRefinementAdapter();
       }
       @Override
       public Adapter caseNestedRefinement(NestedRefinement object)
@@ -153,9 +153,9 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createNestedRefinementAdapter();
       }
       @Override
-      public Adapter caseAttributeGroup(AttributeGroup object)
+      public Adapter caseEclAttributeGroup(EclAttributeGroup object)
       {
-        return createAttributeGroupAdapter();
+        return createEclAttributeGroupAdapter();
       }
       @Override
       public Adapter caseAttributeConstraint(AttributeConstraint object)
@@ -470,16 +470,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference <em>Concept Reference</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference <em>Concept Reference</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.ConceptReference
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference
    * @generated
    */
-  public Adapter createConceptReferenceAdapter()
+  public Adapter createEclConceptReferenceAdapter()
   {
     return null;
   }
@@ -500,16 +500,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement <em>Refinement</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.EclRefinement <em>Refinement</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.Refinement
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclRefinement
    * @generated
    */
-  public Adapter createRefinementAdapter()
+  public Adapter createEclRefinementAdapter()
   {
     return null;
   }
@@ -530,16 +530,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup <em>Attribute Group</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup <em>Attribute Group</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup
    * @generated
    */
-  public Adapter createAttributeGroupAdapter()
+  public Adapter createEclAttributeGroupAdapter()
   {
     return null;
   }

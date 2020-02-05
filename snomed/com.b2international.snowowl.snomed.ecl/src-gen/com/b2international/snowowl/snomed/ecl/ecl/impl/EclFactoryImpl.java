@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,11 +86,11 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.ANCESTOR_OF: return createAncestorOf();
       case EclPackage.ANCESTOR_OR_SELF_OF: return createAncestorOrSelfOf();
       case EclPackage.MEMBER_OF: return createMemberOf();
-      case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
+      case EclPackage.ECL_CONCEPT_REFERENCE: return createEclConceptReference();
       case EclPackage.ANY: return createAny();
-      case EclPackage.REFINEMENT: return createRefinement();
+      case EclPackage.ECL_REFINEMENT: return createEclRefinement();
       case EclPackage.NESTED_REFINEMENT: return createNestedRefinement();
-      case EclPackage.ATTRIBUTE_GROUP: return createAttributeGroup();
+      case EclPackage.ECL_ATTRIBUTE_GROUP: return createEclAttributeGroup();
       case EclPackage.ATTRIBUTE_CONSTRAINT: return createAttributeConstraint();
       case EclPackage.CARDINALITY: return createCardinality();
       case EclPackage.COMPARISON: return createComparison();
@@ -132,6 +132,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Script createScript()
   {
     ScriptImpl script = new ScriptImpl();
@@ -143,6 +144,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ExpressionConstraint createExpressionConstraint()
   {
     ExpressionConstraintImpl expressionConstraint = new ExpressionConstraintImpl();
@@ -154,6 +156,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ChildOf createChildOf()
   {
     ChildOfImpl childOf = new ChildOfImpl();
@@ -165,6 +168,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DescendantOf createDescendantOf()
   {
     DescendantOfImpl descendantOf = new DescendantOfImpl();
@@ -176,6 +180,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DescendantOrSelfOf createDescendantOrSelfOf()
   {
     DescendantOrSelfOfImpl descendantOrSelfOf = new DescendantOrSelfOfImpl();
@@ -187,6 +192,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ParentOf createParentOf()
   {
     ParentOfImpl parentOf = new ParentOfImpl();
@@ -198,6 +204,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AncestorOf createAncestorOf()
   {
     AncestorOfImpl ancestorOf = new AncestorOfImpl();
@@ -209,6 +216,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AncestorOrSelfOf createAncestorOrSelfOf()
   {
     AncestorOrSelfOfImpl ancestorOrSelfOf = new AncestorOrSelfOfImpl();
@@ -220,6 +228,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public MemberOf createMemberOf()
   {
     MemberOfImpl memberOf = new MemberOfImpl();
@@ -231,10 +240,11 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public ConceptReference createConceptReference()
+  @Override
+  public EclConceptReference createEclConceptReference()
   {
-    ConceptReferenceImpl conceptReference = new ConceptReferenceImpl();
-    return conceptReference;
+    EclConceptReferenceImpl eclConceptReference = new EclConceptReferenceImpl();
+    return eclConceptReference;
   }
 
   /**
@@ -242,6 +252,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Any createAny()
   {
     AnyImpl any = new AnyImpl();
@@ -253,10 +264,11 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public Refinement createRefinement()
+  @Override
+  public EclRefinement createEclRefinement()
   {
-    RefinementImpl refinement = new RefinementImpl();
-    return refinement;
+    EclRefinementImpl eclRefinement = new EclRefinementImpl();
+    return eclRefinement;
   }
 
   /**
@@ -264,6 +276,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public NestedRefinement createNestedRefinement()
   {
     NestedRefinementImpl nestedRefinement = new NestedRefinementImpl();
@@ -275,10 +288,11 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public AttributeGroup createAttributeGroup()
+  @Override
+  public EclAttributeGroup createEclAttributeGroup()
   {
-    AttributeGroupImpl attributeGroup = new AttributeGroupImpl();
-    return attributeGroup;
+    EclAttributeGroupImpl eclAttributeGroup = new EclAttributeGroupImpl();
+    return eclAttributeGroup;
   }
 
   /**
@@ -286,6 +300,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AttributeConstraint createAttributeConstraint()
   {
     AttributeConstraintImpl attributeConstraint = new AttributeConstraintImpl();
@@ -297,6 +312,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Cardinality createCardinality()
   {
     CardinalityImpl cardinality = new CardinalityImpl();
@@ -308,6 +324,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public Comparison createComparison()
   {
     ComparisonImpl comparison = new ComparisonImpl();
@@ -319,6 +336,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AttributeComparison createAttributeComparison()
   {
     AttributeComparisonImpl attributeComparison = new AttributeComparisonImpl();
@@ -330,6 +348,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DataTypeComparison createDataTypeComparison()
   {
     DataTypeComparisonImpl dataTypeComparison = new DataTypeComparisonImpl();
@@ -341,6 +360,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AttributeValueEquals createAttributeValueEquals()
   {
     AttributeValueEqualsImpl attributeValueEquals = new AttributeValueEqualsImpl();
@@ -352,6 +372,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AttributeValueNotEquals createAttributeValueNotEquals()
   {
     AttributeValueNotEqualsImpl attributeValueNotEquals = new AttributeValueNotEqualsImpl();
@@ -363,6 +384,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public BooleanValueEquals createBooleanValueEquals()
   {
     BooleanValueEqualsImpl booleanValueEquals = new BooleanValueEqualsImpl();
@@ -374,6 +396,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public BooleanValueNotEquals createBooleanValueNotEquals()
   {
     BooleanValueNotEqualsImpl booleanValueNotEquals = new BooleanValueNotEqualsImpl();
@@ -385,6 +408,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public StringValueEquals createStringValueEquals()
   {
     StringValueEqualsImpl stringValueEquals = new StringValueEqualsImpl();
@@ -396,6 +420,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public StringValueNotEquals createStringValueNotEquals()
   {
     StringValueNotEqualsImpl stringValueNotEquals = new StringValueNotEqualsImpl();
@@ -407,6 +432,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public IntegerValueEquals createIntegerValueEquals()
   {
     IntegerValueEqualsImpl integerValueEquals = new IntegerValueEqualsImpl();
@@ -418,6 +444,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public IntegerValueNotEquals createIntegerValueNotEquals()
   {
     IntegerValueNotEqualsImpl integerValueNotEquals = new IntegerValueNotEqualsImpl();
@@ -429,6 +456,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public IntegerValueGreaterThan createIntegerValueGreaterThan()
   {
     IntegerValueGreaterThanImpl integerValueGreaterThan = new IntegerValueGreaterThanImpl();
@@ -440,6 +468,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public IntegerValueLessThan createIntegerValueLessThan()
   {
     IntegerValueLessThanImpl integerValueLessThan = new IntegerValueLessThanImpl();
@@ -451,6 +480,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public IntegerValueGreaterThanEquals createIntegerValueGreaterThanEquals()
   {
     IntegerValueGreaterThanEqualsImpl integerValueGreaterThanEquals = new IntegerValueGreaterThanEqualsImpl();
@@ -462,6 +492,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public IntegerValueLessThanEquals createIntegerValueLessThanEquals()
   {
     IntegerValueLessThanEqualsImpl integerValueLessThanEquals = new IntegerValueLessThanEqualsImpl();
@@ -473,6 +504,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DecimalValueEquals createDecimalValueEquals()
   {
     DecimalValueEqualsImpl decimalValueEquals = new DecimalValueEqualsImpl();
@@ -484,6 +516,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DecimalValueNotEquals createDecimalValueNotEquals()
   {
     DecimalValueNotEqualsImpl decimalValueNotEquals = new DecimalValueNotEqualsImpl();
@@ -495,6 +528,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DecimalValueGreaterThan createDecimalValueGreaterThan()
   {
     DecimalValueGreaterThanImpl decimalValueGreaterThan = new DecimalValueGreaterThanImpl();
@@ -506,6 +540,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DecimalValueLessThan createDecimalValueLessThan()
   {
     DecimalValueLessThanImpl decimalValueLessThan = new DecimalValueLessThanImpl();
@@ -517,6 +552,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DecimalValueGreaterThanEquals createDecimalValueGreaterThanEquals()
   {
     DecimalValueGreaterThanEqualsImpl decimalValueGreaterThanEquals = new DecimalValueGreaterThanEqualsImpl();
@@ -528,6 +564,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DecimalValueLessThanEquals createDecimalValueLessThanEquals()
   {
     DecimalValueLessThanEqualsImpl decimalValueLessThanEquals = new DecimalValueLessThanEqualsImpl();
@@ -539,6 +576,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public NestedExpression createNestedExpression()
   {
     NestedExpressionImpl nestedExpression = new NestedExpressionImpl();
@@ -550,6 +588,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public OrExpressionConstraint createOrExpressionConstraint()
   {
     OrExpressionConstraintImpl orExpressionConstraint = new OrExpressionConstraintImpl();
@@ -561,6 +600,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AndExpressionConstraint createAndExpressionConstraint()
   {
     AndExpressionConstraintImpl andExpressionConstraint = new AndExpressionConstraintImpl();
@@ -572,6 +612,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public ExclusionExpressionConstraint createExclusionExpressionConstraint()
   {
     ExclusionExpressionConstraintImpl exclusionExpressionConstraint = new ExclusionExpressionConstraintImpl();
@@ -583,6 +624,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public RefinedExpressionConstraint createRefinedExpressionConstraint()
   {
     RefinedExpressionConstraintImpl refinedExpressionConstraint = new RefinedExpressionConstraintImpl();
@@ -594,6 +636,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public DottedExpressionConstraint createDottedExpressionConstraint()
   {
     DottedExpressionConstraintImpl dottedExpressionConstraint = new DottedExpressionConstraintImpl();
@@ -605,6 +648,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public OrRefinement createOrRefinement()
   {
     OrRefinementImpl orRefinement = new OrRefinementImpl();
@@ -616,6 +660,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public AndRefinement createAndRefinement()
   {
     AndRefinementImpl andRefinement = new AndRefinementImpl();
@@ -627,6 +672,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EclPackage getEclPackage()
   {
     return (EclPackage)getEPackage();

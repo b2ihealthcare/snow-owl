@@ -143,7 +143,6 @@ public class EventBusProtocolTest {
 	
 	private void prepareEvent(boolean isAdded) {
 		when(event.getAddress()).thenReturn(ADDRESS);
-//		when(event.getSource()).thenReturn(eb);
 		when(event.isAdded()).thenReturn(isAdded);
 	}
 
@@ -153,7 +152,6 @@ public class EventBusProtocolTest {
 	
 	private void prepareRequestSync(EventBusProtocol protocol, short signalID, Object message, Object result) throws Exception {
 		when(factory.createRequestWithConfirmation(protocol, signalID, message)).thenReturn(requestWithConfirmation);
-//		when(requestWithConfirmation.send(Mockito.eq(EventBusProtocol.ADDRESS_BOOK_REQ_TIMEOUT))).thenReturn(result);
 	}
 	
 }

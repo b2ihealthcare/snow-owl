@@ -22,19 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.UUID.randomUUID;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PipedOutputStream;
-import java.io.Reader;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -105,8 +93,8 @@ public final class FileUtils {
 	 * as an input stream and the file name. The temporary file will be deleted on graceful JVM halt.
 	 * <p>May return with {@code null} if the file cannot be created.
 	 * <p>Callers are responsible for closing the input stream.
-	 * @param is the input stream to the file.
-	 * @param the file name. Can be null. If {@code null} a random UUID will be assigned as the temporary file name.
+	 * @param is - the input stream to the file.
+	 * @param fileName - the file name. Can be null. If {@code null} a random UUID will be assigned as the temporary file name.
 	 * @return the temporary copy file. Or {@code null} if the copy failed.
 	 * @see File#deleteOnExit()
 	 */
@@ -297,48 +285,49 @@ public final class FileUtils {
 			rootDirectoryToUnZip.mkdir();
 		}
 
-		final FileInputStream fis = new FileInputStream(zipFile);
-		final ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
-
-		ZipEntry entry = zis.getNextEntry();
-		
-		while (entry != null) {
-
-			File newFile = new File(rootDirectoryToUnZip, entry.getName());
+		try (
+			final FileInputStream fis = new FileInputStream(zipFile);
+			final ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis))) {
 			
-			if (entry.isDirectory()) {
-				newFile.mkdir();
-			} else {
-
-				File parentFile = newFile.getParentFile();
-				if (parentFile != null && !parentFile.exists()) {
-					parentFile.mkdirs();
+			ZipEntry entry = zis.getNextEntry();
+			
+			while (entry != null) {
+				
+				File newFile = new File(rootDirectoryToUnZip, entry.getName());
+				if (!newFile.toPath().normalize().startsWith(rootDirectoryToUnZip.toPath())) {
+					throw new IOException("Bad zip entry");
 				}
 				
-				int count;
-				final byte data[] = new byte[BUFFER];
-				
-				final FileOutputStream fos = new FileOutputStream(newFile);
-				final BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER);
-
-				while ((count = zis.read(data, 0, BUFFER)) != -1) {
-					dest.write(data, 0, count);
+				if (entry.isDirectory()) {
+					newFile.mkdir();
+				} else {
+					
+					File parentFile = newFile.getParentFile();
+					if (parentFile != null && !parentFile.exists()) {
+						parentFile.mkdirs();
+					}
+					
+					int count;
+					final byte data[] = new byte[BUFFER];
+					
+					final FileOutputStream fos = new FileOutputStream(newFile);
+					final BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER);
+					
+					while ((count = zis.read(data, 0, BUFFER)) != -1) {
+						dest.write(data, 0, count);
+					}
+					
+					dest.flush();
+					fos.flush();
+					dest.close();
+					fos.close();
 				}
-
-				dest.flush();
-				fos.flush();
-				dest.close();
-				fos.close();
+				
+				entry = zis.getNextEntry();
 			}
-			
-			entry = zis.getNextEntry();
 		}
-
-		zis.close();
-		fis.close();
+		
 	}
-
-	
 
 	private static void copy(final InputStream is, final OutputStream os) throws IOException {
 		final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
@@ -394,8 +383,8 @@ public final class FileUtils {
 	/**
 	 * Returns a file path from the given directory that matches the path matcher expression.
 	 * It is expected to have a single file in the directory that matches the expression.
-	 * @param directory to find the file within
-	 * @param path matcher expression
+	 * @param workDir to find the file within
+	 * @param pathMatcherExpression
 	 * @return path for the matched file.
 	 */
 	public static Path getFileFromWorkFolder(String workDir, String pathMatcherExpression) throws IOException {

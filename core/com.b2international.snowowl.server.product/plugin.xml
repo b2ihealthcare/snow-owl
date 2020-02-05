@@ -2,23 +2,10 @@
 <?eclipse version="3.6"?>
 <plugin>
    <extension
-         id="com.b2international.snowowl.server.product.SnowOwlServer"
-         name="Snow Owl Server"
-         point="org.eclipse.core.runtime.applications">
-      <application
-            cardinality="*"
-            thread="any"
-            visible="true">
-         <run
-               class="com.b2international.snowowl.server.product.ServerApplication">
-         </run>
-      </application>
-   </extension>
-   <extension
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
-            application="com.b2international.snowowl.server.product.SnowOwlServer"
+            application="com.b2international.snowowl.server.product.app"
             description="OSGi based Snow Owl server runtime"
             name="Snow Owl Server">
          <property
@@ -30,5 +17,17 @@
                value="true">
          </property>
       </product>
+   </extension>
+   <extension
+         id="app"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="com.b2international.snowowl.server.product.SnowOwlServerApplication">
+         </run>
+      </application>
    </extension>
 </plugin>

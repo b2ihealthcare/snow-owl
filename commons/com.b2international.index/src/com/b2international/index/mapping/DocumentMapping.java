@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.lang.reflect.Field;
@@ -29,19 +30,21 @@ import java.util.TreeMap;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.Reflections;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.BiMap;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
@@ -51,6 +54,8 @@ import com.google.common.collect.Maps;
  */
 public final class DocumentMapping {
 
+	private static final BiMap<Class<?>, String> DOC_TYPE_CACHE = HashBiMap.create();
+	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
 	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
@@ -60,12 +65,7 @@ public final class DocumentMapping {
 	public static final String _TYPE = "_type";
 	public static final String _HASH = "_hash";
 
-	private static final Function<? super Field, String> GET_NAME = new Function<Field, String>() {
-		@Override
-		public String apply(Field field) {
-			return field.getName();
-		}
-	};
+	private static final Function<? super Field, String> GET_NAME = Field::getName;
 	
 	private final Class<?> type;
 	private final String typeAsString;
@@ -77,22 +77,16 @@ public final class DocumentMapping {
 	private final Map<String, Script> scripts;
 	private final Set<String> hashedFields;
 
-	DocumentMapping(Class<?> type) {
+	public DocumentMapping(Class<?> type) {
 		this(null, type);
 	}
 		
-	DocumentMapping(DocumentMapping parent, Class<?> type) {
+	public DocumentMapping(DocumentMapping parent, Class<?> type) {
 		this.parent = parent;
 		this.type = type;
 		final String typeAsString = getType(type);
 		this.typeAsString = parent == null ? typeAsString : parent.typeAsString() + DELIMITER + typeAsString;
-		this.fieldMap = FluentIterable.from(Reflections.getFields(type))
-			.filter(new Predicate<Field>() {
-				@Override
-				public boolean apply(Field field) {
-					return !Modifier.isStatic(field.getModifiers());
-				}
-			}).uniqueIndex(GET_NAME);
+		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(GET_NAME);
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
@@ -117,31 +111,22 @@ public final class DocumentMapping {
 		this.textFields = new TreeMap<>(textFields.build());
 		this.keywordFields = new TreeMap<>(keywordFields.build());
 
-		// @RevisionHash should be directly present, not inherited
-		final RevisionHash revisionHash = type.getDeclaredAnnotation(RevisionHash.class);
-		if (revisionHash != null) {
-			this.hashedFields = ImmutableSortedSet.copyOf(revisionHash.value());
+		final Doc doc = getDocAnnotation(type);
+		if (doc != null) {
+			this.hashedFields = ImmutableSortedSet.copyOf(doc.revisionHash());
 		} else {
 			this.hashedFields = ImmutableSortedSet.of();
 		}
 				
 		this.nestedTypes = FluentIterable.from(getFields())
-			.transform(new Function<Field, Class<?>>() {
-				@Override
-				public Class<?> apply(Field field) {
-					if (Reflections.isMapType(field)) {
-						return Map.class;
-					} else {
-						return Reflections.getType(field);
-					}
+			.transform(field -> {
+				if (Reflections.isMapType(field)) {
+					return Map.class;
+				} else {
+					return Reflections.getType(field);
 				}
 			})
-			.filter(new Predicate<Class<?>>() {
-				@Override
-				public boolean apply(Class<?> fieldType) {
-					return isNestedDoc(fieldType);
-				}
-			})
+			.filter(fieldType -> isNestedDoc(fieldType))
 			.toMap(new Function<Class<?>, DocumentMapping>() {
 				@Override
 				public DocumentMapping apply(Class<?> input) {
@@ -151,7 +136,7 @@ public final class DocumentMapping {
 		
 		this.scripts = Maps.uniqueIndex(getScripts(type), Script::name);
 	}
-	
+
 	private Collection<Script> getScripts(Class<?> type) {
 		final Set<Script> scripts = newHashSet();
 		for (Script script : type.getAnnotationsByType(Script.class)) {
@@ -214,8 +199,8 @@ public final class DocumentMapping {
 	}
 	
 	public Class<?> getFieldType(String key) {
-		// XXX: _hash can be retrieved via field selection, but has not corresponding entry in the mapping
-		if (DocumentMapping._HASH.equals(key)) {
+		// XXX: _hash and _id can be retrieved via field selection, but has not corresponding entry in the mapping
+		if (DocumentMapping._HASH.equals(key) || DocumentMapping._ID.equals(key)) {
 			return String.class;
 		}
 		return getField(key).getType();
@@ -282,11 +267,25 @@ public final class DocumentMapping {
 	}
 	
 	public static String getType(Class<?> type) {
-		final Doc annotation = getDocAnnotation(type);
-		checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);
-		final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
-		checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
-		return docType;
+		if (!DOC_TYPE_CACHE.containsKey(type)) {
+			final Doc annotation = getDocAnnotation(type);
+			checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);
+			final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
+			checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
+			DOC_TYPE_CACHE.put(type, docType);
+		}
+		return DOC_TYPE_CACHE.get(type);
+	}
+	
+	/**
+	 * @return all types currently registered in doc type mapping
+	 */
+	public static Collection<Class<?>> getTypes() {
+		return ImmutableSet.copyOf(DOC_TYPE_CACHE.keySet());
+	}
+	
+	public static Class<?> getClass(String type) {
+		return checkNotNull(DOC_TYPE_CACHE.inverse().get(type), "Missing doc class for key '%s'. Populate the doc type cache via #getType(Class<?>) method before using this method.", type);
 	}
 	
 	private static Doc getDocAnnotation(Class<?> type) {
@@ -326,6 +325,10 @@ public final class DocumentMapping {
 	public Analyzers getSearchAnalyzer(String fieldName) {
 		final Text analyzed = getTextFields().get(fieldName);
 		return analyzed.searchAnalyzer() == Analyzers.INDEX ? analyzed.analyzer() : analyzed.searchAnalyzer();
+	}
+	
+	public static boolean isValidField(Field field) {
+		return !Modifier.isStatic(field.getModifiers()) && !field.isAnnotationPresent(JsonIgnore.class);
 	}
 
 }

@@ -16,14 +16,14 @@
 package com.b2international.index.revision;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 
 import org.junit.Test;
 
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -31,128 +31,166 @@ import com.google.common.collect.ImmutableSet;
  */
 public class RevisionCompareTest extends BaseRevisionIndexTest {
 
+	private static final String DOC_TYPE = DocumentMapping.getType(RevisionData.class);
+	private static final ObjectId ROOT = ObjectId.rootOf(DOC_TYPE);
+	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(Data.class);
+		return ImmutableSet.<Class<?>>of(RevisionData.class);
 	}
 	
 	@Test
 	public void compareBranchWithSelfReturnsEmptyCompare() throws Exception {
 		final RevisionCompare compare = index().compare(MAIN, MAIN);
-		assertTrue(compare.getNewComponents().isEmpty());
-		assertTrue(compare.getChangedComponents().isEmpty());
-		assertTrue(compare.getDeletedComponents().isEmpty());
+		assertThat(compare.getDetails()).isEmpty();
 	}
 	
 	@Test
 	public void compareBranchWithoutChangesReturnsEmptyCompare() throws Exception {
 		final String branch = createBranch(MAIN, "a");
 		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertTrue(compare.getNewComponents().isEmpty());
-		assertTrue(compare.getChangedComponents().isEmpty());
-		assertTrue(compare.getDeletedComponents().isEmpty());
+		assertThat(compare.getDetails()).isEmpty();
 	}
 	
 	@Test
 	public void compareBranchWithNewComponent() throws Exception {
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(branch, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertEquals(1, compare.getNewComponents().size());
-		assertTrue(compare.getNewComponents().get(Data.class).contains(STORAGE_KEY1));
-		assertTrue(compare.getChangedComponents().isEmpty());
-		assertTrue(compare.getDeletedComponents().isEmpty());
-		// verify that comparing just the branch produces the same result
-		final RevisionCompare compareOnlyBranch = index().compare(branch);
-		assertEquals(compare, compareOnlyBranch);
+		assertThat(compare.getDetails()).hasSize(1);
+		final RevisionCompareDetail detail = compare.getDetails().iterator().next();
+		assertThat(detail.getOp()).isEqualTo(Operation.ADD);
+		assertThat(detail.getObject()).isEqualTo(ROOT);
+		assertThat(detail.getComponent()).isEqualTo(ObjectId.of(DOC_TYPE, STORAGE_KEY1));
 	}
 	
 	@Test
 	public void compareBranchWithNewComponent_BaseWithNewComponent() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, STORAGE_KEY2, new Data("field1", "field2"));
+		indexRevision(branch, new RevisionData(STORAGE_KEY2, "field1", "field2"));
 		
 		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertEquals(1, compare.getNewComponents().size());
-		assertTrue(compare.getNewComponents(Data.class).contains(STORAGE_KEY2));
-		assertTrue(compare.getChangedComponents().isEmpty());
-		assertTrue(compare.getDeletedComponents().isEmpty());
+		assertThat(compare.getDetails()).hasSize(1);
+		final RevisionCompareDetail detail = compare.getDetails().iterator().next();
+		assertThat(detail.getOp()).isEqualTo(Operation.ADD);
+		assertThat(detail.getObject()).isEqualTo(ROOT);
+		assertThat(detail.getComponent()).isEqualTo(ObjectId.of(DOC_TYPE, STORAGE_KEY2));
 	}
 	
 	@Test
 	public void compareBranchWithNewComponent_BaseWithNewComponent_Reverse() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, STORAGE_KEY2, new Data("field1", "field2"));
+		indexRevision(branch, new RevisionData(STORAGE_KEY2, "field1", "field2"));
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
-		assertTrue(compare.getNewComponents().isEmpty());
-		assertTrue(compare.getChangedComponents().isEmpty());
-		assertTrue(compare.getDeletedComponents().isEmpty());
+		assertThat(compare.getDetails()).isEmpty();
+	}
+	
+	@Test
+	public void compareChangeOnMainSinceBranchBasePoint_Reverse() throws Exception {
+		final RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, rev1);
+		final String branch = createBranch(MAIN, "a");
+		indexRevision(branch, new RevisionData(STORAGE_KEY2, "field1", "field2"));
+		final RevisionData rev2 = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
+		indexChange(MAIN, rev1, rev2);
+		
+		final RevisionCompare compare = index().compare(branch, MAIN);
+		assertThat(compare.getDetails()).hasSize(1);
+		final RevisionCompareDetail detail = compare.getDetails().iterator().next();
+		assertThat(detail.getOp()).isEqualTo(Operation.CHANGE);
+		assertThat(detail.getObject()).isEqualTo(ObjectId.of(DOC_TYPE, STORAGE_KEY1));
+		assertThat(detail.getProperty()).isEqualTo("field1");
+		assertThat(detail.getFromValue()).isEqualTo("field1");
+		assertThat(detail.getValue()).isEqualTo("field1Changed");
 	}
 	
 	@Test
 	public void compareBranchWithChangedComponent() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, rev1);
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, STORAGE_KEY1, new Data("field1Changed", "field2"));
+		RevisionData rev2 = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
+		indexChange(branch, rev1, rev2);
 		
 		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertTrue(compare.getNewComponents().isEmpty());
-		assertEquals(1, compare.getChangedComponents().size());
-		assertTrue(compare.getChangedComponents(Data.class).contains(STORAGE_KEY1));
-		assertTrue(compare.getDeletedComponents().isEmpty());
+		
+		assertThat(compare.getDetails()).hasSize(1);
+		final RevisionCompareDetail detail = compare.getDetails().iterator().next();
+		assertThat(detail.getOp()).isEqualTo(Operation.CHANGE);
+		assertThat(detail.getObject()).isEqualTo(ObjectId.of(DOC_TYPE, STORAGE_KEY1));
+		assertThat(detail.getProperty()).isEqualTo("field1");
+		assertThat(detail.getFromValue()).isEqualTo("field1");
+		assertThat(detail.getValue()).isEqualTo("field1Changed");
 	}
 	
 	@Test
 	public void compareBranchWithChangedComponent_Reverse() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, rev1);
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, STORAGE_KEY1, new Data("field1Changed", "field2"));
+		RevisionData rev2 = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
+		indexChange(branch, rev1, rev2);
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
-		assertTrue(compare.getNewComponents().isEmpty());
-		assertTrue(compare.getChangedComponents().isEmpty());
-		assertTrue(compare.getDeletedComponents().isEmpty());
+		assertThat(compare.getDetails()).isEmpty();
 	}
 	
 	@Test
 	public void compareBranchWithDeletedComponent() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final String branch = createBranch(MAIN, "a");
-		deleteRevision(branch, Data.class, STORAGE_KEY1);
+		deleteRevision(branch, RevisionData.class, STORAGE_KEY1);
 		
 		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertTrue(compare.getNewComponents().isEmpty());
-		assertTrue(compare.getChangedComponents().isEmpty());
-		assertEquals(1, compare.getDeletedComponents().size());
-		assertTrue(compare.getDeletedComponents(Data.class).contains(STORAGE_KEY1));
+		assertThat(compare.getDetails()).hasSize(1);
+		final RevisionCompareDetail detail = compare.getDetails().iterator().next();
+		assertThat(detail.getOp()).isEqualTo(Operation.REMOVE);
+		assertThat(detail.getObject()).isEqualTo(ROOT);
+		assertThat(detail.getComponent()).isEqualTo(ObjectId.of(DOC_TYPE, STORAGE_KEY1));
 	}
 	
 	@Test
 	public void compareBranchWithDeletedComponent_Reverse() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final String branch = createBranch(MAIN, "a");
-		deleteRevision(branch, Data.class, STORAGE_KEY1);
+		deleteRevision(branch, RevisionData.class, STORAGE_KEY1);
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
-		assertTrue(compare.getNewComponents().isEmpty());
-		assertTrue(compare.getChangedComponents().isEmpty());
-		assertTrue(compare.getDeletedComponents().isEmpty());
+		assertThat(compare.getDetails()).isEmpty();
 	}
 	
 	@Test
 	public void compareBranchWithRevertedChanges() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, rev1);
 		final String branch = createBranch(MAIN, "a");
 		// change storageKey1 component then revert the change
-		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2Changed"));
-		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2"));
+		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
+		indexChange(branch, rev1, changed);
+		indexChange(branch, changed, rev1); // this actually reverts the prev. change, via a new revision
 
 		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertThat(compare.getNewComponents()).isEmpty();
-		assertThat(compare.getChangedComponents()).isEmpty();
-		assertThat(compare.getDeletedComponents()).isEmpty();
+		assertThat(compare.getDetails()).isEmpty();
 	}
+	
+	@Test
+	public void compareBranchWithNewAndChanged() throws Exception {
+		final String branch = createBranch(MAIN, "a");
+		// new revision
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(branch, rev1);
+		// change storageKey1 component
+		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
+		indexChange(branch, rev1, changed);
+
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).hasSize(1);
+		assertThat(compare.getTotalAdded()).isEqualTo(1);
+		assertThat(compare.getTotalChanged()).isEqualTo(0);
+		assertThat(compare.getTotalRemoved()).isEqualTo(0);
+	}
+	
 }

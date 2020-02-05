@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
+
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -23,6 +27,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
  * @since 4.5
@@ -34,6 +39,7 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	private String moduleId;
 	private Boolean active = Boolean.TRUE;
 	private IdGenerationStrategy idGenerationStrategy;
+	private List<SnomedRefSetMemberCreateRequest> members = newArrayList();
 	
 	protected SnomedComponentCreateRequestBuilder() { 
 		super();
@@ -64,6 +70,26 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 		return getSelf();
 	}
 	
+	// Reference Set Member List builders
+	
+	public final B addMember(SnomedRefSetMemberCreateRequestBuilder member) {
+		return addMember((SnomedRefSetMemberCreateRequest) member.build());
+	}
+	
+	public final B addMember(SnomedRefSetMemberCreateRequest member) {
+		this.members.add(member);
+		return getSelf();
+	}
+	
+	public final B addMember(SnomedReferenceSetMember member) {
+		return addMember((SnomedRefSetMemberCreateRequest) member.toCreateRequest());
+	}
+	
+	public final B addMembers(Iterable<? extends SnomedReferenceSetMember> members) {
+		members.forEach(this::addMember);
+		return getSelf();
+	}
+	
 	IdGenerationStrategy getIdGenerationStrategy() {
 		return idGenerationStrategy;
 	}
@@ -74,6 +100,7 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 		req.setIdGenerationStrategy(idGenerationStrategy);
 		req.setModuleId(moduleId);
 		req.setActive(active == null ? Boolean.TRUE : active);
+		req.setMembers(members);
 		init(req);
 		return req;
 	}

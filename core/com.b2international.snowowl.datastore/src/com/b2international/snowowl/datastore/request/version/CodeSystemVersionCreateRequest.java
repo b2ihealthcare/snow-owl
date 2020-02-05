@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,43 +32,45 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.ConflictException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
+import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.CommitResult;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.version.IVersioningManager;
-import com.b2international.snowowl.datastore.version.PublishOperationConfiguration;
-import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.datastore.version.VersioningConfiguration;
+import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
  * @since 5.7
  */
-final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, Boolean> {
+final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, Boolean>, AccessControl {
 
 	private static final long serialVersionUID = 1L;
 	private static final int TASK_WORK_STEP = 4;
@@ -88,82 +90,72 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	@JsonProperty
 	String codeSystemShortName;
 	
-	// lock props
-	private transient Multimap<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> lockTargetsByContext;
+	// local execution variables
+	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
+	private transient Map<String, CodeSystemEntry> codeSystemsByShortName;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String user = job.getUser();
 		
-		final Map<String, CodeSystemEntry> codeSystemsByShortName = fetchAllCodeSystems(context);
+		if (codeSystemsByShortName == null) {
+			codeSystemsByShortName = fetchAllCodeSystems(context);
+		}
 		
 		final CodeSystemEntry codeSystem = codeSystemsByShortName.get(codeSystemShortName);
 		if (codeSystem == null) {
 			throw new CodeSystemNotFoundException(codeSystemShortName);
 		}
-
+		
 		// check that the new versionId does not conflict with any other currently available branch
 		final String newVersionPath = String.format("%s%s%s", codeSystem.getBranchPath(), Branch.SEPARATOR, versionId);
+		final String repositoryId = codeSystem.getRepositoryUuid();
 		
 		// validate new path
-		Branch.BranchNameValidator.DEFAULT.checkName(versionId);
+		RevisionBranch.BranchNameValidator.DEFAULT.checkName(versionId);
 		
 		try {
 			RepositoryRequests.branching()
 				.prepareGet(newVersionPath)
-				.build(codeSystem.getRepositoryUuid())
+				.build(repositoryId)
 				.execute(context.service(IEventBus.class))
 				.getSync();
 			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
 		} catch (NotFoundException e) {
 			// ignore
 		}
-
-		final Map<CodeSystemEntry, IVersioningManager> versioningManagersByCodeSystem = createVersioningManagers(context, codeSystemsByShortName, codeSystem);
-
-		try {
-			acquireLocks(context, user, versioningManagersByCodeSystem.keySet());
 		
-			for (Entry<CodeSystemEntry, IVersioningManager> entry : versioningManagersByCodeSystem.entrySet()) {
-				createVersion(context, entry.getValue(), entry.getKey(), user);
-			}
+		final List<CodeSystemEntry> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
+			.stream()
+			.map(codeSystemsByShortName::get)
+			.collect(Collectors.toList());
+		
+		acquireLocks(context, user, codeSystemsToVersion);
+		
+		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
+		try {
+			
+			codeSystemsToVersion.forEach(codeSystemToVersion -> {
+				// check that the specified effective time is valid in this code system
+				validateEffectiveTime(context, codeSystem);
+				new RepositoryRequest<>(repositoryId,
+					new BranchRequest<>(codeSystem.getBranchPath(),
+						new RevisionIndexReadRequest<CommitResult>(
+							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryUuid())
+								.service(VersioningRequestBuilder.class)
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
+						)
+					)
+				).execute(context);
+				
+				// tag the repository
+				doTag(context, codeSystem, monitor);
+			});
 			
 			return Boolean.TRUE;
 		} finally {
 			releaseLocks(context);
-		}
-		
-	}
-	
-	private Map<CodeSystemEntry, IVersioningManager> createVersioningManagers(final ServiceProvider context, Map<String, CodeSystemEntry> codeSystemsByShortName, final CodeSystemEntry baseCodeSystem) {
-		final Map<CodeSystemEntry, IVersioningManager> versioningManagersByCodeSystem  = Maps.newHashMap();
-		baseCodeSystem.getDependenciesAndSelf()
-			.stream()
-			.map(affectedCodeSystemShortName -> codeSystemsByShortName.get(affectedCodeSystemShortName))
-			.forEach(affectedCodeSystem -> {
-				final IVersioningManager affectedVersioningManager = VersioningManagerBroker.INSTANCE.createVersioningManager(affectedCodeSystem.getTerminologyComponentId());
-				versioningManagersByCodeSystem.put(affectedCodeSystem, affectedVersioningManager);
-			});
-
-		return versioningManagersByCodeSystem;
-	}
-	
-	private void createVersion(ServiceProvider context, IVersioningManager versioningManager, CodeSystemEntry codeSystem, String user) {
-		validateEffectiveTime(context, codeSystem);
-		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
-		try {
-			monitor.worked(1);
-			// execute publication process via the tooling specific VersioningManager 
-			versioningManager.publish(new PublishOperationConfiguration(user, codeSystem.getShortName(), codeSystem.getBranchPath(), versionId, description, effectiveTime), monitor);
-			monitor.worked(1);
-			// tag the repository
-			doTag(context, codeSystem, monitor);
-			// execute any post commit steps defined by the versioning manager
-			postCommit(versioningManager, monitor);
-		} catch (SnowowlServiceException e) {
-			throw new SnowowlRuntimeException("Error occurred during versioning.", e);
-		} finally {
 			if (null != monitor) {
 				monitor.done();
 			}
@@ -189,14 +181,15 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void validateEffectiveTime(ServiceProvider context, CodeSystemEntry codeSystem) {
-		if (!CoreTerminologyBroker.getInstance().isEffectiveTimeSupported(codeSystem.getTerminologyComponentId())) {
+		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyComponentId()).isEffectiveTimeSupported()) {
 			return;
 		}
 
 		Instant mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
-		
-		if (!effectiveTime.toInstant().isAfter(mostRecentVersionEffectiveTime)) {
-			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after epoch.", effectiveTime, mostRecentVersionEffectiveTime);
+		Instant requestEffectiveTime = effectiveTime.toInstant();
+
+		if (!requestEffectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
+			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", requestEffectiveTime, mostRecentVersionEffectiveTime);
 		}
 	}
 	
@@ -220,11 +213,9 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			
 			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
 			for (CodeSystemEntry codeSystem : codeSystems) {
-				final SingleRepositoryAndBranchLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(
-						codeSystem.getRepositoryUuid(),
-						BranchPathUtils.createPath(codeSystem.getBranchPath()));
+				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryUuid(), codeSystem.getBranchPath());
 				
-				context.service(IDatastoreOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
+				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
 
 				lockTargetsByContext.put(lockContext, lockTarget);
 			}
@@ -241,8 +232,8 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void releaseLocks(ServiceProvider context) {
-		for (Entry<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> entry : lockTargetsByContext.entries()) {
-			context.service(IDatastoreOperationLockManager.class).unlock(entry.getKey(), entry.getValue());
+		for (Entry<DatastoreLockContext, DatastoreLockTarget> entry : lockTargetsByContext.entries()) {
+			context.service(IOperationLockManager.class).unlock(entry.getKey(), entry.getValue());
 		}
 	}
 	
@@ -257,15 +248,19 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.getSync();
 		monitor.worked(1);
 	}
-
-	/*
-	 * Performs actions after the successful commit. 
-	 */
-	private void postCommit(final IVersioningManager versioningManager, final IProgressMonitor monitor) throws SnowowlServiceException {
-		versioningManager.postCommit();
-		if (null != monitor) {
-			monitor.worked(1);
+	
+	@Override
+	public String getResource(ServiceProvider context) {
+		if (codeSystemsByShortName == null) {
+			codeSystemsByShortName = fetchAllCodeSystems(context);
 		}
+		// TODO support multi repository version authorization
+		return codeSystemsByShortName.get(codeSystemShortName).getRepositoryUuid();
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.VERSION;
 	}
 	
 }

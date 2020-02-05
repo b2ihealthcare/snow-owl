@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,12 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Inactivatable;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 4.5
  */
-public final class SnomedAssociationReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedAssociationReferenceSetMemberBuilder, SnomedAssociationRefSetMember> {
+public final class SnomedAssociationReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedAssociationReferenceSetMemberBuilder> {
 
 	private String targetComponentId;
 
@@ -37,31 +31,9 @@ public final class SnomedAssociationReferenceSetMemberBuilder extends SnomedMemb
 	}
 
 	@Override
-	protected SnomedAssociationRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedAssociationRefSetMember();
-	}
-
-	@Override
-	public void init(SnomedAssociationRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setTargetComponentId(targetComponentId);
-	}
-
-	@Override
-	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedAssociationRefSetMember component) {
-		Inactivatable annotatable = getInactivatable(context, component.getReferencedComponentId(), component.getReferencedComponentType());
-		annotatable.getAssociationRefSetMembers().add(component);
-	}
-
-	private Inactivatable getInactivatable(TransactionContext context, String referencedComponentId, short referencedComponentType) {
-		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-			return context.lookup(referencedComponentId, Concept.class);
-		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-			return context.lookup(referencedComponentId, Description.class);
-		default:
-			throw new IllegalStateException("Unexpected referenced component type '" + referencedComponentType + "'.");
-		}
+		component.targetComponent(targetComponentId);
 	}
 
 }

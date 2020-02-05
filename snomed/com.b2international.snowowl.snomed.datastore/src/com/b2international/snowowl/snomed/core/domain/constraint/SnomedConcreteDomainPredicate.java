@@ -20,11 +20,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.datastore.index.constraint.ConcreteDomainPredicateFragment;
 import com.google.common.base.Strings;
 
 /**
@@ -69,27 +66,10 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 	}
 
 	@Override
-	public ConcreteDomainElementPredicate createModel() {
-		return MrcmFactory.eINSTANCE.createConcreteDomainElementPredicate();
+	public ConcreteDomainPredicateFragment createModel() {
+		return new ConcreteDomainPredicateFragment(getId(), isActive(), getEffectiveTime(), getAuthor(), getAttribute().createModel(), getRange(), getCharacteristicTypeId());
 	}
-
-	@Override
-	public ConcreteDomainElementPredicate applyChangesTo(final ConceptModelComponent existingModel) {
-		final ConcreteDomainElementPredicate updatedModel = (existingModel instanceof ConcreteDomainElementPredicate)
-				? (ConcreteDomainElementPredicate) existingModel
-				: createModel();
-
-		updatedModel.setActive(isActive());
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setCharacteristicTypeConceptId(getCharacteristicTypeId());
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setAttribute(getAttribute().applyChangesTo(updatedModel.getAttribute()));
-		updatedModel.setRange(getRange());
-		updatedModel.setUuid(getId());
-
-		return updatedModel;
-	}
-
+	
 	@Override
 	public SnomedConcreteDomainPredicate deepCopy(final Date date, final String userName) {
 		final SnomedConcreteDomainPredicate copy = new SnomedConcreteDomainPredicate();

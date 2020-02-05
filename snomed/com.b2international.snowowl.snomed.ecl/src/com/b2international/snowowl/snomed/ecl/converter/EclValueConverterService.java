@@ -24,7 +24,7 @@ import com.google.inject.Inject;
 /**
  * @since 5.4
  */
-public final class EclValueConverterService extends DefaultTerminalConverters {
+public class EclValueConverterService extends DefaultTerminalConverters {
 
 	@Inject
 	private CardinalityMaxValueConverter maxValueConverter;

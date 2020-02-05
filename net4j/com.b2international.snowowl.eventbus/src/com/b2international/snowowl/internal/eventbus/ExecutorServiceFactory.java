@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.internal.eventbus;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import com.google.common.util.concurrent.MoreExecutors;
@@ -26,12 +24,12 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public interface ExecutorServiceFactory {
 
-	List<ExecutorService> createExecutorServices(String description, int numberOfWorkers);
+	ExecutorService createExecutorService(String description, int numberOfWorkers);
 	
 	ExecutorServiceFactory DIRECT = new ExecutorServiceFactory() {
 		@Override
-		public List<ExecutorService> createExecutorServices(String description, int numberOfWorkers) {
-			return Collections.singletonList(MoreExecutors.newDirectExecutorService());
+		public ExecutorService createExecutorService(String description, int numberOfWorkers) {
+			return MoreExecutors.newDirectExecutorService();
 		}
 	}; 
 }

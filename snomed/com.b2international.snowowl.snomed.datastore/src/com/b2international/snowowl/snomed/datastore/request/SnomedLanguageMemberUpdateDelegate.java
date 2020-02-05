@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -30,12 +29,11 @@ final class SnomedLanguageMemberUpdateDelegate extends SnomedRefSetMemberUpdateD
 	}
 
 	@Override
-	boolean execute(SnomedRefSetMember member, TransactionContext context) {
-		SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
+	boolean execute(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
 		String newAcceptabilityId = getComponentId(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
 
-		if (newAcceptabilityId != null && !newAcceptabilityId.equals(languageMember.getAcceptabilityId())) {
-			languageMember.setAcceptabilityId(newAcceptabilityId);
+		if (newAcceptabilityId != null && !newAcceptabilityId.equals(original.getAcceptabilityId())) {
+			member.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, newAcceptabilityId);
 			return true;
 		} else {
 			return false;

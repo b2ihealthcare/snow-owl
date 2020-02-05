@@ -25,12 +25,11 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -196,7 +195,6 @@ public class TerminologyTreeTest {
 					.primitive(primitive)
 					.build();
 					
-			entry.set_id(UUID.randomUUID().toString());
 			items.put(nodeId, entry);
 			if (parents != null) {
 				superTypes.putAll(nodeId, parents);

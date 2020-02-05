@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+#For debugging uncomment these two lines
+set -x
+echo $*
+
+APP_NAME=[[artifactId]]
+
+supervisorctl update $APP_NAME 2>&1 >/dev/null
+supervisorctl start $APP_NAME 2>&1 >/dev/null

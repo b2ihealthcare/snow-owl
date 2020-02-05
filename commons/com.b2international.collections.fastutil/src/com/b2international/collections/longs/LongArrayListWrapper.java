@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,9 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 
 	@Override
 	public void trimToSize() {
-		if (delegate() instanceof LongArrayList) {
-			((LongArrayList) delegate()).trim();
+		final it.unimi.dsi.fastutil.longs.LongList delegate = delegate();
+		if (delegate instanceof LongArrayList) {
+			((LongArrayList) delegate).trim();
 		} else {
 			super.trimToSize();
 		}

@@ -46,11 +46,6 @@ public interface IndexClientFactory {
 	String TRANSLOG_SYNC_INTERVAL_KEY = "translog.sync_interval";
 
 	/**
-	 * Configuration key to specify slow log related configuration.
-	 */
-	String SLOW_LOG_KEY = "slowlog";
-
-	/**
 	 * Configuration key to specify the maximum number of documents to retrieve
 	 * in a single call from the index.
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 
@@ -30,6 +33,7 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	private static final long serialVersionUID = 1L;
 	
 	private final String commitId;
+	private final String groupId;
 	private final String branchPath;
 	private final long commitTimestamp;
 	private final String userId;
@@ -37,19 +41,22 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	private final Set<ComponentIdentifier> newComponents;
 	private final Set<ComponentIdentifier> changedComponents;
 	private final Set<ComponentIdentifier> deletedComponents;
-
+	private final RevisionBranchPoint mergeSource;
 
 	public RepositoryCommitNotification(final String repositoryId,
 			final String commitId,
+			final String groupId,
 			final String branchPath,
 			final long commitTimestamp,
 			final String userId,
 			final String comment,
 			final Collection<ComponentIdentifier> newComponents, 
 			final Collection<ComponentIdentifier> changedComponents, 
-			final Collection<ComponentIdentifier> deletedComponents) {
+			final Collection<ComponentIdentifier> deletedComponents,
+			final RevisionBranchPoint mergeSource) {
 		super(repositoryId);
-		this.commitId = commitId;
+		this.commitId = checkNotNull(commitId, "Commit ID argument cannot be null");
+		this.groupId = groupId;
 		this.branchPath = branchPath;
 		this.commitTimestamp = commitTimestamp;
 		this.userId = userId;
@@ -57,10 +64,15 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 		this.newComponents = Collections3.toImmutableSet(newComponents);
 		this.changedComponents = Collections3.toImmutableSet(changedComponents);
 		this.deletedComponents = Collections3.toImmutableSet(deletedComponents);
+		this.mergeSource = mergeSource;
 	}
 	
 	public String getCommitId() {
 		return commitId;
+	}
+	
+	public String getGroupId() {
+		return groupId;
 	}
 
 	public String getBranchPath() {
@@ -89,6 +101,10 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	
 	public Set<ComponentIdentifier> getDeletedComponents() {
 		return deletedComponents;
+	}
+
+	public RevisionBranchPoint getMergeSource() {
+		return mergeSource;
 	}
 	
 }

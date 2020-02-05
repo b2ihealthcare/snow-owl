@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.base.Strings;
 
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest implements Request<TransactionContext, String> {
+final class CodeSystemCreateRequest implements Request<TransactionContext, String>, RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -94,11 +94,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	@Override
 	public String execute(final TransactionContext context) {
 		checkCodeSystem(context);
-		
-		final CodeSystem codeSystem = createCodeSystem(context);
-		context.add(codeSystem);
-
-		return codeSystem.getShortName();
+		return context.add(createCodeSystem(context));
 	}
 
 	private void checkCodeSystem(final TransactionContext context) {
@@ -123,20 +119,25 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 
-	private CodeSystem createCodeSystem(final TransactionContext context) {
-		return new CodeSystemBuilder()
-				.withBranchPath(branchPath)
-				.withCitation(citation)
-				.withCodeSystemOid(oid)
-				.withIconPath(iconPath)
-				.withLanguage(language)
-				.withMaintainingOrganizationLink(link)
-				.withName(name)
-				.withRepositoryUuid(repositoryUuid)
-				.withShortName(shortName)
-				.withTerminologyComponentId(terminologyId)
-				.withExtensionOf(Strings.isNullOrEmpty(extensionOf) ? null : context.lookup(extensionOf, CodeSystem.class))
+	private CodeSystemEntry createCodeSystem(final TransactionContext context) {
+		return CodeSystemEntry.builder()
+				.oid(oid)
+				.branchPath(branchPath)
+				.name(name)
+				.shortName(shortName)
+				.orgLink(link)
+				.language(language)
+				.citation(citation)
+				.iconPath(iconPath)
+				.terminologyComponentId(terminologyId)
+				.repositoryUuid(repositoryUuid)
+				.extensionOf(extensionOf)
 				.build();
 	}
-
+	
+	@Override
+	public String getOperation() {
+		return Permission.EDIT;
+	}
+	
 }

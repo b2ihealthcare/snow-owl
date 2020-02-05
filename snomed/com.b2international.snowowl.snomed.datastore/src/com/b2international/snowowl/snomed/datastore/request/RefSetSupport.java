@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -43,8 +43,9 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.RELATIONSHIP)
-			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, CoreTerminologyBroker.UNSPECIFIED)
+			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, TerminologyRegistry.UNSPECIFIED)
 			.put(SnomedRefSetType.COMPLEX_MAP, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.COMPLEX_BLOCK_MAP, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.DESCRIPTION_TYPE, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.EXTENDED_MAP, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.LANGUAGE, SnomedTerminologyComponentConstants.DESCRIPTION)

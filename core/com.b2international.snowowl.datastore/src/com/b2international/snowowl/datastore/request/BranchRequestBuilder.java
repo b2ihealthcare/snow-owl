@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,12 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
- * @since 5.7
+ * Provides a default method for wrapping {@link BranchContext}-based requests
+ * into {@link AsyncRequest}s. The provided {@code BranchContext} does not
+ * include a service for accessing the repository index.
+ * 
+ * @since 7.0
+ * @param <R> - the return type
  */
 public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
@@ -34,5 +39,4 @@ public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R
 			)
 		);
 	}
-	
 }

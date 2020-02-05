@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.eventbus;
 
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,8 +24,6 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.internal.eventbus.EventBus;
-import com.b2international.snowowl.internal.eventbus.ExecutorServiceFactory;
-import com.b2international.snowowl.internal.eventbus.WorkerExecutorServiceFactory;
 
 /**
  * @since 3.2
@@ -62,10 +61,10 @@ public class EventBusUtil {
 	 * @param timeout
 	 * @return
 	 */
-	public static IMessage sendWithResult(IEventBus bus, String address, Object message, long timeout) {
+	public static IMessage sendWithResult(IEventBus bus, String address, Object message, String tag, long timeout) {
 		final AtomicReference<IMessage> result = new AtomicReference<IMessage>();
 		final CountDownLatch latch = new CountDownLatch(1);
-		bus.send(address, message, new IHandler<IMessage>() {
+		bus.send(address, message, tag, Collections.emptyMap(), new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				result.set(message);
@@ -87,7 +86,7 @@ public class EventBusUtil {
 	 * @return an {@link EventBus} with the specified description and number of workers, using a shared queue for distributing tasks
 	 */
 	public static IEventBus getWorkerBus(String name, int numberOfWorkers) {
-		final IEventBus bus = new EventBus(name, numberOfWorkers, numberOfWorkers == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory());
+		final IEventBus bus = new EventBus(name, numberOfWorkers);
 		LifecycleUtil.activate(bus);
 		return bus;
 	}
@@ -96,8 +95,6 @@ public class EventBusUtil {
 	 * @return an {@link EventBus} with the specified description and 1 direct thread worker.
 	 */
 	public static IEventBus getDirectBus(String name) {
-		final IEventBus bus = new EventBus(name, 1, ExecutorServiceFactory.DIRECT);
-		LifecycleUtil.activate(bus);
-		return bus;
+		return getWorkerBus(name, 0);
 	}
 }

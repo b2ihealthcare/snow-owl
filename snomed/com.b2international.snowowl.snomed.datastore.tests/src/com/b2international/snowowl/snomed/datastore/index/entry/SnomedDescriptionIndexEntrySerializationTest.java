@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +26,7 @@ import org.junit.Test;
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,8 +48,9 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 	
 	@Test
 	public void indexDescription() throws Exception {
+		final String id = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final SnomedDescriptionIndexEntry description = SnomedDescriptionIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateDescriptionId())
+				.id(id)
 				.active(true)
 				.released(true)
 				.effectiveTime(new Date().getTime())
@@ -62,9 +63,8 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
 				.build();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, description);
-		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, description);
+		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, id);
 		assertDocEquals(description, actual);
 	}
 	
@@ -72,8 +72,9 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 	public void indexFsn() throws Exception {
 		assertEquals("finding", SnomedDescriptionIndexEntry.extractSemanticTag("New Finding (finding)"));
 		
+		final String id = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final SnomedDescriptionIndexEntry description = SnomedDescriptionIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateDescriptionId())
+				.id(id)
 				.active(true)
 				.released(true)
 				.effectiveTime(new Date().getTime())
@@ -89,12 +90,11 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 		
 		assertEquals("finding", description.getSemanticTag());
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, description);
-		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, STORAGE_KEY1);
+		indexRevision(RevisionBranch.MAIN_PATH, description);
+		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, id);
 		
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
 		assertEquals("finding", actual.getSemanticTag());
-		assertEquals(null, actual.getNamespace());
+		assertEquals("", actual.getNamespace());
 		assertDocEquals(description, actual);
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 
@@ -56,10 +55,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, true);
 	}
 
-	public final SnomedConceptSearchRequestBuilder withSearchProfile(final String userId) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.SEARCH_PROFILE, userId);
-	}
-
 	public final SnomedConceptSearchRequestBuilder withFuzzySearch() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_FUZZY, true);
 	}
@@ -74,7 +69,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * This filter affects the score of each result. If results should be returned in order of 
 	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
 	 * 
-	 * @param term the expression to match
+	 * @param term - the expression to match
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
@@ -83,8 +78,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 
 	/**
 	 * Filters the concepts based on the type of its descriptions where the description type is specified by an ECL expression. 
-	 * For example: "900000000000003001" for <i>Fully Specified Name</i>.
-	 * @param description type represented by its concept ID
+	 * representing the type. E.g.: "900000000000003001" for <i>Fully Specified Name</i>.
+	 * @param type - description type represented concept identifiers or ECL expressions
 	 * @return SnomedConceptSearchRequestBuilder
 	 * 
 	 * @see SnomedConcepts
@@ -108,7 +103,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * Filter matches by the specified Expression Constraint Language (ECL) expression. 
 	 * The currently supported ECL version is v1.1. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a>.
 	 * 
-	 * @param expression ECL expression
+	 * @param expression - the ECL expression
 	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByEcl(String expression) {
@@ -224,7 +219,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * Filter matches to have any of the specified ancestor identifier amongst the stated super types (including direct as well).
 	 * E.g.:a filter that returns all of the <i>stated</i> (direct and non-direct) children of the specified parents.
 	 * 
-	 * @param ancestorId
+	 * @param ancestorIds
 	 * @return SnomedConceptSearchRequestBuilder
 	 * @see CharacteristicType
 	 */

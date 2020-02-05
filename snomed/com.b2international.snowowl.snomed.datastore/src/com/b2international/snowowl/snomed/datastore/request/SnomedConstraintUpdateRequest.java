@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 
 /**
  * @since 6.5
  */
-public final class SnomedConstraintUpdateRequest implements Request<TransactionContext, Boolean> {
+public final class SnomedConstraintUpdateRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
 
 	@NotNull
 	private SnomedConstraint constraint;
@@ -39,8 +41,16 @@ public final class SnomedConstraintUpdateRequest implements Request<TransactionC
 
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final AttributeConstraint existingModel = context.lookup(constraint.getId(), AttributeConstraint.class);
-		constraint.applyChangesTo(existingModel);
+		final SnomedConstraintDocument existingModel = context.lookup(constraint.getId(), SnomedConstraintDocument.class);
+		final SnomedConstraintDocument.Builder updatedModel = SnomedConstraintDocument.builder(existingModel);
+		constraint.applyChangesTo(updatedModel);
+		context.add(updatedModel.build());
 		return true;
 	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.EDIT;
+	}
+	
 }

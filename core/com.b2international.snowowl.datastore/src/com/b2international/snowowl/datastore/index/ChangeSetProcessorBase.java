@@ -16,17 +16,13 @@
 package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.3
@@ -34,9 +30,10 @@ import com.google.common.collect.Multimap;
 public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 
 	private final String description;
-	private final Map<Long, Revision> newMappings = newHashMap();
-	private final Map<Long, Revision> changedMappings = newHashMap();
-	private final Multimap<Class<? extends Revision>, Long> deletions = HashMultimap.create();
+	
+	private Map<String, RevisionDocument> newMappings;
+	private Map<String, RevisionDocumentChange> changedMappings;
+	private Collection<RevisionDocument> deletions;
 
 	protected ChangeSetProcessorBase(String description) {
 		this.description = description;
@@ -47,39 +44,46 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 		return description;
 	}
 	
-	protected final void indexNewRevision(CDOID storageKey, Revision revision) {
-		indexNewRevision(CDOIDUtil.getLong(storageKey), revision);
+	protected final void stageNew(RevisionDocument revision) {
+		if (newMappings == null) {
+			newMappings = newHashMap();
+		}
+		Revision prev = newMappings.put(revision.getId(), revision);
+		if (prev != null) {
+			throw new IllegalArgumentException("Multiple entries with same key: " + revision.getId() + "=" + revision);
+		}
 	}
 	
-	protected final void indexNewRevision(long storageKey, Revision revision) {
-		newMappings.put(storageKey, revision);
+	protected final void stageChange(RevisionDocument oldRevision, RevisionDocument newRevision) {
+		if (changedMappings == null) {
+			changedMappings = newHashMap();
+		}
+		RevisionDocumentChange prev = changedMappings.put(newRevision.getId(), new RevisionDocumentChange(oldRevision, newRevision));
+		if (prev != null) {
+			throw new IllegalArgumentException("Multiple entries with same key: " + newRevision.getId() + "=" + prev);
+		}
 	}
 	
-	protected final void indexChangedRevision(CDOID storageKey, Revision revision) {
-		indexChangedRevision(CDOIDUtil.getLong(storageKey), revision);
-	}
-	
-	protected final void indexChangedRevision(long storageKey, Revision revision) {
-		changedMappings.put(storageKey, revision);
-	}
-	
-	protected final void deleteRevisions(Class<? extends Revision> type, Collection<CDOID> storageKeys) {
-		deletions.putAll(type, CDOIDUtils.createCdoIdToLong(storageKeys));
-	}
-	
-	@Override
-	public final Map<Long, Revision> getNewMappings() {
-		return newMappings;
-	}
-	
-	@Override
-	public final Map<Long, Revision> getChangedMappings() {
-		return changedMappings;
+	protected final void stageRemove(RevisionDocument revision) {
+		if (deletions == null) {
+			deletions = newHashSet();
+		}
+		deletions.add(revision);
 	}
 	
 	@Override
-	public final Multimap<Class<? extends Revision>, Long> getDeletions() {
-		return deletions;
+	public final Map<String, RevisionDocument> getNewMappings() {
+		return newMappings == null ? Collections.emptyMap() : newMappings;
+	}
+	
+	@Override
+	public final Map<String, RevisionDocumentChange> getChangedMappings() {
+		return changedMappings == null ? Collections.emptyMap() : changedMappings;
+	}
+	
+	@Override
+	public final Collection<RevisionDocument> getDeletions() {
+		return deletions == null ? Collections.emptyList() : deletions;
 	}
 	
 }

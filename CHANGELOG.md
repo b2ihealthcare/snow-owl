@@ -1,6 +1,235 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.3.0
+
+### Changes from 6.x stream since 7.2.0 release
+
+All changes from the `6.x` stream (the 6.24.0 release) have been merged into the `7.3.0` release. See changelog entry `6.24.0` for details.
+
+### Core
+- Support unprotected API routes/requests (d07e6c2, 2e5166a)
+  * `GET /admin/info` and `POST /admin/login` are unprotected routes
+- Add back `responseTime` property (unit is milliseconds) to request log (57b913d)
+
+### SNOMED CT
+- SNOMED CT computable languages are now supported (#470)
+  * [ETL 1.0](http://snomed.org/etl)
+  * [SCG 2.3.1](http://snomed.org/scg)
+
+### FHIR
+- Exclude mapping members by default from ConceptMap responses (0ed6b1c, 14a1ad5, 67d1e03, 376391a, )
+
+### Bugs/Improvements
+- [core] simplify raw index read requests in Java API (5214922)
+- [jobs] reduce memory requirements of job clean up (b43d658)
+- [log] improve error logging from failed API requests, omit Broken pipe errors (edbc7f9)
+
+## 7.2.0
+
+### Changes from 6.x stream since 7.1.0 release
+
+All changes from the `6.x` stream (since 6.19.0) have been merged into the `7.2.0` release. See changelog entries from `6.19.0` to `6.23.0` for details.
+
+### Docker build
+
+Snow Owl 7.2.0 now supports Docker based deployments via the official image. See [here](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss). 
+
+### Known issues
+- Query parameters are not supplied to `Try it out` requests from the Swagger UI (see GH issue: #441)
+
+### Core changes
+
+#### API
+- New Swagger API design and navigation menu (#419)
+- Generate proper commit notifications after successful commit (32ce42d)
+- Improve revision merging by introducing Git-like behaviour when merging a branch into another (e3d2da5)
+
+#### Authentication & Authorization
+- New `POST /login` endpoint to authenticate a user and get back a JWT token for further API calls (#403)
+- Support `X-Author` header in most transaction endpoints (#403)
+- New bearer token based authentication support (#403)
+- New permission system to allow fine grained `operation:resource` based authorization (#403)
+- API endpoints that do not require permissions: `GET /admin/info`, `GET /admin/jobs`, `GET /admin/repositories` (#413)
+
+#### Rate limiting
+- New rate-limiting configuration options are available (#409)
+
+### SNOMED CT changes
+
+#### API
+- Add support for refset member filtering based on the following properties: `acceptabilityId`, `valueId`, `correlationId`, `descriptionFormat`, `characteristicTypeId`, `typeId`, `mapCategoryId`, `domainId`, `contentTypeId`, `ruleStrengthId`, `mrcmRuleRefSetId`, `relationshipGroup`, `mapTarget`, `grouped` (beede5f)
+- Support ECL expressions in the following refset member property filters: `characteristicTypeId`, `correlationId`, `descriptionFormat`, `mapCategoryId`, `targetComponentId`, `targetComponent`, `valueId`, `mrcmDomainId`, `mrcmContentTypeId`, `mrmcRuleStrengthId`, `mrcmRuleRefSetId`, `owlExpressionConceptId`, `owlExpressionDestinationId`, `owlExpressionTypeId` (7b3d21c)
+- Allow creation of SNOMED CT Concepts without relationships (fc81d59)
+
+#### RF2
+- Validate `referencedComponentId` values when importing RF2 RefSet files (93167d2)
+- Register IDs in CIS after successfully importing RF2 content (908d053)
+
+#### Classification
+- Add ELK as default classifier (ee68a94)
+
+### Scalability and reliability
+- Health check now includes ES cluster and indices health statuses (2a6628b)
+- Use retry policy to detect ES cluster outages and retry a few times before failing the request (97fc936, d5d8418) 
+
+### Plug-in development
+- New easily extensible REST API modules (#403)
+
+### Bugs/Improvements
+- Add shutdown hook to gracefully shut down Snow Owl (00faaae)   
+- Fix NPE in list branches OSGi command (80bc0c5)
+- Fix potential NPE in case of communication failure with ES cluster (d00e56e)
+- Fix `modifiers` field access issue on Java 12 (93cb94b)
+- Fix branch counter initialization issue causing issues after restart (277bf10)
+- Do NOT index revisions when there are no changes (66c3f0e) 
+- Fix `namespace` field indexing issue (a09c44c)
+- Fix MRCM constraints deletion issue (88de20b)
+- Fixed reported GH issues: #422, #424, #436, #442, #444, #450
+
+### Dependencies
+- Bump Jackson to 2.9.10
+- Bump SnakeYAML to 1.25
+- Bump Spring to 5.1.9
+- Bump Springfox to 2.9.2
+- Bump Swagger to 1.5.23
+- Bump Swagger UI to 3.24.3
+- Bump micrometer to 1.3.2 
+- Bump Tycho to 1.5.0
+
+## 7.1.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 7.1.0 (from any previous 6.x or 7.x version).
+
+#### Upgrade to Java 11
+
+Starting from `7.1.0`, Snow Owl requires Java 11 both compile and runtime as minimum Java version (see https://jdk.java.net/archive/ for OpenJDK downloads).
+
+#### Changes from 6.x stream since 7.0.0 release
+
+All changes happened on the 6.x stream (between `6.10.0` and `6.19.0`) has been merged into the `7.1.0` release.
+Major breaking changes that require a full RF2 re-import of any existing 7.0.x data:
+- Concrete Domain Reference Set Member changes from #288 (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.11.0)
+- SNOMED CT Query Language Support (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.12.0)
+- OWL Axiom support (https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.14.0)
+
+#### Packaging and platform changes
+
+Due to the move to Java 11, Snow Owl can no longer depend on `Eclipse Virgo with Tomcat` server as OSGi container to provide its services and functionality.
+Instead, it builds upon a bare Equinox OSGi runtime (Eclipse 4.12, Equinox 3.18.0) running a Jetty (9.4.18) web server.
+This resulted in a much faster startup time and development of third party terminology plug-ins.
+
+#### Configuration changes
+
+Important configuration changes that require attention when migrating to Snow Owl 7.1.0:
+- Configuration key `snomed.ids` has been replaced with the new `cis` root configuration node (#379)
+- `snomed.language` configuration key has been removed. APIs, commands now accept a list of `locales` in preference order to compute display names/labels/etc. (2ef2a4a) 
+
+### CIS package and API
+- Snow Owl 7.1.0 introduces partial support for the [official CIS API](https://github.com/IHTSDO/component-identifier-service)
+ * See full release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v6.18.0)
+
+### FHIR
+- Supported FHIR API version has been upgraded to [FHIR 4.0.0](https://www.hl7.org/fhir/history.html)
+ * See additional documentation at the [FHIR API docs](http://docs.b2i.sg/snow-owl/api/fhir)
+
+### Debian
+- Snow Owl 7.1.0 adds support for Debian systems with a dedicated `.deb` package.
+
+### Dependencies
+- Bump Eclipse Platform to 4.12
+- Bump Jetty to 9.4.18
+- Bump Elasticsearch to 6.8.2
+- Bump Classgraph (formerly `fast-classpath-scanner`) to 4.8.43
+- Remove Virgo packaging and dependencies
+
+## 7.0.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 7.0.0.
+
+#### Datasets created before 7.0.0
+Snow Owl v7.0.0 does not support indexes created by Snow Owl 6.x stream anymore. 
+Migration from Snow Owl 6.x to 7.x is still work in progress, in the meantime if you would like to try Snow Owl 7.0.0 out, we recommend starting from scratch from an RF2 export from your Snow Owl 6.x instance or by importing an official RF2 distribution. 
+
+#### Database
+MySQL RDBMS software requirement has been removed and Snow Owl no longer requires it for its data source. 
+Instead, Snow Owl requires only a single Elasticsearch cluster to operate on.
+
+#### Documentation
+The new improved and shiny Snow Owl 7.x documentation is available at `https://docs.b2i.sg/snow-owl/`
+
+### Added
+- FHIR v3.0.1 API support (https://www.hl7.org/fhir/http.html)
+  * New Swagger API endpoint collection is available at `/snowowl/fhir`
+  * It supports read-only capabilities of `/CodeSystem`, `/ValueSet` and `/ConceptMap` concepts
+- APIs
+  * New `/stats` endpoint to scrape [micrometer](http://micrometer.io/) based statistics for [prometheus](https://prometheus.io/)
+  * New `/commits` endpoint to query commits in a repository and for a given component
+  * New `/compare` endpoint to efficiently compare two branches
+  * New `<branch>@<timestamp>` branch path expression support to query a branch at any arbitrary point in time
+  * `UTF-8` encoding to all endpoints
+- SNOMED CT
+  * New `JSON` based MRCM export and import format
+  * Refactored classification services, using Elasticsearch indexes instead of custom Lucene store
+- Configuration
+  * `SO_PATH_CONF` environment variable to configure Snow Owl configuration folder
+  * Environment variable substitution is now supported in `snowowl.yml` configuration file via `${...}` expressions
+  * Added `monitoring.tags` support for tagging metrics with custom tags
+- Packaging
+  * Travis-CI build integration (https://travis-ci.org/b2ihealthcare/snow-owl/)
+  * `tar.gz` packaging for Unix/Linux systems
+  * RPM packaging for RPM based systems (like CentOS, RedHat, etc.)
+- Modules
+  * New plug-in mechanism with the help of classpath scanning to simplify development of third-party modules
+  * `com.b2international.snowowl.fhir.core`
+  * `com.b2international.snowowl.fhir.api`
+  * `com.b2international.snowowl.snomed.fhir`
+- Dependencies
+  * Added zjsonpatch `0.4.4`
+  * Added micrometer `1.0.6`
+  * Added picocli `3.5.1`  
+  * Added fast-classpath-scanner `3.1.6`
+  * Bumped Spring to `4.3.10`
+  * Bumped Protege to `5.0.0-beta21`
+  * Bumped SLF4J to `1.7.13`
+  * Bumped Logback to `1.1.3`
+
+### Changed
+- Revision control features have been rewritten from the ground up to support scaling to billions of revision documents (using IPv6 based addressing)
+- SNOMED CT RF2 importer APIs now use the new RF2 importer implementation
+- Console
+  * Completely rewritten using the awesome `picocli` library with full version, help support, POSIX-style grouped short options and more
+- Configuration
+  * Renamed `snowowl_config.yml` configuration file to `snowowl.yml` and move it inside the `configuration` folder
+  * Renamed `metrics` node to `monitoring`
+
+### Removed
+- SNOMED CT
+  * XMI based MRCM import/export functionality has been removed (remaining options are `CSV` and `JSON`) 
+- Modules
+  * `org.eclipse.emf.cdo.*`
+  * `org.eclipse.net4j.db.mysql`
+  * `com.b2international.snowowl.snomed.model`
+  * `com.b2international.snowowl.snomed.refset.model`
+  * `com.b2international.snowowl.snomed.mrcm.model`
+  * `com.b2international.snowowl.server.console`
+  * `com.b2international.snowowl.datastore.server`
+  * `com.b2international.snowowl.snomed.datastore.server`
+  * `com.b2international.snowowl.snomed.exporter.server`
+  * `com.b2international.snowowl.snomed.reasoner.server`
+  * `com.b2international.snowowl.snomed.importer`
+  * `com.b2international.snowowl.snomed.importer.rf2`
+  * `system.bundle.package.exporter`
+- Configuration
+  * `yaml` and `json` file extension support for `snowowl.yml` configuration file
+  * `resources/defaults` XML configuration folder and support 
+  * Removed `database` configuration options from `repository` node
+  * Removed `revisionCache` configuration option from `repository` node
+
 ## 6.24.0
 
 ### API

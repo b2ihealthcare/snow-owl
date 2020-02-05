@@ -1,9 +1,0 @@
-# Debugging and tracing options
-
-org.eclipse.net4j.util/debug = true
-org.eclipse.net4j.util/debug.lifecycle = true
-org.eclipse.net4j.util/debug.lifecycle.dump = true
-org.eclipse.net4j.util/debug.concurrency = true
-org.eclipse.net4j.util/debug.registry = true
-org.eclipse.net4j.util/debug.om = true
-org.eclipse.net4j.util/debug.om.monitor = true

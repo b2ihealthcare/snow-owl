@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,20 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -41,7 +45,7 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @since 5.7
  */
-final class ClassificationSaveRequest implements Request<RepositoryContext, String> {
+final class ClassificationSaveRequest implements Request<RepositoryContext, String>, RepositoryAccessControl {
 
 	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 	
@@ -50,10 +54,11 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 			ClassificationStatus.COMPLETED, 
 			ClassificationStatus.SAVE_FAILED);
 
+	@JsonProperty
 	@NotEmpty
 	private String classificationId;
 
-	@NotEmpty
+	@JsonProperty
 	private String userId;
 	
 	@NotNull
@@ -112,14 +117,14 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.prepareGetClassification(classificationId)
 				.build();
 		
-		final ClassificationTask classification = new IndexReadRequest<>(classificationRequest).execute(context);
+		final ClassificationTask classification = classificationRequest.execute(context);
 		final String branchPath = classification.getBranch();
 		
 		final Request<RepositoryContext, Branch> branchRequest = RepositoryRequests.branching()
 				.prepareGet(branchPath)
 				.build();
 		
-		final Branch branch = new IndexReadRequest<>(branchRequest).execute(context);
+		final Branch branch = branchRequest.execute(context);
 
 		if (!SAVEABLE_STATUSES.contains(classification.getStatus())) {
 			throw new BadRequestException("Classification '%s' is not in the expected state to start saving changes.", classificationId);
@@ -132,10 +137,12 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 					classification.getTimestamp(),
 					branch.headTimestamp());
 		}
+		
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 
 		final AsyncRequest<?> saveRequest = new SaveJobRequestBuilder()
 				.setClassificationId(classificationId)
-				.setUserId(userId)
+				.setUserId(user)
 				.setParentLockContext(parentLockContext)
 				.setCommitComment(commitComment)
 				.setModuleId(moduleId)
@@ -149,6 +156,11 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.setRequest(saveRequest)
 				.setDescription(String.format("Saving classification changes on %s", branch.path()))
 				.buildAsync()
-				.get(SCHEDULE_TIMEOUT_MILLIS);
+				.get(context, SCHEDULE_TIMEOUT_MILLIS);
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.CLASSIFY;
 	}
 }

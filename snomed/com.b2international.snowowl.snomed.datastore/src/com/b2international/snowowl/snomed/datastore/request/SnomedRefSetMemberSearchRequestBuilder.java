@@ -18,13 +18,13 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collections;
 
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequest.OptionKey;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT reference set members.
@@ -81,7 +81,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	}
 
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(String referencedComponentType) {
-		return filterByReferencedComponentType(CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType));
+		return filterByReferencedComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(referencedComponentType).shortId());
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(short referencedComponentType) {

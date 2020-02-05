@@ -20,10 +20,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
-import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 
 /**
@@ -61,34 +59,19 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
+	@JsonIgnore
 	public String getAttributeExpression() {
 		return attribute.toEcl();
 	}
 
+	@JsonIgnore
 	public String getRangeExpression() {
 		return range.toEcl();
 	}
 
 	@Override
-	public RelationshipPredicate createModel() {
-		return MrcmFactory.eINSTANCE.createRelationshipPredicate();
-	}
-
-	@Override
-	public RelationshipPredicate applyChangesTo(final ConceptModelComponent existingModel) {
-		final RelationshipPredicate updatedModel = (existingModel instanceof RelationshipPredicate)
-				? (RelationshipPredicate) existingModel
-				: createModel();
-
-		updatedModel.setActive(isActive());
-		updatedModel.setAttribute(getAttribute().applyChangesTo(updatedModel.getAttribute()));
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setCharacteristicTypeConceptId(getCharacteristicTypeId());
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setRange(getRange().applyChangesTo(updatedModel.getRange()));
-		updatedModel.setUuid(getId());
-
-		return updatedModel;
+	public RelationshipPredicateFragment createModel() {
+		return new RelationshipPredicateFragment(getId(), isActive(), getEffectiveTime(), getAuthor(), attribute.createModel(), range.createModel(), getCharacteristicTypeId());
 	}
 
 	@Override

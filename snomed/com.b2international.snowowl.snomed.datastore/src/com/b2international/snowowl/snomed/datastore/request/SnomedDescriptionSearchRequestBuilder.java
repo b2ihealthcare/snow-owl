@@ -19,16 +19,18 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
@@ -59,7 +61,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * This filter affects the score of each result. If results should be returned in order of 
 	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
 	 * 
-	 * @param termFilter the expression to match
+	 * @param termFilter - the expression to match
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
@@ -73,7 +75,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * This filter affects the score of each result. If results should be returned in order of 
 	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
 	 * 
-	 * @param termFilter the expression to match
+	 * @param exactTermFilter - the expression to match
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByExactTerm(String exactTermFilter) {
@@ -109,7 +111,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	/**
 	 * Filter descriptions by their case significance value. This method accepts ECL values as caseSignificanceFilter.
 	 * 
-	 * @param caseSignificances
+	 * @param caseSignificanceFilter
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByCaseSignificance(CaseSignificance)
 	 * @see #filterByCaseSignificance(String)
@@ -170,7 +172,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	
 	/**
 	 * Filter descriptions by applying the given regular expression on their terms. 
-	 * @param regex - the reguler expression to apply
+	 * @param regex - the regular expression to apply
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByTermRegex(String regex) {
@@ -361,18 +363,18 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 		List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
 	
 		for (ExtendedLocale extendedLocale : locales) {
-			String languageRefSetId;
+			Collection<String> mappedRefSetIds;
 	
 			if (!extendedLocale.getLanguageRefSetId().isEmpty()) {
-				languageRefSetId = extendedLocale.getLanguageRefSetId();
+				mappedRefSetIds = Collections.singleton(extendedLocale.getLanguageRefSetId());
 			} else {
-				languageRefSetId = LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(extendedLocale.getLanguageTag());
+				mappedRefSetIds = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getMappedLanguageRefSetIds(extendedLocale.getLanguageTag());
 			}
 	
-			if (languageRefSetId == null) {
+			if (mappedRefSetIds.isEmpty()) {
 				unconvertableLocales.add(extendedLocale);
 			} else {
-				languageRefSetIds.add(languageRefSetId);
+				languageRefSetIds.addAll(mappedRefSetIds);
 			}
 		}
 	

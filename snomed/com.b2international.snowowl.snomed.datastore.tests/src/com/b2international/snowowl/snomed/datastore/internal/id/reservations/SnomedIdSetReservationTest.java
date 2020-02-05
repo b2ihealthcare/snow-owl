@@ -21,11 +21,11 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifier;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.cis.reservations.Reservation;
 import com.b2international.snowowl.snomed.cis.reservations.Reservations;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.google.common.collect.Sets;
 
 /**

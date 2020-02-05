@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,6 @@ public interface ActiveFilter extends PropertyFilter
    * Returns the value of the '<em><b>Domain</b></em>' attribute.
    * The literals are from the enumeration {@link com.b2international.snowowl.snomed.ql.ql.Domain}.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Domain</em>' attribute isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Domain</em>' attribute.
    * @see com.b2international.snowowl.snomed.ql.ql.Domain
@@ -67,10 +63,6 @@ public interface ActiveFilter extends PropertyFilter
   /**
    * Returns the value of the '<em><b>Active</b></em>' attribute.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Active</em>' attribute isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Active</em>' attribute.
    * @see #setActive(boolean)

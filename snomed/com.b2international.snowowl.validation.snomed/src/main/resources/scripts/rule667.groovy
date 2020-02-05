@@ -7,35 +7,17 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.index.Hits
-import com.b2international.index.aggregations.Aggregation
-import com.b2international.index.aggregations.AggregationBuilder
-import com.b2international.index.query.Expressions
-import com.b2international.index.query.Query
-import com.b2international.index.query.Expressions.ExpressionBuilder
-import com.b2international.index.revision.RevisionSearcher
-import com.b2international.snowowl.core.ComponentIdentifier
-import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.core.domain.BranchContext
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
-
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
 import com.google.common.collect.HashMultimap
-import com.google.common.collect.Multimap
-import com.google.common.collect.Lists
 import com.google.common.collect.ImmutableMap
+import com.google.common.collect.Multimap
 
 final RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 

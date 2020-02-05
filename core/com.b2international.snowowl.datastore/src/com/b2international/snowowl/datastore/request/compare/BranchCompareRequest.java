@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,27 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.index.Hits;
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
-import com.b2international.index.revision.Revision;
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionCompare;
+import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.core.repository.TerminologyComponents;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.9
  */
-final class BranchCompareRequest implements Request<RepositoryContext, CompareResult> {
+final class BranchCompareRequest implements Request<RepositoryContext, CompareResult>, RepositoryAccessControl {
 
 	@JsonProperty
 	private String base;
@@ -68,8 +70,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	@Override
 	public CompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
-		final CoreTerminologyBroker terminologyBroker = context.service(CoreTerminologyBroker.class);
-		final Branch branchToCompare = context.service(BranchManager.class).getBranch(compare);
+		final Branch branchToCompare = RepositoryRequests.branching().prepareGet(compare).build().execute(context);
 		final long compareHeadTimestamp = branchToCompare.headTimestamp();
 		
 		final RevisionCompare compareResult;
@@ -82,53 +83,44 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
-		final CompareResult.Builder result = CompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
+		final CompareResult.Builder result = CompareResult.builder(baseBranchPath, compare, compareHeadTimestamp)
+				.addTotalNew(compareResult.getTotalAdded())
+				.addTotalChanged(compareResult.getTotalChanged())
+				.addTotalDeleted(compareResult.getTotalRemoved());
 		
-		for (Class<? extends Revision> revisionType : compareResult.getNewRevisionTypes()) {
-			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
-			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compareResult.searchNew(createMatchAllReturnIdsQuery(revisionType));
-				result.addTotalNew(compareResult.getNewTotals(revisionType));
-				hits.getHits()
-					.stream()
-					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
-					.forEach(result::putNewComponent);
+		for (RevisionCompareDetail detail : compareResult.getDetails()) {
+			final ObjectId affectedId;
+			if (detail.isComponentChange()) {
+				affectedId = detail.getComponent();
+			} else {
+				affectedId = detail.getObject();
 			}
-		}
-
-		for (Class<? extends Revision> revisionType : compareResult.getChangedRevisionTypes()) {
-			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
-			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compareResult.searchChanged(createMatchAllReturnIdsQuery(revisionType));
-				result.addTotalChanged(compareResult.getChangedTotals(revisionType));
-				hits.getHits()
-					.stream()
-					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
-					.forEach(result::putChangedComponent);
+			final short terminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(affectedId.type()));
+			if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID == terminologyComponentId || CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID == terminologyComponentId) {
+				continue;
 			}
-		}
-
-		for (Class<? extends Revision> revisionType : compareResult.getDeletedRevisionTypes()) {
-			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
-			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compareResult.searchDeleted(createMatchAllReturnIdsQuery(revisionType));
-				result.addTotalDeleted(compareResult.getDeletedTotals(revisionType));
-				hits.getHits()
-					.stream()
-					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
-					.forEach(result::putDeletedComponent);
+			
+			final ComponentIdentifier identifier = ComponentIdentifier.of(terminologyComponentId, affectedId.id());
+			
+			switch (detail.getOp()) {
+			case ADD:
+				result.putNewComponent(identifier);
+				break;
+			case CHANGE:
+				result.putChangedComponent(identifier);
+				break;
+			case REMOVE:
+				result.putDeletedComponent(identifier);
+				break;
 			}
 		}
 		
 		return result.build();
 	}
-
-	private Query<String> createMatchAllReturnIdsQuery(Class<? extends Revision> revisionType) {
-		return Query.select(String.class)
-			.from(revisionType)
-			.fields(RevisionDocument.Fields.ID)
-			.where(Expressions.matchAll())
-			.limit(limit)
-			.build();
+	
+	@Override
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
+	
 }

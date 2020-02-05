@@ -56,6 +56,7 @@ SO_JAVA_OPTS="-Xms2g \
                 -Dosgi.noShutdown=true \
                 -Declipse.application.launchDefault=false \
                 -Dosgi.classloader.type=nonparallel \
+                -Dosgi.console=2501 \
                 -XX:+AlwaysLockClassLoader \
                 -Djetty.port=9090 \
                 -Djetty.home=$KERNEL_HOME/configuration \
@@ -75,6 +76,6 @@ exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
   -Dosgi.configuration.area="$CONFIG_AREA" \
-  -jar plugins/org.eclipse.equinox.launcher_1.3.0.v20130327-1440.jar -console 2501
+  -jar plugins/org.eclipse.equinox.launcher_1.5.400.v20190515-0925.jar -console 2501
   
 popd

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,18 +28,21 @@ public final class Rf2Format {
 			// Terminology
 			.add(new Rf2ConceptContentType())
 			.add(new Rf2DescriptionContentType())
+			.add(new Rf2OwlExpressionRefSetContentType())
 			.add(new Rf2RelationshipContentType())
 			// Refset/Content
 			.add(new Rf2AssociationRefSetContentType())
 			.add(new Rf2AttributeValueRefSetContentType())
 			.add(new Rf2SimpleRefSetContentType())
-			.add(new Rf2OwlExpressionRefSetContentType())
+			.add(new Rf2ConcreteDomainRefSetContentType())
+			.add(new Rf2QueryRefSetContentType())
 			// Refset/Language
 			.add(new Rf2LanguageRefSetContentType())
 			// Refset/Map
 			.add(new Rf2SimpleMapRefSetContentType())
 			.add(new Rf2SimpleMapWithDescriptionContentType())
 			.add(new Rf2ComplexMapRefSetContentType())
+			.add(new Rf2ComplexBlockMapRefSetContentType())
 			.add(new Rf2ExtendedMapRefSetContentType())
 			// Refset/Metadata
 			.add(new Rf2ModuleDependencyRefSetContentType())

@@ -1,1 +1,0 @@
-This is a marker file for bundles with CDO native models.

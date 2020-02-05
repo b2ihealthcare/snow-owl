@@ -99,7 +99,6 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	
 	@Before
 	public void setup() {
-		super.setup();
 		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), getMapper(), new Mappings(ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class));
 		repository = new ValidationRepository(index);
 		context = TestBranchContext.on(MAIN)
@@ -123,7 +122,6 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	
 	@After
 	public void teardown() {
-		super.teardown();
 		repository.dispose();
 	}
 	
@@ -208,7 +206,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 			.build();
 
 		SnomedConceptDocument theConcept = concept(conceptId).active(true).build();
-		indexRevision(MAIN, STORAGE_KEY1, theConcept);
+		indexRevision(MAIN, theConcept);
 		
 		createSnomedQueryRule(ruleQuery);
 		
@@ -254,7 +252,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	public void conceptAttributeChange() throws Exception {
 		final String conceptId = RandomSnomedIdentiferGenerator.generateConceptId();
 		
-		indexRevision(MAIN, STORAGE_KEY1, concept(conceptId).effectiveTime(-1).build());
+		indexRevision(MAIN, concept(conceptId).effectiveTime(-1).build());
 		
 		createSnomedQueryRule(
 			ImmutableMap.<String, Object>builder()
@@ -265,7 +263,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 		
 		final ValidationIssues firstValidation = validate();
 		
-		indexRevision(MAIN, STORAGE_KEY1, concept(conceptId).effectiveTime(Long.MAX_VALUE).build());
+		indexRevision(MAIN, concept(conceptId).effectiveTime(Long.MAX_VALUE).build());
 		
 		ValidationIssues afterConceptEffectiveTimeChangeValidation = validate();
 		

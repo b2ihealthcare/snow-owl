@@ -17,8 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -30,14 +29,13 @@ final class SnomedSimpleMapMemberUpdateDelegate extends SnomedRefSetMemberUpdate
 	}
 
 	@Override
-	boolean execute(SnomedRefSetMember member, TransactionContext context) {
-		SnomedSimpleMapRefSetMember mapMember = (SnomedSimpleMapRefSetMember) member;
+	boolean execute(final SnomedRefSetMemberIndexEntry original, final SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
 		String newMapTargetId = getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET);
 
 		boolean changed = false;
 
-		if (newMapTargetId != null && !newMapTargetId.equals(mapMember.getMapTargetComponentId())) {
-			mapMember.setMapTargetComponentId(newMapTargetId);
+		if (newMapTargetId != null && !newMapTargetId.equals(original.getMapTarget())) {
+			member.field(SnomedRf2Headers.FIELD_MAP_TARGET, newMapTargetId);
 			changed |= true;
 		}
 

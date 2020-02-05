@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.Serializable;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Function;
 
 /**
  * Represents an identifiable component of a code system.
@@ -37,13 +36,6 @@ public interface IComponent extends Serializable {
 	long ROOT_IDL = Long.parseLong(ROOT_ID);
 
 	/**
-	 * Function to extract the ID from an {@link IComponent} instance.
-	 * 
-	 * @since 4.6
-	 */
-	Function<IComponent, String> ID_FUNCTION = IComponent::getId;
-
-	/**
 	 * Returns the component identifier.
 	 * 
 	 * @return the component identifier
@@ -57,13 +49,6 @@ public interface IComponent extends Serializable {
 	 */
 	Boolean isReleased();
 
-	/**
-	 * @deprecated - figure out how to remove storage key from domain representation classes, currently required for CDO object lookups on
-	 *             server/client side
-	 */
-	@JsonIgnore
-	long getStorageKey();
-	
 	/**
 	 * Returns a {@link ComponentIdentifier} instance to identify this component using its {@link #getTerminologyComponentId() type} and {@link #getId() id}.
 	 * @return

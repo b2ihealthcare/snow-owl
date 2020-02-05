@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,5 +28,4 @@ public abstract class AbstractEclValidator extends AbstractDeclarativeValidator 
 		result.add(com.b2international.snowowl.snomed.ecl.ecl.EclPackage.eINSTANCE);
 		return result;
 	}
-	
 }

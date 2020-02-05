@@ -57,6 +57,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 
 	/**
 	 * Marks the given validation object to save it into the Validation Repository.
+	 * 
 	 * @param id
 	 * @param doc
 	 */
@@ -65,9 +66,10 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 	}
 	
 	/**
-	 * Marks the given validation object for deletion. 
+	 * Marks the given validation object for deletion.
+	 *  
 	 * @param type
-	 * @param ids
+	 * @param id
 	 */
 	public void delete(Class<?> type, String id) {
 		objectsToDelete.put(type, id);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,28 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.MapTargetTypes;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -42,6 +50,7 @@ import com.google.common.collect.Multimap;
  * <ul>
  * <li>{@code type()} - returns the concept representing the type of the description</li>
  * <li>{@code members()} - returns the reference set members referencing this component</li>
+ * <li>{@code acceptabilities()} - returns the acceptability membership for this description</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 
@@ -51,6 +60,20 @@ import com.google.common.collect.Multimap;
  * @see SnomedReferenceSet
  * @see SnomedReferenceSetMember
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.DESCRIPTION, 
+	shortId = SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER,
+	name = "SNOMED CT Description",
+	componentCategory = ComponentCategory.DESCRIPTION,
+	docType = SnomedDescriptionIndexEntry.class,
+	supportedRefSetTypes = {
+		MapTargetTypes.SIMPLE,
+		MapTargetTypes.ATTRIBUTE_VALUE,
+		MapTargetTypes.SIMPLE_MAP,
+		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION,
+		MapTargetTypes.LANGUAGE
+	}
+)
 public final class SnomedDescription extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = 1L;
@@ -91,6 +114,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	private CaseSignificance caseSignificance;
 	private DescriptionInactivationIndicator inactivationIndicator;
 	private Map<String, Acceptability> acceptabilityMap;
+	private List<AcceptabilityMembership> acceptabilities;
 	private Multimap<AssociationType, String> associationTargets;
 	private SnomedConcept concept;
 	private SnomedConcept type;
@@ -184,18 +208,27 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	/**
 	 * Returns language reference set member acceptability values for this description, keyed by language reference set identifier.
 	 * 
-	 * @return the acceptability map for this description
+	 * @return all acceptability values from each available language refset for this description
+	 * @deprecated - expand {@link #getAcceptabilities()} instead of relying on {@link #getAcceptabilityMap()}
 	 */
 	public Map<String, Acceptability> getAcceptabilityMap() {
 		return acceptabilityMap;
 	}
-
+	
+	/**
+	 * Returns language reference set member acceptability values for this description, keyed by language reference set identifier.
+	 * 
+	 * @return all acceptability values from each available language refset for this description
+	 */
+	public List<AcceptabilityMembership> getAcceptabilities() {
+		return acceptabilities;
+	}
+	
 	/**
 	 * Returns the inactivation indicator (if any) of the description that can be used to identify the reason why the
 	 * current description has been deactivated.
 	 * 
-	 * @return the inactivation reason for this description, or {@code null} if the description is still active, or no
-	 * reason has been given
+	 * @return the inactivation reason for this description, or {@code null} if the description does not have an inactivation indicator set
 	 */
 	public DescriptionInactivationIndicator getInactivationIndicator() {
 		return inactivationIndicator;
@@ -204,10 +237,31 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	/**
 	 * Returns association reference set member targets keyed by the association type.
 	 * 
-	 * @return related association targets, or {@code null} if the description is still active
+	 * @return related association targets, or {@code null} if the description does not have any association targets
 	 */
 	public Multimap<AssociationType, String> getAssociationTargets() {
 		return associationTargets;
+	}
+	
+	/**
+	 * Returns association reference set member targets keyed by the association type as a {@link java.util.Map}.
+	 * 
+	 * @return related association targets, or {@code null} if the description does not have any association targets
+	 */
+	@JsonProperty("associationTargets")
+	public Map<AssociationType, List<String>> getAssociationTargetsAsMap() {
+		if (associationTargets == null) {
+			return null;
+		} else {
+			final Map<AssociationType, List<String>> targets = Maps.newHashMapWithExpectedSize(associationTargets.size());
+			associationTargets.forEach((key, value) -> {
+				if (!targets.containsKey(key)) {
+					targets.put(key, new ArrayList<>(associationTargets.get(key).size()));
+				}
+				targets.get(key).add(value);
+			});
+			return targets;
+		}
 	}
 
 	@JsonIgnore
@@ -244,17 +298,34 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		this.caseSignificance = caseSignificance;
 	}
 
+	@Deprecated
 	@JsonProperty("acceptability")
 	public void setAcceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
 		this.acceptabilityMap = acceptabilityMap;
+	}
+	
+	public void setAcceptabilities(List<AcceptabilityMembership> acceptabilities) {
+		this.acceptabilities = acceptabilities;
 	}
 	
 	public void setInactivationIndicator(final DescriptionInactivationIndicator descriptionInactivationIndicator) {
 		this.inactivationIndicator = descriptionInactivationIndicator;
 	}
 	
-	public void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
+	@JsonIgnore
+	public void setAssociationTargets(final Multimap<AssociationType, String> associationTargets) {
 		this.associationTargets = associationTargets;
+	}
+	
+	@JsonProperty("associationTargets")
+	public void setAssociationTargets(final Map<AssociationType, List<String>> associationTargets) {
+		if (associationTargets == null) {
+			this.associationTargets = null;
+		} else {
+			final ImmutableListMultimap.Builder<AssociationType, String> targets = ImmutableListMultimap.<AssociationType, String>builder();
+			associationTargets.forEach(targets::putAll);
+			this.associationTargets = targets.build();
+		}
 	}
 	
 	@Override

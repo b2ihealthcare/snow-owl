@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.mapdb.DB;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
@@ -32,20 +33,16 @@ public final class Rf2EffectiveTimeSlices {
 
 	private final DB db;
 	private final Map<String, Rf2EffectiveTimeSlice> slices = newHashMap();
-	private final Map<String, Long> storageKeysByComponent;
-	private final Map<String, Long> storageKeysByRefSet;
-	private final boolean loadOnDemand; 
+	private final boolean loadOnDemand;
 
-	public Rf2EffectiveTimeSlices(DB db, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet, boolean loadOnDemand) {
+	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand) {
 		this.db = db;
-		this.storageKeysByComponent = storageKeysByComponent;
-		this.storageKeysByRefSet = storageKeysByRefSet;
 		this.loadOnDemand = loadOnDemand;
 	}
 	
 	public Rf2EffectiveTimeSlice getOrCreate(String effectiveTime) {
 		if (!slices.containsKey(effectiveTime)) {
-			slices.put(effectiveTime, new Rf2EffectiveTimeSlice(db, effectiveTime, storageKeysByComponent, storageKeysByRefSet, loadOnDemand));
+			slices.put(effectiveTime, new Rf2EffectiveTimeSlice(db, effectiveTime, loadOnDemand));
 		}
 		return slices.get(effectiveTime);
 	}
@@ -59,7 +56,15 @@ public final class Rf2EffectiveTimeSlices {
 	}
 
 	public Iterable<Rf2EffectiveTimeSlice> consumeInOrder() {
-		return Ordering.natural().immutableSortedCopy(slices.keySet()).stream().map(slices::get).collect(Collectors.toList());
+		return Ordering.<String>from((effectiveTime1, effectiveTime2) -> {
+			if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime1)) {
+				return 1;
+			} else if(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime2)) {
+				return -1;
+			} else  {
+				return effectiveTime1.compareTo(effectiveTime2);
+			}
+		}).immutableSortedCopy(slices.keySet()).stream().map(slices::get).collect(Collectors.toList());
 	}
 	
 }

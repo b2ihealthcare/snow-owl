@@ -24,18 +24,17 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.index.ContainerIdProvider;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Predicate;
 
 /**
  * Common superclass for SNOMED CT transfer objects.
  */
-public abstract class SnomedDocument extends RevisionDocument implements ContainerIdProvider {
+public abstract class SnomedDocument extends RevisionDocument {
 
 	public static abstract class Expressions extends RevisionDocument.Expressions {
 		
@@ -102,12 +101,12 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 	};
 
 	// XXX: Type parameter reveals subclass to AbstractBuilder for fluent API
-	public static abstract class SnomedDocumentBuilder<B extends SnomedDocumentBuilder<B>> extends RevisionDocumentBuilder<B> {
+	public static abstract class Builder<B extends Builder<B, T>, T extends SnomedDocument> extends RevisionDocumentBuilder<B, T> {
 
 		protected String moduleId;
 		protected boolean active;
 		protected boolean released;
-		protected long effectiveTime;
+		protected long effectiveTime = EffectiveTimes.UNSET_EFFECTIVE_TIME;
 
 		public B moduleId(final String moduleId) {
 			this.moduleId = moduleId;
@@ -158,11 +157,6 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		this.effectiveTime = effectiveTime;
 	}
 	
-	@Override
-	public boolean isRoot() {
-		return false;
-	}
-
 	/**
 	 * @return {@code true} if the component has already appeared in an RF2 release, {@code false} otherwise
 	 */
@@ -202,7 +196,7 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 	}
 
 	protected ToStringHelper toStringHelper() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("id", getId())
 				.add("label", getLabel())
 				.add("iconId", getIconId())

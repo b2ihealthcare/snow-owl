@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,260 +16,140 @@
 package com.b2international.index.revision;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.b2international.collections.PrimitiveMaps;
-import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.ints.IntValueMap;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
-import com.b2international.index.Hits;
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
-import com.google.common.collect.ImmutableSet;
+import com.b2international.commons.collections.Collections3;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 5.0
  */
 public final class RevisionCompare {
 
-	// Allow to store a small amount of samples for each revision type, even if the limit has been hit
-	private static final int SAMPLE_LIMIT = 5_000;
-	
-	static Builder builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare, int limit) {
-		return new Builder(index, base, compare, limit);
+	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare) {
+		return new Builder(base, compare);
 	}
 	
 	static class Builder {
 		
-		private final InternalRevisionIndex index;
-		private final RevisionBranch base;
-		private final RevisionBranch compare;
-		private final int limit;
+		private final RevisionBranchRef base;
+		private final RevisionBranchRef compare;
+		private int added;
+		private int changed;
+		private int removed;
 	
-		private final Map<Class<? extends Revision>, LongSet> newComponents = newHashMap();
-		private final Map<Class<? extends Revision>, LongSet> changedComponents = newHashMap();
-		private final Map<Class<? extends Revision>, LongSet> deletedComponents = newHashMap();
+		private final Map<String, RevisionCompareDetail> detailsByComponent = newHashMap();
 		
-		private final IntValueMap<Class<? extends Revision>> newTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
-		private final IntValueMap<Class<? extends Revision>> changedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
-		private final IntValueMap<Class<? extends Revision>> deletedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
-
-		private int revisionCount = 0;
-		
-		Builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare, int limit) {
-			this.index = index;
+		Builder(RevisionBranchRef base, RevisionBranchRef compare) {
 			this.base = base;
 			this.compare = compare;
-			this.limit = limit;
 		}
 		
-		public Builder newRevision(Class<? extends Revision> type, long storageKey) {
-			if (!newComponents.containsKey(type)) {
-				newComponents.put(type, PrimitiveSets.newLongOpenHashSet());
+		public Builder apply(Commit commit) {
+			for (CommitDetail detail : commit.getDetails()) {
+				List<String> objects = detail.getObjects();
+				for (int i = 0; i < objects.size(); i++) {
+					String object = objects.get(i);
+					final ObjectId objectId = ObjectId.of(detail.getObjectType(), object);
+					
+					final List<RevisionCompareDetail> details;
+					if (detail.isPropertyChange()) {
+						// ignore property change if an existing ADD detail has been added for the component
+						RevisionCompareDetail existingObjectDetail = detailsByComponent.get(objectId.toString());
+						if (existingObjectDetail != null && existingObjectDetail.isAdd()) {
+							details = Collections.emptyList();
+						} else {
+							details = Collections.singletonList(
+									RevisionCompareDetail.propertyChange(
+											commit.getAuthor(), 
+											commit.getTimestamp(), 
+											commit.getComment(), 
+											detail.getOp(), 
+											objectId, 
+											detail.getProp(), 
+											detail.getFrom(), detail.getTo()));
+						}
+					} else {
+						details = detail.getComponents()
+								.get(i)
+								.stream()
+								.map(component -> RevisionCompareDetail.componentChange(commit.getAuthor(), commit.getTimestamp(), commit.getComment(), detail.getOp(), objectId, ObjectId.of(detail.getComponentType(), component)))
+								.collect(Collectors.toList());
+					}
+					
+					details.forEach(compareDetail -> {
+						switch (compareDetail.getOp()) {
+						case ADD:
+							added++;
+							break;
+						case CHANGE:
+							changed++;
+							break;
+						case REMOVE:
+							removed++;
+							break;
+						}
+						detailsByComponent.merge(compareDetail.key(), compareDetail, (oldV, newV) -> oldV.merge(newV));
+					});
+				}
 			}
-			
-			if (revisionCount < limit || newTotals.get(type) < SAMPLE_LIMIT) {
-				newComponents.get(type).add(storageKey);
-				revisionCount++;
-			}
-			
-			newTotals.put(type, newTotals.get(type) + 1);
-			return this;
-		}
-		
-		public Builder changedRevision(Class<? extends Revision> type, long storageKey) {
-			if (!changedComponents.containsKey(type)) {
-				changedComponents.put(type, PrimitiveSets.newLongOpenHashSet());
-			}
-			
-			if (revisionCount < limit || changedTotals.get(type) < SAMPLE_LIMIT) {
-				changedComponents.get(type).add(storageKey);
-				revisionCount++;
-			}
-			
-			changedTotals.put(type, changedTotals.get(type) + 1);
-			return this;
-		}
-		
-		public Builder deletedRevision(Class<? extends Revision> type, long storageKey) {
-			if (!deletedComponents.containsKey(type)) {
-				deletedComponents.put(type, PrimitiveSets.newLongOpenHashSet());
-			}
-			
-			if (revisionCount < limit || deletedTotals.get(type) < SAMPLE_LIMIT) {
-				deletedComponents.get(type).add(storageKey);
-				revisionCount++;
-			}
-			
-			deletedTotals.put(type, deletedTotals.get(type) + 1);
 			return this;
 		}
 		
 		public RevisionCompare build() {
-			return new RevisionCompare(index, 
+			return new RevisionCompare(
 					base, 
-					compare, 
-					newComponents, 
-					changedComponents, 
-					deletedComponents,
-					newTotals,
-					changedTotals,
-					deletedTotals);
+					compare,
+					ImmutableList.copyOf(detailsByComponent.values()),
+					added,
+					changed,
+					removed);
 		}
 		
 	}
 	
-	private final InternalRevisionIndex index;
-	private final RevisionBranch base;
-	private final RevisionBranch compare;
+	private final RevisionBranchRef base;
+	private final RevisionBranchRef compare;
+	private final List<RevisionCompareDetail> details;
+	private final int totalAdded;
+	private final int totalChanged;
+	private final int totalRemoved;
 
-	private final Map<Class<? extends Revision>, LongSet> newComponents;
-	private final Map<Class<? extends Revision>, LongSet> changedComponents;
-	private final Map<Class<? extends Revision>, LongSet> deletedComponents;
-
-	private final IntValueMap<Class<? extends Revision>> newTotals;
-	private final IntValueMap<Class<? extends Revision>> changedTotals;
-	private final IntValueMap<Class<? extends Revision>> deletedTotals;
-	
-	private RevisionCompare(InternalRevisionIndex index, 
-			RevisionBranch base, 
-			RevisionBranch compare,
-			Map<Class<? extends Revision>, LongSet> newComponents,
-			Map<Class<? extends Revision>, LongSet> changedComponents,
-			Map<Class<? extends Revision>, LongSet> deletedComponents,
-			IntValueMap<Class<? extends Revision>> newTotals,
-			IntValueMap<Class<? extends Revision>> changedTotals,
-			IntValueMap<Class<? extends Revision>> deletedTotals) {
-		
-		this.index = index;
+	private RevisionCompare(RevisionBranchRef base,	RevisionBranchRef compare, List<RevisionCompareDetail> details, int totalAdded, int totalChanged, int totalRemoved) {
 		this.base = base;
 		this.compare = compare;
-		this.newComponents = newComponents;
-		this.changedComponents = changedComponents;
-		this.deletedComponents = deletedComponents;
-		this.newTotals = newTotals;
-		this.changedTotals = changedTotals;
-		this.deletedTotals = deletedTotals;
+		this.details = Collections3.toImmutableList(details);
+		this.totalAdded = totalAdded;
+		this.totalChanged = totalChanged;
+		this.totalRemoved = totalRemoved;
+	}
+
+	public RevisionBranchRef getBase() {
+		return base;
 	}
 	
-	public Collection<Class<? extends Revision>> getNewRevisionTypes() {
-		return ImmutableSet.copyOf(newComponents.keySet());
+	public RevisionBranchRef getCompare() {
+		return compare;
 	}
 	
-	public Collection<Class<? extends Revision>> getChangedRevisionTypes() {
-		return ImmutableSet.copyOf(changedComponents.keySet());
+	public List<RevisionCompareDetail> getDetails() {
+		return details;
 	}
 	
-	public Collection<Class<? extends Revision>> getDeletedRevisionTypes() {
-		return ImmutableSet.copyOf(deletedComponents.keySet());
+	public int getTotalAdded() {
+		return totalAdded;
 	}
 	
-	public int getNewTotals(Class<? extends Revision> type) {
-		return newTotals.get(type);
+	public int getTotalChanged() {
+		return totalChanged;
 	}
 	
-	public int getChangedTotals(Class<? extends Revision> type) {
-		return changedTotals.get(type);
+	public int getTotalRemoved() {
+		return totalRemoved;
 	}
 	
-	public int getDeletedTotals(Class<? extends Revision> type) {
-		return deletedTotals.get(type);
-	}
-	
-	LongSet getNewComponents(Class<? extends Revision> type) {
-		return newComponents.get(type);
-	}
-	
-	Map<Class<? extends Revision>, LongSet> getNewComponents() {
-		return newComponents;
-	}
-	
-	LongSet getChangedComponents(Class<? extends Revision> type) {
-		return changedComponents.get(type);
-	}
-	
-	Map<Class<? extends Revision>, LongSet> getChangedComponents() {
-		return changedComponents;
-	}
-	
-	LongSet getDeletedComponents(Class<? extends Revision> type) {
-		return deletedComponents.get(type);
-	}
-	
-	Map<Class<? extends Revision>, LongSet> getDeletedComponents() {
-		return deletedComponents;
-	}
-	
-	public <T> Hits<T> searchNew(final Query<T> query) {
-		return index.read(compare, new RevisionIndexRead<Hits<T>>() {
-			@Override
-			public Hits<T> execute(RevisionSearcher searcher) throws IOException {
-				return searcher.search(rewrite(query, newComponents));
-			}
-		});
-	}
-	
-	public <T> Hits<T> searchChanged(final Query<T> query) {
-		return index.read(compare, new RevisionIndexRead<Hits<T>>() {
-			@Override
-			public Hits<T> execute(RevisionSearcher searcher) throws IOException {
-				return searcher.search(rewrite(query, changedComponents));
-			}
-		});
-	}
-	
-	public <T> Hits<T> searchDeleted(final Query<T> query) {
-		return index.read(base, new RevisionIndexRead<Hits<T>>() {
-			@Override
-			public Hits<T> execute(RevisionSearcher searcher) throws IOException {
-				return searcher.search(rewrite(query, deletedComponents));
-			}
-		});
-	}
-	
-	private <T> Query<T> rewrite(Query<T> query, Map<Class<? extends Revision>, LongSet> storageKeysByType) {
-		if (query.getParentType() != null) {
-			throw new UnsupportedOperationException("Nested query are not supported");
-		}
-		final Class<?> revisionType = query.getFrom();
-		final LongIterator queryStorageKeys = storageKeysByType.get(revisionType).iterator();
-		final Set<Long> storageKeys = newHashSet();
-		while (queryStorageKeys.hasNext()) {
-			storageKeys.add(queryStorageKeys.next());
-		}
-		return Query.select(query.getSelect())
-				.from(query.getFrom())
-				.fields(query.getFields())
-				.where(Expressions.builder()
-						.must(query.getWhere())
-						.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
-						.build())
-				.limit(Math.min(query.getLimit(), storageKeys.size())) // Allow retrieving a subset of these keys, using the query limit
-				.build();
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(newComponents, changedComponents, deletedComponents);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (!getClass().equals(obj.getClass())) return false;
-		RevisionCompare other = (RevisionCompare) obj;
-		return Objects.equals(newComponents, other.newComponents)
-				&& Objects.equals(changedComponents, other.changedComponents)
-				&& Objects.equals(deletedComponents, other.deletedComponents)
-				&& Objects.equals(base, other.base)
-				&& Objects.equals(compare, other.compare);
-	}
 }

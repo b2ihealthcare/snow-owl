@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@ package com.b2international.snowowl.internal.eventbus;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.net4j.util.CheckUtil;
 import org.eclipse.net4j.util.factory.ProductCreationException;
@@ -38,6 +39,7 @@ import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
+import com.google.common.collect.MapMaker;
 
 /**
  * @since 3.1
@@ -46,49 +48,76 @@ public class EventBus extends Lifecycle implements IEventBus {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EventBus.class);
 	
-	private Set<String> addressBook = new CopyOnWriteArraySet<>();
-	private ConcurrentMap<String, ChoosableList<Handler>> protocolMap = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, ChoosableList<Handler>> handlerMap = new ConcurrentHashMap<>();
-	private ChoosableList<ExecutorService> contexts = new ChoosableList<ExecutorService>();
+	private final Set<String> addressBook = new CopyOnWriteArraySet<>();
+	private final ConcurrentMap<String, ChoosableList<Handler>> protocolMap;
+	private final ConcurrentMap<String, ChoosableList<Handler>> handlerMap ;
+	private final ConcurrentMap<String, AtomicLong> inQueueMessages;
+	private final ConcurrentMap<String, AtomicLong> currentlyProcessingMessages;
+	private final ConcurrentMap<String, AtomicLong> succeededMessages;
+	private final ConcurrentMap<String, AtomicLong> completedMessages;
+	private final ConcurrentMap<String, AtomicLong> failedMessages;
 	private final String description;
 	private final int numberOfWorkers;
 	private final ExecutorServiceFactory executorServiceFactory;
+	
+	private ExecutorService executorService;
 
 	public EventBus() {
 		this(EventBusConstants.GLOBAL_BUS, Runtime.getRuntime().availableProcessors());
 	}
 	
 	public EventBus(String description, int numberOfWorkers) {
-		this(description, numberOfWorkers, new DefaultExecutorServiceFactory());
-	}
-
-	public EventBus(String description, int numberOfWorkers, ExecutorServiceFactory executorServiceFactory) {
 		CheckUtil.checkArg(description, "Description should be specified");
-		CheckUtil.checkArg(numberOfWorkers > 0, "Number of workers must be greater than zero");
+		CheckUtil.checkArg(numberOfWorkers >= 0, "Number of workers must be greater than zero");
 		this.description = description;
 		this.numberOfWorkers = numberOfWorkers;
-		this.executorServiceFactory = executorServiceFactory;
+		this.executorServiceFactory = numberOfWorkers == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory();
+		
+		// init stat maps with at least 1 concurrencyLevel
+		final int concurrencyLevel = Math.max(1, numberOfWorkers);
+		this.protocolMap = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.handlerMap = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.inQueueMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.currentlyProcessingMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.succeededMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.completedMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+		this.failedMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
 	}
 
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
-		contexts.list.addAll(executorServiceFactory.createExecutorServices(description, numberOfWorkers));
+		executorService = executorServiceFactory.createExecutorService(description, numberOfWorkers);
 	}
 
 	@Override
-	public IEventBus send(String address, Object message) {
-		return send(address, message, null);
+	public IEventBus send(String address, Object message, Map<String, String> headers) {
+		return send(address, message, IMessage.DEFAULT_TAG, headers);
 	}
 	
 	@Override
-	public IEventBus send(String address, Object message, IHandler<IMessage> handler) {
-		return sendMessageInternal(null, MessageFactory.createMessage(address, message), true, handler);
+	public IEventBus send(String address, Object message, String tag, Map<String, String> headers) {
+		return send(address, message, tag, headers, null);
 	}
 	
 	@Override
-	public IEventBus publish(String address, Object message) {
-		return sendMessageInternal(null, MessageFactory.createMessage(address, message), false, null);
+	public IEventBus send(String address, Object message, Map<String, String> headers, IHandler<IMessage> handler) {
+		return send(address, message, IMessage.DEFAULT_TAG, headers, handler);
+	}
+
+	@Override
+	public IEventBus send(String address, Object message, String tag, Map<String, String> headers, IHandler<IMessage> replyHandler) {
+		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag, headers), true, replyHandler);
+	}
+	
+	@Override
+	public IEventBus publish(String address, Object message, Map<String, String> headers) {
+		return publish(address, message, IMessage.DEFAULT_TAG, headers);
+	}
+	
+	@Override
+	public IEventBus publish(String address, Object message, String tag, Map<String, String> headers) {
+		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag, headers), false, null);
 	}
 	
 	@Override
@@ -125,15 +154,18 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	private void doReceive(final IMessage message, final Handler holder) {
+		queue(message);
 		holder.context.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
+					process(message);
 					holder.handler.handle(message);
 				} catch (Exception e) {
 					LOG.error("Exception happened while delivering message", e);
 					message.fail(e);
 				} finally {
+					complete(message);
 					if (holder.isReplyHandler || !LifecycleUtil.isActive(holder.handler)) {
 						unregisterHandler(holder.address, holder.handler);
 					}
@@ -185,6 +217,53 @@ public class EventBus extends Lifecycle implements IEventBus {
 		return this;
 	}
 	
+	private void queue(IMessage message) {
+		final String tag = message.tag();
+		increment(tag, inQueueMessages);
+	}
+
+	private void process(IMessage message) {
+		final String tag = message.tag();
+		decrement(tag, inQueueMessages);
+
+		increment(tag, currentlyProcessingMessages);
+	}
+
+	private void complete(IMessage message) {
+		final String tag = message.tag();
+		decrement(tag, currentlyProcessingMessages);
+
+		if (message.isSucceeded()) {
+			increment(tag, succeededMessages);
+		} else {
+			increment(tag, failedMessages);
+		}
+
+		increment(tag, completedMessages);
+	}
+
+	private void increment(String tag, Map<String, AtomicLong> toIncrement) {
+		final AtomicLong counter = getOrCreateCounter(tag, toIncrement);
+		counter.incrementAndGet();
+	}
+
+	private void decrement(String tag, Map<String, AtomicLong> toDecrement) {
+		final AtomicLong counter = getOrCreateCounter(tag, toDecrement);
+		counter.decrementAndGet();
+	}
+	
+	private AtomicLong getOrCreateCounter(final String tag, final Map<String, AtomicLong> counterMap) {
+		if (!counterMap.containsKey(tag)) {
+			synchronized (counterMap) {
+				if (!counterMap.containsKey(tag)) {
+					counterMap.put(tag, new AtomicLong(0L));
+				}
+			}
+		}
+		
+		return counterMap.get(tag);
+	}
+	
 	private void registerHandler(String address, IHandler<IMessage> handler, boolean replyHandler, boolean localOnly) {
 		checkActive();
 		MessageFactory.checkAddress(address);
@@ -209,7 +288,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 					}
 				}
 			}
-			final Handler h = new Handler(address, handler, contexts.choose(), replyHandler);
+			final Handler h = new Handler(address, handler, executorService, replyHandler);
 			if (!handlers.list.contains(h)) {
 				handlers.list.add(h);
 				LOG.trace("Registered handler {} to address {}", handler, address);
@@ -224,6 +303,36 @@ public class EventBus extends Lifecycle implements IEventBus {
 	@Override
 	public Set<String> getAddressBook() {
 		return new HashSet<String>(addressBook);
+	}
+	
+	@Override
+	public ExecutorService getExecutorService() {
+		return executorService;
+	}
+	
+	@Override
+	public long getInQueueMessages(String tag) {
+		return getOrCreateCounter(tag, inQueueMessages).get();
+	}
+
+	@Override
+	public long getProcessingMessages(String tag) {
+		return getOrCreateCounter(tag, currentlyProcessingMessages).get();
+	}
+	
+	@Override
+	public long getFailedMessages(String tag) {
+		return getOrCreateCounter(tag, failedMessages).get();
+	}
+	
+	@Override
+	public long getCompletedMessages(String tag) {
+		return getOrCreateCounter(tag, completedMessages).get();
+	}
+	
+	@Override
+	public long getSucceededMessages(String tag) {
+		return getOrCreateCounter(tag, succeededMessages).get();
 	}
 	
 	private IEventBus sendMessageInternal(IEventBusProtocol protocol, BaseMessage message, boolean send, IHandler<IMessage> replyHandler) {
@@ -258,8 +367,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 		@Override
 		public Object create(String description) throws ProductCreationException {
 			final String[] values = description.split(":");
-			final boolean worker = Boolean.parseBoolean(values[2]);
-			return new EventBus(values[0], Integer.parseInt(values[1]), worker ? new WorkerExecutorServiceFactory() : new DefaultExecutorServiceFactory());
+			return new EventBus(values[0], Integer.parseInt(values[1]));
 		}
 
 	}

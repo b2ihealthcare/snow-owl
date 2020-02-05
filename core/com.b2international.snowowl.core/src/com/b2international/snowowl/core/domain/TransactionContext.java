@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,18 @@ package com.b2international.snowowl.core.domain;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.ecore.EObject;
-
+import com.b2international.index.Doc;
+import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
+ * Represents an ongoing transaction to the underlying repository. The transaction can commit all aggregated changes up to a given point using the {@link #commit() commit method}. 
+ * The changes can be new, changed and deleted objects. 
+ * An object is basically a POJO with a {@link Doc} annotation, so the underlying repository will recognize and treat them properly during {@link #commit()}. 
+ * If the given Object is an instance of {@link Revision} then it will be treated as a {@link Revision} and it will be persisted on the branch available via {@link #branch()}.
+ * 
  * @since 4.5
  */
 public interface TransactionContext extends BranchContext, AutoCloseable {
@@ -33,45 +38,48 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * The author of the changes. 
 	 * @return
 	 */
-	String userId();
+	String author();
 	
 	/**
-	 * Adds the given {@link EObject} to this transaction context.
+	 * Adds the given {@link Object} to this transaction context as a completely new object. 
 	 * 
-	 * @param o
+	 * @param obj - the object to persist and add to the repository
+	 * @return the identifier of the object if it is an instanceof of any of the following classes: {@link Revision} / {@link CodeSystemEntry} / {@link CodeSystemVersionEntry} or <code>null</code> in any other cases.
 	 */
-	void add(EObject o);
+	String add(Object obj);
+	
+	/**
+	 * @param oldVersion
+	 * @param newVersion
+	 */
+	void update(Revision oldVersion, Revision newVersion);
 
 	/**
-	 * Removes the given EObject from the transaction context and from the store as
-	 * well.
+	 * Removes the given Object from this TransactionContext and from the underlying repository on {@link #commit() commit}. If the deletion of the
+	 * object is being prevented by a domain specific rule usually in the form of an {@link Exception}, then clients should be able to forcefully
+	 * delete the object from the underlying repository via the {@link #delete(Object, boolean) force delete method}.
 	 * 
-	 * @param o
+	 * @param obj
+	 *            - the object to delete from the context and from the repository
 	 */
-	void delete(EObject o);
+	void delete(Object obj);
 
 	/**
-	 * Forcefully removes the given EObject from the transaction context and from
-	 * the store as well.
+	 * Forcefully removes the given Object from the transaction context and from underlying repository on {@link #commit() commit} even if domain specific rules would otherwise prevent the deletion from happening.
 	 * 
-	 * @param o
+	 * @param obj - the object to forcefully delete from the context and from the repository
 	 */
-	void delete(EObject o, boolean force);
+	void delete(Object obj, boolean force);
 
 	/**
-	 * Prepares the commit.
-	 */
-	void preCommit();
-
-	/**
-	 * Commits any changes made to {@link EObject}s into the store.
+	 * Commits all changes made so far using the current userId, default commit comment and no lock context.
 	 * 
-	 * @return
+	 * @return - the timestamp of the successful commit
 	 */
 	long commit();
 	
 	/**
-	 * Commits any changes made to {@link EObject}s into the store.
+	 * Commits all changes made so far.
 	 * 
 	 * @param userId
 	 *            - the owner of the commit
@@ -86,22 +94,17 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	long commit(String userId, String commitComment, String parentContextDescription);
 	
 	/**
-	 * Returns whether the commit will notify interested services, notification services about this transaction's commit or not. It's enabled by default.
-	 * @return
+	 * @return whether the commit will notify interested services, notification services about this transaction's commit or not. It's enabled by default.
 	 */
 	boolean isNotificationEnabled();
 	
 	/**
 	 * Enable or disable notification of other services about this commit.
+	 * 
 	 * @param notificationEnabled
 	 */
 	void setNotificationEnabled(boolean notificationEnabled);
-
-	/**
-	 * Rolls back any changes the underlying transaction has since its creation.
-	 */
-	void rollback();
-
+	
 	/**
 	 * Returns a persisted component from the store with the given component id and
 	 * type.
@@ -112,7 +115,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @throws ComponentNotFoundException
 	 *             - if the component cannot be found
 	 */
-	<T extends EObject> T lookup(String componentId, Class<T> type) throws ComponentNotFoundException;
+	<T> T lookup(String componentId, Class<T> type) throws ComponentNotFoundException;
 
 	/**
 	 * Returns a persisted component from the store with the given component id and
@@ -122,7 +125,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @param type
 	 * @return
 	 */
-	<T extends EObject> T lookupIfExists(String componentId, Class<T> type);
+	<T> T lookupIfExists(String componentId, Class<T> type);
 	
 	/**
 	 * Lookup all components of the given type and ID set. The returned {@link Map} will contain all resolved objects, but won't contain any value for missing components.
@@ -131,10 +134,16 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @param type
 	 * @return
 	 */
-	<T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
+	<T> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
 
 	/**
-	 * Clears the entire content of the repository this context belongs to.
+	 * Stages all indexed instances of {@link Revision} and subclasses for deletion
+	 * that are currently returned by a "match all" query using
+	 * {@link RevisionIndex}.
+	 * <p>
+	 * Documents not under revision control should be removed separately, along with
+	 * any code system versions and corresponding version branches, if a complete
+	 * clear operation is needed.
 	 */
 	void clearContents();
 

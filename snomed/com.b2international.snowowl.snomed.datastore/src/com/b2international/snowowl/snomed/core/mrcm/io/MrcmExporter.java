@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ public interface MrcmExporter {
 	/**
 	 * Exports the current state of the MRCM rules.
 	 * 
-	 * @param user
-	 *            - the authenticated user to perform the export
-	 * @param stream
+	 * @param authorizationToken
+	 *            - the token to use to authenticate and authorize the user before performing the export
+	 * @param content
 	 *            - the outputstream to write MRCM release content to
 	 *            
 	 * @param exportFormat the export format to use           
 	 * @return - the exported file path
 	 */
-	void doExport(String user, OutputStream content, final MrcmExportFormat exportFormat);
+	void doExport(String authorizationToken, OutputStream content, final MrcmExportFormat exportFormat);
 
 }

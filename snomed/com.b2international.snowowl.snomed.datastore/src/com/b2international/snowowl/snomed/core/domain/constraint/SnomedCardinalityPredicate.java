@@ -19,11 +19,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.GroupRule;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.snomed.datastore.index.constraint.CardinalityPredicateFragment;
 
 /**
  * @since 6.5
@@ -72,28 +68,10 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 	}
 
 	@Override
-	public CardinalityPredicate createModel() {
-		return MrcmFactory.eINSTANCE.createCardinalityPredicate();
+	public CardinalityPredicateFragment createModel() {
+		return new CardinalityPredicateFragment(getId(), isActive(), getEffectiveTime(), getAuthor(), minCardinality, maxCardinality, groupRule, predicate.createModel());
 	}
-
-	@Override
-	public CardinalityPredicate applyChangesTo(final ConceptModelComponent existingModel) {
-		final CardinalityPredicate updatedModel = (existingModel instanceof CardinalityPredicate)
-				? (CardinalityPredicate) existingModel
-				: createModel();
-
-		updatedModel.setActive(isActive());
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setGroupRule(getGroupRule());
-		updatedModel.setMaxCardinality(getMaxCardinality());
-		updatedModel.setMinCardinality(getMinCardinality());
-		updatedModel.setPredicate(getPredicate().applyChangesTo(updatedModel.getPredicate()));
-		updatedModel.setUuid(getId());
-
-		return updatedModel;
-	}
-
+	
 	@Override
 	public SnomedCardinalityPredicate deepCopy(final Date date, final String userName) {
 		final SnomedCardinalityPredicate copy = new SnomedCardinalityPredicate();

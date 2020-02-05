@@ -19,12 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -34,35 +33,28 @@ public class RevisionRangePathQueryTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class);
 	}
 
-	private String branchA;
-	
-	@Before
-	@Override
-	public void setup() {
-		super.setup();
-		branchA = createBranch(MAIN, "a");
-	}
-	
 	@Test(expected = IllegalArgumentException.class)
 	public void readRangeWithoutBase() throws Exception {
-		search(RevisionIndex.toRevisionRange("", branchA), Query.select(Data.class).where(Expressions.matchAll()).build());
+		final String branchA = createBranch(MAIN, "a");
+		search(RevisionIndex.toRevisionRange("", branchA), Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void readRangeWithoutCompare() throws Exception {
-		search(RevisionIndex.toRevisionRange(MAIN, ""), Query.select(Data.class).where(Expressions.matchAll()).build());
+		search(RevisionIndex.toRevisionRange(MAIN, ""), Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 	}
 	
 	@Test
 	public void readRange() throws Exception {
-		final Data data1 = new Data("field1", "field2");
-		final Data data2 = new Data("field1", "field2Changed");
-		indexRevision(MAIN, STORAGE_KEY1, data1);
-		indexRevision(branchA, STORAGE_KEY1, data2);
-		final Iterable<Data> hits = search(RevisionIndex.toRevisionRange(MAIN, branchA), Query.select(Data.class).where(Expressions.matchAll()).build());
+		final String branchA = createBranch(MAIN, "a");
+		final RevisionData data1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data2 = new RevisionData(STORAGE_KEY2, "field1", "field2Changed");
+		indexRevision(MAIN, data1);
+		indexRevision(branchA, data2);
+		final Iterable<RevisionData> hits = search(RevisionIndex.toRevisionRange(MAIN, branchA), Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data2);
 	}
 	

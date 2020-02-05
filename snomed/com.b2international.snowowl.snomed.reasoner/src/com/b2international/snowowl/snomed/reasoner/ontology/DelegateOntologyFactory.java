@@ -51,12 +51,11 @@ public final class DelegateOntologyFactory implements OWLOntologyFactory {
 	}
 
 	@Override
-	public OWLOntology createOWLOntology(final OWLOntologyManager manager,
+	public OWLOntology createOWLOntology(final OWLOntologyManager manager, 
 			final OWLOntologyID ontologyID, 
-			final IRI ontologyIRI, 
-			final OWLOntologyCreationHandler handler)
-			throws OWLOntologyCreationException {
-		
+			final IRI documentIRI,
+			final OWLOntologyCreationHandler handler) throws OWLOntologyCreationException {
+
 		final DelegateOntology owlOntology = new DelegateOntology(manager, ontologyID, taxonomy);
 		handler.ontologyCreated(owlOntology);
 		handler.setOntologyFormat(owlOntology, new RDFXMLDocumentFormat());
@@ -65,10 +64,10 @@ public final class DelegateOntologyFactory implements OWLOntologyFactory {
 
 	@Override
 	public OWLOntology loadOWLOntology(final OWLOntologyManager manager, 
-			final OWLOntologyDocumentSource documentSource, 
-			final OWLOntologyCreationHandler handler,
+			final OWLOntologyDocumentSource documentSource,
+			final OWLOntologyCreationHandler handler, 
 			final OWLOntologyLoaderConfiguration configuration) throws OWLOntologyCreationException {
-		
+
 		throw new OWLOntologyCreationException("This ontology factory does not support loading OWL ontologies.");
 	}
 }

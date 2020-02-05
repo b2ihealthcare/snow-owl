@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,23 @@ import java.util.Set;
 /**
  * @since 4.7
  */
-public interface Writer extends AutoCloseable {
+public interface Writer {
 
-	void put(String key, Object object) throws IOException;
+	void put(String key, Object object);
 	
-	<T> void putAll(Map<String, T> objectsByKey) throws IOException;
+	<T> void putAll(Map<String, T> objectsByKey);
 
-	<T> void bulkUpdate(BulkUpdate<T> update) throws IOException;
+	<T> void bulkUpdate(BulkUpdate<T> update);
 	
-	<T> void bulkDelete(BulkDelete<T> delete) throws IOException;
+	<T> void bulkDelete(BulkDelete<T> delete);
 	
-	void remove(Class<?> type, String key) throws IOException;
+	void remove(Class<?> type, String keyToRemove);
 	
-	void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException;
+	void remove(Class<?> type, Set<String> keysToRemove);
+	
+	void removeAll(Map<Class<?>, Set<String>> keysToRemoveByType);
 
 	void commit() throws IOException;
 
-	DocSearcher searcher();
-	
+	Searcher searcher();
 }

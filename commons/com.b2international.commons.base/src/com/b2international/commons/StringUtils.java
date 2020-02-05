@@ -18,8 +18,10 @@ package com.b2international.commons;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
@@ -62,6 +64,19 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Converts the passed in String into camelCase. E.g. TEST_STRING -> testString
+	 * @param string to convert
+	 * @param splitChars characters to split the word
+	 * @return camelCase representation
+	 */
+	public static String camelCase(final String string, final String splitChars) {
+		
+		String[] words = string.toLowerCase().split(splitChars);
+		String capitalizedString = Arrays.stream(words).map(StringUtils::capitalizeFirstLetter).collect(Collectors.joining());
+		return lowerCaseFirstLetter(capitalizedString);
+	}
+	
+	/**
 	 * Returns the human-readable representation of a camelCase string.
 	 * Example: camelCaseExample -> camel Case Example or
 	 * complexXMLResolver -> complex XML Resolver
@@ -69,9 +84,8 @@ public class StringUtils {
 	 * @param stringToSplit
 	 * @return
 	 */
-	public static String splitCamelCase(final String s) {
-		
-		return s.replaceAll(String.format("%s|%s|%s",
+	public static String splitCamelCase(final String stringToSplit) {
+		return stringToSplit.replaceAll(String.format("%s|%s|%s",
 				"(?<=[A-Z])(?=[A-Z][a-z])", 
 				"(?<=[^A-Z])(?=[A-Z])",
 				"(?<=[A-Za-z])(?=[^A-Za-z])"), 

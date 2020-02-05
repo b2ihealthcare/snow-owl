@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>6.25.0-SNAPSHOT</version>
+		<version>7.4.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.index.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
@@ -30,11 +30,6 @@
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>com.b2international.snowowl.logging.logbackconfiguration</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
 								<id>com.b2international.collections.fastutil</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
@@ -53,6 +48,9 @@
 						<goals>
 							<goal>test</goal>
 						</goals>
+						<configuration>
+							<argLine>${tycho.testArgLine} -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
+						</configuration>
 					</execution>
 					<execution>
 						<id>http-tests</id>
@@ -61,19 +59,10 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
-							<argLine>-Dso.index.es.useHttp</argLine>
+							<argLine>${tycho.testArgLine} -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml -Dso.index.es.useHttp</argLine>
 						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<failIfNoTests>false</failIfNoTests>
-					<includes>
-						<include>**/*Test.java</include>
-					</includes>
-					<!-- Kill test JVM if tests take more than 10 minutes (600 seconds) 
-						to finish -->
-					<forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
@@ -38,13 +39,14 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
@@ -52,7 +54,6 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.DatatypeSnomedD
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
@@ -437,9 +438,10 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							final int occurrences = groupOccurrences.getOrDefault(typeId, 0);
 							concept.getRelationships()
 									.stream()
-									.filter(r -> typeId.equals(r.getTypeId()) && r.getGroup() == propertyGroup
-												&& (CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType()) 
-													|| CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType())))
+									.filter(r -> typeId.equals(r.getTypeId())
+											&& Objects.equals(r.getGroup(), propertyGroup) 
+											&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
+													|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
 									.forEach(relationship -> {
 										addCells(dataRow, occurrences, includeRelationshipId, ImmutableMap.of(relationship.getDestinationId(), getPreferredTerm(relationship.getDestination())));
 									});
@@ -464,7 +466,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
 											&& m.isActive()
 											&& typeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID))
-											&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == propertyGroup 
+											&& Objects.equals(m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP), propertyGroup) 
 											&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
 													|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
 									.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
@@ -516,7 +518,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						break;
 
 					case DEFINITION_STATUS: 
-						dataRow.add(concept.getDefinitionStatus().toString());
+						dataRow.add(concept.getDefinitionStatusId());
 						break;
 
 					default:

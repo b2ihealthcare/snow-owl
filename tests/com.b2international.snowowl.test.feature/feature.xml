@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.test.feature"
       label="Snow Owl Tests Feature"
-      version="6.25.0.qualifier"
+      version="7.4.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -11,7 +11,7 @@ Visit us at http://b2i.sg
    </description>
 
    <copyright>
-      Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+      Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
    </copyright>
 
    <plugin

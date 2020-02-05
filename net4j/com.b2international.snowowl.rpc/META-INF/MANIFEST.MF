@@ -2,14 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Remote Procedure Call
 Bundle-SymbolicName: com.b2international.snowowl.rpc;singleton:=true
-Bundle-Version: 6.25.0.qualifier
+Bundle-Version: 7.4.0.qualifier
 Bundle-Activator: com.b2international.snowowl.internal.rpc.bundle.OM$Activator
 Bundle-Vendor: B2i Healthcare
-Require-Bundle: org.eclipse.core.runtime;bundle-version="3.8.0",
- org.eclipse.net4j;bundle-version="4.1.2"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.100",
+ org.eclipse.net4j;bundle-version="[4.7.0,4.8.0)";visibility:=reexport
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.internal.rpc;x-internal:=t
  rue,com.b2international.snowowl.internal.rpc.bundle;x-internal:=true,
  com.b2international.snowowl.rpc
-Import-Package: org.slf4j;version="1.7.2"
+Import-Package: org.slf4j;version="1.7.25"

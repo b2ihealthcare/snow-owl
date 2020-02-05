@@ -16,15 +16,19 @@
 package com.b2international.snowowl.core.branch;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataHolder;
+import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataHolder;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.index.revision.RevisionBranchMergeSource;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -34,12 +38,30 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @since 4.1
  */
-public interface Branch extends Deletable, MetadataHolder, Serializable {
+public final class Branch implements MetadataHolder, Serializable {
 
+	private static final long serialVersionUID = 1305843991971921932L;
+
+	/**
+	 * The path of the main branch.
+	 */
+	public static final String MAIN_PATH = RevisionBranch.MAIN_PATH;
+	
+	/**
+	 * Segment separator in {@link Branch#path()} values.
+	 */
+	public static final String SEPARATOR = RevisionBranch.SEPARATOR;
+	
+	/**
+	 * A singleton {@link Joiner} that can be used to concatenate branch path segments into a fully usable branch path.
+	 * @see #get(String...)
+	 */
+	public static final Joiner BRANCH_PATH_JOINER = Joiner.on(SEPARATOR);
+	
 	/**
 	 * @since 6.16
 	 */
-	final class Fields {
+	public static final class Fields {
 		
 		public static final String PATH = "path";
 		public static final String PARENT_PATH = "parentPath";
@@ -48,129 +70,93 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 		public static final String HEAD_TIMESTAMP = "headTimestamp";
 		public static final String STATE = "state";
 		public static final Set<String> ALL = ImmutableSet.of(
-				PATH,
-				PARENT_PATH,
-				NAME,
-				BASE_TIMESTAMP,
-				HEAD_TIMESTAMP,
-				STATE);
-		
+			PATH,
+			PARENT_PATH,
+			NAME,
+			BASE_TIMESTAMP,
+			HEAD_TIMESTAMP,
+			STATE
+		);
+	}
+	
+	public static interface Expand {
+		public static final String CHILDREN = "children";
+	}
+	
+	private final long branchId;
+	private final boolean isDeleted;
+	private final Metadata metadata;
+	private final String name;
+	private final String parentPath;
+	private final long baseTimestamp;
+	private final long headTimestamp;
+	private final BranchState state;
+	private final IBranchPath branchPath;
+	private final List<RevisionBranchMergeSource> mergeSources;
+	
+	private Branches children;
+	
+	public Branch(RevisionBranch branch, BranchState state, IBranchPath branchPath, List<RevisionBranchMergeSource> mergeSources) {
+		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), branch.isDeleted(), branch.metadata(), state, branchPath, mergeSources);
+	}
+	
+	public Branch(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean isDeleted, Metadata metadata, BranchState state, IBranchPath branchPath, List<RevisionBranchMergeSource> mergeSources) {
+		this.branchId = branchId;
+		this.name = name;
+		this.parentPath = parentPath;
+		this.baseTimestamp = baseTimestamp;
+		this.headTimestamp = headTimestamp;
+		this.state = state;
+		this.isDeleted = isDeleted;
+		this.metadata = metadata;
+		this.branchPath = branchPath;
+		this.mergeSources = Collections3.toImmutableList(mergeSources);
 	}
 	
 	/**
-	 * Allowed set of characters for a branch name.
+	 * @return the numeric identifier associated with this branch.
 	 */
-	String DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET = "a-zA-Z0-9_-";
-
-	/**
-	 * The maximum length of a branch.
-	 */
-	int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 50;
-
-	/**
-	 * Branch name prefix used for temporary branches during rebase.
-	 */
-	String TEMP_PREFIX = "$";
-	
-	/**
-	 * Temporary branch name format. Values are prefix, name, current time. 
-	 */
-	String TEMP_BRANCH_NAME_FORMAT = "%s%s_%s";
-	
-	/**
-	 * @since 4.2
-	 */
-	interface BranchNameValidator {
-
-		BranchNameValidator DEFAULT = new BranchNameValidatorImpl();
-
-		/**
-		 * Validates a branch name and throws {@link BadRequestException} if not valid.
-		 * 
-		 * @param name
-		 * @throws BadRequestException
-		 */
-		void checkName(String name) throws BadRequestException;
-
-		/**
-		 * @since 4.2
-		 */
-		class BranchNameValidatorImpl implements BranchNameValidator {
-
-			private Pattern pattern;
-			private String allowedCharacterSet;
-			private int maximumLength;
-
-			public BranchNameValidatorImpl() {
-				this(DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET, DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH);
-			}
-
-			public BranchNameValidatorImpl(String allowedCharacterSet, int maximumLength) {
-				this.allowedCharacterSet = allowedCharacterSet;
-				this.maximumLength = maximumLength;
-				pattern = Pattern.compile(String.format("^(%s)?[%s]{1,%s}(_[0-9]{1,19})?$", Pattern.quote(TEMP_PREFIX), allowedCharacterSet, maximumLength));
-			}
-
-			@Override
-			public void checkName(String name) {
-				if (Strings.isNullOrEmpty(name)) {
-					throw new BadRequestException("Name cannot be empty");
-				}
-				if (!pattern.matcher(name).matches()) {
-					throw new BadRequestException(
-							"'%s' is either too long (max %s characters) or it contains invalid characters (only '%s' characters are allowed).", name,
-							maximumLength, allowedCharacterSet);
-				}
-			}
-
-		}
-
+	public long branchId() {
+		return branchId;
 	}
 
 	/**
-	 * The path of the main branch.
+	 * @return whether this branch is deleted or not
 	 */
-	static final String MAIN_PATH = "MAIN";
+	@JsonProperty
+	public boolean isDeleted() {
+		return isDeleted;
+	}
 
-	/**
-	 * @since 4.1
-	 */
-	enum BranchState {
-		UP_TO_DATE, FORWARD, BEHIND, DIVERGED, STALE
+	@JsonProperty
+	@Override
+	public Metadata metadata() {
+		return metadata;
 	}
 
 	/**
-	 * Segment separator in {@link Branch#path()} values.
+	 * @return the unique path of this {@link Branch}.
 	 */
-	String SEPARATOR = "/";
+	@JsonProperty
+	public String path() {
+		return Strings.isNullOrEmpty(parentPath) ? name : parentPath + Branch.SEPARATOR + name;
+	}
 
 	/**
-	 * Returns the unique path of this {@link Branch}.
-	 * 
-	 * @return
+	 * @return the unique path of the parent of this {@link Branch}.
 	 */
-	String path();
+	@JsonProperty
+	public String parentPath() {
+		return parentPath;
+	}
 
 	/**
-	 * Returns the unique path of the parent of this {@link Branch}.
-	 * 
-	 * @return
+	 * @return the name of the {@link Branch}, which is often the same value as the last segment of the {@link #path()}.
 	 */
-	String parentPath();
-
-	/**
-	 * Returns the name of the {@link Branch}, which is often the same value as the last segment of the {@link #path()}.
-	 * 
-	 * @return
-	 */
-	String name();
-
-	/**
-	 * Returns the parent {@link Branch} instance.
-	 * 
-	 * @return
-	 */
-	Branch parent();
+	@JsonProperty
+	public String name() {
+		return name;
+	}
 
 	/**
 	 * Returns the base timestamp value of this {@link Branch}. The base timestamp represents the time when this branch has been created, or branched
@@ -178,7 +164,10 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	 * 
 	 * @return
 	 */
-	long baseTimestamp();
+	@JsonProperty
+	public long baseTimestamp() {
+		return baseTimestamp;
+	}
 
 	/**
 	 * Returns the head timestamp value for this {@link Branch}. The head timestamp represents the time when the last commit arrived on this
@@ -186,7 +175,10 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	 * 
 	 * @return
 	 */
-	long headTimestamp();
+	@JsonProperty
+	public long headTimestamp() {
+		return headTimestamp;
+	}
 
 	/**
 	 * Returns the {@link BranchState} of this {@link Branch} compared to its {@link #parent()}. TODO document how BranchState calculation works
@@ -194,110 +186,41 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	 * @return
 	 * @see #state(Branch)
 	 */
-	BranchState state();
-
-	/**
-	 * Returns the {@link BranchState} of this {@link Branch} compared to the given target {@link Branch}.
-	 * 
-	 * @param target
-	 * @return
-	 */
-	BranchState state(Branch target);
-
-	boolean canRebase();
-
-	boolean canRebase(Branch onTopOf);
-
-	/**
-	 * Rebases this branch {@link Branch} on top of the specified {@link Branch}.
-	 * <p>
-	 * Rebasing this branch does not actually modify this {@link Branch} state, instead it will create a new {@link Branch} representing the rebased
-	 * form of this {@link Branch} and returns it. Commits available on the target {@link Branch} will be available on the resulting {@link Branch}
-	 * after successful rebase.
-	 * 
-	 * @param onTopOf
-	 *            - the branch on top of which this branch should be lifted
-	 * @param commitMessage
-	 *            - the commit message
-	 * @return
-	 */
-	Branch rebase(Branch onTopOf, String userId, String commitMessage);
-
-	Branch rebase(Branch onTopOf, String userId, String commitMessage, Runnable postReopen);
-
-	/**
-	 * Merges changes to this {@link Branch} by squashing the change set of the specified {@link Branch} into a single commit.
-	 * 
-	 * @param changesFrom
-	 *            - the branch to take changes from
-	 * @param commitMessage
-	 *            - the commit message
-	 * @return
-	 * @throws BranchMergeException
-	 *             - if the branch cannot be merged for some reason
-	 */
-	Branch merge(Branch changesFrom, String userId, String commitMessage) throws BranchMergeException;
-
-	/**
-	 * Creates a new child branch.
-	 * 
-	 * @param name
-	 *            - the name of the new child {@link Branch}
-	 * @return
-	 * @throws AlreadyExistsException
-	 *             - if the child branch already exists
-	 */
-	Branch createChild(String name) throws AlreadyExistsException;
-
-	/**
-	 * Creates a new child branch with the given name and metadata.
-	 * 
-	 * @param name
-	 *            - the name of the new child {@link Branch}, may not be <code>null</code>
-	 * @param metadata
-	 *            - optional metadata map
-	 * @return
-	 * @throws AlreadyExistsException
-	 *             - if the child branch already exists
-	 */
-	Branch createChild(String name, Metadata metadata);
-
-	/**
-	 * Returns all child branches created on this {@link Branch}.
-	 * 
-	 * @return a {@link Collection} of child {@link Branch} instances or an empty collection, never <code>null</code>.
-	 */
-	Collection<Branch> children();
-
-	/**
-	 * Reopens the branch with the same name and parent, on the parent head.
-	 * 
-	 * @return the reopened branch
-	 */
-	Branch reopen();
-
-	@Override
-	Branch delete();
+	@JsonProperty
+	public BranchState state() {
+		return state;
+	}
 
 	/**
 	 * @return
-	 * @deprecated - use the new {@link Branch} interface instead
+	 * @deprecated - backward compatible API support, use {@link #path()} instead.
 	 */
-	IBranchPath branchPath();
+	public IBranchPath branchPath() {
+		return branchPath;
+	}
 
 	/**
-	 * Returns a new version of this branch with updated {@link Metadata}.
-	 * 
-	 * @param metadata
+	 * Returns all child branches of this branch (direct and indirect children both). If not expanded this method returns a <code>null</code> object.
 	 * @return
 	 */
-	@Override
-	Branch withMetadata(Metadata metadata);
-
+	public Branches getChildren() {
+		return children;
+	}
+	
+	public void setChildren(Branches children) {
+		this.children = children;
+	}
+	
+	public List<RevisionBranchMergeSource> mergeSources() {
+		return mergeSources;
+	}
+	
 	/**
-	 * Updates the branch with the specified properties. Currently {@link Metadata} supported only.
-	 * 
-	 * @param metadata
+	 * @param segments - segments to join into a usable branch path string 
+	 * @return a full absolute branch path that can be used in {@link Request}s and other services  
 	 */
-	void update(Metadata metadata);
+	public static final String get(String...segments) {
+		return BRANCH_PATH_JOINER.join(segments);
+	}
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ import java.util.Objects;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.WithScore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
  * @since 4.7
@@ -35,16 +34,57 @@ public class RevisionFixtures {
 	private RevisionFixtures() {
 	}
 	
-	@Doc
-	@RevisionHash({ "field1", "field2" })
-	public static class Data extends Revision {
+	@Doc(revisionHash = { "field1", "field2" })
+	public static class RevisionData extends Revision {
+		
+		public static class Builder extends Revision.Builder<RevisionData.Builder, RevisionData> {
+
+			private String id;
+			private String field1;
+			private String field2;
+			
+			public Builder(RevisionData revisionData) {
+				this.id = revisionData.getId();
+				this.field1 = revisionData.field1;
+				this.field2 = revisionData.field2;
+			}
+
+			public Builder id(String id) {
+				this.id = id;
+				return getSelf();
+			}
+			
+			public Builder field1(String field1) {
+				this.field1 = field1;
+				return getSelf();
+			}
+			
+			public Builder field2(String field2) {
+				this.field2 = field2;
+				return getSelf();
+			}
+			
+			@Override
+			protected Builder getSelf() {
+				return this;
+			}
+
+			@Override
+			public RevisionData build() {
+				return new RevisionData(id, field1, field2);
+			}
+		}
 		
 		@Text(analyzer=Analyzers.TOKENIZED)
 		private String field1;
 		private String field2;
 
 		@JsonCreator
-		public Data(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2) {
+		public RevisionData(
+				@JsonProperty(Revision.Fields.ID) final String id, 
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2) {
+			super(id);
 			this.field1 = field1;
 			this.field2 = field2;
 		}
@@ -54,7 +94,7 @@ public class RevisionFixtures {
 			if (this == obj) return true;
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
-			Data other = (Data) obj;
+			RevisionData other = (RevisionData) obj;
 			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2); 
 		}
 		
@@ -63,6 +103,10 @@ public class RevisionFixtures {
 			return Objects.hash(field1, field2);
 		}
 		
+		@Override
+		protected Builder toBuilder() {
+			return new Builder(this);
+		}
 	}
 	
 	@Doc
@@ -72,7 +116,10 @@ public class RevisionFixtures {
 		private final String field;
 		
 		@JsonCreator
-		public AnalyzedData(@JsonProperty("field") final String field) {
+		public AnalyzedData(
+				@JsonProperty(Revision.Fields.ID) final String id, 
+				@JsonProperty("field") final String field) {
+			super(id);
 			this.field = field;
 		}
 		
@@ -99,15 +146,18 @@ public class RevisionFixtures {
 	@Doc
 	@Script(name="doi", script="return doc.doi.value")
 	@Script(name="doiFactor", script="return doc.doi.value * params.factor")
-	public static class ScoredData extends Data implements WithScore {
+	public static class ScoredData extends RevisionData implements WithScore {
 		
 		private float score = 0.0f;
 		private final float doi;
 
 		@JsonCreator
-		public ScoredData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2,
+		public ScoredData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2,
 				@JsonProperty("doi") final float doi) {
-			super(field1, field2);
+			super(id, field1, field2);
 			this.doi = doi;
 		}
 		
@@ -135,14 +185,17 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class BooleanData extends Data {
+	public static class BooleanData extends RevisionData {
 
 		private final boolean active;
 
 		@JsonCreator
-		public BooleanData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2,
+		public BooleanData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2,
 				@JsonProperty("value") final boolean active) {
-			super(field1, field2);
+			super(id, field1, field2);
 			this.active = active;
 		}
 		
@@ -153,14 +206,19 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class RangeData extends Data {
+	public static class RangeData extends RevisionData {
 		
 		private final int from;
 		private final int to;
 
 		@JsonCreator
-		public RangeData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2, @JsonProperty("from") final int from, @JsonProperty("to") final int to) {
-			super(field1, field2);
+		public RangeData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2, 
+				@JsonProperty("from") final int from,
+				@JsonProperty("to") final int to) {
+			super(id, field1, field2);
 			this.from = from;
 			this.to = to;
 		}
@@ -176,14 +234,18 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class NestedData extends Revision {
+	public static class NestedRevisionData extends Revision {
 		
 		private String field1;
 		// using unversioned data not the revision based one here
 		private com.b2international.index.Fixtures.Data data;
 		
 		@JsonCreator
-		public NestedData(@JsonProperty("field1") String field1, @JsonProperty("data") com.b2international.index.Fixtures.Data data) {
+		public NestedRevisionData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("field1") String field1, 
+				@JsonProperty("data") com.b2international.index.Fixtures.Data data) {
+			super(id);
 			this.field1 = field1;
 			this.data = data;
 		}
@@ -193,7 +255,7 @@ public class RevisionFixtures {
 			if (this == obj) return true;
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
-			NestedData other = (NestedData) obj;
+			NestedRevisionData other = (NestedRevisionData) obj;
 			return Objects.equals(field1, other.field1) && Objects.equals(data, other.data); 
 		}
 		
@@ -210,7 +272,10 @@ public class RevisionFixtures {
 		private com.b2international.index.Fixtures.ParentData parentData;
 		
 		@JsonCreator
-		public DeeplyNestedData(@JsonProperty("parentData") com.b2international.index.Fixtures.ParentData parentData) {
+		public DeeplyNestedData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("parentData") com.b2international.index.Fixtures.ParentData parentData) {
+			super(id);
 			this.parentData = parentData;
 		}
 		

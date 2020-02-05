@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package com.b2international.index.revision;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
+import java.util.Set;
 
 import com.b2international.index.Writer;
 
@@ -26,29 +24,24 @@ import com.b2international.index.Writer;
  * 
  * @since 4.7
  */
-public interface RevisionWriter {
-
-	void put(long storageKey, Revision object) throws IOException;
-
-	void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException;
-
-	void remove(Class<? extends Revision> type, long storageKey) throws IOException;
-
-	void remove(Class<? extends Revision> type, Collection<Long> storageKeys) throws IOException;
-
-	void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType) throws IOException;
-
-	void commit() throws IOException;
+public interface RevisionWriter extends Writer {
 
 	String branch();
 
+	@Override
 	RevisionSearcher searcher();
 
 	/**
-	 * Returns the underlying raw writer.
+	 * Set the revised time on the given set of document IDs on the given branch revised when searching it from the current set {@link #branch()}. The
+	 * given branch won't be affected.
 	 * 
-	 * @return
+	 * @param type
+	 *            - the doc type to update
+	 * @param keysToUpdate
+	 *            - the document IDs to update
+	 * @param branch
+	 *            - branch where the documents were created by another transaction
 	 */
-	Writer writer();
+	void setRevised(Class<?> type, Set<String> keysToUpdate, RevisionBranchRef branch);
 
 }

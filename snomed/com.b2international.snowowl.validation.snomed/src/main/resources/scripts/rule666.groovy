@@ -1,22 +1,18 @@
 package scripts
 
-import com.b2international.snowowl.core.ApplicationContext
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator
-import com.b2international.snowowl.eventbus.IEventBus
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.Acceptability
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType
 import com.google.common.collect.HashMultiset
 import com.google.common.collect.Lists
 import com.google.common.collect.Multiset
@@ -55,7 +51,8 @@ if (params.isUnpublishedOnly) {
 	def conceptsWithUnpublishedLanguageMembers = SnomedRequests.prepareSearchDescription()
 				.filterByIds(descriptionsIdsWithUnpublishedLanguageMembers)
 				.setLimit(descriptionsIdsWithUnpublishedLanguageMembers.size())
-				.setFields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
+				.setFields(SnomedDescriptionIndexEntry.Fields.ID,
+					SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 				.build()
 				.execute(ctx)
 				.collect({SnomedDescription d -> d.getConceptId()})

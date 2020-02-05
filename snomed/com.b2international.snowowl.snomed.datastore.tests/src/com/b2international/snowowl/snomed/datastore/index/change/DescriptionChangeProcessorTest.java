@@ -20,23 +20,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
-import java.util.Map.Entry;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -49,30 +43,29 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void addNewDescriptionWithoutLanguageMembers() throws Exception {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		registerNew(description);
+		SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
+		stageNew(fsn);
 		
 		process(processor);
 		
-		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description).build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
-		assertDocEquals(expectedDoc, currentDoc);
+		assertEquals(1, processor.getNewMappings().size());
+		Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		assertDocEquals(fsn, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
 	@Test
 	public void addNewDescriptionWithAcceptableLanguageMember() throws Exception {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		final SnomedLanguageRefSetMember acceptableMember = createLangMember(description.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_UK);
-		description.getLanguageRefSetMembers().add(acceptableMember);
-		registerNew(description);
-		registerNew(acceptableMember);
+		SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
+		SnomedRefSetMemberIndexEntry acceptableInUk = langMember(fsn.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_UK);
+		stageNew(fsn);
+		stageNew(acceptableInUk);
 		
 		process(processor);
 		
-		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description)
-				.memberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(fsn)
+				.memberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK)) // TODO fix me
 				.activeMemberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)
 				.build();
@@ -84,15 +77,14 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void addNewDescriptionWithPreferredLanguageMember() throws Exception {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		final SnomedLanguageRefSetMember acceptableMember = createLangMember(description.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_UK);
-		description.getLanguageRefSetMembers().add(acceptableMember);
-		registerNew(description);
-		registerNew(acceptableMember);
+		SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
+		SnomedRefSetMemberIndexEntry preferredInUk = langMember(fsn.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_UK);
+		stageNew(fsn);
+		stageNew(preferredInUk);
 		
 		process(processor);
 		
-		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description)
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(fsn)
 				.memberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.activeMemberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
@@ -106,31 +98,25 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	@Test
 	public void deleteAcceptableLanguageMember() throws Exception {
 		// create description as dirty
-		final Description description = createFsnWithTwoAcceptabilityMembers();
-		final SnomedLanguageRefSetMember acceptableMember = getFirstMember(description, Acceptability.ACCEPTABLE);
-		final SnomedLanguageRefSetMember preferredMember = getFirstMember(description, Acceptability.PREFERRED);
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), ImmutableMap.of(
+			Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED,
+			Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE
+		));
+		final SnomedRefSetMemberIndexEntry acceptableInUs = langMember(fsn.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US);
+		final SnomedRefSetMemberIndexEntry preferredInUk = langMember(fsn.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_UK);
 		
 		// index current revisions, so change processor can find them (both the description and the members)
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()), SnomedDescriptionIndexEntry.builder(description)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
-				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(acceptableMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(acceptableMember).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(preferredMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(preferredMember).build());
-		
-		// remove the acceptableMember and mark the description as dirty
-		description.getLanguageRefSetMembers().remove(acceptableMember);
-		registerDirty(description);
-		// delete the acceptable member of the description
-		registerDetached(acceptableMember.cdoID(), SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
+		initRevisions(fsn, acceptableInUs, preferredInUk);
+
+		stageRemove(acceptableInUs);
 		
 		process(processor);
 		
 		// expected that the new doc will have only the preferred acceptability
-		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(fsn)
+				.acceptabilityMap(Collections.singletonMap(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED))
 				.build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		// XXX the deleted member handled by another processor
 		assertEquals(0, processor.getNewMappings().size());
@@ -140,31 +126,25 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	@Test
 	public void deletePreferredLanguageMember() throws Exception {
 		// create description as dirty
-		final Description description = createFsnWithTwoAcceptabilityMembers();
-		final SnomedLanguageRefSetMember acceptableMember = getFirstMember(description, Acceptability.ACCEPTABLE);
-		final SnomedLanguageRefSetMember preferredMember = getFirstMember(description, Acceptability.PREFERRED);
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), ImmutableMap.of(
+			Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED,
+			Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE
+		));
+		final SnomedRefSetMemberIndexEntry acceptableInUs = langMember(fsn.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US);
+		final SnomedRefSetMemberIndexEntry preferredInUk = langMember(fsn.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_UK);
 		
 		// index current revisions, so change processor can find them (both the description and the members)
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()), SnomedDescriptionIndexEntry.builder(description)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
-				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(acceptableMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(acceptableMember).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(preferredMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(preferredMember).build());
-		
-		// remove the acceptableMember and mark the description as dirty
-		description.getLanguageRefSetMembers().remove(preferredMember);
-		registerDirty(description);
-		// delete the acceptable member of the description
-		registerDetached(preferredMember.cdoID(), SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
+		initRevisions(fsn, acceptableInUs, preferredInUk);
+
+		stageRemove(preferredInUk);
 		
 		process(processor);
 		
 		// expected that the new doc will have only the preferred acceptability
-		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description)
-				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(fsn)
+				.acceptabilityMap(Collections.singletonMap(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE))
 				.build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		// XXX the deleted member handled by another processor
 		assertEquals(0, processor.getNewMappings().size());
@@ -172,16 +152,18 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	}
 	
 	@Test
-	public void changeDescriptionCasesignificance() throws Exception {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()), SnomedDescriptionIndexEntry.builder(description).build());
-		description.setCaseSignificance(getConcept(Concepts.ENTIRE_TERM_CASE_INSENSITIVE));
-		registerDirty(description);
+	public void changeDescriptionCaseSignificance() throws Exception {
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
+		initRevisions(fsn);
+		
+		stageChange(fsn, SnomedDescriptionIndexEntry.builder(fsn).caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE).build());
 		
 		process(processor);
 		
-		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description).build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(fsn)
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.build();
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -189,23 +171,26 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void changeLanguageMemberAcceptability() throws Exception {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		final SnomedLanguageRefSetMember acceptableMember = createLangMember(description.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_UK);
-		description.getLanguageRefSetMembers().add(acceptableMember);
-		// index revisions for previous state
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()), SnomedDescriptionIndexEntry.builder(description).acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(acceptableMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(acceptableMember).build());
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), ImmutableMap.of(
+			Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
+		));
+		final SnomedRefSetMemberIndexEntry acceptableInUk = langMember(fsn.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_UK);
+		
+		initRevisions(fsn, acceptableInUk);
 		
 		// make the change
-		acceptableMember.setAcceptabilityId(Acceptability.PREFERRED.getConceptId());
-		registerDirty(acceptableMember);
+		stageChange(acceptableInUk, SnomedRefSetMemberIndexEntry.builder(acceptableInUk).field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Acceptability.PREFERRED.getConceptId()).build());
 		
 		process(processor);
 		
+		
+		assertEquals(1, processor.getChangedMappings().size());
+		
 		// description doc must be reindexed with change acceptabilityMap
-		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description).
-				acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED).build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(fsn).
+				acceptabilityMap(Collections.singletonMap(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED))
+				.build();
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -213,32 +198,31 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 
 	@Test
 	public void deleteDescription() throws Exception {
-		final CDOID storageKey = nextStorageKeyAsCDOID();
-		registerDetached(storageKey, SnomedPackage.Literals.DESCRIPTION);
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
+		initRevisions(fsn);
+		
+		stageRemove(fsn);
 		
 		process(processor);
 		
 		assertThat(processor.getNewMappings()).isEmpty();
 		assertThat(processor.getChangedMappings()).isEmpty();
-		assertEquals(1, processor.getDeletions().size());
-		final Entry<Class<? extends Revision>, Long> deletionEntry = Iterables.getOnlyElement(processor.getDeletions().entries());
-		assertEquals(SnomedDescriptionIndexEntry.class, deletionEntry.getKey());
-		assertEquals(CDOIDUtil.getLong(storageKey), deletionEntry.getValue().longValue());
+		assertThat(processor.getDeletions()).isEmpty();
 	}
 	
 	@Test
 	public void addNewMemberToNewDescription() {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
 		final String referringRefSetId = generateConceptId();
-		final SnomedRefSetMember member = createSimpleMember(description.getId(), referringRefSetId);
+		final SnomedRefSetMemberIndexEntry member = simpleMember(fsn.getId(), referringRefSetId);
 		
-		registerNew(description);
-		registerNew(member);
+		stageNew(fsn);
+		stageNew(member);
 		
 		process(processor);
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
-				.builder(description)
+				.builder(fsn)
 				.memberOf(Collections.singleton(referringRefSetId))
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
@@ -251,24 +235,23 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void addNewMemberToExistingDescription() {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		final String referringRefSetId = generateConceptId();
-		final SnomedRefSetMember member = createSimpleMember(description.getId(), referringRefSetId);
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
+		initRevisions(fsn);
 		
-		registerExistingObject(description);
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()),
-				SnomedDescriptionIndexEntry.builder(description).build());
-		registerNew(member);
+		final String referringRefSetId = generateConceptId();
+		final SnomedRefSetMemberIndexEntry member = simpleMember(fsn.getId(), referringRefSetId);
+		
+		stageNew(member);
 		
 		process(processor);
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
-				.builder(description)
+				.builder(fsn)
 				.memberOf(Collections.singleton(referringRefSetId))
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -276,26 +259,28 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void deleteMemberOfDescription() {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
 		final String referringRefSetId = generateConceptId();
-		final SnomedRefSetMember member = createSimpleMember(description.getId(), referringRefSetId);
+		final SnomedRefSetMemberIndexEntry member = simpleMember(fsn.getId(), referringRefSetId);
 		
-		registerExistingObject(description);
-		registerExistingObject(member);
-		
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()),
-				SnomedDescriptionIndexEntry.builder(description).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
-		
-		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		initRevisions(
+			SnomedDescriptionIndexEntry
+				.builder(fsn)
+				.memberOf(Collections.singleton(referringRefSetId))
+				.activeMemberOf(Collections.singleton(referringRefSetId))
+				.build(), 
+			member
+		);
+
+		stageRemove(member);
 		
 		process(processor);
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
-				.builder(description)
+				.builder(fsn)
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -303,48 +288,35 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void deleteOneMemberFromMultipleMembersOfDescription() {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
+		final SnomedDescriptionIndexEntry fsn = fsn(generateConceptId(), Collections.emptyMap());
 		final String referringRefSetId = generateConceptId();
-		final SnomedRefSetMember member1 = createSimpleMember(description.getId(), referringRefSetId);
-		final SnomedRefSetMember member2 = createSimpleMember(description.getId(), referringRefSetId);
+		final SnomedRefSetMemberIndexEntry member1 = simpleMember(fsn.getId(), referringRefSetId);
+		final SnomedRefSetMemberIndexEntry member2 = simpleMember(fsn.getId(), referringRefSetId);
 		
-		registerExistingObject(description);
-		registerExistingObject(member1);
-		registerExistingObject(member2);
+		initRevisions(
+			SnomedDescriptionIndexEntry
+				.builder(fsn)
+				.memberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
+				.activeMemberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
+				.build(), 
+			member1,
+			member2
+		);
 		
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()),
-				SnomedDescriptionIndexEntry.builder(description)
-					.memberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
-					.activeMemberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
-					.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
-		
-		registerDetached(member1.cdoID(), member1.eClass());
+		stageRemove(member1);
 		
 		process(processor);
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
-				.builder(description)
+				.builder(fsn)
 				.memberOf(Collections.singleton(referringRefSetId))
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
-	// Fixture helpers
-	
-	private SnomedLanguageRefSetMember getFirstMember(Description description, Acceptability acceptability) {
-		for (SnomedLanguageRefSetMember member : description.getLanguageRefSetMembers()) {
-			if (acceptability.getConceptId().equals(member.getAcceptabilityId())) {
-				return member;
-			}
-		}
-		return null;
-	}
-
 }

@@ -37,18 +37,18 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
+import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdMultimap;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdSet;
@@ -405,7 +405,7 @@ public final class ClassificationTracker implements IDisposableService {
 		});
 	}
 
-	private ClassificationTaskDocument getClassificationChecked(final DocSearcher searcher, final String classificationId) {
+	private ClassificationTaskDocument getClassificationChecked(final Searcher searcher, final String classificationId) {
 		try {
 
 			final ClassificationTaskDocument document = searcher.get(ClassificationTaskDocument.class, classificationId);

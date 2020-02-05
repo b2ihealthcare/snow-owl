@@ -1,45 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="changeProcessorFactory" name="changeProcessorFactory" schema="schema/changeProcessorFactory.exsd"/>
-   <extension-point id="serviceConfigJob" name="serviceConfigJob" schema="schema/serviceConfigJob.exsd"/>
-   <extension-point id="connectionFactory" name="connectionFactory" schema="schema/connectionFactory.exsd"/>
    <extension-point id="protocolFactory" name="Net4j Client Protocol Factory" schema="schema/protocolFactory.exsd"/>
-   <extension-point id="repository" name="Repository" schema="schema/repository.exsd"/>
-   <extension-point id="versioningManager" name="versioningManager" schema="schema/versioningManager.exsd"/>
    <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
-   <extension-point id="mappingProvider" name="mappingProvider" schema="schema/mappingProvider.exsd"/>
    <extension-point id="validationIssueDetailExtension" name="validationIssueDetailExtension" schema="schema/validationDetailExtension.exsd"/>
-   <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.oplock.impl.DatastoreLockManagerClientConfigJob"
-            id="com.b2international.snowowl.datastore.oplock.impl.DatastoreLockManagerClientConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
-            id="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.internal.file.FileRegistryServerServiceConfigJob"
-            id="com.b2international.snowowl.datastore.file.FileRegistryServerServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.internal.file.FileRegistryClientServiceConfigJob"
-            id="com.b2international.snowowl.datastore.file.FileRegistryClientServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.connectionFactory">
-      <connectionFactory
-            class="com.b2international.snowowl.datastore.cdo.CDOConnectionFactory"
-            id="com.b2international.snowowl.datastore.cdo.CDOConnectionFactory">
-      </connectionFactory>
-   </extension>
+   <extension-point id="serverProtocolFactory" name="Net4j Protocol Factory" schema="schema/serverProtocolFactory.exsd"/>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
@@ -50,23 +15,4 @@
             type="java.lang.Object">
       </propertyTester>
    </extension>
-      <extension
-            point="com.b2international.snowowl.core.bootstrapFragments">
-         <bootstrapFragment
-               class="com.b2international.snowowl.datastore.setup.RepositoryBootstrap">
-         </bootstrapFragment>
-         <bootstrapFragment
-               class="com.b2international.snowowl.datastore.connection.RepositoryConnectionBootstrap">
-         </bootstrapFragment>
-         <bootstrapFragment
-               class="com.b2international.snowowl.core.internal.validation.ValidationBootstrap">
-         </bootstrapFragment>
-      </extension>
-
-	<extension point="org.eclipse.emf.ecore.generated_package">
-      <package
-            uri="urn:com:b2international:snowowl:terminologymetadata:model"
-            class="com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage"
-            genModel="model/terminologymetadata.genmodel"/>
-	</extension>
 </plugin>

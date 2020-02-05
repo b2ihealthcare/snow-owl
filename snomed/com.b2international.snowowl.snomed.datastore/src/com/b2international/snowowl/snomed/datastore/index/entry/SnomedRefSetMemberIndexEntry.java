@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,23 +30,25 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
@@ -54,32 +56,17 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.util.SnomedRefSetSwitch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -88,52 +75,56 @@ import com.google.common.collect.Iterables;
 /**
  * Lightweight representation of a SNOMED CT reference set member.
  */
-@Doc
+@Doc(
+	type="member",
+	revisionHash = { 
+		SnomedDocument.Fields.ACTIVE, 
+		SnomedDocument.Fields.EFFECTIVE_TIME, 
+		SnomedDocument.Fields.MODULE_ID, 
+		SnomedDocument.Fields.RELEASED,
+		SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
+		SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
+		SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE,
+		SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE,
+		SnomedRefSetMemberIndexEntry.Fields.INTEGER_VALUE,
+		SnomedRefSetMemberIndexEntry.Fields.DECIMAL_VALUE,
+		SnomedRefSetMemberIndexEntry.Fields.RELATIONSHIP_GROUP,
+		SnomedRefSetMemberIndexEntry.Fields.TYPE_ID,
+		SnomedRefSetMemberIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
+		SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_LENGTH,
+		SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_FORMAT,
+		SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID,
+		SnomedRefSetMemberIndexEntry.Fields.SOURCE_EFFECTIVE_TIME,
+		SnomedRefSetMemberIndexEntry.Fields.TARGET_EFFECTIVE_TIME,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_DESCRIPTION,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_CATEGORY_ID,
+		SnomedRefSetMemberIndexEntry.Fields.CORRELATION_ID,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_ADVICE,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_RULE,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_GROUP,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_PRIORITY,
+		SnomedRefSetMemberIndexEntry.Fields.QUERY,
+		SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_CONSTRAINT,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_PARENT_DOMAIN,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_EDITORIAL_GUIDE_REFERENCE,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_CARDINALITY,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_STRENGTH_ID,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_RULE,
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_BLOCK,
+	}
+)
 @JsonDeserialize(builder = SnomedRefSetMemberIndexEntry.Builder.class)
-@RevisionHash({ 
-	SnomedDocument.Fields.ACTIVE, 
-	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID, 
-	SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
-	SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.INTEGER_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.DECIMAL_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.RELATIONSHIP_GROUP,
-	SnomedRefSetMemberIndexEntry.Fields.TYPE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_LENGTH,
-	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_FORMAT,
-	SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID,
-	SnomedRefSetMemberIndexEntry.Fields.SOURCE_EFFECTIVE_TIME,
-	SnomedRefSetMemberIndexEntry.Fields.TARGET_EFFECTIVE_TIME,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_DESCRIPTION,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_CATEGORY_ID,
-	SnomedRefSetMemberIndexEntry.Fields.CORRELATION_ID,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_ADVICE,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_RULE,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_GROUP,
-	SnomedRefSetMemberIndexEntry.Fields.MAP_PRIORITY,
-	SnomedRefSetMemberIndexEntry.Fields.QUERY,
-	SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_CONSTRAINT,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_PARENT_DOMAIN,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_EDITORIAL_GUIDE_REFERENCE,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_CARDINALITY,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_STRENGTH_ID,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_RULE,
-	SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID
-})
 public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	public static class Fields extends SnomedDocument.Fields {
@@ -214,6 +205,9 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String MRCM_RULE_REFSET_ID = SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
 		public static final String CLASS_AXIOM_RELATIONSHIP = "classAxiomRelationships";
 		public static final String GCI_AXIOM_RELATIONSHIP = "gciAxiomRelationships";
+		
+		// Complex map with map block
+		public static final String MAP_BLOCK = "mapBlock";
 	}
 	
 	public static Builder builder() {
@@ -222,7 +216,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public static Builder builder(final SnomedRefSetMemberIndexEntry source) {
 		return builder()
-				.storageKey(source.getStorageKey())
 				.active(source.isActive())
 				.effectiveTime(source.getEffectiveTime())
 				.id(source.getId())
@@ -239,7 +232,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public static final Builder builder(final SnomedReferenceSetMember input) {
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.active(input.isActive())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.id(input.getId())
@@ -256,7 +248,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		} else if (input.getReferencedComponent() instanceof SnomedRelationship) {
 			builder.referencedComponentType(RELATIONSHIP_NUMBER);
 		} else {
-			builder.referencedComponentType(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT);
+			builder.referencedComponentType(TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT);
 		}
 		
 		if (input.getEquivalentOWLRelationships() != null) {
@@ -281,142 +273,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return builder;
 	}
 	
-	public static Builder builder(SnomedRefSetMember refSetMember) {
-		final Builder builder = SnomedRefSetMemberIndexEntry.builder()
-				.storageKey(CDOIDUtils.asLong(refSetMember.cdoID()))
-				.id(refSetMember.getUuid()) 
-				.moduleId(refSetMember.getModuleId())
-				.active(refSetMember.isActive())
-				.released(refSetMember.isReleased())
-				.effectiveTime(refSetMember.isSetEffectiveTime() ? refSetMember.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.referenceSetId(refSetMember.getRefSetIdentifierId())
-				.referenceSetType(refSetMember.getRefSet().getType())
-				.referencedComponentType(refSetMember.getReferencedComponentType())
-				.referencedComponentId(refSetMember.getReferencedComponentId());
-
-		return new SnomedRefSetSwitch<Builder>() {
-
-			@Override
-			public Builder caseSnomedAssociationRefSetMember(final SnomedAssociationRefSetMember associationMember) {
-				return builder.targetComponent(associationMember.getTargetComponentId());
-			}
-
-			@Override
-			public Builder caseSnomedAttributeValueRefSetMember(final SnomedAttributeValueRefSetMember attributeValueMember) {
-				return builder.field(Fields.VALUE_ID, attributeValueMember.getValueId());
-			}
-
-			@Override
-			public Builder caseSnomedConcreteDataTypeRefSetMember(final SnomedConcreteDataTypeRefSetMember concreteDataTypeMember) {
-				return builder
-						.field(Fields.DATA_TYPE, concreteDataTypeMember.getDataType())
-						.field(Fields.SERIALIZED_VALUE, concreteDataTypeMember.getSerializedValue())
-						.field(Fields.RELATIONSHIP_GROUP, concreteDataTypeMember.getGroup())
-						.field(Fields.TYPE_ID, concreteDataTypeMember.getTypeId())
-						.field(Fields.CHARACTERISTIC_TYPE_ID, concreteDataTypeMember.getCharacteristicTypeId());
-			}
-
-			@Override
-			public Builder caseSnomedDescriptionTypeRefSetMember(final SnomedDescriptionTypeRefSetMember descriptionTypeMember) {
-				return builder
-						.field(Fields.DESCRIPTION_FORMAT, descriptionTypeMember.getDescriptionFormat())
-						.field(Fields.DESCRIPTION_LENGTH, descriptionTypeMember.getDescriptionLength());
-			}
-
-			@Override
-			public Builder caseSnomedLanguageRefSetMember(final SnomedLanguageRefSetMember languageMember) {
-				return builder.field(Fields.ACCEPTABILITY_ID, languageMember.getAcceptabilityId());
-			}
-
-			@Override
-			public Builder caseSnomedQueryRefSetMember(final SnomedQueryRefSetMember queryMember) {
-				return builder.field(Fields.QUERY, queryMember.getQuery());
-			}
-
-			@Override
-			public Builder caseSnomedSimpleMapRefSetMember(final SnomedSimpleMapRefSetMember mapRefSetMember) {
-				return builder
-						.field(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId())
-						.field(Fields.MAP_TARGET_DESCRIPTION, mapRefSetMember.getMapTargetComponentDescription());
-			}
-			
-			@Override
-			public Builder caseSnomedComplexMapRefSetMember(final SnomedComplexMapRefSetMember mapRefSetMember) {
-				return builder
-						.field(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId())
-						.field(Fields.CORRELATION_ID, mapRefSetMember.getCorrelationId())
-						.field(Fields.MAP_GROUP, Integer.valueOf(mapRefSetMember.getMapGroup()))
-						.field(Fields.MAP_ADVICE, mapRefSetMember.getMapAdvice())
-						.field(Fields.MAP_PRIORITY, Integer.valueOf(mapRefSetMember.getMapPriority()))
-						.field(Fields.MAP_RULE, mapRefSetMember.getMapRule())
-						// extended refset
-						.field(Fields.MAP_CATEGORY_ID, mapRefSetMember.getMapCategoryId());
-			}
-			
-			@Override
-			public Builder caseSnomedModuleDependencyRefSetMember(SnomedModuleDependencyRefSetMember member) {
-				return builder
-						.field(Fields.SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getSourceEffectiveTime()))
-						.field(Fields.TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getTargetEffectiveTime()));
-			}
-
-			@Override
-			public Builder caseSnomedOWLExpressionRefSetMember(SnomedOWLExpressionRefSetMember member) {
-				return builder
-						.field(Fields.OWL_EXPRESSION, member.getOwlExpression());
-			};
-			
-			@Override
-			public Builder caseSnomedMRCMDomainRefSetMember(SnomedMRCMDomainRefSetMember member) {
-				return builder
-						.field(Fields.MRCM_DOMAIN_CONSTRAINT, member.getDomainConstraint())
-						.field(Fields.MRCM_PARENT_DOMAIN, member.getParentDomain())
-						.field(Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, member.getProximalPrimitiveConstraint())
-						.field(Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, member.getProximalPrimitiveRefinement())
-						.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, member.getDomainTemplateForPrecoordination())
-						.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, member.getDomainTemplateForPostcoordination())
-						.field(Fields.MRCM_EDITORIAL_GUIDE_REFERENCE, member.getEditorialGuideReference());
-			};
-			
-			@Override
-			public Builder caseSnomedMRCMAttributeDomainRefSetMember(SnomedMRCMAttributeDomainRefSetMember member) {
-				return builder
-						.field(Fields.MRCM_DOMAIN_ID, member.getDomainId())
-						.field(Fields.MRCM_GROUPED, member.isGrouped())
-						.field(Fields.MRCM_ATTRIBUTE_CARDINALITY, member.getAttributeCardinality())
-						.field(Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, member.getAttributeInGroupCardinality())
-						.field(Fields.MRCM_RULE_STRENGTH_ID, member.getRuleStrengthId())
-						.field(Fields.MRCM_CONTENT_TYPE_ID, member.getContentTypeId());
-			};
-			
-			@Override
-			public Builder caseSnomedMRCMAttributeRangeRefSetMember(SnomedMRCMAttributeRangeRefSetMember member) {
-				return builder
-						.field(Fields.MRCM_RANGE_CONSTRAINT, member.getRangeConstraint())
-						.field(Fields.MRCM_ATTRIBUTE_RULE, member.getAttributeRule())
-						.field(Fields.MRCM_RULE_STRENGTH_ID, member.getRuleStrengthId())
-						.field(Fields.MRCM_CONTENT_TYPE_ID, member.getContentTypeId());
-			};
-			
-			@Override
-			public Builder caseSnomedMRCMModuleScopeRefSetMember(SnomedMRCMModuleScopeRefSetMember member) {
-				return builder
-						.field(Fields.MRCM_RULE_REFSET_ID, member.getMrcmRuleRefsetId());
-			};
-			
-			@Override
-			public Builder caseSnomedRefSetMember(SnomedRefSetMember object) {
-				return builder;
-			};
-
-		}.doSwitch(refSetMember);
-	}
-	
 	private static Object convertValue(String rf2Field, Object value) {
 		switch (rf2Field) {
 		case SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME:
 		case SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME:
-			return EffectiveTimes.getEffectiveTime(value);
+			return EffectiveTimes.getEffectiveTime((Date) value);
 		default: 
 			return value;
 		}
@@ -633,13 +494,13 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
-	public static final class Builder extends SnomedDocumentBuilder<Builder> {
+	public static final class Builder extends SnomedDocument.Builder<Builder, SnomedRefSetMemberIndexEntry> {
 
 		private String referencedComponentId;
 
 		private String referenceSetId;
 		private SnomedRefSetType referenceSetType;
-		private short referencedComponentType;
+		private short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
 
 		// Member specific fields, they can be null or emptyish values
 		// ASSOCIATION reference set members
@@ -696,6 +557,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String attributeRule;
 		// MRCM Module Scope
 		private String mrcmRuleRefsetId;
+		// Complex map with map block
+		private Integer mapBlock;
 
 		@JsonCreator
 		private Builder() {
@@ -754,6 +617,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 			case Fields.MRCM_RULE_REFSET_ID: this.mrcmRuleRefsetId = (String) value; break;
 			
+			case Fields.MAP_BLOCK: this.mapBlock = (Integer) value; break;
+			
 			default: throw new UnsupportedOperationException("Unknown RF2 member field: " + fieldName);
 			}
 			return this;
@@ -779,102 +644,102 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 
-		public Builder referencedComponentType(final short referencedComponentType) {
-			this.referencedComponentType = referencedComponentType;
-			return this;
-		}
-		
 		public Builder targetComponent(String targetComponent) {
 			this.targetComponent = targetComponent;
 			return this;
 		}
 		
-		Builder acceptabilityId(String acceptabilityId) {
+		public Builder referencedComponentType(final short referencedComponentType) {
+			this.referencedComponentType = referencedComponentType;
+			return this;
+		}
+		
+		public Builder acceptabilityId(String acceptabilityId) {
 			this.acceptabilityId = acceptabilityId;
 			return getSelf();
 		}
 		
-		Builder relationshipGroup(Integer relationshipGroup) {
+		public Builder relationshipGroup(Integer relationshipGroup) {
 			this.relationshipGroup = relationshipGroup;
 			return getSelf();
 		}
 		
-		Builder typeId(String typeId) {
+		public Builder typeId(String typeId) {
 			this.typeId = typeId;
 			return getSelf();
 		}
 		
-		Builder characteristicTypeId(final String characteristicTypeId) {
+		public Builder characteristicTypeId(final String characteristicTypeId) {
 			this.characteristicTypeId = characteristicTypeId;
 			return getSelf();
 		}
 		
-		Builder correlationId(final String correlationId) {
+		public Builder correlationId(final String correlationId) {
 			this.correlationId = correlationId;
 			return getSelf();
 		}
 		
-		Builder dataType(final DataType dataType) {
+		public Builder dataType(final DataType dataType) {
 			this.dataType = dataType;
 			return getSelf();
 		}
 		
-		Builder descriptionFormat(final String descriptionFormat) {
+		public Builder descriptionFormat(final String descriptionFormat) {
 			this.descriptionFormat = descriptionFormat;
 			return getSelf();
 		}
 		
-		Builder descriptionLength(final Integer descriptionLength) {
+		public Builder descriptionLength(final Integer descriptionLength) {
 			this.descriptionLength = descriptionLength;
 			return getSelf();
 		}
 		
-		Builder mapAdvice(final String mapAdvice) {
+		public Builder mapAdvice(final String mapAdvice) {
 			this.mapAdvice = mapAdvice;
 			return getSelf();
 		}
 		
-		Builder mapCategoryId(final String mapCategoryId) {
+		public Builder mapCategoryId(final String mapCategoryId) {
 			this.mapCategoryId = mapCategoryId;
 			return getSelf();
 		}
 		
-		Builder mapGroup(final Integer mapGroup) {
+		public Builder mapGroup(final Integer mapGroup) {
 			this.mapGroup = mapGroup;
 			return getSelf();
 		}
 		
-		Builder mapPriority(final Integer mapPriority) {
+		public Builder mapPriority(final Integer mapPriority) {
 			this.mapPriority = mapPriority;
 			return getSelf();
 		}
 		
-		Builder mapRule(final String mapRule) {
+		public Builder mapRule(final String mapRule) {
 			this.mapRule = mapRule;
 			return getSelf();
 		}
 		
-		Builder mapTarget(final String mapTarget) {
+		public Builder mapTarget(final String mapTarget) {
 			this.mapTarget = mapTarget;
 			return getSelf();
 		}
 		
-		Builder mapTargetDescription(final String mapTargetDescription) {
+		public Builder mapTargetDescription(final String mapTargetDescription) {
 			this.mapTargetDescription = mapTargetDescription;
 			return getSelf();
 		}
 		
-		Builder query(final String query) {
+		public Builder query(final String query) {
 			this.query = query;
 			return getSelf();
 		}
 		
-		Builder sourceEffectiveTime(final Long sourceEffectiveTime) {
+		public Builder sourceEffectiveTime(final Long sourceEffectiveTime) {
 			this.sourceEffectiveTime = sourceEffectiveTime;
 			return getSelf();
 		}
 		
-		Builder targetEffectiveTime(final Long targetEffectiveTime) {
+		public Builder targetEffectiveTime(final Long targetEffectiveTime) {
 			this.targetEffectiveTime = targetEffectiveTime;
 			return getSelf();
 		}
@@ -887,27 +752,27 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder decimalValue(final BigDecimal value) {
+		public Builder decimalValue(final BigDecimal value) {
 			this.value = value;
 			return getSelf();
 		}
 		
-		Builder booleanValue(final Boolean value) {
+		public Builder booleanValue(final Boolean value) {
 			this.value = value;
 			return getSelf();
 		}
 		
-		Builder integerValue(final Integer value) {
+		public Builder integerValue(final Integer value) {
 			this.value = value;
 			return getSelf();
 		}
 		
-		Builder stringValue(final String value) {
+		public Builder stringValue(final String value) {
 			this.value = value;
 			return getSelf();
 		}
 		
-		Builder valueId(String valueId) {
+		public Builder valueId(String valueId) {
 			this.valueId = valueId;
 			return getSelf();
 		}
@@ -927,82 +792,88 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder domainConstraint(String domainConstraint) {
+		public Builder domainConstraint(String domainConstraint) {
 			this.domainConstraint = domainConstraint;
 			return getSelf();
 		}
 		
-		Builder parentDomain(String parentDomain) {
+		public Builder parentDomain(String parentDomain) {
 			this.parentDomain = parentDomain;
 			return getSelf();
 		}
 		
-		Builder proximalPrimitiveConstraint(String proximalPrimitiveConstraint) {
+		public Builder proximalPrimitiveConstraint(String proximalPrimitiveConstraint) {
 			this.proximalPrimitiveConstraint = proximalPrimitiveConstraint;
 			return getSelf();
 		}
 		
-		Builder proximalPrimitiveRefinement(String proximalPrimitiveRefinement) {
+		public Builder proximalPrimitiveRefinement(String proximalPrimitiveRefinement) {
 			this.proximalPrimitiveRefinement = proximalPrimitiveRefinement;
 			return getSelf();
 		}
 		
-		Builder domainTemplateForPrecoordination(String domainTemplateForPrecoordination) {
+		public Builder domainTemplateForPrecoordination(String domainTemplateForPrecoordination) {
 			this.domainTemplateForPrecoordination = domainTemplateForPrecoordination;
 			return getSelf();
 		}
-		Builder domainTemplateForPostcoordination(String domainTemplateForPostcoordination) {
+		
+		public Builder domainTemplateForPostcoordination(String domainTemplateForPostcoordination) {
 			this.domainTemplateForPostcoordination = domainTemplateForPostcoordination;
 			return getSelf();
 		}
 		
-		Builder editorialGuideReference(String editorialGuideReference) {
+		public Builder editorialGuideReference(String editorialGuideReference) {
 			this.editorialGuideReference = editorialGuideReference;
 			return getSelf();
 		}
 		
-		Builder domainId(String domainId) {
+		public Builder domainId(String domainId) {
 			this.domainId = domainId;
 			return getSelf();
 		}
 		
-		Builder grouped(Boolean grouped) {
+		public Builder grouped(Boolean grouped) {
 			this.grouped = grouped;
 			return getSelf();
 		}
 		
-		Builder attributeCardinality(String attributeCardinality) {
+		public Builder attributeCardinality(String attributeCardinality) {
 			this.attributeCardinality = attributeCardinality;
 			return getSelf();
 		}
 		
-		Builder attributeInGroupCardinality(String attributeInGroupCardinality) {
+		public Builder attributeInGroupCardinality(String attributeInGroupCardinality) {
 			this.attributeInGroupCardinality = attributeInGroupCardinality;
 			return getSelf();
 		}
 		
-		Builder ruleStrengthId(String ruleStrengthId) {
+		public Builder ruleStrengthId(String ruleStrengthId) {
 			this.ruleStrengthId = ruleStrengthId;
 			return getSelf();
 		}
 		
-		Builder contentTypeId(String contentTypeId) {
+		public Builder contentTypeId(String contentTypeId) {
 			this.contentTypeId = contentTypeId;
 			return getSelf();
 		}
 		
-		Builder rangeConstraint(String rangeConstraint) {
+		public Builder rangeConstraint(String rangeConstraint) {
 			this.rangeConstraint = rangeConstraint;
 			return getSelf();
 		}
 		
-		Builder attributeRule(String attributeRule) {
+		public Builder attributeRule(String attributeRule) {
 			this.attributeRule = attributeRule;
 			return getSelf();
 		}
 		
-		Builder mrcmRuleRefsetId(String mrcmRuleRefsetId) {
+		public Builder mrcmRuleRefsetId(String mrcmRuleRefsetId) {
 			this.mrcmRuleRefsetId = mrcmRuleRefsetId;
+			return getSelf();
+		}
+		
+		public Builder mapBlock(final Integer mapBlock) {
+			this.mapBlock = mapBlock;
 			return getSelf();
 		}
 		
@@ -1104,13 +975,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			// MRCM Module Scope
 			doc.mrcmRuleRefsetId = mrcmRuleRefsetId;
 			
+			// Complex map with map block
+			doc.mapBlock = mapBlock;
+			
 			doc.setScore(score);
-			// metadata
-			doc.setBranchPath(branchPath);
-			doc.setCommitTimestamp(commitTimestamp);
-			doc.setStorageKey(storageKey);
-			doc.setReplacedIns(replacedIns);
-			doc.setSegmentId(segmentId);
 			return doc;
 		}
 	}
@@ -1184,6 +1052,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private String attributeRule;
 	// MRCM Module Scope
 	private String mrcmRuleRefsetId;
+	// Complex map with map block
+	private Integer mapBlock;
 
 	private SnomedRefSetMemberIndexEntry(final String id,
 			final String label,
@@ -1203,21 +1073,35 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				released, 
 				active, 
 				effectiveTimeLong);
-
-		checkArgument(referencedComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
 		this.referencedComponentId = referencedComponentId;
 		this.referenceSetId = referenceSetId;
 		this.referenceSetType = referenceSetType;
-		this.referencedComponentType = referencedComponentType;
+		checkArgument(referencedComponentType >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
+		if (!Strings.isNullOrEmpty(referencedComponentId)) {
+			this.referencedComponentType = referencedComponentType == TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT ? SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId) : referencedComponentType;
+		} else {
+			this.referencedComponentType = referencedComponentType;
+		}
+	}
+	
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
 	}
 
 	@Override
-	public String getContainerId() {
-		// XXX hack to make IHTSDO merge review API tests pass and work as before in 4.5
-		if (getReferenceSetType() == SnomedRefSetType.MODULE_DEPENDENCY) {
-			return null;
-		} else {
-			return getReferencedComponentId();
+	public ObjectId getContainerId() {
+		return ObjectId.of(getReferencedComponentDocClass(), getReferencedComponentId());
+	}
+
+	@JsonIgnore
+	Class<?> getReferencedComponentDocClass() {
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.REFSET_NUMBER:
+		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return SnomedConceptDocument.class;
+		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return SnomedDescriptionIndexEntry.class;
+		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return SnomedRelationshipIndexEntry.class;
+		default: throw new UnsupportedOperationException("Cannot get doc class for referenced component type: " + referencedComponentType);
 		}
 	}
 
@@ -1443,8 +1327,12 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return mrcmRuleRefsetId;
 	}
 	
-	// model helper methods
+	public Integer getMapBlock() {
+		return mapBlock;
+	}
 	
+	// model helper methods
+
 	@JsonIgnore
 	public Acceptability getAcceptability() {
 		return Acceptability.getByConceptId(getAcceptabilityId());
@@ -1475,7 +1363,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	 */
 	@JsonIgnore
 	public String getReferencedComponentTypeAsString() {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
+		return TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(referencedComponentType).id();
 	}
 
 	/**
@@ -1537,6 +1425,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		putIfPresent(builder, Fields.MRCM_ATTRIBUTE_RULE, getAttributeRule());
 		// MRCM Module Scope
 		putIfPresent(builder, Fields.MRCM_RULE_REFSET_ID, getMrcmRuleRefsetId());
+		// Complex map with map block
+		putIfPresent(builder, Fields.MAP_BLOCK, getMapBlock());
 		
 		return builder.build();
 	}
@@ -1595,7 +1485,9 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("rangeConstraint", rangeConstraint)
 				.add("attributeRule", attributeRule)
 				
-				.add("mrcmRuleRefsetId", mrcmRuleRefsetId);
+				.add("mrcmRuleRefsetId", mrcmRuleRefsetId)
+				
+				.add("mapBlock", mapBlock);
 		
 	}
 }

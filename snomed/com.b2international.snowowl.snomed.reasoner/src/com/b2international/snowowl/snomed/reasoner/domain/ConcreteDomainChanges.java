@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 6.12 (originally introduced in 7.x)
+ * @since 7.0
  */
 public final class ConcreteDomainChanges extends PageableCollectionResource<ConcreteDomainChange> {
 

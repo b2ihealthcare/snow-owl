@@ -1,7 +1,5 @@
 package scripts
 
-import groovy.swing.factory.CollectionFactory
-
 import java.util.stream.Collectors
 
 import com.b2international.index.Hits
@@ -12,13 +10,11 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.Relationship
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConceptSetDefinition
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.core.ecl.EclExpression

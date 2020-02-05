@@ -15,8 +15,8 @@
  */
 package com.b2international.index.es;
 
-import com.b2international.index.DocSearcher;
 import com.b2international.index.IndexClient;
+import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.admin.EsIndexAdmin;
@@ -41,7 +41,7 @@ public final class EsIndexClient implements IndexClient {
 	}
 
 	@Override
-	public DocSearcher searcher() {
+	public Searcher searcher() {
 		return new EsDocumentSearcher(admin, mapper);
 	}
 

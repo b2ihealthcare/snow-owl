@@ -20,24 +20,19 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Set;
 
-import org.eclipse.emf.ecore.EObject;
-
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.Identifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -48,11 +43,13 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -85,6 +82,9 @@ import com.google.common.collect.Iterables;
  * 
  * //Obtain the eventbus required to execution of the request
  * IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
+ * // AuthorizedEventBus instance could be required in scenarios where an authentication token is required to execute the request
+ * bus = new AuthorizedEventBus(bus, ImmutableMap.of("Authorization", authorizationToken));
+ * // the token can be `Basic Base64.encode("user:pass") or a JWT APIkey provdided by the server`
  * 
  * //Search for concepts matching the an ECL expression (DescendantsOrSelfOf: 'Clinical finding')
  * SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
@@ -203,7 +203,7 @@ public abstract class SnomedRequests {
 		return new SnomedRefSetMemberGetRequestBuilder(memberId);
 	}
 
-	private static DeleteRequestBuilder prepareDelete(String componentId, Class<? extends EObject> type) {
+	private static DeleteRequestBuilder prepareDelete(String componentId, Class<? extends RevisionDocument> type) {
 		return new SnomedDeleteRequestBuilder(componentId, type);
 	}
 	
@@ -213,7 +213,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given constraint
 	 */
 	public static DeleteRequestBuilder prepareDeleteConstraint(String constraintId) {
-		return prepareDelete(constraintId, AttributeConstraint.class);
+		return prepareDelete(constraintId, SnomedConstraintDocument.class);
 	}
 	
 	/**
@@ -222,7 +222,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given concept
 	 */
 	public static DeleteRequestBuilder prepareDeleteConcept(String conceptId) {
-		return prepareDelete(conceptId, Concept.class);
+		return prepareDelete(conceptId, SnomedConceptDocument.class);
 	}
 	
 	/**
@@ -231,7 +231,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given description
 	 */
 	public static DeleteRequestBuilder prepareDeleteDescription(String descriptionId) {
-		return prepareDelete(descriptionId, Description.class);
+		return prepareDelete(descriptionId, SnomedDescriptionIndexEntry.class);
 	}
 	
 	/**
@@ -240,16 +240,17 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given relationship
 	 */
 	public static DeleteRequestBuilder prepareDeleteRelationship(String relationshipId) {
-		return prepareDelete(relationshipId, Relationship.class);
+		return prepareDelete(relationshipId, SnomedRelationshipIndexEntry.class);
 	}
 	
 	/**
 	 * Returns a SNOMED CT request builder to prepare a request that deletes a reference set.
 	 * @param refSetId - the identifier of the reference set
+	 * @param force 
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given reference set
 	 */
-	public static DeleteRequestBuilder prepareDeleteReferenceSet(String refSetId) {
-		return prepareDelete(refSetId, SnomedRefSet.class);
+	public static SnomedTransactionalRequestBuilder<Boolean> prepareDeleteReferenceSet(String refSetId, boolean force) {
+		return prepareUpdateConcept(refSetId).clearRefSet(force);
 	}
 	
 	/**
@@ -258,7 +259,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given reference set member
 	 */
 	public static DeleteRequestBuilder prepareDeleteMember(String memberId) {
-		return prepareDelete(memberId, SnomedRefSetMember.class);
+		return prepareDelete(memberId, SnomedRefSetMemberIndexEntry.class);
 	}
 	
 	/**
@@ -346,12 +347,12 @@ public abstract class SnomedRequests {
 
 	/**
 	 * Returns the central class that provides access to IO services, turning the SNOMED CT content to delimiter separated values (DSV), and vice versa.
-	 * @return central SNOMED CT RF2 client
+	 * @return central SNOMED CT DSV client
 	 */
 	public static SnomedDSVRequests dsv() {
 		return new SnomedDSVRequests();
 	}
-
+	
 	/**
 	 * Returns a SNOMED CT request builder to prepare the evaluation of an Query type reference set.
 	 * @return SNOMED CT Query type reference set evaluation request builder
@@ -402,7 +403,7 @@ public abstract class SnomedRequests {
 	
 	/**
 	 * Returns a SNOMED CT request builder to prepare the updating a concept.
-	 * @param concept id of the concept to be updated
+	 * @param componentId - id of the concept to be updated
 	 * @return SNOMED CT concept update request builder
 	 */
 	public static SnomedConceptUpdateRequestBuilder prepareUpdateConcept(String componentId) {
@@ -411,7 +412,7 @@ public abstract class SnomedRequests {
 
 	/**
 	 * Returns a SNOMED CT request builder to prepare the updating a description.
-	 * @param description id of the description to be updated
+	 * @param componentId - description id of the description to be updated
 	 * @return SNOMED CT description update request builder
 	 */
 	public static SnomedDescriptionUpdateRequestBuilder prepareUpdateDescription(String componentId) {
@@ -420,7 +421,7 @@ public abstract class SnomedRequests {
 
 	/**
 	 * Returns a SNOMED CT request builder to prepare the updating a relationship.
-	 * @param relationship id of the relationship to be updated
+	 * @param componentId - relationship id of the relationship to be updated
 	 * @return SNOMED CT relationship update request builder
 	 */
 	public static SnomedRelationshipUpdateRequestBuilder prepareUpdateRelationship(String componentId) {
@@ -444,7 +445,8 @@ public abstract class SnomedRequests {
 	}
 
 	/**
-	 * Returns all applicable predicates for the given selfIds, ruleParentIds (+fetched ancestorIds), refSetIds. 
+	 * Returns all applicable predicates for the given selfIds, ruleParentIds (+fetched ancestorIds), refSetIds.
+	 * @param bus - the bus to use when sending the requests 
 	 * @param branch - the branch to query for the constraints
 	 * @param selfIds - set of SNOMED CT identifiers to use for getting self rules
 	 * @param ruleParentIds - set of parent IDs to use for getting the descendant rules, also fetches and applies all ancestors of these
@@ -452,13 +454,12 @@ public abstract class SnomedRequests {
 	 * @param relationshipKeys - relationship keys (in "type=value" format) to match
 	 * @return
 	 */
-	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final String branch, 
+	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final IEventBus bus, final String branch, 
 			final Set<String> selfIds, 
 			final Set<String> ruleParentIds, 
 			final Set<String> refSetIds,
 			final Set<String> relationshipKeys) {
 		// query constraint domains three times, on for each concept domain set
-		final IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		return SnomedRequests.prepareSearchConcept()
 			.all()
 			.filterByIds(ruleParentIds)

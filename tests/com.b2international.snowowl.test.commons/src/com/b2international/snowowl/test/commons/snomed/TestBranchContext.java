@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,20 @@
  */
 package com.b2international.snowowl.test.commons.snomed;
 
-import static org.mockito.Mockito.when;
-
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.emf.common.util.WrappedException;
-import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
+import com.b2international.commons.options.MetadataImpl;
+import com.b2international.index.es.client.EsIndexStatus;
+import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -32,12 +37,11 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.IHandler;
-import com.b2international.snowowl.eventbus.IMessage;
 
 /**
  * @since 6.4
@@ -54,8 +58,13 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 	}
 	
 	@Override
-	public RepositoryContext get(String repositoryId) {
+	public RepositoryContext getContext(String repositoryId) {
 		return this;
+	}
+	
+	@Override
+	public Logger log() {
+		return LoggerFactory.getLogger(repositoryId);
 	}
 	
 	@Override
@@ -83,6 +92,11 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 		return Health.GREEN;
 	}
 	
+	@Override
+	public List<EsIndexStatus> indices() {
+		return Collections.emptyList();
+	}
+	
 	public static TestBranchContext.Builder on(String branch) {
 		return new TestBranchContext.Builder(branch);
 	}
@@ -93,23 +107,20 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 		
 		Builder(String branch) {
 			final String repositoryId = UUID.randomUUID().toString();
-			final Branch mockBranch = Mockito.mock(Branch.class);
-			when(mockBranch.path()).thenReturn(branch);
+			IBranchPath branchPath = BranchPathUtils.createPath(branch);
+			final Branch mockBranch = new Branch(1L, branchPath.lastSegment(), branchPath.getParentPath(), 0L, 1L, false, new MetadataImpl(), BranchState.FORWARD, branchPath, Collections.emptyList());
 			context = new TestBranchContext(repositoryId, mockBranch);
 			final IEventBus bus = EventBusUtil.getDirectBus(repositoryId);
-			bus.registerHandler(Request.ADDRESS, new IHandler<IMessage>() {
-				@Override
-				public void handle(IMessage message) {
-					try {
-						final RepositoryRequest<?> repoReq = message.body(RepositoryRequest.class);
-						final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
-						final Request<BranchContext, ?> innerReq = ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next");
-						message.reply(innerReq.execute(context));
-					} catch (WrappedException e) {
-						message.fail(e.getCause());
-					} catch (Throwable e) {
-						message.fail(e);
-					}
+			bus.registerHandler(Request.ADDRESS, message -> {
+				try {
+					final RepositoryRequest<?> repoReq = message.body(RepositoryRequest.class);
+					final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
+					final Request<BranchContext, ?> innerReq = ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next");
+					message.reply(innerReq.execute(context));
+				} catch (WrappedException e1) {
+					message.fail(e1.getCause());
+				} catch (Throwable e2) {
+					message.fail(e2);
 				}
 			});
 			with(IEventBus.class, bus);

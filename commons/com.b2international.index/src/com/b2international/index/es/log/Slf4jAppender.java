@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @since 6.15
+ * @since 7.0
  */
 @Plugin(
 	name = "slf4j", 
@@ -63,10 +63,10 @@ public final class Slf4jAppender extends AbstractAppender {
 	}
 
 	@PluginFactory
-    public static Slf4jAppender createAppender(
+  public static Slf4jAppender createAppender(
     		@PluginAttribute("name") String name, 
     		@PluginElement("Layout") Layout<? extends Serializable> layout) {
 		return new Slf4jAppender(name, null, layout);
-    }
+  }
 
 }

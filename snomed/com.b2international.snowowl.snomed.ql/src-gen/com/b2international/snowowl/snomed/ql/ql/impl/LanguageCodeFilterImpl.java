@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,7 @@ public class LanguageCodeFilterImpl extends PropertyFilterImpl implements Langua
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public String getLanguageCode()
   {
     return languageCode;
@@ -95,6 +96,7 @@ public class LanguageCodeFilterImpl extends PropertyFilterImpl implements Langua
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setLanguageCode(String newLanguageCode)
   {
     String oldLanguageCode = languageCode;
@@ -179,7 +181,7 @@ public class LanguageCodeFilterImpl extends PropertyFilterImpl implements Langua
   {
     if (eIsProxy()) return super.toString();
 
-    StringBuffer result = new StringBuffer(super.toString());
+    StringBuilder result = new StringBuilder(super.toString());
     result.append(" (languageCode: ");
     result.append(languageCode);
     result.append(')');

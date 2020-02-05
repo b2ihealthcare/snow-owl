@@ -1,0 +1,158 @@
+/*
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+grammar com.b2international.snowowl.snomed.etl.Etl with com.b2international.snowowl.snomed.ecl.Ecl
+
+generate etl "http://www.b2international.com/snowowl/snomed/etl/Etl"
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+
+ExpressionTemplate:
+	{ExpressionTemplate} (((primitive?=SUBTYPE_OF | EQUIVALENT_TO) | slot=TokenReplacementSlot)? expression=SubExpression)?;
+
+SubExpression:
+	focusConcepts+=FocusConcept (PLUS focusConcepts+=FocusConcept)* (COLON refinement=Refinement)?;
+
+FocusConcept:
+	(slot=TemplateInformationSlot)? concept=ConceptReference;
+
+Refinement:
+	(attributes+=Attribute (COMMA attributes+=Attribute)* | groups+=AttributeGroup) (COMMA? groups+=AttributeGroup)*;
+
+AttributeGroup:
+	(slot=TemplateInformationSlot)? CURLY_OPEN attributes+=Attribute (COMMA attributes+=Attribute)* CURLY_CLOSE;
+
+Attribute:
+	(slot=TemplateInformationSlot)? name=ConceptReference EQUAL value=AttributeValue;
+
+AttributeValue:
+	ConceptReference | ROUND_OPEN SubExpression ROUND_CLOSE | StringValue | IntegerValue | DecimalValue | ConcreteValueReplacementSlot;
+
+ConceptIdReplacementSlot:
+	{ConceptIdReplacementSlot} DOUBLE_SQUARE_OPEN PLUS ID (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+
+ExpressionReplacementSlot:
+	{ExpressionReplacementSlot} DOUBLE_SQUARE_OPEN PLUS SCG? (ROUND_OPEN constraint=ExpressionConstraint ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+
+TokenReplacementSlot:
+	{TokenReplacementSlot} DOUBLE_SQUARE_OPEN PLUS TOK (ROUND_OPEN tokens+=SlotToken (tokens+=SlotToken)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+
+TemplateInformationSlot:
+	{TemplateInformationSlot} DOUBLE_SQUARE_OPEN (cardinality=EtlCardinality)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+
+ConcreteValueReplacementSlot:
+	StringReplacementSlot | IntegerReplacementSlot | DecimalReplacementSlot;
+
+StringReplacementSlot:
+	{StringReplacementSlot} DOUBLE_SQUARE_OPEN PLUS STR (ROUND_OPEN values+=STRING (values+=STRING)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+
+IntegerReplacementSlot:
+	{IntegerReplacementSlot} DOUBLE_SQUARE_OPEN PLUS INT (ROUND_OPEN values+=SlotInteger (values+=SlotInteger)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+
+DecimalReplacementSlot:
+	{DecimalReplacementSlot} DOUBLE_SQUARE_OPEN PLUS DEC (ROUND_OPEN values+=SlotDecimal (values+=SlotDecimal)* ROUND_CLOSE)? (name=SLOTNAME_STRING)? DOUBLE_SQUARE_CLOSE;
+
+EtlCardinality: // XXX this is different to Ecl.Cardinality -> needed to remove square brackets and to add optional tilde (-> IHTSDO has template syntax v0.2)
+	TILDE? min=NonNegativeInteger TO max=MaxValue;
+
+ConceptReplacementSlot:
+	ConceptIdReplacementSlot | ExpressionReplacementSlot;
+
+ConceptReference:
+	(slot=ConceptReplacementSlot) | (id=SnomedIdentifier (term=TERM_STRING)?);
+
+SlotToken:
+	EQUIVALENT_TO | SUBTYPE_OF |
+	COMMA | CONJUNCTION | DISJUNCTION | EXCLUSION | REVERSED | CARET |
+	LT | LTE | DBL_LT | LT_EM |
+	GT | GTE | DBL_GT | GT_EM |
+	EQUAL | NOT_EQUAL;
+
+StringValue:
+	value=STRING;
+
+IntegerValue: // this is used by SCG (and ECL) and can be negative or positive 
+	HASH value=Integer;
+
+DecimalValue: // this is used by SCG (and ECL) and can be negative or positive
+	HASH value=Decimal;
+	
+SlotInteger: // this is a slot integer value which cannot be negative, the range must preceed the simple value in this definition
+	SlotIntegerRange | SlotIntegerValue;
+
+SlotIntegerValue:
+	HASH value=NonNegativeInteger;
+
+SlotIntegerRange:
+	(minimum=SlotIntegerMinimumValue TO (maximum=SlotIntegerMaximumValue)?) | (TO maximum=SlotIntegerMaximumValue);
+
+SlotIntegerMinimumValue:
+	(exclusive?=GT)? HASH value=NonNegativeInteger;
+
+SlotIntegerMaximumValue:
+	(exclusive?=LT)? HASH value=NonNegativeInteger;
+
+SlotDecimal: // this is a slot decimal value which cannot be negative, the range must preceed the simple value in this definition
+	SlotDecimalRange | SlotDecimalValue;
+
+SlotDecimalValue:
+	HASH value=NonNegativeDecimal;
+
+SlotDecimalRange:
+	(minimum=SlotDecimalMinimumValue TO (maximum=SlotDecimalMaximumValue)?) | (TO maximum=SlotDecimalMaximumValue);
+
+SlotDecimalMinimumValue:
+	(exclusive?=GT)? HASH value=NonNegativeDecimal;
+
+SlotDecimalMaximumValue:
+	(exclusive?=LT)? HASH value=NonNegativeDecimal;
+
+terminal DOUBLE_SQUARE_OPEN:
+	'[[';
+
+terminal DOUBLE_SQUARE_CLOSE:
+	']]';
+
+terminal TILDE:
+	'~';
+
+terminal AT:
+	'@';
+
+terminal ID:
+	'id';
+
+terminal SCG:
+	'scg';
+
+terminal TOK:
+	'tok';
+
+terminal STR:
+	'str';
+
+terminal INT:
+	'int';
+
+terminal DEC:
+	'dec';
+
+terminal EQUIVALENT_TO:
+	'===';
+
+terminal SUBTYPE_OF:
+	'<<<';
+	
+terminal SLOTNAME_STRING:
+	AT (STRING | (!('\\' | '"' | "'" | WS | AT | SQUARE_OPEN | SQUARE_CLOSE))*);

@@ -1,7 +1,0 @@
-243796009 | situation with explicit context | :
-{ 363589002 | associated procedure | = ( <<17636008 | specimen collection | :
-!116686009 | has specimen | )
-, 408730004 | procedure context | = <288532009 | context values for actions |
-, 408731000 | temporal context | = <410510008 | temporal context value |
-, 408732007 | subject relationship context | = <125676002 | person |
-}

@@ -20,7 +20,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * @since 6.11 (originally introduced on 7.0)
+ * @since 7.0
  */
 public final class ConcreteDomainChange implements Serializable {
 

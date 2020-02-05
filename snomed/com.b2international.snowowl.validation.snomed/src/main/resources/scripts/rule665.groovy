@@ -1,9 +1,9 @@
 package scripts
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.CHARACTERISTIC_TYPE
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ADDITIONAL_RELATIONSHIP
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.CHARACTERISTIC_TYPE
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.INFERRED_RELATIONSHIP
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.STATED_RELATIONSHIP
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ADDITIONAL_RELATIONSHIP
 
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions

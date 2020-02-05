@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.merge.ConflictingAttribute;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
-import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -42,7 +41,7 @@ public class MergeConflictSerializationTest {
 	public void before() {
 		this.mapper = new ObjectMapper();
 		
-		this.conflict = MergeConflictImpl.builder()
+		this.conflict = MergeConflict.builder()
 				.componentId("id")
 				.componentType("type")
 				.type(ConflictType.CONFLICTING_CHANGE)
@@ -69,7 +68,7 @@ public class MergeConflictSerializationTest {
 
 	@Test
 	public void serializeConflictWithOnlyPropertyAttribute() throws Exception {
-		MergeConflict conflictWithAttribute = MergeConflictImpl.builder(this.conflict)
+		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict)
 				.conflictingAttribute(ConflictingAttributeImpl.builder().property("property").build()).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
 		String result = 
@@ -83,7 +82,7 @@ public class MergeConflictSerializationTest {
 	
 	@Test
 	public void serializeConflictWithPropertyAndOldValueAttribute() throws Exception {
-		MergeConflict conflictWithAttribute = MergeConflictImpl.builder(this.conflict)
+		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict)
 				.conflictingAttribute(ConflictingAttributeImpl.builder().property("property").oldValue("oldValue").build()).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
 		String result = 
@@ -97,7 +96,7 @@ public class MergeConflictSerializationTest {
 	
 	@Test
 	public void serializeConflictWithPropertyAndValueAttribute() throws Exception {
-		MergeConflict conflictWithAttribute = MergeConflictImpl.builder(this.conflict)
+		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict)
 				.conflictingAttribute(ConflictingAttributeImpl.builder().property("property").value("value").build()).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
 		String result = 
@@ -111,7 +110,7 @@ public class MergeConflictSerializationTest {
 	
 	@Test
 	public void serializeConflictWithFullAttribute() throws Exception {
-		MergeConflict conflictWithAttribute = MergeConflictImpl.builder(this.conflict).conflictingAttribute(attribute).build();
+		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict).conflictingAttribute(attribute).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
 		String result = 
 				"{\"componentId\":\"id\","
@@ -124,7 +123,7 @@ public class MergeConflictSerializationTest {
 
 	@Test
 	public void serializeConflictWithMultipleFullAttributes() throws Exception {
-		MergeConflict conflictWithAttribute = MergeConflictImpl
+		MergeConflict conflictWithAttribute = MergeConflict
 				.builder(this.conflict)
 				.conflictingAttribute(attribute)
 				.conflictingAttribute(ConflictingAttributeImpl.builder().property("property2").oldValue("oldValue2").value("value2").build())
@@ -146,12 +145,12 @@ public class MergeConflictSerializationTest {
 		assertEquals("id", conflict.getComponentId());
 		assertEquals("type", conflict.getComponentType());
 		assertEquals(ConflictType.CONFLICTING_CHANGE.name(), conflict.getType().name());
-		assertEquals(MergeConflictImpl.buildDefaultMessage("id", "type", Collections.<ConflictingAttribute>emptyList(), ConflictType.CONFLICTING_CHANGE), conflict.getMessage());
+		assertEquals(MergeConflict.buildDefaultMessage("id", "type", Collections.<ConflictingAttribute>emptyList(), ConflictType.CONFLICTING_CHANGE), conflict.getMessage());
 	}
 	
 	@Test
 	public void deserializeConflictWithFullAttributes() throws Exception {
-		MergeConflict conflictWithAttribute = MergeConflictImpl.builder(this.conflict).conflictingAttribute(attribute).build();
+		MergeConflict conflictWithAttribute = MergeConflict.builder(this.conflict).conflictingAttribute(attribute).build();
 		String json = mapper.writeValueAsString(conflictWithAttribute);
 		
 		MergeConflict conflict = mapper.readValue(json, MergeConflict.class);
@@ -165,6 +164,6 @@ public class MergeConflictSerializationTest {
 		assertEquals("oldValue", attr.getOldValue());
 		assertEquals("value", attr.getValue());
 		
-		assertEquals(MergeConflictImpl.buildDefaultMessage("id", "type", conflict.getConflictingAttributes(), ConflictType.CONFLICTING_CHANGE), conflict.getMessage());
+		assertEquals(MergeConflict.buildDefaultMessage("id", "type", conflict.getConflictingAttributes(), ConflictType.CONFLICTING_CHANGE), conflict.getMessage());
 	}
 }

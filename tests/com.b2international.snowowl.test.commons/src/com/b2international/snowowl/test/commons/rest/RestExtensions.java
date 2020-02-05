@@ -18,7 +18,6 @@ package com.b2international.snowowl.test.commons.rest;
 import static io.restassured.RestAssured.given;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +28,8 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.CoreMatchers;
 
 import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.IdentityWriter;
 import com.b2international.snowowl.test.commons.json.JsonExtensions;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -44,10 +38,8 @@ import com.google.common.collect.Iterables;
 
 import io.restassured.RestAssured;
 import io.restassured.config.LogConfig;
-import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
-import io.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
@@ -60,6 +52,9 @@ import io.restassured.specification.RequestSpecification;
  */
 public class RestExtensions {
 
+	public static final Joiner COMMA_JOINER = Joiner.on(",");
+	public static final String JSON_UTF8 = ContentType.JSON.withCharset(Charsets.UTF_8);
+	
 	// HTTP and REST API
 	private static final AtomicBoolean INITIALIZE_ONCE = new AtomicBoolean(false); 
 	public static final String CONTEXT = "snowowl";
@@ -77,8 +72,8 @@ public class RestExtensions {
 	public static final String DEFAULT_PASS = "snowowl";
 	public static final String WRONG_PASS = "wrong";
 	
-	static final String USER;
-	static final String PASS; 
+	public static final String USER;
+	public static final String PASS; 
 	
 	static {
 		if (!Strings.isNullOrEmpty(System.getProperty("test.user"))) {
@@ -104,23 +99,8 @@ public class RestExtensions {
 				RestAssured.baseURI = serverLocation;
 			}
 			
-			final ObjectMapper mapper = new ObjectMapper();
-			mapper.registerModule(new GuavaModule());
-			
 			RestAssured.config = RestAssuredConfig.config()
-				.logConfig(LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails())
-				.objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
-					public ObjectMapper create(Type arg0, String arg1) {
-						return mapper;
-					}
-				}));
-			
-			// add the user to the current identity provider
-			try {
-				((IdentityWriter) ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class)).addUser(USER, PASS);
-			} catch (AlreadyExistsException e) {
-				// ignore existing user
-			}
+				.logConfig(LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails());
 		}
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'");
 		return given().port(getPort()).basePath(CONTEXT + api);
@@ -135,7 +115,7 @@ public class RestExtensions {
 	}
 
 	private static RequestSpecification givenRequestWithPassword(String api, String password) {
-		return givenUnauthenticatedRequest(api).auth().basic(USER, password);
+		return givenUnauthenticatedRequest(api).auth().preemptive().basic(USER, password);
 	}
 
 	public static RequestSpecification withJson(RequestSpecification it, Map<String, ? extends Object> properties) {
@@ -222,6 +202,12 @@ public class RestExtensions {
 
 	public static Response putJson(String api, Map<String, ?> json, String...segments) {
 		return withJson(givenAuthenticatedRequest(api), json).put(asPath(Arrays.asList(segments)));
+	}
+
+	public static String assertCreated(ValidatableResponse response) {
+		return lastPathSegment(response.statusCode(201)
+				.extract()
+				.header("Location"));
 	}
 	
 }

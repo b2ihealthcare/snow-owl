@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.remotejobs;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.nestedMatch;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,6 +28,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
@@ -74,6 +76,17 @@ public final class RemoteJobEntry implements Serializable {
 		public static final String DELETED = "deleted";
 		public static final String USER = "user";
 		public static final String STATE = "state";
+		public static final String START_DATE = "startDate";
+		public static final String SCHEDULE_DATE = "scheduleDate";
+		public static final String PARAMETERS = "parameters";
+		public static final Set<String> SORT_FIELDS = ImmutableSet.of(
+			ID,
+			DELETED,
+			USER,
+			STATE,
+			START_DATE,
+			SCHEDULE_DATE
+		);
 		public static final String DESCRIPTION = "description";
 	}
 	
@@ -104,6 +117,14 @@ public final class RemoteJobEntry implements Serializable {
 		
 		public static Expression state(Iterable<RemoteJobState> states) {
 			return matchAny(Fields.STATE, FluentIterable.from(states).transform(Enum::name).toSet());
+		}
+
+		public static Expression matchRequestType(Iterable<String> values) {
+			return matchParameter("type", values);
+		}
+		
+		public static Expression matchParameter(String parameterName, Iterable<String> values) {
+			return nestedMatch(RemoteJobEntry.Fields.PARAMETERS, matchAny(parameterName, values));
 		}
 		
 	}
@@ -344,6 +365,9 @@ public final class RemoteJobEntry implements Serializable {
 	 */
 	public <T> T getResultAs(ObjectMapper mapper, Class<T> type) {
 		try {
+			if (CompareUtils.isEmpty(getResult())) {
+				return null;
+			}
 			return mapper.readValue(getResult(), type);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);

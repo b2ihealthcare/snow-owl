@@ -133,7 +133,7 @@ public final class ConceptChangeConverter
 
 				final SnomedConcept expandedConcept = conceptsById.get(conceptId);
 
-				reasonerConcept.setDefinitionStatus(expandedConcept.getDefinitionStatus());
+				reasonerConcept.setDefinitionStatusId(expandedConcept.getDefinitionStatusId());
 				reasonerConcept.setPt(expandedConcept.getPt());
 				reasonerConcept.setFsn(expandedConcept.getFsn());
 				// reasonerConcept.setReleased(...) is already set

@@ -17,17 +17,16 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Set;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -40,7 +39,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.CONCRETE_DATA_TYPE);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(SnomedRf2Headers.FIELD_VALUE);
@@ -51,7 +50,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_TYPE_ID);
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
-		DataType dataType = ((SnomedConcreteDataTypeRefSet) refSet).getDataType();
+		DataType dataType = refSet.getDataType();
 		String value = getProperty(SnomedRf2Headers.FIELD_VALUE);
 
 		try {
@@ -60,7 +59,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 			throw new BadRequestException("Couldn't deserialize value '%s' for data type '%s'.", value, dataType);
 		}
 
-		SnomedConcreteDataTypeRefSetMember member = SnomedComponents.newConcreteDomainReferenceSetMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newConcreteDomainReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withCharacteristicType(CharacteristicType.getByConceptId(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)))
@@ -72,7 +71,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 				.withTypeId(getComponentId(SnomedRf2Headers.FIELD_TYPE_ID))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override

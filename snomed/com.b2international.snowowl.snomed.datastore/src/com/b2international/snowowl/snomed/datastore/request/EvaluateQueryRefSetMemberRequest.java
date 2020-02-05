@@ -27,28 +27,28 @@ import java.util.Set;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChangeImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluationImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.google.common.base.Function;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluation> {
+public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluation> implements BranchAccessControl {
 
 	@NotEmpty
 	private String memberId;
@@ -65,7 +65,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 		final String targetReferenceSet;
 		
 		if (context instanceof TransactionContext) {
-			SnomedQueryRefSetMember member = ((TransactionContext) context).lookup(memberId, SnomedQueryRefSetMember.class);
+			SnomedRefSetMemberIndexEntry member = ((TransactionContext) context).lookup(memberId, SnomedRefSetMemberIndexEntry.class);
 			query = member.getQuery();
 			targetReferenceSet = member.getReferencedComponentId();
 			active = member.isActive();
@@ -127,19 +127,9 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 		// fetch all referenced components
 		final Set<String> referencedConceptIds = newHashSet();
 		referencedConceptIds.addAll(conceptsToAdd.keySet());
-		referencedConceptIds.addAll(FluentIterable.from(membersToRemove).transform(new Function<SnomedReferenceSetMember, SnomedCoreComponent>() {
-			@Override
-			public SnomedCoreComponent apply(SnomedReferenceSetMember input) {
-				return input.getReferencedComponent();
-			}
-		}).transform(IComponent.ID_FUNCTION).toSet());
+		referencedConceptIds.addAll(FluentIterable.from(membersToRemove).transform(SnomedReferenceSetMember::getReferencedComponent).transform(IComponent::getId).toSet());
 		
-		referencedConceptIds.addAll(FluentIterable.from(conceptsToActivate).transform(new Function<SnomedReferenceSetMember, SnomedCoreComponent>() {
-			@Override
-			public SnomedCoreComponent apply(SnomedReferenceSetMember input) {
-				return input.getReferencedComponent();
-			}
-		}).transform(IComponent.ID_FUNCTION).toSet());
+		referencedConceptIds.addAll(FluentIterable.from(conceptsToActivate).transform(SnomedReferenceSetMember::getReferencedComponent).transform(IComponent::getId).toSet());
 		
 		final Map<String, SnomedConcept> concepts;
 		if (expand().containsKey("referencedComponent")) {
@@ -150,7 +140,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 					.setExpand(expandOptions.getOptions("expand"))
 					.setLocales(locales())
 					.build()
-					.execute(context), IComponent.ID_FUNCTION);
+					.execute(context), IComponent::getId);
 		} else {
 			// initialize with empty SnomedConcept resources
 			concepts = newHashMap();
@@ -173,6 +163,11 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 			changes.add(MemberChangeImpl.changed(concepts.get(conceptToActivate.getReferencedComponent().getId()), conceptToActivate.getId()));
 		}
 		return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, changes);
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 
 }

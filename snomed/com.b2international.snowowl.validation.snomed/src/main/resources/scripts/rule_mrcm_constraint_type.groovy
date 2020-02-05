@@ -2,8 +2,6 @@ package scripts
 
 import java.util.stream.Collectors
 
-import javax.validation.Constraint
-
 import com.b2international.index.Hits
 import com.b2international.index.query.Expression
 import com.b2international.index.query.Expressions
@@ -12,12 +10,12 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.Relationship
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.core.ecl.EclExpression
 import com.b2international.snowowl.snomed.core.tree.Trees
@@ -27,7 +25,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType
 import com.google.common.base.Joiner
 import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMultimap

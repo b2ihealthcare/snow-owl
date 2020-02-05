@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import org.eclipse.emf.ecore.EObject;
-
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 
 /**
@@ -24,7 +23,7 @@ import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
  */
 public final class SnomedDeleteRequestBuilder extends DeleteRequestBuilder implements SnomedTransactionalRequestBuilder<Boolean> {
 
-	public SnomedDeleteRequestBuilder(String componentId, Class<? extends EObject> type) {
+	public SnomedDeleteRequestBuilder(String componentId, Class<? extends RevisionDocument> type) {
 		super(componentId, type);
 	}
 

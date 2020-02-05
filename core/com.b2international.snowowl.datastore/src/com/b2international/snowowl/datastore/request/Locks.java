@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -36,9 +35,9 @@ import com.google.common.collect.Maps;
 public final class Locks implements AutoCloseable {
 
 	private final String repositoryId;
-	private final IDatastoreOperationLockManager lockManager;
+	private final IOperationLockManager lockManager;
 	private final DatastoreLockContext lockContext;
-	private final Map<String, IOperationLockTarget> lockTargets;
+	private final Map<String, DatastoreLockTarget> lockTargets;
 	
 	public Locks(RepositoryContext context, String userId, String description, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
 		this(context, userId, description, ROOT, firstBranch, nextBranches);
@@ -46,19 +45,19 @@ public final class Locks implements AutoCloseable {
 	
 	public Locks(RepositoryContext context, String userId, String description, String parentLockContext, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
 		repositoryId = context.id();
-		lockManager = context.service(IDatastoreOperationLockManager.class);
+		lockManager = context.service(IOperationLockManager.class);
 		lockContext = new DatastoreLockContext(userId, description, Strings.isNullOrEmpty(parentLockContext) ? ROOT : parentLockContext);
 	
 		lockTargets = Maps.newHashMap();
 		for (Branch branch : Lists.asList(firstBranch, nextBranches)) {
-			lockTargets.put(branch.path(), new SingleRepositoryAndBranchLockTarget(repositoryId, branch.branchPath()));	
+			lockTargets.put(branch.path(), new DatastoreLockTarget(repositoryId, branch.path()));	
 		}
 		
 		lock();
 	}
 
 	private void lock() throws OperationLockException, InterruptedException {
-		lockManager.lock(lockContext, IDatastoreOperationLockManager.IMMEDIATE, lockTargets.values());
+		lockManager.lock(lockContext, IOperationLockManager.IMMEDIATE, lockTargets.values());
 	}
 	
 	public void unlock(String path) throws OperationLockException {

@@ -94,5 +94,5 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 	protected RemoteJobs createEmptyResult(int limit) {
 		return new RemoteJobs(Collections.emptyList(), null, null, limit, 0);
 	}
-	
+
 }

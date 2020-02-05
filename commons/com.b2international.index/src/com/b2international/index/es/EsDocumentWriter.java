@@ -42,9 +42,9 @@ import org.elasticsearch.common.xcontent.XContentType;
 
 import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
+import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.client.EsClient;
@@ -71,7 +71,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 public class EsDocumentWriter implements Writer {
 
 	private final EsIndexAdmin admin;
-	private final DocSearcher searcher;
+	private final Searcher searcher;
 
 	private final Table<Class<?>, String, Object> indexOperations = HashBasedTable.create();
 	private final Multimap<Class<?>, String> deleteOperations = HashMultimap.create();
@@ -79,7 +79,7 @@ public class EsDocumentWriter implements Writer {
 	private List<BulkUpdate<?>> bulkUpdateOperations = newArrayList();
 	private List<BulkDelete<?>> bulkDeleteOperations = newArrayList();
  	
-	public EsDocumentWriter(EsIndexAdmin admin, DocSearcher searcher, ObjectMapper mapper) {
+	public EsDocumentWriter(EsIndexAdmin admin, Searcher searcher, ObjectMapper mapper) {
 		this.admin = admin;
 		this.searcher = searcher;
 		this.mapper = mapper;
@@ -96,22 +96,27 @@ public class EsDocumentWriter implements Writer {
 	}
 
 	@Override
-	public <T> void bulkUpdate(BulkUpdate<T> update) throws IOException {
+	public <T> void bulkUpdate(BulkUpdate<T> update) {
 		bulkUpdateOperations.add(update);
 	}
 	
 	@Override
-	public <T> void bulkDelete(BulkDelete<T> delete) throws IOException {
+	public <T> void bulkDelete(BulkDelete<T> delete) {
 		bulkDeleteOperations.add(delete);
 	}
 
 	@Override
-	public void remove(Class<?> type, String key) throws IOException {
-		removeAll(Collections.singletonMap(type, ImmutableSet.of(key)));
+	public void remove(Class<?> type, String key) {
+		remove(type, ImmutableSet.of(key));
+	}
+	
+	@Override
+	public void remove(Class<?> type, Set<String> keysToRemove) {
+		removeAll(Collections.singletonMap(type, keysToRemove));
 	}
 
 	@Override
-	public void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException {
+	public void removeAll(Map<Class<?>, Set<String>> keysByType) {
 		for (Class<?> type : keysByType.keySet()) {
 			deleteOperations.putAll(type, keysByType.get(type));
 		}
@@ -285,11 +290,7 @@ public class EsDocumentWriter implements Writer {
 	}
 
 	@Override
-	public DocSearcher searcher() {
+	public Searcher searcher() {
 		return searcher;
-	}
-
-	@Override
-	public void close() throws Exception {
 	}
 }

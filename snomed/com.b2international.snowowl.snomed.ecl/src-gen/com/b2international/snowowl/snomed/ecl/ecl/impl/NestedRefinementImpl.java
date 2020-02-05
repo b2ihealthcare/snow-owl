@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
+import com.b2international.snowowl.snomed.ecl.ecl.EclRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -40,7 +40,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class NestedRefinementImpl extends RefinementImpl implements NestedRefinement
+public class NestedRefinementImpl extends EclRefinementImpl implements NestedRefinement
 {
   /**
    * The cached value of the '{@link #getNested() <em>Nested</em>}' containment reference.
@@ -50,7 +50,7 @@ public class NestedRefinementImpl extends RefinementImpl implements NestedRefine
    * @generated
    * @ordered
    */
-  protected Refinement nested;
+  protected EclRefinement nested;
 
   /**
    * <!-- begin-user-doc -->
@@ -78,7 +78,8 @@ public class NestedRefinementImpl extends RefinementImpl implements NestedRefine
    * <!-- end-user-doc -->
    * @generated
    */
-  public Refinement getNested()
+  @Override
+  public EclRefinement getNested()
   {
     return nested;
   }
@@ -88,9 +89,9 @@ public class NestedRefinementImpl extends RefinementImpl implements NestedRefine
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetNested(Refinement newNested, NotificationChain msgs)
+  public NotificationChain basicSetNested(EclRefinement newNested, NotificationChain msgs)
   {
-    Refinement oldNested = nested;
+    EclRefinement oldNested = nested;
     nested = newNested;
     if (eNotificationRequired())
     {
@@ -105,7 +106,8 @@ public class NestedRefinementImpl extends RefinementImpl implements NestedRefine
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setNested(Refinement newNested)
+  @Override
+  public void setNested(EclRefinement newNested)
   {
     if (newNested != nested)
     {
@@ -164,7 +166,7 @@ public class NestedRefinementImpl extends RefinementImpl implements NestedRefine
     switch (featureID)
     {
       case EclPackage.NESTED_REFINEMENT__NESTED:
-        setNested((Refinement)newValue);
+        setNested((EclRefinement)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -181,7 +183,7 @@ public class NestedRefinementImpl extends RefinementImpl implements NestedRefine
     switch (featureID)
     {
       case EclPackage.NESTED_REFINEMENT__NESTED:
-        setNested((Refinement)null);
+        setNested((EclRefinement)null);
         return;
     }
     super.eUnset(featureID);

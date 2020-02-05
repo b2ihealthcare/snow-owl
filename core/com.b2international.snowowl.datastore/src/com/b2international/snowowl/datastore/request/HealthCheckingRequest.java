@@ -17,11 +17,11 @@ package com.b2international.snowowl.datastore.request;
 
 import java.util.List;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.google.common.collect.ImmutableList;
 
 /**

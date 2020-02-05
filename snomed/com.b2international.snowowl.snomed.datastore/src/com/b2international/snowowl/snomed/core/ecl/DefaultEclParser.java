@@ -35,8 +35,8 @@ import org.eclipse.xtext.validation.Issue;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.SyntaxException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
 

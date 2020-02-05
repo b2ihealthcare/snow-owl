@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
  * <i>Builder</i> class to build requests responsible for creating SNOMED CT concepts.
@@ -34,10 +32,9 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
  */
 public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedConceptCreateRequestBuilder> {
 
-	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
+	private String definitionStatusId = Concepts.PRIMITIVE;
 	private List<SnomedDescriptionCreateRequest> descriptions = newArrayList();
 	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
-	private List<SnomedRefSetMemberCreateRequest> members = newArrayList();
 	private SnomedRefSetCreateRequest refSet;
 	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 	
@@ -92,30 +89,10 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
-	// Reference Set Member List builders
-	
-	public SnomedConceptCreateRequestBuilder addMember(SnomedRefSetMemberCreateRequestBuilder member) {
-		return addMember((SnomedRefSetMemberCreateRequest) member.build());
-	}
-	
-	public SnomedConceptCreateRequestBuilder addMember(SnomedRefSetMemberCreateRequest member) {
-		this.members.add(member);
-		return getSelf();
-	}
-	
-	public SnomedConceptCreateRequestBuilder addMember(SnomedReferenceSetMember member) {
-		return addMember((SnomedRefSetMemberCreateRequest) member.toCreateRequest());
-	}
-	
-	public SnomedConceptCreateRequestBuilder addMembers(Iterable<? extends SnomedReferenceSetMember> members) {
-		members.forEach(this::addMember);
-		return getSelf();
-	}
-	
 	// Concept property builders
 
-	public SnomedConceptCreateRequestBuilder setDefinitionStatus(DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	public SnomedConceptCreateRequestBuilder setDefinitionStatusId(String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 		return getSelf();
 	}
 	
@@ -143,11 +120,10 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	@Override
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedConceptCreateRequest req = (SnomedConceptCreateRequest) request;
-		req.setDefinitionStatus(definitionStatus);
+		req.setDefinitionStatusId(definitionStatusId);
 		req.setSubclassDefinitionStatus(subclassDefinitionStatus);
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
-		req.setMembers(members);
 		req.setRefSet(refSet);
 	}
 

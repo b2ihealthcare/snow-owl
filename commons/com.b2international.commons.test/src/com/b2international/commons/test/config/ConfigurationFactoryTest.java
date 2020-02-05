@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import com.b2international.commons.config.ConfigurationFactory;
 import com.b2international.commons.config.ConfigurationValidationException;
@@ -43,7 +43,7 @@ import com.b2international.commons.test.config.data.ModuleConfig1;
 import com.b2international.commons.test.config.data.ModuleConfig2;
 import com.b2international.commons.test.config.data.NestedConfig;
 import com.b2international.commons.test.config.data.TestConfig;
-import com.b2international.snowowl.hibernate.validator.ValidationUtil;
+import com.b2international.commons.validation.ApiValidation;
 
 /**
  * @since 3.4
@@ -83,7 +83,7 @@ public class ConfigurationFactoryTest {
 
 	@Test(expected = ConfigurationValidationException.class)
 	public void build_WithValidation_ShouldThrowExceptionIfValidationErrorsPresent() throws Exception {
-		parse(TestConfig.class, "config.yml", ValidationUtil.getValidator());
+		parse(TestConfig.class, "config.yml", ApiValidation.getValidator());
 	}
 	
 	@Test
@@ -220,7 +220,7 @@ public class ConfigurationFactoryTest {
 	
 	@Test(expected = ConfigurationValidationException.class)
 	public void build_NestedConfigWithValidation_ShouldThrowExceptionInCaseOfErrors() throws Exception {
-		parse(NestedConfig.class, "nestedconfig-error.yml", ValidationUtil.getValidator());
+		parse(NestedConfig.class, "nestedconfig-error.yml", ApiValidation.getValidator());
 	}
 	
 	@Test(expected = RuntimeException.class)

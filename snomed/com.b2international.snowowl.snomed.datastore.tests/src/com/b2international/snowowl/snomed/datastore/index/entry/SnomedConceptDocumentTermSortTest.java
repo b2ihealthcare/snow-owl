@@ -30,7 +30,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.BaseRevisionIndexTest;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,9 +57,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 	}
 	
 	@Before
-	@Override
 	public void setup() {
-		super.setup();
 		conceptA = concept()
 				.preferredDescriptions(
 					ImmutableList.of(
@@ -96,10 +94,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 					)
 				)
 				.build();
-		indexRevision(MAIN, nextStorageKey(), conceptA);
-		indexRevision(MAIN, nextStorageKey(), conceptB);
-		indexRevision(MAIN, nextStorageKey(), conceptC);
-		indexRevision(MAIN, nextStorageKey(), conceptD);
+		indexRevision(MAIN, conceptA, conceptB, conceptC, conceptD);
 	}
 	
 	@Test
@@ -145,7 +140,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 	}
 
 	private SnomedDescriptionFragment descriptionFragment(String typeId, String term, String languageRefSetId) {
-		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), nextStorageKey(), typeId, term, languageRefSetId);
+		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), typeId, term, languageRefSetId);
 	}
 
 }

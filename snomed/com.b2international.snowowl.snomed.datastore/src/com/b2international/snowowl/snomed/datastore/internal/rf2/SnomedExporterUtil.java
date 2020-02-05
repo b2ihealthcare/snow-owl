@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.datastore.internal.rf2;
 import java.io.File;
 import java.util.Set;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.MapSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;

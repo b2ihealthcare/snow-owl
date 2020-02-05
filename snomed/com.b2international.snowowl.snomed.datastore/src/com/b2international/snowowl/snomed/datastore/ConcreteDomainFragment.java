@@ -23,14 +23,18 @@ import java.util.Objects;
  * 
  * @since
  */
-public class ConcreteDomainFragment implements Serializable {
+public final class ConcreteDomainFragment implements Serializable {
 
-	private final String memberId;
+	private static final long serialVersionUID = 2L;
+
 	private final long refSetId;
 	private final int group;
 	private final String serializedValue;
 	private final long typeId;
 	private final boolean released;
+
+	// For tracking the original member
+	private final String memberId;
 
 	public ConcreteDomainFragment(final String memberId, 
 			final long refSetId, 
@@ -47,10 +51,6 @@ public class ConcreteDomainFragment implements Serializable {
 		this.released = released;
 	}
 
-	public String getMemberId() {
-		return memberId;
-	}
-
 	public long getRefSetId() {
 		return refSetId;
 	}
@@ -59,6 +59,13 @@ public class ConcreteDomainFragment implements Serializable {
 		return group;
 	}
 
+	/**
+	 * @return the originating reference set member's UUID
+	 */
+	public String getMemberId() {
+		return memberId;
+	}
+	
 	public String getSerializedValue() {
 		return serializedValue;
 	}
@@ -90,5 +97,22 @@ public class ConcreteDomainFragment implements Serializable {
 		if (typeId != other.typeId) { return false; }
 
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("ConcreteDomainFragment [serializedValue=");
+		builder.append(serializedValue);
+		builder.append(", typeId=");
+		builder.append(typeId);
+		builder.append(", group=");
+		builder.append(group);
+		builder.append(", refSetId=");
+		builder.append(refSetId);
+		builder.append(", memberId=");
+		builder.append(memberId);
+		builder.append("]");
+		return builder.toString();
 	}
 }

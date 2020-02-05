@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,28 @@
  */
 package com.b2international.snowowl.datastore.request.repository;
 
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
- * Request to clear a repository. Mostly used during the import process as an option.
+ * Deletes all current revisions from a single branch.
+ * 
  * @since 5.12
  */
-public class RepositoryClearRequest implements Request<TransactionContext, Boolean> {
+public class RepositoryClearRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public Boolean execute(TransactionContext context) {
+	public Boolean execute(final TransactionContext context) {
 		context.clearContents();
 		return true;
 	}
-	
-	public static RepositoryClearRequestBuilder builder() {
-		return new RepositoryClearRequestBuilder();
+
+	@Override
+	public String getOperation() {
+		return Permission.EDIT;
 	}
 }

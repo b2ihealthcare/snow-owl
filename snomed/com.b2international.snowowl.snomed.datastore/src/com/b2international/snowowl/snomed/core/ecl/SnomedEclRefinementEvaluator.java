@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -48,22 +49,22 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.b2international.snowowl.snomed.ecl.ecl.*;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
@@ -99,11 +100,11 @@ final class SnomedEclRefinementEvaluator {
 		this.expressionForm = focusConcepts.getExpressionForm();
 	}
 	
-	public Promise<Expression> evaluate(BranchContext context, Refinement refinement) {
+	public Promise<Expression> evaluate(BranchContext context, EclRefinement refinement) {
 		return refinementDispatcher.invoke(context, refinement);
 	}
 	
-	protected Promise<Expression> eval(BranchContext context, Refinement refinement) {
+	protected Promise<Expression> eval(BranchContext context, EclRefinement refinement) {
 		return SnomedEclEvaluationRequest.throwUnsupported(refinement); 
 	}
 	
@@ -174,7 +175,7 @@ final class SnomedEclRefinementEvaluator {
 	 * Handles evaluation of attribute refinements with groups
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.2+Refinements
 	 */
-	protected Promise<Expression> eval(final BranchContext context, AttributeGroup group) {
+	protected Promise<Expression> eval(final BranchContext context, EclAttributeGroup group) {
 		final Cardinality cardinality = group.getCardinality();
 		final boolean isUnbounded = cardinality == null ? true : cardinality.getMax() == UNBOUNDED_CARDINALITY;
 		final long min = cardinality == null ? 1 : cardinality.getMin();
@@ -204,11 +205,11 @@ final class SnomedEclRefinementEvaluator {
 	/**
 	 * Evaluates refinement parts inside attribute group based refinements.
 	 */
-	protected Promise<Collection<Property>> evaluateGroup(BranchContext context, Range<Long> groupCardinality, Refinement refinement) {
+	protected Promise<Collection<Property>> evaluateGroup(BranchContext context, Range<Long> groupCardinality, EclRefinement refinement) {
 		return groupRefinementDispatcher.invoke(context, groupCardinality, refinement);
 	}
 	
-	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final Refinement refinement) {
+	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final EclRefinement refinement) {
 		return SnomedEclEvaluationRequest.throwUnsupported(refinement);
 	}
 
@@ -572,7 +573,7 @@ final class SnomedEclRefinementEvaluator {
 			final String expressionForm) {
 
 		final ImmutableList.Builder<String> fieldsToLoad = ImmutableList.builder();
-		fieldsToLoad.add(SOURCE_ID,	TYPE_ID, DESTINATION_ID);
+		fieldsToLoad.add(SnomedDocument.Fields.ID, SOURCE_ID, TYPE_ID, DESTINATION_ID);
 		if (groupedRelationshipsOnly) {
 			fieldsToLoad.add(GROUP);
 		}

@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Notifications;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
@@ -143,14 +144,14 @@ public abstract class ClassifyOperation<T> {
 				.addAllConcepts(additionalConcepts)
 				.setParentLockContext(parentLockContext)
 				.build(repositoryId, branch)
-				.get();
+				.get(ApplicationContext.getServiceForClass(Environment.class));
 
 			while (true) {
 
 				if (monitor.isCanceled()) {
 					throw new OperationCanceledException();
 				}
-				
+
 				try {
 					
 					final RemoteJobEntry jobEntry = jobQueue.poll(CHECK_JOB_INTERVAL_SECONDS, TimeUnit.SECONDS);

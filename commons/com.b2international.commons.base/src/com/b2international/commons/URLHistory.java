@@ -20,13 +20,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
-
 /**
  * This class is for storing repository address history.
- * */
+ */
 public class URLHistory {
 
-	
 	private List<String> addresses;
 	private static final String DELIMITER = "|";
 	private static final int MAX_SIZE = 5;
@@ -34,15 +32,16 @@ public class URLHistory {
 
 	/**
 	 * Private constructor.
-	 * */
+	 */
 	private URLHistory() {
 		this.addresses = new ArrayList<String>();
 	}
 
 	/**
-	 * Set addresses. 
+	 * Set addresses.
+	 * 
 	 * @param addresses list of repository addresses stored as string
-	 * */
+	 */
 	public void setAddresses(List<String> addresses) {
 		this.addresses = null;
 		this.addresses = addresses;
@@ -50,21 +49,24 @@ public class URLHistory {
 
 	/**
 	 * Retrieve addresses.
+	 * 
 	 * @return list of addresses stores as string
-	 * */
+	 */
 	public List<String> getAddressesAsList() {
 		Collections.reverse(addresses);
 		return this.addresses;
 	}
-	
+
 	/**
-	 * Retrieve addresses as single string (concatenation of list element with delimiter).
+	 * Retrieve addresses as single string (concatenation of list element with
+	 * delimiter).
+	 * 
 	 * @return concatenation of repository address history with delimiter
-	 * */
+	 */
 	public String getAddressesAsString() {
 		StringBuffer buffer = new StringBuffer();
 		for (String listElement : this.addresses) {
-			if(!listElement.isEmpty()){				
+			if (!listElement.isEmpty()) {
 				buffer.append(listElement);
 				buffer.append(DELIMITER);
 			}
@@ -73,9 +75,11 @@ public class URLHistory {
 	}
 
 	/**
-	 * Converts a string of repository address histories list of strings and sets the addresses.
-	 * @param concatenation of repository address history with delimiter
-	 * */
+	 * Converts a string of repository address histories list of strings and sets
+	 * the addresses.
+	 * 
+	 * @param addresses - concatenation of repository address history with delimiter
+	 */
 	public void setAddresses(String addresses) {
 		StringTokenizer stringTokenizer = new StringTokenizer(addresses, DELIMITER);
 		int tokenNumber = stringTokenizer.countTokens();
@@ -90,9 +94,11 @@ public class URLHistory {
 	}
 
 	/**
-	 * Add a concatenation of repository address to the repository address histories. 
-	 * @param concatenation of repository address history with delimiter
-	 * */
+	 * Add a concatenation of repository address to the repository address
+	 * histories.
+	 * 
+	 * @param addresses - concatenation of repository address history with delimiter
+	 */
 	public void addAddress(String addresses) {
 		StringTokenizer stringTokenizer = new StringTokenizer(addresses, DELIMITER);
 		int tokenNumber = stringTokenizer.countTokens();
@@ -108,34 +114,37 @@ public class URLHistory {
 
 	/**
 	 * Add a single repository address to the repository address histories.
-	 * @param a single repository address
-	 * */
-	public void add(String str) {
+	 * 
+	 * @param address - a single repository address
+	 */
+	public void add(String address) {
 		if (isFull()) {
 			List<String> tempList = new ArrayList<String>(MAX_SIZE + 1);
 			tempList = this.addresses;
-			tempList.add(str);
+			tempList.add(address);
 			tempList.subList(0, 1).clear();
 			this.addresses = tempList;
 		} else {
-			this.addresses.add(str);
+			this.addresses.add(address);
 		}
 	}
 
 	/**
 	 * Add a list of addresses.
-	 * @param a list of repository addresses
-	 * */
-	public void add(List<String> list) {
-		for (String listElement : list) {
+	 * 
+	 * @param addresses - a list of repository addresses
+	 */
+	public void add(List<String> addresses) {
+		for (String listElement : addresses) {
 			add(listElement);
 		}
 	}
 
 	/**
 	 * Checks whether the list is full or not.
+	 * 
 	 * @return is the queue full
-	 * */
+	 */
 	public boolean isFull() {
 		if (this.addresses.size() == MAX_SIZE) {
 			return true;
@@ -146,8 +155,9 @@ public class URLHistory {
 
 	/**
 	 * Static method for singleton.
+	 * 
 	 * @return instance of URLHistory
-	 * */
+	 */
 	public static URLHistory getInstance() {
 		if (urlHistory == null) {
 			urlHistory = new URLHistory();
@@ -157,6 +167,7 @@ public class URLHistory {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -166,15 +177,17 @@ public class URLHistory {
 
 	/**
 	 * Get the latest repository address from the queue as string.
+	 * 
 	 * @return latest repository address
-	 * */
+	 */
 	public String getServerAddress() {
 		if (this.addresses == null) {
 			return "";
 		} else {
 			int momenatryAddressSize = this.addresses.size();
 			try {
-				int lastIndexOf = this.addresses.get(momenatryAddressSize - 1).lastIndexOf("/");//FIXME check StringIndexOutOfBoundsException
+				int lastIndexOf = this.addresses.get(momenatryAddressSize - 1).lastIndexOf("/");// FIXME check
+																								// StringIndexOutOfBoundsException
 				return this.addresses.get(momenatryAddressSize - 1).substring(0, lastIndexOf).trim();
 			} catch (StringIndexOutOfBoundsException e) {
 				return this.addresses.get(momenatryAddressSize - 1);
@@ -184,15 +197,17 @@ public class URLHistory {
 
 	/**
 	 * Get the latest repository ID from the queue as string.
+	 * 
 	 * @return latest repository ID
-	 * */
+	 */
 	public String getRepositoryID() {
 		if (this.addresses == null) {
 			return "";
 		} else {
 			int momenatryAddressSize = this.addresses.size();
 			try {
-				int lastIndexOf = this.addresses.get(momenatryAddressSize - 1).lastIndexOf("/");//FIXME check StringIndexOutOfBoundsException
+				int lastIndexOf = this.addresses.get(momenatryAddressSize - 1).lastIndexOf("/");// FIXME check
+																								// StringIndexOutOfBoundsException
 				return this.addresses.get(momenatryAddressSize - 1).substring(lastIndexOf + 1).trim();
 			} catch (StringIndexOutOfBoundsException e) {
 				return this.addresses.get(momenatryAddressSize - 1);

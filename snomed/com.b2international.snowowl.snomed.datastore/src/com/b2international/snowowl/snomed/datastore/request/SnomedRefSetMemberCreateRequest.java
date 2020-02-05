@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,12 +26,15 @@ import javax.annotation.Nonnull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.ClassUtils;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -55,8 +60,7 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 	
 	private Map<String, Object> properties = newHashMap();
 
-	SnomedRefSetMemberCreateRequest() {
-	}
+	SnomedRefSetMemberCreateRequest() { }
 	
 	String getId() {
 		return id;
@@ -85,13 +89,22 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 	}
 	
 	String getComponentId(String key) {
-		Object value = properties.get(key);
-		if (value == null) {
-			return null;
-		} else if (value instanceof Map) {
-			return ClassUtils.checkAndCast(((Map<?, ?>) value).get(SnomedRf2Headers.FIELD_ID), String.class);
-		} else {
-			return ClassUtils.checkAndCast(value, String.class);
+		final Object value = properties.get(key);
+		
+		try {
+			
+			if (value == null) {
+				return null;
+			} else if (value instanceof Map) {
+				final Map<?, ?> component = (Map<?, ?>) value;
+				final Object componentId = component.get(SnomedRf2Headers.FIELD_ID);
+				return (String) componentId;
+			} else {
+				return (String) value;
+			}
+			
+		} catch (final ClassCastException cce) {
+			throw new BadRequestException("Property '%s' must be a String, or have a nested String property named 'id'.", key);
 		}
 	}
 	
@@ -100,11 +113,12 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 	}
 	
 	<T> T getProperty(String key, Class<T> valueType) {
-		Object value = properties.get(key);
-		if (value == null) {
-			return null;
-		} else {
-			return ClassUtils.checkAndCast(value, valueType);
+		final Object value = properties.get(key);
+		
+		try {
+			return valueType.cast(value);
+		} catch (final ClassCastException cce) {
+			throw new BadRequestException("Property '%s' must be a %s.", key, valueType.getSimpleName());
 		}
 	}
 	
@@ -138,7 +152,7 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		try {
-			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
+			SnomedReferenceSet refSet = getRefSet(context);
 			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
 			Builder<String> requiredComponentIds = ImmutableSet.<String>builder().addAll(delegate.getRequiredComponentIds());
 			requiredComponentIds.add(referenceSetId);
@@ -161,12 +175,18 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 		 * should return a 400 response instead of a 404. 
 		 */
 		try {
-			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
+			SnomedReferenceSet refSet = getRefSet(context);
 			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
 			return delegate.execute(refSet, context);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
+	}
+
+	private SnomedReferenceSet getRefSet(TransactionContext context) {
+		final SnomedReferenceSet refSet = SnomedConverters.newRefSetConverter(context, Options.builder().build(), Collections.emptyList()).convert(context.lookup(referenceSetId, SnomedConceptDocument.class));
+		checkArgument(refSet.getType() != null, "Reference Set Properties are missing from identifier concept document: %s.", refSet.getId());
+		return refSet;
 	}
 
 	private SnomedRefSetMemberCreateDelegate getDelegate(SnomedRefSetType referenceSetType) {
@@ -177,6 +197,8 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 				return new SnomedAttributeValueMemberCreateDelegate(this);
 			case COMPLEX_MAP:
 				return new SnomedComplexMapMemberCreateDelegate(this);
+			case COMPLEX_BLOCK_MAP:
+				return new SnomedComplexBlockMapMemberCreateDelegate(this);
 			case CONCRETE_DATA_TYPE:
 				return new SnomedConcreteDomainMemberCreateDelegate(this);
 			case DESCRIPTION_TYPE:
@@ -211,4 +233,5 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 				throw new IllegalStateException("Unexpected reference set type '" + referenceSetType + "'.");
 		}
 	}
+
 }

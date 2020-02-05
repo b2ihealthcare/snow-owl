@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,12 +37,12 @@ final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry> {
 	
 	@Override
 	public RemoteJobEntry execute(ServiceProvider context) {
-		RemoteJobEntry entry = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(RemoteJobEntry.Expressions.id(id), 2), null);
+		final RemoteJobEntry entry = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(RemoteJobEntry.Expressions.id(id), 2), null);
 		if (entry == null) {
 			throw new NotFoundException("job", id);
 		} else {
 			return entry;
 		}
 	}
-
+	
 }

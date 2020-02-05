@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,13 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 
 import java.util.Collection;
-import java.util.Collections;
-
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.IComponent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
  * @since 4.7
@@ -55,36 +50,19 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	/**
 	 * @since 4.7
 	 */
-	public static class Fields {
-		public static final String ID = "id";
+	public static class Fields extends Revision.Fields {
 		public static final String ICON_ID = "iconId";
 	}
 	
 	/**
-	 * @param <B> - the builder type
 	 * @since 4.7
 	 */
-	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B>> {
+	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B, T>, T extends RevisionDocument> extends Revision.Builder<B, T> {
 		
 		protected String id;
 		protected String label;
 		protected String iconId;
 		protected float score = 0.0f;
-		
-		// XXX only for JSON deserialization
-		protected long storageKey;
-		protected String branchPath;
-		protected long commitTimestamp;
-		protected Collection<Integer> replacedIns = Collections.emptyList();
-		protected int segmentId;
-
-		/**
-		 * @deprecated - see reason at {@link com.b2international.snowowl.core.domain.IComponent#getStorageKey()} why this should be removed
-		 */
-		public final B storageKey(long storageKey) {
-			this.storageKey = storageKey;
-			return getSelf();
-		} 
 		
 		public B id(final String id) {
 			this.id = id;
@@ -109,37 +87,14 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 			return getSelf();
 		}
 		
-		B commitTimestamp(final long commitTimestamp) {
-			this.commitTimestamp = commitTimestamp;
-			return getSelf();
-		}
-		
-		B branchPath(final String branchPath) {
-			this.branchPath = branchPath;
-			return getSelf();
-		}
-		
-		B replacedIns(final Collection<Integer> replacedIns) {
-			this.replacedIns = replacedIns;
-			return getSelf();
-		}
-		
-		B segmentId(final int segmentId) {
-			this.segmentId = segmentId;
-			return getSelf();
-		}
-		
-		protected abstract B getSelf();
-		
 	}
 	
-	private final String id;
 	private final String label;
 	private final String iconId;
 	private float score = 0.0f;
 	
 	protected RevisionDocument(final String id, final String label, String iconId) {
-		this.id = id;
+		super(id);
 		this.label = label;
 		this.iconId = iconId;
 	}
@@ -148,11 +103,6 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	@Override
 	public String getLabel() {
 		return label;
-	}
-
-	@Override
-	public String getId() {
-		return id;
 	}
 
 	public String getIconId() {
@@ -172,35 +122,11 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	}
 	
 	@Override
-	public final int hashCode() {
-		return Objects.hashCode(_id());
-	}
-
-	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add("id", id)
 				.add("label", label)
 				.add("iconId", iconId)
 				.add("score", score);
 	}
 
-	@Override
-	public final boolean equals(final Object obj) {
-		if (this == obj) { return true; }
-		if (obj == null) { return false; }
-		if (getClass() != obj.getClass()) { return false; }
-		final RevisionDocument other = (RevisionDocument) obj;
-		return Objects.equal(_id(), other._id());
-	}
-
-	/**
-	 * (non-API)
-	 * 
-	 * @return returns with the storage key of the current component as a CDO ID.
-	 */
-	public CDOID cdoID() {
-		return CDOIDUtil.createLong(getStorageKey());
-	}
-	
 }

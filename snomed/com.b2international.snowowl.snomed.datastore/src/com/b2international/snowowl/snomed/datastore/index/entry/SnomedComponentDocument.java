@@ -24,7 +24,8 @@ import java.util.List;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.query.Expression;
-import com.google.common.base.Objects.ToStringHelper;
+import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Strings;
 
 /**
@@ -68,9 +69,8 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 		public static final String ACTIVE_MEMBER_OF = "activeMemberOf";
 	}
 	
-	public static abstract class SnomedComponentDocumentBuilder<B extends SnomedComponentDocumentBuilder<B>> extends SnomedDocumentBuilder<B> {
+		public static abstract class Builder<B extends Builder<B, T>, T extends SnomedComponentDocument> extends SnomedDocument.Builder<B, T> {
 		
-		protected String namespace;
 		protected List<String> memberOf = Collections.emptyList();
 		protected List<String> activeMemberOf = Collections.emptyList();
 
@@ -80,7 +80,6 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 		}
 		
 		public B namespace(String namespace) {
-			this.namespace = Strings.emptyToNull(namespace);
 			return getSelf();
 		}
 		
@@ -107,11 +106,10 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			boolean released, 
 			boolean active,
 			long effectiveTime,
-			String namespace,
 			List<String> memberOf,
 			List<String> activeMemberOf) {
 		super(id, label, iconId, moduleId, released, active, effectiveTime);
-		this.namespace = namespace;
+		this.namespace = !Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null;
 		this.memberOf = memberOf;
 		this.activeMemberOf = activeMemberOf;
 	}

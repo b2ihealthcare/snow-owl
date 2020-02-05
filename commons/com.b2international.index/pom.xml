@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>6.25.0-SNAPSHOT</version>
+		<version>7.4.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.index</artifactId>
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>6.5.0</elasticsearch.version>
+		<elasticsearch.version>6.8.2</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
@@ -20,46 +20,55 @@
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>transport</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>analysis-common</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>lang-painless</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>reindex</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>transport-netty4</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>${log4j2.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     
@@ -90,6 +99,7 @@
 								elasticsearch-rest-client,
 								elasticsearch-rest-high-level-client,
 								elasticsearch-secure-sm,
+								elasticsearch-ssl-config,
 								elasticsearch-x-content,
 								hppc,
 								jna,

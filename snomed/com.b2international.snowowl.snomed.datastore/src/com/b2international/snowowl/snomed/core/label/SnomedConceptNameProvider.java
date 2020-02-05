@@ -20,9 +20,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -46,6 +46,8 @@ public final class SnomedConceptNameProvider {
 	public SnomedConceptNameProvider(final IEventBus bus) {
 		this.bus = bus;
 		this.locales = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByAncestor(Concepts.REFSET_LANGUAGE_TYPE)
 				.filterByActive(true)
 				.setFields(SnomedConceptDocument.Fields.ID)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
@@ -56,11 +58,11 @@ public final class SnomedConceptNameProvider {
 				.collect(Collectors.toList());
 	}
 	
-	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
+	public String getComponentLabel(final String branchPath, final String componentId) {
 		final SnomedDescription pt = new DescriptionRequestHelper() {
 			@Override
 			protected SnomedDescriptions execute(final SnomedDescriptionSearchRequestBuilder req) {
-				return req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(bus).getSync(NAME_PROVIDER_TIMEOUT, TimeUnit.MILLISECONDS);
+				return req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath).execute(bus).getSync(NAME_PROVIDER_TIMEOUT, TimeUnit.MILLISECONDS);
 			}
 		}.getPreferredTerm(componentId, locales);
 		

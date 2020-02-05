@@ -30,10 +30,10 @@ import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -90,9 +90,8 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 				.setFields(SnomedDescriptionIndexEntry.Fields.ID)
 				.build();
 
-		final RevisionIndexReadRequest<SnomedDescriptions> indexReadRequest = new RevisionIndexReadRequest<>(request);
-		final BranchRequest<SnomedDescriptions> branchRequest = new BranchRequest<>(branch, indexReadRequest);
-		final Set<String> validDescriptionIds = branchRequest.execute(context)
+		final Set<String> validDescriptionIds = new BranchRequest<>(branch, new RevisionIndexReadRequest<>(request))
+				.execute(context)
 				.stream()
 				.map(d -> d.getId())
 				.collect(Collectors.toSet());

@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -26,17 +28,19 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.datastore.config.ConnectionPoolConfiguration;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * SNOMED CT related application level configuration parameters.
  * 
  * @since 3.4
  */
-public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
+public class SnomedCoreConfiguration {
 	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
@@ -106,7 +110,10 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	@NotNull
 	private String namespaceModuleAssigner = "default";
-
+	
+	private List<SnomedLanguageConfig> languages = Collections.emptyList();
+	private Multimap<String, String> languageMap;
+	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
 	 */
@@ -398,6 +405,29 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@JsonProperty
 	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
 		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
+	}
+	
+	public List<SnomedLanguageConfig> getLanguages() {
+		return languages;
+	}
+	
+	public void setLanguages(List<SnomedLanguageConfig> languages) {
+		this.languages = languages;
+	}
+
+	public Collection<String> getMappedLanguageRefSetIds(String languageCode) {
+		return getLanguageMap().get(languageCode);
+	}
+
+	@JsonIgnore
+	private Multimap<String, String> getLanguageMap() {
+		if (languageMap == null) {
+			languageMap = HashMultimap.create();
+			for (SnomedLanguageConfig languageConfig : getLanguages()) {
+				languageMap.putAll(languageConfig.getCode(), languageConfig.getRefSetIds());
+			}
+		}
+		return languageMap;
 	}
 	
 }

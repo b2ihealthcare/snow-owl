@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -30,8 +30,7 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 	}
 
 	@Override
-	boolean execute(SnomedRefSetMember member, TransactionContext context) {
-		SnomedConcreteDataTypeRefSetMember concreteDomainMember = (SnomedConcreteDataTypeRefSetMember) member;
+	boolean execute(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
 		String newValue = getProperty(SnomedRf2Headers.FIELD_VALUE);
 		Integer newGroup = getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class);
 		String newTypeId = getComponentId(SnomedRf2Headers.FIELD_TYPE_ID);
@@ -39,23 +38,23 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 
 		boolean changed = false;
 
-		if (newValue != null && !newValue.equals(concreteDomainMember.getSerializedValue())) {
-			concreteDomainMember.setSerializedValue(newValue);
+		if (newValue != null && !newValue.equals(SnomedRefSetUtil.serializeValue(original.getDataType(), original.getValue()))) {
+			member.field(SnomedRf2Headers.FIELD_VALUE, newValue);
 			changed |= true;
 		}
 
-		if (newGroup != null && newGroup.intValue() != concreteDomainMember.getGroup()) {
-			concreteDomainMember.setGroup(newGroup);
+		if (newGroup != null && newGroup.intValue() != original.getRelationshipGroup()) {
+			member.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, newGroup);
 			changed |= true;
 		}
 
-		if (newTypeId != null && !newTypeId.equals(concreteDomainMember.getTypeId())) {
-			concreteDomainMember.setTypeId(newTypeId);
+		if (newTypeId != null && !newTypeId.equals(original.getTypeId())) {
+			member.field(SnomedRf2Headers.FIELD_TYPE_ID, newTypeId);
 			changed |= true;
 		}
 
-		if (newCharacteristicTypeId != null && !newCharacteristicTypeId.equals(concreteDomainMember.getCharacteristicTypeId())) {
-			concreteDomainMember.setCharacteristicTypeId(newCharacteristicTypeId);
+		if (newCharacteristicTypeId != null && !newCharacteristicTypeId.equals(original.getCharacteristicTypeId())) {
+			member.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, newCharacteristicTypeId);
 			changed |= true;
 		}
 

@@ -26,6 +26,8 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -33,9 +35,9 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -67,10 +69,26 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @since 4.5
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.REFSET_MEMBER, 
+	shortId = SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER,
+	name = "SNOMED CT Reference Set Member",
+	componentCategory = ComponentCategory.SET_MEMBER,
+	docType = SnomedRefSetMemberIndexEntry.class
+)
 public final class SnomedReferenceSetMember extends SnomedComponent {
 
 	private static final long serialVersionUID = -7471488952871955209L;
 
+	/**
+	 * Enumerates expandable property keys.
+	 * 
+	 * @since 7.0
+	 */
+	public static final class Expand {
+		public static final String REFERENCED_COMPONENT = "referencedComponent";
+	}
+	
 	public static final Function<SnomedReferenceSetMember, String> GET_REFERENCED_COMPONENT_ID = (member) -> member.getReferencedComponent().getId();
 	
 	/**

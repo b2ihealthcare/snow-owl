@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 
 /**
@@ -31,14 +30,14 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
  */
 public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, BranchContext, CommitResult> implements AllowedHealthStates {
 
-	private String userId;
+	private String author;
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
-	private long preparationTime = Metrics.SKIP;
+	private long preparationTime = -1L;
 	private String parentContextDescription = DatastoreLockContextDescriptions.ROOT;
 
-	public final RepositoryCommitRequestBuilder setUserId(String userId) {
-		this.userId = userId;
+	public final RepositoryCommitRequestBuilder setAuthor(String author) {
+		this.author = author;
 		return getSelf();
 	}
 
@@ -83,7 +82,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 
 	@Override
 	protected final Request<BranchContext, CommitResult> doBuild() {
-		return new TransactionalRequest(userId, commitComment, getBody(), preparationTime, parentContextDescription);
+		return new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription);
 	}
 	
 	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {
@@ -91,9 +90,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 			new RepositoryRequest<>(repositoryId,
 				new HealthCheckingRequest<>(
 					new BranchRequest<>(branch,
-						new RevisionIndexReadRequest<CommitResult>(
-							build()
-						)
+						new RevisionIndexReadRequest<CommitResult>(build())
 					),
 					allowedHealthstates()
 				)

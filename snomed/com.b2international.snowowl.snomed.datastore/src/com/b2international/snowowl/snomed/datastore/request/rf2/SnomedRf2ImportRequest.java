@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -31,31 +30,32 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
+import org.mapdb.DBMaker.Maker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.b2international.index.Hits;
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
-import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
-import com.b2international.snowowl.datastore.file.FileRegistry;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Format;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -63,22 +63,26 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.0.0
  */
-public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
+final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, BranchAccessControl {
 
+	private static final Logger LOG = LoggerFactory.getLogger("import");
+	
 	private static final String TXT_EXT = ".txt";
-
+	
 	@NotNull
 	private final UUID rf2ArchiveId;
 	
 	@NotNull
 	private Rf2ReleaseType type;
-
+	
 	@NotEmpty
+	private String codeSystemShortName;
+
 	private String userId;
 	
 	private boolean createVersions = true;
@@ -91,6 +95,10 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		this.type = type;
 	}
 	
+	void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
+	}
+	
 	void setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
 	}
@@ -100,76 +108,79 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	}
 	
 	@Override
-	public Boolean execute(BranchContext context) {
+	public Rf2ImportResponse execute(BranchContext context) {
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		final String feature = Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, context.branchPath());
 
-		final InternalFileRegistry fileReg = (InternalFileRegistry) context.service(FileRegistry.class);
-		final File rf2Archive = fileReg.getFile(rf2ArchiveId);
-
+		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
+		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
+		
 		try {
 			features.enable(feature);
-			doImport(userId, context, rf2Archive);
-			return Boolean.TRUE;
+			final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+			return doImport(rf2Archive, new Rf2ImportConfiguration(user, createVersions, codeSystemShortName, type), context);
 		} catch (Exception e) {
+			if (e instanceof ApiException) {
+				throw (ApiException) e;
+			}
 			throw new SnowowlRuntimeException(e);
 		} finally {
 			features.disable(feature);
 		}
 	}
 
-	void doImport(final String userId, final BranchContext context, final File rf2Archive) throws Exception {
+	Rf2ImportResponse doImport(File rf2Archive, final Rf2ImportConfiguration importconfig, final BranchContext context) throws Exception {
+		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
+		final Rf2ImportResponse response = new Rf2ImportResponse();
+		
 		try (final DB db = createDb()) {
-			final Map<String, Long> storageKeysByComponent = db.hashMap("storageKeysByComponent", Serializer.STRING, Serializer.LONG).create();
-			final Map<String, Long> storageKeysByRefSet = db.hashMap("storageKeysByRefSet", Serializer.STRING, Serializer.LONG).create();
-			
-			// TODO in case of FULL or SNAPSHOT import load all component storage key pairs into the above Maps, so we can avoid loading them during tx commit
-			if (!isLoadOnDemandEnabled()) {
-				Stopwatch w = Stopwatch.createStarted();
-				System.err.println("Loading available components IDs and StorageKeys took...");
-				for (Class<?> type : ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
-					for (Hits<Map> hits : context.service(RevisionSearcher.class).scroll(Query.select(Map.class)
-							.from(type)
-							.fields(RevisionDocument.Fields.ID, Revision.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY)
-							.where(Expressions.matchAll())
-							.limit(10_000)
-							.build())) {
-						for (Map hit : hits) {
-							final String componentId = (String) hit.get(RevisionDocument.Fields.ID);
-							final long storageKey = (long) hit.get(Revision.STORAGE_KEY);
-							storageKeysByComponent.put(componentId, storageKey);
-							// add refset storagekey if this concept has a non negative value
-							if (type == SnomedConceptDocument.class && hit.containsKey(SnomedConceptDocument.Fields.REFSET_STORAGEKEY)) {
-								final long refSetStorageKey = (long) hit.get(SnomedConceptDocument.Fields.REFSET_STORAGEKEY);
-								if (refSetStorageKey != -1L) {
-									storageKeysByRefSet.put(componentId, refSetStorageKey);
-								}
-							}
-						}
-					}
-				}
-				System.err.println("Loading available components IDs and StorageKeys took: " + w);
-			}
-			
 			// create executor service to parallel update the underlying index store
 
-			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, storageKeysByComponent, storageKeysByRefSet, isLoadOnDemandEnabled());
+			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
-			read(rf2Archive, effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
-			System.err.println("Preparing RF2 import took: " + w);
+			read(rf2Archive, effectiveTimeSlices, reporter);
+			LOG.info("Preparing RF2 import took: " + w);
 			w.reset().start();
-
-			for (Rf2EffectiveTimeSlice slice : effectiveTimeSlices.consumeInOrder()) {
-				slice.doImport(userId, context, createVersions);
+			
+			// log issues with rows
+			logValidationIssues(reporter, response);
+			if (response.getStatus().equals(ImportStatus.FAILED)) {
+				return response;
+			}
+			
+			// run global validation
+			final Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG);
+			globalValidator.validateTerminologyComponents(orderedEffectiveTimeSlices, reporter, context);
+//			globalValidator.validateMembers(orderedEffectiveTimeSlices, reporter, context);
+			
+			// log global validation issues
+			logValidationIssues(reporter, response);
+			if (response.getStatus().equals(ImportStatus.FAILED)) {
+				return response;
+			}
+			
+			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
+				slice.doImport(importconfig, context);
 			}
 		}
+		return response;
 	}
 
+	private void logValidationIssues(final Rf2ValidationIssueReporter reporter, Rf2ImportResponse response) {
+		reporter.logWarnings(LOG);
+		response.setIssues(reporter.getIssues());
+		if (reporter.getNumberOfErrors() > 0) {
+			response.setStatus(ImportStatus.FAILED);
+			reporter.logErrors(LOG);
+		}
+	}
+	
 	private boolean isLoadOnDemandEnabled() {
 		return Rf2ReleaseType.DELTA == type;
 	}
-
-	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet) {
+	
+	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Rf2ValidationIssueReporter reporter) {
 		final CsvMapper csvMapper = new CsvMapper();
 		csvMapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
 		final CsvSchema schema = CsvSchema.emptySchema()
@@ -182,12 +193,14 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		try (final ZipFile zip = new ZipFile(rf2Archive)) {
 			for (ZipEntry entry : Collections.list(zip.entries())) {
 				final String fileName = Paths.get(entry.getName()).getFileName().toString().toLowerCase();
-				if (fileName.contains(type.toString().toLowerCase()) && fileName.endsWith(TXT_EXT)) {
-					w.reset().start();
-					try (final InputStream in = zip.getInputStream(entry)) {
-						readFile(entry, in, oReader, slices, storageKeysByComponent, storageKeysByRefSet);
+				if (fileName.endsWith(TXT_EXT)) {
+					if (fileName.contains(type.toString().toLowerCase())) {
+						w.reset().start();
+						try (final InputStream in = zip.getInputStream(entry)) {
+							readFile(entry, in, oReader, slices, reporter);
+						}
+						LOG.info(entry.getName() + " - " + w);
 					}
-					System.err.println(entry.getName() + " - " + w);
 				}
 			}
 		} catch (IOException e) {
@@ -197,7 +210,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		slices.flushAll();
 	}
 
-	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, Rf2EffectiveTimeSlices effectiveTimeSlices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet)
+	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, Rf2EffectiveTimeSlices effectiveTimeSlices, Rf2ValidationIssueReporter reporter)
 			throws IOException, JsonProcessingException {
 		boolean header = true;
 		Rf2ContentType<?> resolver = null;
@@ -215,13 +228,19 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				}
 
 				if (resolver == null) {
-					System.err.println("Unrecognized RF2 file: " + entry.getName());
+					LOG.warn("Unrecognized RF2 file: " + entry.getName());
 					break;
 				}
 				
 				header = false;
 			} else {
-				resolver.register(line, effectiveTimeSlices.getOrCreate(/*effectiveTime*/ line[1]));
+				if (Rf2ReleaseType.SNAPSHOT == type) {
+					final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : Rf2EffectiveTimeSlice.SNAPSHOT_SLICE;
+					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
+				} else {
+					final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : line[1];
+					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
+				}
 			}
 
 		}
@@ -230,18 +249,20 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
 	private DB createDb() {
 		try {
-			DB db = DBMaker 
+			Maker dbMaker = DBMaker 
 					.fileDB(Files.createTempDirectory(rf2ArchiveId.toString()).resolve("rf2-import.db").toFile())
 					.fileDeleteAfterClose()
 					.fileMmapEnable()
-					.fileMmapPreclearDisable()
-					// Unmap (release resources) file when its closed.
-					// That can cause JVM crash if file is accessed after it was unmapped
-					// (there is possible race condition).
-					.cleanerHackEnable()
+					.fileMmapPreclearDisable();
+			
+			// for non-delta releases increase the allocation size
+			if (type != Rf2ReleaseType.DELTA) {
+				dbMaker = dbMaker
 					.allocateStartSize(256 * 1024*1024)  // 256MB
-				    .allocateIncrement(128 * 1024*1024)  // 128MB
-					.make();
+				    .allocateIncrement(128 * 1024*1024);  // 128MB
+			}
+			
+			DB db = dbMaker.make();
 			
 			// preload file content into disk cache
 			db.getStore().fileLoad();
@@ -249,6 +270,11 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Couldn't create temporary db", e);
 		}
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.IMPORT;
 	}
 
 }

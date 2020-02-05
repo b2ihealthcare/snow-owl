@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.date;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -162,29 +161,6 @@ public abstract class Dates {
 		} catch (final ParseException e) {
 			throw new IllegalArgumentException("Error while parsing date '" + date + "' with pattern: '" + datePattern + "'.", e);
 		}
-	}
-
-	/**
-	 * Returns the number of milliseconds since January&nbsp;1,&nbsp;1970,&nbsp;00:00:00&nbsp;GMT represented by the specified date object.
-	 * 
-	 * @param date
-	 *            - the date to extract time from
-	 * @return - the number of milliseconds
-	 * @throws NullPointerException
-	 *             - if the given date object is <code>null</code>
-	 * @throws IllegalArgumentException
-	 *             - if it is impossible to extract the time from the object
-	 */
-	public static long getTime(final Object date) {
-		checkNotNull(date, "date");
-		if (date instanceof Date) {
-			return ((Date) date).getTime();
-		} else if (date instanceof Timestamp) {
-			return ((Timestamp) date).getTime();
-		} else if (date instanceof java.sql.Date) {
-			return ((java.sql.Date) date).getTime();
-		}
-		throw new IllegalArgumentException("Unknown date type: " + date.getClass());
 	}
 
 	/**

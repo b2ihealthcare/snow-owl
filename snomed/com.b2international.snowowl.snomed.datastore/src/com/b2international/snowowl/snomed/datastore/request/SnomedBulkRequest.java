@@ -21,19 +21,18 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.cdo.CDOObject;
-
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.datastore.request.DeleteRequest;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -64,17 +63,16 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 			.filter(componentId -> SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId) != -1L || isMember(componentId)) // just in case filter out invalid component IDs
 			.collect(Collectors.toSet());
 		
-		
-		final Multimap<Class<? extends CDOObject>, String> componentIdsByType = HashMultimap.create(FluentIterable.from(requiredComponentIds).index(this::getCdoType));
+		final Multimap<Class<? extends SnomedDocument>, String> componentIdsByType = HashMultimap.create(FluentIterable.from(requiredComponentIds).index(this::getDocType));
 		
 		// collect all deleted IDs as well
 		deletions.build()
 			.stream()
 			.map(DeleteRequest::getComponentId)
-			.forEach(componentId -> componentIdsByType.put(getCdoType(componentId), componentId));
+			.forEach(componentId -> componentIdsByType.put(getDocType(componentId), componentId));
 		
 		try {
-			for (final Entry<Class<? extends CDOObject>, Collection<String>> idsForType : componentIdsByType.asMap().entrySet()) {
+			for (final Entry<Class<? extends SnomedDocument>, Collection<String>> idsForType : componentIdsByType.asMap().entrySet()) {
 				context.lookup(idsForType.getValue(), idsForType.getKey());	
 			}
 		} catch (final ComponentNotFoundException e) {
@@ -84,6 +82,7 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 		// bind additional caches to the context
 		TransactionContext newContext = context.inject()
 			.bind(Synonyms.class, new Synonyms(context))
+			.bind(SnomedOWLExpressionConverter.class, new SnomedOWLExpressionConverter(context))
 			.build();
 		
 		return next(newContext);
@@ -97,17 +96,17 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 			return false;
 		}
 	}
-
-	private Class<? extends CDOObject> getCdoType(String componentId) {
+	
+	private Class<? extends SnomedDocument> getDocType(String componentId) {
 		switch (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId)) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return Concept.class;
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return Description.class;
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return Relationship.class;
+			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return SnomedConceptDocument.class;
+			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return SnomedDescriptionIndexEntry.class;
+			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return SnomedRelationshipIndexEntry.class;
 			default: {
 				if (!isMember(componentId)) {
 					throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
 				}
-				return SnomedRefSetMember.class;
+				return SnomedRefSetMemberIndexEntry.class;
 			}
 		}
 	}

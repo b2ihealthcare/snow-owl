@@ -89,8 +89,8 @@ public interface Options {
 	 * Otherwise the stored configuration value is returned.
 	 * 
 	 * @param key
-	 *            - the key whose associated {@link Boolean} value is to be returned
-	 * @return the value to which the specified key is mapped, or {@code null} if this map contains no mapping for the key
+	 *            - the key whose associated {@link boolean} value is to be returned
+	 * @return the value to which the specified key is mapped, or {@code false} if this map contains no mapping for the key
 	 * @throws NullPointerException
 	 *             if the specified key is <code>null</code>
 	 * @see #get(String, Class)

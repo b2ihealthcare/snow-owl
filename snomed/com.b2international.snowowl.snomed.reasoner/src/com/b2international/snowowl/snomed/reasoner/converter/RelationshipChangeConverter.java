@@ -22,12 +22,12 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
@@ -52,17 +52,13 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /**
- * @since 6.11 (originally introduced on 7.0)
+ * @since 7.0
  */
 public final class RelationshipChangeConverter 
-extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
+	extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
 
-	// TODO: these constants are moved to SnomedRelationship.Expand on 7.x
-	private static final String SOURCE = "source";
-	private static final String TYPE = "type";
-	private static final String DESTINATION = "destination";
 	private static final String MEMBERS = "members";
-
+	
 	public RelationshipChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
@@ -157,13 +153,13 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 		
 		final Options relationshipExpandOptions = expandOptions.getOptions("expand");
 		
-		final Options sourceOptions = relationshipExpandOptions.getOptions(SOURCE);
-		final Options typeOptions = relationshipExpandOptions.getOptions(TYPE);
-		final Options destinationOptions = relationshipExpandOptions.getOptions(DESTINATION);
+		final Options sourceOptions = relationshipExpandOptions.getOptions(SnomedRelationship.Expand.SOURCE);
+		final Options typeOptions = relationshipExpandOptions.getOptions(SnomedRelationship.Expand.TYPE);
+		final Options destinationOptions = relationshipExpandOptions.getOptions(SnomedRelationship.Expand.DESTINATION);
 
-		final boolean needsSource = relationshipExpandOptions.keySet().contains(SOURCE);
-		final boolean needsType = relationshipExpandOptions.keySet().contains(TYPE);
-		final boolean needsDestination = relationshipExpandOptions.keySet().contains(DESTINATION);
+		final boolean needsSource = relationshipExpandOptions.keySet().contains(SnomedRelationship.Expand.SOURCE);
+		final boolean needsType = relationshipExpandOptions.keySet().contains(SnomedRelationship.Expand.TYPE);
+		final boolean needsDestination = relationshipExpandOptions.keySet().contains(SnomedRelationship.Expand.DESTINATION);
 		
 		// Do not allow expansion of members
 		final boolean needsMembers = relationshipExpandOptions.keySet().contains(MEMBERS);

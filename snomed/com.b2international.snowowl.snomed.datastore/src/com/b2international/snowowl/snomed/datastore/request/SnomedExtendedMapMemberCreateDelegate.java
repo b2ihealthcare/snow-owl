@@ -20,10 +20,10 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -37,7 +37,7 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.EXTENDED_MAP);
 		checkReferencedComponent(refSet);
 		checkHasProperty(SnomedRf2Headers.FIELD_MAP_GROUP);
@@ -58,7 +58,7 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_TARGET);
 		}
 		
-		SnomedComplexMapRefSetMember member = SnomedComponents.newComplexMapMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newComplexMapMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -73,7 +73,7 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 				.withMapCategoryId(mapCategoryId)
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override

@@ -16,26 +16,34 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import java.util.Collections;
+import java.util.Date;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 4.7
  */
-final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> {
+final class CodeSystemVersionSearchRequest 
+	extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> 
+	implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
 	private String codeSystemShortName;
 	private String versionId;
+	private Date effectiveDate;
+	private String parentBranchPath;
+
 	
 	/**
 	 * @since 6.15
@@ -65,6 +73,14 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 		this.versionId = versionId;
 	}
 	
+	void setEffectiveDate(Date effectiveDate) {
+		this.effectiveDate = effectiveDate;
+	}
+	
+	void setParentBranchPath(String parentBranchPath) {
+		this.parentBranchPath = parentBranchPath;
+	}
+	
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder query = Expressions.builder();
@@ -77,6 +93,14 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 			query.filter(CodeSystemVersionEntry.Expressions.versionId(versionId));
 		}
 		
+		if (effectiveDate != null) {
+			query.filter(CodeSystemVersionEntry.Expressions.effectiveDate(effectiveDate));
+		}
+		
+		if (!StringUtils.isEmpty(parentBranchPath)) {
+			query.filter(CodeSystemVersionEntry.Expressions.parentBranchPath(parentBranchPath));
+		}
+
 		if (containsKey(OptionKey.CREATED_AT_START) || containsKey(OptionKey.CREATED_AT_END)) {
 			final long from = containsKey(OptionKey.CREATED_AT_START) ? get(OptionKey.CREATED_AT_START, Long.class) : 0;
 			final long to = containsKey(OptionKey.CREATED_AT_END) ? get(OptionKey.CREATED_AT_END, Long.class) : Long.MAX_VALUE;
@@ -99,6 +123,11 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 	@Override
 	protected CodeSystemVersions createEmptyResult(int limit) {
 		return new CodeSystemVersions(Collections.emptyList(), null, null, limit, 0);
+	}
+
+	@Override
+	public String getOperation() {
+		return Permission.BROWSE;
 	}
 
 }

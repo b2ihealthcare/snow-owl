@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.b2international.snowowl.identity;
 import java.util.Collections;
 import java.util.List;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -30,8 +28,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class IdentityConfiguration {
 
 	private boolean adminParty = false;
+	private String secret = "secret";
+	private String issuer = "Snow Owl";
 	
-	@NotEmpty
 	private List<IdentityProviderConfig> providerConfigurations = Collections.emptyList();
 	
 	public boolean isAdminParty() {
@@ -49,6 +48,22 @@ public class IdentityConfiguration {
 	
 	public void setProviderConfigurations(List<IdentityProviderConfig> providerConfigurations) {
 		this.providerConfigurations = providerConfigurations;
+	}
+	
+	public String getSecret() {
+		return secret;
+	}
+	
+	public void setSecret(String secret) {
+		this.secret = secret;
+	}
+	
+	public String getIssuer() {
+		return issuer;
+	}
+	
+	public void setIssuer(String issuer) {
+		this.issuer = issuer;
 	}
 	
 }

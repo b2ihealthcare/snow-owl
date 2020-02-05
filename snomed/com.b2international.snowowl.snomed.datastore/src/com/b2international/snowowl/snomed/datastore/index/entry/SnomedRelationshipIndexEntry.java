@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,40 +25,41 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Doc;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.base.Strings;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
  * A transfer object representing a SNOMED CT description.
  */
-@Doc
+@Doc(
+	type="relationship",
+	revisionHash = { 
+		SnomedDocument.Fields.ACTIVE, 
+		SnomedDocument.Fields.EFFECTIVE_TIME, 
+		SnomedDocument.Fields.MODULE_ID, 
+		SnomedDocument.Fields.RELEASED,
+		SnomedRelationshipIndexEntry.Fields.GROUP,
+		SnomedRelationshipIndexEntry.Fields.UNION_GROUP,
+		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
+		SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,
+		SnomedRelationshipIndexEntry.Fields.TYPE_ID,
+		SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
+		SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED
+	}
+)
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
-@RevisionHash({ 
-	SnomedDocument.Fields.ACTIVE, 
-	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID, 
-	SnomedRelationshipIndexEntry.Fields.GROUP,
-	SnomedRelationshipIndexEntry.Fields.UNION_GROUP,
-	SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
-	SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,
-	SnomedRelationshipIndexEntry.Fields.TYPE_ID,
-	SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
-	SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED
-})
 public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = -7873086925532169024L;
@@ -73,9 +74,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	public static Builder builder(final SnomedRelationship input) {
 		String id = input.getId();
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
@@ -96,37 +95,15 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		return builder;
 	}
 	
-	public static Builder builder(Relationship relationship) {
-		String id = relationship.getId();
-		return builder()
-				.storageKey(CDOIDUtils.asLong(relationship.cdoID()))
-				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
-				.active(relationship.isActive())
-				.sourceId(relationship.getSource().getId())
-				.typeId(relationship.getType().getId())
-				.destinationId(relationship.getDestination().getId())
-				.characteristicTypeId(relationship.getCharacteristicType().getId())
-				.group(relationship.getGroup())
-				.unionGroup(relationship.getUnionGroup())
-				.released(relationship.isReleased())
-				.modifierId(relationship.getModifier().getId())
-				.destinationNegated(relationship.isDestinationNegated())
-				.moduleId(relationship.getModule().getId())
-				.effectiveTime(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
-	}
-	
 	public static Builder builder(SnomedRelationshipIndexEntry input) {
 		String id = input.getId();
 		return builder()
-				.storageKey(CDOIDUtils.asLong(input.cdoID()))
 				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.active(input.isActive())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
-				.characteristicTypeId(input.getCharacteristicType().getConceptId())
+				.characteristicTypeId(input.getCharacteristicTypeId())
 				.group(input.getGroup())
 				.unionGroup(input.getUnionGroup())
 				.released(input.isReleased())
@@ -215,7 +192,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedRelationshipIndexEntry> {
 
 		private String sourceId;
 		private String typeId;
@@ -263,16 +240,34 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			return getSelf();
 		}
 
+		@JsonIgnore
+		Builder group(final Integer group) {
+			return group(group == null ? DEFAULT_GROUP : group);
+		}
+		
+		@JsonProperty
 		public Builder group(final int group) {
 			this.group = group;
 			return getSelf();
 		}
 
+		@JsonIgnore
+		Builder unionGroup(final Integer unionGroup) {
+			return unionGroup(unionGroup == null ? DEFAULT_UNION_GROUP : unionGroup);
+		}
+		
+		@JsonProperty
 		public Builder unionGroup(final int unionGroup) {
 			this.unionGroup = unionGroup;
 			return getSelf();
 		}
 
+		@JsonIgnore
+		Builder destinationNegated(final Boolean destinationNegated) {
+			return destinationNegated(destinationNegated == null ? false : destinationNegated);
+		}
+		
+		@JsonProperty
 		public Builder destinationNegated(final boolean destinationNegated) {
 			this.destinationNegated = destinationNegated;
 			return getSelf();
@@ -293,15 +288,9 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					group, 
 					unionGroup, 
 					destinationNegated,
-					namespace,
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
-			doc.setBranchPath(branchPath);
-			doc.setCommitTimestamp(commitTimestamp);
-			doc.setStorageKey(storageKey);
-			doc.setReplacedIns(replacedIns);
-			doc.setSegmentId(segmentId);
 			return doc;
 		}
 	}
@@ -329,7 +318,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			final int group,
 			final int unionGroup,
 			final boolean destinationNegated,
-			final String namespace,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets) {
 
@@ -340,7 +328,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				released, 
 				active, 
 				effectiveTimeLong,
-				namespace,
 				referringRefSets,
 				referringMappingRefSets);
 
@@ -357,10 +344,15 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		this.unionGroup = unionGroup;
 		this.destinationNegated = destinationNegated;
 	}
+	
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
+	}
 
 	@Override
-	public String getContainerId() {
-		return getSourceId();
+	public ObjectId getContainerId() {
+		return ObjectId.of(SnomedConceptDocument.class, getSourceId());
 	}
 	
 	@Override

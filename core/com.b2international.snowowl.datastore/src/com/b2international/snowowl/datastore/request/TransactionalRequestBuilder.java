@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,16 @@ public interface TransactionalRequestBuilder<R> extends RequestBuilder<Transacti
 
 	default AsyncRequest<CommitResult> build(String repositoryId, 
 			String branch, 
-			String userId,
+			String author,
 			String commitComment) {
-		
-		return new RepositoryCommitRequestBuilder()
-				.setUserId(userId)
+		return commit()
+				.setAuthor(author)
 				.setCommitComment(commitComment)
-				.setBody(build())
 				.build(repositoryId, branch);
+	}
+	
+	default RepositoryCommitRequestBuilder commit() {
+		return new RepositoryCommitRequestBuilder().setBody(build());
 	}
 	
 }

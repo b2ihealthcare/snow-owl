@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -30,20 +29,19 @@ final class SnomedDescriptionTypeMemberUpdateDelegate extends SnomedRefSetMember
 	}
 
 	@Override
-	boolean execute(SnomedRefSetMember member, TransactionContext context) {
-		SnomedDescriptionTypeRefSetMember descriptionTypeMember = (SnomedDescriptionTypeRefSetMember) member;
+	boolean execute(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
 		String newDescriptionFormat = getComponentId(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
 		Integer newDescriptionLength = getProperty(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, Integer.class);
 
 		boolean changed = false;
 
-		if (newDescriptionFormat != null && !newDescriptionFormat.equals(descriptionTypeMember.getDescriptionFormat())) {
-			descriptionTypeMember.setDescriptionFormat(newDescriptionFormat);
+		if (newDescriptionFormat != null && !newDescriptionFormat.equals(original.getDescriptionFormat())) {
+			member.field(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, newDescriptionFormat);
 			changed |= true;
 		}
 
-		if (newDescriptionLength != null && !newDescriptionLength.equals(descriptionTypeMember.getDescriptionLength())) {
-			descriptionTypeMember.setDescriptionLength(newDescriptionLength);
+		if (newDescriptionLength != null && !newDescriptionLength.equals(original.getDescriptionLength())) {
+			member.field(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, newDescriptionLength);
 			changed |= true;
 		}
 

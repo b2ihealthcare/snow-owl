@@ -92,7 +92,7 @@ public final class StatementFragment implements Serializable {
 	public long getStatementId() {
 		return statementId;
 	}
-	
+
 	public boolean isReleased() {
 		return released;
 	}

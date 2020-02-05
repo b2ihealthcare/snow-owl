@@ -15,11 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -29,12 +28,12 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 public class SnomedAvailabilityInfoProvider implements ContentAvailabilityInfoProvider {
 
 	@Override
-	public boolean isAvailable() {
+	public boolean isAvailable(IEventBus bus) {
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
 				.filterById(Concepts.ROOT_CONCEPT)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(bus)
 				.getSync().getTotal() > 0;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,39 @@ package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.b2international.index.Index;
 import com.b2international.index.admin.Administrable;
-import com.b2international.index.admin.IndexAdmin;
 import com.google.common.base.Strings;
 
 /**
  * @since 4.7
  */
-public interface RevisionIndex extends Administrable<IndexAdmin> {
+public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 
 	/**
-	 * A single character that when put at the end of a branchPath argument indicates that the search should execute the query from the perspective of the branch's base point (like ignoring all changes on the branch). 
+	 * A single character that when put at the end of a branchPath argument indicates that the search should execute the query from the perspective of the branch's base point (like ignoring all changes on the branch).
+	 * <p>
+	 * Expected branch path expression format: <i>{branchPath}^</i>
 	 */
 	String BASE_REF_CHAR = "^";
 	
 	/**
 	 * Three dot characters that represent git diff notation between two branch paths. This kind of path expression will evaluate to the latest version of a given document available in the segments selected by the range described in the expression
 	 * (eg. MAIN...MAIN/A would consider revisions available on all segments of MAIN/A since it diverged from MAIN)
-	 * https://git-scm.com/docs/git-diff 
+	 * https://git-scm.com/docs/git-diff
+	 * <p>
+	 * Expected branch path expression format: <i>{fromBranchPath}...{toBranchPath}</i>
 	 */
 	String REV_RANGE = "...";
+
+	/**
+	 * Single character that when put at the end of the branchPath along with a full timestamp modifies the scope of the search operation to search at
+	 * the specified timestamp from the branch's perspective than search from the current HEAD. Negative timestamps throw
+	 * {@link IllegalArgumentException}.
+	 * <p>
+	 * Expected branch path expression format: <i>{branchPath}@{timestamp}</i>
+	 */
+	String AT_CHAR = "@";
 	
 	/**
 	 * Returns the name of the index.
@@ -53,19 +66,6 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 */
 	<T> T read(String branchPath, RevisionIndexRead<T> read);
-
-	/**
-	 * Writes to this index via an {@link RevisionIndexWrite write transaction}.
-	 * 
-	 * @param branchPath
-	 *            - put all modifications to this branch
-	 * @param commitTimestamp
-	 *            - all modifications should appear with this timestamp
-	 * @param write
-	 *            - transactional write operation
-	 * @return
-	 */
-	<T> T write(String branchPath, long commitTimestamp, RevisionIndexWrite<T> write);
 
 	/**
 	 * Purges selected revisions from the given branch in this index. When the purge completes only document revisions applicable for the selected
@@ -113,7 +113,34 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 */
 	RevisionCompare compare(String baseBranch, String compareBranch, int limit);
-
+	
+	/**
+	 * Returns the revision branching API that can be used to access the branches available in this {@link RevisionIndex}.
+	 * @return
+	 * @since 6.5
+	 */
+	BaseRevisionBranching branching();
+	
+	/**
+	 * Prepare a commit by staging changes to the {@link StagingArea} then calling
+	 * {@link StagingArea#commit(String, String, long, String, String) commit} to
+	 * push that changes into the underlying repository.
+	 * 
+	 * @param branchPath - prepares a commit on the specified branch
+	 * @return
+	 */
+	StagingArea prepareCommit(String branchPath);
+	
+	/**
+	 * @return the Hooks API to register/unregister hooks to this {@link RevisionIndex}.
+	 */
+	Hooks hooks();
+	
+	/**
+	 * @return the underlying index to access the raw documents in the repository
+	 */
+	Index index();
+	
 	/**
 	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.
 	 * @param base
@@ -139,9 +166,9 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 		}
 		return revisionRangePath.split("\\.\\.\\.");
 	}
-	
+
 	/**
-	 * Returns <code>true</code> if the given branch path can evaluate to its base segments.
+	 * Returns <code>true</code> if the given branch path can evaluate to its base points.
 	 * @param branchPath
 	 * @return
 	 */
@@ -150,16 +177,22 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	}
 	
 	/**
-	 * Returns <code>true</code> if the given path is an expression that can evaluate to a revision range rather than select a single branch and its segments.
-	 * @param revisionRangePath
+	 * Returns <code>true</code> if the given path is an expression that can evaluate to a revision range rather than select a single branch and its branch points.
+	 * @param branchPath
 	 * @return
 	 */
-	static boolean isRevRangePath(String revisionRangePath) {
-		if (revisionRangePath.contains(REV_RANGE)) {
-			String[] branches = revisionRangePath.split("\\.\\.\\.");
-			return branches.length == 2 && !Strings.isNullOrEmpty(branches[0]) && !Strings.isNullOrEmpty(branches[1]);
-		}
-		return false;
+	static boolean isRevRangePath(String branchPath) {
+		return branchPath.contains(REV_RANGE);
+	}
+
+	/**
+	 * Returns <code>true</code> if the given path is an expression that can evaluate to a revision range up that will evaluate the segments up until the specified at timestamp argument.
+	 * @param branchPath
+	 * @return
+	 * @see RevisionIndex#AT_CHAR
+	 */
+	static boolean isBranchAtPath(String branchPath) {
+		return branchPath.contains(AT_CHAR);
 	}
 
 }

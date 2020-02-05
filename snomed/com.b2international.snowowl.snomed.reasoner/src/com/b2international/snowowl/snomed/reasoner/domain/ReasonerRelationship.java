@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 6.11 (originally introduced on 7.0)
+ * @since 7.0
  */
 public final class ReasonerRelationship implements Serializable {
 

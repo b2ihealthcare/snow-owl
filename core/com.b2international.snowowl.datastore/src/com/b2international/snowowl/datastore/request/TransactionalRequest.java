@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.metrics.Metrics;
-import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
-import com.b2international.snowowl.core.events.metrics.Timer;
-import com.b2international.snowowl.core.exceptions.ApiException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -40,7 +37,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	private final String commitComment;
 	
 	@JsonProperty
-	private final String userId;
+	private final String author;
 	
 	private final Request<TransactionContext, ?> next;
 
@@ -48,9 +45,9 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	
 	private final String parentContextDescription;
 
-	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentContextDescription) {
+	public TransactionalRequest(String author, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentContextDescription) {
 		this.next = checkNotNull(next, "next");
-		this.userId = userId;
+		this.author = author;
 		this.commitComment = commitComment;
 		this.preRequestPreparationTime = preRequestPreparationTime;
 		this.parentContextDescription = parentContextDescription;
@@ -58,9 +55,9 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	
 	@Override
 	public CommitResult execute(BranchContext context) {
-		final Metrics metrics = context.service(Metrics.class);
-		metrics.setExternalValue("preRequest", preRequestPreparationTime);
-		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, userId, commitComment, parentContextDescription)) {
+//		final Metrics metrics = context.service(Metrics.class);
+//		metrics.setExternalValue("preRequest", preRequestPreparationTime);
+		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, author, commitComment, parentContextDescription)) {
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);
 		} catch (ApiException e) {
@@ -71,34 +68,16 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	}
 
 	private CommitResult commit(final TransactionContext context, final Object body) {
-		final Metrics metrics = context.service(Metrics.class);
-		final Timer commitTimer = metrics.timer("commit");
-		MetricsThreadLocal.set(metrics);
-		try {
-			commitTimer.start();
-			// TODO consider moving preCommit into commit(userId, commitComment)
-			context.preCommit();
-			
-			/*
-			 * FIXME: at this point, the component identifier might have changed even though the input 
-			 * required an exact ID to be assigned. What to do?
-			 */
-			final long commitTimestamp = context.commit(userId, commitComment, parentContextDescription);
-			return new CommitResult(commitTimestamp, body);
-		} finally {
-			commitTimer.stop();
-			MetricsThreadLocal.release();
-		}
+		/*
+		 * FIXME: at this point, the component identifier might have changed even though the input 
+		 * required an exact ID to be assigned. What to do?
+		 */
+		final long commitTimestamp = context.commit(context.author(), commitComment, parentContextDescription);
+		return new CommitResult(commitTimestamp, body);
 	}
 	
 	private Object executeNext(TransactionContext context) {
-		final Timer preCommit = context.service(Metrics.class).timer("preCommit");
-		try {
-			preCommit.start();
-			return next.execute(context);
-		} finally {
-			preCommit.stop();
-		}
+		return next.execute(context);
 	}
 
 	/**
@@ -107,4 +86,10 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	public Request<TransactionContext, ?> getNext() {
 		return next;
 	}
+	
+	@Override
+	public ClassLoader getClassLoader() {
+		return next.getClassLoader();
+	}
+	
 }

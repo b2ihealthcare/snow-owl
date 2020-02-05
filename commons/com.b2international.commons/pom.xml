@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.b2international.snowowl</groupId>
-    <artifactId>commons-parent</artifactId>
-    <version>6.25.0-SNAPSHOT</version>
-  </parent>
-  <artifactId>com.b2international.commons</artifactId>
-  <packaging>eclipse-plugin</packaging>
-  
-  <properties>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.b2international.snowowl</groupId>
+		<artifactId>commons-parent</artifactId>
+		<version>7.4.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>com.b2international.commons</artifactId>
+	<packaging>eclipse-plugin</packaging>
+
+	<properties>
+		<micrometer.version>1.3.2</micrometer.version>
 		<jsr305.version>1.3.9</jsr305.version>
 		<jgrapht.version>1.3.0</jgrapht.version>
 		<zjsonpatch.version>0.4.4</zjsonpatch.version>
+		<picocli.version>3.5.1</picocli.version>
+		<jsr305.version>1.3.9</jsr305.version>
+		<hibernate.validator.version>5.1.1.Final</hibernate.validator.version>
+		<validation.api.version>1.1.0.Final</validation.api.version>
+		<bucket4j.version>4.4.1</bucket4j.version>
+		<javax.annotation.version>1.3.1</javax.annotation.version>
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
@@ -23,6 +32,12 @@
   			<artifactId>jsr305</artifactId>
   			<version>${jsr305.version}</version>
   			<scope>provided</scope>
+		</dependency>
+		<dependency>
+  			<groupId>info.picocli</groupId>
+		  	<artifactId>picocli</artifactId>
+		  	<version>${picocli.version}</version>
+		  	<scope>provided</scope>
 		</dependency>
 		<dependency>
   			<groupId>org.jgrapht</groupId>
@@ -36,6 +51,35 @@
 			<version>${zjsonpatch.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<version>${micrometer.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+  			<groupId>javax.validation</groupId>
+  			<artifactId>validation-api</artifactId>
+  			<version>${validation.api.version}</version>
+  			<scope>provided</scope>
+		</dependency>
+		<dependency>
+  			<groupId>org.hibernate</groupId>
+  			<artifactId>hibernate-validator</artifactId>
+  			<version>${hibernate.validator.version}</version>
+  			<scope>provided</scope>
+		</dependency>
+		<dependency>
+    		<groupId>com.github.vladimir-bukhtoyarov</groupId>
+    		<artifactId>bucket4j-core</artifactId>
+    		<version>${bucket4j.version}</version>
+		</dependency>
+		<dependency>
+		 	<groupId>javax.annotation</groupId>
+		  	<artifactId>javax.annotation-api</artifactId>
+		  	<version>${javax.annotation.version}</version>
+		  	<scope>provided</scope>
+		</dependency>	
 	</dependencies>
 
 	<build>
@@ -54,10 +98,21 @@
 						<configuration>
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
 							<includeArtifactIds>
+								hibernate-validator,
+								jboss-logging,
 								jsr305,
+								picocli,
+								zjsonpatch,
+								micrometer-core,
+								micrometer-registry-prometheus,
+								LatencyUtils,
+								simpleclient_common,
+								simpleclient,
+								validation-api,
 								jgrapht-core,
 								jheaps,
-								zjsonpatch
+								bucket4j-core,
+								javax.annotation-api
 							</includeArtifactIds>
 							<outputDirectory>${basedir}/lib</outputDirectory>
 						</configuration>
@@ -102,5 +157,5 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-  
+
 </project>

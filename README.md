@@ -1,28 +1,100 @@
-# Snow Owl
+# <a href='https://docs.b2i.sg/snow-owl/'><img src='logo/logo-title.png' height='80' alt='Snow Owl Logo' /></a>
 
-## Introduction
-Snow Owl<sup>®</sup> is a terminology server and a collaborative terminology authoring platform.  The authoring platform maintains terminology artifacts developed by a team and supported by business workflows that are driven by external task management systems like Bugzilla and JIRA.  With its modular design, the server can maintain multiple terminologies where new terminologies can be plugged-in to the platform.  The functionality of Snow Owl is exposed via a REST API.
+Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 
-## Getting Started
+[![build status](https://img.shields.io/travis/b2ihealthcare/snow-owl/7.x.svg?style=flat-square)](https://travis-ci.org/b2ihealthcare/snow-owl)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.3.0)
+[![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
+[![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
+[![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE)
+[![grade: Java](https://img.shields.io/lgtm/grade/java/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/context:java)
+[![alerts](https://img.shields.io/lgtm/alerts/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/alerts/)
+[![codecov](https://codecov.io/gh/b2ihealthcare/snow-owl/branch/7.x/graph/badge.svg?style=flat-square)](https://codecov.io/gh/b2ihealthcare/snow-owl)
 
-These instructions will get Snow Owl up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy Snow Owl on a live system.
+# Introduction
 
-### Prerequisites
+Features include:
+* Revision-controlled authoring
+    * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
+    * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
+* SNOMED CT and others
+    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, experimental Query Language)
+    * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
+* Various set of APIs
+    * SNOMED CT API (RESTful and native Java API)
+    * FHIR API
+    * CIS API
+* Highly extensible and configurable
+    * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
+* Built on top of [Elasticsearch](https://www.elastic.co/products/elasticsearch) (highly scalable, distributed, open source search engine)
+    * Connect to your existing cluster or use the embedded instance
+    * All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more)
 
-From [version 5.1.0](CHANGELOG.md#510), Snow Owl requires Java 8 update 102 or later.
+# Download
 
-Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi). To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
+* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.zip.sha512)
+* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.tar.gz.sha512) 
+* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.rpm.sha512)
+* [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.3.0/snow-owl-oss-7.3.0.deb.sha512)
+
+{% hint style="info" %}
+This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
+{% endhint %}
+
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.3.0).
+
+Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
+
+### Install and Run
+
+NOTE: You need to have a recent version of Java installed (Java 11+, https://jdk.java.net/archive/).
+
+Once you have downloaded the appropriate package:
+
+* Run `bin/snowowl.sh` on unix, or `bin/snowowl.bat` on windows
+* Run `curl http://localhost:8080/snowowl/admin/info`
+* Navigate to `http://localhost:8080/snowowl`
+* See [SNOMED CT API docs](https://docs.b2i.sg/snow-owl/api/snomed), [FHIR API docs](https://docs.b2i.sg/snow-owl/api/fhir)
+
+# Learn Snow Owl
+
+* [Getting Started](docs/getting_started/index.md)
+* [Set up Snow Owl](docs/setup/index.md)
+* [Configuring Snow Owl](docs/setup/configure/index.md)
+* [FHIR API](docs/api/fhir/index.md)
+* [SNOMED CT API](docs/api/snomed/index.md)
+* [Admin API](docs/api/admin/index.md)
+
+# Building from source
+
+Snow Owl uses Maven for its build system. In order to create a distribution, simply run the following command in the cloned directory. 
+
+    mvn clean package
+
+The distribution packages can be found in the `releng/com.b2international.snowowl.server.update/target` folder, when the build is complete.
+
+To run the test cases, use the following command:
+
+    mvn clean verify
+
+# Development
+
+These instructions will get Snow Owl up and running on your local machine for development and testing purposes.
+
+## Prerequisites
+
+Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
 * Use latest Eclipse IDE for Eclipse Committers package: http://www.eclipse.org/downloads/eclipse-packages/
 
-Required Eclipse plug-ins (install the listed features):
+Required Eclipse plug-ins (install the listed features via `Help` -> `Install New Software...`):
 
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
 * Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
-  * MWE 2 language SDK 2.9.0 (MWE)
-  * Xtend IDE 2.11.0 (Xtext)
-  * Xtext Complete SDK 2.11.0 (Xtext)
-* Optional: Maven integration (http://download.eclipse.org/technology/m2e/releases) 
+  * MWE 2 language SDK 2.10.0 (MWE)
+  * Xtend IDE 2.18.0 (Xtext)
+  * Xtext Complete SDK 2.18.0 (Xtext)
+* Maven integration (http://download.eclipse.org/technology/m2e/releases) 
  
 ### Eclipse Preferences
 
@@ -36,89 +108,32 @@ Make sure you have the following preferences enabled/disabled.
 
 * Make sure the Git line endings are set to *input* (Preferences->Team->Git->Configuration - add key if missing *core.autocrlf = input*)
 
-### Target platform
+## First steps
 
-1. Create a prefetched target platform and copy the contents of the `target_platform_<version>` directory under `<eclipse_home>/target_platform`.
-2. (Re)Open Eclipse and find the `com.b2international.snowowl.server.target.update` project
-3. Open the file: `com.b2international.snowowl.server.local.target`
-4. Click on `Set as Target platform`
+1. Import all projects into your Eclipse workspace and wait for the build to complete
+2. Select all projects and hit `Alt` + `F5` and trigger an update to all Maven projects manually (to download dependencies from Maven)
+3. Open the `target-platform/target-platform-local.target` file
+4. Wait until Eclipse resolves the target platform (click on the `Resolve` button if it refuses to do so) and then click on `Set as Active Target platform`
+5. Wait until the build is complete and you have no compile errors
+6. Launch `snow-owl-oss` launch configuration in the Run Configurations menu
+7. Navigate to `http://localhost:8080/snowowl`
 
-### Run from development environment
-
-1. Find `com.b2international.snowowl.server.update` project
-2. Open `so_server.product` file, click on `Launch an Eclipse application` and terminate it
-3. Open Run Configurations and find the launch config `so_server.product`
-4. Open Arguments tab
- * Add `-Djetty.home.bundle=org.eclipse.jetty.osgi.boot` to the end of VM arguments
-5. Open Plug-ins tab
- 1. Add `org.eclipse.jetty.osgi.boot` bundle (set Auto-Start to `true`, and Start Level to `5`)
- 2. Click on Add required bundles
- 3. Remove `org.eclipse.equinox.http.jetty`, `org.eclipse.jetty.annotations`, all `*jsp*` and `*jasper*` bundles
- 4. Set the API bundles to start automatically (`com.b2international.snowowl.api.rest`, `com.b2international.snowowl.snomed.api.rest`) by setting Auto-Start to `true`, and Start Level to `5`.
- 5. Add the `com.sun.el` bundle and remove the `org.apache.el` bundle if necessary
-6. Run and point your browser to `http://localhost:8080/snowowl/snomed-ct/v2/`
-7. By default Snow Owl will use an empty embedded `H2` database. To use `MySQL`, you have to configure the database in the `snowowl_config.yml` configuration file (or copy an existing `MySQL` or `H2` configuration file located in the `releng/com.b2international.snowowl.server.update/assembly/mysql or h2` directory to `<eclipse_home>/target_platform`).
-
-## Build
-
-Snow Owl uses Maven for its build system.
-
-In order to create a distribution, simply run the `mvn clean package -Pdependencies -Psite -Pdist` command in the cloned directory.
-
-To run the test cases, simply run:
-
-    mvn clean verify -Pdependencies -Psite -Pdist
-
-The distribution package can be found in the `releng/distribution/target` folder, when the build completes.
-
-### Additional Build Improvements
-
-Here are few tips to improve the quality of the default build process.
-
-#### Nexus
-
-We highly recommend to install a local artifact repository (`Nexus OSS` is supported), so the build can deploy and reuse (in downstream projects) `Maven` and `p2` artifacts.
-
-1. Download and install Nexus OSS or Professional (http://www.sonatype.org/nexus/go/).
-2. Install `Nexus Unzip Plugin` to easily reference p2 repositories deployed as zip: https://wiki.eclipse.org/Tycho/Nexus_Unzip_Plugin
-3. Define the `nexus.url` parameter in the `settings.xml` file under `.m2` folder on your build server (use the `settings.xml` in the root of this repository as template).
-4. Define a deployment user in Nexus, and reference it in the `.m2/settings.xml` file.
-5. Use `mvn clean deploy` instead of `mvn clean verify` when you execute the process.
-6. *Optional: deploy only if build succeeds (requires a `Jenkins CI` job with post build step to deploy artifacts to `Nexus`*
-
-#### Prefetched target platform
-
-The `-Pdependencies` profile includes all required third party repositories and modules as part of the build process using Tycho's p2 and Maven dependency resolution capabilities. 
-While this should be enough to run the process, in production builds we recommend using a prefetched target platform, as it will ensure consistent third party versions and reduces the execution time significantly.
-
-1. Create the target platform update site, run `mvn clean verify -Pdependencies -Ptarget_site` from the **releng** folder
-2. Navigate to `com.b2international.snowowl.server.target.update/target` folder
-3. Copy the `target_platform_<version>` folder to a webserver, or use `Nexus` to serve the site as unzipped p2 (requires Nexus OSS with Unzip Plugin installed, see previous section)
-4. Define an `http` URL as `target.platform.url` parameter in the global Maven `.m2/settings.xml` file
-5. Run Snow Owl maven process with `mvn clean verify -Ptp_dependencies -Psite -Pdist` (*NOTE: the tp_dependencies profile will use the prefetched local p2 repository instead of querying all remote sites*)
-
-## Deployment
-
-Please refer to the [installation guide](documentation/src/main/asciidoc/installation_guide.adoc). Prerequisites are detailed in the [software requirements](documentation/src/main/asciidoc/software_requirements.adoc) document. Then see the [configuration guide](documentation/src/main/asciidoc/configuration_guide.adoc) to configure for your particular installation.
-
-The [SNOMED CT extension management guide](documentation/src/main/asciidoc/snomed_extension_management.adoc) provides details for managing multiple SNOMED extensions on a single terminology server.
-
-## Administration
-
-See the [administration guide](documentation/src/main/asciidoc/administration_guide.adoc). You may find the quick references for [console commands](documentation/src/main/asciidoc/administrative_console_reference.adoc) and the [administration REST API](documentation/src/main/asciidoc/administrative_rest_reference.adoc) helpful.
-
-## Contributing
+# Contributing
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## Versioning
+# Versioning
 
 Our [releases](https://github.com/b2ihealthcare/snow-owl/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](CHANGELOG.md).
 
-## License
+# License
 
-This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) for details and refer to [NOTICE](NOTICE) for additional licencing notes and uses of third-party components.
+This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) for details and refer to [NOTICE](NOTICE) for additional licensing notes and uses of third-party components.
 
-## Acknowledgements
+# Acknowledgements
 
 In March 2015, [SNOMED International](http://snomed.org) generously licensed the Snow Owl Terminology Server components supporting SNOMED CT. They subsequently made the licensed code available to their [members](http://www.snomed.org/members) and the global community under an open-source license.
+
+In March 2017, [NHS Digital](https://digital.nhs.uk) licensed the Snow Owl Terminology Server to support the mandatory adoption of SNOMED CT throughout all care settings in the United Kingdom by April 2020. In addition to driving the UK’s clinical terminology efforts by providing a platform to author national clinical codes, Snow Owl will support the maintenance and improvement of the dm+d drug extension which alone is used in over 156 million electronic prescriptions per month. Improvements to the terminology server made under this agreement will be made available to the global community. 
+
+Many other organizations have directly and indirectly contributed to Snow Owl, including: Singapore Ministry of Health; American Dental Association; University of Nebraska Medical Center (USA); Federal Public Service of Public Health (Belgium); Danish Health Data Authority; Health and Welfare Information Systems Centre (Estonia); Department of Health (Ireland); New Zealand Ministry of Health; Norwegian Directorate of eHealth; Integrated Health Information Systems (Singapore); National Board of Health and Welfare (Sweden); eHealth Suisse (Switzerland); and the National Library of Medicine (USA).

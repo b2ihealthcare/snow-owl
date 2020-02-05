@@ -28,10 +28,10 @@ import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdent
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessorAxiomTest;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessorTest;
-import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessorTest;
-import com.b2international.snowowl.snomed.datastore.index.change.RefSetMemberChangeProcessorTest;
+import com.b2international.snowowl.snomed.datastore.index.change.PreferredDescriptionPreCommitHookTest;
 import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessorTest;
+import com.b2international.snowowl.snomed.datastore.index.change.TaxonomyPreCommitHookTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocumentTermSortTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConstraintDocumentSerializationTest;
@@ -50,28 +50,30 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 @SuiteClasses({
 	TerminologyTreeTest.class,
 	ReservationImplTest.class,
+	// ID service test cases
 	SnomedIdentifierTest.class,
 	SnomedIdentifierReservationServiceImplTest.class,
 	DefaultSnomedIdentifierServiceTest.class,
 	DefaultSnomedIdentifierServiceRegressionTest.class,
+	// index document test cases 
 	SnomedConceptIndexEntrySerializationTest.class,
 	SnomedRelationshipIndexEntrySerializationTest.class,
 	SnomedDescriptionIndexEntrySerializationTest.class,
 	SnomedConstraintDocumentSerializationTest.class,
 	SnomedRefSetMemberDocumentSerializationTest.class,
+	SnomedConceptDocumentTermSortTest.class,
 	// change proc test cases
 	DescriptionChangeProcessorTest.class,
 	RelationshipChangeProcessorTest.class,
-	RefSetMemberChangeProcessorTest.class,
-	ConstraintChangeProcessorTest.class,
-	ConceptChangeProcessorTest.class,
+	TaxonomyPreCommitHookTest.class,
+	PreferredDescriptionPreCommitHookTest.class,
 	ConceptChangeProcessorAxiomTest.class,
+	// ECL test cases
 	SnomedEclEvaluationRequestTest.class,
 	SnomedStatedEclEvaluationTest.class,
 	SnomedEclRewriterTest.class,
 	SnomedQueryEvaluationRequestTest.class,
 	SnomedQueryValidationRuleEvaluatorTest.class,
-	SnomedConceptDocumentTermSortTest.class
 })
 public class AllSnomedDatastoreTests {
 

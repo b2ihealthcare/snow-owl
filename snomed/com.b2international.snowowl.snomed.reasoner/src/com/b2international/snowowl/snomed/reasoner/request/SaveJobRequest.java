@@ -32,20 +32,23 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.extension.Extensions;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
@@ -67,18 +70,10 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCr
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
-import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
-import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
-import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSet;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerConcreteDomainMember;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
@@ -86,10 +81,10 @@ import com.google.common.collect.Multimap;
 /**
  * Represents a request that saves pre-recorded changes of a classification,
  * usually running in a remote job.
- * 
- * @since 6.11 (originally introduced on 7.0)
+ *
+ * @since 7.0
  */
-final class SaveJobRequest implements Request<BranchContext, Boolean> {
+final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAccessControl {
 
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
@@ -99,7 +94,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 	@NotEmpty
 	private String classificationId;
 
-	@NotEmpty
 	private String userId;
 
 	@NotNull
@@ -158,7 +152,9 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
-		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext, branch)) {
+		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
+		
+		try (Locks locks = new Locks(context, user, DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext, branch)) {
 			return persistChanges(context, monitor);
 		} catch (final OperationLockException e) {
 			tracker.classificationFailed(classificationId);
@@ -167,6 +163,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Thread interrupted while acquiring exclusive access to terminology store for persisting classification changes.", e);
 		} catch (final Exception e) {
+			LOG.error("Unexpected error while persisting classification changes.", e);
 			tracker.classificationSaveFailed(classificationId);
 			throw new ReasonerApiException("Error while persisting classification changes on '%s'.", context.branchPath(), e);
 		} finally {
@@ -207,12 +204,11 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final BulkRequestBuilder<TransactionContext> bulkRequestBuilder = BulkRequest.create();
 
 		applyChanges(subMonitor, context, bulkRequestBuilder);
-
 		final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
 			.setBody(bulkRequestBuilder)
 			.setCommitComment(commitComment)
 			.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
-			.setUserId(userId)
+			.setAuthor(userId)
 			.build();
 
 		final CommitResult commitResult = new IdRequest<>(commitRequest)  
@@ -468,9 +464,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			return Collections.emptySet();
 		}
 		
-		final IEquivalentConceptMerger merger = Extensions.getFirstPriorityExtension(
+		IEquivalentConceptMerger merger = Extensions.getFirstPriorityExtension(
 				IEquivalentConceptMerger.EXTENSION_POINT, 
 				IEquivalentConceptMerger.class);
+		if (merger == null) {
+			merger = new IEquivalentConceptMerger.Default();
+		}
 		
 		final String mergerName = merger.getClass().getSimpleName();
 		LOG.info("Reasoner service will use {} for equivalent concept merging.", mergerName);
@@ -876,5 +875,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 						.build());
 
 		bulkRequestBuilder.add(updateRequest);		
+	}
+
+	@Override
+	public String getOperation() {
+		return Permission.CLASSIFY;
 	}
 }

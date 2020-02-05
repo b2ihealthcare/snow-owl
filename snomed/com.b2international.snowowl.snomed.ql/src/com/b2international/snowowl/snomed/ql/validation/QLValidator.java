@@ -21,11 +21,11 @@ import java.util.stream.Stream;
 import org.eclipse.xtext.validation.Check;
 
 import com.b2international.snowowl.snomed.ql.QLRuntimeModule;
-import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter;
+import com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
 import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
-import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.ExclusionFilter;
 import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
@@ -67,51 +67,51 @@ public class QLValidator extends AbstractQLValidator {
 	}
 
 	@Check
-	public void checkDisjunction(Disjunction it) {
+	public void checkDisjunction(DisjunctionFilter it) {
 		if (isAmbiguous(it, it.getLeft())) {
-			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.DISJUNCTION__LEFT, AMBIGUOUS_CODE);
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.DISJUNCTION_FILTER__LEFT, AMBIGUOUS_CODE);
 		} else if (isAmbiguous(it, it.getRight())) {
-			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.DISJUNCTION__RIGHT, AMBIGUOUS_CODE);
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.DISJUNCTION_FILTER__RIGHT, AMBIGUOUS_CODE);
 		}
 		
 		Domain leftDomain = QLRuntimeModule.getDomain(it.getLeft());
 		Domain rightDomain = QLRuntimeModule.getDomain(it.getRight());
 		
 		if (leftDomain != rightDomain) {
-			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.DISJUNCTION__LEFT, DOMAIN_INCONSISTENCY_CODE);
+			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.DISJUNCTION_FILTER__LEFT, DOMAIN_INCONSISTENCY_CODE);
 		}
 		
 	}
 	
 	@Check
-	public void checkConjunction(Conjunction it) {
+	public void checkConjunction(ConjunctionFilter it) {
 		if (isAmbiguous(it, it.getLeft())) {
-			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__LEFT, AMBIGUOUS_CODE);
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION_FILTER__LEFT, AMBIGUOUS_CODE);
 		} else if (isAmbiguous(it, it.getRight())) {
-			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__RIGHT, AMBIGUOUS_CODE);
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION_FILTER__RIGHT, AMBIGUOUS_CODE);
 		}
 		
 		Domain leftDomain = QLRuntimeModule.getDomain(it.getLeft());
 		Domain rightDomain = QLRuntimeModule.getDomain(it.getRight());
 		
 		if (leftDomain != rightDomain) {
-			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.CONJUNCTION__LEFT, DOMAIN_INCONSISTENCY_CODE);
+			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.CONJUNCTION_FILTER__LEFT, DOMAIN_INCONSISTENCY_CODE);
 		}
 	}
 	
 	@Check
-	public void checkExclusion(Exclusion it) {
+	public void checkExclusion(ExclusionFilter it) {
 		if (isAmbiguous(it, it.getLeft())) {
-			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__LEFT, AMBIGUOUS_CODE);
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION_FILTER__LEFT, AMBIGUOUS_CODE);
 		} else if (isAmbiguous(it, it.getRight())) {
-			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__RIGHT, AMBIGUOUS_CODE);
+			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION_FILTER__RIGHT, AMBIGUOUS_CODE);
 		}
 		
 		Domain leftDomain = QLRuntimeModule.getDomain(it.getLeft());
 		Domain rightDomain = QLRuntimeModule.getDomain(it.getRight());
 		
 		if (leftDomain != rightDomain) {
-			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.EXCLUSION__LEFT, DOMAIN_INCONSISTENCY_CODE);
+			error(DOMAIN_INCONSISTENCY_MESSAGE, it, QlPackage.Literals.EXCLUSION_FILTER__LEFT, DOMAIN_INCONSISTENCY_CODE);
 		}
 	}
 	
@@ -125,9 +125,9 @@ public class QLValidator extends AbstractQLValidator {
 	
 	private boolean isAmbiguous(Filter parent, Filter child) {
 		return parent.getClass() != child.getClass() && 
-			(child instanceof Disjunction 
-				|| child instanceof Conjunction 
-				|| child instanceof Exclusion);
+			(child instanceof DisjunctionFilter 
+				|| child instanceof ConjunctionFilter 
+				|| child instanceof ExclusionFilter);
 	}
 	
 }

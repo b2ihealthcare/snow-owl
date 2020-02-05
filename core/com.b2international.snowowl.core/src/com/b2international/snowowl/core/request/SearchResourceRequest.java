@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -92,7 +93,27 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		public static SortField descending(String field) {
 			return of(field, false);
 		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(field, ascending);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) { return true; }
+			if (obj == null) { return false; }
+			if (getClass() != obj.getClass()) { return false; }
+			final SortField other = (SortField) obj;
+			if (ascending != other.ascending) { return false; }
+			if (!Objects.equals(field, other.field)) { return false; }
+			return true;
+		}
 		
+		@Override
+		public String toString() {
+			return String.format("%s:%s", field, ascending ? "asc" : "desc");
+		}
 	}
 	
 	public static class SortScript implements Sort {
@@ -294,7 +315,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	/**
 	 * Creates a new empty result object with the specified offset and limit parameter.
-	 * @param offset
+
 	 * @param limit
 	 * @return
 	 */
@@ -302,6 +323,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 
 	/**
 	 * Executes this search request.
+	 * 
 	 * @param context
 	 * @return
 	 * @throws IOException
@@ -310,6 +332,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	/**
 	 * Constructs the operator property name for the given property name.
+	 * 
 	 * @param property
 	 * @return
 	 */

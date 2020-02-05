@@ -48,7 +48,7 @@ public final class ClassificationJobRequestBuilder
 		this.additionalConcepts.addAll(additionalConcepts);
 		return this;
 	}
-	
+
 	public ClassificationJobRequestBuilder setParentLockContext(final String parentLockContext) {
 		this.parentLockContext = parentLockContext;
 		return this;

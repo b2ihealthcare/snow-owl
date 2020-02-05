@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core;
 
 import java.io.Serializable;
 
+import com.b2international.index.es.client.EsClusterStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -29,11 +30,13 @@ public final class ServerInfo implements Serializable {
 	private final String version;
 	private final String description;
 	private final Repositories repositories;
+	private final EsClusterStatus cluster;
 	
-	public ServerInfo(String version, String description, Repositories repositories) {
+	public ServerInfo(String version, String description, Repositories repositories, EsClusterStatus cluster) {
 		this.version = version;
 		this.description = description;
 		this.repositories = repositories;
+		this.cluster = cluster;
 	}
 
 	@JsonProperty
@@ -49,6 +52,11 @@ public final class ServerInfo implements Serializable {
 	@JsonProperty
 	public Repositories repositories() {
 		return repositories;
+	}
+	
+	@JsonProperty
+	public EsClusterStatus cluster() {
+		return cluster;
 	}
 	
 }

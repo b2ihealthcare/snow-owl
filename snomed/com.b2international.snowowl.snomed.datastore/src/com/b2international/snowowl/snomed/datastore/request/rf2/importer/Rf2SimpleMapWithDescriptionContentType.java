@@ -19,8 +19,10 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -56,4 +58,16 @@ final class Rf2SimpleMapWithDescriptionContentType implements Rf2RefSetContentTy
 			Long.parseLong(values[4])
 		);
 	}
+
+	@Override
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String mapTarget = values[6];
+		
+		if (Strings.isNullOrEmpty(mapTarget)) {
+			reporter.warning("Simple map target field was empty for '%s'", memberId);
+		}
+		
+	}
+	
 }

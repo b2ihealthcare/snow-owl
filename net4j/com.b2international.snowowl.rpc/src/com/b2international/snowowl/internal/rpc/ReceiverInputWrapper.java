@@ -65,7 +65,7 @@ public final class ReceiverInputWrapper extends InputStream {
 	 * @see java.io.InputStream#mark(int)
 	 */
 	@Override
-	public void mark(final int readlimit) {
+	public synchronized void mark(final int readlimit) {
 		delegate.mark(readlimit);
 	}
 
@@ -74,7 +74,7 @@ public final class ReceiverInputWrapper extends InputStream {
 	 * @see java.io.InputStream#reset()
 	 */
 	@Override
-	public void reset() throws IOException {
+	public synchronized void reset() throws IOException {
 		delegate.reset();
 	}
 

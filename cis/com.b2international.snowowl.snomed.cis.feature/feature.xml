@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.snomed.cis.feature"
       label="Snow Owl SNOMED CT CIS Feature"
-      version="6.25.0.qualifier"
+      version="7.4.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://www.example.com/description">
@@ -32,13 +32,6 @@
    </requires>
 
    <plugin
-         id="com.b2international.snowowl.snomed.cis.rest"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="com.b2international.snowowl.snomed.cis"
          download-size="0"
          install-size="0"
@@ -46,7 +39,7 @@
          unpack="false"/>
 
    <plugin
-         id="com.b2international.snowowl.logging.logbackconfiguration"
+         id="com.b2international.snowowl.snomed.cis.rest"
          download-size="0"
          install-size="0"
          version="0.0.0"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 
 /**
@@ -32,7 +31,7 @@ public final class ReasonerConcept implements Serializable {
 	 * Values below will match the origin concept ID, as they will only appear as
 	 * "removed" changes.
 	 */
-	private DefinitionStatus definitionStatus;
+	private String definitionStatusId;
 	private SnomedDescription fsn;
 	private SnomedDescription pt;
 
@@ -59,12 +58,12 @@ public final class ReasonerConcept implements Serializable {
 		this.released = released;
 	}
 
-	public DefinitionStatus getDefinitionStatus() {
-		return definitionStatus;
+	public String getDefinitionStatus() {
+		return definitionStatusId;
 	}
 
-	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	public void setDefinitionStatusId(final String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 	}
 
 	public SnomedDescription getPt() {
@@ -90,8 +89,8 @@ public final class ReasonerConcept implements Serializable {
 		builder.append(originConceptId);
 		builder.append(", released=");
 		builder.append(released);
-		builder.append(", definitionStatus=");
-		builder.append(definitionStatus);
+		builder.append(", definitionStatusId=");
+		builder.append(definitionStatusId);
 		builder.append(", fsn=");
 		builder.append(fsn);
 		builder.append(", pt=");

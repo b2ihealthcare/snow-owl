@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.google.common.collect.ImmutableList;
@@ -51,7 +51,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
-	 * Sets the search after parameter to the specified array of scroll values.
+	 * Sets the "search after" parameter to the specified array of scroll values.
+	 * 
 	 * @param searchAfter
 	 * @return
 	 * @see PageableCollectionResource#getSearchAfter()
@@ -62,7 +63,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
-	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request. 
+	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request.
+	 * 
 	 * @param scrollKeepAlive
 	 * @return this builder instance
 	 */
@@ -80,6 +82,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Sets the scroll Id to continue a previously started scroll.
+	 * 
 	 * @param scrollId
 	 * @return
 	 * @see PageableCollectionResource#getScrollId()
@@ -91,7 +94,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Sets the limit of the result set returned
-	 * @param limit of the result set
+	 * @param limit - limit of the result set
 	 * @return this builder instance
 	 */
 	public final B setLimit(int limit) {
@@ -121,6 +124,18 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
+	 * Sorts the result set by the given sort descriptor.
+	 * <p>
+	 * The format is <code>field1,field2:asc,field3:desc</code>.
+	 * 
+	 * @param sortBy - the sort descriptor
+	 * @return this builder instance
+	 */
+	public final B sortBy(String sortBy) {
+		return sortBy(SortParser.parse(sortBy));
+	}
+	
+	/**
 	 * Sorts the result set by the given sort fields.
 	 * 
 	 * @param first - the first sort field
@@ -134,7 +149,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	/**
 	 * Sorts the result set by the given sort fields.
 	 * 
-	 * @param sortFields - the list of fields to sort by, in order
+	 * @param sorts - the list of fields to sort by, in order
 	 * @return this builder instance
 	 */
 	public final B sortBy(List<Sort> sorts) {

@@ -20,10 +20,13 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -53,40 +56,58 @@ import com.google.common.collect.ImmutableSet;
  * @see SnomedReferenceSet
  * @see SnomedReferenceSetMember
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.RELATIONSHIP, 
+	shortId = SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER,
+	name = "SNOMED CT Relationship",			
+	componentCategory = ComponentCategory.RELATIONSHIP,
+	docType = SnomedRelationshipIndexEntry.class
+)
 public final class SnomedRelationship extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = -1131388567716570593L;
 	
 	/**
-	 * @since 6.16 
+	 * Enumerates expandable property keys.
+	 * 
+	 * @since 7.0
 	 */
-	public static final class Fields extends SnomedCoreComponent.Fields {
-
-		public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
-		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
-		public static final String GROUP = "group";
-		public static final String UNION_GROUP = "unionGroup";
-		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
-		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
-		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
-		
-		public static final Set<String> ALL = ImmutableSet.of(
-				// RF2 fields
-				ID,
-				ACTIVE,
-				EFFECTIVE_TIME,
-				MODULE_ID,
-				SOURCE_ID,
-				DESTINATION_ID,
-				GROUP,
-				UNION_GROUP,
-				TYPE_ID,
-				CHARACTERISTIC_TYPE_ID,
-				MODIFIER_ID,
-				// additional fields
-				RELEASED);
-
+	public static final class Expand {
+		public static final String SOURCE = "source";
+		public static final String TYPE = "type";
+		public static final String DESTINATION = "destination";
 	}
+
+ /*
+	* @since 6.16 
+	*/
+ public static final class Fields extends SnomedCoreComponent.Fields {
+
+	 public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
+	 public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
+	 public static final String GROUP = "group";
+	 public static final String UNION_GROUP = "unionGroup";
+	 public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+	 public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+	 public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
+	 
+	 public static final Set<String> ALL = ImmutableSet.of(
+			 // RF2 fields
+			 ID,
+			 ACTIVE,
+			 EFFECTIVE_TIME,
+			 MODULE_ID,
+			 SOURCE_ID,
+			 DESTINATION_ID,
+			 GROUP,
+			 UNION_GROUP,
+			 TYPE_ID,
+			 CHARACTERISTIC_TYPE_ID,
+			 MODIFIER_ID,
+			 // additional fields
+			 RELEASED);
+
+ }
 	
 	private boolean destinationNegated;
 	private Integer group;

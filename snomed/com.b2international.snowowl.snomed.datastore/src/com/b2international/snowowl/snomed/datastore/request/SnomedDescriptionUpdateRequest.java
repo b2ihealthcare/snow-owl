@@ -18,16 +18,21 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -81,41 +86,42 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final Description description = context.lookup(getComponentId(), Description.class);
+		final SnomedDescriptionIndexEntry description = context.lookup(getComponentId(), SnomedDescriptionIndexEntry.class);
+		final SnomedDescriptionIndexEntry.Builder updatedDescription = SnomedDescriptionIndexEntry.builder(description); 
 
 		boolean changed = false;
-		changed |= updateModule(context, description);
-		changed |= updateCaseSignificance(context, description, caseSignificance);
-		changed |= updateTypeId(context, description);
-		changed |= updateTerm(context, description);
-		changed |= updateLanguageCode(context, description);
-		changed |= processInactivation(context, description);
+		changed |= updateModule(context, description, updatedDescription);
+		changed |= updateCaseSignificance(context, description, updatedDescription, caseSignificance);
+		changed |= updateTypeId(context, description, updatedDescription);
+		changed |= updateTerm(context, description, updatedDescription);
+		changed |= updateLanguageCode(context, description, updatedDescription);
+		changed |= processInactivation(context, description, updatedDescription);
 
 		// XXX: acceptability and association changes do not push the effective time forward on the description
 		// XXX: this should be executed after processInactivation 
-		updateAcceptability(context, description);
+		updateAcceptability(context, description, updatedDescription);
 
-		if (changed && description.isSetEffectiveTime()) {
-			description.unsetEffectiveTime();
+		if (changed) {
+			if (description.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+				updatedDescription.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			}
+			context.update(description, updatedDescription.build());
 		}
 
 		return changed;
 	}
 
-	private void updateAcceptability(TransactionContext context, final Description description) {
-		final SnomedDescriptionAcceptabilityUpdateRequest acceptabilityUpdate = new SnomedDescriptionAcceptabilityUpdateRequest();
-		acceptabilityUpdate.setAcceptability(acceptability);
-		acceptabilityUpdate.setDescriptionId(description.getId());
-		acceptabilityUpdate.execute(context);
+	private void updateAcceptability(TransactionContext context, final SnomedDescriptionIndexEntry description, final SnomedDescriptionIndexEntry.Builder updatedDescription) {
+		new SnomedDescriptionAcceptabilityUpdateRequest(description, acceptability, false).execute(context);
 	}
 
-	private void updateAssociationTargets(TransactionContext context, final Multimap<AssociationType, String> associationTargets) {
-		final SnomedAssociationTargetUpdateRequest<Description> associationUpdateRequest = new SnomedAssociationTargetUpdateRequest<>(getComponentId(), Description.class);
+	private void updateAssociationTargets(TransactionContext context, final SnomedDescriptionIndexEntry description, final Multimap<AssociationType, String> associationTargets) {
+		final SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(description);
 		associationUpdateRequest.setNewAssociationTargets(associationTargets);
 		associationUpdateRequest.execute(context);
 	}
 	
-	private boolean processInactivation(final TransactionContext context, final Description description) {
+	private boolean processInactivation(final TransactionContext context, final SnomedDescriptionIndexEntry description, final SnomedDescriptionIndexEntry.Builder updatedDescription) {
 		if (null == isActive() && null == inactivationIndicator && null == associationTargets) {
 			return false;
 		}
@@ -130,9 +136,10 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			// Active --> Inactive: description inactivation, update indicator and association targets
 			// (using default values if not given)
 
-			description.setActive(false);
-			updateInactivationIndicator(context, newIndicator);
-			updateAssociationTargets(context, newAssociationTargets);
+			updatedDescription.active(false);
+			updateInactivationIndicator(context, description, newIndicator);
+			updateAssociationTargets(context, description, newAssociationTargets);
+			
 			return true;
 			
 		} else if (!currentStatus && newStatus) {
@@ -148,9 +155,9 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 				throw new BadRequestException("Cannot reactivate description and retain or change its historical association target(s) at the same time.");
 			}
 			
-			description.setActive(true);
-			updateInactivationIndicator(context, newIndicator);
-			updateAssociationTargets(context, newAssociationTargets);
+			updatedDescription.active(true);
+			updateInactivationIndicator(context, description, newIndicator);
+			updateAssociationTargets(context, description, newAssociationTargets);
 			return true;
 			
 		} else if (currentStatus == newStatus) {
@@ -158,8 +165,8 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			// Inactive --> Inactive: update indicator and/or association targets if required
 			// (using original values that can be null)
 
-			updateInactivationIndicator(context, inactivationIndicator);
-			updateAssociationTargets(context, associationTargets);
+			updateInactivationIndicator(context, description, inactivationIndicator);
+			updateAssociationTargets(context, description, associationTargets);
 			return false;
 			
 		} else /* if (currentStatus && newStatus) */ {
@@ -167,70 +174,66 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		}
 	}
 
-	private void updateInactivationIndicator(final TransactionContext context, final DescriptionInactivationIndicator inactivationIndicator) {
+	private void updateInactivationIndicator(final TransactionContext context, final SnomedDescriptionIndexEntry description, final DescriptionInactivationIndicator inactivationIndicator) {
 		if (inactivationIndicator == null) {
 			return;
 		}
 		
-		final SnomedInactivationReasonUpdateRequest<Description> inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest<>(
-				getComponentId(), 
-				Description.class, 
-				Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
-		
+		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
 		inactivationUpdateRequest.setInactivationValueId(inactivationIndicator.getConceptId());
 		inactivationUpdateRequest.execute(context);
 	}
 
-	private boolean updateCaseSignificance(final TransactionContext context, final Description description, final CaseSignificance newCaseSignificance) {
+	private boolean updateCaseSignificance(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description, final CaseSignificance newCaseSignificance) {
 		if (null == newCaseSignificance) {
 			return false;
 		}
 
-		final String existingCaseSignificanceId = description.getCaseSignificance().getId();
+		final String existingCaseSignificanceId = original.getCaseSignificanceId();
 		final String newCaseSignificanceId = newCaseSignificance.getConceptId();
 		if (!existingCaseSignificanceId.equals(newCaseSignificanceId)) {
-			description.setCaseSignificance(context.lookup(newCaseSignificanceId, Concept.class));
+			description.caseSignificanceId(context.lookup(newCaseSignificanceId, SnomedConceptDocument.class).getId());
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	private boolean updateTypeId(final TransactionContext context, final Description description) {
+	private boolean updateTypeId(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
 		if (null == typeId) {
 			return false;
 		}
 		
-		if (!description.getType().getId().equals(typeId)) {
-			checkUpdateOnReleased(description, SnomedRf2Headers.FIELD_TYPE_ID, typeId);
-			description.setType(context.lookup(typeId, Concept.class));
+		if (!original.getTypeId().equals(typeId)) {
+			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_TYPE_ID, typeId);
+			description.typeId(context.lookup(typeId, SnomedConceptDocument.class).getId());
 			return true;
 		}
 		
 		return false;
 	}
 	
-	private boolean updateTerm(final TransactionContext context, final Description description) {
+	private boolean updateTerm(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
 		if (null == term) {
 			return false;
 		}
 		
-		if (!description.getTerm().equals(term)) {
-			description.setTerm(term);
+		if (!original.getTerm().equals(term)) {
+			description.term(term);
 			return true;
 		}
 		
 		return false;
 	}
 	
-	private boolean updateLanguageCode(final TransactionContext context, final Description description) {
+	private boolean updateLanguageCode(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
 		if (null == languageCode) {
 			return false;
 		}
 		
-		if (!description.getLanguageCode().equals(languageCode)) {
-			checkUpdateOnReleased(description, SnomedRf2Headers.FIELD_LANGUAGE_CODE, languageCode);
-			description.setLanguageCode(languageCode);
+		if (!original.getLanguageCode().equals(languageCode)) {
+			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_LANGUAGE_CODE, languageCode);
+			description.languageCode(languageCode);
 			return true;
 		}
 		return false;

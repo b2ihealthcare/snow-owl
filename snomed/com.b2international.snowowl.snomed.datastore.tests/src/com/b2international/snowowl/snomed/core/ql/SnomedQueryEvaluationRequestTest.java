@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -35,10 +36,9 @@ import com.b2international.index.query.MatchNone;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -83,7 +83,6 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Before
 	public void setup() {
-		super.setup();
 		context = TestBranchContext.on(MAIN)
 				.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)))
@@ -162,7 +161,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void termFilter() throws Exception {
 		
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -228,7 +227,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void descriptionTypeFilter() throws Exception {
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -288,7 +287,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void preferredInFilter() throws Exception {
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -299,7 +298,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
 				.build());
 		
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -317,7 +316,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void acceptableInFilter() throws Exception {
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -328,7 +327,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
 				.build());
 		
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -346,7 +345,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void languageRefSetFilter() throws Exception {
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -357,7 +356,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
 				.build());
 		
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -380,7 +379,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void languageCodeFilter() throws Exception {
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
@@ -397,7 +396,7 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void caseSignificanceIdFilter() throws Exception {
-		indexRevision(MAIN, nextStorageKey(), SnomedDescriptionIndexEntry.builder()
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)

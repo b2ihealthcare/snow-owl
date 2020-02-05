@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.datastore.internal.id.reservations;
 import java.util.Collection;
 import java.util.Set;
 
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;

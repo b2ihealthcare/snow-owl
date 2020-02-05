@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,29 @@
 package com.b2international.snowowl.datastore.index;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.RevisionWriter;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.google.common.collect.Multimap;
+import com.b2international.index.revision.StagingArea;
 
 /**
  * @since 4.3
  */
 public interface ChangeSetProcessor {
 
+	int PAGE_SIZE = 10_000;
+	
 	/**
 	 * Processes the changes and writer index changes using the given {@link RevisionWriter}.
 	 * 
-	 * @param commitChangeSet
-	 *            - the set of changes
+	 * @param staging
+	 *            - the current state of the commit staging area
 	 * @param searcher
 	 *            - the revision index searcher to query previous state of the revisions, if required
 	 */
-	void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException;
+	void process(StagingArea staging, RevisionSearcher searcher) throws IOException;
 
 	/**
 	 * Returns the description of the change set processor.
@@ -51,20 +52,20 @@ public interface ChangeSetProcessor {
 	 * 
 	 * @return
 	 */
-	Map<Long, Revision> getNewMappings();
+	Map<String, RevisionDocument> getNewMappings();
 	
 	/**
 	 * Returns the new mappings made by this {@link ChangeSetProcessor} on existing documents.
 	 * 
 	 * @return
 	 */
-	Map<Long, Revision> getChangedMappings();
+	Map<String, RevisionDocumentChange> getChangedMappings();
 
 	/**
 	 * Returns the deletions made by this {@link ChangeSetProcessor}
 	 * 
 	 * @return
 	 */
-	Multimap<Class<? extends Revision>, Long> getDeletions();
+	Collection<RevisionDocument> getDeletions();
 
 }
