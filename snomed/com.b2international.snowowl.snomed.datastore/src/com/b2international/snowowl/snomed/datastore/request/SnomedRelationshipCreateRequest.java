@@ -27,7 +27,6 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Strings;
@@ -61,7 +60,7 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	private String characteristicTypeId;
 
 	@NotNull
-	private RelationshipModifier modifier;
+	private String modifierId;
 
 	SnomedRelationshipCreateRequest() {}
 	
@@ -93,8 +92,8 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		return characteristicTypeId;
 	}
 
-	public RelationshipModifier getModifier() {
-		return modifier;
+	public String getModifierId() {
+		return modifierId;
 	}
 	
 	void setSourceId(final String sourceId) {
@@ -125,14 +124,14 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
-	void setModifier(final RelationshipModifier modifier) {
-		this.modifier = modifier;
+	void setModifier(final String modifierId) {
+		this.modifierId = modifierId;
 	}
 	
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		Builder<String> result = ImmutableSet.<String>builder()
-				.add(getModifier().getConceptId())
+				.add(getModifierId())
 				.add(getCharacteristicTypeId())
 				.add(getTypeId())
 				.add(getDestinationId());
@@ -164,7 +163,7 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 					.withGroup(getGroup())
 					.withUnionGroup(getUnionGroup())
 					.withCharacteristicTypeId(getCharacteristicTypeId())
-					.withModifier(getModifier())
+					.withModifierId(getModifierId())
 					.withDestinationNegated(isDestinationNegated())
 					.build(context);
 			

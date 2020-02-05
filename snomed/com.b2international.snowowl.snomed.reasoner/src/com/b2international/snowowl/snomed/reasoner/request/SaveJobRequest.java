@@ -51,7 +51,6 @@ import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -716,7 +715,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
-		final RelationshipModifier modifier = relationship.getModifier();
+		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
 				sourceId, typeId, destinationId, destinationNegated,
@@ -734,7 +733,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
-		final RelationshipModifier modifier = relationship.getModifier();
+		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
 				sourceId, typeId, destinationId, destinationNegated,
@@ -750,7 +749,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final String characteristicTypeId, 
 			final int group, 
 			final int unionGroup,
-			final RelationshipModifier modifier) {
+			final String modifier) {
 		
 		final String moduleId = namespaceAndModuleAssigner.getRelationshipModuleId(sourceId);
 		final String namespace = namespaceAndModuleAssigner.getRelationshipNamespace(sourceId);
@@ -765,7 +764,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setDestinationNegated(destinationNegated)
 				.setGroup(group)
 				.setUnionGroup(unionGroup)
-				.setModifier(modifier)
+				.setModifierId(modifier)
 				.setModuleId(moduleId);
 	
 		bulkRequestBuilder.add(createRequest);

@@ -48,7 +48,6 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -389,7 +388,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 							&& parentConceptId.equals(relationship.getDestinationId())
 							&& relationship.getGroup() == 0
 							&& relationship.getUnionGroup() == 0
-							&& RelationshipModifier.EXISTENTIAL.equals(relationship.getModifier())
+							&& Concepts.EXISTENTIAL_RESTRICTION_MODIFIER.equals(relationship.getModifierId())
 							&& Concepts.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId());
 				}));
 	}

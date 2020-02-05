@@ -92,6 +92,6 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 						relationship.getGroup().toString(),					// group
 						relationship.getTypeId(),							// typeId
 						relationship.getCharacteristicTypeId(),				// characteristicTypeId
-						relationship.getModifier().getConceptId()));		// modifierId
+						relationship.getModifierId()));						// modifierId
 	}
 }

@@ -23,7 +23,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -52,7 +52,7 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		result.setDestinationNegated(input.isDestinationNegated());
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
 		result.setId(input.getId());
-		result.setModifier(toRelationshipModifier(input.isUniversal()));
+		result.setModifierId(toRelationshipModifier(input.isUniversal()));
 		result.setModuleId(input.getModuleId());
 		result.setIconId(input.getIconId());
 		result.setReleased(input.isReleased());
@@ -148,7 +148,7 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		}
 	}
 	
-	private RelationshipModifier toRelationshipModifier(final boolean universal) {
-		return universal ? RelationshipModifier.UNIVERSAL : RelationshipModifier.EXISTENTIAL;
+	private String toRelationshipModifier(final boolean universal) {
+		return universal ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 	}
 }

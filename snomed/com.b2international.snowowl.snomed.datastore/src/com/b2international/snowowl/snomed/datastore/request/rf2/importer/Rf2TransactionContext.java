@@ -397,7 +397,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withGroup(relationship.getGroup())
 					.withUnionGroup(relationship.getUnionGroup())
 					.withDestinationNegated(false)
-					.withModifier(relationship.getModifier());
+					.withModifierId(relationship.getModifierId());
 		} else {
 			throw new UnsupportedOperationException("Cannot prepare unknown core component: " + component);
 		}

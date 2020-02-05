@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,7 +38,7 @@ public final class ReasonerRelationship implements Serializable {
 	private Integer group;
 	private Integer unionGroup;
 	private String characteristicTypeId;
-	private RelationshipModifier modifier;
+	private String modifierId;
 	private SnomedConcept source;
 	private SnomedConcept destination;
 	private SnomedConcept type;
@@ -152,8 +151,8 @@ public final class ReasonerRelationship implements Serializable {
 	 * 
 	 * @return the modifier of this relationship
 	 */
-	public RelationshipModifier getModifier() {
-		return modifier;
+	public String getModifierId() {
+		return modifierId;
 	}
 
 	public void setSource(final SnomedConcept source) {
@@ -199,8 +198,8 @@ public final class ReasonerRelationship implements Serializable {
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
-	public void setModifier(final RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public void setModifierId(final String modifierId) {
+		this.modifierId = modifierId;
 	}
 
 	@Override
@@ -218,8 +217,8 @@ public final class ReasonerRelationship implements Serializable {
 		builder.append(unionGroup);
 		builder.append(", characteristicTypeId=");
 		builder.append(characteristicTypeId);
-		builder.append(", modifier=");
-		builder.append(modifier);
+		builder.append(", modifierId=");
+		builder.append(modifierId);
 		builder.append(", source=");
 		builder.append(source);
 		builder.append(", destination=");

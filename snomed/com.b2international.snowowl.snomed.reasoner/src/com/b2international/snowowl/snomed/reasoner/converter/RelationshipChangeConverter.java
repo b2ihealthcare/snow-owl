@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -230,7 +230,7 @@ public final class RelationshipChangeConverter
 							// reasonerRelationship.setDestination(...) is already set
 							reasonerRelationship.setDestinationNegated(false);
 							// reasonerRelationship.setGroup(...) is already set
-							reasonerRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
+							reasonerRelationship.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 							// reasonerRelationship.setReleased(...) is already set
 							// reasonerRelationship.setSource(...) is already set
 							// reasonerRelationship.setType(...) is already set
@@ -244,7 +244,7 @@ public final class RelationshipChangeConverter
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 							// reasonerRelationship.setGroup(...) is already set
-							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							reasonerRelationship.setModifierId(expandedRelationship.getModifierId());
 							// reasonerRelationship.setReleased(...) is already set
 							// reasonerRelationship.setSource(...) is already set
 							reasonerRelationship.setType(expandedRelationship.getType());
@@ -260,7 +260,7 @@ public final class RelationshipChangeConverter
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 							// reasonerRelationship.setGroup(...) is already set
-							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							reasonerRelationship.setModifierId(expandedRelationship.getModifierId());
 							// reasonerRelationship.setReleased(...) is already set
 							reasonerRelationship.setSource(expandedRelationship.getSource());
 							reasonerRelationship.setType(expandedRelationship.getType());
@@ -276,7 +276,7 @@ public final class RelationshipChangeConverter
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 							reasonerRelationship.setGroup(expandedRelationship.getGroup());
-							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							reasonerRelationship.setModifierId(expandedRelationship.getModifierId());
 							// reasonerRelationship.setReleased(...) is already set
 							reasonerRelationship.setSource(expandedRelationship.getSource());
 							reasonerRelationship.setType(expandedRelationship.getType());

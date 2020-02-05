@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-
 /**
  * @since 4.5
  */
@@ -25,7 +23,7 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 	private String characteristicTypeId;
 	private Integer group;
 	private Integer unionGroup;
-	private RelationshipModifier modifier;
+	private String modifierId;
 	private String destinationId;
 	private String typeId;
 
@@ -43,8 +41,8 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 		return getSelf();
 	}
 	
-	public SnomedRelationshipUpdateRequestBuilder setModifier(RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public SnomedRelationshipUpdateRequestBuilder setModifierId(String modifierId) {
+		this.modifierId = modifierId;
 		return getSelf();
 	}
 	
@@ -74,7 +72,7 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 		req.setCharacteristicTypeId(characteristicTypeId);
 		req.setGroup(group);
 		req.setUnionGroup(unionGroup);
-		req.setModifier(modifier);
+		req.setModifierId(modifierId);
 		req.setDestinationId(destinationId);
 		req.setTypeId(typeId);
 	}

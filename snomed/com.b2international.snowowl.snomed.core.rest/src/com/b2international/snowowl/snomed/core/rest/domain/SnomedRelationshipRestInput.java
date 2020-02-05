@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -29,7 +28,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	private String destinationId;
 	private boolean destinationNegated = false;
 	private int group = 0;
-	private RelationshipModifier modifier = RelationshipModifier.EXISTENTIAL;
+	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 	private String sourceId;
 	private String typeId;
 	private int unionGroup = 0;
@@ -50,8 +49,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		return group;
 	}
 
-	public RelationshipModifier getModifier() {
-		return modifier;
+	public String getModifierId() {
+		return modifierId;
 	}
 
 	public String getSourceId() {
@@ -82,8 +81,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		this.group = group;
 	}
 
-	public void setModifier(final RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public void setModifierId(final String modifierId) {
+		this.modifierId = modifierId;
 	}
 
 	public void setSourceId(final String sourceId) {
@@ -110,7 +109,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 				.setDestinationId(getDestinationId())
 				.setDestinationNegated(isDestinationNegated())
 				.setGroup(getGroup())
-				.setModifier(getModifier())
+				.setModifierId(getModifierId())
 				.setSourceId(getSourceId())
 				.setTypeId(getTypeId())
 				.setUnionGroup(getUnionGroup());
@@ -131,8 +130,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		builder.append(isDestinationNegated());
 		builder.append(", getGroup()=");
 		builder.append(getGroup());
-		builder.append(", getModifier()=");
-		builder.append(getModifier());
+		builder.append(", getModifierId()=");
+		builder.append(getModifierId());
 		builder.append(", getSourceId()=");
 		builder.append(getSourceId());
 		builder.append(", getTypeId()=");

@@ -20,7 +20,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
@@ -53,7 +52,7 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 		component.setGroup(Integer.parseInt(values[6]));
 		component.setTypeId(values[7]);
 		component.setCharacteristicTypeId(values[8]);
-		component.setModifier(RelationshipModifier.getByConceptId(values[9]));
+		component.setModifierId(values[9]);
 		component.setUnionGroup(0);
 	}
 

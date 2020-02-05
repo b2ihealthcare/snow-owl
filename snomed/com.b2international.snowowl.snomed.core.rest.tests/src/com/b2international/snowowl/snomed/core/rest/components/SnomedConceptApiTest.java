@@ -72,7 +72,6 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -778,7 +777,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		newRelationship.setModuleId(Concepts.MODULE_SCT_CORE);
 		newRelationship.setGroup(0);
 		newRelationship.setUnionGroup(0);
-		newRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
+		newRelationship.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
 		final List<SnomedRelationship> changedRelationships = ImmutableList.<SnomedRelationship>builder()
 				.addAll(concept.getRelationships())

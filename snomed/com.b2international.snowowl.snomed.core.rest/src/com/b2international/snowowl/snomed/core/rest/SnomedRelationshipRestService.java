@@ -226,7 +226,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.setCharacteristicTypeId(update.getCharacteristicTypeId())
 			.setGroup(update.getGroup())
 			.setUnionGroup(update.getUnionGroup())
-			.setModifier(update.getModifier())
+			.setModifierId(update.getModifierId())
 			.setTypeId(update.getTypeId())
 			.setDestinationId(update.getDestinationId())
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)

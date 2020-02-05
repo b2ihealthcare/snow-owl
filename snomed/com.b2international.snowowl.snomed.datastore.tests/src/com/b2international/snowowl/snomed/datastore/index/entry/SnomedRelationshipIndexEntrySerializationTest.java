@@ -27,7 +27,6 @@ import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -59,7 +58,7 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 				.destinationId(Concepts.ROOT_CONCEPT)
 				.typeId(Concepts.IS_A)
 				.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
-				.modifierId(RelationshipModifier.EXISTENTIAL.getConceptId())
+				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
 				.destinationNegated(true)
 				.group(1)
 				.unionGroup(1)

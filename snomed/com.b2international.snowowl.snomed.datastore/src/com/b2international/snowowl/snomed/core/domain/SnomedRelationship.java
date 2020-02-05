@@ -113,7 +113,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	private Integer group;
 	private Integer unionGroup;
 	private SnomedConcept characteristicType;
-	private RelationshipModifier modifier;
+	private SnomedConcept modifier;
 	private SnomedConcept source;
 	private SnomedConcept destination;
 	private SnomedConcept type;
@@ -224,10 +224,9 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * Returns the relationship's modifier value.
 	 * 
 	 * @return the modifier of this relationship
-	 * @deprecated - get the modifierId from {@link #getModifierId()} method
 	 */
 	@JsonProperty
-	public RelationshipModifier getModifier() {
+	public SnomedConcept getModifier() {
 		return modifier;
 	}
 	
@@ -235,7 +234,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @return the modifierId of the relationship.
 	 */
 	public String getModifierId() {
-		return getModifier() == null ? null : getModifier().getConceptId();
+		return getModifier() == null ? null : getModifier().getId();
 	}
 
 	public void setSource(SnomedConcept source) {
@@ -293,10 +292,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 
 	/**
 	 * @param modifier
-	 * @deprecated - set modifierId via {@link #setModifierId(String)} method
 	 */
-	@JsonIgnore
-	public void setModifier(final RelationshipModifier modifier) {
+	public void setModifier(final SnomedConcept modifier) {
 		this.modifier = modifier;
 	}
 	
@@ -304,7 +301,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @param modifierId
 	 */
 	public void setModifierId(final String modifierId) {
-		this.modifier = RelationshipModifier.getByConceptId(modifierId);
+		setModifier(new SnomedConcept(modifierId));
 	}
 
 	@Override
@@ -316,7 +313,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 				.setDestinationNegated(isDestinationNegated())
 				.setGroup(getGroup())
 				.setId(getId())
-				.setModifier(getModifier())
+				.setModifierId(getModifierId())
 				.setModuleId(getModuleId())
 				.setSourceId(containerId)
 				.setTypeId(getTypeId())
@@ -330,7 +327,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 				.setActive(isActive())
 				.setGroup(getGroup())
 				.setCharacteristicTypeId(getCharacteristicTypeId())
-				.setModifier(getModifier())
+				.setModifierId(getModifierId())
 				.setModuleId(getModuleId())
 				.setUnionGroup(getUnionGroup())
 				.setTypeId(getTypeId())

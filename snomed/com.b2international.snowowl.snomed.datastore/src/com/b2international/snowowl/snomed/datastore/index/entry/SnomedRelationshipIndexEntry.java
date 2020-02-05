@@ -82,7 +82,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				.unionGroup(input.getUnionGroup())
 				.active(input.isActive())
 				.released(input.isReleased())
-				.modifierId(input.getModifier().getConceptId())
+				.modifierId(input.getModifierId())
 				.destinationNegated(input.isDestinationNegated())
 				.moduleId(input.getModuleId())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));

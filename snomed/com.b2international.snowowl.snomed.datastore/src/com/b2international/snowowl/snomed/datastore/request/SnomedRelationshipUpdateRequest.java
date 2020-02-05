@@ -24,7 +24,6 @@ import javax.validation.constraints.Min;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.ImmutableSet;
@@ -44,7 +43,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	private Integer unionGroup;
 	
 	private String characteristicTypeId;
-	private RelationshipModifier modifier;
+	private String modifierId;
 	private String destinationId;
 	private String typeId;
 
@@ -60,8 +59,8 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		this.group = group;
 	}
 	
-	void setModifier(RelationshipModifier modifier) {
-		this.modifier = modifier;
+	void setModifierId(String modifierId) {
+		this.modifierId = modifierId;
 	}
 	
 	void setUnionGroup(Integer unionGroup) {
@@ -87,7 +86,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		changed |= updateGroup(group, relationship, updatedRelationship, context);
 		changed |= updateUnionGroup(unionGroup, relationship, updatedRelationship, context);
 		changed |= updateCharacteristicTypeId(characteristicTypeId, relationship, updatedRelationship, context);
-		changed |= updateModifier(modifier, relationship, updatedRelationship, context);
+		changed |= updateModifier(modifierId, relationship, updatedRelationship, context);
 		changed |= updateDestinationId(context, relationship, updatedRelationship);
 		changed |= updateTypeId(context, relationship, updatedRelationship);
 
@@ -169,14 +168,14 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		}
 	}
 
-	private boolean updateModifier(final RelationshipModifier newModifier, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
-		if (null == newModifier) {
+	private boolean updateModifier(final String newModifierId, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
+		if (null == newModifierId) {
 			return false;
 		}
 
-		final RelationshipModifier currentModifier = RelationshipModifier.getByConceptId(original.getModifierId());
-		if (!currentModifier.equals(newModifier)) {
-			relationship.modifierId(context.lookup(newModifier.getConceptId(), SnomedConceptDocument.class).getId());
+		final String currentModifier = original.getModifierId();
+		if (!currentModifier.equals(newModifierId)) {
+			relationship.modifierId(context.lookup(newModifierId, SnomedConceptDocument.class).getId());
 			return true;
 		} else {
 			return false;
@@ -196,8 +195,8 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		if (typeId != null) {
 			ids.add(typeId);
 		}
-		if (modifier != null) {
-			ids.add(modifier.getConceptId());
+		if (modifierId != null) {
+			ids.add(modifierId);
 		}
 		return ids.build();
 	}

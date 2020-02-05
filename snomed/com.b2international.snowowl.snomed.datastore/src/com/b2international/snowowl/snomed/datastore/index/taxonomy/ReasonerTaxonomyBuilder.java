@@ -62,7 +62,6 @@ import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
@@ -745,7 +744,7 @@ public final class ReasonerTaxonomyBuilder {
 				final boolean destinationNegated = relationship.isDestinationNegated();
 				final int group = relationship.getGroup();
 				final int unionGroup = relationship.getUnionGroup();
-				final boolean universal = RelationshipModifier.UNIVERSAL.equals(relationship.getModifier());
+				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship.getModifierId());
 
 				final StatementFragment statement = new StatementFragment(
 						typeId,

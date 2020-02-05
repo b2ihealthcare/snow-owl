@@ -31,7 +31,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -219,7 +218,7 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setDestinationId(destinationId)
 			.setTypeId(IS_A)
 			.setCharacteristicTypeId(characteristicTypeId)
-			.setModifier(RelationshipModifier.EXISTENTIAL);
+			.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
 }

@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  * <i>Builder</i> class to build requests responsible for creating SNOMED CT relationships.
@@ -31,7 +30,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	private String sourceId;
 	private boolean destinationNegated;
 	private int group = 0;
-	private RelationshipModifier modifier = RelationshipModifier.EXISTENTIAL;
+	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 	private Integer unionGroup = 0;
 	private String typeId;
 
@@ -64,8 +63,8 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 		return getSelf();
 	}
 	
-	public SnomedRelationshipCreateRequestBuilder setModifier(RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public SnomedRelationshipCreateRequestBuilder setModifierId(String modifierid) {
+		this.modifierId = modifierid;
 		return getSelf();
 	}
 	
@@ -87,7 +86,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 		req.setSourceId(sourceId);
 		req.setDestinationNegated(destinationNegated);
 		req.setGroup(group);
-		req.setModifier(modifier);
+		req.setModifier(modifierId);
 		req.setUnionGroup(unionGroup);
 		req.setTypeId(typeId);
 	}

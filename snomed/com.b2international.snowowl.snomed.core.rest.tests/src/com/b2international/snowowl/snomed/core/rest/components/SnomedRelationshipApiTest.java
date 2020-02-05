@@ -51,7 +51,6 @@ import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -310,13 +309,13 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	public void changeRelationshipModifier() {
 		String relationshipId = createNewRelationship(branchPath);
 		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("modifier", RelationshipModifier.UNIVERSAL)
+				.put("modifierId", Concepts.UNIVERSAL_RESTRICTION_MODIFIER)
 				.put("commitComment", "Updated relationship modifier")
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("modifier", equalTo(RelationshipModifier.UNIVERSAL.name()));
+		.body("modifierId", equalTo(Concepts.UNIVERSAL_RESTRICTION_MODIFIER));
 	}
 
 	@Test

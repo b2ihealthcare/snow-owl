@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-
-
 /**
  * @since 1.0
  */
@@ -26,7 +23,7 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 	private Integer group;
 	private Integer unionGroup;
 	private String characteristicTypeId;
-	private RelationshipModifier modifier;
+	private String modifierId;
 	private String destinationId;
 	private String typeId;
 
@@ -54,12 +51,12 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
-	public RelationshipModifier getModifier() {
-		return modifier;
+	public String getModifierId() {
+		return modifierId;
 	}
 
-	public void setModifier(final RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public void setModifierId(final String modifierId) {
+		this.modifierId = modifierId;
 	}
 	
 	public String getDestinationId() {

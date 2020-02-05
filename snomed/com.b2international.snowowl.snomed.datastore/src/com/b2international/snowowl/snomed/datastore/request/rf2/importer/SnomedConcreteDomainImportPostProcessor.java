@@ -39,7 +39,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -240,7 +239,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			.setDestinationId(destination)
 			.setTypeId(IS_A)
 			.setCharacteristicTypeId(characteristicTypeId)
-			.setModifier(RelationshipModifier.EXISTENTIAL);
+			.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
 }
