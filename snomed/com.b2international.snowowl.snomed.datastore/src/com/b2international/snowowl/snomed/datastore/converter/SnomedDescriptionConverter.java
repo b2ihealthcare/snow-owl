@@ -86,11 +86,35 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 		expandInactivationProperties(results, descriptionIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
 		new ModuleExpander(context(), expand(), locales()).expand(results);
+		expandCaseSignificance(results);
 		expandConcept(results, descriptionIds);
 		expandType(results, descriptionIds);
 		expandAcceptabilities(results);
 	}
 	
+	private void expandCaseSignificance(List<SnomedDescription> results) {
+		if (!expand().containsKey("caseSignificance")) {
+			return;
+		}
+		
+		final Set<String> caseSignificanceIds = results.stream().map(SnomedDescription::getCaseSignificanceId).collect(Collectors.toSet());
+		final Options caseSignificanceExpand = expand().get("caseSignificance", Options.class);
+		
+		final Map<String, SnomedConcept> caseSignificancesById = SnomedRequests.prepareSearchConcept()
+				.filterByIds(caseSignificanceIds)
+				.setLimit(caseSignificanceIds.size())
+				.setExpand(caseSignificanceExpand.getOptions("expand"))
+				.setLocales(locales())
+				.build()
+				.execute(context())
+				.stream()
+				.collect(Collectors.toMap(SnomedConcept::getId, c -> c));
+		
+		for (SnomedDescription result : results) {
+			result.setCaseSignificance(caseSignificancesById.get(result.getCaseSignificanceId()));
+		}
+	}
+
 	private void expandAcceptabilities(List<SnomedDescription> results) {
 		if (!expand().containsKey("acceptabilities")) {
 			return;
