@@ -51,7 +51,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -181,7 +180,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.put("term", "Synonym of root concept")
 				.put("languageCode", "en")
 				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
-				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
 				.put("commitComment", "Created new synonym with duplicate SCTID")
 				.build();
 
@@ -204,7 +203,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.put("term", descriptionTerm)
 				.put("languageCode", DEFAULT_LANGUAGE_CODE)
 				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
-				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
 				.put("commitComment", "Created new synonym")
 				.build();
 
@@ -223,7 +222,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 			.body("released", equalTo(true))
 			.body("effectiveTime", equalTo(effectiveDate))
 			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
-			.body("caseSignificance", equalTo(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.toString()));
+			.body("caseSignificanceId", equalTo(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
 		
 		// upgrade extension to latest INT version
 		
@@ -247,7 +246,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		// update description on extension, change module and case significance
 		
 		Map<?, ?> descriptionUpdateRequest = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE)
 				.put("moduleId", Concepts.MODULE_B2I_EXTENSION)
 				.put("commitComment", "Changed case significance on description")
 				.build();
@@ -259,7 +258,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.body("released", equalTo(true))
 				.body("effectiveTime", nullValue())
 				.body("moduleId", equalTo(Concepts.MODULE_B2I_EXTENSION))
-				.body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.toString()));
+				.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
 		
 		// version extension
 		
@@ -276,7 +275,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		// update description on MAIN ("take" extension changes and apply it in INT) 
 		
 		Map<?, ?> intDescriptionUpdateRequest = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE)
 				.put("commitComment", "Changed case significance on description on MAIN")
 				.build();
 
@@ -293,7 +292,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.body("released", equalTo(true))
 				.body("effectiveTime", equalTo(newIntEffectiveDate))
 				.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
-				.body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.toString()));
+				.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
 		
 		// upgrade extension to new INT version
 		
@@ -319,7 +318,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 			.body("released", equalTo(true))
 			.body("effectiveTime", equalTo(newIntEffectiveDate))
 			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
-			.body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.toString()));
+			.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
 		
 	}
 	
@@ -480,7 +479,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.put("term", descriptionTerm)
 				.put("languageCode", DEFAULT_LANGUAGE_CODE)
 				.put("acceptability", SnomedApiTestConstants.US_ACCEPTABLE_MAP)
-				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
 				.put("commitComment", "Created new extension synonym")
 				.build();
 
@@ -492,7 +491,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(SnomedDescription.class);
 		
-		assertEquals(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE, extensionDescription.getCaseSignificance());
+		assertEquals(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE, extensionDescription.getCaseSignificanceId());
 		assertThat(extensionDescription.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_US));
 		assertEquals(Acceptability.ACCEPTABLE, extensionDescription.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_US));
 		assertFalse(extensionDescription.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_UK));
@@ -520,7 +519,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.put("term", descriptionTerm)
 				.put("languageCode", "en")
 				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("caseSignificance", Concepts.ENTIRE_TERM_CASE_SENSITIVE)
 				.put("commitComment", "Created new donated synonym")
 				.build();
 
@@ -534,7 +533,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(SnomedDescription.class);
 		
-		assertEquals(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE, donatedDescription.getCaseSignificance());
+		assertEquals(Concepts.ENTIRE_TERM_CASE_SENSITIVE, donatedDescription.getCaseSignificanceId());
 		assertThat(donatedDescription.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_UK));
 		assertEquals(Acceptability.ACCEPTABLE, donatedDescription.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_UK));
 		assertFalse(donatedDescription.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_US));
@@ -556,7 +555,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.extract().as(SnomedDescription.class);
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedDescriptionInExtension.getModuleId());
-		assertEquals(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE, donatedDescriptionInExtension.getCaseSignificance());
+		assertEquals(Concepts.ENTIRE_TERM_CASE_SENSITIVE, donatedDescriptionInExtension.getCaseSignificanceId());
 		assertThat(donatedDescriptionInExtension.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_US));
 		assertEquals(Acceptability.ACCEPTABLE, donatedDescriptionInExtension.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_US));
 		assertThat(donatedDescriptionInExtension.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_UK));

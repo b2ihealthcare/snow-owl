@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,7 +40,7 @@ public final class ReasonerDescription implements Serializable {
 	private SnomedConcept type;
 	private String languageCode;
 	private String term;
-	private CaseSignificance caseSignificance;
+	private String caseSignificanceId;
 	private Map<String, Acceptability> acceptabilityMap;
 
 	// Default constructor is used in JSON de-serialization
@@ -109,12 +108,12 @@ public final class ReasonerDescription implements Serializable {
 		this.term = term;
 	}
 
-	public CaseSignificance getCaseSignificance() {
-		return caseSignificance;
+	public String getCaseSignificanceId() {
+		return caseSignificanceId;
 	}
 
-	public void setCaseSignificance(final CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
+	public void setCaseSignificanceId(final String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 	}
 
 	public Map<String, Acceptability> getAcceptabilityMap() {
@@ -140,8 +139,8 @@ public final class ReasonerDescription implements Serializable {
 		builder.append(languageCode);
 		builder.append(", term=");
 		builder.append(term);
-		builder.append(", caseSignificance=");
-		builder.append(caseSignificance);
+		builder.append(", caseSignificanceId=");
+		builder.append(caseSignificanceId);
 		builder.append(", acceptabilityMap=");
 		builder.append(acceptabilityMap);
 		builder.append("]");

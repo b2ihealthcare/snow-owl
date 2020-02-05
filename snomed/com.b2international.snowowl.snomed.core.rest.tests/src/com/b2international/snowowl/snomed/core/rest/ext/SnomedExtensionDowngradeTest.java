@@ -36,7 +36,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemVersion;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
@@ -126,7 +125,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 				.put("term", "Synonym of root concept")
 				.put("languageCode", "en")
 				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
-				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
 				.put("commitComment", "Created new synonym with duplicate SCTID")
 				.build();
 

@@ -379,7 +379,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withActive(description.isActive())
 					.withEffectiveTime(description.getEffectiveTime())
 					.withModule(description.getModuleId())
-					.withCaseSignificance(description.getCaseSignificance())
+					.withCaseSignificanceId(description.getCaseSignificanceId())
 					.withLanguageCode(description.getLanguageCode())
 					.withType(description.getTypeId())
 					.withTerm(description.getTerm())

@@ -72,7 +72,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -188,7 +187,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void createDescriptionCaseInsensitive() {
 		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.SYNONYM, Concepts.MODULE_SCT_CORE, 
 				SnomedApiTestConstants.UK_ACCEPTABLE_MAP, 
-				CaseSignificance.CASE_INSENSITIVE)
+				Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.put("commitComment", "Created new description with case insensitive significance")
 				.build();
 
@@ -197,7 +196,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.extract().header("Location"));
 
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
-		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()));
+			.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_INSENSITIVE));
 	}
 
 	@Test
@@ -399,13 +398,13 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath);
 		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
 				.put("active", false)
-				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.put("commitComment", "Updated description case significance")
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivationRequestBody).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
-			.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()));
+			.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_INSENSITIVE));
 	}
 
 	@Test

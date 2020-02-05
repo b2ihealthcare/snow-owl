@@ -15,23 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.ATTRIBUTE_CARDINALITY;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.ATTRIBUTE_IN_GROUP_CARDINALITY;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.ATTRIBUTE_RULE;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.CONTENT_TYPE_ID;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.DOMAIN_CONSTRAINT;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.DOMAIN_ID;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_PRECOORDINATION;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.EDITORIAL_GUIDE_REFERENCE;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.OWL_AXIOM_1;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.OWL_ONTOLOGY_1;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.PARENT_DOMAIN;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_CONSTRAINT;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_REFINEMENT;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.RANGE_CONSTRAINT;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.RULE_REFSET_ID;
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.RULE_STRENGTH_ID;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.searchComponent;
@@ -57,7 +41,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -157,7 +140,7 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static String createNewDescription(IBranchPath descriptionPath, String conceptId, String typeId, Map<String, Acceptability> acceptabilityMap, final String languageCode) {
-		Map<?, ?> requestBody = createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, acceptabilityMap, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE, languageCode)
+		Map<?, ?> requestBody = createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, acceptabilityMap, Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE, languageCode)
 				.put("commitComment", "Created new description")
 				.build();
 
@@ -202,17 +185,17 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, Map<String, Acceptability> acceptabilityMap) {
-		return createDescriptionRequestBody(conceptId, typeId, moduleId, acceptabilityMap, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE);
+		return createDescriptionRequestBody(conceptId, typeId, moduleId, acceptabilityMap, Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE);
 	}
 
 	public static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, 
 			Map<String, Acceptability> acceptabilityMap,
-			CaseSignificance caseSignificance) {
-		return createDescriptionRequestBody(conceptId, typeId, moduleId, acceptabilityMap, caseSignificance, DEFAULT_LANGUAGE_CODE);
+			String caseSignificanceId) {
+		return createDescriptionRequestBody(conceptId, typeId, moduleId, acceptabilityMap, caseSignificanceId, DEFAULT_LANGUAGE_CODE);
 	}
 
 	private static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, Map<String, Acceptability> acceptabilityMap,
-			CaseSignificance caseSignificance, final String languageCode) {
+			String caseSignificanceId, final String languageCode) {
 		return ImmutableMap.<String, Object>builder()
 				.put("conceptId", conceptId)
 				.put("moduleId", moduleId)
@@ -220,7 +203,7 @@ public abstract class SnomedRestFixtures {
 				.put("term", DEFAULT_TERM)
 				.put("languageCode", languageCode)
 				.put("acceptability", acceptabilityMap)
-				.put("caseSignificance", caseSignificance);
+				.put("caseSignificanceId", caseSignificanceId);
 	}
 
 	public static String createNewRelationship(IBranchPath relationshipPath) {
@@ -412,12 +395,12 @@ public abstract class SnomedRestFixtures {
 	}
 	
 	public static void changeCaseSignificance(IBranchPath descriptionPath, String descriptionId) {
-		changeCaseSignificance(descriptionPath, descriptionId, CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE);
+		changeCaseSignificance(descriptionPath, descriptionId, Concepts.ENTIRE_TERM_CASE_SENSITIVE);
 	}
 
-	public static void changeCaseSignificance(IBranchPath descriptionPath, String descriptionId, CaseSignificance caseSignificance) {
+	public static void changeCaseSignificance(IBranchPath descriptionPath, String descriptionId, String caseSignificanceId) {
 		Map<?, ?> descriptionUpdateRequest = ImmutableMap.builder()
-				.put("caseSignificance", caseSignificance)
+				.put("caseSignificanceId", caseSignificanceId)
 				.put("commitComment", "Changed case significance on description")
 				.build();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.google.common.collect.Multimap;
 
@@ -30,7 +29,7 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 
 	private Map<String, Acceptability> acceptability;
 	private Multimap<AssociationType, String> associationTargets;
-	private CaseSignificance caseSignificance;
+	private String caseSignificanceId;
 	private DescriptionInactivationIndicator inactivationIndicator;
 	private String languageCode;
 	private String typeId;
@@ -50,8 +49,8 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 		return getSelf();
 	}
 	
-	public SnomedDescriptionUpdateRequestBuilder setCaseSignificance(CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
+	public SnomedDescriptionUpdateRequestBuilder setCaseSignificanceId(String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 		return getSelf();
 	}
 	
@@ -85,7 +84,7 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 		super.init(req);
 		req.setAcceptability(acceptability);
 		req.setAssociationTargets(associationTargets);
-		req.setCaseSignificance(caseSignificance);
+		req.setCaseSignificanceId(caseSignificanceId);
 		req.setInactivationIndicator(inactivationIndicator);
 		req.setLanguageCode(languageCode);
 		req.setTypeId(typeId);

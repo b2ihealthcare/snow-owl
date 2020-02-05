@@ -447,7 +447,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 				ids.add(description.getTypeId());
 				ids.addAll(description.getAcceptabilityMap().keySet());
 				ids.addAll(description.getAcceptabilityMap().values().stream().map(Acceptability::getConceptId).collect(Collectors.toSet()));
-				ids.add(description.getCaseSignificance().getConceptId());
+				ids.add(description.getCaseSignificanceId());
 			});
 		}
 		if (!CompareUtils.isEmpty(relationships)) {

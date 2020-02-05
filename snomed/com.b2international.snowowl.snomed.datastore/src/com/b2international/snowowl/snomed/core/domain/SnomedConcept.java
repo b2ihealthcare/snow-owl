@@ -128,8 +128,8 @@ public final class SnomedConcept extends SnomedCoreComponent {
 		public static final String DESCRIPTIONS = "descriptions";
 		public static final String FULLY_SPECIFIED_NAME = "fsn";
 		public static final String PREFERRED_TERM = "pt";
-		public static final Object PREFERRED_DESCRIPTIONS = "preferredDescriptions";
-		public static final Object DEFINITION_STATUS = "definitionStatus";
+		public static final String PREFERRED_DESCRIPTIONS = "preferredDescriptions";
+		public static final String DEFINITION_STATUS = "definitionStatus";
 
 	}
 	

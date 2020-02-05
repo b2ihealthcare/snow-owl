@@ -49,7 +49,6 @@ import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
@@ -69,7 +68,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		branching.createBranch(a).statusCode(201);
 
-		changeCaseSignificance(branchPath, descriptionId, CaseSignificance.CASE_INSENSITIVE); // Parent branch changes to CaseSignificance.CASE_INSENSITIVE
+		changeCaseSignificance(branchPath, descriptionId, Concepts.ENTIRE_TERM_CASE_INSENSITIVE); // Parent branch changes to CaseSignificance.CASE_INSENSITIVE
 		changeCaseSignificance(a, descriptionId); // Child branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
 
 		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased case significance change over case significance change")
@@ -81,8 +80,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
 				.property("caseSignificanceId")
-				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
-				.value(CaseSignificance.CASE_INSENSITIVE.getConceptId())
+				.oldValue(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.value(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.build();
 
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
@@ -101,13 +100,13 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		branching.createBranch(a).statusCode(201);
 
 		Map<?, ?> changesOnParent = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.put("moduleId", Concepts.MODULE_ROOT)
 				.put("commitComment", "Changed case significance and module on parent")
 				.build();
 
 		Map<?, ?> changesOnBranch = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE)
 				.put("moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT)
 				.put("commitComment", "Changed case significance and module on branch")
 				.build();
@@ -131,8 +130,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		Map<String, ConflictingAttribute> expectedAttributes = newHashMap();
 		expectedAttributes.put("caseSignificanceId", ConflictingAttributeImpl.builder()
 				.property("caseSignificanceId")
-				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
-				.value(CaseSignificance.CASE_INSENSITIVE.getConceptId())
+				.oldValue(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.value(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.build());
 
 		expectedAttributes.put("moduleId", ConflictingAttributeImpl.builder()
@@ -217,7 +216,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 				.put("term", "Synonym of root concept")
 				.put("languageCode", "en")
 				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
-				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.put("commitComment", "Created new synonym with duplicate SCTID")
 				.build();
 

@@ -22,16 +22,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeCaseSignificance;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeRelationshipGroup;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createInactiveConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewDescription;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSetMember;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewTextDefinition;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.merge;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 
@@ -50,7 +41,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
@@ -438,7 +428,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		merge(branchPath, a, "Rebased deletion over case significance change").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name()));
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
 		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
 	}
 
@@ -468,7 +458,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		final String description2Id = createNewDescription(branchPath);
 
 		final Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.put("moduleId", Concepts.MODULE_ROOT)
 				.put("commitComment", "Changed case significance and module on child")
 				.build();
@@ -483,11 +473,11 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		// Description 1 retains the changes on child, keeps the original values on parent
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200)
-		.body("caseSignificance", equalTo(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.name()))
+		.body("caseSignificanceId", equalTo(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE))
 		.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE));
 
 		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200)
-		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
+		.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_INSENSITIVE))
 		.body("moduleId", equalTo(Concepts.MODULE_ROOT));
 
 		merge(a, branchPath, "Merged description change to parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
@@ -497,11 +487,11 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		// Description 1 changes are visible everywhere
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200)
-		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
+		.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_INSENSITIVE))
 		.body("moduleId", equalTo(Concepts.MODULE_ROOT));
 
 		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200)
-		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
+		.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_INSENSITIVE))
 		.body("moduleId", equalTo(Concepts.MODULE_ROOT));
 	}
 
@@ -637,14 +627,18 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		createNewRelationship(branchPath);
 		merge(branchPath, a, "Rebased new components over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
-		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.name()));
-		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("group", equalTo(0));
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body("caseSignificanceId", equalTo(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body("group", equalTo(0));
 
 		// "b" should be STALE at this point, try to rebase it, it should pass and the components should still exist with changed content
 		merge(a, b, "Rebased changed components over new components").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		// Verify that the two components have the modified values
-		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name()));
+		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
 		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("group", equalTo(99));
 	}
 
