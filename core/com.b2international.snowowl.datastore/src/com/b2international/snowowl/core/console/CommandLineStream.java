@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.console;
 
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
 
 /**
@@ -28,8 +29,8 @@ public interface CommandLineStream {
 	
 	void println(Object o);
 	
-	default User authenticate() {
-		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
+	default User authenticate(IEventBus bus) {
+		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator(bus);
 		
 		if (!authenticator.authenticate(this)) {
 			return null;
