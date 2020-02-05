@@ -41,6 +41,9 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.nested.Nested;
+import org.elasticsearch.search.aggregations.bucket.nested.ReverseNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
@@ -455,9 +458,24 @@ public class EsDocumentSearcher implements Searcher {
 		
 		
 		ImmutableMap.Builder<Object, Bucket<T>> buckets = ImmutableMap.builder();
-		Terms aggregationResult = response.getAggregations().<Terms>get(aggregationName);
+		Aggregations topLevelAggregations = response.getAggregations();
+		Nested nested = topLevelAggregations.get(nestedAggName(aggregation));
+		Terms aggregationResult;
+		
+		if (nested != null) {
+			aggregationResult = nested.getAggregations().get(aggregationName);
+		} else {
+			aggregationResult = topLevelAggregations.get(aggregationName);
+		}
+				
 		for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : aggregationResult.getBuckets()) {
-			final TopHits topHits = bucket.getAggregations().get(topHitsAggName(aggregation));
+			final TopHits topHits;
+			if (nested != null) {
+				final ReverseNested reverseNested = bucket.getAggregations().get(reverseNestedAggName(aggregation));
+				topHits = reverseNested.getAggregations().get(topHitsAggName(aggregation));
+			} else {
+				topHits = bucket.getAggregations().get(topHitsAggName(aggregation));				
+			}
 			Hits<T> hits;
 			if (topHits != null) {
 				hits = toHits(aggregation.getSelect(), aggregation.getFrom(), aggregation.getFields(), fetchSource, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount(), null, null, topHits.getHits()); 
@@ -486,6 +504,7 @@ public class EsDocumentSearcher implements Searcher {
 			throw new IllegalArgumentException("Specify either field or script parameter");
 		}
 		
+		boolean isNested = !Strings.isNullOrEmpty(aggregation.getPath());
 		// add top hits agg to get the top N items for each bucket
 		if (aggregation.getBucketHitsLimit() > 0) {
 			TopHitsAggregationBuilder topHitsAgg = AggregationBuilders.topHits(topHitsAggName(aggregation))
@@ -504,7 +523,17 @@ public class EsDocumentSearcher implements Searcher {
 				
 			}
 			
-			termsAgg.subAggregation(topHitsAgg);
+			if (isNested) {
+				termsAgg.subAggregation(AggregationBuilders.reverseNested(reverseNestedAggName(aggregation)).subAggregation(topHitsAgg));
+			} else {
+				termsAgg.subAggregation(topHitsAgg);
+			}
+		}
+		
+		if (isNested) {
+			return AggregationBuilders
+					.nested(nestedAggName(aggregation), aggregation.getPath())
+					.subAggregation(termsAgg);
 		}
 		
 		return termsAgg;
@@ -512,6 +541,14 @@ public class EsDocumentSearcher implements Searcher {
 
 	private String topHitsAggName(AggregationBuilder<?> aggregation) {
 		return aggregation.getName() + "-top-hits";
+	}
+	
+	private String nestedAggName(AggregationBuilder<?> aggregation) {
+		return aggregation.getName() + "-nested";
+	}
+	
+	private String reverseNestedAggName(AggregationBuilder<?> aggregation) {
+		return aggregation.getName() + "-reverse-nested";
 	}
 
 }
