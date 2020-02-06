@@ -86,8 +86,6 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		
 		final SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareSearchMember()
 				.setLimit(params.getLimit())
-				.setScroll(params.getScrollKeepAlive())
-				.setScrollId(params.getScrollId())
 				.setSearchAfter(params.getSearchAfter())
 				.filterByIds(params.getId())
 				.filterByActive(params.getActive())

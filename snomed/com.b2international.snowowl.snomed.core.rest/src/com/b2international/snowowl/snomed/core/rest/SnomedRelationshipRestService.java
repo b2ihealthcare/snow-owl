@@ -92,8 +92,6 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.filterByGroup(params.getGroup())
 					.filterByUnionGroup(params.getUnionGroup())
 					.setLimit(params.getLimit())
-					.setScroll(params.getScrollKeepAlive())
-					.setScrollId(params.getScrollId())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())
 					.setLocales(extendedLocales)
