@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,33 +38,27 @@ public class SnowOwlSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
-	    StrictHttpFirewall firewall = new StrictHttpFirewall();
-	    firewall.setAllowUrlEncodedSlash(true);
-	    return firewall;
+		StrictHttpFirewall firewall = new StrictHttpFirewall();
+		firewall.setAllowUrlEncodedSlash(true);
+		return firewall;
 	}
-	
+
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
-		http
-			.sessionManagement()
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-			.and()
-			.csrf().disable();
-		
+		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
 		// add dev time CORS filter
 		if (PlatformUtil.isDevVersion()) {
 			http.addFilterAfter(new CORSFilter(), BasicAuthenticationFilter.class);
 		}
-		
+
 		// authentication is handled internally in AuthorizedRequest
-		http.authorizeRequests()
-			.antMatchers("/**")
-			.permitAll();
+		http.authorizeRequests().antMatchers("/**").permitAll();
 	}
-	
+
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
 	}
-	
+
 }
