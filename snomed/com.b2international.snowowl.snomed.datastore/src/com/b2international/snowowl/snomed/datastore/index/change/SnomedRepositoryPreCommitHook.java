@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -208,8 +209,6 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, expressionConverter, staging, inferredConceptIds, checkCycles);
 		final Taxonomy statedTaxonomy = Taxonomies.stated(index, expressionConverter, staging, statedConceptIds, checkCycles);
 
-		final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
-		
 		// XXX change processor execution order is important!!!
 		return ImmutableList.<ChangeSetProcessor>builder()
 				// execute description change processor to get proper acceptabilityMap values before executing other change processors
@@ -217,10 +216,19 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 				.add(new DescriptionChangeProcessor())
 				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.INSTANCE.getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new RelationshipChangeProcessor())
-				// effective time restore should be the last processing unit before we send the changes to commit
-				.add(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp))
 				.build();
-		
+	}
+	
+	@Override
+	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
+		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
+		final FeatureToggles featureToggles = context.service(FeatureToggles.class);
+		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(context.id(), index.branch()));
+		if (!importRunning) {
+			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
+			// XXX effective time restore should be the last processing unit before we send the changes to commit
+			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);
+		}
 	}
 	
 	@Override
