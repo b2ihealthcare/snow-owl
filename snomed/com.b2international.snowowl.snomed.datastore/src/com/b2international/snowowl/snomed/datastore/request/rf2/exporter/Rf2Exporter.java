@@ -150,7 +150,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 						.filterByModules(modules) // null value will be ignored
 						.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
 						.setLimit(BATCH_SIZE)
-						.setScroll("15m");
+						.setScroll("1m");
 				
 				final SearchResourceRequestIterator<B, R> iterator = new SearchResourceRequestIterator<>(requestBuilder, scrolledBuilder -> {
 					return new BranchRequest<R>(
