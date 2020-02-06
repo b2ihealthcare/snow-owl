@@ -145,24 +145,23 @@ public final class EsIndexAdmin implements IndexAdmin {
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
 			final String type = mapping.typeAsString();
-			final Map<String, Object> typeMapping = ImmutableMap.of(type,
-					ImmutableMap.builder()
+			final Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
 					.put("date_detection", false)
 					.put("numeric_detection", false)
 					.putAll(toProperties(mapping))
-					.build());
+					.build();
 			
 			if (exists(mapping)) {
 				// update mapping if required
 				ImmutableOpenMap<String, MappingMetaData> currentIndexMapping;
 				try {
-					currentIndexMapping = client.indices().getMapping(new GetMappingsRequest().indices(index).types(type)).mappings().get(index);
+					currentIndexMapping = client.indices().getMapping(new GetMappingsRequest().types(type).indices(index)).mappings().get(index);
 				} catch (Exception e) {
 					throw new IndexException(String.format("Failed to get mapping of '%s' for type '%s'", name, mapping.typeAsString()), e);
 				}
 				
 				try {
-					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping.get(type));
+					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping);
 					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.get(type).getSourceAsMap());
 					final JsonNode diff = JsonDiff.asJson(currentTypeMapping, newTypeMapping, DIFF_FLAGS);
 					final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);

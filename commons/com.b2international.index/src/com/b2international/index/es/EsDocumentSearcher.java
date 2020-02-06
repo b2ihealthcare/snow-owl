@@ -43,8 +43,8 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
-import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.TopHits;
+import org.elasticsearch.search.aggregations.metrics.TopHitsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
@@ -107,7 +107,7 @@ public class EsDocumentSearcher implements Searcher {
 	public <T> T get(Class<T> type, String key) throws IOException {
 		checkArgument(!Strings.isNullOrEmpty(key), "Key cannot be empty");
 		final DocumentMapping mapping = admin.mappings().getMapping(type);
-		final GetRequest req = new GetRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
+		final GetRequest req = new GetRequest(admin.getTypeIndex(mapping), key)
 				.fetchSourceContext(FetchSourceContext.FETCH_SOURCE);
 		final GetResponse res = admin.client().get(req);
 		
@@ -136,8 +136,7 @@ public class EsDocumentSearcher implements Searcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
-		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping))
-				.types(mapping.typeAsString());
+		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping));
 		
 		final SearchSourceBuilder reqSource = req.source()
 			.size(toRead)
@@ -190,7 +189,7 @@ public class EsDocumentSearcher implements Searcher {
 			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
 		}
 		
-		final int totalHits = (int) response.getHits().getTotalHits();
+		final int totalHits = (int) response.getHits().getTotalHits().value;
 		int numDocsToFetch = Math.min(limit, totalHits) - response.getHits().getHits().length;
 		
 		final ImmutableList.Builder<SearchHit> allHits = ImmutableList.builder();
@@ -242,7 +241,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 		
 		// Use docValues otherwise for field retrieval
-		fields.stream().forEach(field -> reqSource.docValueField(field, "use_field_mapping"));
+		fields.stream().forEach(field -> reqSource.docValueField(field));
 		reqSource.fetchSource(false);
 		return false;
 	}
@@ -274,7 +273,7 @@ public class EsDocumentSearcher implements Searcher {
 			
 			final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
 			final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
-			return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());	
+			return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits().value, response.getScrollId(), null, response.getHits());	
 			
 		} catch (IOException | ElasticsearchStatusException e) {
 			final Throwable rootCause = Throwables.getRootCause(e);
@@ -433,8 +432,7 @@ public class EsDocumentSearcher implements Searcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
 		
-		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping))
-				.types(mapping.typeAsString());
+		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping));
 		
 		final SearchSourceBuilder reqSource = req.source()
 			.query(esQuery)
@@ -500,7 +498,7 @@ public class EsDocumentSearcher implements Searcher {
 					.storedFields(STORED_FIELDS_NONE)
 					.fetchSource(false);
 				
-				aggregation.getFields().forEach(field -> topHitsAgg.docValueField(field, "use_field_mapping"));
+				aggregation.getFields().forEach(field -> topHitsAgg.docValueField(field));
 				
 			}
 			

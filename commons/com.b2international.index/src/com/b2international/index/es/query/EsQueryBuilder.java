@@ -271,7 +271,6 @@ public final class EsQueryBuilder {
 			query = QueryBuilders.queryStringQuery(TextConstants.escape(term))
 						.field(field)
 						.escape(false)
-						.useDisMax(true)
 						.allowLeadingWildcard(true)
 						.defaultOperator(Operator.AND);
 			break;

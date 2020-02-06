@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,8 +75,7 @@ public final class EsHttpClient extends EsClientBase {
 					.setSocketTimeout(configuration.getSocketTimeout());
 			
 			final RestClientBuilder restClientBuilder = RestClient.builder(host())
-				.setRequestConfigCallback(requestConfigCallback)
-				.setMaxRetryTimeoutMillis(configuration.getSocketTimeout()); // retry timeout should match socket timeout
+				.setRequestConfigCallback(requestConfigCallback);
 			
 			if (configuration.isProtected()) {
 				
@@ -150,6 +149,7 @@ public final class EsHttpClient extends EsClientBase {
 	@Override
 	public final ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
 		checkAvailable();
+		// XXX use special client to handle 404 Bad Request on missing search context errors
 		return clientExt.clearScroll(req, RequestOptions.DEFAULT);
 	}
 	
