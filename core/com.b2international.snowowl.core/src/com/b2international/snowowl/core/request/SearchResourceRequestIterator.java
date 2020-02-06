@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.request;
 import java.util.function.Function;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.google.common.base.Strings;
 import com.google.common.collect.AbstractIterator;
 
 /**
@@ -31,18 +30,11 @@ public final class SearchResourceRequestIterator<
 		B extends SearchResourceRequestBuilder<B, ?, R>, 
 		R extends PageableCollectionResource<?>> extends AbstractIterator<R> {
 	
-	/**
-	 * The default scroll timeout value if none given on the initial search request builder.
-	 * 
-	 * @see com.b2international.index.query.Query.DEFAULT_SCROLL_KEEP_ALIVE
-	 */
-	private static final String DEFAULT_SCROLL_KEEP_ALIVE = "60s";
-	
 	private final B searchRequestBuilder;
 	private final Function<B, R> executeHandler;
 
 	private boolean firstRun = true;
-	private String scrollId;
+	private String searchAfter;
 	private int visited;
 	private int total;
 	
@@ -56,10 +48,6 @@ public final class SearchResourceRequestIterator<
 	public SearchResourceRequestIterator(B searchRequestBuilder, Function<B, R> executeHandler) {
 		this.searchRequestBuilder = searchRequestBuilder;
 		this.executeHandler = executeHandler;
-		
-		if (Strings.isNullOrEmpty(this.searchRequestBuilder.getScrollKeepAlive())) {
-			this.searchRequestBuilder.setScroll(DEFAULT_SCROLL_KEEP_ALIVE);
-		}
 	}
 	
 	@Override
@@ -69,8 +57,8 @@ public final class SearchResourceRequestIterator<
 			return endOfData();
 		}
 		
-		// Execute the request with the last recorded scrollId (can be null on first run) 
-		searchRequestBuilder.setScrollId(scrollId);
+		// Execute the request with the last recorded searchAfter value (can be null on first run) 
+		searchRequestBuilder.setSearchAfter(searchAfter);
 		R hits = executeHandler.apply(searchRequestBuilder);
 
 		// Initialize total counter on first run
@@ -84,7 +72,7 @@ public final class SearchResourceRequestIterator<
 		}
 
 		// Update scrollId and visited counter
-		scrollId = hits.getScrollId();
+		searchAfter = hits.getSearchAfter();
 		visited += hits.getItems().size();
 
 		return hits;

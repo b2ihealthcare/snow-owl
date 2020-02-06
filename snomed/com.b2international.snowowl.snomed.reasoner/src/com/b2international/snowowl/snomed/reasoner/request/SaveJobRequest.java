@@ -87,7 +87,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
 	private static final int SCROLL_LIMIT = 10_000;
-	private static final String SCROLL_KEEP_ALIVE = "5m";
 
 	@NotEmpty
 	private String classificationId;
@@ -240,7 +239,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 
 		final RelationshipChangeSearchRequestBuilder relationshipRequestBuilder = ClassificationRequests.prepareSearchRelationshipChange()
 				.setLimit(SCROLL_LIMIT)
-				.setScroll(SCROLL_KEEP_ALIVE)
 				.setExpand("relationship(inferredOnly:true)")
 				.filterByClassificationId(classificationId);
 
@@ -329,7 +327,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 
 		final ConcreteDomainChangeSearchRequestBuilder concreteDomainRequestBuilder = ClassificationRequests.prepareSearchConcreteDomainChange()
 				.setLimit(SCROLL_LIMIT)
-				.setScroll(SCROLL_KEEP_ALIVE)
 				.setExpand("concreteDomainMember(inferredOnly:true)")
 				.filterByClassificationId(classificationId);
 
@@ -428,7 +425,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		
 		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.setLimit(SCROLL_LIMIT)
-				.setScroll(SCROLL_KEEP_ALIVE)
 				.setExpand(expand)
 				.filterByClassificationId(classificationId);
 

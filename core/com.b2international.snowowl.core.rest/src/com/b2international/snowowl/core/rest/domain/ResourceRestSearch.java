@@ -31,10 +31,6 @@ public abstract class ResourceRestSearch {
 	// scrolling/paging/expansion/sorting
 	@ApiParam(value = "Expansion parameters")
 	private String expand;
-	@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
-	private String scrollKeepAlive;
-	@ApiParam(value = "A scrollId to continue scrolling a previous query")
-	private String scrollId;
 	@ApiParam(value = "The search key to use for retrieving the next page of results")
 	private String searchAfter;
 	@ApiParam(value = "Sort keys")
@@ -56,22 +52,6 @@ public abstract class ResourceRestSearch {
 
 	public final void setExpand(String expand) {
 		this.expand = expand;
-	}
-
-	public final String getScrollKeepAlive() {
-		return scrollKeepAlive;
-	}
-
-	public final void setScrollKeepAlive(String scrollKeepAlive) {
-		this.scrollKeepAlive = scrollKeepAlive;
-	}
-
-	public final String getScrollId() {
-		return scrollId;
-	}
-
-	public final void setScrollId(String scrollId) {
-		this.scrollId = scrollId;
 	}
 
 	public final String getSearchAfter() {
