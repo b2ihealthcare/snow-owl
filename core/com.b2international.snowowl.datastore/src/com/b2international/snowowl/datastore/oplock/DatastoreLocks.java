@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ public class DatastoreLocks extends PageableCollectionResource<DatastoreLockInde
 
 	private static final long serialVersionUID = 1L;
 	
-	public DatastoreLocks(List<DatastoreLockIndexEntry> items, String scrollId, String searchAfter, int limit, int total) {
-		super(items, scrollId, searchAfter, limit, total);
+	public DatastoreLocks(List<DatastoreLockIndexEntry> items, String searchAfter, int limit, int total) {
+		super(items, searchAfter, limit, total);
 	}
 
 }
