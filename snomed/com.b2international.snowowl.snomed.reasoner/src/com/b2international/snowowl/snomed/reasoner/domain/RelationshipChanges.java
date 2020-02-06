@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public final class RelationshipChanges extends PageableCollectionResource<Relati
 	 * @param total number of items in the result set
 	 */
 	public RelationshipChanges(final int limit, final int total) {
-		super(Collections.emptyList(), null, null, limit, total);
+		super(Collections.emptyList(), null, limit, total);
 	}
 
 	/**
@@ -49,10 +49,9 @@ public final class RelationshipChanges extends PageableCollectionResource<Relati
 	@JsonCreator
 	public RelationshipChanges(
 			@JsonProperty("items") final List<RelationshipChange> items, 
-			@JsonProperty("scrollId") final String scrollId,
 			@JsonProperty("searchAfter") final String searchAfter,
 			@JsonProperty("limit") final int limit, 
 			@JsonProperty("total") final int total) {
-		super(items, scrollId, searchAfter, limit, total);
+		super(items, searchAfter, limit, total);
 	}
 }

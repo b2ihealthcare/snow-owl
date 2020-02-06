@@ -57,13 +57,8 @@ extends BaseResourceConverter<DescriptionChangeDocument, DescriptionChange, Desc
 	}
 
 	@Override
-	protected DescriptionChanges createCollectionResource(final List<DescriptionChange> results, 
-			final String scrollId, 
-			final String searchAfter, 
-			final int limit, 
-			final int total) {
-
-		return new DescriptionChanges(results, scrollId, searchAfter, limit, total);
+	protected DescriptionChanges createCollectionResource(final List<DescriptionChange> results, final String searchAfter, final int limit, final int total) {
+		return new DescriptionChanges(results, searchAfter, limit, total);
 	}
 
 	@Override

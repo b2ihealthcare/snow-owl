@@ -40,8 +40,8 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 	}
 
 	@Override
-	protected SnomedRelationships createCollectionResource(List<SnomedRelationship> results, String scrollId, String searchAfter, int limit, int total) {
-		return new SnomedRelationships(results, scrollId, searchAfter, limit, total);
+	protected SnomedRelationships createCollectionResource(List<SnomedRelationship> results, String searchAfter, int limit, int total) {
+		return new SnomedRelationships(results, searchAfter, limit, total);
 	}
 	
 	@Override
