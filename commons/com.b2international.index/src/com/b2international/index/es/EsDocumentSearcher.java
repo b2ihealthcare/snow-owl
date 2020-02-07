@@ -16,6 +16,7 @@
 package com.b2international.index.es;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.lucene.search.TotalHits;
+import org.apache.lucene.search.TotalHits.Relation;
 import org.apache.solr.common.util.JavaBinCodec;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -141,7 +144,8 @@ public class EsDocumentSearcher implements Searcher {
 		final SearchSourceBuilder reqSource = req.source()
 			.size(toRead)
 			.query(esQuery)
-			.trackScores(esQueryBuilder.needsScoring());
+			.trackScores(esQueryBuilder.needsScoring())
+			.trackTotalHitsUpTo(Integer.MAX_VALUE);
 		
 		// field selection
 		final boolean fetchSource = applySourceFiltering(query.getFields(), query.isDocIdOnly(), mapping, reqSource);
@@ -189,8 +193,10 @@ public class EsDocumentSearcher implements Searcher {
 			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
 		}
 		
-		final int totalHits = (int) response.getHits().getTotalHits().value;
-		int numDocsToFetch = Math.min(limit, totalHits) - response.getHits().getHits().length;
+		TotalHits totalHits = response.getHits().getTotalHits();
+		checkState(totalHits.relation == Relation.EQUAL_TO, "Searches should always track total hits accurately");
+		final int totalHitCount = (int) totalHits.value;
+		int numDocsToFetch = Math.min(limit, totalHitCount) - response.getHits().getHits().length;
 		
 		final ImmutableList.Builder<SearchHit> allHits = ImmutableList.builder();
 		allHits.add(response.getHits().getHits());
@@ -218,7 +224,7 @@ public class EsDocumentSearcher implements Searcher {
 		final Class<T> select = query.getSelect();
 		final Class<?> from = query.getFrom();
 		
-		return toHits(select, from, query.getFields(), fetchSource, limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
+		return toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, response.getScrollId(), query.getSortBy(), allHits.build());
 	}
 
 	private <T> boolean applySourceFiltering(List<String> fields, boolean isDocIdOnly, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
