@@ -287,16 +287,20 @@ public final class EsQueryBuilder {
 			final BoolQueryBuilder bool = QueryBuilders.boolQuery().minimumShouldMatch(1);
 			Iterables.partition(terms, maxTermsCount).forEach(partition -> {
 				if (valueConverter != null) {
-					bool.should(QueryBuilders.termsQuery(predicate.getField(), partition.stream().map(valueConverter).collect(Collectors.toSet())));	
+					bool.should(QueryBuilders.termsQuery(toFieldPath(predicate), partition.stream().map(valueConverter).collect(Collectors.toSet())));	
 				} else {
-					bool.should(QueryBuilders.termsQuery(predicate.getField(), partition));
+					bool.should(QueryBuilders.termsQuery(toFieldPath(predicate), partition));
 				}
 				
 			});
 			deque.push(bool);
 		} else {
 			// push the terms query directly
-			deque.push(QueryBuilders.termsQuery(toFieldPath(predicate), terms));
+			if (valueConverter != null) {
+				deque.push(QueryBuilders.termsQuery(toFieldPath(predicate), terms.stream().map(valueConverter).collect(Collectors.toSet())));
+			} else {
+				deque.push(QueryBuilders.termsQuery(toFieldPath(predicate), terms));
+			}
 		}
 	}
 	
