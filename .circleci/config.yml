@@ -41,7 +41,7 @@ jobs:
             npm install -g npm
             echo $PATH
             echo $JAVA_HOME
-            echo ls $JAVA_HOME/bin
+            ls $JAVA_HOME/bin
       - save_cache:
           key: project-{{ checksum "pom.xml" }}
           paths:
