@@ -23,7 +23,7 @@ import com.google.common.collect.AbstractIterator;
 /**
  * @since 6.4
  * 
- * @param <B> the search resource request builder type; an instance of this will be configured for scrolling
+ * @param <B> the search resource request builder type; an instance of this will be configured for paging
  * @param <R> the collection resource response type; the iterator will return results as instances of this type
  */
 public final class SearchResourceRequestIterator<
@@ -71,7 +71,7 @@ public final class SearchResourceRequestIterator<
 			}
 		}
 
-		// Update scrollId and visited counter
+		// Update searchAfter and visited counter
 		searchAfter = hits.getSearchAfter();
 		visited += hits.getItems().size();
 
