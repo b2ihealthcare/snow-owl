@@ -309,8 +309,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 				Doc annotation = fieldType.getAnnotation(Doc.class);
 				// this is a nested document type create a nested mapping
 				final Map<String, Object> prop = newHashMap();
-				prop.put("type", annotation.nested() ? "nested" : "object");
-				prop.put("enabled", annotation.index() ? true : false);
+				// XXX type: object is the default for nested objects, ES won't store it in the mapping and will default to object even if explicitly set, which would cause unnecessary mapping update during boot
+				if (annotation.nested()) {
+					prop.put("type", "nested");
+				}
+				// XXX enabled: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+				if (!annotation.index()) {
+					prop.put("enabled", false);
+				}
 				prop.putAll(toProperties(new DocumentMapping(fieldType)));
 				properties.put(property, prop);
 			} else {
