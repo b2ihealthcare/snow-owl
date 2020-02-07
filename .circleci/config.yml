@@ -25,9 +25,8 @@ jobs:
           keys:
             - project-{{ checksum "pom.xml" }}
           paths:
-            - "~/.gradle"
             - "~/.m2"
-            - "/root/.gradle"
+            - "/root/.m2"
       - run:
           name: Build prerequisites
           command: |
@@ -43,9 +42,8 @@ jobs:
       - save_cache:
           key: project-{{ checksum "pom.xml" }}
           paths:
-            - "~/.gradle"
             - "~/.m2"
-            - "/root/.gradle"
+            - "/root/.m2"
       - run:
           name: Build and deploy
           command: >
