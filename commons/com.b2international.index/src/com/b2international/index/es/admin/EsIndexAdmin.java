@@ -86,7 +86,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	private static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE);
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
-	private static final int BATCHS_SIZE = 10_000;
+	private static final int BATCH_SIZE = 10_000;
 	
 	private final Random random = new Random();
 	private final EsClient client;
@@ -556,9 +556,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 				final BulkByScrollResponse response; 
 				if ("update".equals(command)) {
-					response = client.updateByQuery(getTypeIndex(mapping), BATCHS_SIZE, script, getConcurrencyLevel(), query);
+					response = client.updateByQuery(getTypeIndex(mapping), BATCH_SIZE, script, getConcurrencyLevel(), query);
 				} else if ("delete".equals(command)) {
-					response = client.deleteByQuery(getTypeIndex(mapping), BATCHS_SIZE, getConcurrencyLevel(), query);
+					response = client.deleteByQuery(getTypeIndex(mapping), BATCH_SIZE, getConcurrencyLevel(), query);
 				} else {
 					throw new UnsupportedOperationException("Not implemented command: " + command);
 				}
