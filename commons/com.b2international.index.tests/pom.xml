@@ -49,7 +49,7 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
-							<argLine>${tycho.testArgLine} -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
+							<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
 						</configuration>
 					</execution>
 					<execution>
@@ -59,7 +59,7 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
-							<argLine>${tycho.testArgLine} -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml -Dso.index.es.useHttp</argLine>
+							<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml -Dso.index.es.useHttp</argLine>
 						</configuration>
 					</execution>
 				</executions>

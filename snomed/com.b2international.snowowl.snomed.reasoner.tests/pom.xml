@@ -46,8 +46,8 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
-				<version>${tycho.version}</version>
 				<configuration>
+					<argLine>${tycho.testArgLine} -Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch</argLine>
 					<includes>
 						<include>**/AllSnomedReasonerTests.java</include>
 					</includes>
