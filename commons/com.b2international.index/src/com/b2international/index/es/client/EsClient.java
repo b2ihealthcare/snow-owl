@@ -71,9 +71,9 @@ public interface EsClient extends AutoCloseable {
 	
 	BulkProcessor.Builder bulk(BulkProcessor.Listener listener);
 	
-	BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, QueryBuilder query) throws IOException;
+	BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, int numberOfSlices, QueryBuilder query) throws IOException;
 	
-	BulkByScrollResponse deleteByQuery(String index, String type, int batchSize, int numberOfSlices, QueryBuilder query) throws IOException;
+	BulkByScrollResponse deleteByQuery(String index, int batchSize, int numberOfSlices, QueryBuilder query) throws IOException;
 	
 	static EsClient create(final EsClientConfiguration configuration) {
 		return ClientPool.create(configuration);

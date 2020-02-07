@@ -15,7 +15,6 @@
  */
 package com.b2international.index.decimal;
 
-import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.util.VersionUtil;
 
 /**

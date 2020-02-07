@@ -556,9 +556,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 				final BulkByScrollResponse response; 
 				if ("update".equals(command)) {
-					response = client.updateByQuery(getTypeIndex(mapping), mapping.typeAsString(), BATCHS_SIZE, script, getConcurrencyLevel(), query);
+					response = client.updateByQuery(getTypeIndex(mapping), BATCHS_SIZE, script, getConcurrencyLevel(), query);
 				} else if ("delete".equals(command)) {
-					response = client.deleteByQuery(getTypeIndex(mapping), mapping.typeAsString(), BATCHS_SIZE, getConcurrencyLevel(), query);
+					response = client.deleteByQuery(getTypeIndex(mapping), BATCHS_SIZE, getConcurrencyLevel(), query);
 				} else {
 					throw new UnsupportedOperationException("Not implemented command: " + command);
 				}

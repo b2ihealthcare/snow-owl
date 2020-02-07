@@ -154,11 +154,10 @@ public final class EsHttpClient extends EsClientBase {
 	}
 	
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, 
+	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, int numberOfSlices, 
 			QueryBuilder query) throws IOException {
 		checkHealthy(index);
 		UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(index)
-			.setDocTypes(type)
 			.setBatchSize(batchSize)
 			.setQuery(query)
 			.setScript(script)
@@ -169,11 +168,10 @@ public final class EsHttpClient extends EsClientBase {
 	}
 	
 	@Override
-	public BulkByScrollResponse deleteByQuery(String index, String type, int batchSize, int numberOfSlices,
+	public BulkByScrollResponse deleteByQuery(String index, int batchSize, int numberOfSlices,
 			QueryBuilder query) throws IOException {
 		checkHealthy(index);
 		DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index)
-				.setDocTypes(type)
 				.setBatchSize(batchSize)
 				.setQuery(query)
 				.setSlices(numberOfSlices)

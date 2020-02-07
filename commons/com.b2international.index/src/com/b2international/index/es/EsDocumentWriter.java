@@ -185,7 +185,6 @@ public class EsDocumentWriter implements Writer {
 				final Map<String, Object> indexOperationsForType = indexOperations.row(type);
 				
 				final DocumentMapping mapping = admin.mappings().getMapping(type);
-				final String typeString = mapping.typeAsString();
 				final String typeIndex = admin.getTypeIndex(mapping);
 				
 				mappingsToRefresh.add(mapping);
@@ -220,14 +219,16 @@ public class EsDocumentWriter implements Writer {
 							_source = mapper.writeValueAsBytes(obj);
 						}
 						
-						processor.add(new IndexRequest(typeIndex, typeString, id)
+						processor.add(new IndexRequest()
+								.index(typeIndex)
+								.id(id)
 								.opType(OpType.INDEX)
 								.source(_source, XContentType.JSON));
 					}
 				}
 	
 				for (String id : deleteOperations.removeAll(type)) {
-					processor.add(new DeleteRequest(typeIndex, typeString, id));
+					processor.add(new DeleteRequest(typeIndex, id));
 				}
 				
 				// Flush processor between index boundaries
@@ -243,7 +244,7 @@ public class EsDocumentWriter implements Writer {
 				mappingsToRefresh.add(mapping);
 				
 				for (String id : deleteOperations.removeAll(type)) {
-					processor.add(new DeleteRequest(typeIndex, typeString, id));
+					processor.add(new DeleteRequest(typeIndex, id));
 				}
 
 				// Flush processor between index boundaries

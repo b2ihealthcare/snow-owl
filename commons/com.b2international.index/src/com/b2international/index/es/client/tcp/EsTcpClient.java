@@ -103,11 +103,11 @@ public final class EsTcpClient extends EsClientBase {
 
 	@Override
 	public Builder bulk(Listener listener) {
-		return BulkProcessor.builder(client, listener);
+		return BulkProcessor.builder(client::bulk, listener);
 	}
 
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, 
+	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, int numberOfSlices, 
 			QueryBuilder query) throws IOException {
 		UpdateByQueryRequestBuilder ubqrb = new UpdateByQueryRequestBuilder(client, UpdateByQueryAction.INSTANCE);
 		
@@ -123,7 +123,7 @@ public final class EsTcpClient extends EsClientBase {
 	}
 	
 	@Override
-	public BulkByScrollResponse deleteByQuery(String index, String type, int batchSize, int numberOfSlices,
+	public BulkByScrollResponse deleteByQuery(String index, int batchSize, int numberOfSlices,
 			QueryBuilder query) throws IOException {
 		DeleteByQueryRequestBuilder dbqrb = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
 		
