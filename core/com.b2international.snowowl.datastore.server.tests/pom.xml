@@ -50,7 +50,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<useUIThread>false</useUIThread>
-					<argLine>${tycho.testArgLine}</argLine>
+					<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch</argLine>
 					<includes>
 						<include>**/AllCoreTests.java</include>
 					</includes>

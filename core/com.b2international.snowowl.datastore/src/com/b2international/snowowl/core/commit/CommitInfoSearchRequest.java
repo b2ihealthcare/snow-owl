@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new CommitInfos(limit(), hits.getTotal());
 		} else {
-			return new CommitInfoConverter(context, expand(), locales(), options()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
+			return new CommitInfoConverter(context, expand(), locales(), options()).convert(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
 		}
 	}
 	

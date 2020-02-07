@@ -87,14 +87,6 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 			@RequestParam(value="expand", required=false)
 			final String expand,
 			
-			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false)
-			final String scrollKeepAlive,
-			
-			@ApiParam(value = "A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false)
-			final String scrollId,
-			
 			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
@@ -116,8 +108,6 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 					.filterByBranches(branch)
 					.filterByTimestamp(timestamp)
 					.setExpand(expand)
-					.setScroll(scrollKeepAlive)
-					.setScrollId(scrollId)
 					.setSearchAfter(searchAfter)
 					.setLimit(limit)
 					.sortBy(extractSortFields(sort))

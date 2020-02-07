@@ -100,8 +100,6 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		return SnomedRequests.prepareSearchRefSet()
 				.filterByTypes(getRefSetTypes(params.getRefSetTypes()))
 				.setLimit(params.getLimit())
-				.setScroll(params.getScrollKeepAlive())
-				.setScrollId(params.getScrollId())
 				.setSearchAfter(params.getSearchAfter())
 				.setLocales(extendedLocales)
 				.sortBy(sorts)

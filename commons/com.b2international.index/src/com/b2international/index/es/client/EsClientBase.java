@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 import org.apache.http.HttpHost;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
@@ -134,7 +135,9 @@ public abstract class EsClientBase implements EsClient {
 	private ClusterHealthResponse checkClusterHealth(ClusterHealthResponse previousHealth) {
 		try {
 			log.trace("Checking cluster health at '{}'...", host.toURI());
-			return cluster().health(new ClusterHealthRequest());
+			ClusterHealthRequest req = new ClusterHealthRequest();
+			req.level(Level.INDICES);
+			return cluster().health(req);
 		} catch (IOException e) {
 			throw new IndexException("Failed to get cluster health", e);
 		}

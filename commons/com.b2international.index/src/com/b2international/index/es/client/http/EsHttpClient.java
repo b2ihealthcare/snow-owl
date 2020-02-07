@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,8 +75,7 @@ public final class EsHttpClient extends EsClientBase {
 					.setSocketTimeout(configuration.getSocketTimeout());
 			
 			final RestClientBuilder restClientBuilder = RestClient.builder(host())
-				.setRequestConfigCallback(requestConfigCallback)
-				.setMaxRetryTimeoutMillis(configuration.getSocketTimeout()); // retry timeout should match socket timeout
+				.setRequestConfigCallback(requestConfigCallback);
 			
 			if (configuration.isProtected()) {
 				
@@ -150,15 +149,15 @@ public final class EsHttpClient extends EsClientBase {
 	@Override
 	public final ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
 		checkAvailable();
+		// XXX use special client to handle 404 Bad Request on missing search context errors
 		return clientExt.clearScroll(req, RequestOptions.DEFAULT);
 	}
 	
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, 
+	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, int numberOfSlices, 
 			QueryBuilder query) throws IOException {
 		checkHealthy(index);
 		UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(index)
-			.setDocTypes(type)
 			.setBatchSize(batchSize)
 			.setQuery(query)
 			.setScript(script)
@@ -169,11 +168,10 @@ public final class EsHttpClient extends EsClientBase {
 	}
 	
 	@Override
-	public BulkByScrollResponse deleteByQuery(String index, String type, int batchSize, int numberOfSlices,
+	public BulkByScrollResponse deleteByQuery(String index, int batchSize, int numberOfSlices,
 			QueryBuilder query) throws IOException {
 		checkHealthy(index);
 		DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index)
-				.setDocTypes(type)
 				.setBatchSize(batchSize)
 				.setQuery(query)
 				.setSlices(numberOfSlices)

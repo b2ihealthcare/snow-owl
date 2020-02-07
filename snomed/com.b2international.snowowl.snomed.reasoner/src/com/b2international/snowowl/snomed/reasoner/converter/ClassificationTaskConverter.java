@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,13 +60,8 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 	}
 
 	@Override
-	protected ClassificationTasks createCollectionResource(final List<ClassificationTask> results, 
-			final String scrollId, 
-			final String searchAfter, 
-			final int limit, 
-			final int total) {
-
-		return new ClassificationTasks(results, scrollId, searchAfter, limit, total);
+	protected ClassificationTasks createCollectionResource(final List<ClassificationTask> results, final String searchAfter, final int limit, final int total) {
+		return new ClassificationTasks(results, searchAfter, limit, total);
 	}
 
 	@Override
@@ -146,7 +141,7 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 
 		for (final ClassificationTask classificationTask : results) {
 			final List<EquivalentConceptSet> taskSets = setsByTaskId.get(classificationTask.getId());
-			classificationTask.setEquivalentConceptSets(new EquivalentConceptSets(taskSets, null, null, taskSets.size(), taskSets.size()));
+			classificationTask.setEquivalentConceptSets(new EquivalentConceptSets(taskSets, null, taskSets.size(), taskSets.size()));
 		}
 	}
 
@@ -177,9 +172,7 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 
 		for (final ClassificationTask classificationTask : results) {
 			final List<RelationshipChange> taskChanges = relationshipChangesByTaskId.get(classificationTask.getId());
-			classificationTask.setRelationshipChanges(new RelationshipChanges(taskChanges, null, null, 
-					taskChanges.size(), 
-					taskChanges.size()));
+			classificationTask.setRelationshipChanges(new RelationshipChanges(taskChanges, null, taskChanges.size(), taskChanges.size()));
 		}
 	}
 
@@ -203,9 +196,7 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 
 		for (final ClassificationTask classificationTask : results) {
 			final List<ConcreteDomainChange> taskChanges = concreteDomainChangesByTaskId.get(classificationTask.getId());
-			classificationTask.setConcreteDomainChanges(new ConcreteDomainChanges(taskChanges, null, null, 
-					taskChanges.size(), 
-					taskChanges.size()));
+			classificationTask.setConcreteDomainChanges(new ConcreteDomainChanges(taskChanges, null, taskChanges.size(), taskChanges.size()));
 		}
 	}
 }

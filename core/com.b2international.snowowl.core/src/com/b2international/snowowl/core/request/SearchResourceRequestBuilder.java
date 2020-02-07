@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,6 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
 	private Set<String> componentIds;
-	private String scrollKeepAlive;
-	private String scrollId;
 	private String searchAfter;
 	
 	private int limit = 50;
@@ -59,36 +57,6 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 */
 	public B setSearchAfter(String searchAfter) {
 		this.searchAfter = searchAfter;
-		return getSelf();
-	}
-	
-	/**
-	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request.
-	 * 
-	 * @param scrollKeepAlive
-	 * @return this builder instance
-	 */
-	public final B setScroll(String scrollKeepAlive) {
-		this.scrollKeepAlive = scrollKeepAlive;
-		return getSelf();
-	}
-
-	/*
-	 * Used by SearchResourceRequestIterator
-	 */
-	final String getScrollKeepAlive() {
-		return scrollKeepAlive;
-	}
-	
-	/**
-	 * Sets the scroll Id to continue a previously started scroll.
-	 * 
-	 * @param scrollId
-	 * @return
-	 * @see PageableCollectionResource#getScrollId()
-	 */
-	public final B setScrollId(String scrollId) {
-		this.scrollId = scrollId;
 		return getSelf();
 	}
 	
@@ -162,7 +130,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B all() {
-		return setScroll(null).setLimit(MAX_LIMIT);
+		return setLimit(MAX_LIMIT);
 	}
 	
 	/**
@@ -170,7 +138,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B one() {
-		return setScroll(null).setLimit(1);
+		return setLimit(1);
 	}
 	
 	// XXX: Does not allow null values or collections with null values
@@ -196,8 +164,6 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	protected ResourceRequest<C, R> create() {
 		final SearchResourceRequest<C, R> req = createSearch();
 		req.setComponentIds(componentIds);
-		req.setScrollId(scrollId);
-		req.setScrollKeepAlive(scrollKeepAlive);
 		req.setSearchAfter(searchAfter);
 		req.setLimit(Math.min(limit, MAX_LIMIT));
 		req.setOptions(optionsBuilder.build());

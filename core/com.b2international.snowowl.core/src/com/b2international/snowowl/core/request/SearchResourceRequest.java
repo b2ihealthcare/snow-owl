@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
 
 /**
  * @since 5.2
@@ -172,8 +170,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		LESS_THAN_EQUALS,
 	}
 	
-	private String scrollId;
-	private String scrollKeepAlive;
 	private String searchAfter;
 
 	/**
@@ -189,19 +185,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	protected SearchResourceRequest() {}
 	
-	@JsonIgnore
-	protected final boolean isScrolled() {
-		return !Strings.isNullOrEmpty(scrollId());
-	}
-	
-	void setScrollId(String scrollId) {
-		this.scrollId = scrollId;
-	}
-	
-	void setScrollKeepAlive(String scrollKeepAlive) {
-		this.scrollKeepAlive = scrollKeepAlive;
-	}
-	
 	void setSearchAfter(String searchAfter) {
 		this.searchAfter = searchAfter;
 	}
@@ -210,16 +193,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		this.componentIds = componentIds;
 	}
 
-	@JsonProperty
-	protected final String scrollId() {
-		return scrollId;
-	}
-	
-	@JsonProperty
-	protected final String scrollKeepAlive() {
-		return scrollKeepAlive;
-	}
-	
 	@JsonProperty
 	protected final String searchAfter() {
 		return searchAfter;

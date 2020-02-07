@@ -141,7 +141,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			.setExpand(expand)
 			.filterByActive(true)
 			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
-			.setScroll("15m")
 			.setLimit(10_000);
 		
 		if (includeInactiveMembers) {

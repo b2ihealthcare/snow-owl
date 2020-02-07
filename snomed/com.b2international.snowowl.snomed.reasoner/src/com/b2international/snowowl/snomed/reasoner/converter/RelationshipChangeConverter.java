@@ -63,13 +63,8 @@ public final class RelationshipChangeConverter
 	}
 
 	@Override
-	protected RelationshipChanges createCollectionResource(final List<RelationshipChange> results, 
-			final String scrollId, 
-			final String searchAfter, 
-			final int limit, 
-			final int total) {
-
-		return new RelationshipChanges(results, scrollId, searchAfter, limit, total);
+	protected RelationshipChanges createCollectionResource(final List<RelationshipChange> results, final String searchAfter, final int limit, final int total) {
+		return new RelationshipChanges(results, searchAfter, limit, total);
 	}
 
 	@Override

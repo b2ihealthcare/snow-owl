@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.analyzer;
+package com.b2international.index.compat;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 
-import com.b2international.index.compat.TextConstants;
-
 /**
  * A variant of {@link Analyzer} that uses {@link CharMatcherTokenizer} to tokenize incoming text and convert it to lower case,
  * then passes tokens through {@link ASCIIFoldingFilter} to convert any non-ASCII characters to their closest ASCII alternative.
  */
-public class ComponentTermAnalyzer extends Analyzer {
+final class ComponentTermAnalyzer extends Analyzer {
 
 	@Override
 	protected TokenStreamComponents createComponents(final String fieldName) {

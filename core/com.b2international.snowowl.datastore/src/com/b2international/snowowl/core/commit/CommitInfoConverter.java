@@ -47,8 +47,8 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 	}
 
 	@Override
-	protected CommitInfos createCollectionResource(final List<CommitInfo> results, final String scrollId, String searchAfter, final int limit, final int total) {
-		return new CommitInfos(results, scrollId, searchAfter, limit, total);
+	protected CommitInfos createCollectionResource(final List<CommitInfo> results, String searchAfter, final int limit, final int total) {
+		return new CommitInfos(results, searchAfter, limit, total);
 	}
 
 	@Override
@@ -63,7 +63,7 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 					.flatMap(info -> toCommitInfoDetail(info))
 					.collect(Collectors.toList());
 			
-			builder.details(new CommitInfoDetails(commitInfoDetails, null, null, commitInfoDetails.size(), commitInfoDetails.size()));
+			builder.details(new CommitInfoDetails(commitInfoDetails, null, commitInfoDetails.size(), commitInfoDetails.size()));
 		}
 		
 		return builder.build();

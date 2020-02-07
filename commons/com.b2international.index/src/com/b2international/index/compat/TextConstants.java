@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public abstract class TextConstants {
 	/**
 	 * A {@link CharMatcher} that matches all characters in {@link #DELIMITERS} as well as all whitespace characters.
 	 */
-	public static final CharMatcher WHITESPACE_OR_DELIMITER_MATCHER = INTERNAL_DELIMITER_MATCHER.or(CharMatcher.WHITESPACE).precomputed();
+	public static final CharMatcher WHITESPACE_OR_DELIMITER_MATCHER = INTERNAL_DELIMITER_MATCHER.or(CharMatcher.whitespace()).precomputed();
 
 	private TextConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");

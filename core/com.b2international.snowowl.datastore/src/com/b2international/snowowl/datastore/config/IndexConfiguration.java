@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,10 @@ public class IndexConfiguration {
 	private int socketTimeout = IndexClientFactory.DEFAULT_SOCKET_TIMEOUT;
 	@Min(2_001)
 	private int clusterHealthTimeout = IndexClientFactory.DEFAULT_CLUSTER_HEALTH_TIMEOUT;
+	
+	private int maxTermsCount = IndexClientFactory.DEFAULT_MAX_TERMS_COUNT;
+	
+	private int resultWindow = IndexClientFactory.DEFAULT_RESULT_WINDOW;
 
 	@JsonProperty
 	public String getCommitInterval() {
@@ -149,4 +153,21 @@ public class IndexConfiguration {
 	public void setClusterHealthTimeout(int clusterHealthTimeout) {
 		this.clusterHealthTimeout = clusterHealthTimeout;
 	}
+	
+	public int getMaxTermsCount() {
+		return maxTermsCount;
+	}
+	
+	public int getResultWindow() {
+		return resultWindow;
+	}
+	
+	public void setMaxTermsCount(int maxTermsCount) {
+		this.maxTermsCount = maxTermsCount;
+	}
+	
+	public void setResultWindow(int resultWindow) {
+		this.resultWindow = resultWindow;
+	}
+	
 }

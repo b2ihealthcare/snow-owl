@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,16 +28,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class ValidationRules extends PageableCollectionResource<ValidationRule> {
 
 	public ValidationRules(int limit, int total) {
-		this(Collections.emptyList(), null, null, limit, total);
+		this(Collections.emptyList(), null, limit, total);
 	}
 	
 	@JsonCreator
 	public ValidationRules(
 			@JsonProperty("items") List<ValidationRule> items, 
-			@JsonProperty("scrollId") String scrollId, 
 			@JsonProperty("searchAfter") String searchAfter, 
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
-		super(items, scrollId, searchAfter, limit, total);
+		super(items, searchAfter, limit, total);
 	}
 }

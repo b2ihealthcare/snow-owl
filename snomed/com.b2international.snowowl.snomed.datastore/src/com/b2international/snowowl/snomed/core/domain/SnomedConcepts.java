@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,13 +46,12 @@ public final class SnomedConcepts extends PageableCollectionResource<SnomedConce
 	 * @param total - total number of items in the resultset
 	 */
 	public SnomedConcepts(int limit, int total) {
-		super(Collections.emptyList(), null, null, limit, total);
+		super(Collections.emptyList(), null, limit, total);
 	}
 	
 	/**
 	 * Instantiates a pageable collection of SNOMED CT concepts.
 	 * @param items - list of @link {@link SnomedConcept}s
-	 * @param scrollId - scrollId for paging the result set continuously
 	 * @param searchAfter - searchAfter for paging the result set with a live cursor
 	 * @param limit - limit of items for a single page
 	 * @param total - total number of items in the result set
@@ -60,10 +59,9 @@ public final class SnomedConcepts extends PageableCollectionResource<SnomedConce
 	@JsonCreator
 	public SnomedConcepts(
 			@JsonProperty("items") List<SnomedConcept> items, 
-			@JsonProperty("scrollId") String scrollId,
 			@JsonProperty("searchAfter") String searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
-		super(items, scrollId, searchAfter, limit, total);
+		super(items, searchAfter, limit, total);
 	}
 }

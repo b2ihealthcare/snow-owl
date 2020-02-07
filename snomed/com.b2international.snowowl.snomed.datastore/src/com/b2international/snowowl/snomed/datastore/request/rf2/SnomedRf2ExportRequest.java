@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -251,6 +252,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 
 	@Override
 	public ExportResult execute(final RepositoryContext context) {
+		// register export start time for later use
+		final long exportStartTime = Instant.now().toEpochMilli();
 
 		// Step 1: check if the export reference branch is a working branch path descendant
 		final CodeSystemEntry referenceCodeSystem = validateCodeSystem(context);
@@ -301,9 +304,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 			
 			// export content from reference branch
 			if (includePreReleaseContent) {
+				final String referenceBranchToExport = String.format("%s%s%s", referenceBranch, RevisionIndex.AT_CHAR, exportStartTime);
 				exportBranch(releaseDirectory, 
 						context, 
-						referenceBranch, 
+						referenceBranchToExport, 
 						archiveEffectiveDateShort, 
 						EffectiveTimes.UNSET_EFFECTIVE_TIME,
 						EffectiveTimes.UNSET_EFFECTIVE_TIME,

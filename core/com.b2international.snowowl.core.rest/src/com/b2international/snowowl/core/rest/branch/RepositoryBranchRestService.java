@@ -99,14 +99,6 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 			@RequestParam(value="name", required=false)
 			final String[] names,
 			
-			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false)
-			final String scrollKeepAlive,
-			
-			@ApiParam(value = "A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false)
-			final String scrollId,
-			
 			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
@@ -125,8 +117,6 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 					.filterByName(names == null ? null : ImmutableList.copyOf(names))
 					.sortBy(extractSortFields(sort))
 					.setSearchAfter(searchAfter)
-					.setScrollId(scrollId)
-					.setScroll(scrollKeepAlive)
 					.setLimit(limit)
 					.build(repositoryId)
 					.execute(getBus());
