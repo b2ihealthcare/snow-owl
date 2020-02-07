@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,6 +109,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
+		this.settings.putIfAbsent(IndexClientFactory.MAX_TERMS_COUNT_KEY, ""+IndexClientFactory.DEFAULT_MAX_TERMS_COUNT);
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 		
 		final String prefix = (String) settings.getOrDefault(IndexClientFactory.INDEX_PREFIX, IndexClientFactory.DEFAULT_INDEX_PREFIX);
@@ -235,10 +236,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 				.put("number_of_replicas", "0")
 				// disable es refresh, we will do it manually on each commit
 				.put("refresh_interval", "-1")
-				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
-				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
+				// use async durability for the translog
 				.put("translog.durability", "async")
+				// wait all shards during writes
 				.put("write.wait_for_active_shards", "all")
+				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
+				.put(IndexClientFactory.MAX_TERMS_COUNT_KEY, settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY))
+				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
 				.build();
 	}
 	
@@ -541,7 +545,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final Set<DocumentMapping> mappingsToRefresh) {
 		
 		final DocumentMapping mapping = mappings().getMapping(op.getType());
-		final QueryBuilder query = new EsQueryBuilder(mapping).build(op.getFilter());
+		final QueryBuilder query = new EsQueryBuilder(mapping, settings).build(op.getFilter());
 		
 		long versionConflicts = 0;
 		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;

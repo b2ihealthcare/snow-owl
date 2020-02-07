@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,11 @@ public interface IndexClientFactory {
 	 * in a single call from the index.
 	 */
 	String RESULT_WINDOW_KEY = "max_result_window";
+	
+	/**
+	 * Configuration key to specify the maximum number of term values in a terms query. By default it is set to {@value #DEFAULT_MAX_TERMS_COUNT}.
+	 */
+	String MAX_TERMS_COUNT_KEY = "max_terms_count";
 	
 	/**
 	 * Configuration key to specify the number of shards for the index.
@@ -118,6 +123,12 @@ public interface IndexClientFactory {
 	int DEFAULT_RESULT_WINDOW = 100_099;
 	
 	/**
+	 * The default max terms count (from Elasticsearch default), 
+	 * <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html">more details</a>
+	 */
+	int DEFAULT_MAX_TERMS_COUNT = 65_536;
+	
+	/**
 	 * The default concurrency level for the bulk operations depends on the number of cores you have <code>max(1, cores / 4)</code>.
 	 * Elasticsearch module only configuration key.
 	 */
@@ -147,7 +158,7 @@ public interface IndexClientFactory {
 	 * The default cluster.name value for embedded nodes and tcp based clients.
 	 */
 	String DEFAULT_CLUSTER_NAME = "elastic-snowowl";
-	
+
 	/**
 	 * Create a new {@link IndexClient} with the given name.
 	 * 

@@ -16,11 +16,11 @@
 package com.b2international.index.es.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
-import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Deque;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
@@ -33,39 +33,14 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.query.BoolExpression;
-import com.b2international.index.query.BooleanPredicate;
-import com.b2international.index.query.BoostPredicate;
-import com.b2international.index.query.DecimalPredicate;
-import com.b2international.index.query.DecimalRangePredicate;
-import com.b2international.index.query.DecimalSetPredicate;
-import com.b2international.index.query.DisMaxPredicate;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.HasParentPredicate;
-import com.b2international.index.query.IntPredicate;
-import com.b2international.index.query.IntRangePredicate;
-import com.b2international.index.query.IntSetPredicate;
-import com.b2international.index.query.LongPredicate;
-import com.b2international.index.query.LongRangePredicate;
-import com.b2international.index.query.LongSetPredicate;
-import com.b2international.index.query.MatchAll;
-import com.b2international.index.query.MatchNone;
-import com.b2international.index.query.NestedPredicate;
-import com.b2international.index.query.Predicate;
-import com.b2international.index.query.PrefixPredicate;
-import com.b2international.index.query.RangePredicate;
-import com.b2international.index.query.ScriptQueryExpression;
-import com.b2international.index.query.ScriptScoreExpression;
-import com.b2international.index.query.SetPredicate;
-import com.b2international.index.query.SingleArgumentPredicate;
-import com.b2international.index.query.StringPredicate;
-import com.b2international.index.query.StringRangePredicate;
-import com.b2international.index.query.StringSetPredicate;
-import com.b2international.index.query.TextPredicate;
+import com.b2international.index.query.*;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Queues;
 
 /**
@@ -77,17 +52,19 @@ public final class EsQueryBuilder {
 	private static String ILLEGAL_STACK_STATE_MESSAGE = "Illegal internal stack state: %s";
 	
 	private final Deque<QueryBuilder> deque = Queues.newLinkedBlockingDeque();
+	private final Map<String, Object> settings;
 	private final DocumentMapping mapping;
 	private final String path;
 	
 	private boolean needsScoring;
 	
-	public EsQueryBuilder(DocumentMapping mapping) {
-		this(mapping, "");
+	public EsQueryBuilder(DocumentMapping mapping, Map<String, Object> settings) {
+		this(mapping, settings, "");
 	}
 	
-	private EsQueryBuilder(DocumentMapping mapping, String path) {
+	private EsQueryBuilder(DocumentMapping mapping, Map<String, Object> settings, String path) {
 		this.mapping = mapping;
+		this.settings = settings;
 		this.path = path;
 	}
 	
@@ -191,7 +168,7 @@ public final class EsQueryBuilder {
 		final BoolQueryBuilder query = QueryBuilders.boolQuery();
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping);
+			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping, settings);
 			innerQueryBuilder.visit(must);
 			if (innerQueryBuilder.needsScoring) {
 				needsScoring = innerQueryBuilder.needsScoring;
@@ -226,7 +203,7 @@ public final class EsQueryBuilder {
 	private void visit(NestedPredicate predicate) {
 		final String nestedPath = toFieldPath(predicate);
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-		final EsQueryBuilder nestedQueryBuilder = new EsQueryBuilder(nestedMapping, nestedPath);
+		final EsQueryBuilder nestedQueryBuilder = new EsQueryBuilder(nestedMapping, settings, nestedPath);
 		nestedQueryBuilder.visit(predicate.getExpression());
 		needsScoring = nestedQueryBuilder.needsScoring;
 		final QueryBuilder nestedQuery = nestedQueryBuilder.deque.pop();
@@ -291,20 +268,36 @@ public final class EsQueryBuilder {
 		deque.push(QueryBuilders.termQuery(toFieldPath(predicate), predicate.getArgument()));
 	}
 	
-	private void visit(SetPredicate<?> predicate) {
-		deque.push(QueryBuilders.termsQuery(toFieldPath(predicate), predicate.values()));
-	}
-	
 	private void visit(DecimalPredicate predicate) {
 		deque.push(QueryBuilders.termQuery(toFieldPath(predicate), DecimalUtils.encode(predicate.getArgument())));
 	}
 	
+	private <T> void visit(SetPredicate<T> predicate) {
+		toTermsQuery(predicate, predicate.values(), null);
+	}
+
 	private void visit(DecimalSetPredicate predicate) {
-		final Collection<String> terms = newHashSetWithExpectedSize(predicate.values().size());
-		for (BigDecimal decimal : predicate.values()) {
-			terms.add(DecimalUtils.encode(decimal));
+		toTermsQuery(predicate, predicate.values(), DecimalUtils::encode);
+	}
+	
+	// consider max terms count and break into multiple terms queries if number of terms are greater than that value
+	private <T> void toTermsQuery(SetPredicate<T> predicate, final Set<T> terms, final Function<T, ?> valueConverter) {
+		final int maxTermsCount = Integer.parseInt((String) settings.get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
+		if (terms.size() > maxTermsCount) {
+			final BoolQueryBuilder bool = QueryBuilders.boolQuery().minimumShouldMatch(1);
+			Iterables.partition(terms, maxTermsCount).forEach(partition -> {
+				if (valueConverter != null) {
+					bool.should(QueryBuilders.termsQuery(predicate.getField(), partition.stream().map(valueConverter).collect(Collectors.toSet())));	
+				} else {
+					bool.should(QueryBuilders.termsQuery(predicate.getField(), partition));
+				}
+				
+			});
+			deque.push(bool);
+		} else {
+			// push the terms query directly
+			deque.push(QueryBuilders.termsQuery(toFieldPath(predicate), terms));
 		}
-		deque.push(QueryBuilders.termsQuery(toFieldPath(predicate), terms));
 	}
 	
 	private void visit(PrefixPredicate predicate) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public class EsDocumentSearcher implements Searcher {
 		final int limit = query.getLimit();
 		final int toRead = Ints.min(limit, resultWindow);
 		
-		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
+		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, admin.settings());
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
 		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping));
@@ -429,7 +429,7 @@ public class EsDocumentSearcher implements Searcher {
 		final EsClient client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getMapping(aggregation.getFrom());
 		
-		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
+		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, admin.settings());
 		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
 		
 		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping));
