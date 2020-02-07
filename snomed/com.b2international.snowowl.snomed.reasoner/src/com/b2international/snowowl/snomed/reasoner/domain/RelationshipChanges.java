@@ -41,7 +41,6 @@ public final class RelationshipChanges extends PageableCollectionResource<Relati
 	 * Instantiates a pageable collection of relationship changes.
 	 * 
 	 * @param list of @link {@link RelationshipChange}s
-	 * @param scrollId for paging the result set continuously
 	 * @param searchAfter for paging the result set with a live cursor
 	 * @param limit of items for a single page
 	 * @param total number of items in the result set

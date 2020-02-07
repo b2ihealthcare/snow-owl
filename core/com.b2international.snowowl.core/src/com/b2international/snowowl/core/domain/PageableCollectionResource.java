@@ -87,7 +87,6 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	 * Creates a new {@link PageableCollectionResource} from the given items, scrollId, searchAfter, limit and total arguments.
 	 * 
 	 * @param items
-	 * @param scrollId
 	 * @param searchAfter
 	 * @param limit
 	 * @param total

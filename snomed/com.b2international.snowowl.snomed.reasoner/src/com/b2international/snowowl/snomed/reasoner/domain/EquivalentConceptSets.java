@@ -42,7 +42,6 @@ public final class EquivalentConceptSets extends PageableCollectionResource<Equi
 	 * Instantiates a pageable collection of equivalent concept sets.
 	 * 
 	 * @param list of @link {@link SnomedConcept}s
-	 * @param scrollId for paging the result set continuously
 	 * @param searchAfter for paging the result set with a live cursor
 	 * @param limit of items for a single page
 	 * @param total number of items in the result set

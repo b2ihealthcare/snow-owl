@@ -39,7 +39,6 @@ public final class Merges extends PageableCollectionResource<Merge> {
 	/**
 	 * Instantiates a pageable collection of Merge objects.
 	 * @param items - list of {@link Merge}s
-	 * @param scrollId - scrollId for paging the result set continuously
 	 * @param searchAfter - searchAfter for paging the result set with a live cursor
 	 * @param limit - limit of items for a single page
 	 * @param total - total number of items in the result set

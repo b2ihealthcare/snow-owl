@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 /**
  * @since 7.1.0
  */
-public class DatastoreLocks extends PageableCollectionResource<DatastoreLockIndexEntry> {
+public final class DatastoreLocks extends PageableCollectionResource<DatastoreLockIndexEntry> {
 
 	private static final long serialVersionUID = 1L;
 	
