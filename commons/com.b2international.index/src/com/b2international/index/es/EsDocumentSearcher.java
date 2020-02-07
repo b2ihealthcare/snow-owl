@@ -443,7 +443,8 @@ public class EsDocumentSearcher implements Searcher {
 		final SearchSourceBuilder reqSource = req.source()
 			.query(esQuery)
 			.size(0)
-			.trackScores(false);
+			.trackScores(false)
+			.trackTotalHitsUpTo(Integer.MAX_VALUE);
 		
 		// field selection
 		final boolean fetchSource = applySourceFiltering(aggregation.getFields(), false, mapping, reqSource);
