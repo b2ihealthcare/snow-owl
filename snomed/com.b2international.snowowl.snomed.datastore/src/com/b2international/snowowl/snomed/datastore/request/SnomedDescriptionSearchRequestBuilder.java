@@ -85,7 +85,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * 
 	 * @param caseSignificanceId
 	 * @return <code>this</code> search request builder, for method chaining
-	 * @see #filterByCaseSignificance(Iterable)
+	 * @see #filterByCaseSignificances(Iterable)
 	 * @see SnomedDescription#getCaseSignificanceId()
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(String caseSignificanceId) {
@@ -95,12 +95,12 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	/**
 	 * Filter descriptions by their case significance value.
 	 * 
-	 * @param caseSignificances
+	 * @param caseSignificanceIds
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByCaseSignificance(String)
 	 * @see SnomedDescription#getCaseSignificanceId()
 	 */
-	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(Iterable<String> caseSignificanceIds) {
+	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificances(Iterable<String> caseSignificanceIds) {
 		return addOption(OptionKey.CASE_SIGNIFICANCE, caseSignificanceIds);
 	}
 	
