@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,11 @@ public final class ValidationRequests {
 	}
 	
 	/**
-	 * Creates a unique validation id
+	 * Creates a unique validation id for the given codesystem on the given branch.
 	 * 
-	 * @param codeSystemEntry
+	 * @param shortName
+	 * @param branch
+	 * 
 	 * @return the unique id.
 	 */
 	public static String createUniqueValidationId(String shortName, String branch) {
