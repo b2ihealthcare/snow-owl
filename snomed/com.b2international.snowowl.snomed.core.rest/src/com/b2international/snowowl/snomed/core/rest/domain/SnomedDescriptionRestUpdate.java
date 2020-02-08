@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import java.util.List;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableListMultimap;
 
 /**
  * @since 1.0
@@ -32,8 +28,6 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 
 	private String caseSignificanceId;
 	private Map<String, Acceptability> acceptability;
-	private DescriptionInactivationIndicator inactivationIndicator;
-	private Map<AssociationType, List<String>> associationTargets;
 	private String typeId;
 	private String term;
 	private String languageCode;
@@ -46,14 +40,6 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 		return acceptability;
 	}
 
-	public DescriptionInactivationIndicator getInactivationIndicator() {
-		return inactivationIndicator;
-	}
-	
-	public Map<AssociationType, List<String>> getAssociationTargets() {
-		return associationTargets;
-	}
-	
 	public String getLanguageCode() {
 		return languageCode;
 	}
@@ -74,14 +60,6 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 		this.acceptability = acceptability;
 	}
 
-	public void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
-	}
-	
-	public void setAssociationTargets(Map<AssociationType, List<String>> associationTargets) {
-		this.associationTargets = associationTargets;
-	}
-	
 	public void setLanguageCode(String languageCode) {
 		this.languageCode = languageCode;
 	}
@@ -95,19 +73,10 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 	}
 
 	public SnomedDescriptionUpdateRequestBuilder toRequestBuilder(final String descriptionId) {
-		final ImmutableListMultimap.Builder<AssociationType, String> targets;
-		if (associationTargets != null) {
-			targets = ImmutableListMultimap.<AssociationType, String>builder();
-			associationTargets.forEach(targets::putAll);
-		} else {
-			targets = null;
-		}
-		return SnomedRequests
-			.prepareUpdateDescription(descriptionId)
+		return SnomedRequests.prepareUpdateDescription(descriptionId)
 			.setActive(isActive())
 			.setModuleId(getModuleId())
-			.setAssociationTargets(targets == null ? null : targets.build())
-			.setInactivationIndicator(getInactivationIndicator())
+			.setInactivationProperties(getInactivationProperties())
 			.setCaseSignificanceId(getCaseSignificanceId())
 			.setAcceptability(getAcceptability())
 			.setTypeId(getTypeId())

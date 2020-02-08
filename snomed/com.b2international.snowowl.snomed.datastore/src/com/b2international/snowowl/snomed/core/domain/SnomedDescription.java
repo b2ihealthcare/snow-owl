@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,10 +33,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
 /**
  * Represents a SNOMED&nbsp;CT description.
@@ -112,10 +108,8 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	private String semanticTag;
 	private String languageCode;
 	private SnomedConcept caseSignificance;
-	private DescriptionInactivationIndicator inactivationIndicator;
 	private Map<String, Acceptability> acceptabilityMap;
 	private List<AcceptabilityMembership> acceptabilities;
-	private Multimap<AssociationType, String> associationTargets;
 	private SnomedConcept concept;
 	private SnomedConcept type;
 
@@ -233,46 +227,6 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		return acceptabilities;
 	}
 	
-	/**
-	 * Returns the inactivation indicator (if any) of the description that can be used to identify the reason why the
-	 * current description has been deactivated.
-	 * 
-	 * @return the inactivation reason for this description, or {@code null} if the description does not have an inactivation indicator set
-	 */
-	public DescriptionInactivationIndicator getInactivationIndicator() {
-		return inactivationIndicator;
-	}
-
-	/**
-	 * Returns association reference set member targets keyed by the association type.
-	 * 
-	 * @return related association targets, or {@code null} if the description does not have any association targets
-	 */
-	public Multimap<AssociationType, String> getAssociationTargets() {
-		return associationTargets;
-	}
-	
-	/**
-	 * Returns association reference set member targets keyed by the association type as a {@link java.util.Map}.
-	 * 
-	 * @return related association targets, or {@code null} if the description does not have any association targets
-	 */
-	@JsonProperty("associationTargets")
-	public Map<AssociationType, List<String>> getAssociationTargetsAsMap() {
-		if (associationTargets == null) {
-			return null;
-		} else {
-			final Map<AssociationType, List<String>> targets = Maps.newHashMapWithExpectedSize(associationTargets.size());
-			associationTargets.forEach((key, value) -> {
-				if (!targets.containsKey(key)) {
-					targets.put(key, new ArrayList<>(associationTargets.get(key).size()));
-				}
-				targets.get(key).add(value);
-			});
-			return targets;
-		}
-	}
-
 	@JsonIgnore
 	public void setConceptId(final String conceptId) {
 		setConcept(new SnomedConcept(conceptId));
@@ -321,34 +275,13 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		this.acceptabilities = acceptabilities;
 	}
 	
-	public void setInactivationIndicator(final DescriptionInactivationIndicator descriptionInactivationIndicator) {
-		this.inactivationIndicator = descriptionInactivationIndicator;
-	}
-	
-	@JsonIgnore
-	public void setAssociationTargets(final Multimap<AssociationType, String> associationTargets) {
-		this.associationTargets = associationTargets;
-	}
-	
-	@JsonProperty("associationTargets")
-	public void setAssociationTargets(final Map<AssociationType, List<String>> associationTargets) {
-		if (associationTargets == null) {
-			this.associationTargets = null;
-		} else {
-			final ImmutableListMultimap.Builder<AssociationType, String> targets = ImmutableListMultimap.<AssociationType, String>builder();
-			associationTargets.forEach(targets::putAll);
-			this.associationTargets = targets.build();
-		}
-	}
-	
 	@Override
 	public Request<TransactionContext, Boolean> toUpdateRequest() {
 		return SnomedRequests.prepareUpdateDescription(getId())
 			.setAcceptability(getAcceptabilityMap())
 			.setActive(isActive())
-			.setAssociationTargets(getAssociationTargets())
+			.setInactivationProperties(getInactivationProperties())
 			.setCaseSignificanceId(getCaseSignificanceId())
-			.setInactivationIndicator(getInactivationIndicator())
 			.setModuleId(getModuleId())
 			.setTypeId(getTypeId())
 			.setTerm(getTerm())
@@ -364,7 +297,6 @@ public final class SnomedDescription extends SnomedCoreComponent {
 			.setCaseSignificanceId(getCaseSignificanceId())
 			// ensure that the description's conceptId property is the right one
 			.setConceptId(conceptId)
-			.setInactivationIndicator(inactivationIndicator)
 			// XXX assuming that the ID is always set in this case
 			.setId(getId())
 			.setLanguageCode(getLanguageCode())
@@ -397,13 +329,11 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		builder.append(getCaseSignificance());
 		builder.append(", getAcceptabilityMap()=");
 		builder.append(getAcceptabilityMap());
-		if (null != inactivationIndicator) {
-			builder.append(", getDescriptionInactivationIndicator()=")
-				.append(inactivationIndicator);
+		if (null != getInactivationProperties()) {
+			builder.append(", getInactivationProperties()=")
+				.append(getInactivationProperties());
 			
 		}
-		builder.append(", getAssociationTargets()=");
-		builder.append(getAssociationTargets());
 		builder.append("]");
 		return builder.toString();
 	}

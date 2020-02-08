@@ -50,7 +50,6 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -1341,11 +1340,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	@JsonIgnore
 	public RelationshipRefinability getRefinability() {
 		return RelationshipRefinability.getByConceptId(getValueId());
-	}
-	
-	@JsonIgnore
-	public InactivationIndicator getInactivationIndicator() {
-		return InactivationIndicator.getByConceptId(getValueId());
 	}
 	
 	@JsonIgnore

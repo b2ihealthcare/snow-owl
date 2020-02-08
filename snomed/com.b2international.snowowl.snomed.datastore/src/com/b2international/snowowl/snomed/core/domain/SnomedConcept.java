@@ -17,10 +17,8 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,10 +38,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
 /**
  * Represents a SNOMED&nbsp;CT concept.
@@ -118,7 +113,6 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	public static final class Expand extends SnomedCoreComponent.Expand {
 
 		public static final String REFERENCE_SET = "referenceSet";
-		public static final String INACTIVATION_PROPERTIES = "inactivationProperties";
 		public static final String STATED_ANCESTORS = "statedAncestors";
 		public static final String ANCESTORS = "ancestors";
 		public static final String STATED_DESCENDANTS = "statedDescendants";
@@ -188,8 +182,6 @@ public final class SnomedConcept extends SnomedCoreComponent {
 
 	private SnomedConcept definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
-	private InactivationIndicator inactivationIndicator;
-	private Multimap<AssociationType, String> associationTargets;
 	private SnomedDescription fsn;
 	private SnomedDescription pt;
 	private SnomedDescriptions descriptions;
@@ -234,46 +226,6 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	 */
 	public SubclassDefinitionStatus getSubclassDefinitionStatus() {
 		return subclassDefinitionStatus;
-	}
-
-	/**
-	 * Returns the concept's corresponding inactivation indicator member value.
-	 * 
-	 * @return the inactivation indicator value, or {@code null} if the concept does not have an inactivation indicator
-	 */
-	public InactivationIndicator getInactivationIndicator() {
-		return inactivationIndicator;
-	}
-
-	/**
-	 * Returns association reference set member targets keyed by the association type.
-	 * 
-	 * @return related association targets, or {@code null} if the concept does not have any association targets
-	 */
-	@JsonIgnore
-	public Multimap<AssociationType, String> getAssociationTargets() {
-		return associationTargets;
-	}
-	
-	/**
-	 * Returns association reference set member targets keyed by the association type as a {@link java.util.Map}.
-	 * 
-	 * @return related association targets, or {@code null} if the concept does not have any association targets
-	 */
-	@JsonProperty("associationTargets")
-	public Map<AssociationType, List<String>> getAssociationTargetsAsMap() {
-		if (associationTargets == null) {
-			return null;
-		} else {
-			final Map<AssociationType, List<String>> targets = Maps.newHashMapWithExpectedSize(associationTargets.size());
-			associationTargets.forEach((key, value) -> {
-				if (!targets.containsKey(key)) {
-					targets.put(key, new ArrayList<>(associationTargets.get(key).size()));
-				}
-				targets.get(key).add(value);
-			});
-			return targets;
-		}
 	}
 
 	/**
@@ -420,38 +372,18 @@ public final class SnomedConcept extends SnomedCoreComponent {
 		return statedParentIds == null ? null : Arrays.stream(statedParentIds).mapToObj(Long::toString).collect(Collectors.toList());
 	}
 	
-	public void setDefinitionStatus(final SnomedConcept definitionStatus) {
+	public void setDefinitionStatus(SnomedConcept definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}
 	
-	public void setDefinitionStatusId(final String definitionStatusId) {
+	public void setDefinitionStatusId(String definitionStatusId) {
 		setDefinitionStatus(new SnomedConcept(definitionStatusId));
 	}
 
-	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {
+	public void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
 	}
 
-	public void setInactivationIndicator(final InactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
-	}
-
-	@JsonIgnore
-	public void setAssociationTargets(final Multimap<AssociationType, String> associationTargets) {
-		this.associationTargets = associationTargets;
-	}
-	
-	@JsonProperty("associationTargets")
-	public void setAssociationTargets(final Map<AssociationType, Iterable<String>> associationTargets) {
-		if (associationTargets == null) {
-			this.associationTargets = null;
-		} else {
-			final ImmutableListMultimap.Builder<AssociationType, String> targets = ImmutableListMultimap.<AssociationType, String>builder();
-			associationTargets.forEach(targets::putAll);
-			this.associationTargets = targets.build();
-		}
-	}
-	
 	public void setDescriptions(SnomedDescriptions descriptions) {
 		this.descriptions = descriptions;
 	}
@@ -563,9 +495,8 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	public Request<TransactionContext, Boolean> toUpdateRequest() {
 		return SnomedRequests.prepareUpdateConcept(getId())
 				.setActive(isActive())
-				.setAssociationTargets(getAssociationTargets())
+				.setInactivationProperties(getInactivationProperties())
 				.setDefinitionStatusId(getDefinitionStatusId())
-				.setInactivationIndicator(getInactivationIndicator())
 				.setModuleId(getModuleId())
 				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
 				.setDescriptions(getDescriptions())
@@ -591,10 +522,8 @@ public final class SnomedConcept extends SnomedCoreComponent {
 		builder.append(getDefinitionStatusId());
 		builder.append(", getSubclassDefinitionStatus()=");
 		builder.append(getSubclassDefinitionStatus());
-		builder.append(", getInactivationIndicator()=");
-		builder.append(getInactivationIndicator());
-		builder.append(", getAssociationTargets()=");
-		builder.append(getAssociationTargets());
+		builder.append(", getInactivationProperties()=");
+		builder.append(getInactivationProperties());
 		builder.append("]");
 		return builder.toString();
 	}

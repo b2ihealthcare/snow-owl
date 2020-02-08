@@ -28,7 +28,6 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.ComponentStatusConflictException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
@@ -40,8 +39,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -56,11 +53,9 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -81,8 +76,6 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 
 	private String definitionStatusId;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
-	private InactivationIndicator inactivationIndicator;
-	private Multimap<AssociationType, String> associationTargets;
 	private List<SnomedDescription> descriptions;
 	private List<SnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
@@ -99,14 +92,6 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
-	}
-	
-	void setInactivationIndicator(InactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
-	}
-	
-	void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
-		this.associationTargets = associationTargets;
 	}
 	
 	void setDescriptions(List<SnomedDescription> descriptions) {
@@ -178,6 +163,11 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 		
 		return changed;
+	}
+	
+	@Override
+	protected String getInactivationIndicatorRefSetId() {
+		return Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR;
 	}
 
 	private boolean updateRefSet(TransactionContext context, SnomedConceptDocument concept, SnomedConceptDocument.Builder updatedConcept) {
@@ -287,98 +277,6 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 	}
 
-	private boolean processInactivation(final TransactionContext context, final SnomedConceptDocument concept, final SnomedConceptDocument.Builder updatedConcept) {
-		if (null == isActive() && null == inactivationIndicator && null == associationTargets) {
-			return false;
-		}
-		
-		final boolean currentStatus = concept.isActive();
-		final boolean newStatus = isActive() == null ? currentStatus : isActive();
-		final InactivationIndicator newIndicator = inactivationIndicator == null ? InactivationIndicator.RETIRED : inactivationIndicator; 
-		final Multimap<AssociationType, String> newAssociationTargets = associationTargets == null ? ImmutableMultimap.<AssociationType, String>of() : associationTargets;
-		
-		if (currentStatus && !newStatus) {
-			
-			// Active --> Inactive: concept inactivation, update indicator and association targets
-			// (using default values if not given)
-			
-			inactivateConcept(context, concept, updatedConcept);
-			updateInactivationIndicator(context, concept, newIndicator);
-			updateAssociationTargets(context, concept, newAssociationTargets);
-			return true;
-			
-		} else if (!currentStatus && newStatus) {
-			
-			// Inactive --> Active: concept reactivation, clear indicator and association targets
-			
-			reactivateConcept(context, concept, updatedConcept);
-			updateInactivationIndicator(context, concept, newIndicator);
-			updateAssociationTargets(context, concept, newAssociationTargets);
-			return true;
-			
-		} else if (currentStatus == newStatus) {
-			
-			// Same status, allow indicator and/or association targets to be updated if required
-			// (using original values that can be null)
-			
-			updateInactivationIndicator(context, concept, inactivationIndicator);
-			updateAssociationTargets(context, concept, associationTargets);
-			return false;
-			
-		} else {
-			return false;
-		}
-	}
-
-	private void updateAssociationTargets(final TransactionContext context, SnomedConceptDocument concept, Multimap<AssociationType, String> associationTargets) {
-		if (associationTargets == null) {
-			return;
-		}
-		
-		SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(concept);
-		associationUpdateRequest.setNewAssociationTargets(associationTargets);
-		associationUpdateRequest.execute(context);
-	}
-
-	private void updateInactivationIndicator(final TransactionContext context, final SnomedConceptDocument concept, final InactivationIndicator indicator) {
-		if (indicator == null) {
-			return;
-		}
-		
-		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(concept, Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR);
-		inactivationUpdateRequest.setInactivationValueId(indicator.getConceptId());
-		inactivationUpdateRequest.execute(context);
-	}
-
-	private void inactivateConcept(final TransactionContext context, final SnomedConceptDocument concept, final SnomedConceptDocument.Builder updatedConcept) {
-		if (!concept.isActive()) {
-			throw new ComponentStatusConflictException(concept.getId(), concept.isActive());
-		}
-		
-		updatedConcept.active(false);
-	}
-
-	private void reactivateConcept(final TransactionContext context, final SnomedConceptDocument concept, final SnomedConceptDocument.Builder updatedConcept) {
-		if (concept.isActive()) {
-			throw new ComponentStatusConflictException(concept.getId(), concept.isActive());
-		}
-		
-		updatedConcept.active(true);
-		
-//		for (final SnomedDescription description : concept.getDescriptions()) {
-//			// Remove "Concept non-current" reason from active descriptions by changing to "no reason given"
-//			if (description.isActive()) {
-//				SnomedInactivationReasonUpdateRequest descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest(
-//						description.getId(), 
-//						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
-//						description.getModuleId());
-//				
-//				descriptionUpdateRequest.setInactivationValueId(DescriptionInactivationIndicator.RETIRED.getConceptId());
-//				descriptionUpdateRequest.execute(context);
-//			}
-//		}
-	}
-	
 	private <T extends EObject, U extends SnomedComponent> boolean updateComponents(final TransactionContext context, 
 			final String conceptId, 
 			final Set<String> previousComponentIds,
@@ -432,13 +330,13 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 
 		ids.addAll(ImmutableList.of(Concepts.PRIMITIVE, Concepts.FULLY_DEFINED));
 		
-		if (inactivationIndicator != null) {
-			ids.add(inactivationIndicator.getConceptId());
+		if (getInactivationProperties() != null && getInactivationProperties().getInactivationIndicatorId() != null) {
+			ids.add(getInactivationProperties().getInactivationIndicatorId());
 		}
-		if (associationTargets != null && !associationTargets.isEmpty()) {
-			associationTargets.entries().forEach(entry -> {
-				ids.add(entry.getKey().getConceptId());
-				ids.add(entry.getValue());
+		if (getInactivationProperties() != null && !CompareUtils.isEmpty(getInactivationProperties().getAssociationTargets())) {
+			getInactivationProperties().getAssociationTargets().forEach(associationTarget -> {
+				ids.add(associationTarget.getReferenceSetId());
+				ids.add(associationTarget.getTargetComponentId());
 			});
 		}
 		if (!CompareUtils.isEmpty(descriptions)) {

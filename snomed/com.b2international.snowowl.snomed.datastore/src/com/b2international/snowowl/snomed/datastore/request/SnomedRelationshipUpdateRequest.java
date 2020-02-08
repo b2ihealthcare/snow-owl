@@ -100,6 +100,11 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		return changed;
 	}
 	
+	@Override
+	protected String getInactivationIndicatorRefSetId() {
+		throw new UnsupportedOperationException("Relationship inactivation does not support inactivationProperties yet");
+	}
+	
 	private boolean updateTypeId(TransactionContext context, SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship) {
 		if (null == typeId) {
 			return false;

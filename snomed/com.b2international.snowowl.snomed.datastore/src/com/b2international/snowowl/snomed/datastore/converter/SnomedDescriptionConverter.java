@@ -28,8 +28,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AcceptabilityMembership;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -38,7 +36,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.0
@@ -83,7 +80,7 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 		
 		final Set<String> descriptionIds = FluentIterable.from(results).transform(SnomedDescription::getId).toSet();
 		
-		expandInactivationProperties(results, descriptionIds);
+		new InactivationPropertiesExpander(context(), expand(), locales(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).expand(results, descriptionIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
 		new ModuleExpander(context(), expand(), locales()).expand(results);
 		expandCaseSignificance(results);
@@ -214,22 +211,6 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 			.execute(context());
 		
 		return Maps.uniqueIndex(types, SnomedConcept::getId);
-	}
-
-	private void expandInactivationProperties(List<SnomedDescription> results, final Set<String> descriptionIds) {
-		if (expand().containsKey("inactivationProperties")) {
-			new InactivationExpander<SnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
-				@Override
-				protected void setAssociationTargets(SnomedDescription result,Multimap<AssociationType, String> associationTargets) {
-					((SnomedDescription) result).setAssociationTargets(associationTargets);
-				}
-				
-				@Override
-				protected void setInactivationIndicator(SnomedDescription result, String valueId) {
-					((SnomedDescription) result).setInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
-				}
-			}.expand(results, descriptionIds);
-		}
 	}
 
 }
