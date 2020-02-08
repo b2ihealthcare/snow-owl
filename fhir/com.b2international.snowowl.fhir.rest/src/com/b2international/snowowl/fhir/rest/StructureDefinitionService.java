@@ -59,7 +59,7 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 	
 	/**
 	 * StructureDefinitions
-	 * @param request parameters
+	 * @param parameters
 	 * @return bundle of {@link StructureDefinition}s
 	 */
 	@ApiOperation(
@@ -89,8 +89,8 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 	
 	/**
 	 * HTTP Get for retrieving a structure definition by its id
-	 * @param structure definition id
-	 * @param request parameters
+	 * @param structureDefinitionId
+	 * @param parameters
 	 * @return @link {@link StructureDefinition}
 	 */
 	@ApiOperation(
