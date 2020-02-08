@@ -41,8 +41,8 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 	/**
 	 * Specifies the {@link DefinitionStatus} to use for the new concept.
 	 * 
-	 * @param definitionStatus
-	 *            - the definition status to use
+	 * @param definitionStatusId
+	 *            - the definition status ID to use
 	 * @return
 	 */
 	public final SnomedConceptBuilder withDefinitionStatusId(String definitionStatusId) {
