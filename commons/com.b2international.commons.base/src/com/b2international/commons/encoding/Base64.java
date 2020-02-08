@@ -7,7 +7,7 @@ package com.b2international.commons.encoding;
 /**
  * Base64 Encoder/Decoder
  */
-@SuppressWarnings({"lgtm[java/constant-comparison]"})
+@SuppressWarnings({"lgtm[java/constant-comparison]", "lgtm[java/dereferenced-value-may-be-null]"})
 public class Base64
 {
     
