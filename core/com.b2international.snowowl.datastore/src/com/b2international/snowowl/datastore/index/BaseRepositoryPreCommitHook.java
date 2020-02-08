@@ -132,7 +132,7 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	 * @return
 	 * @throws IOException
 	 */
-	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea stagingArea, RevisionSearcher index) throws IOException {
+	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
 		return Collections.emptySet();
 	}
 
