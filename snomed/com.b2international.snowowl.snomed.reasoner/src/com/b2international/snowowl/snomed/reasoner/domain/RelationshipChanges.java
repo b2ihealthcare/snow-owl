@@ -27,11 +27,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class RelationshipChanges extends PageableCollectionResource<RelationshipChange> {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Instantiates an empty pageable collection for relationship changes.
 	 * 
-	 * @param limit of items for a single page
-	 * @param total number of items in the result set
+	 * @param limit
+	 *            - number of items for a single page
+	 * @param total
+	 *            - number of items in the result set
 	 */
 	public RelationshipChanges(final int limit, final int total) {
 		super(Collections.emptyList(), null, limit, total);
@@ -40,10 +44,14 @@ public final class RelationshipChanges extends PageableCollectionResource<Relati
 	/**
 	 * Instantiates a pageable collection of relationship changes.
 	 * 
-	 * @param list of @link {@link RelationshipChange}s
-	 * @param searchAfter for paging the result set with a live cursor
-	 * @param limit of items for a single page
-	 * @param total number of items in the result set
+	 * @param items
+	 *            - list of @link {@link RelationshipChange}s
+	 * @param searchAfter
+	 *            - for paging the result set with a live cursor
+	 * @param limit
+	 *            - number of items for a single page
+	 * @param total
+	 *            - number of items in the result set
 	 */
 	@JsonCreator
 	public RelationshipChanges(
