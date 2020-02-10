@@ -47,11 +47,11 @@
 		<tycho-extras.version>1.5.0</tycho-extras.version>
 		<xtend.compiler.version>2.18.0</xtend.compiler.version>
 		<jacoco.version>0.8.4</jacoco.version>
-		
+
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
-		
+
 		<!-- Testing -->
 		<testHeapSize>1g</testHeapSize>
 		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
@@ -903,36 +903,36 @@
 		</pluginManagement>
 	</build>
 
-	<profiles>
-		<profile>
-			<id>docs</id>
-			<activation>
-				<property>
-					<name>docs</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<modules>
-				<module>documentation</module>
-			</modules>
-		</profile>
-	</profiles>
+    <profiles>
+        <profile>
+            <id>docs</id>
+            <activation>
+                <property>
+                    <name>docs</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>documentation</module>
+            </modules>
+        </profile>
+    </profiles>
 
-	<distributionManagement>
-		<repository>
-			<id>${maven.repository.id}</id>
-			<url>${nexus.releases.url}</url>
-		</repository>
-		<snapshotRepository>
-			<id>${maven.repository.id}</id>
-			<url>${nexus.snapshots.url}</url>
-		</snapshotRepository>
-	</distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>artifactory-releases</id>
+            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>artifactory-snapshots</id>
+            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
-	<scm>
-		<url>https://github.com/b2ihealthcare/snow-owl</url>
-		<connection>scm:git:ssh://github.com/b2ihealthcare/snow-owl.git</connection>
-		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
-	</scm>
-	
+    <scm>
+        <url>https://github.com/babylonhealth/snow-owl</url>
+        <connection>scm:git:ssh://github.com/babylonhealth/snow-owl.git</connection>
+        <developerConnection>scm:git:ssh@github.com:babylonhealth/snow-owl.git</developerConnection>
+    </scm>
+
 </project>
