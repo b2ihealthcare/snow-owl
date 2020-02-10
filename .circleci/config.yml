@@ -38,14 +38,14 @@ jobs:
             docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
             apk add --no-cache make=4.2.1-r0 nodejs openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-            npm config set unsafe-perm true
-            npm install -g npm
             echo "--------------------"
             ls /usr
             ls /usr/bin
             find / -name javadoc
             export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
             export PATH="$JAVA_HOME/bin:${PATH}"
+            npm config set unsafe-perm true
+            npm install -g npm
       - save_cache:
           key: snow-owl-mvn-cache-{{ checksum "pom.xml" }}
           paths:
