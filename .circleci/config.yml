@@ -23,7 +23,8 @@ jobs:
       - setup_remote_docker
       - restore_cache:
           keys:
-            - project-{{ checksum "pom.xml" }}
+            - snow-owl-mvn-cache-{{ checksum "pom.xml" }}
+            - snow-owl-mvn-cache-
           paths:
             - "~/.m2"
             - "/root/.m2"
@@ -39,11 +40,14 @@ jobs:
             apk add --no-cache make=4.2.1-r0 nodejs openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
             npm config set unsafe-perm true
             npm install -g npm
-            ls /usr/lib/jvm/
+            echo "--------------------"
+            ls /usr
+            ls /usr/bin
+            find / -name javadoc
             export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
             export PATH="$JAVA_HOME/bin:${PATH}"
       - save_cache:
-          key: project-{{ checksum "pom.xml" }}
+          key: snow-owl-mvn-cache-{{ checksum "pom.xml" }}
           paths:
             - "~/.m2"
             - "/root/.m2"
