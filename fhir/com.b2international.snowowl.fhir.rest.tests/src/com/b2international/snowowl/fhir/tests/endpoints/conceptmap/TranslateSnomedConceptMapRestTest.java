@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	
 	private static final String SIMPLE_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Map Type Reference Sets";
 	private static final String COMPLEX_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Complex Map Type Reference Sets";
+	private static final String COMPLEX_BLOCK_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Complex Map With Map Block Type Reference Sets";
 	private static final String EXTENDED_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Extended Map Type Reference Sets";
 	private static final String FHIR_MAP_TYPE_REFSET_VERSION = "FHIR_MAP_TYPE_REFSET_VERSION";
 	
@@ -58,6 +59,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 		mapTypeRefSetIds = TestMapTypeReferenceSetCreator.createSimpleMapTypeReferenceSets(mainBranch, 
 				SIMPLE_MAP_TYPE_REFSET_NAME, 
 				COMPLEX_MAP_TYPE_REFSET_NAME,
+				COMPLEX_BLOCK_MAP_TYPE_REFSET_NAME,
 				EXTENDED_MAP_TYPE_REFSET_NAME,
 				FHIR_MAP_TYPE_REFSET_VERSION);
 	}
@@ -79,43 +81,29 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 		TranslateResult result = objectMapper.convertValue(json, TranslateResult.class);
 		
 		assertTrue(result.getResult());
-		assertEquals("3 match(es).", result.getMessage());
+		assertEquals("4 match(es).", result.getMessage());
 		
 		Collection<Match> matches = result.getMatches();
-		assertEquals(3, matches.size());
+		assertEquals(4, matches.size());
 		
+		assertMatchExists(matches, 0, "equivalent");
+		assertMatchExists(matches, 1, "unmatched");
+		assertMatchExists(matches, 2, "unmatched");
+		assertMatchExists(matches, 3, "unmatched");
+	}
+	
+	private void assertMatchExists(Collection<Match> matches, int refSetIndex, String equivalenceValue) {
 		Optional<Match> optionalMatch = matches.stream()
-			.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(0)))
-			.findFirst();
-		
+				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(refSetIndex)))
+				.findFirst();
+			
 		assertTrue(optionalMatch.isPresent());
 		
 		Match match = optionalMatch.get();
-		assertEquals("equivalent", match.getEquivalence().getCodeValue());
+		assertEquals(equivalenceValue, match.getEquivalence().getCodeValue());
 		assertEquals("MO", match.getConcept().getCodeValue());
-		
-		optionalMatch = matches.stream()
-				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(1)))
-				.findFirst();
-			
-		assertTrue(optionalMatch.isPresent());
-			
-		match = optionalMatch.get();
-		assertEquals("unmatched", match.getEquivalence().getCodeValue());
-		assertEquals("MO", match.getConcept().getCodeValue());
-
-		optionalMatch = matches.stream()
-				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(2)))
-				.findFirst();
-		
-		assertTrue(optionalMatch.isPresent());
-		
-		match = optionalMatch.get();
-		assertEquals("unmatched", match.getEquivalence().getCodeValue());
-		assertEquals("MO", match.getConcept().getCodeValue());
-		
 	}
-	
+
 	@Test
 	public void reverseTranslateMappingTest() throws Exception {
 		
@@ -136,41 +124,15 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 		TranslateResult result = objectMapper.convertValue(json, TranslateResult.class);
 		
 		assertTrue(result.getResult());
-		assertEquals("3 match(es).", result.getMessage());
+		assertEquals("4 match(es).", result.getMessage());
 		
 		Collection<Match> matches = result.getMatches();
-		assertEquals(3, matches.size());
+		assertEquals(4, matches.size());
 		
-		Optional<Match> optionalMatch = matches.stream()
-			.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(0)))
-			.findFirst();
-		
-		assertTrue(optionalMatch.isPresent());
-		
-		Match match = optionalMatch.get();
-		assertEquals("equivalent", match.getEquivalence().getCodeValue());
-		assertEquals("MO", match.getConcept().getCodeValue());
-		
-		optionalMatch = matches.stream()
-				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(1)))
-				.findFirst();
-			
-		assertTrue(optionalMatch.isPresent());
-			
-		match = optionalMatch.get();
-		assertEquals("unmatched", match.getEquivalence().getCodeValue());
-		assertEquals("MO", match.getConcept().getCodeValue());
-
-		optionalMatch = matches.stream()
-				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(2)))
-				.findFirst();
-		
-		assertTrue(optionalMatch.isPresent());
-		
-		match = optionalMatch.get();
-		assertEquals("unmatched", match.getEquivalence().getCodeValue());
-		assertEquals("MO", match.getConcept().getCodeValue());
-		
+		assertMatchExists(matches, 0, "equivalent");
+		assertMatchExists(matches, 1, "unmatched");
+		assertMatchExists(matches, 2, "unmatched");
+		assertMatchExists(matches, 3, "unmatched");
 	}
 	
 	//From a specific Map type reference set

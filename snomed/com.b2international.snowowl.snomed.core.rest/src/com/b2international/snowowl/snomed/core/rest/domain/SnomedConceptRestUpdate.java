@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,85 +15,38 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import java.util.List;
-import java.util.Map;
-
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableListMultimap;
 
 /**
  * @since 4.0
  */
 public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 
-	private DefinitionStatus definitionStatus;
+	private String definitionStatusId;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
-	private Map<AssociationType, List<String>> associationTargets;
-	private InactivationIndicator inactivationIndicator;
 	private SnomedDescriptions descriptions;
 	private SnomedRelationships relationships;
 	private SnomedReferenceSetMembers members;
 
-	public DefinitionStatus getDefinitionStatus() {
-		return definitionStatus;
+	public String getDefinitionStatusId() {
+		return definitionStatusId;
 	}
 
 	public SubclassDefinitionStatus getSubclassDefinitionStatus() {
 		return subclassDefinitionStatus;
 	}
 
-	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	public void setDefinitionStatusId(final String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 	}
 
 	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
-	}
-
-	/**
-	 * Returns with the associations between the current component and other SNOMED&nbsp;CT concepts.
-	 * The associations are represented as a multimap where the keys are the {@link AssociationType association type}s
-	 * and the values are the referred associations. 
-	 * @return a multimap of associations.
-	 */
-	public Map<AssociationType, List<String>> getAssociationTargets() {
-		return associationTargets;
-	}
-
-	/**
-	 * Sets the associations for the current concept.
-	 * <br>Counterpart of {@link #getAssociationTargets()}.
-	 * @param associationTargets the multimap of associations.
-	 */
-	public void setAssociationTargets(final Map<AssociationType, List<String>> associationTargets) {
-		this.associationTargets = associationTargets;
-	}
-
-	/**
-	 * Returns with the concept inactivation reason (if any). May return with {@code null}
-	 * if the concept is active or no reason was specified during the concept inactivation process.
-	 * @return the inactivation process. Can be {@code null} if the concept is not retired or no
-	 * reason was specified.
-	 */
-	public InactivationIndicator getInactivationIndicator() {
-		return inactivationIndicator;
-	}
-
-	/**
-	 * Counterpart of the {@link #getInactivationIndicator()}.
-	 * <br>Sets the inactivation reason for the concept update.
-	 * @param inactivationIndicator the desired inactivation reason for the concept update.
-	 */
-	public void setInactivationIndicator(final InactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
 	}
 
 	public SnomedDescriptions getDescriptions() {
@@ -121,21 +74,13 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	}
 
 	public SnomedConceptUpdateRequestBuilder toRequestBuilder(String conceptId) {
-		final ImmutableListMultimap.Builder<AssociationType, String> targets;
-		if (associationTargets != null) {
-			targets = ImmutableListMultimap.<AssociationType, String>builder();
-			associationTargets.forEach(targets::putAll);
-		} else {
-			targets = null;
-		}
 		return SnomedRequests
 				.prepareUpdateConcept(conceptId)
 				.setActive(isActive())
 				.setModuleId(getModuleId())
-				.setAssociationTargets(targets == null ? null : targets.build())
-				.setDefinitionStatus(getDefinitionStatus())
-				.setInactivationIndicator(getInactivationIndicator())
+				.setDefinitionStatusId(getDefinitionStatusId())
 				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
+				.setInactivationProperties(getInactivationProperties())
 				.setMembers(getMembers())
 				.setRelationships(getRelationships())
 				.setDescriptions(getDescriptions());

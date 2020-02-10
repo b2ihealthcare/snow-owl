@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,6 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -75,7 +73,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	
 	private static int getPersistedInferredRelationshipCount(IBranchPath conceptPath, String conceptId) {
 		List<Map<String, Object>> relationships = getComponent(conceptPath, SnomedComponentType.CONCEPT, conceptId, 
-				"relationships(\"active\":true,\"characteristicType\":\"" + CharacteristicType.INFERRED_RELATIONSHIP.getConceptId() + "\")")
+				"relationships(\"active\":true,\"characteristicTypeId\":\"" + Concepts.INFERRED_RELATIONSHIP + "\")")
 				.statusCode(200)
 				.extract()
 				.jsonPath()
@@ -196,11 +194,11 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		String childConceptId = createNewConcept(branchPath, parentConceptId);
 
 		// Add "regular" inferences before running the classification
-		createNewRelationship(branchPath, parentConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
-		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, parentConceptId, CharacteristicType.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, parentConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, parentConceptId, Concepts.INFERRED_RELATIONSHIP);
 
 		// Add redundant information that should be removed
-		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 
 		String classificationId = getClassificationJobId(beginClassification(branchPath));
 		waitForClassificationJob(branchPath, classificationId)
@@ -237,13 +235,13 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		String childConceptId = createNewConcept(branchPath, parentConceptId);
 		
 		// Add "regular" inferences before running the classification
-		createNewRelationship(branchPath, parentConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
-		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, parentConceptId, CharacteristicType.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, parentConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, parentConceptId, Concepts.INFERRED_RELATIONSHIP);
 
 		// Add redundant information that should be removed
 		Map<?, ?> relationshipRequestBody = createRelationshipRequestBody(
 				childConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT,
-				Concepts.MODULE_SCT_MODEL_COMPONENT, CharacteristicType.INFERRED_RELATIONSHIP, 0)
+				Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.INFERRED_RELATIONSHIP, 0)
 				.put("commitComment", "Created new relationship")
 				.build();
 
@@ -297,11 +295,11 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 
 		// Add "regular" inferences before running the classification
-		createNewRelationship(branchPath, conceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+		createNewRelationship(branchPath, conceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		// Add new relationship to the root as stated
 		createNewRelationship(branchPath);
 		// Add the same relationship with a different group to the new concept as inferred
-		createNewRelationship(branchPath, conceptId, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP, 5);
+		createNewRelationship(branchPath, conceptId, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP, 5);
 
 		String classificationId = getClassificationJobId(beginClassification(branchPath));
 		waitForClassificationJob(branchPath, classificationId)
@@ -390,8 +388,8 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 							&& parentConceptId.equals(relationship.getDestinationId())
 							&& relationship.getGroup() == 0
 							&& relationship.getUnionGroup() == 0
-							&& RelationshipModifier.EXISTENTIAL.equals(relationship.getModifier())
-							&& CharacteristicType.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType());
+							&& Concepts.EXISTENTIAL_RESTRICTION_MODIFIER.equals(relationship.getModifierId())
+							&& Concepts.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId());
 				}));
 	}
 	

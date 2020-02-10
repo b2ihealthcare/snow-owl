@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,35 +18,24 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.5
  */
 public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateRequest {
 
-	private CaseSignificance caseSignificance;
+	private String caseSignificanceId;
 	private Map<String, Acceptability> acceptability;
-	private DescriptionInactivationIndicator inactivationIndicator;
-	private Multimap<AssociationType, String> associationTargets;
 	
 	private String term;
 	private String typeId;
@@ -60,16 +49,8 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		this.acceptability = acceptability;
 	}
 	
-	void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
-		this.associationTargets = associationTargets;
-	}
-	
-	void setCaseSignificance(CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
-	}
-	
-	void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
+	void setCaseSignificanceId(String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 	}
 	
 	void setLanguageCode(String languageCode) {
@@ -91,7 +72,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 
 		boolean changed = false;
 		changed |= updateModule(context, description, updatedDescription);
-		changed |= updateCaseSignificance(context, description, updatedDescription, caseSignificance);
+		changed |= updateCaseSignificanceId(context, description, updatedDescription, caseSignificanceId);
 		changed |= updateTypeId(context, description, updatedDescription);
 		changed |= updateTerm(context, description, updatedDescription);
 		changed |= updateLanguageCode(context, description, updatedDescription);
@@ -99,7 +80,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 
 		// XXX: acceptability and association changes do not push the effective time forward on the description
 		// XXX: this should be executed after processInactivation 
-		updateAcceptability(context, description, updatedDescription);
+		updateAcceptability(context, description);
 
 		if (changed) {
 			if (description.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
@@ -110,87 +91,22 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 
 		return changed;
 	}
+	
+	@Override
+	protected String getInactivationIndicatorRefSetId() {
+		return Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR;
+	}
 
-	private void updateAcceptability(TransactionContext context, final SnomedDescriptionIndexEntry description, final SnomedDescriptionIndexEntry.Builder updatedDescription) {
+	private void updateAcceptability(TransactionContext context, final SnomedDescriptionIndexEntry description) {
 		new SnomedDescriptionAcceptabilityUpdateRequest(description, acceptability, false).execute(context);
 	}
 
-	private void updateAssociationTargets(TransactionContext context, final SnomedDescriptionIndexEntry description, final Multimap<AssociationType, String> associationTargets) {
-		final SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(description);
-		associationUpdateRequest.setNewAssociationTargets(associationTargets);
-		associationUpdateRequest.execute(context);
-	}
-	
-	private boolean processInactivation(final TransactionContext context, final SnomedDescriptionIndexEntry description, final SnomedDescriptionIndexEntry.Builder updatedDescription) {
-		if (null == isActive() && null == inactivationIndicator && null == associationTargets) {
-			return false;
-		}
-		
-		final boolean currentStatus = description.isActive();
-		final boolean newStatus = isActive() == null ? currentStatus : isActive();
-		final DescriptionInactivationIndicator newIndicator = inactivationIndicator == null ? DescriptionInactivationIndicator.RETIRED : inactivationIndicator;
-		final Multimap<AssociationType, String> newAssociationTargets = associationTargets == null ? ImmutableMultimap.<AssociationType, String>of() : associationTargets;
-		
-		if (currentStatus && !newStatus) {
-			
-			// Active --> Inactive: description inactivation, update indicator and association targets
-			// (using default values if not given)
-
-			updatedDescription.active(false);
-			updateInactivationIndicator(context, description, newIndicator);
-			updateAssociationTargets(context, description, newAssociationTargets);
-			
-			return true;
-			
-		} else if (!currentStatus && newStatus) {
-			
-			// Inactive --> Active: description reactivation, clear indicator and association targets
-			// (using default values at all times)
-
-			if (inactivationIndicator != DescriptionInactivationIndicator.RETIRED && inactivationIndicator != null) {
-				throw new BadRequestException("Cannot reactivate description and retain or change its inactivation indicator at the same time.");
-			}
-			
-			if (associationTargets != null) {
-				throw new BadRequestException("Cannot reactivate description and retain or change its historical association target(s) at the same time.");
-			}
-			
-			updatedDescription.active(true);
-			updateInactivationIndicator(context, description, newIndicator);
-			updateAssociationTargets(context, description, newAssociationTargets);
-			return true;
-			
-		} else if (currentStatus == newStatus) {
-			
-			// Inactive --> Inactive: update indicator and/or association targets if required
-			// (using original values that can be null)
-
-			updateInactivationIndicator(context, description, inactivationIndicator);
-			updateAssociationTargets(context, description, associationTargets);
-			return false;
-			
-		} else /* if (currentStatus && newStatus) */ {
-			return false;
-		}
-	}
-
-	private void updateInactivationIndicator(final TransactionContext context, final SnomedDescriptionIndexEntry description, final DescriptionInactivationIndicator inactivationIndicator) {
-		if (inactivationIndicator == null) {
-			return;
-		}
-		
-		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
-		inactivationUpdateRequest.setInactivationValueId(inactivationIndicator.getConceptId());
-		inactivationUpdateRequest.execute(context);
-	}
-
-	private boolean updateCaseSignificance(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description, final CaseSignificance newCaseSignificance) {
-		if (null == newCaseSignificance) {
+	private boolean updateCaseSignificanceId(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description, final String newCaseSignificanceId) {
+		if (null == newCaseSignificanceId) {
 			return false;
 		}
 
 		final String existingCaseSignificanceId = original.getCaseSignificanceId();
-		final String newCaseSignificanceId = newCaseSignificance.getConceptId();
 		if (!existingCaseSignificanceId.equals(newCaseSignificanceId)) {
 			description.caseSignificanceId(context.lookup(newCaseSignificanceId, SnomedConceptDocument.class).getId());
 			return true;
@@ -243,16 +159,16 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		final Builder<String> ids = ImmutableSet.<String>builder();
 		ids.add(getComponentId());
-		if (inactivationIndicator != null) {
-			ids.add(inactivationIndicator.getConceptId());
+		if (getInactivationProperties() != null && getInactivationProperties().getInactivationIndicatorId() != null) {
+			ids.add(getInactivationProperties().getInactivationIndicatorId());
 		}
-		if (caseSignificance != null) {
-			ids.add(caseSignificance.getConceptId());
+		if (caseSignificanceId != null) {
+			ids.add(caseSignificanceId);
 		}
-		if (associationTargets != null && !associationTargets.isEmpty()) {
-			associationTargets.entries().forEach(entry -> {
-				ids.add(entry.getKey().getConceptId());
-				ids.add(entry.getValue());
+		if (getInactivationProperties() != null && !CompareUtils.isEmpty(getInactivationProperties().getAssociationTargets())) {
+			getInactivationProperties().getAssociationTargets().forEach(associationTarget -> {
+				ids.add(associationTarget.getReferenceSetId());
+				ids.add(associationTarget.getTargetComponentId());
 			});
 		}
 		if (typeId != null) {

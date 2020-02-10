@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -120,7 +119,8 @@ import com.google.common.collect.Iterables;
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID,
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT,
 		SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_RULE,
-		SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID
+		SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID,
+		SnomedRefSetMemberIndexEntry.Fields.MAP_BLOCK,
 	}
 )
 @JsonDeserialize(builder = SnomedRefSetMemberIndexEntry.Builder.class)
@@ -204,6 +204,9 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String MRCM_RULE_REFSET_ID = SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
 		public static final String CLASS_AXIOM_RELATIONSHIP = "classAxiomRelationships";
 		public static final String GCI_AXIOM_RELATIONSHIP = "gciAxiomRelationships";
+		
+		// Complex map with map block
+		public static final String MAP_BLOCK = "mapBlock";
 	}
 	
 	public static Builder builder() {
@@ -309,6 +312,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression mapGroups(Collection<Integer> mapGroups) {
 			return matchAnyInt(Fields.MAP_GROUP, mapGroups);
+		}
+		
+		public static Expression mapPriority(Collection<Integer> mapPriorities) {
+			return matchAnyInt(Fields.MAP_PRIORITY, mapPriorities);
 		}
 
 		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
@@ -549,6 +556,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String attributeRule;
 		// MRCM Module Scope
 		private String mrcmRuleRefsetId;
+		// Complex map with map block
+		private Integer mapBlock;
 
 		@JsonCreator
 		private Builder() {
@@ -606,6 +615,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			case Fields.MRCM_ATTRIBUTE_RULE: this.attributeRule = (String) value; break;
 
 			case Fields.MRCM_RULE_REFSET_ID: this.mrcmRuleRefsetId = (String) value; break;
+			
+			case Fields.MAP_BLOCK: this.mapBlock = (Integer) value; break;
 			
 			default: throw new UnsupportedOperationException("Unknown RF2 member field: " + fieldName);
 			}
@@ -860,6 +871,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
+		public Builder mapBlock(final Integer mapBlock) {
+			this.mapBlock = mapBlock;
+			return getSelf();
+		}
+		
 		public SnomedRefSetMemberIndexEntry build() {
 			final SnomedRefSetMemberIndexEntry doc = new SnomedRefSetMemberIndexEntry(id,
 					label,
@@ -957,6 +973,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			
 			// MRCM Module Scope
 			doc.mrcmRuleRefsetId = mrcmRuleRefsetId;
+			
+			// Complex map with map block
+			doc.mapBlock = mapBlock;
+			
 			doc.setScore(score);
 			return doc;
 		}
@@ -1031,6 +1051,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private String attributeRule;
 	// MRCM Module Scope
 	private String mrcmRuleRefsetId;
+	// Complex map with map block
+	private Integer mapBlock;
 
 	private SnomedRefSetMemberIndexEntry(final String id,
 			final String label,
@@ -1304,8 +1326,12 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return mrcmRuleRefsetId;
 	}
 	
-	// model helper methods
+	public Integer getMapBlock() {
+		return mapBlock;
+	}
 	
+	// model helper methods
+
 	@JsonIgnore
 	public Acceptability getAcceptability() {
 		return Acceptability.getByConceptId(getAcceptabilityId());
@@ -1314,11 +1340,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	@JsonIgnore
 	public RelationshipRefinability getRefinability() {
 		return RelationshipRefinability.getByConceptId(getValueId());
-	}
-	
-	@JsonIgnore
-	public InactivationIndicator getInactivationIndicator() {
-		return InactivationIndicator.getByConceptId(getValueId());
 	}
 	
 	@JsonIgnore
@@ -1398,6 +1419,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		putIfPresent(builder, Fields.MRCM_ATTRIBUTE_RULE, getAttributeRule());
 		// MRCM Module Scope
 		putIfPresent(builder, Fields.MRCM_RULE_REFSET_ID, getMrcmRuleRefsetId());
+		// Complex map with map block
+		putIfPresent(builder, Fields.MAP_BLOCK, getMapBlock());
 		
 		return builder.build();
 	}
@@ -1456,7 +1479,9 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("rangeConstraint", rangeConstraint)
 				.add("attributeRule", attributeRule)
 				
-				.add("mrcmRuleRefsetId", mrcmRuleRefsetId);
+				.add("mrcmRuleRefsetId", mrcmRuleRefsetId)
+				
+				.add("mapBlock", mapBlock);
 		
 	}
 }

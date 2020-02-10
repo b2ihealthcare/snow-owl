@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -254,27 +254,27 @@ public class QlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case QlPackage.DISJUNCTION:
+      case QlPackage.DISJUNCTION_FILTER:
       {
-        Disjunction disjunction = (Disjunction)theEObject;
-        T result = caseDisjunction(disjunction);
-        if (result == null) result = caseFilter(disjunction);
+        DisjunctionFilter disjunctionFilter = (DisjunctionFilter)theEObject;
+        T result = caseDisjunctionFilter(disjunctionFilter);
+        if (result == null) result = caseFilter(disjunctionFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case QlPackage.CONJUNCTION:
+      case QlPackage.CONJUNCTION_FILTER:
       {
-        Conjunction conjunction = (Conjunction)theEObject;
-        T result = caseConjunction(conjunction);
-        if (result == null) result = caseFilter(conjunction);
+        ConjunctionFilter conjunctionFilter = (ConjunctionFilter)theEObject;
+        T result = caseConjunctionFilter(conjunctionFilter);
+        if (result == null) result = caseFilter(conjunctionFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case QlPackage.EXCLUSION:
+      case QlPackage.EXCLUSION_FILTER:
       {
-        Exclusion exclusion = (Exclusion)theEObject;
-        T result = caseExclusion(exclusion);
-        if (result == null) result = caseFilter(exclusion);
+        ExclusionFilter exclusionFilter = (ExclusionFilter)theEObject;
+        T result = caseExclusionFilter(exclusionFilter);
+        if (result == null) result = caseFilter(exclusionFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -603,49 +603,49 @@ public class QlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Disjunction</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Disjunction Filter</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Disjunction</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Disjunction Filter</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseDisjunction(Disjunction object)
+  public T caseDisjunctionFilter(DisjunctionFilter object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Conjunction</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Conjunction Filter</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Conjunction</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Conjunction Filter</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseConjunction(Conjunction object)
+  public T caseConjunctionFilter(ConjunctionFilter object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Exclusion</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Exclusion Filter</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Exclusion</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Exclusion Filter</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseExclusion(Exclusion object)
+  public T caseExclusionFilter(ExclusionFilter object)
   {
     return null;
   }

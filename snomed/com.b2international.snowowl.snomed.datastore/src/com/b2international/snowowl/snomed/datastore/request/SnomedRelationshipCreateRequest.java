@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Strings;
@@ -59,10 +57,10 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	private int unionGroup;
 
 	@NotNull
-	private CharacteristicType characteristicType;
+	private String characteristicTypeId;
 
 	@NotNull
-	private RelationshipModifier modifier;
+	private String modifierId;
 
 	SnomedRelationshipCreateRequest() {}
 	
@@ -90,12 +88,12 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		return unionGroup;
 	}
 
-	public CharacteristicType getCharacteristicType() {
-		return characteristicType;
+	public String getCharacteristicTypeId() {
+		return characteristicTypeId;
 	}
 
-	public RelationshipModifier getModifier() {
-		return modifier;
+	public String getModifierId() {
+		return modifierId;
 	}
 	
 	void setSourceId(final String sourceId) {
@@ -122,19 +120,19 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		this.unionGroup = unionGroup;
 	}
 
-	void setCharacteristicType(final CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	void setCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 	}
 
-	void setModifier(final RelationshipModifier modifier) {
-		this.modifier = modifier;
+	void setModifier(final String modifierId) {
+		this.modifierId = modifierId;
 	}
 	
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		Builder<String> result = ImmutableSet.<String>builder()
-				.add(modifier.getConceptId())
-				.add(characteristicType.getConceptId())
+				.add(getModifierId())
+				.add(getCharacteristicTypeId())
 				.add(getTypeId())
 				.add(getDestinationId());
 		if (getModuleId() != null) {
@@ -164,8 +162,8 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 					.withType(getTypeId())
 					.withGroup(getGroup())
 					.withUnionGroup(getUnionGroup())
-					.withCharacteristicType(getCharacteristicType())
-					.withModifier(getModifier())
+					.withCharacteristicTypeId(getCharacteristicTypeId())
+					.withModifierId(getModifierId())
 					.withDestinationNegated(isDestinationNegated())
 					.build(context);
 			

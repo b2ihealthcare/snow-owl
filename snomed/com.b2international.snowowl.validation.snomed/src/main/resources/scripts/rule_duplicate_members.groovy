@@ -42,7 +42,7 @@ final Aggregation<String> memberAggregation = searcher
 memberAggregation.getBuckets().entrySet().each({entry ->
 	entry.getValue().getHits().forEach({referencedComponentId -> 
 		final ComponentCategory referencedComponentCategory = SnomedIdentifiers.getComponentCategory(referencedComponentId)
-		final ComponentIdentifier affectedComponent 
+		ComponentIdentifier affectedComponent = ComponentIdentifier.UNKOWN
 		switch(referencedComponentCategory) {
 			case ComponentCategory.CONCEPT:
 				affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, referencedComponentId);

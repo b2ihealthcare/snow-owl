@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -59,8 +57,8 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 				.sourceId(Concepts.ROOT_CONCEPT)
 				.destinationId(Concepts.ROOT_CONCEPT)
 				.typeId(Concepts.IS_A)
-				.characteristicTypeId(CharacteristicType.STATED_RELATIONSHIP.getConceptId())
-				.modifierId(RelationshipModifier.EXISTENTIAL.getConceptId())
+				.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
+				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
 				.destinationNegated(true)
 				.group(1)
 				.unionGroup(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,6 @@ import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -271,7 +269,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		}
 		
 		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED)) {
-			resultBuilder.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(concept.getDefinitionStatus() == DefinitionStatus.FULLY_DEFINED));
+			resultBuilder.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(!concept.isPrimitive()));
 		}
 		
 		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.EFFECTIVE_TIME)) {
@@ -308,7 +306,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true)
-				.filterByCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId())
+				.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 				.filterBySource(concept.getId())
 				.filterByType(relationshipTypeIds)
 				.build(getRepositoryId(), branchPath)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,11 @@ public final class ConceptChangeConverter
 
 	@Override
 	protected ConceptChanges createCollectionResource(final List<ConceptChange> results, 
-			final String scrollId, 
 			final String searchAfter, 
 			final int limit, 
 			final int total) {
 
-		return new ConceptChanges(results, scrollId, searchAfter, limit, total);
+		return new ConceptChanges(results, searchAfter, limit, total);
 	}
 
 	@Override
@@ -133,7 +132,7 @@ public final class ConceptChangeConverter
 
 				final SnomedConcept expandedConcept = conceptsById.get(conceptId);
 
-				reasonerConcept.setDefinitionStatus(expandedConcept.getDefinitionStatus());
+				reasonerConcept.setDefinitionStatusId(expandedConcept.getDefinitionStatusId());
 				reasonerConcept.setPt(expandedConcept.getPt());
 				reasonerConcept.setFsn(expandedConcept.getFsn());
 				// reasonerConcept.setReleased(...) is already set

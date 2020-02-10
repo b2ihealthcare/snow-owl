@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,13 +55,8 @@ public final class EquivalentConceptSetConverter
 	}
 
 	@Override
-	protected EquivalentConceptSets createCollectionResource(final List<EquivalentConceptSet> results, 
-			final String scrollId, 
-			final String searchAfter, 
-			final int limit, 
-			final int total) {
-
-		return new EquivalentConceptSets(results, scrollId, searchAfter, limit, total);
+	protected EquivalentConceptSets createCollectionResource(final List<EquivalentConceptSet> results, final String searchAfter, final int limit, final int total) {
+		return new EquivalentConceptSets(results, searchAfter, limit, total);
 	}
 
 	@Override
@@ -75,7 +70,7 @@ public final class EquivalentConceptSetConverter
 			items.add(new SnomedConcept(Long.toString(itr.next())));
 		}
 
-		final SnomedConcepts equivalentConcepts = new SnomedConcepts(items, null, null, items.size(), items.size());
+		final SnomedConcepts equivalentConcepts = new SnomedConcepts(items, null, items.size(), items.size());
 		resource.setEquivalentConcepts(equivalentConcepts);
 		return resource;
 	}

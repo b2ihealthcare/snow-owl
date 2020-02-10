@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
@@ -156,10 +156,7 @@ public final class RepositoryBuilder {
 		
 		// execute initialization steps
 		repository.waitForHealth(Health.GREEN, 3 * 60L /*wait 3 minutes for GREEN repository status*/);
-		new IndexReadRequest<Void>((context) -> {
-			initializer.initialize(context);
-			return null;
-		}).execute(manager.getContext(repositoryId));
+		new RepositoryRequest<>(repositoryId, initializer).execute(env);
 		
 		return repository;
 	}

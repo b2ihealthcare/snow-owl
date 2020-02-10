@@ -266,6 +266,7 @@ import com.google.common.annotations.VisibleForTesting;
  * Orderly library.
  * </p>
  */
+@SuppressWarnings({"lgtm[java/constant-comparison]"})
 public class OrderedBytes {
 
   /*

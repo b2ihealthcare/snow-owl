@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -56,7 +57,6 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFragment;
@@ -111,7 +111,8 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class))).with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index()).with(ObjectMapper.class, getMapper())
 				.with(ValidationRepository.class, new ValidationRepository(rawIndex()))
-				.with(ClassLoader.class, SnomedDatastoreActivator.class.getClassLoader())
+				.with(ClassLoader.class, getClass().getClassLoader())
+				.with(TerminologyRegistry.class, TerminologyRegistry.INSTANCE)
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1)).build();
 		
 		// index common required SNOMED CT Concepts

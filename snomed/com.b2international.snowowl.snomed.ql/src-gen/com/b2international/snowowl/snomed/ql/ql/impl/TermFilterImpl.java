@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,6 +107,7 @@ public class TermFilterImpl extends PropertyFilterImpl implements TermFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public LexicalSearchType getLexicalSearchType()
   {
     return lexicalSearchType;
@@ -117,6 +118,7 @@ public class TermFilterImpl extends PropertyFilterImpl implements TermFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setLexicalSearchType(LexicalSearchType newLexicalSearchType)
   {
     LexicalSearchType oldLexicalSearchType = lexicalSearchType;
@@ -130,6 +132,7 @@ public class TermFilterImpl extends PropertyFilterImpl implements TermFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public String getTerm()
   {
     return term;
@@ -140,6 +143,7 @@ public class TermFilterImpl extends PropertyFilterImpl implements TermFilter
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setTerm(String newTerm)
   {
     String oldTerm = term;
@@ -234,7 +238,7 @@ public class TermFilterImpl extends PropertyFilterImpl implements TermFilter
   {
     if (eIsProxy()) return super.toString();
 
-    StringBuffer result = new StringBuffer(super.toString());
+    StringBuilder result = new StringBuilder(super.toString());
     result.append(" (lexicalSearchType: ");
     result.append(lexicalSearchType);
     result.append(", term: ");

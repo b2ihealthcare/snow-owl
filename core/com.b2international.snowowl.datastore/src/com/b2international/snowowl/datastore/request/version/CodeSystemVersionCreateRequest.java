@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockE
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
@@ -141,13 +140,11 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				// check that the specified effective time is valid in this code system
 				validateEffectiveTime(context, codeSystem);
 				new RepositoryRequest<>(repositoryId,
-					new IndexReadRequest<>(
-						new BranchRequest<>(codeSystem.getBranchPath(),
-							new RevisionIndexReadRequest<CommitResult>(
-								context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryUuid())
-									.service(VersioningRequestBuilder.class)
-									.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
-							)
+					new BranchRequest<>(codeSystem.getBranchPath(),
+						new RevisionIndexReadRequest<CommitResult>(
+							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryUuid())
+								.service(VersioningRequestBuilder.class)
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
 						)
 					)
 				).execute(context);

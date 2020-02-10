@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ import com.google.common.collect.Iterables;
  * @since 4.5
  */
 final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry> {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @since 4.5
@@ -161,6 +163,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_GROUP)) {
 				queryBuilder.filter(mapGroups(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class)));
 			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_PRIORITY)) {
+				queryBuilder.filter(mapPriority(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class)));
+			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
 				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::valueIds);
 			}
@@ -253,7 +258,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedReferenceSetMembers(limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
+			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
 		}
 	}
 

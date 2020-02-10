@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import com.b2international.index.es.client.IndicesClient;
 
 /**
  * @since 6.11
+ * @deprecated
  */
 public final class EsTcpClient extends EsClientBase {
 
@@ -102,17 +103,16 @@ public final class EsTcpClient extends EsClientBase {
 
 	@Override
 	public Builder bulk(Listener listener) {
-		return BulkProcessor.builder(client, listener);
+		return BulkProcessor.builder(client::bulk, listener);
 	}
 
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, 
+	public BulkByScrollResponse updateByQuery(String index, int batchSize, Script script, int numberOfSlices, 
 			QueryBuilder query) throws IOException {
-		UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
+		UpdateByQueryRequestBuilder ubqrb = new UpdateByQueryRequestBuilder(client, UpdateByQueryAction.INSTANCE);
 		
 		ubqrb.source()
 			.setIndices(index)
-			.setTypes(type)
 			.setSize(batchSize)
 			.setQuery(query);
 		
@@ -123,13 +123,12 @@ public final class EsTcpClient extends EsClientBase {
 	}
 	
 	@Override
-	public BulkByScrollResponse deleteByQuery(String index, String type, int batchSize, int numberOfSlices,
+	public BulkByScrollResponse deleteByQuery(String index, int batchSize, int numberOfSlices,
 			QueryBuilder query) throws IOException {
-		DeleteByQueryRequestBuilder dbqrb = DeleteByQueryAction.INSTANCE.newRequestBuilder(client);
+		DeleteByQueryRequestBuilder dbqrb = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
 		
 		dbqrb.source()
 			.setIndices(index)
-			.setTypes(type)
 			.setSize(batchSize)
 			.setQuery(query);
 	

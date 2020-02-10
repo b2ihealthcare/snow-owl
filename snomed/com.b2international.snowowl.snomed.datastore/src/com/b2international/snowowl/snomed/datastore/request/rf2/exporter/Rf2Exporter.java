@@ -38,7 +38,6 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -150,16 +149,14 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				final B requestBuilder = createSearchRequestBuilder()
 						.filterByModules(modules) // null value will be ignored
 						.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
-						.setLimit(BATCH_SIZE)
-						.setScroll("15m");
+						.setLimit(BATCH_SIZE);
 				
 				final SearchResourceRequestIterator<B, R> iterator = new SearchResourceRequestIterator<>(requestBuilder, scrolledBuilder -> {
-					return new IndexReadRequest<>(
-						new BranchRequest<R>(
-							branch, 
-							new RevisionIndexReadRequest<>(scrolledBuilder.build())
-						)
-					).execute(context);
+					return new BranchRequest<R>(
+						branch, 
+						new RevisionIndexReadRequest<>(scrolledBuilder.build())
+					)
+					.execute(context);
 				});
 				
 				while (iterator.hasNext()) {

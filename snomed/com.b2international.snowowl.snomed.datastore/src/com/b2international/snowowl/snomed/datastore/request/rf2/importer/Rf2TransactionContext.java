@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -96,8 +95,8 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
-	public void add(Object o) {
-		getDelegate().add(o);
+	public String add(Object o) {
+		return getDelegate().add(o);
 	}
 	
 	@Override
@@ -370,7 +369,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withActive(concept.isActive())
 					.withEffectiveTime(concept.getEffectiveTime())
 					.withModule(concept.getModuleId())
-					.withDefinitionStatus(concept.getDefinitionStatus())
+					.withDefinitionStatusId(concept.getDefinitionStatusId())
 					.withExhaustive(concept.getSubclassDefinitionStatus().isExhaustive());
 		} else if (component instanceof SnomedDescription) { 
 			SnomedDescription description = (SnomedDescription) component;
@@ -379,7 +378,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withActive(description.isActive())
 					.withEffectiveTime(description.getEffectiveTime())
 					.withModule(description.getModuleId())
-					.withCaseSignificance(description.getCaseSignificance())
+					.withCaseSignificanceId(description.getCaseSignificanceId())
 					.withLanguageCode(description.getLanguageCode())
 					.withType(description.getTypeId())
 					.withTerm(description.getTerm())
@@ -394,11 +393,11 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withSource(relationship.getSourceId())
 					.withType(relationship.getTypeId())
 					.withDestination(relationship.getDestinationId())
-					.withCharacteristicType(relationship.getCharacteristicType())
+					.withCharacteristicTypeId(relationship.getCharacteristicTypeId())
 					.withGroup(relationship.getGroup())
 					.withUnionGroup(relationship.getUnionGroup())
 					.withDestinationNegated(false)
-					.withModifier(relationship.getModifier());
+					.withModifierId(relationship.getModifierId());
 		} else {
 			throw new UnsupportedOperationException("Cannot prepare unknown core component: " + component);
 		}
@@ -431,6 +430,16 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 						.withMapCategoryId((String) properties.get(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID))
 						.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
 						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
+				break;
+			case COMPLEX_BLOCK_MAP:
+				builder = SnomedComponents.newComplexBlockMapMember()
+						.withGroup((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP))
+						.withPriority((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_PRIORITY))
+						.withMapAdvice((String) properties.get(SnomedRf2Headers.FIELD_MAP_ADVICE))
+						.withCorrelationId((String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID))
+						.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
+						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET))
+						.withBlock((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_BLOCK));
 				break;
 			case LANGUAGE: 
 				builder = SnomedComponents.newLanguageMember()
@@ -490,7 +499,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 				break;
 			case CONCRETE_DATA_TYPE:
 				builder = SnomedComponents.newConcreteDomainReferenceSetMember()
-						.withCharacteristicType(CharacteristicType.getByConceptId((String) properties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)))
+						.withCharacteristicTypeId((String) properties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))
 						.withGroup(Integer.parseInt((String) properties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)))
 						.withTypeId((String) properties.get(SnomedRf2Headers.FIELD_TYPE_ID))
 						.withSerializedValue((String) properties.get(SnomedRf2Headers.FIELD_VALUE));

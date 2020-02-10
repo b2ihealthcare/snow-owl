@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -25,17 +24,17 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<SnomedRelationshipCreateRequestBuilder> {
 
-	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	private String destinationId;
 	private boolean destinationNegated = false;
 	private int group = 0;
-	private RelationshipModifier modifier = RelationshipModifier.EXISTENTIAL;
+	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 	private String sourceId;
 	private String typeId;
 	private int unionGroup = 0;
 
-	public CharacteristicType getCharacteristicType() {
-		return characteristicType;
+	public String getCharacteristicTypeId() {
+		return characteristicTypeId;
 	}
 
 	public String getDestinationId() {
@@ -50,8 +49,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		return group;
 	}
 
-	public RelationshipModifier getModifier() {
-		return modifier;
+	public String getModifierId() {
+		return modifierId;
 	}
 
 	public String getSourceId() {
@@ -66,8 +65,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		return unionGroup;
 	}
 
-	public void setCharacteristicType(final CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	public void setCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 	}
 
 	public void setDestinationId(final String destinationId) {
@@ -82,8 +81,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		this.group = group;
 	}
 
-	public void setModifier(final RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public void setModifierId(final String modifierId) {
+		this.modifierId = modifierId;
 	}
 
 	public void setSourceId(final String sourceId) {
@@ -106,11 +105,11 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	@Override
 	public SnomedRelationshipCreateRequestBuilder toRequestBuilder() {
 		return super.toRequestBuilder()
-				.setCharacteristicType(getCharacteristicType())
+				.setCharacteristicTypeId(getCharacteristicTypeId())
 				.setDestinationId(getDestinationId())
 				.setDestinationNegated(isDestinationNegated())
 				.setGroup(getGroup())
-				.setModifier(getModifier())
+				.setModifierId(getModifierId())
 				.setSourceId(getSourceId())
 				.setTypeId(getTypeId())
 				.setUnionGroup(getUnionGroup());
@@ -123,16 +122,16 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		builder.append(getId());
 		builder.append(", getModuleId()=");
 		builder.append(getModuleId());
-		builder.append(", getCharacteristicType()=");
-		builder.append(getCharacteristicType());
+		builder.append(", getCharacteristicTypeId()=");
+		builder.append(getCharacteristicTypeId());
 		builder.append(", getDestinationId()=");
 		builder.append(getDestinationId());
 		builder.append(", isDestinationNegated()=");
 		builder.append(isDestinationNegated());
 		builder.append(", getGroup()=");
 		builder.append(getGroup());
-		builder.append(", getModifier()=");
-		builder.append(getModifier());
+		builder.append(", getModifierId()=");
+		builder.append(getModifierId());
 		builder.append(", getSourceId()=");
 		builder.append(getSourceId());
 		builder.append(", getTypeId()=");

@@ -29,19 +29,30 @@ public abstract class RandomSnomedIdentiferGenerator {
 	private RandomSnomedIdentiferGenerator() {}
 	
 	public final static String generateConceptId() {
-		return generateSnomedId(ComponentCategory.CONCEPT);
+		return generateConceptId("");
+	}
+	
+	public final static String generateConceptId(String namespace) {
+		return generateSnomedId(ComponentCategory.CONCEPT, namespace);
 	}
 	
 	public final static String generateDescriptionId() {
-		return generateSnomedId(ComponentCategory.DESCRIPTION);
+		return generateDescriptionId("");
+	}
+	
+	public final static String generateDescriptionId(String namespace) {
+		return generateSnomedId(ComponentCategory.DESCRIPTION, namespace);
 	}
 
 	public final static String generateRelationshipId() {
-		return generateSnomedId(ComponentCategory.RELATIONSHIP);
+		return generateRelationshipId("");
 	}
 	
-	private static String generateSnomedId(ComponentCategory category) {
-		final String selectedNamespace = "";
+	public final static String generateRelationshipId(String namespace) {
+		return generateSnomedId(ComponentCategory.RELATIONSHIP, namespace);
+	}
+	
+	private static String generateSnomedId(ComponentCategory category, String selectedNamespace) {
 		final StringBuilder builder = new StringBuilder();
 		// generate the SCT Item ID
 		builder.append(new RandomItemIdGenerationStrategy().generateItemIds(selectedNamespace, category, 1, 1).stream().findFirst().get());

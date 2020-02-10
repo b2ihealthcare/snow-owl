@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import com.b2international.commons.exceptions.IllegalQueryParameterException;
+import com.b2international.index.Index;
+import com.b2international.index.Searcher;
+import com.b2international.index.query.QueryParseException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Bindable;
 import com.b2international.snowowl.core.domain.DelegatingContext;
@@ -49,7 +53,8 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	
 	@Override
 	public B execute(final ServiceProvider context) {
-		DelegatingContext.Builder<? extends RepositoryContext> repositoryContext = context.service(RepositoryContextProvider.class).getContext(repositoryId).inject();
+		RepositoryContext originalRepositoryContext = context.service(RepositoryContextProvider.class).getContext(repositoryId);
+		DelegatingContext.Builder<? extends RepositoryContext> repositoryContext = originalRepositoryContext.inject();
 		
 		// by default add a NullProgressMonitor binding to the context
 		// if the previous context is a delegate context, injecting all services can override this safely 
@@ -58,7 +63,16 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 		if (context instanceof Bindable) {
 			repositoryContext.bindAll((Bindable) context);
 		}
-		
-		return next(repositoryContext.build());
+
+		// always "open" an index read context when executing requests inside a repository
+		return originalRepositoryContext.service(Index.class).read(index -> {
+			try {
+				return next(repositoryContext
+						.bind(Searcher.class, index)
+						.build());
+			} catch (QueryParseException e) {
+				throw new IllegalQueryParameterException(e.getMessage());
+			}
+		});
 	}
 }

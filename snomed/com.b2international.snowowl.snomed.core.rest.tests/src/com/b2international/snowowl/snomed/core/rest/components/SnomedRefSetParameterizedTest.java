@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				}, 
 			//  Concrete data type reference sets are tested separately 
 			{ 	SnomedRefSetType.COMPLEX_MAP					},
+			{ 	SnomedRefSetType.COMPLEX_BLOCK_MAP				},
 			{ 	SnomedRefSetType.DESCRIPTION_TYPE				}, 
 			{ 	SnomedRefSetType.EXTENDED_MAP					},
 			{ 	SnomedRefSetType.LANGUAGE						},

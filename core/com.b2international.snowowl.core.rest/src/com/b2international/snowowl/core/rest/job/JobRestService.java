@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,14 +66,6 @@ public class JobRestService extends AbstractRestService {
 			@RequestParam(value = "user", required = false) 
 			final String user,
 			
-			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false) 
-			final String scrollKeepAlive,
-			
-			@ApiParam(value="A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false) 
-			final String scrollId,
-			
 			@ApiParam(value="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
@@ -88,8 +80,6 @@ public class JobRestService extends AbstractRestService {
 		return JobRequests.prepareSearch()
 				.filterByIds(ids)
 				.filterByUser(user)
-				.setScroll(scrollKeepAlive)
-				.setScrollId(scrollId)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.sortBy(extractSortFields(sort))

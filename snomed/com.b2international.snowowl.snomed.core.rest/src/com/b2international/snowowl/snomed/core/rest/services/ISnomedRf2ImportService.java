@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ import java.io.InputStream;
 import java.util.UUID;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
-import com.b2international.snowowl.snomed.core.rest.exceptions.SnomedImportConfigurationNotFoundException;
 
 /**
  * Implementations allow importing SNOMED CT content from RF2 release archives.
@@ -36,7 +36,7 @@ public interface ISnomedRf2ImportService {
 	 * 
 	 * @return the configuration object describing import details
 	 * 
-	 * @throws SnomedImportConfigurationNotFoundException if the specified import run does not exist
+	 * @throws NotFoundException if the specified import run does not exist
 	 */
 	ISnomedImportConfiguration getImportDetails(UUID importId);
 
@@ -55,9 +55,6 @@ public interface ISnomedRf2ImportService {
 	 *  
 	 * @param importId    the identifier of the import run to begin
 	 * @param inputStream the input stream opened on a valid RF2 release archive
-	 * 
-	 * @throws SnomedImportException if the import can not start for some reason (import errors are only 
-	 *                               reflected in the import run's status flag)
 	 */
 	void startImport(UUID importId, InputStream inputStream);
 

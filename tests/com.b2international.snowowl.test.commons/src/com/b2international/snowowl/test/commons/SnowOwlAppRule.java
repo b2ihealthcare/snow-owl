@@ -66,7 +66,7 @@ public class SnowOwlAppRule extends ExternalResource {
 
 //	private final static Logger LOGGER = LogManager.getLogger(SnowOwlAppRule.class);
 	
-	private boolean clearResources = false;
+	private boolean clearResources = true;
 	private Plugin[] plugins;
 	private SnowOwl snowowl;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import javax.validation.constraints.Min;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.ImmutableSet;
@@ -44,8 +42,8 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	@Max(Integer.MAX_VALUE)
 	private Integer unionGroup;
 	
-	private CharacteristicType characteristicType;
-	private RelationshipModifier modifier;
+	private String characteristicTypeId;
+	private String modifierId;
 	private String destinationId;
 	private String typeId;
 
@@ -53,16 +51,16 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		super(componentId);
 	}
 	
-	void setCharacteristicType(CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	void setCharacteristicTypeId(String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 	}
 	
 	void setGroup(Integer group) {
 		this.group = group;
 	}
 	
-	void setModifier(RelationshipModifier modifier) {
-		this.modifier = modifier;
+	void setModifierId(String modifierId) {
+		this.modifierId = modifierId;
 	}
 	
 	void setUnionGroup(Integer unionGroup) {
@@ -87,8 +85,8 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		changed |= updateModule(context, relationship, updatedRelationship);
 		changed |= updateGroup(group, relationship, updatedRelationship, context);
 		changed |= updateUnionGroup(unionGroup, relationship, updatedRelationship, context);
-		changed |= updateCharacteristicType(characteristicType, relationship, updatedRelationship, context);
-		changed |= updateModifier(modifier, relationship, updatedRelationship, context);
+		changed |= updateCharacteristicTypeId(characteristicTypeId, relationship, updatedRelationship, context);
+		changed |= updateModifier(modifierId, relationship, updatedRelationship, context);
 		changed |= updateDestinationId(context, relationship, updatedRelationship);
 		changed |= updateTypeId(context, relationship, updatedRelationship);
 
@@ -100,6 +98,11 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		}
 		
 		return changed;
+	}
+	
+	@Override
+	protected String getInactivationIndicatorRefSetId() {
+		throw new UnsupportedOperationException("Relationship inactivation does not support inactivationProperties yet");
 	}
 	
 	private boolean updateTypeId(TransactionContext context, SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship) {
@@ -156,28 +159,28 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		}
 	}
 
-	private boolean updateCharacteristicType(final CharacteristicType newCharacteristicType, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
-		if (null == newCharacteristicType) {
+	private boolean updateCharacteristicTypeId(final String newCharacteristicTypeId, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
+		if (null == newCharacteristicTypeId) {
 			return false;
 		}
 
-		final CharacteristicType currentCharacteristicType = original.getCharacteristicType();
-		if (!currentCharacteristicType.equals(newCharacteristicType)) {
-			relationship.characteristicTypeId(context.lookup(newCharacteristicType.getConceptId(), SnomedConceptDocument.class).getId());
+		final String currentCharacteristicType = original.getCharacteristicTypeId();
+		if (!currentCharacteristicType.equals(newCharacteristicTypeId)) {
+			relationship.characteristicTypeId(context.lookup(newCharacteristicTypeId, SnomedConceptDocument.class).getId());
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private boolean updateModifier(final RelationshipModifier newModifier, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
-		if (null == newModifier) {
+	private boolean updateModifier(final String newModifierId, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
+		if (null == newModifierId) {
 			return false;
 		}
 
-		final RelationshipModifier currentModifier = RelationshipModifier.getByConceptId(original.getModifierId());
-		if (!currentModifier.equals(newModifier)) {
-			relationship.modifierId(context.lookup(newModifier.getConceptId(), SnomedConceptDocument.class).getId());
+		final String currentModifier = original.getModifierId();
+		if (!currentModifier.equals(newModifierId)) {
+			relationship.modifierId(context.lookup(newModifierId, SnomedConceptDocument.class).getId());
 			return true;
 		} else {
 			return false;
@@ -188,8 +191,8 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		final Builder<String> ids = ImmutableSet.<String>builder();
 		ids.add(getComponentId());
-		if (characteristicType != null) {
-			ids.add(characteristicType.getConceptId());
+		if (characteristicTypeId != null) {
+			ids.add(characteristicTypeId);
 		}
 		if (destinationId != null) {
 			ids.add(destinationId);
@@ -197,8 +200,8 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		if (typeId != null) {
 			ids.add(typeId);
 		}
-		if (modifier != null) {
-			ids.add(modifier.getConceptId());
+		if (modifierId != null) {
+			ids.add(modifierId);
 		}
 		return ids.build();
 	}

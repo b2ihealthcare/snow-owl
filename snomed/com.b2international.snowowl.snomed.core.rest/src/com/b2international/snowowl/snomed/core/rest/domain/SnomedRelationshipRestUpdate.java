@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-
-
 /**
  * @since 1.0
  */
@@ -26,8 +22,8 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 
 	private Integer group;
 	private Integer unionGroup;
-	private CharacteristicType characteristicType;
-	private RelationshipModifier modifier;
+	private String characteristicTypeId;
+	private String modifierId;
 	private String destinationId;
 	private String typeId;
 
@@ -47,20 +43,20 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 		this.unionGroup = unionGroup;
 	}
 
-	public CharacteristicType getCharacteristicType() {
-		return characteristicType;
+	public String getCharacteristicTypeId() {
+		return characteristicTypeId;
 	}
 
-	public void setCharacteristicType(final CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	public void setCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 	}
 
-	public RelationshipModifier getModifier() {
-		return modifier;
+	public String getModifierId() {
+		return modifierId;
 	}
 
-	public void setModifier(final RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public void setModifierId(final String modifierId) {
+		this.modifierId = modifierId;
 	}
 	
 	public String getDestinationId() {

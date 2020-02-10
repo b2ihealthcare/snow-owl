@@ -27,13 +27,13 @@ QueryConstraint:
 	QueryDisjunction;
 
 QueryDisjunction returns QueryConstraint:
-	QueryConjunction ({QueryDisjunction.left=current} 'OR' right=QueryConjunction)*;
+	QueryConjunction ({QueryDisjunction.left=current} DISJUNCTION right=QueryConjunction)*;
 
 QueryConjunction returns QueryConstraint:
-	QueryExclusion ({QueryConjunction.left=current} ('AND' | ',') right=QueryExclusion)*;
+	QueryExclusion ({QueryConjunction.left=current} (CONJUNCTION | COMMA) right=QueryExclusion)*;
 
 QueryExclusion returns QueryConstraint:
-	SubQuery ({QueryExclusion.left=current} 'MINUS' right=SubQuery)?;
+	SubQuery ({QueryExclusion.left=current} EXCLUSION right=SubQuery)?;
 
 SubQuery:
 	DomainQuery | NestedQuery;
@@ -47,16 +47,16 @@ NestedQuery:
 // Domain Property Filters
 
 Filter:
-	Disjunction;
+	DisjunctionFilter;
 
-Disjunction returns Filter:
-	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
+DisjunctionFilter returns Filter:
+	ConjunctionFilter ({DisjunctionFilter.left=current} DISJUNCTION right=ConjunctionFilter)*;
 
-Conjunction returns Filter:
-	Exclusion ({Conjunction.left=current} ('AND' | ',') right=Exclusion)*;
+ConjunctionFilter returns Filter:
+	ExclusionFilter ({ConjunctionFilter.left=current} (CONJUNCTION | COMMA) right=ExclusionFilter)*;
 
-Exclusion returns Filter:
-	PropertyFilter ({Exclusion.left=current} 'MINUS' right=PropertyFilter)?;
+ExclusionFilter returns Filter:
+	PropertyFilter ({ExclusionFilter.left=current} EXCLUSION right=PropertyFilter)?;
 
 NestedFilter:
 	ROUND_OPEN nested=Filter ROUND_CLOSE;

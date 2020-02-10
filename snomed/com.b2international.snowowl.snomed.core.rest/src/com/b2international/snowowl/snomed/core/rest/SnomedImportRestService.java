@@ -155,13 +155,14 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 			final ISnomedImportConfiguration configuration) {
 		
 		final SnomedImportDetails details = new SnomedImportDetails();
-		details.setCompletionDate(configuration.getCompletionDate());
-		details.setCreateVersions(configuration.shouldCreateVersion());
 		details.setId(importId);
-		details.setStartDate(configuration.getStartDate());
-		details.setStatus(SnomedImportStatus.getImportStatus(configuration.getStatus()));
 		details.setType(configuration.getRf2ReleaseType());
 		details.setBranchPath(configuration.getBranchPath());
+		details.setCodeSystemShortName(configuration.getCodeSystemShortName());
+		details.setCreateVersions(configuration.shouldCreateVersion());
+		details.setStartDate(configuration.getStartDate());
+		details.setCompletionDate(configuration.getCompletionDate());
+		details.setStatus(SnomedImportStatus.getImportStatus(configuration.getStatus()));
 		return details;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-
 /**
  * @since 4.5
  */
 public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedRelationshipUpdateRequestBuilder, SnomedRelationshipUpdateRequest> {
 
-	private CharacteristicType characteristicType;
+	private String characteristicTypeId;
 	private Integer group;
 	private Integer unionGroup;
-	private RelationshipModifier modifier;
+	private String modifierId;
 	private String destinationId;
 	private String typeId;
 
@@ -34,8 +31,8 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 		super(componentId);
 	}
 	
-	public SnomedRelationshipUpdateRequestBuilder setCharacteristicType(CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	public SnomedRelationshipUpdateRequestBuilder setCharacteristicTypeId(String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 		return getSelf();
 	}
 	
@@ -44,8 +41,8 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 		return getSelf();
 	}
 	
-	public SnomedRelationshipUpdateRequestBuilder setModifier(RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public SnomedRelationshipUpdateRequestBuilder setModifierId(String modifierId) {
+		this.modifierId = modifierId;
 		return getSelf();
 	}
 	
@@ -72,10 +69,10 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 	@Override
 	protected void init(SnomedRelationshipUpdateRequest req) {
 		super.init(req);
-		req.setCharacteristicType(characteristicType);
+		req.setCharacteristicTypeId(characteristicTypeId);
 		req.setGroup(group);
 		req.setUnionGroup(unionGroup);
-		req.setModifier(modifier);
+		req.setModifierId(modifierId);
 		req.setDestinationId(destinationId);
 		req.setTypeId(typeId);
 	}

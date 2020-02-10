@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getTypeId());
 				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getDestinationId());
 				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getModifierId());
-				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getCharacteristicType().getConceptId());
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getCharacteristicTypeId());
 				updatedComponent = SnomedRelationshipIndexEntry.builder(relationship);
 			} else if (componentToVersion instanceof SnomedRefSetMemberIndexEntry) {
 				final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) componentToVersion;

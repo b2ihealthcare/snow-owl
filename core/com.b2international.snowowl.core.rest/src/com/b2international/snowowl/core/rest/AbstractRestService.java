@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.rest;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Collections3;
@@ -161,6 +163,25 @@ public abstract class AbstractRestService {
 		} catch (IllegalArgumentException e) {
 			throw new BadRequestException(e.getMessage());
 		}
+	}
+	
+	/**
+	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
+	 * @param resourceId - the identifier of the resource
+	 * @return a URI to be added as Location header value
+	 */
+	protected final URI getResourceLocationURI(String resourceId) {
+		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(resourceId).build().toUri();
+	}
+	
+	/**
+	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
+	 * @param branch - the branch where the resource has been created
+	 * @param resourceId - the identifier of the resource
+	 * @return a URI to be added as Location header value
+	 */
+	protected final URI getResourceLocationURI(String branch, String resourceId) {
+		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(branch, resourceId).build().toUri();
 	}
 
 }

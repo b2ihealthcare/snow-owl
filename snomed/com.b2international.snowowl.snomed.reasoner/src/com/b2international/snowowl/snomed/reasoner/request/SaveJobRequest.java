@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,7 @@ import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -70,7 +68,16 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCr
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
-import com.b2international.snowowl.snomed.reasoner.domain.*;
+import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
+import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
+import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSet;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerConcreteDomainMember;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.google.common.base.Strings;
@@ -89,7 +96,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
 	private static final int SCROLL_LIMIT = 10_000;
-	private static final String SCROLL_KEEP_ALIVE = "5m";
 
 	@NotEmpty
 	private String classificationId;
@@ -242,7 +248,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 
 		final RelationshipChangeSearchRequestBuilder relationshipRequestBuilder = ClassificationRequests.prepareSearchRelationshipChange()
 				.setLimit(SCROLL_LIMIT)
-				.setScroll(SCROLL_KEEP_ALIVE)
 				.setExpand("relationship(inferredOnly:true)")
 				.filterByClassificationId(classificationId);
 
@@ -331,7 +336,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 
 		final ConcreteDomainChangeSearchRequestBuilder concreteDomainRequestBuilder = ClassificationRequests.prepareSearchConcreteDomainChange()
 				.setLimit(SCROLL_LIMIT)
-				.setScroll(SCROLL_KEEP_ALIVE)
 				.setExpand("concreteDomainMember(inferredOnly:true)")
 				.filterByClassificationId(classificationId);
 
@@ -430,7 +434,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		
 		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.setLimit(SCROLL_LIMIT)
-				.setScroll(SCROLL_KEEP_ALIVE)
 				.setExpand(expand)
 				.filterByClassificationId(classificationId);
 
@@ -605,7 +608,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 					.prepareUpdateConcept(concept.getId())
 					.setModuleId(namespaceAndModuleAssigner.getRelationshipModuleId(concept.getId()))
 					.setActive(false)
-					.setInactivationIndicator(InactivationIndicator.RETIRED)
+					.setInactivationProperties(new InactivationProperties("" /*RETIRED*/, Collections.emptyList()))
 					.build();
 		} else {
 			request = SnomedRequests
@@ -714,14 +717,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
-		final CharacteristicType characteristicType = relationship.getCharacteristicType();
+		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
-		final RelationshipModifier modifier = relationship.getModifier();
+		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
 				sourceId, typeId, destinationId, destinationNegated,
-				characteristicType, group, unionGroup, modifier);
+				characteristicTypeId, group, unionGroup, modifier);
 	}
 
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
@@ -732,14 +735,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
-		final CharacteristicType characteristicType = relationship.getCharacteristicType();
+		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
-		final RelationshipModifier modifier = relationship.getModifier();
+		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
 				sourceId, typeId, destinationId, destinationNegated,
-				characteristicType, group, unionGroup, modifier);
+				characteristicTypeId, group, unionGroup, modifier);
 	}
 
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
@@ -748,10 +751,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final String typeId, 
 			final String destinationId, 
 			final boolean destinationNegated,
-			final CharacteristicType characteristicType, 
+			final String characteristicTypeId, 
 			final int group, 
 			final int unionGroup,
-			final RelationshipModifier modifier) {
+			final String modifier) {
 		
 		final String moduleId = namespaceAndModuleAssigner.getRelationshipModuleId(sourceId);
 		final String namespace = namespaceAndModuleAssigner.getRelationshipNamespace(sourceId);
@@ -760,13 +763,13 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setIdFromNamespace(namespace)
 				.setTypeId(typeId)
 				.setActive(true)
-				.setCharacteristicType(characteristicType)
+				.setCharacteristicTypeId(characteristicTypeId)
 				.setSourceId(sourceId)
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
 				.setGroup(group)
 				.setUnionGroup(unionGroup)
-				.setModifier(modifier)
+				.setModifierId(modifier)
 				.setModuleId(moduleId);
 	
 		bulkRequestBuilder.add(createRequest);
@@ -840,7 +843,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setIdFromNamespace(namespace)
 				.setAcceptability(description.getAcceptabilityMap())
 				.setActive(true)
-				.setCaseSignificance(description.getCaseSignificance())
+				.setCaseSignificanceId(description.getCaseSignificanceId())
 				.setConceptId(description.getConceptId())
 				.setLanguageCode(description.getLanguageCode())
 				.setModuleId(moduleId)

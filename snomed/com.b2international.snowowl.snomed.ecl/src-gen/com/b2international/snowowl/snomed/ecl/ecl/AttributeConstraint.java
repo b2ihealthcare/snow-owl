@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,15 +35,11 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface AttributeConstraint extends Refinement
+public interface AttributeConstraint extends EclRefinement
 {
   /**
    * Returns the value of the '<em><b>Cardinality</b></em>' containment reference.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Cardinality</em>' containment reference isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Cardinality</em>' containment reference.
    * @see #setCardinality(Cardinality)
@@ -66,10 +62,6 @@ public interface AttributeConstraint extends Refinement
   /**
    * Returns the value of the '<em><b>Reversed</b></em>' attribute.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Reversed</em>' attribute isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Reversed</em>' attribute.
    * @see #setReversed(boolean)
@@ -92,10 +84,6 @@ public interface AttributeConstraint extends Refinement
   /**
    * Returns the value of the '<em><b>Attribute</b></em>' containment reference.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Attribute</em>' containment reference isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Attribute</em>' containment reference.
    * @see #setAttribute(ExpressionConstraint)
@@ -118,10 +106,6 @@ public interface AttributeConstraint extends Refinement
   /**
    * Returns the value of the '<em><b>Comparison</b></em>' containment reference.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Comparison</em>' containment reference isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Comparison</em>' containment reference.
    * @see #setComparison(Comparison)

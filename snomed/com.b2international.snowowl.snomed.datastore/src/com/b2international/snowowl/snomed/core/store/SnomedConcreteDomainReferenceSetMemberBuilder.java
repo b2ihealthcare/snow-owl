@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
@@ -28,7 +28,7 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 	private int group;
 	private String typeId;
 	private String serializedValue;
-	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	
 	public SnomedConcreteDomainReferenceSetMemberBuilder withGroup(int group) {
 		this.group = group;
@@ -45,8 +45,8 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 		return getSelf();
 	}
 	
-	public SnomedConcreteDomainReferenceSetMemberBuilder withCharacteristicType(CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	public SnomedConcreteDomainReferenceSetMemberBuilder withCharacteristicTypeId(String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 		return getSelf();
 	}
 	
@@ -57,7 +57,7 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 			.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, group)
 			.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)
 			.field(SnomedRf2Headers.FIELD_VALUE, serializedValue)
-			.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicType.getConceptId());
+			.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,12 +39,13 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 	}
 
 	@Override
-	protected SnomedReferenceSets createCollectionResource(List<SnomedReferenceSet> results, String scrollId, String searchAfter, int limit, int total) {
-		return new SnomedReferenceSets(results, scrollId, searchAfter, limit, total);
+	protected SnomedReferenceSets createCollectionResource(List<SnomedReferenceSet> results, String searchAfter, int limit, int total) {
+		return new SnomedReferenceSets(results, searchAfter, limit, total);
 	}
 	
 	@Override
 	protected void expand(List<SnomedReferenceSet> results) {
+		new ModuleExpander(context(), expand(), locales()).expand(results);
 		expandMembers(results);
 	}
 

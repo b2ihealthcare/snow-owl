@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import java.util.List;
-import java.util.Set;
-
+import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 
 import io.swagger.annotations.ApiParam;
@@ -25,10 +23,7 @@ import io.swagger.annotations.ApiParam;
 /**
  * @since 6.16
  */
-public final class SnomedDescriptionRestSearch {
-
-	@ApiParam(value = "The Description identifier(s) to match")
-	private Set<String> id;
+public final class SnomedDescriptionRestSearch extends ResourceRestSearch {
 
 	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
@@ -71,32 +66,6 @@ public final class SnomedDescriptionRestSearch {
 
 	@ApiParam(value = "Any membership to match in these language refsets")
 	private String[] languageRefSet;
-
-	@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
-	private String scrollKeepAlive;
-
-	@ApiParam(value = "A scrollId to continue scrolling a previous query")
-	private String scrollId;
-
-	@ApiParam(value = "The search key to use for retrieving the next page of results")
-	private String searchAfter;
-
-	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
-	private int limit = 50;
-
-	@ApiParam(value = "Expansion parameters")
-	private String expand;
-
-	@ApiParam(value = "Sort keys")
-	private List<String> sort;
-
-	public Set<String> getId() {
-		return id;
-	}
-
-	public void setId(Set<String> id) {
-		this.id = id;
-	}
 
 	public String getEffectiveTime() {
 		return effectiveTime;
@@ -208,54 +177,6 @@ public final class SnomedDescriptionRestSearch {
 
 	public void setLanguageRefSet(String[] languageRefSet) {
 		this.languageRefSet = languageRefSet;
-	}
-
-	public String getScrollKeepAlive() {
-		return scrollKeepAlive;
-	}
-
-	public void setScrollKeepAlive(String scrollKeepAlive) {
-		this.scrollKeepAlive = scrollKeepAlive;
-	}
-
-	public String getScrollId() {
-		return scrollId;
-	}
-
-	public void setScrollId(String scrollId) {
-		this.scrollId = scrollId;
-	}
-
-	public String getSearchAfter() {
-		return searchAfter;
-	}
-
-	public void setSearchAfter(String searchAfter) {
-		this.searchAfter = searchAfter;
-	}
-
-	public int getLimit() {
-		return limit;
-	}
-
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-
-	public String getExpand() {
-		return expand;
-	}
-
-	public void setExpand(String expand) {
-		this.expand = expand;
-	}
-
-	public List<String> getSort() {
-		return sort;
-	}
-
-	public void setSort(List<String> sort) {
-		this.sort = sort;
 	}
 
 }

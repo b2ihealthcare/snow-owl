@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 
@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
  */
 public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<SnomedDescriptionBuilder, SnomedDescriptionIndexEntry.Builder, SnomedDescriptionIndexEntry> {
 
-	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
+	private String caseSignificanceId = Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE;
 	private String type;
 	private String term;
 	private String languageCode = "en";
@@ -45,11 +45,11 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 	/**
 	 * Specifies the case significance of the new SNOMED CT Description.
 	 * 
-	 * @param caseSignificance
+	 * @param caseSignificanceId
 	 * @return
 	 */
-	public SnomedDescriptionBuilder withCaseSignificance(CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
+	public SnomedDescriptionBuilder withCaseSignificanceId(String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 		return getSelf();
 	}
 
@@ -89,7 +89,7 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 	@Override
 	public void init(SnomedDescriptionIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.caseSignificanceId(context.lookup(caseSignificance.getConceptId(), SnomedConceptDocument.class).getId());
+		component.caseSignificanceId(context.lookup(caseSignificanceId, SnomedConceptDocument.class).getId());
 		component.typeId(context.lookup(type, SnomedConceptDocument.class).getId());
 		component.term(term);
 		component.languageCode(languageCode);

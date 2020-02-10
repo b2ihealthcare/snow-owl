@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.ClassUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -63,13 +63,22 @@ final class SnomedRefSetMemberUpdateRequest implements SnomedComponentRequest<Bo
 	}
 	
 	String getComponentId(String key) {
-		Object value = properties.get(key);
-		if (value == null) {
-			return null;
-		} else if (value instanceof Map) {
-			return ClassUtils.checkAndCast(((Map<?, ?>) value).get(SnomedRf2Headers.FIELD_ID), String.class);
-		} else {
-			return ClassUtils.checkAndCast(value, String.class);
+		final Object value = properties.get(key);
+		
+		try {
+			
+			if (value == null) {
+				return null;
+			} else if (value instanceof Map) {
+				final Map<?, ?> component = (Map<?, ?>) value;
+				final Object componentId = component.get(SnomedRf2Headers.FIELD_ID);
+				return (String) componentId;
+			} else {
+				return (String) value;
+			}
+			
+		} catch (final ClassCastException cce) {
+			throw new BadRequestException("Property '%s' must be a String, or have a nested String property named 'id'.", key);
 		}
 	}
 	
@@ -78,11 +87,12 @@ final class SnomedRefSetMemberUpdateRequest implements SnomedComponentRequest<Bo
 	}
 	
 	<T> T getProperty(String key, Class<T> valueType) {
-		Object value = properties.get(key);
-		if (value == null) {
-			return null;
-		} else {
-			return ClassUtils.checkAndCast(value, valueType);
+		final Object value = properties.get(key);
+		
+		try {
+			return valueType.cast(value);
+		} catch (final ClassCastException cce) {
+			throw new BadRequestException("Property '%s' must be a %s.", key, valueType.getSimpleName());
 		}
 	}
 	
@@ -135,6 +145,8 @@ final class SnomedRefSetMemberUpdateRequest implements SnomedComponentRequest<Bo
 				return new SnomedAttributeValueMemberUpdateDelegate(this);
 			case COMPLEX_MAP:
 				return new SnomedComplexMapMemberUpdateDelegate(this);
+			case COMPLEX_BLOCK_MAP:
+				return new SnomedComplexBlockMapMemberUpdateDelegate(this);
 			case CONCRETE_DATA_TYPE:
 				return new SnomedConcreteDomainMemberUpdateDelegate(this);
 			case DESCRIPTION_TYPE:

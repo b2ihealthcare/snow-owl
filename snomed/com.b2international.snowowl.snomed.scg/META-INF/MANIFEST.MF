@@ -1,26 +1,32 @@
 Manifest-Version: 1.0
+Automatic-Module-Name: com.b2international.snowowl.snomed.scg
 Bundle-ManifestVersion: 2
-Bundle-Name: Snow Owl SCG Core
+Bundle-Name: Snow Owl SNOMED CT Compositional Grammar
 Bundle-Vendor: B2i Healthcare
-Bundle-Version: 7.3.0.qualifier
+Bundle-Version: 7.4.0.qualifier
 Bundle-SymbolicName: com.b2international.snowowl.snomed.scg;singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.eclipse.emf.common;bundle-version="2.10.0",
- org.eclipse.emf.ecore;bundle-version="2.10.0",
- org.eclipse.xtext;bundle-version="[2.18.0,2.19.0)",
+Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.emf.ecore,
+ org.eclipse.emf.common,
+ org.eclipse.xtext;bundle-version="[2.18.0,2.19.0)";visibility:=reexport,
  org.eclipse.xtext.util;bundle-version="[2.18.0,2.19.0)",
+ org.eclipse.xtext.xbase.lib;bundle-version="[2.18.0,2.19.0)",
+ org.eclipse.xtext.common.types;bundle-version="[2.18.0,2.19.0)",
  org.antlr.runtime,
- com.b2international.snowowl.snomed.dsl,
- com.b2international.snowowl.snomed.datastore;visibility:=reexport
-Import-Package: org.slf4j;version="1.7.25"
+ org.objectweb.asm;bundle-version="[7.1.0,7.2.0)";resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: com.b2international.snowowl.dsl,com.b2international.sn
- owowl.dsl.expressionextractor,com.b2international.snowowl.dsl.parseTr
- eeConstruction,com.b2international.snowowl.dsl.parser.antlr,com.b2int
- ernational.snowowl.dsl.parser.antlr.internal,com.b2international.snow
- owl.dsl.scg,com.b2international.snowowl.dsl.scg.impl,com.b2internatio
- nal.snowowl.dsl.services,com.b2international.snowowl.dsl.util,com.b2i
- nternational.snowowl.dsl.validation,com.b2international.snowowl.dsl.s
- cg.util,com.b2international.snowowl.dsl.scoping,com.b2international.s
- nowowl.dsl.formatting
+Import-Package: org.apache.log4j,
+ org.slf4j;version="1.7.25"
+Export-Package: com.b2international.snowowl.snomed.scg,
+ com.b2international.snowowl.snomed.scg.generator,
+ com.b2international.snowowl.snomed.scg.parser.antlr,
+ com.b2international.snowowl.snomed.scg.parser.antlr.internal,
+ com.b2international.snowowl.snomed.scg.parser.antlr.lexer,
+ com.b2international.snowowl.snomed.scg.scg,
+ com.b2international.snowowl.snomed.scg.scg.impl,
+ com.b2international.snowowl.snomed.scg.scg.util,
+ com.b2international.snowowl.snomed.scg.scoping,
+ com.b2international.snowowl.snomed.scg.serializer,
+ com.b2international.snowowl.snomed.scg.services,
+ com.b2international.snowowl.snomed.scg.validation

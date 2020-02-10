@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,23 +32,19 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface NestedRefinement extends Refinement
+public interface NestedRefinement extends EclRefinement
 {
   /**
    * Returns the value of the '<em><b>Nested</b></em>' containment reference.
    * <!-- begin-user-doc -->
-   * <p>
-   * If the meaning of the '<em>Nested</em>' containment reference isn't clear,
-   * there really should be more of a description here...
-   * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Nested</em>' containment reference.
-   * @see #setNested(Refinement)
+   * @see #setNested(EclRefinement)
    * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getNestedRefinement_Nested()
    * @model containment="true"
    * @generated
    */
-  Refinement getNested();
+  EclRefinement getNested();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement#getNested <em>Nested</em>}' containment reference.
@@ -58,6 +54,6 @@ public interface NestedRefinement extends Refinement
    * @see #getNested()
    * @generated
    */
-  void setNested(Refinement value);
+  void setNested(EclRefinement value);
 
 } // NestedRefinement

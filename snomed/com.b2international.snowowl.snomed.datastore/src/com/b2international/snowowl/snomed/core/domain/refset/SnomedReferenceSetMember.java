@@ -143,6 +143,13 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	public SnomedCoreComponent getReferencedComponent() {
 		return referencedComponent;
 	}
+	
+	/**
+	 * @return the referenced component's identifier or <code>null</code> if this is a partially loaded member.
+	 */
+	public String getReferencedComponentId() {
+		return referencedComponent == null ? null : referencedComponent.getId();
+	}
 
 	/**
 	 * Returns the identifier of the SNOMED CT Reference Set this SNOMED CT Reference Set Member belongs to.

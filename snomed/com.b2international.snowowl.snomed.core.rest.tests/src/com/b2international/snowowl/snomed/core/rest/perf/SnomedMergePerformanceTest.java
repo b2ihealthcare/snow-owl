@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.perf;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranch;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
@@ -35,7 +34,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -78,7 +76,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 	@Test
 	public void testPerf() throws Exception {
 		IBranchPath branch = BranchPathUtils.createPath(branchPath, "merge-test");
-		createBranch(branch).statusCode(201);
+		branching.createBranch(branch).statusCode(201);
 		BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
 		final int numberOfConceptsToWorkWith = 10_000;
 		for (int i = 0; i < numberOfConceptsToWorkWith; i++) {
@@ -100,7 +98,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 								.preferredIn(Concepts.REFSET_LANGUAGE_TYPE_UK))
 						.addRelationship(SnomedRequests.prepareNewRelationship()
 								.setIdFromNamespace(null /*INT*/)
-								.setCharacteristicType(CharacteristicType.STATED_RELATIONSHIP)
+								.setCharacteristicTypeId(Concepts.STATED_RELATIONSHIP)
 								.setTypeId(Concepts.IS_A)
 								.setDestinationId(Concepts.ROOT_CONCEPT)));
 		}

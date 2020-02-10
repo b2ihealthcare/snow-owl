@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 
@@ -33,7 +34,7 @@ import io.restassured.response.ValidatableResponse;
 /**
  * @since 5.4
  */
-public abstract class SnomedExportRestRequests extends AbstractSnomedApiTest {
+public abstract class SnomedExportRestRequests extends AbstractApiTest {
 
 	public static ValidatableResponse createExport(final Map<?, ?> exportConfiguration) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)

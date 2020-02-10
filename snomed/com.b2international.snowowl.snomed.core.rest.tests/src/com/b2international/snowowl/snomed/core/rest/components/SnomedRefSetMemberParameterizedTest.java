@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,9 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.core.rest.BranchBase;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipGetRequestBuilder;
+import com.b2international.snowowl.test.commons.rest.BranchBase;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -93,6 +94,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				},
 			//  Concrete data type reference sets are tested separately
 			{ 	SnomedRefSetType.COMPLEX_MAP					},
+			{ 	SnomedRefSetType.COMPLEX_BLOCK_MAP				},
 			{ 	SnomedRefSetType.DESCRIPTION_TYPE				},
 			{ 	SnomedRefSetType.EXTENDED_MAP					},
 			{ 	SnomedRefSetType.LANGUAGE						},
@@ -402,6 +404,16 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexMapAdvice2")
 					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.NAMESPACE_ROOT)
 					.build();
+		case COMPLEX_BLOCK_MAP:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexBlockMapTarget2")
+					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 1)
+					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 1)
+					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexBlockMapRule2")
+					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexBlockMapAdvice2")
+					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.NAMESPACE_ROOT)
+					.put(SnomedRf2Headers.FIELD_MAP_BLOCK, 2)
+					.build();
 		case DESCRIPTION_TYPE:
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, Concepts.NAMESPACE_ROOT)
@@ -513,6 +525,16 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "extendedMapAdvice")
 					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
 					.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, Concepts.MAP_CATEGORY_NOT_CLASSIFIED)
+					.build();
+		case COMPLEX_BLOCK_MAP:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexBlockMapTarget")
+					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 10)
+					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 10)
+					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexBlockMapRule")
+					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexBlockMapAdvice")
+					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
+					.put(SnomedRf2Headers.FIELD_MAP_BLOCK, "not an integer")
 					.build();
 		case LANGUAGE:
 			return ImmutableMap.<String, Object>builder()

@@ -1,6 +1,30 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.3.0
+
+### Changes from 6.x stream since 7.2.0 release
+
+All changes from the `6.x` stream (the 6.24.0 release) have been merged into the `7.3.0` release. See changelog entry `6.24.0` for details.
+
+### Core
+- Support unprotected API routes/requests (d07e6c2, 2e5166a)
+  * `GET /admin/info` and `POST /admin/login` are unprotected routes
+- Add back `responseTime` property (unit is milliseconds) to request log (57b913d)
+
+### SNOMED CT
+- SNOMED CT computable languages are now supported (#470)
+  * [ETL 1.0](http://snomed.org/etl)
+  * [SCG 2.3.1](http://snomed.org/scg)
+
+### FHIR
+- Exclude mapping members by default from ConceptMap responses (0ed6b1c, 14a1ad5, 67d1e03, 376391a, )
+
+### Bugs/Improvements
+- [core] simplify raw index read requests in Java API (5214922)
+- [jobs] reduce memory requirements of job clean up (b43d658)
+- [log] improve error logging from failed API requests, omit Broken pipe errors (edbc7f9)
+
 ## 7.2.0
 
 ### Changes from 6.x stream since 7.1.0 release
@@ -205,6 +229,22 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
   * `resources/defaults` XML configuration folder and support 
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
+
+## 6.24.0
+
+### API
+- Support filtering refset members by `mapPriority` (a0bff3d)
+
+### Bugs/Improvements
+- [index] Log the number of pending cluster tasks (959a088)
+- [index] fix query boosting issue (2de4841)
+- [core] Allow customization of component adjustment during publication (a0e6820)
+- [history] Ignore many-valued features altogether in HistoryInfoProvider (526d3e7)
+- [snomed] Fix incorrectly categorized query refset evaluation changes (#467)
+- [snomed] Fix incorrect parentage values when reactivating concept's relationships first then the concept in two different commits (5298252)
+- [cis] accept all SNOMED CT ID statuses when publishing them (c914c05)
+- [mrcm] Handle ECL expressions in attributes' concept set definitions in MRCM validation rules (0cc7b61)
+- [export] Create general ExportResult class (filename, UUID pair) (8265617)
 
 ## 6.23.0
 

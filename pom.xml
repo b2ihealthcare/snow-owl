@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <project
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-        xmlns="http://maven.apache.org/POM/4.0.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.b2international.snowowl</groupId>
-    <artifactId>snowowl-parent</artifactId>
-    <version>7.3.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.b2international.snowowl</groupId>
+	<artifactId>snowowl-parent</artifactId>
+	<version>7.4.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,7 +16,7 @@
         <!-- Maven Dependency Versions -->
         <jackson.version>2.9.10</jackson.version>
         <jackson.databind.version>2.9.10.1</jackson.databind.version>
-        <netty.version>4.1.16.Final</netty.version>
+        <netty.version>4.1.43.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
@@ -66,7 +66,6 @@
     </modules>
 
     <repositories>
-
         <repository>
             <snapshots>
                 <enabled>false</enabled>
@@ -75,21 +74,6 @@
             <name>remote-repos</name>
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
-        <!--        <repository>-->
-        <!--            <snapshots>-->
-        <!--                <enabled>false</enabled>-->
-        <!--            </snapshots>-->
-        <!--            <id>artifactory-releases</id>-->
-        <!--            <name>remote-repos</name>-->
-        <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
-        <!--        </repository>-->
-        <!--        <repository>-->
-        <!--            <snapshots/>-->
-        <!--            <id>artifactory-snapshots</id>-->
-        <!--            <name>remote-repos</name>-->
-        <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
-        <!--        </repository>-->
-
         <repository>
             <id>protege-mvn-repo</id>
             <url>https://b2ihealthcare.github.io/protege/</url>
@@ -115,22 +99,6 @@
             </snapshots>
         </repository>
     </repositories>
-    <!--    <pluginRepositories>-->
-    <!--        <pluginRepository>-->
-    <!--            <snapshots>-->
-    <!--                <enabled>false</enabled>-->
-    <!--            </snapshots>-->
-    <!--            <id>artifactory-releases</id>-->
-    <!--            <name>remote-repos</name>-->
-    <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>-->
-    <!--        </pluginRepository>-->
-    <!--        <pluginRepository>-->
-    <!--            <snapshots/>-->
-    <!--            <id>artifactory-snapshots</id>-->
-    <!--            <name>remote-repos</name>-->
-    <!--            <url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>-->
-    <!--        </pluginRepository>-->
-    <!--    </pluginRepositories>-->
     <dependencies>
         <!-- Add new dependencies here at the end of the dependency list -->
         <dependency>
@@ -935,11 +903,6 @@
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.3</version>
                 </plugin>
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.maven.plugins</groupId>-->
-<!--                    <artifactId>maven-deploy-plugin</artifactId>-->
-<!--                    <version>3.0.0-M1</version>-->
-<!--                </plugin>-->
             </plugins>
         </pluginManagement>
     </build>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Comparator;
 
 import org.elasticsearch.analysis.common.CommonAnalysisPlugin;
@@ -145,7 +146,7 @@ public final class EsNode extends Node {
 	}
 	
 	protected EsNode(Settings settings, Path dataPath, boolean persistent) {
-		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.<Class<? extends Plugin>>builder()
+		super(InternalSettingsPreparer.prepareEnvironment(settings, Collections.emptyMap(), null, null), ImmutableList.<Class<? extends Plugin>>builder()
 				.add(CommonAnalysisPlugin.class)
 				.add(MatrixAggregationPlugin.class)
 				.add(Netty4Plugin.class)
@@ -159,10 +160,6 @@ public final class EsNode extends Node {
 		this.persistent = persistent;
 	}
 	
-	@Override
-	protected void registerDerivedNodeNameWithLogger(String nodeName) {
-	}
-
 	private static void waitForPendingTasks(Client client) {
 		RetryPolicy<Integer> retryPolicy = new RetryPolicy<Integer>();
 		retryPolicy

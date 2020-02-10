@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -64,13 +63,8 @@ public final class RelationshipChangeConverter
 	}
 
 	@Override
-	protected RelationshipChanges createCollectionResource(final List<RelationshipChange> results, 
-			final String scrollId, 
-			final String searchAfter, 
-			final int limit, 
-			final int total) {
-
-		return new RelationshipChanges(results, scrollId, searchAfter, limit, total);
+	protected RelationshipChanges createCollectionResource(final List<RelationshipChange> results, final String searchAfter, final int limit, final int total) {
+		return new RelationshipChanges(results, searchAfter, limit, total);
 	}
 
 	@Override
@@ -105,7 +99,7 @@ public final class RelationshipChangeConverter
 				 */
 				relationship.setGroup(entry.getGroup());
 				relationship.setUnionGroup(entry.getUnionGroup());
-				relationship.setCharacteristicType(CharacteristicType.getByConceptId(entry.getCharacteristicTypeId()));
+				relationship.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 				
 				/*
 				 * Inferred IS A relationships have even more stored information, which we set on the response object.
@@ -231,7 +225,7 @@ public final class RelationshipChangeConverter
 							// reasonerRelationship.setDestination(...) is already set
 							reasonerRelationship.setDestinationNegated(false);
 							// reasonerRelationship.setGroup(...) is already set
-							reasonerRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
+							reasonerRelationship.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 							// reasonerRelationship.setReleased(...) is already set
 							// reasonerRelationship.setSource(...) is already set
 							// reasonerRelationship.setType(...) is already set
@@ -245,7 +239,7 @@ public final class RelationshipChangeConverter
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 							// reasonerRelationship.setGroup(...) is already set
-							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							reasonerRelationship.setModifierId(expandedRelationship.getModifierId());
 							// reasonerRelationship.setReleased(...) is already set
 							// reasonerRelationship.setSource(...) is already set
 							reasonerRelationship.setType(expandedRelationship.getType());
@@ -257,11 +251,11 @@ public final class RelationshipChangeConverter
 						if (!inferredOnly) {
 							final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
 
-							reasonerRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
+							reasonerRelationship.setCharacteristicTypeId(expandedRelationship.getCharacteristicTypeId());
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 							// reasonerRelationship.setGroup(...) is already set
-							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							reasonerRelationship.setModifierId(expandedRelationship.getModifierId());
 							// reasonerRelationship.setReleased(...) is already set
 							reasonerRelationship.setSource(expandedRelationship.getSource());
 							reasonerRelationship.setType(expandedRelationship.getType());
@@ -273,11 +267,11 @@ public final class RelationshipChangeConverter
 						if (!inferredOnly) {
 							final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
 
-							reasonerRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
+							reasonerRelationship.setCharacteristicTypeId(expandedRelationship.getCharacteristicTypeId());
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 							reasonerRelationship.setGroup(expandedRelationship.getGroup());
-							reasonerRelationship.setModifier(expandedRelationship.getModifier());
+							reasonerRelationship.setModifierId(expandedRelationship.getModifierId());
 							// reasonerRelationship.setReleased(...) is already set
 							reasonerRelationship.setSource(expandedRelationship.getSource());
 							reasonerRelationship.setType(expandedRelationship.getType());

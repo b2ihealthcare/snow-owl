@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
+
 /**
  * @since 4.0
  */
@@ -22,7 +24,8 @@ public abstract class AbstractSnomedComponentRestUpdate {
 
 	private String moduleId;
 	private Boolean active;
-
+	private InactivationProperties inactivationProperties;
+	
 	public Boolean isActive() {
 		return active;
 	}
@@ -37,6 +40,14 @@ public abstract class AbstractSnomedComponentRestUpdate {
 
 	public void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
+	}
+	
+	public InactivationProperties getInactivationProperties() {
+		return inactivationProperties;
+	}
+
+	public void setInactivationProperties(InactivationProperties inactivationProperties) {
+		this.inactivationProperties = inactivationProperties;
 	}
 
 }

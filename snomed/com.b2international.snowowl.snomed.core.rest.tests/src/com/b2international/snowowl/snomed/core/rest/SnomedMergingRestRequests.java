@@ -35,7 +35,7 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedMergingRestRequests {
 	
-	private static final long MERGE_POLLING_INTERVAL = 2_000L;
+	private static final long MERGE_POLLING_INTERVAL = 200L;
 	
 	private static final Set<String> FINISH_STATES = ImmutableSet.of(
 			Merge.Status.COMPLETED.name(), 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,6 +146,9 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "MRCMAttributeRange";
 			case MRCM_MODULE_SCOPE:
 				return "MRCMModuleScope";
+			case COMPLEX_BLOCK_MAP:
+				// XXX: complex maps with map block are also considered "extended", but with a different column type
+				return "ExtendedMap";
 			case ASSOCIATION: //$FALL-THROUGH$
 			case SIMPLE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$
@@ -304,6 +307,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "ss";
 			case COMPLEX_MAP: 
 				return "iisssc";
+			case COMPLEX_BLOCK_MAP: 
+				return "iisssci";
 			case EXTENDED_MAP: 
 				return "iissscc";
 			case MODULE_DEPENDENCY: 
@@ -346,6 +351,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION;
 		case COMPLEX_MAP: 
 			return SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
+		case COMPLEX_BLOCK_MAP: 
+			return SnomedRf2Headers.COMPLEX_BLOCK_MAP_TYPE_HEADER;
 		case EXTENDED_MAP: 
 			return SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
 		case MODULE_DEPENDENCY: 

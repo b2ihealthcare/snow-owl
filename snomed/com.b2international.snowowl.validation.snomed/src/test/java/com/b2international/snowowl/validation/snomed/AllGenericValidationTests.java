@@ -23,8 +23,10 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.validation.eval.GroovyScriptValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
+import com.b2international.snowowl.snomed.core.SnomedPlugin;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
 
 /**
@@ -39,6 +41,7 @@ public class AllGenericValidationTests {
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
 		final Path resourcesDir = PlatformUtil.toAbsoluteBundlePath(BaseGenericValidationRuleTest.class.getClassLoader().getResource("src/main/resources"));
 		ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(resourcesDir));
+		TerminologyRegistry.INSTANCE.register(new SnomedPlugin());
 	}
 
 }
