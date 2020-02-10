@@ -14,6 +14,9 @@ env: &env
   resource_class: large
   docker:
     - image: docker:17.03.0-ce-git
+      environment:
+        JAVA_HOME: /usr/lib/jvm/java-11-openjdk
+        PATH: $JAVA_HOME/bin:$PATH
 
 jobs:
   deploy:
@@ -38,8 +41,9 @@ jobs:
             docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
             apk add --no-cache make=4.2.1-r0 nodejs openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
-            export PATH="$JAVA_HOME/bin:${PATH}"
+            echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> $BASH_ENV
+            echo 'export PATH="$JAVA_HOME/bin:${PATH}"' >> $BASH_ENV
+            source /home/circleci/.bashrc
             npm config set unsafe-perm true
             npm install -g npm
       - save_cache:
