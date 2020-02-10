@@ -37,6 +37,7 @@ jobs:
             docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
             apk add --no-cache make=4.2.1-r0 nodejs openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+            npm config set unsafe-perm true
             npm install -g npm
             ls /usr/lib/jvm/
             export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
