@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,8 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -215,8 +213,8 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				.setModuleId(MODULE_B2I_EXTENSION.equals(identifierConceptId) ? MODULE_SCT_CORE : MODULE_B2I_EXTENSION) // workaround to be able to set the module for the B2i module concept
 				.addDescription(createDescription(identifierConceptId, fsnTerm, FULLY_SPECIFIED_NAME, Acceptability.PREFERRED))
 				.addDescription(createDescription(identifierConceptId, ptTerm, SYNONYM, Acceptability.PREFERRED))
-				.addRelationship(createIsaRelationship(identifierConceptId, parent, CharacteristicType.STATED_RELATIONSHIP))
-				.addRelationship(createIsaRelationship(identifierConceptId, parent, CharacteristicType.INFERRED_RELATIONSHIP));
+				.addRelationship(createIsaRelationship(identifierConceptId, parent, Concepts.STATED_RELATIONSHIP))
+				.addRelationship(createIsaRelationship(identifierConceptId, parent, Concepts.INFERRED_RELATIONSHIP));
 	}
 	
 	private SnomedDescriptionCreateRequestBuilder createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability) {
@@ -228,11 +226,11 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				.setLanguageCode("en")
 				.setTypeId(type)
 				.setTerm(term)
-				.setCaseSignificance(CaseSignificance.CASE_INSENSITIVE)
+				.setCaseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.setAcceptability(ImmutableMap.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, acceptability));
 	}
 	
-	private SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType) {
+	private SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String source, final String destination, final String characteristicTypeId) {
 		return SnomedRequests.prepareNewRelationship() 
 			.setIdFromNamespace(B2I_NAMESPACE)
 			.setActive(true)
@@ -240,8 +238,8 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			.setSourceId(source)
 			.setDestinationId(destination)
 			.setTypeId(IS_A)
-			.setCharacteristicType(characteristicType)
-			.setModifier(RelationshipModifier.EXISTENTIAL);
+			.setCharacteristicTypeId(characteristicTypeId)
+			.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
 }

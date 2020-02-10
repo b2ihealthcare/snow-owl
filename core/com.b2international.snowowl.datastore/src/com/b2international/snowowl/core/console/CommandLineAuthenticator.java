@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.identity.request.UserRequests;
@@ -33,8 +32,13 @@ import com.google.common.base.Strings;
  */
 public class CommandLineAuthenticator {
 
+	private final IEventBus bus;
 	private User user;
 
+	public CommandLineAuthenticator(IEventBus bus) {
+		this.bus = bus;
+	}
+	
 	public boolean authenticate(final CommandLineStream out) {
 		out.print("Impersonate operation as: ");
 		
@@ -45,7 +49,7 @@ public class CommandLineAuthenticator {
 			return false;
 		} else {
 			try {
-				user = UserRequests.prepareGet(username).buildAsync().execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync(1, TimeUnit.MINUTES);
+				user = UserRequests.prepareGet(username).buildAsync().execute(bus).getSync(1, TimeUnit.MINUTES);
 				return true;
 			} catch (NotFoundException e) {
 				out.println("Cannot impersonate non-existing user '%s'.", username);

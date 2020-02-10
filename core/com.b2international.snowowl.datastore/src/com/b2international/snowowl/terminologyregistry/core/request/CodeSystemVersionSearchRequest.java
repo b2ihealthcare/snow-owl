@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,12 +117,12 @@ final class CodeSystemVersionSearchRequest
 
 	@Override
 	protected CodeSystemVersions toCollectionResource(RepositoryContext context, Hits<CodeSystemVersionEntry> hits) {
-		return new CodeSystemVersions(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
+		return new CodeSystemVersions(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	
 	@Override
 	protected CodeSystemVersions createEmptyResult(int limit) {
-		return new CodeSystemVersions(Collections.emptyList(), null, null, limit, 0);
+		return new CodeSystemVersions(Collections.emptyList(), null, limit, 0);
 	}
 
 	@Override

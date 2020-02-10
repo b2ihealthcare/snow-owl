@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
@@ -53,8 +51,8 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 		component.setDestinationId(values[5]);
 		component.setGroup(Integer.parseInt(values[6]));
 		component.setTypeId(values[7]);
-		component.setCharacteristicType(CharacteristicType.getByConceptId(values[8]));
-		component.setModifier(RelationshipModifier.getByConceptId(values[9]));
+		component.setCharacteristicTypeId(values[8]);
+		component.setModifierId(values[9]);
 		component.setUnionGroup(0);
 	}
 

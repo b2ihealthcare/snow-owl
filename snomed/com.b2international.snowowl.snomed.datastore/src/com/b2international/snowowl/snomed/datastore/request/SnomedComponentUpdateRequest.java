@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ComponentStatusConflictException;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 /** 
  * @since 4.5
@@ -30,6 +36,7 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 	
 	private String moduleId;
 	private Boolean active;
+	private InactivationProperties inactivationProperties;
 	
 	protected SnomedComponentUpdateRequest(String componentId) {
 		this.componentId = componentId;
@@ -43,11 +50,11 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 		this.moduleId = moduleId;
 	}
 	
-	/**
-	 * @deprecated - visibility will be reduced to protected in 4.6
-	 * @return
-	 */
-	public Boolean isActive() {
+	void setInactivationProperties(InactivationProperties inactivationProperties) {
+		this.inactivationProperties = inactivationProperties;
+	}
+	
+	protected Boolean isActive() {
 		return active;
 	}
 	
@@ -57,6 +64,10 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 	
 	protected String getComponentId() {
 		return componentId;
+	}
+	
+	protected InactivationProperties getInactivationProperties() {
+		return inactivationProperties;
 	}
 	
 	protected boolean updateModule(final TransactionContext context, final SnomedComponentDocument original, final SnomedComponentDocument.Builder<?, ?> component) {
@@ -90,5 +101,90 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 			throw new BadRequestException("Cannot update '%s' to '%s' on released %s '%s'", field, value, component.getClass().getSimpleName(), component.getId());
 		}
 	}
+	
+	protected final <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> boolean processInactivation(final TransactionContext context, final T component, final B updatedComponent) {
+		if (null == isActive() && getInactivationProperties() == null) {
+			return false;
+		}
+		
+		final boolean currentStatus = component.isActive();
+		final boolean newStatus = isActive() == null ? currentStatus : isActive();
+		final String newInactivationIndicatorId = getInactivationProperties() == null || getInactivationProperties().getInactivationIndicatorId() == null ? "" : getInactivationProperties().getInactivationIndicatorId(); 
+		final ImmutableMultimap.Builder<String, String> newAssociationTargets = ImmutableMultimap.builder();
+		
+		if (getInactivationProperties() != null && !CompareUtils.isEmpty(getInactivationProperties().getAssociationTargets())) {
+			getInactivationProperties().getAssociationTargets().forEach(associationTarget -> {
+				newAssociationTargets.put(associationTarget.getReferenceSetId(), associationTarget.getTargetComponentId());
+			});
+		}
+		
+		if (currentStatus && !newStatus) {
+			
+			// Active --> Inactive: concept inactivation, update indicator and association targets
+			// (using default values if not given)
+			
+			inactivateComponent(context, component, updatedComponent);
+			updateInactivationIndicator(context, component, newInactivationIndicatorId);
+			updateAssociationTargets(context, component, newAssociationTargets.build());
+			return true;
+			
+		} else if (!currentStatus && newStatus) {
+			
+			// Inactive --> Active: concept reactivation, clear indicator and association targets
+			
+			reactivateComponent(context, component, updatedComponent);
+			updateInactivationIndicator(context, component, newInactivationIndicatorId);
+			updateAssociationTargets(context, component, newAssociationTargets.build());
+			return true;
+			
+		} else if (currentStatus == newStatus) {
+			
+			// Same status, allow indicator and/or association targets to be updated if required
+			// (using original values that can be null)
+			
+			updateInactivationIndicator(context, component, getInactivationProperties() != null ? getInactivationProperties().getInactivationIndicatorId() : null);
+			updateAssociationTargets(context, component, newAssociationTargets.build());
+			return false;
+			
+		} else {
+			return false;
+		}
+	}
+
+	protected final void updateAssociationTargets(final TransactionContext context, SnomedComponentDocument concept, Multimap<String, String> associationTargets) {
+		if (associationTargets == null) {
+			return;
+		}
+		new SnomedAssociationTargetUpdateRequest(concept, associationTargets).execute(context);
+	}
+
+	protected final void updateInactivationIndicator(final TransactionContext context, final SnomedComponentDocument concept, final String newInactivationIndicatorId) {
+		if (newInactivationIndicatorId == null) {
+			return;
+		}
+		
+		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(concept, getInactivationIndicatorRefSetId());
+		inactivationUpdateRequest.setInactivationValueId(newInactivationIndicatorId);
+		inactivationUpdateRequest.execute(context);
+	}
+
+	protected final <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> void inactivateComponent(final TransactionContext context, final T component, final B updatedComponent) {
+		if (!component.isActive()) {
+			throw new ComponentStatusConflictException(component.getId(), component.isActive());
+		}
+		
+		updatedComponent.active(false);
+	}
+
+	protected final <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> void reactivateComponent(final TransactionContext context, final SnomedComponentDocument component, final B updatedConcept) {
+		if (component.isActive()) {
+			throw new ComponentStatusConflictException(component.getId(), component.isActive());
+		}
+		
+		updatedConcept.active(true);
+	}
+	
+	@JsonIgnore
+	protected abstract String getInactivationIndicatorRefSetId();
 	
 }

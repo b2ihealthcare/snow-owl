@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,10 +33,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
 /**
  * Represents a SNOMED&nbsp;CT description.
@@ -50,6 +46,7 @@ import com.google.common.collect.Multimap;
  * <ul>
  * <li>{@code type()} - returns the concept representing the type of the description</li>
  * <li>{@code members()} - returns the reference set members referencing this component</li>
+ * <li>{@code acceptabilities()} - returns the acceptability membership for this description</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 
@@ -110,10 +107,9 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	private String term;
 	private String semanticTag;
 	private String languageCode;
-	private CaseSignificance caseSignificance;
-	private DescriptionInactivationIndicator inactivationIndicator;
+	private SnomedConcept caseSignificance;
 	private Map<String, Acceptability> acceptabilityMap;
-	private Multimap<AssociationType, String> associationTargets;
+	private List<AcceptabilityMembership> acceptabilities;
 	private SnomedConcept concept;
 	private SnomedConcept type;
 
@@ -194,64 +190,43 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	}
 
 	/**
-	 * Returns the description's case significance attribute, indicating whether character case within the term should
+	 * Returns the description's case significance concept, indicating whether character case within the term should
 	 * be preserved or is interchangeable.
 	 * 
-	 * @return the case significance of this description
+	 * @return the case significance concept of this description
 	 */
-	public CaseSignificance getCaseSignificance() {
+	public SnomedConcept getCaseSignificance() {
 		return caseSignificance;
+	}
+	
+	/**
+	 * Returns the identifier of the description's case significance concept.
+	 * 
+	 * @return the identifier of the case significance concept of this description
+	 */
+	public String getCaseSignificanceId() {
+		return getCaseSignificance() == null ? null : getCaseSignificance().getId();
 	}
 
 	/**
 	 * Returns language reference set member acceptability values for this description, keyed by language reference set identifier.
 	 * 
-	 * @return the acceptability map for this description
+	 * @return all acceptability values from each available language refset for this description
+	 * @deprecated - expand {@link #getAcceptabilities()} instead of relying on {@link #getAcceptabilityMap()}
 	 */
 	public Map<String, Acceptability> getAcceptabilityMap() {
 		return acceptabilityMap;
 	}
-
-	/**
-	 * Returns the inactivation indicator (if any) of the description that can be used to identify the reason why the
-	 * current description has been deactivated.
-	 * 
-	 * @return the inactivation reason for this description, or {@code null} if the description does not have an inactivation indicator set
-	 */
-	public DescriptionInactivationIndicator getInactivationIndicator() {
-		return inactivationIndicator;
-	}
-
-	/**
-	 * Returns association reference set member targets keyed by the association type.
-	 * 
-	 * @return related association targets, or {@code null} if the description does not have any association targets
-	 */
-	public Multimap<AssociationType, String> getAssociationTargets() {
-		return associationTargets;
-	}
 	
 	/**
-	 * Returns association reference set member targets keyed by the association type as a {@link java.util.Map}.
+	 * Returns language reference set member acceptability values for this description, keyed by language reference set identifier.
 	 * 
-	 * @return related association targets, or {@code null} if the description does not have any association targets
+	 * @return all acceptability values from each available language refset for this description
 	 */
-	@JsonProperty("associationTargets")
-	public Map<AssociationType, List<String>> getAssociationTargetsAsMap() {
-		if (associationTargets == null) {
-			return null;
-		} else {
-			final Map<AssociationType, List<String>> targets = Maps.newHashMapWithExpectedSize(associationTargets.size());
-			associationTargets.forEach((key, value) -> {
-				if (!targets.containsKey(key)) {
-					targets.put(key, new ArrayList<>(associationTargets.get(key).size()));
-				}
-				targets.get(key).add(value);
-			});
-			return targets;
-		}
+	public List<AcceptabilityMembership> getAcceptabilities() {
+		return acceptabilities;
 	}
-
+	
 	@JsonIgnore
 	public void setConceptId(final String conceptId) {
 		setConcept(new SnomedConcept(conceptId));
@@ -282,33 +257,22 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		this.languageCode = languageCode;
 	}
 
-	public void setCaseSignificance(final CaseSignificance caseSignificance) {
+	public void setCaseSignificanceId(final String caseSignificanceId) {
+		setCaseSignificance(new SnomedConcept(caseSignificanceId));
+	}
+	
+	public void setCaseSignificance(final SnomedConcept caseSignificance) {
 		this.caseSignificance = caseSignificance;
 	}
 
+	@Deprecated
 	@JsonProperty("acceptability")
 	public void setAcceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
 		this.acceptabilityMap = acceptabilityMap;
 	}
 	
-	public void setInactivationIndicator(final DescriptionInactivationIndicator descriptionInactivationIndicator) {
-		this.inactivationIndicator = descriptionInactivationIndicator;
-	}
-	
-	@JsonIgnore
-	public void setAssociationTargets(final Multimap<AssociationType, String> associationTargets) {
-		this.associationTargets = associationTargets;
-	}
-	
-	@JsonProperty("associationTargets")
-	public void setAssociationTargets(final Map<AssociationType, List<String>> associationTargets) {
-		if (associationTargets == null) {
-			this.associationTargets = null;
-		} else {
-			final ImmutableListMultimap.Builder<AssociationType, String> targets = ImmutableListMultimap.<AssociationType, String>builder();
-			associationTargets.forEach(targets::putAll);
-			this.associationTargets = targets.build();
-		}
+	public void setAcceptabilities(List<AcceptabilityMembership> acceptabilities) {
+		this.acceptabilities = acceptabilities;
 	}
 	
 	@Override
@@ -316,9 +280,8 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		return SnomedRequests.prepareUpdateDescription(getId())
 			.setAcceptability(getAcceptabilityMap())
 			.setActive(isActive())
-			.setAssociationTargets(getAssociationTargets())
-			.setCaseSignificance(getCaseSignificance())
-			.setInactivationIndicator(getInactivationIndicator())
+			.setInactivationProperties(getInactivationProperties())
+			.setCaseSignificanceId(getCaseSignificanceId())
 			.setModuleId(getModuleId())
 			.setTypeId(getTypeId())
 			.setTerm(getTerm())
@@ -331,10 +294,9 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		return SnomedRequests.prepareNewDescription()
 			.setActive(isActive())
 			.setAcceptability(getAcceptabilityMap())
-			.setCaseSignificance(getCaseSignificance())
+			.setCaseSignificanceId(getCaseSignificanceId())
 			// ensure that the description's conceptId property is the right one
 			.setConceptId(conceptId)
-			.setInactivationIndicator(inactivationIndicator)
 			// XXX assuming that the ID is always set in this case
 			.setId(getId())
 			.setLanguageCode(getLanguageCode())
@@ -367,13 +329,11 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		builder.append(getCaseSignificance());
 		builder.append(", getAcceptabilityMap()=");
 		builder.append(getAcceptabilityMap());
-		if (null != inactivationIndicator) {
-			builder.append(", getDescriptionInactivationIndicator()=")
-				.append(inactivationIndicator);
+		if (null != getInactivationProperties()) {
+			builder.append(", getInactivationProperties()=")
+				.append(getInactivationProperties());
 			
 		}
-		builder.append(", getAssociationTargets()=");
-		builder.append(getAssociationTargets());
 		builder.append("]");
 		return builder.toString();
 	}

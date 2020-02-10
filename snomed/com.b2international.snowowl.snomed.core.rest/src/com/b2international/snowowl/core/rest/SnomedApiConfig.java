@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 
 import springfox.documentation.spring.web.plugins.Docket;
@@ -30,6 +31,8 @@ import springfox.documentation.spring.web.plugins.Docket;
 @Configuration
 @ComponentScan("com.b2international.snowowl.snomed.core.rest")
 public class SnomedApiConfig extends BaseApiConfig {
+	
+	public static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
 	
 	@Override
 	public String getApiBaseUrl() {

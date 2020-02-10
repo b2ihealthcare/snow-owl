@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
@@ -43,10 +41,10 @@ import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestUpdate;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableMap;
@@ -113,8 +111,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		return SnomedRequests
 					.prepareSearchConcept()
 					.setLimit(params.getLimit())
-					.setScroll(params.getScrollKeepAlive())
-					.setScrollId(params.getScrollId())
 					.setSearchAfter(params.getSearchAfter())
 					.filterByIds(params.getId())
 					.filterByEffectiveTime(params.getEffectiveTime())
@@ -230,7 +226,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value = "Concept parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedConceptRestInput> body,
+			final SnomedResourceRequest<SnomedConceptRestInput> body,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -246,7 +242,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.getResultAs(String.class);
 		
 		
-		return ResponseEntity.created(getConceptLocationURI(branchPath, createdConceptId)).build();
+		return ResponseEntity.created(getResourceLocationURI(branchPath, createdConceptId)).build();
 	}
 
 	@ApiOperation(
@@ -281,7 +277,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Updated Concept parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedConceptRestUpdate> body,
+			final SnomedResourceRequest<SnomedConceptRestUpdate> body,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -333,10 +329,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.build(repositoryId, branchPath, author, String.format("Deleted Concept '%s' from store.", conceptId))
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
-	}
-	
-	private URI getConceptLocationURI(String branchPath, String conceptId) {
-		return MvcUriComponentsBuilder.fromController(SnomedConceptRestService.class).pathSegment(branchPath, conceptId).build().toUri();
 	}
 	
 	@Override

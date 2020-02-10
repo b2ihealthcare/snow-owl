@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,15 @@ public final class CommitInfos extends PageableCollectionResource<CommitInfo> {
 	private static final long serialVersionUID = 1L;
 	
 	public CommitInfos(int limit, int total) {
-		this(Collections.emptyList(), null, null, limit, total);
+		this(Collections.emptyList(), null, limit, total);
 	}
 
 	@JsonCreator
 	public CommitInfos(
 			@JsonProperty("items") final List<CommitInfo> items, 
-			@JsonProperty("scrollId") final String scrollId, 
 			@JsonProperty("searchAfter") final String searchAfter, 
 			@JsonProperty("limit") final int limit, 
 			@JsonProperty("total") final int total) {
-		super(items, scrollId, searchAfter, limit, total);
+		super(items, searchAfter, limit, total);
 	}
 }

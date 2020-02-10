@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -120,7 +119,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.execute(getBus())
 				.getSync().getResultAs(String.class);
 		
-		return ResponseEntity.created(MvcUriComponentsBuilder.fromController(CodeSystemRestService.class).pathSegment(shortName).build().toUri()).build();
+		return ResponseEntity.created(getResourceLocationURI(shortName)).build();
 	}
 	
 	@ApiOperation(

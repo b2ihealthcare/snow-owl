@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,9 @@
  */
 package com.b2international.snowowl.snomed.common;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -200,6 +196,9 @@ public abstract class SnomedConstants {
 		public static final String REFSET_DRUG_TO_GROUPER_SIMPLE_MAP = "499896751000133109";
 		public static final String REFSET_DRUG_TO_PACKAGING_SIMPLE_MAP = "780548781000133105";
 		
+		// complex map with map block type 
+		public static final String REFSET_COMPLEX_BLOCK_MAP_TYPE = "999001671000000105";
+
 		//used for NEHTA AU AMT extension
 		/**@deprecated For NEHTA only. {@value}*/
 		@Deprecated public static final String REFSET_STRENGTH = "700000111000036105";
@@ -427,7 +426,6 @@ public abstract class SnomedConstants {
 		// Module dependency
 		public static final String ATTRIBUTE_TYPE_SOURCE_EFFECTIVE_TIME = "900000000000536009";
 		public static final String ATTRIBUTE_TYPE_TARGET_EFFECTIVE_TIME = "900000000000537000";
-		
 	}
 	
 	// RF2 effective time format

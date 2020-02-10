@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +24,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
@@ -38,10 +36,10 @@ import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestUpdate;
+import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableSet;
@@ -132,8 +130,6 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		return req
 					.setLocales(extendedLocales)
 					.setLimit(params.getLimit())
-					.setScroll(params.getScrollKeepAlive())
-					.setScrollId(params.getScrollId())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())
 					.sortBy(sorts)
@@ -183,7 +179,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Description parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedDescriptionRestInput> body,
+			final SnomedResourceRequest<SnomedDescriptionRestInput> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -198,7 +194,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
 		
-		return ResponseEntity.created(getDescriptionLocation(branchPath, createdDescriptionId)).build();
+		return ResponseEntity.created(getResourceLocationURI(branchPath, createdDescriptionId)).build();
 	}
 
 	@ApiOperation(
@@ -250,7 +246,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "Update Description parameters")
 			@RequestBody 
-			final ChangeRequest<SnomedDescriptionRestUpdate> body,
+			final SnomedResourceRequest<SnomedDescriptionRestUpdate> body,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -301,7 +297,4 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 	
-	private URI getDescriptionLocation(final String branchPath, final String descriptionId) {
-		return MvcUriComponentsBuilder.fromController(SnomedDescriptionRestService.class).pathSegment(branchPath, descriptionId).build().toUri();
-	}
 }

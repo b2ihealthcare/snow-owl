@@ -272,7 +272,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	
 	/**
 	 * HTTP POST request to translate a code that belongs to any {@link ConceptMap} in the system.
-	 * @param {@link TranslateRequest}
+	 * @param in - {@link TranslateRequest}}
 	 * @return translation of the code
 	 */
 	@ApiOperation(

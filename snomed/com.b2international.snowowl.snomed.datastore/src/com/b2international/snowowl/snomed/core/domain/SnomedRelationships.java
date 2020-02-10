@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,16 +28,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class SnomedRelationships extends PageableCollectionResource<SnomedRelationship> {
 
 	public SnomedRelationships(int limit, int total) {
-		super(Collections.emptyList(), null, null, limit, total);
+		super(Collections.emptyList(), null, limit, total);
 	}
 
 	@JsonCreator
 	public SnomedRelationships(
 			@JsonProperty("items") List<SnomedRelationship> items, 
-			@JsonProperty("scrollId") String scrollId, 
 			@JsonProperty("searchAfter") String searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
-		super(items, scrollId, searchAfter, limit, total);
+		super(items, searchAfter, limit, total);
 	}
 }

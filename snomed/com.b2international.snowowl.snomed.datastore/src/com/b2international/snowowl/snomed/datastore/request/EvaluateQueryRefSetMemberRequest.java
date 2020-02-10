@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,14 +36,12 @@ import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChangeImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluationImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
@@ -95,7 +93,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 		
 		final Map<String, SnomedConcept> conceptsToAdd = newHashMap();
 		final Collection<SnomedReferenceSetMember> membersToRemove = newHashSet();
-		final Map<String, String> conceptsToActivate = Maps.newHashMap();
+		final Collection<SnomedReferenceSetMember> conceptsToActivate = newHashSet();
 
 		// add all matching first
 		for (SnomedConcept matchedConcept : matchingConcepts.getItems()) {
@@ -114,25 +112,24 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 			final String referencedComponentId = currentMember.getReferencedComponent().getId();
 			if (conceptsToAdd.containsKey(referencedComponentId)) {
 				if (!currentMember.isActive()) {
-					// TODO fix reactivation label???
-					conceptsToActivate.put(referencedComponentId, referencedComponentId);
+					conceptsToAdd.remove(referencedComponentId);
+					conceptsToActivate.add(currentMember);
 				} else {
 					conceptsToAdd.remove(referencedComponentId);
 				}
 			} else {
-				membersToRemove.add(currentMember);
+				if (currentMember.isActive()) {
+					membersToRemove.add(currentMember);
+				}
 			}
 		}
 		
 		// fetch all referenced components
 		final Set<String> referencedConceptIds = newHashSet();
 		referencedConceptIds.addAll(conceptsToAdd.keySet());
-		referencedConceptIds.addAll(FluentIterable.from(membersToRemove).transform(new Function<SnomedReferenceSetMember, SnomedCoreComponent>() {
-			@Override
-			public SnomedCoreComponent apply(SnomedReferenceSetMember input) {
-				return input.getReferencedComponent();
-			}
-		}).transform(IComponent.ID_FUNCTION).toSet());
+		referencedConceptIds.addAll(FluentIterable.from(membersToRemove).transform(SnomedReferenceSetMember::getReferencedComponent).transform(IComponent::getId).toSet());
+		
+		referencedConceptIds.addAll(FluentIterable.from(conceptsToActivate).transform(SnomedReferenceSetMember::getReferencedComponent).transform(IComponent::getId).toSet());
 		
 		final Map<String, SnomedConcept> concepts;
 		if (expand().containsKey("referencedComponent")) {
@@ -143,7 +140,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 					.setExpand(expandOptions.getOptions("expand"))
 					.setLocales(locales())
 					.build()
-					.execute(context), IComponent.ID_FUNCTION);
+					.execute(context), IComponent::getId);
 		} else {
 			// initialize with empty SnomedConcept resources
 			concepts = newHashMap();
@@ -162,10 +159,9 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 			changes.add(MemberChangeImpl.removed(concepts.get(memberToRemove.getReferencedComponent().getId()), memberToRemove.getId()));
 		}
 
-		// TODO reactivation???
-//		for (String id : conceptsToActivate.keySet()) {
-//			changes.add(new Diff(MemberChangeKind.ACTIVATE, id, conceptsToActivate.get(id)));
-//		}
+		for (SnomedReferenceSetMember conceptToActivate : conceptsToActivate) {
+			changes.add(MemberChangeImpl.changed(concepts.get(conceptToActivate.getReferencedComponent().getId()), conceptToActivate.getId()));
+		}
 		return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, changes);
 	}
 	

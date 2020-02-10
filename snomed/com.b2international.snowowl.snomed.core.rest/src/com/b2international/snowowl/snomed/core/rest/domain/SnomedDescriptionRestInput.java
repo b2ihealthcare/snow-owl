@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import java.util.Map;
 
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -31,7 +31,7 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	private String term;
 	private String languageCode;
 	private String conceptId;
-	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
+	private String caseSignificanceId = Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE;
 	private Map<String, Acceptability> acceptability;
 
 	/**
@@ -65,8 +65,8 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	/**
 	 * @return
 	 */
-	public CaseSignificance getCaseSignificance() {
-		return caseSignificance;
+	public String getCaseSignificanceId() {
+		return caseSignificanceId;
 	}
 
 	public Map<String, Acceptability> getAcceptability() {
@@ -89,8 +89,8 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 		this.conceptId = conceptId;
 	}
 
-	public void setCaseSignificance(final CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
+	public void setCaseSignificanceId(final String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 	}
 
 	public void setAcceptability(final Map<String, Acceptability> acceptability) {
@@ -108,7 +108,7 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	@Override
 	public SnomedDescriptionCreateRequestBuilder toRequestBuilder() {
 		return super.toRequestBuilder()
-				.setCaseSignificance(getCaseSignificance())
+				.setCaseSignificanceId(getCaseSignificanceId())
 				.setConceptId(getConceptId())
 				.setLanguageCode(getLanguageCode())
 				.setTerm(getTerm())
@@ -127,8 +127,8 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 		builder.append(languageCode);
 		builder.append(", conceptId=");
 		builder.append(conceptId);
-		builder.append(", caseSignificance=");
-		builder.append(caseSignificance);
+		builder.append(", caseSignificanceId=");
+		builder.append(caseSignificanceId);
 		builder.append(", acceptability=");
 		builder.append(acceptability);
 		builder.append("]");

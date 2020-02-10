@@ -51,7 +51,8 @@ if (params.isUnpublishedOnly) {
 	def conceptsWithUnpublishedLanguageMembers = SnomedRequests.prepareSearchDescription()
 				.filterByIds(descriptionsIdsWithUnpublishedLanguageMembers)
 				.setLimit(descriptionsIdsWithUnpublishedLanguageMembers.size())
-				.setFields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
+				.setFields(SnomedDescriptionIndexEntry.Fields.ID,
+					SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 				.build()
 				.execute(ctx)
 				.collect({SnomedDescription d -> d.getConceptId()})

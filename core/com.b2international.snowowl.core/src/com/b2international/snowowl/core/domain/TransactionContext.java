@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.b2international.index.Doc;
 import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
@@ -27,7 +28,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
  * Represents an ongoing transaction to the underlying repository. The transaction can commit all aggregated changes up to a given point using the {@link #commit() commit method}. 
  * The changes can be new, changed and deleted objects. 
  * An object is basically a POJO with a {@link Doc} annotation, so the underlying repository will recognize and treat them properly during {@link #commit()}. 
- * If the given Object is an instance of {@link Revision} then it will be treated as a {@link Revision} will be persisted on the branch available via {@link #branch()}.
+ * If the given Object is an instance of {@link Revision} then it will be treated as a {@link Revision} and it will be persisted on the branch available via {@link #branch()}.
  * 
  * @since 4.5
  */
@@ -43,8 +44,9 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * Adds the given {@link Object} to this transaction context as a completely new object. 
 	 * 
 	 * @param obj - the object to persist and add to the repository
+	 * @return the identifier of the object if it is an instanceof of any of the following classes: {@link Revision} / {@link CodeSystemEntry} / {@link CodeSystemVersionEntry} or <code>null</code> in any other cases.
 	 */
-	void add(Object obj);
+	String add(Object obj);
 	
 	/**
 	 * @param oldVersion
@@ -135,7 +137,13 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	<T> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
 
 	/**
-	 * Clears the entire content of the repository this context belongs to.
+	 * Stages all indexed instances of {@link Revision} and subclasses for deletion
+	 * that are currently returned by a "match all" query using
+	 * {@link RevisionIndex}.
+	 * <p>
+	 * Documents not under revision control should be removed separately, along with
+	 * any code system versions and corresponding version branches, if a complete
+	 * clear operation is needed.
 	 */
 	void clearContents();
 

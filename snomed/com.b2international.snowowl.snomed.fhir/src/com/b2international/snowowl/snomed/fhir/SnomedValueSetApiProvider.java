@@ -248,7 +248,6 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	
 	@Override
 	public ValueSet expandValueSet(ExpandValueSetRequest request) {
-		
 		//same as the GET url parameter
 		if (request.getValueSet() == null) {
 			return expandValueSet(request.getUrl().getUriValue());
@@ -256,20 +255,19 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		//valueset is sent for expansion
 		ValueSet valueSet = request.getValueSet();
-		Collection<Compose> composeParts = valueSet.getComposeParts();
-		if (composeParts == null || composeParts.isEmpty()) {
+		Compose compose = valueSet.getCompose();
+		if (compose == null) {
 			throw new BadRequestException("Compose is null or empty. Nothing to expand", "$expand.valueSet.compose[]");
 		}
 		
-		for (Compose compose : composeParts) {
-			Collection<Include> includes = compose.getIncludes();
-			for (Include include : includes) {
-				Collection<ValueSetFilter> filters = include.getFilters();
-				for (ValueSetFilter valueSetFilter : filters) {
-					//TODO:
-				}
+		Collection<Include> includes = compose.getIncludes();
+		for (Include include : includes) {
+			Collection<ValueSetFilter> filters = include.getFilters();
+			for (ValueSetFilter valueSetFilter : filters) {
+				//TODO:
 			}
 		}
+		
 		throw new NotImplementedException();
 	}
 	
@@ -745,7 +743,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.addInclude(include)
 			.build();
 		
-		return builder.addCompose(compose);
+		return builder.compose(compose);
 	}
 	
 	private ValueSet.Builder buildExpandedSimpleTypeValueSet(SnomedReferenceSet referenceSet, CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
@@ -936,7 +934,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		return builder
 			.name(pt)
 			.title(pt)
-			.addCompose(compose);
+			.compose(compose);
 		
 	}
 

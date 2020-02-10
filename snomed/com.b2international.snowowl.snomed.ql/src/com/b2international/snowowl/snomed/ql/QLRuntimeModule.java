@@ -21,10 +21,10 @@ import com.b2international.snowowl.snomed.ecl.converter.EclValueConverterService
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
-import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter;
+import com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
-import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.ExclusionFilter;
 import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
@@ -52,23 +52,23 @@ public class QLRuntimeModule extends AbstractQLRuntimeModule {
 	private static Domain getDomainInternal(Filter constraint) {
 		if (constraint instanceof NestedFilter) {
 			return getDomain(((NestedFilter) constraint).getNested());
-		} else if (constraint instanceof Conjunction) {
-			Domain leftDomain = getDomain(((Conjunction) constraint).getLeft());
-			Domain rightDomain = getDomain(((Conjunction) constraint).getRight());
+		} else if (constraint instanceof ConjunctionFilter) {
+			Domain leftDomain = getDomain(((ConjunctionFilter) constraint).getLeft());
+			Domain rightDomain = getDomain(((ConjunctionFilter) constraint).getRight());
 			if (leftDomain != rightDomain) {
 				throw new IllegalStateException("Constraint with inconsistent left and right domains.");
 			}
 			return leftDomain;
-		} else if (constraint instanceof Disjunction) {
-			Domain leftDomain = getDomain(((Disjunction) constraint).getLeft());
-			Domain rightDomain = getDomain(((Disjunction) constraint).getRight());
+		} else if (constraint instanceof DisjunctionFilter) {
+			Domain leftDomain = getDomain(((DisjunctionFilter) constraint).getLeft());
+			Domain rightDomain = getDomain(((DisjunctionFilter) constraint).getRight());
 			if (leftDomain != rightDomain) {
 				throw new IllegalStateException("Constraint with inconsistent left and right domains.");
 			}
 			return leftDomain;
-		} else if (constraint instanceof Exclusion) {
-			Domain leftDomain = getDomain(((Exclusion) constraint).getLeft());
-			Domain rightDomain = getDomain(((Exclusion) constraint).getRight());
+		} else if (constraint instanceof ExclusionFilter) {
+			Domain leftDomain = getDomain(((ExclusionFilter) constraint).getLeft());
+			Domain rightDomain = getDomain(((ExclusionFilter) constraint).getRight());
 			if (leftDomain != rightDomain) {
 				throw new IllegalStateException("Constraint with inconsistent left and right domains.");
 			}

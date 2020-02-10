@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,14 +81,6 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="userId", required=false) 
 			final String userId,
 			
-			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false)
-			final String scrollKeepAlive,
-			
-			@ApiParam(value = "A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false)
-			final String scrollId,
-			
 			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
@@ -106,8 +98,6 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			.filterByUserId(userId)
 			.filterByStatus(status)
 			.sortBy(extractSortFields(sort))
-			.setScroll(scrollKeepAlive)
-			.setScrollId(scrollId)
 			.setSearchAfter(searchAfter)
 			.setLimit(limit)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -182,14 +172,6 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@PathVariable(value="classificationId") 
 			final String classificationId,
 			
-			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false)
-			final String scrollKeepAlive,
-			
-			@ApiParam(value = "A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false)
-			final String scrollId,
-			
 			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
@@ -207,8 +189,6 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.filterByClassificationId(classificationId)
 				.setExpand("equivalentConcepts(expand(pt()))")
 				.setLocales(extendedLocales)
-				.setScroll(scrollKeepAlive)
-				.setScrollId(scrollId)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -236,14 +216,6 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestParam(value="expand", required=false)
 			final String expand,
 
-			@ApiParam(value = "The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false)
-			final String scrollKeepAlive,
-			
-			@ApiParam(value = "A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false)
-			final String scrollId,
-			
 			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
@@ -262,8 +234,6 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		return ClassificationRequests.prepareSearchRelationshipChange()
 				.filterByClassificationId(classificationId)
 				.setExpand(expandWithRelationship)
-				.setScroll(scrollKeepAlive)
-				.setScrollId(scrollId)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)

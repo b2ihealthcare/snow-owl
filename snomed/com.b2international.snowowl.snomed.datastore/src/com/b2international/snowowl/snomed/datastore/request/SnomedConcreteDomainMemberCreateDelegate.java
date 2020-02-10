@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Set;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -62,7 +61,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 		SnomedRefSetMemberIndexEntry member = SnomedComponents.newConcreteDomainReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
-				.withCharacteristicType(CharacteristicType.getByConceptId(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)))
+				.withCharacteristicTypeId(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))
 				.withGroup(getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class))
 				.withModule(getModuleId())
 				.withReferencedComponent(getReferencedComponentId())

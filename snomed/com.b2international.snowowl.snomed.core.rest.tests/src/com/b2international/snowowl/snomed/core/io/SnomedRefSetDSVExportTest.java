@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate;
@@ -209,8 +208,8 @@ public class SnomedRefSetDSVExportTest {
 				.stream()
 				.flatMap(concept -> concept.getRelationships().stream())
 				.filter(r -> r.isActive() && 
-						(CharacteristicType.STATED_RELATIONSHIP.equals(r.getCharacteristicType())
-						|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
+						(Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId())
+						|| Concepts.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicTypeId())))
 				.map(r -> String.format("%s=%s", r.getTypeId(), r.getDestinationId()))
 				.collect(Collectors.toSet());
 	}
@@ -236,8 +235,8 @@ public class SnomedRefSetDSVExportTest {
 		SnomedDescriptionCreateRequestBuilder fsn = toDescriptionRequest(Concepts.FULLY_SPECIFIED_NAME, "term-test");
 		SnomedDescriptionCreateRequestBuilder pt = toDescriptionRequest(Concepts.SYNONYM, "test");
 
-		SnomedRelationshipCreateRequestBuilder statedIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(type));
-		SnomedRelationshipCreateRequestBuilder inferredIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(type));
+		SnomedRelationshipCreateRequestBuilder statedIsA = toRelationshipRequest(Concepts.IS_A, Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(type));
+		SnomedRelationshipCreateRequestBuilder inferredIsA = toRelationshipRequest(Concepts.IS_A, Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(type));
 
 		SnomedRefSetCreateRequestBuilder refSet = toRefSetRequest(type);
 		
@@ -293,13 +292,13 @@ public class SnomedRefSetDSVExportTest {
 					.orElseThrow(() -> new IllegalStateException("Couldn't generate identifier concept ID"));
 	}
 
-	private SnomedRelationshipCreateRequestBuilder toRelationshipRequest(String typeId, CharacteristicType characteristicType, String desctinationId) {
+	private SnomedRelationshipCreateRequestBuilder toRelationshipRequest(String typeId, String characteristicTypeId, String desctinationId) {
 		return SnomedRequests.prepareNewRelationship()
 				.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 				.setModuleId(Concepts.MODULE_SCT_CORE)
 				.setDestinationId(desctinationId)
 				.setTypeId(typeId)
-				.setCharacteristicType(characteristicType);
+				.setCharacteristicTypeId(characteristicTypeId);
 	}
 
 	private SnomedDescriptionCreateRequestBuilder toDescriptionRequest(String typeId, String term) {

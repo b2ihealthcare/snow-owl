@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg&#xD;&#xA;&#xD;&#xA;Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#xD;&#xA;you may not use this file except in compliance with the License.&#xD;&#xA;You may obtain a copy of the License at&#xD;&#xA; *&#xD;&#xA;     http://www.apache.org/licenses/LICENSE-2.0&#xD;&#xA; *&#xD;&#xA;Unless required by applicable law or agreed to in writing, software&#xD;&#xA;distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#xD;&#xA;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#xD;&#xA;See the License for the specific language governing permissions and&#xD;&#xA;limitations under the License."
+    modelDirectory="/com.b2international.snowowl.snomed.scg/src-gen" modelPluginID="com.b2international.snowowl.snomed.scg"
+    forceOverwrite="true" modelName="Scg" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    complianceLevel="6.0" copyrightFields="false" runtimeVersion="2.17">
+  <genPackages prefix="Scg" basePackage="com.b2international.snowowl.snomed.scg" disposableProviderFactory="true"
+      fileExtensions="scg" ecorePackage="Scg.ecore#/">
+    <genClasses ecoreClass="Scg.ecore#//Expression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Scg.ecore#//Expression/primitive"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Scg.ecore#//Expression/expression"/>
+    </genClasses>
+    <genClasses ecoreClass="Scg.ecore#//SubExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Scg.ecore#//SubExpression/focusConcepts"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Scg.ecore#//SubExpression/refinement"/>
+    </genClasses>
+    <genClasses ecoreClass="Scg.ecore#//Refinement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Scg.ecore#//Refinement/attributes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Scg.ecore#//Refinement/groups"/>
+    </genClasses>
+    <genClasses ecoreClass="Scg.ecore#//AttributeGroup">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Scg.ecore#//AttributeGroup/attributes"/>
+    </genClasses>
+    <genClasses ecoreClass="Scg.ecore#//Attribute">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Scg.ecore#//Attribute/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Scg.ecore#//Attribute/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Scg.ecore#//AttributeValue"/>
+    <genClasses ecoreClass="Scg.ecore#//StringValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Scg.ecore#//StringValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Scg.ecore#//IntegerValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Scg.ecore#//IntegerValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Scg.ecore#//DecimalValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Scg.ecore#//DecimalValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Scg.ecore#//ConceptReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Scg.ecore#//ConceptReference/id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Scg.ecore#//ConceptReference/term"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

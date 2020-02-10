@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ import com.google.common.base.MoreObjects;
 //@ApiModel("Pageable Collection")
 public class PageableCollectionResource<T> extends CollectionResource<T> {
 
-	private final String scrollId;
-	
 	private final String searchAfter;
 	
 //	@ApiModelProperty("The number of requested maximum items")
@@ -41,9 +39,8 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 //	@ApiModelProperty("Total number of results available")
 	private final int total;
 
-	protected PageableCollectionResource(List<T> items, String scrollId, String searchAfter, int limit, int total) {
+	protected PageableCollectionResource(List<T> items, String searchAfter, int limit, int total) {
 		super(items);
-		this.scrollId = scrollId;
 		this.searchAfter = searchAfter;
 		this.limit = limit;
 		this.total = total;
@@ -56,17 +53,6 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	 */
 	public String getSearchAfter() {
 		return searchAfter;
-	}
-	
-	/**
-	 * Returns the scrollId associated with this pageable result set. It can be used to fetch the next batch of {@link #getLimit()} items from the
-	 * repository.
-	 * 
-	 * @return
-	 * @see SearchResourceRequestBuilder#setScrollId(String)
-	 */
-	public String getScrollId() {
-		return scrollId;
 	}
 	
 	/**
@@ -92,7 +78,6 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	public String toString() {
 		return MoreObjects.toStringHelper(PageableCollectionResource.class)
 				.add("items", StringUtils.limitedToString(getItems(), 10))
-				.add("scrollId", scrollId)
 				.add("searchAfter", searchAfter)
 				.add("limit", limit)
 				.add("total", total).toString();
@@ -102,7 +87,6 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	 * Creates a new {@link PageableCollectionResource} from the given items, scrollId, searchAfter, limit and total arguments.
 	 * 
 	 * @param items
-	 * @param scrollId
 	 * @param searchAfter
 	 * @param limit
 	 * @param total
@@ -110,11 +94,10 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	 */
 	@JsonCreator
 	public static <T> PageableCollectionResource<T> of(@JsonProperty("items") List<T> items, 
-			@JsonProperty("scrollId") String scrollId, 
 			@JsonProperty("searchAfter") String searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
 		
-		return new PageableCollectionResource<T>(items, scrollId, searchAfter, limit, total);
+		return new PageableCollectionResource<T>(items, searchAfter, limit, total);
 	}
 }

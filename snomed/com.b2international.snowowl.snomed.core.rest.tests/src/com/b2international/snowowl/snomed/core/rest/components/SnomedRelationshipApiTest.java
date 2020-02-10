@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranchRecursively;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
@@ -52,8 +51,6 @@ import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -161,7 +158,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createRelationshipInferred() {
 		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT,  
-				CharacteristicType.INFERRED_RELATIONSHIP)
+				Concepts.INFERRED_RELATIONSHIP)
 				.put("commitComment", "Created new relationship with inferred characteristic type")
 				.build();
 
@@ -170,7 +167,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 				.extract().header("Location"));
 
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("characteristicType", equalTo(CharacteristicType.INFERRED_RELATIONSHIP.name()));
+		.body("characteristicTypeId", equalTo(Concepts.INFERRED_RELATIONSHIP));
 	}
 
 	@Test
@@ -299,33 +296,33 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	public void changeRelationshipCharacteristicType() {
 		String relationshipId = createNewRelationship(branchPath);
 		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("characteristicType", CharacteristicType.ADDITIONAL_RELATIONSHIP)
+				.put("characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP)
 				.put("commitComment", "Updated relationship characteristic type")
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("characteristicType", equalTo(CharacteristicType.ADDITIONAL_RELATIONSHIP.name()));
+			.body("characteristicTypeId", equalTo(Concepts.ADDITIONAL_RELATIONSHIP));
 	}
 
 	@Test
 	public void changeRelationshipModifier() {
 		String relationshipId = createNewRelationship(branchPath);
 		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("modifier", RelationshipModifier.UNIVERSAL)
+				.put("modifierId", Concepts.UNIVERSAL_RESTRICTION_MODIFIER)
 				.put("commitComment", "Updated relationship modifier")
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("modifier", equalTo(RelationshipModifier.UNIVERSAL.name()));
+		.body("modifierId", equalTo(Concepts.UNIVERSAL_RESTRICTION_MODIFIER));
 	}
 
 	@Test
 	public void createRelationshipOnNestedBranch() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranchRecursively(b);
+		branching.createBranchRecursively(b);
 
 		String relationshipId = createNewRelationship(b);
 
@@ -352,7 +349,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		IBranchPath b = BranchPathUtils.createPath(a, "b");
-		createBranchRecursively(b);
+		branching.createBranchRecursively(b);
 
 		// New relationship on nested branch resets the concept's version to 1 again
 		createNewRelationship(b, conceptId, Concepts.PART_OF, Concepts.NAMESPACE_ROOT);

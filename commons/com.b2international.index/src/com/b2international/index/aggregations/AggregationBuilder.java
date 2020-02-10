@@ -38,6 +38,7 @@ public final class AggregationBuilder<T> implements ScriptExpression {
 	private String groupByScript;
 	private int minBucketSize = 1;
 	private int bucketHitsLimit = 10;
+	private String path;
 
 	AggregationBuilder(String name, Class<T> select, Class<?> from) {
 		this.name = name;
@@ -52,6 +53,11 @@ public final class AggregationBuilder<T> implements ScriptExpression {
 	
 	public AggregationBuilder<T> onFieldValue(String field) {
 		this.groupByField = field;
+		return this;
+	}
+	
+	public AggregationBuilder<T> nested(String path) {
+		this.path = path;
 		return this;
 	}
 	
@@ -89,6 +95,10 @@ public final class AggregationBuilder<T> implements ScriptExpression {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public String getPath() {
+		return path;
 	}
 	
 	public String getGroupByField() {

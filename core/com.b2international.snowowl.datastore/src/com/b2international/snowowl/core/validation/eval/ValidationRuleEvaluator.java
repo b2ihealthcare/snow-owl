@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public interface ValidationRuleEvaluator {
 			checkArgument(!INSTANCE.evaluators.containsKey(evaluator.type()), "Rule Evaluator '%s' is already registered", evaluator.type());
 			INSTANCE.evaluators.put(evaluator.type(), evaluator);
 		}
-		
+
 		/**
 		 * Returns the available evaluator for the given type or <code>null</code> if there is not evaluator registered for that type.
 		 * 
@@ -75,13 +75,17 @@ public interface ValidationRuleEvaluator {
 
 	/**
 	 * Evaluate the given rule
-	 * @param <T>
-	 * @param rule - the rule to evaluate
-	 * @param params contains parameters for the rule evaluators (BranchContext should always be included)
+	 * 
+	 * @param context
+	 *            - the branch context where the evaluation should run
+	 * @param rule
+	 *            - the rule to evaluate
+	 * @param params
+	 *            - parameters for the rule evaluators
 	 * @return
 	 * @throws Exception
 	 */
-	 List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> params) throws Exception;
+	List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> params) throws Exception;
 
 	/**
 	 * Unique type identifier of this validation rule evaluator. The type should represent the kind of rules that this evaluator can evaluate using

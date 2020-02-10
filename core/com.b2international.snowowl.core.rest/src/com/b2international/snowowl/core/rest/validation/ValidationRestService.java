@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -96,7 +95,7 @@ public class ValidationRestService extends AbstractRestService {
 						.filter(ValidationRequests::isValidationJob)
 						.map(entry -> RemoteJobEntry.from(entry).id(getHash(entry.getId())).build())
 						.collect(Collectors.toList());
-				return new RemoteJobs(validationJobs, null, null, jobs.getLimit(), validationJobs.size());
+				return new RemoteJobs(validationJobs, null, jobs.getLimit(), validationJobs.size());
 			});
 	}
 	
@@ -172,7 +171,7 @@ public class ValidationRestService extends AbstractRestService {
 			.getSync();
 		final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
 		
-		return ResponseEntity.created(MvcUriComponentsBuilder.fromController(ValidationRestService.class).pathSegment(encodedId).build().toUri()).build();
+		return ResponseEntity.created(getResourceLocationURI(encodedId)).build();
 	}
 	
 	@ApiOperation(
@@ -208,14 +207,6 @@ public class ValidationRestService extends AbstractRestService {
 			@PathVariable(value="validationId")
 			final String validationId,
 		
-			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
-			@RequestParam(value="scrollKeepAlive", required=false) 
-			final String scrollKeepAlive,
-			
-			@ApiParam(value="A scrollId to continue scrolling a previous query")
-			@RequestParam(value="scrollId", required=false) 
-			final String scrollId,
-			
 			@ApiParam(value="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
@@ -270,8 +261,6 @@ public class ValidationRestService extends AbstractRestService {
 				return ValidationRequests.issues().prepareSearch()
 						.isWhitelisted(false)
 						.setLimit(limit)
-						.setScrollId(scrollId)
-						.setScroll(scrollKeepAlive)
 						.setSearchAfter(searchAfter)
 						.filterByBranchPath(branchPath)
 						.buildAsync()

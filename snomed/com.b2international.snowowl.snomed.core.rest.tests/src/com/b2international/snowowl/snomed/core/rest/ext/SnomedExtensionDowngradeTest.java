@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest.ext;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.getCodeSystem;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.updateCodeSystem;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getVersion;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
@@ -37,12 +36,11 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemVersion;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.core.rest.BranchBase;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.test.commons.rest.BranchBase;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -59,11 +57,11 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 				.extract()
 				.as(CodeSystemVersion.class);
 
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(version.getParentBranchPath(), 
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(version.getParentBranchPath(), 
 				version.getVersion(),
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 		merge(branchPath, targetPath, "Downgraded B2i extension to 2016-01-31.").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
@@ -84,11 +82,11 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(CodeSystemVersion.class);
 
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(version.getParentBranchPath(), 
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(version.getParentBranchPath(), 
 				version.getVersion(),
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 
 		String conceptId = createNewConcept(targetPath);
 
@@ -113,11 +111,11 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(CodeSystemVersion.class);
 
-		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(version.getParentBranchPath(), 
+		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(version.getParentBranchPath(), 
 				version.getVersion(),
 				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
 
-		createBranch(targetPath).statusCode(201);
+		branching.createBranch(targetPath).statusCode(201);
 
 		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("id", "476216051000154119") // Description of Date-time reference set
@@ -127,7 +125,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 				.put("term", "Synonym of root concept")
 				.put("languageCode", "en")
 				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
-				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
 				.put("commitComment", "Created new synonym with duplicate SCTID")
 				.build();
 

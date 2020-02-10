@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServerInfo;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.DatastoreActivator;
@@ -37,6 +38,7 @@ import com.b2international.snowowl.datastore.request.RepositoryRequests;
 /**
  * @since 5.8
  */
+@Unprotected
 class ServerInfoGetRequest implements Request<ServiceProvider, ServerInfo> {
 
 	private static final long serialVersionUID = 1L;

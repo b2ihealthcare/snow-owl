@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public enum SnomedRefSetType {
 	 * @ordered
 	 */
 	COMPLEX_MAP(5, "COMPLEX_MAP", "COMPLEX_MAP"),
-
+	
 	/**
 	 * Description type.
 	 * @see #DESCRIPTION_TYPE_VALUE
@@ -114,14 +114,18 @@ public enum SnomedRefSetType {
 	 * @see #OWL_AXIOM_VALUE
 	 * @ordered
 	 */
-	OWL_AXIOM(12, "OWL_AXIOM", "OWL_AXIOM"), /**
+	OWL_AXIOM(12, "OWL_AXIOM", "OWL_AXIOM"),
+	
+	/**
 	 * The '<em><b>OWL ONTOLOGY</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #OWL_ONTOLOGY_VALUE
 	 * @ordered
 	 */
-	OWL_ONTOLOGY(13, "OWL_ONTOLOGY", "OWL_ONTOLOGY"), /**
+	OWL_ONTOLOGY(13, "OWL_ONTOLOGY", "OWL_ONTOLOGY"), 
+	
+	/**
 	 * The '<em><b>MRCM DOMAIN</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -164,7 +168,15 @@ public enum SnomedRefSetType {
 	 * @see #ANNOTATION_VALUE
 	 * @ordered
 	 */
-	ANNOTATION(18, "ANNOTATION", "ANNOTATION");
+	ANNOTATION(18, "ANNOTATION", "ANNOTATION"),
+	
+	/**
+	 * Complex map with map block type.
+	 * @see #COMPLEX_BLOCK_MAP_VALUE
+	 * @ordered
+	 */
+	COMPLEX_BLOCK_MAP(19, "COMPLEX_BLOCK_MAP", "COMPLEX_BLOCK_MAP");
+
 
 	/**
 	 * The '<em><b>SIMPLE</b></em>' literal value.
@@ -371,6 +383,20 @@ public enum SnomedRefSetType {
 	 * @ordered
 	 */
 	public static final int ANNOTATION_VALUE = 18;
+	
+	/**
+	 * The '<em><b>COMPLEX_BLOCK_MAP</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>COMPLEX_BLOCK_MAP</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #COMPLEX_BLOCK_MAP
+	 * @model
+	 * @ordered
+	 */
+	public static final int COMPLEX_BLOCK_MAP_VALUE = 19;
 
 	/**
 	 * An array of all the '<em><b>Type</b></em>' enumerators.
@@ -398,6 +424,7 @@ public enum SnomedRefSetType {
 			MRCM_ATTRIBUTE_RANGE,
 			MRCM_MODULE_SCOPE,
 			ANNOTATION,
+			COMPLEX_BLOCK_MAP,
 		};
 
 	/**
@@ -457,6 +484,7 @@ public enum SnomedRefSetType {
 			case MRCM_ATTRIBUTE_RANGE_VALUE: return MRCM_ATTRIBUTE_RANGE;
 			case MRCM_MODULE_SCOPE_VALUE: return MRCM_MODULE_SCOPE;
 			case ANNOTATION_VALUE: return ANNOTATION;
+			case COMPLEX_BLOCK_MAP_VALUE: return COMPLEX_BLOCK_MAP;
 		}
 		return null;
 	}

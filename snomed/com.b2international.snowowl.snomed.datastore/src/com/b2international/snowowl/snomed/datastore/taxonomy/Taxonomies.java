@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.destinationIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.sourceIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -44,7 +45,6 @@ import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
@@ -66,16 +66,15 @@ public final class Taxonomies {
 	}
 	
 	public static Taxonomy inferred(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, LongCollection conceptIds, boolean checkCycles) {
-		return buildTaxonomy(searcher, expressionConverter, staging, conceptIds, CharacteristicType.INFERRED_RELATIONSHIP, checkCycles);
+		return buildTaxonomy(searcher, expressionConverter, staging, conceptIds, Concepts.INFERRED_RELATIONSHIP, checkCycles);
 	}
 	
 	public static Taxonomy stated(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, LongCollection conceptIds, boolean checkCycles) {
-		return buildTaxonomy(searcher, expressionConverter, staging, conceptIds, CharacteristicType.STATED_RELATIONSHIP, checkCycles);
+		return buildTaxonomy(searcher, expressionConverter, staging, conceptIds, Concepts.STATED_RELATIONSHIP, checkCycles);
 	}
 
-	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
+	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, LongCollection conceptIds, String characteristicTypeId, boolean checkCycles) {
 		try {
-			final String characteristicTypeId = characteristicType.getConceptId();
 			Collection<Object[]> isaStatements = getStatements(searcher, conceptIds, characteristicTypeId, true);
 			
 			final TaxonomyGraph oldTaxonomy = new TaxonomyGraph(conceptIds.size(), isaStatements.size());
@@ -130,21 +129,34 @@ public final class Taxonomies {
 		}
 	}
 
-	private static TaxonomyGraphStatus updateTaxonomy(RevisionSearcher searcher, SnomedOWLExpressionConverter expressionConverter, StagingArea staging, TaxonomyGraph graphToUpdate, String characteristicTypeId) {
+	private static TaxonomyGraphStatus updateTaxonomy(RevisionSearcher searcher, 
+			SnomedOWLExpressionConverter expressionConverter, 
+			StagingArea staging, 
+			TaxonomyGraph graphToUpdate, 
+			String characteristicTypeId) throws IOException {
+
 		LOGGER.trace("Processing changes taxonomic information.");
 		
 		staging.getNewObjects(SnomedRelationshipIndexEntry.class)
 			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
 			.forEach(newRelationship -> updateEdge(newRelationship, graphToUpdate));
 		
+		final Set<String> relationshipsToExcludeFromReactivatedConcepts = newHashSet();
+		
 		staging.getChangedRevisions(SnomedRelationshipIndexEntry.class)
 			.map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision)
 			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
-			.forEach(dirtyRelationship -> updateEdge(dirtyRelationship, graphToUpdate));
+			.forEach(dirtyRelationship -> {
+				relationshipsToExcludeFromReactivatedConcepts.add(dirtyRelationship.getId());
+				updateEdge(dirtyRelationship, graphToUpdate);
+			});
 		
 		staging.getRemovedObjects(SnomedRelationshipIndexEntry.class)
 			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
-			.forEach(relationship -> graphToUpdate.removeEdge(relationship.getId()));
+			.forEach(relationship -> {
+				relationshipsToExcludeFromReactivatedConcepts.add(relationship.getId());
+				graphToUpdate.removeEdge(relationship.getId());
+			});
 		
 		if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
 			staging.getNewObjects(SnomedRefSetMemberIndexEntry.class)
@@ -169,6 +181,8 @@ public final class Taxonomies {
 		staging.getRemovedObjects(SnomedConceptDocument.class)
 			.forEach(concept -> graphToUpdate.removeNode(concept.getId()));
 		
+		final Set<String> conceptWithPossibleMissingRelationships = newHashSet();
+		
 		staging.getChangedRevisions(SnomedConceptDocument.class, Collections.singleton(SnomedConceptDocument.Fields.ACTIVE))
 			.forEach(diff -> {
 				final RevisionPropertyDiff propDiff = diff.getRevisionPropertyDiff(SnomedConceptDocument.Fields.ACTIVE);
@@ -178,8 +192,30 @@ public final class Taxonomies {
 				if (!oldValue && newValue) {
 					// make sure the node is part of the new tree
 					graphToUpdate.addNode(conceptId);
+					conceptWithPossibleMissingRelationships.add(conceptId);
 				}
 			});
+		
+		if (!conceptWithPossibleMissingRelationships.isEmpty()) {
+			Hits<String[]> possibleMissingRelationships = searcher.search(Query.select(String[].class)
+					.from(SnomedRelationshipIndexEntry.class)
+					.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+					.where(Expressions.builder()
+							.filter(SnomedRelationshipIndexEntry.Expressions.active())
+							.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
+							.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
+							.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(conceptWithPossibleMissingRelationships))
+							.mustNot(SnomedRelationshipIndexEntry.Expressions.ids(relationshipsToExcludeFromReactivatedConcepts))
+							.build()
+					)
+					.limit(Integer.MAX_VALUE)
+					.build());
+			
+			for (String[] relationship : possibleMissingRelationships) {
+				graphToUpdate.addNode(relationship[2]);
+				graphToUpdate.addEdge(relationship[0], Long.parseLong(relationship[1]), new long[] { Long.parseLong(relationship[2]) });
+			}
+		}
 		
 		LOGGER.trace("Rebuilding taxonomic information based on the changes.");
 		return graphToUpdate.update();

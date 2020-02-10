@@ -94,11 +94,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	@Override
 	public String execute(final TransactionContext context) {
 		checkCodeSystem(context);
-		
-		final CodeSystemEntry codeSystem = createCodeSystem(context);
-		context.add(codeSystem);
-
-		return codeSystem.getShortName();
+		return context.add(createCodeSystem(context));
 	}
 
 	private void checkCodeSystem(final TransactionContext context) {

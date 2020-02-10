@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ public class QueryExclusionImpl extends QueryConstraintImpl implements QueryExcl
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public SubQuery getLeft()
   {
     return left;
@@ -116,6 +117,7 @@ public class QueryExclusionImpl extends QueryConstraintImpl implements QueryExcl
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setLeft(SubQuery newLeft)
   {
     if (newLeft != left)
@@ -137,6 +139,7 @@ public class QueryExclusionImpl extends QueryConstraintImpl implements QueryExcl
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public SubQuery getRight()
   {
     return right;
@@ -164,6 +167,7 @@ public class QueryExclusionImpl extends QueryConstraintImpl implements QueryExcl
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public void setRight(SubQuery newRight)
   {
     if (newRight != right)

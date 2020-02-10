@@ -25,86 +25,86 @@ ExpressionConstraint:
 	OrExpressionConstraint;
 
 OrExpressionConstraint returns ExpressionConstraint:
-	AndExpressionConstraint ({OrExpressionConstraint.left=current} 'OR' right=AndExpressionConstraint)*;
+	AndExpressionConstraint ({OrExpressionConstraint.left=current} DISJUNCTION right=AndExpressionConstraint)*;
 
 AndExpressionConstraint returns ExpressionConstraint:
-	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} ('AND' | ',')
+	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (CONJUNCTION | COMMA)
 	right=ExclusionExpressionConstraint)*;
 
 ExclusionExpressionConstraint returns ExpressionConstraint:
-	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} 'MINUS' right=RefinedExpressionConstraint)?;
+	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} EXCLUSION right=RefinedExpressionConstraint)?;
 
 RefinedExpressionConstraint returns ExpressionConstraint:
-	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
+	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=EclRefinement)?;
 
 DottedExpressionConstraint returns ExpressionConstraint:
 	SubExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=SubExpressionConstraint)*;
 
 SubExpressionConstraint returns ExpressionConstraint:
-	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
+	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | EclFocusConcept;
 
-FocusConcept returns ExpressionConstraint:
-	MemberOf | ConceptReference | Any | NestedExpression;
+EclFocusConcept returns ExpressionConstraint:
+	MemberOf | EclConceptReference | Any | NestedExpression;
 
 ChildOf:
-	LT_EM constraint=FocusConcept;
+	LT_EM constraint=EclFocusConcept;
 
 DescendantOf:
-	LT constraint=FocusConcept;
+	LT constraint=EclFocusConcept;
 
 DescendantOrSelfOf:
-	DBL_LT constraint=FocusConcept;
+	DBL_LT constraint=EclFocusConcept;
 
 ParentOf:
-	GT_EM constraint=FocusConcept;
+	GT_EM constraint=EclFocusConcept;
 
 AncestorOf:
-	GT constraint=FocusConcept;
+	GT constraint=EclFocusConcept;
 
 AncestorOrSelfOf:
-	DBL_GT constraint=FocusConcept;
+	DBL_GT constraint=EclFocusConcept;
 
 MemberOf:
-	CARET constraint=(ConceptReference | Any | NestedExpression);
+	CARET constraint=(EclConceptReference | Any | NestedExpression);
 
-ConceptReference:
+EclConceptReference:
 	id=SnomedIdentifier (term=TERM_STRING)?;
 
 Any:
 	WILDCARD {Any};
 
-Refinement:
+EclRefinement:
 	OrRefinement;
 
-OrRefinement returns Refinement:
-	AndRefinement -> ({OrRefinement.left=current} 'OR' right=AndRefinement)*;
+OrRefinement returns EclRefinement:
+	AndRefinement -> ({OrRefinement.left=current} DISJUNCTION right=AndRefinement)*;
 
-AndRefinement returns Refinement:
-	SubRefinement -> ({AndRefinement.left=current} ('AND' | ',') right=SubRefinement)*;
+AndRefinement returns EclRefinement:
+	SubRefinement -> ({AndRefinement.left=current} (CONJUNCTION | COMMA) right=SubRefinement)*;
 
-SubRefinement returns Refinement:
-	AttributeConstraint | AttributeGroup | NestedRefinement;
+SubRefinement returns EclRefinement:
+	AttributeConstraint | EclAttributeGroup | NestedRefinement;
 
 NestedRefinement:
-	ROUND_OPEN nested=Refinement ROUND_CLOSE;
+	ROUND_OPEN nested=EclRefinement ROUND_CLOSE;
 
-AttributeGroup:
-	(cardinality=Cardinality)? CURLY_OPEN refinement=AttributeSet CURLY_CLOSE;
+EclAttributeGroup:
+	(cardinality=Cardinality)? CURLY_OPEN refinement=EclAttributeSet CURLY_CLOSE;
 
-AttributeSet returns Refinement:
+EclAttributeSet returns EclRefinement:
 	OrAttributeSet;
 
-OrAttributeSet returns Refinement:
-	AndAttributeSet ({OrRefinement.left=current} 'OR' right=AndAttributeSet)*;
+OrAttributeSet returns EclRefinement:
+	AndAttributeSet ({OrRefinement.left=current} DISJUNCTION right=AndAttributeSet)*;
 
-AndAttributeSet returns Refinement:
-	SubAttributeSet ({AndRefinement.left=current} ('AND' | ',') right=SubAttributeSet)*;
+AndAttributeSet returns EclRefinement:
+	SubAttributeSet ({AndRefinement.left=current} (CONJUNCTION | COMMA) right=SubAttributeSet)*;
 
-SubAttributeSet returns Refinement:
+SubAttributeSet returns EclRefinement:
 	AttributeConstraint | NestedAttributeSet;
 
 NestedAttributeSet returns NestedRefinement:
-	ROUND_OPEN nested=AttributeSet ROUND_CLOSE;
+	ROUND_OPEN nested=EclAttributeSet ROUND_CLOSE;
 
 AttributeConstraint:
 	(cardinality=Cardinality)? (reversed?=REVERSED)? attribute=SubExpressionConstraint comparison=Comparison;
@@ -216,18 +216,27 @@ NonNegativeDecimal returns ecore::EBigDecimal hidden():
 Boolean returns ecore::EBoolean hidden(): 
 	'true'|'false';
 
-// ---TERMINALS---
 terminal TERM_STRING:
 	"|" (!("|"))* "|";
 
 terminal REVERSED:
 	'R';
 
-// ECL terminals
 terminal TO:
 	'..';
 
-// numeric terminals
+terminal COMMA:
+	',';
+	
+terminal CONJUNCTION:
+	('a' | 'A') ('n' | 'N') ('d' | 'D');
+
+terminal DISJUNCTION:
+	('o' | 'O') ('r' | 'R');
+
+terminal EXCLUSION:
+	('m' | 'M') ('i' | 'I') ('n' | 'N') ('u' | 'U') ('s' | 'S');
+	
 terminal ZERO:
 	'0';
 
@@ -263,9 +272,6 @@ terminal DASH:
 
 terminal CARET:
 	'^';
-
-terminal NOT:
-	'!';
 
 terminal DOT:
 	'.';

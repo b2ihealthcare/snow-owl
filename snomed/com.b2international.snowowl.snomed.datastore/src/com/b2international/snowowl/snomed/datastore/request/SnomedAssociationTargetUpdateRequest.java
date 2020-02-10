@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,16 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -40,7 +38,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 /**
- * Updates association reference set members on the {@link Inactivatable} specified by identifier.
+ * Updates association reference set members on a core component specified by identifier.
  * <p>
  * Existing members are <b>removed</b> when:
  * <ul>
@@ -80,16 +78,13 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedAssociationTargetUpdateRequest.class);
 
-	private Multimap<AssociationType, String> newAssociationTargets;
+	private final Multimap<String, String> newAssociationTargets;
 
-	SnomedAssociationTargetUpdateRequest(final SnomedComponentDocument componentToUpdate) {
+	SnomedAssociationTargetUpdateRequest(final SnomedComponentDocument componentToUpdate, Multimap<String, String> newAssociationTargets) {
 		super(componentToUpdate);
-	}
-
-	void setNewAssociationTargets(final Multimap<AssociationType, String> newAssociationTargets) {
 		this.newAssociationTargets = newAssociationTargets;
 	}
-	
+
 	@Override
 	protected String getMemberType() {
 		return "Association-member";
@@ -107,26 +102,21 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 			SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByReferencedComponent(componentToUpdate.getId())
-				.filterByRefSet(Arrays.asList(AssociationType.values()).stream().map(AssociationType::getConceptId).collect(Collectors.toSet()))
+				.filterByRefSet("<" + Concepts.REFSET_ASSOCIATION_TYPE)
 				.build()
 				.execute(context)
-				.getItems()
 		);
-		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
+		final Multimap<String, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
 		final ModuleIdProvider moduleIdFunction = context.service(ModuleIdProvider.class);
 		final Iterator<SnomedReferenceSetMember> memberIterator = existingMembers.iterator();
 		while (memberIterator.hasNext()) {
 			
 			final SnomedReferenceSetMember existingMember = memberIterator.next();
-			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getReferenceSetId());
-			
-			if (null == associationType) {
-				continue;
-			}
-
+			// existing historical association member
+			final String associationReferenceSetId = existingMember.getReferenceSetId();
 			final String existingTargetId = ((SnomedComponent) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId();
 			
-			if (newAssociationTargetsToCreate.remove(associationType, existingTargetId)) {
+			if (newAssociationTargetsToCreate.remove(associationReferenceSetId, existingTargetId)) {
 				// Exact match, just make sure that the member is active and remove it from the working list
 				final Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
 				final SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
@@ -142,24 +132,21 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 		 */
 		for (final SnomedReferenceSetMember existingMember : existingMembers) {
 
-			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getReferenceSetId());
-			if (null == associationType) {
-				continue;
-			}
-			
+			final String associationReferenceSetId = existingMember.getReferenceSetId();
+
 			final Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
 			
-			if (newAssociationTargetsToCreate.containsKey(associationType)) {
+			if (newAssociationTargetsToCreate.containsKey(associationReferenceSetId)) {
 				// We can re-use the member by changing the target component identifier, and checking that it is active
 
-				final Iterator<String> targetIterator = newAssociationTargetsToCreate.get(associationType).iterator();
+				final Iterator<String> targetIterator = newAssociationTargetsToCreate.get(associationReferenceSetId).iterator();
 				final String newTargetId = targetIterator.next();
 				targetIterator.remove();
 
 				if (LOG.isDebugEnabled()) { 
 					LOG.debug("Changing association member {} with type {} and target component identifier from {} to {}.", 
 							existingMember.getId(), 
-							associationType, 
+							associationReferenceSetId, 
 							((SnomedComponent) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId(), 
 							newTargetId);
 				}
@@ -186,9 +173,9 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 		 * to be added as new members; defaultModuleId is only used if there is at least a single
 		 * new entry. 
 		 */
-		for (final Entry<AssociationType, String> newAssociationEntry : newAssociationTargetsToCreate.entries()) {
+		for (final Entry<String, String> newAssociationEntry : newAssociationTargetsToCreate.entries()) {
 			SnomedComponents.newAssociationMember()
-					.withRefSet(newAssociationEntry.getKey().getConceptId())
+					.withRefSet(newAssociationEntry.getKey())
 					.withTargetComponentId(newAssociationEntry.getValue())
 					.withReferencedComponent(componentToUpdate.getId())
 					.withModule(moduleIdFunction.apply(componentToUpdate))

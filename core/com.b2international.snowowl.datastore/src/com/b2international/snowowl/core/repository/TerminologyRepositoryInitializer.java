@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.b2international.snowowl.core.repository;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
@@ -34,14 +34,15 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
  * </ul>
  * <p>
  */
-public abstract class TerminologyRepositoryInitializer {
+public abstract class TerminologyRepositoryInitializer implements Request<RepositoryContext, Void> {
 
 	/**
 	 * Executes initialization steps for the corresponding repository.
 	 * 
 	 * @param context - the repository context to use for the repository initialization 
 	 */
-	public void initialize(RepositoryContext context) {
+	@Override
+	public final Void execute(RepositoryContext context) {
 		CodeSystemEntry primaryCodeSystem = createPrimaryCodeSystem();
 	
 		if (primaryCodeSystem != null) {
@@ -68,6 +69,7 @@ public abstract class TerminologyRepositoryInitializer {
 					.execute(context);
 			}
 		}
+		return null;
 	}
 
 	/**

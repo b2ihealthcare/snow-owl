@@ -145,7 +145,7 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 		LOG.debug("Attempting to expand field: {}", each);
 		String dataTypeName = Optional.fromNullable(typeNameFor(each.getFieldType().getErasedType()))
 				.or(each.getFieldType().getErasedType().getSimpleName());
-		LOG.debug("Building parameter for field: {}, with type: ", each, each.getFieldType());
+		LOG.debug("Building parameter for field: {}, with type: {}", each, each.getFieldType());
 		ParameterExpansionContext parameterExpansionContext = new ParameterExpansionContext(
 				dataTypeName, 
 				parentName, 

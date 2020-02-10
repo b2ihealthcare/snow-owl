@@ -10,7 +10,14 @@ const { Content, Sider } = Layout;
 class App extends React.Component {
 
   state = {
-    selectedKey: 'admin'
+    selectedKey: 'admin',
+    apis: []
+  }
+
+  componentDidMount() {
+    fetch(`${process.env.REACT_APP_SO_BASE_URL}/admin/apis`)
+      .then(response => response.json())
+      .then(data => this.setState({ apis: data.items }));
   }
 
   onMenuSelect = (e) => {
@@ -20,6 +27,7 @@ class App extends React.Component {
   }
 
   render() {
+    const apis = this.state.apis
     return (
       <>
         <BackTop />
@@ -41,10 +49,9 @@ class App extends React.Component {
               mode="inline"
               theme="dark"
             >
-              <Menu.Item key="admin">Admin API</Menu.Item>
-              <Menu.Item key="snomed">SNOMED CT API</Menu.Item>
-              <Menu.Item key="fhir">FHIR API</Menu.Item>
-              <Menu.Item key="cis">CIS API</Menu.Item>
+              { 
+                apis.map(api => <Menu.Item key={`${api.id}`}>{api.title}</Menu.Item>)
+              }
             </Menu>
           </Sider>
           <Content style={{ marginLeft: 200 }}>

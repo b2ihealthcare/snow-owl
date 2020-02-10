@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package com.b2international.snowowl.core.commit;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 
 /**
  * @since 5.2
  */
 public final class CommitInfoGetRequestBuilder 
 		extends GetResourceRequestBuilder<CommitInfoGetRequestBuilder, CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfo> 
-		implements RepositoryIndexRequestBuilder<CommitInfo> {
+		implements RepositoryRequestBuilder<CommitInfo> {
 
 	CommitInfoGetRequestBuilder(String commitId) {
 		super(new CommitInfoGetRequest(commitId));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 
 /**
  * <i>Builder</i> class to build requests responsible for creating SNOMED CT descriptions.
@@ -32,20 +30,20 @@ import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationInd
  */
 public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedDescriptionCreateRequestBuilder> {
 
-	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
+	private String caseSignificanceId = Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE;
 	private String term;
 	private String conceptId;
 	private String typeId = Concepts.SYNONYM;
 	private String languageCode = "en";
 	private Map<String, Acceptability> acceptabilityMap = newHashMap();
-	private DescriptionInactivationIndicator inactivationIndicator = DescriptionInactivationIndicator.RETIRED;
+	private String inactivationIndicatorId = "";
 	
 	SnomedDescriptionCreateRequestBuilder() { 
 		super();
 	}
 	
-	public SnomedDescriptionCreateRequestBuilder setCaseSignificance(CaseSignificance caseSignificance) {
-		this.caseSignificance = caseSignificance;
+	public SnomedDescriptionCreateRequestBuilder setCaseSignificanceId(String caseSignificanceId) {
+		this.caseSignificanceId = caseSignificanceId;
 		return getSelf();
 	}
 	
@@ -84,8 +82,8 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 		return getSelf();
 	}
 	
-	public SnomedDescriptionCreateRequestBuilder setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
+	public SnomedDescriptionCreateRequestBuilder setInactivationIndicator(String inactivationIndicatorId) {
+		this.inactivationIndicatorId = inactivationIndicatorId;
 		return getSelf();
 	}
 	
@@ -97,13 +95,13 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 	@Override
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedDescriptionCreateRequest req = (SnomedDescriptionCreateRequest) request;
-		req.setCaseSignificance(caseSignificance);
+		req.setCaseSignificanceId(caseSignificanceId);
 		req.setTerm(term);
 		req.setConceptId(conceptId);
 		req.setTypeId(typeId);
 		req.setLanguageCode(languageCode);
 		req.setAcceptability(acceptabilityMap);
-		req.setInactivationIndicator(inactivationIndicator);
+		req.setInactivationIndicatorId(inactivationIndicatorId);
 	}
 
 

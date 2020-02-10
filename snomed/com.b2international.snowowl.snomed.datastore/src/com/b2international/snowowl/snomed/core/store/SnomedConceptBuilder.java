@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
  */
 public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedConceptBuilder, SnomedConceptDocument.Builder, SnomedConceptDocument> {
 
-	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
+	private String definitionStatusId = Concepts.PRIMITIVE;
 	private boolean exhaustive = false;
 
 	/**
@@ -41,12 +41,12 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 	/**
 	 * Specifies the {@link DefinitionStatus} to use for the new concept.
 	 * 
-	 * @param definitionStatus
-	 *            - the definition status to use
+	 * @param definitionStatusId
+	 *            - the definition status ID to use
 	 * @return
 	 */
-	public final SnomedConceptBuilder withDefinitionStatus(DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
+	public final SnomedConceptBuilder withDefinitionStatusId(String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
 		return getSelf();
 	}
 
@@ -59,8 +59,8 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 	public void init(SnomedConceptDocument.Builder component, TransactionContext context) {
 		super.init(component, context);
 		// check that the definitionStatus concept does exist before using it in this concept
-		context.lookup(definitionStatus.getConceptId(), SnomedConceptDocument.class);
-		component.primitive(definitionStatus.isPrimitive());
+		context.lookup(definitionStatusId, SnomedConceptDocument.class);
+		component.primitive(Concepts.PRIMITIVE.equals(definitionStatusId));
 		component.exhaustive(exhaustive);
 	}
 

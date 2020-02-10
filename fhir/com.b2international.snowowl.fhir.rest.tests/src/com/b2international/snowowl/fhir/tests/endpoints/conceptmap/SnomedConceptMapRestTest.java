@@ -39,6 +39,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 	
 	private static final String SIMPLE_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Map Type Reference Sets";
 	private static final String COMPLEX_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Complex Map Type Reference Sets";
+	private static final String COMPLEX_BLOCK_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Complex Map With Map Block Type Reference Sets";
 	private static final String EXTENDED_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Extended Map Type Reference Sets";
 	private static final String FHIR_MAP_TYPE_REFSET_VERSION = "FHIR_MAP_TYPE_REFSET_VERSION";
 	
@@ -51,6 +52,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 		mapTypeRefSetIds = TestMapTypeReferenceSetCreator.createSimpleMapTypeReferenceSets(mainBranch, 
 				SIMPLE_MAP_TYPE_REFSET_NAME, 
 				COMPLEX_MAP_TYPE_REFSET_NAME,
+				COMPLEX_BLOCK_MAP_TYPE_REFSET_NAME,
 				EXTENDED_MAP_TYPE_REFSET_NAME,
 				FHIR_MAP_TYPE_REFSET_VERSION);
 	}

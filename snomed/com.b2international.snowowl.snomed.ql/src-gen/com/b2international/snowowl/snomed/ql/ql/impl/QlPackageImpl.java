@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
-import com.b2international.snowowl.snomed.ql.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter;
+import com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter;
 import com.b2international.snowowl.snomed.ql.ql.Domain;
 import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
-import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.ExclusionFilter;
 import com.b2international.snowowl.snomed.ql.ql.Filter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
 import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
@@ -206,21 +206,21 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass disjunctionEClass = null;
+  private EClass disjunctionFilterEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass conjunctionEClass = null;
+  private EClass conjunctionFilterEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass exclusionEClass = null;
+  private EClass exclusionFilterEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -265,7 +265,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
 
   /**
    * Creates, registers, and initializes the <b>Package</b> for this model, and for any others upon which it depends.
-   * 
+   *
    * <p>This method is used to initialize {@link QlPackage#eINSTANCE} when that field is accessed.
    * Clients should not invoke it directly. Instead, they should simply access that field to obtain the package.
    * <!-- begin-user-doc -->
@@ -280,7 +280,8 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     if (isInited) return (QlPackage)EPackage.Registry.INSTANCE.getEPackage(QlPackage.eNS_URI);
 
     // Obtain or create and register package
-    QlPackageImpl theQlPackage = (QlPackageImpl)(EPackage.Registry.INSTANCE.get(eNS_URI) instanceof QlPackageImpl ? EPackage.Registry.INSTANCE.get(eNS_URI) : new QlPackageImpl());
+    Object registeredQlPackage = EPackage.Registry.INSTANCE.get(eNS_URI);
+    QlPackageImpl theQlPackage = registeredQlPackage instanceof QlPackageImpl ? (QlPackageImpl)registeredQlPackage : new QlPackageImpl();
 
     isInited = true;
 
@@ -296,7 +297,6 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     // Mark meta-data to indicate it can't be changed
     theQlPackage.freeze();
 
-  
     // Update the registry and return the package
     EPackage.Registry.INSTANCE.put(QlPackage.eNS_URI, theQlPackage);
     return theQlPackage;
@@ -307,6 +307,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getQuery()
   {
     return queryEClass;
@@ -317,6 +318,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getQuery_Query()
   {
     return (EReference)queryEClass.getEStructuralFeatures().get(0);
@@ -327,6 +329,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getQueryConstraint()
   {
     return queryConstraintEClass;
@@ -337,6 +340,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getSubQuery()
   {
     return subQueryEClass;
@@ -347,6 +351,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getDomainQuery()
   {
     return domainQueryEClass;
@@ -357,6 +362,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getDomainQuery_Ecl()
   {
     return (EReference)domainQueryEClass.getEStructuralFeatures().get(0);
@@ -367,6 +373,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getDomainQuery_Filter()
   {
     return (EReference)domainQueryEClass.getEStructuralFeatures().get(1);
@@ -377,6 +384,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getNestedQuery()
   {
     return nestedQueryEClass;
@@ -387,6 +395,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getNestedQuery_Nested()
   {
     return (EReference)nestedQueryEClass.getEStructuralFeatures().get(0);
@@ -397,6 +406,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getFilter()
   {
     return filterEClass;
@@ -407,6 +417,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getNestedFilter()
   {
     return nestedFilterEClass;
@@ -417,6 +428,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getNestedFilter_Nested()
   {
     return (EReference)nestedFilterEClass.getEStructuralFeatures().get(0);
@@ -427,6 +439,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getPropertyFilter()
   {
     return propertyFilterEClass;
@@ -437,6 +450,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getActiveFilter()
   {
     return activeFilterEClass;
@@ -447,6 +461,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EAttribute getActiveFilter_Domain()
   {
     return (EAttribute)activeFilterEClass.getEStructuralFeatures().get(0);
@@ -457,6 +472,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EAttribute getActiveFilter_Active()
   {
     return (EAttribute)activeFilterEClass.getEStructuralFeatures().get(1);
@@ -467,6 +483,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getModuleFilter()
   {
     return moduleFilterEClass;
@@ -477,6 +494,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EAttribute getModuleFilter_Domain()
   {
     return (EAttribute)moduleFilterEClass.getEStructuralFeatures().get(0);
@@ -487,6 +505,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getModuleFilter_ModuleId()
   {
     return (EReference)moduleFilterEClass.getEStructuralFeatures().get(1);
@@ -497,6 +516,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getTermFilter()
   {
     return termFilterEClass;
@@ -507,6 +527,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EAttribute getTermFilter_LexicalSearchType()
   {
     return (EAttribute)termFilterEClass.getEStructuralFeatures().get(0);
@@ -517,6 +538,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EAttribute getTermFilter_Term()
   {
     return (EAttribute)termFilterEClass.getEStructuralFeatures().get(1);
@@ -527,6 +549,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getPreferredInFilter()
   {
     return preferredInFilterEClass;
@@ -537,6 +560,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getPreferredInFilter_LanguageRefSetId()
   {
     return (EReference)preferredInFilterEClass.getEStructuralFeatures().get(0);
@@ -547,6 +571,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getAcceptableInFilter()
   {
     return acceptableInFilterEClass;
@@ -557,6 +582,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getAcceptableInFilter_LanguageRefSetId()
   {
     return (EReference)acceptableInFilterEClass.getEStructuralFeatures().get(0);
@@ -567,6 +593,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getLanguageRefSetFilter()
   {
     return languageRefSetFilterEClass;
@@ -577,6 +604,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getLanguageRefSetFilter_LanguageRefSetId()
   {
     return (EReference)languageRefSetFilterEClass.getEStructuralFeatures().get(0);
@@ -587,6 +615,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getTypeFilter()
   {
     return typeFilterEClass;
@@ -597,6 +626,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getTypeFilter_Type()
   {
     return (EReference)typeFilterEClass.getEStructuralFeatures().get(0);
@@ -607,6 +637,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getCaseSignificanceFilter()
   {
     return caseSignificanceFilterEClass;
@@ -617,6 +648,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getCaseSignificanceFilter_CaseSignificanceId()
   {
     return (EReference)caseSignificanceFilterEClass.getEStructuralFeatures().get(0);
@@ -627,6 +659,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getLanguageCodeFilter()
   {
     return languageCodeFilterEClass;
@@ -637,6 +670,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EAttribute getLanguageCodeFilter_LanguageCode()
   {
     return (EAttribute)languageCodeFilterEClass.getEStructuralFeatures().get(0);
@@ -647,6 +681,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getQueryDisjunction()
   {
     return queryDisjunctionEClass;
@@ -657,6 +692,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getQueryDisjunction_Left()
   {
     return (EReference)queryDisjunctionEClass.getEStructuralFeatures().get(0);
@@ -667,6 +703,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getQueryDisjunction_Right()
   {
     return (EReference)queryDisjunctionEClass.getEStructuralFeatures().get(1);
@@ -677,6 +714,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getQueryConjunction()
   {
     return queryConjunctionEClass;
@@ -687,6 +725,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getQueryConjunction_Left()
   {
     return (EReference)queryConjunctionEClass.getEStructuralFeatures().get(0);
@@ -697,6 +736,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getQueryConjunction_Right()
   {
     return (EReference)queryConjunctionEClass.getEStructuralFeatures().get(1);
@@ -707,6 +747,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EClass getQueryExclusion()
   {
     return queryExclusionEClass;
@@ -717,6 +758,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getQueryExclusion_Left()
   {
     return (EReference)queryExclusionEClass.getEStructuralFeatures().get(0);
@@ -727,6 +769,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EReference getQueryExclusion_Right()
   {
     return (EReference)queryExclusionEClass.getEStructuralFeatures().get(1);
@@ -737,9 +780,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EClass getDisjunction()
+  @Override
+  public EClass getDisjunctionFilter()
   {
-    return disjunctionEClass;
+    return disjunctionFilterEClass;
   }
 
   /**
@@ -747,9 +791,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getDisjunction_Left()
+  @Override
+  public EReference getDisjunctionFilter_Left()
   {
-    return (EReference)disjunctionEClass.getEStructuralFeatures().get(0);
+    return (EReference)disjunctionFilterEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -757,9 +802,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getDisjunction_Right()
+  @Override
+  public EReference getDisjunctionFilter_Right()
   {
-    return (EReference)disjunctionEClass.getEStructuralFeatures().get(1);
+    return (EReference)disjunctionFilterEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -767,9 +813,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EClass getConjunction()
+  @Override
+  public EClass getConjunctionFilter()
   {
-    return conjunctionEClass;
+    return conjunctionFilterEClass;
   }
 
   /**
@@ -777,9 +824,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getConjunction_Left()
+  @Override
+  public EReference getConjunctionFilter_Left()
   {
-    return (EReference)conjunctionEClass.getEStructuralFeatures().get(0);
+    return (EReference)conjunctionFilterEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -787,9 +835,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getConjunction_Right()
+  @Override
+  public EReference getConjunctionFilter_Right()
   {
-    return (EReference)conjunctionEClass.getEStructuralFeatures().get(1);
+    return (EReference)conjunctionFilterEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -797,9 +846,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EClass getExclusion()
+  @Override
+  public EClass getExclusionFilter()
   {
-    return exclusionEClass;
+    return exclusionFilterEClass;
   }
 
   /**
@@ -807,9 +857,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getExclusion_Left()
+  @Override
+  public EReference getExclusionFilter_Left()
   {
-    return (EReference)exclusionEClass.getEStructuralFeatures().get(0);
+    return (EReference)exclusionFilterEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -817,9 +868,10 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getExclusion_Right()
+  @Override
+  public EReference getExclusionFilter_Right()
   {
-    return (EReference)exclusionEClass.getEStructuralFeatures().get(1);
+    return (EReference)exclusionFilterEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -827,6 +879,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EEnum getLexicalSearchType()
   {
     return lexicalSearchTypeEEnum;
@@ -837,6 +890,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public EEnum getDomain()
   {
     return domainEEnum;
@@ -847,6 +901,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
   public QlFactory getQlFactory()
   {
     return (QlFactory)getEFactoryInstance();
@@ -935,17 +990,17 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     createEReference(queryExclusionEClass, QUERY_EXCLUSION__LEFT);
     createEReference(queryExclusionEClass, QUERY_EXCLUSION__RIGHT);
 
-    disjunctionEClass = createEClass(DISJUNCTION);
-    createEReference(disjunctionEClass, DISJUNCTION__LEFT);
-    createEReference(disjunctionEClass, DISJUNCTION__RIGHT);
+    disjunctionFilterEClass = createEClass(DISJUNCTION_FILTER);
+    createEReference(disjunctionFilterEClass, DISJUNCTION_FILTER__LEFT);
+    createEReference(disjunctionFilterEClass, DISJUNCTION_FILTER__RIGHT);
 
-    conjunctionEClass = createEClass(CONJUNCTION);
-    createEReference(conjunctionEClass, CONJUNCTION__LEFT);
-    createEReference(conjunctionEClass, CONJUNCTION__RIGHT);
+    conjunctionFilterEClass = createEClass(CONJUNCTION_FILTER);
+    createEReference(conjunctionFilterEClass, CONJUNCTION_FILTER__LEFT);
+    createEReference(conjunctionFilterEClass, CONJUNCTION_FILTER__RIGHT);
 
-    exclusionEClass = createEClass(EXCLUSION);
-    createEReference(exclusionEClass, EXCLUSION__LEFT);
-    createEReference(exclusionEClass, EXCLUSION__RIGHT);
+    exclusionFilterEClass = createEClass(EXCLUSION_FILTER);
+    createEReference(exclusionFilterEClass, EXCLUSION_FILTER__LEFT);
+    createEReference(exclusionFilterEClass, EXCLUSION_FILTER__RIGHT);
 
     // Create enums
     lexicalSearchTypeEEnum = createEEnum(LEXICAL_SEARCH_TYPE);
@@ -1001,9 +1056,9 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     queryDisjunctionEClass.getESuperTypes().add(this.getQueryConstraint());
     queryConjunctionEClass.getESuperTypes().add(this.getQueryConstraint());
     queryExclusionEClass.getESuperTypes().add(this.getQueryConstraint());
-    disjunctionEClass.getESuperTypes().add(this.getFilter());
-    conjunctionEClass.getESuperTypes().add(this.getFilter());
-    exclusionEClass.getESuperTypes().add(this.getFilter());
+    disjunctionFilterEClass.getESuperTypes().add(this.getFilter());
+    conjunctionFilterEClass.getESuperTypes().add(this.getFilter());
+    exclusionFilterEClass.getESuperTypes().add(this.getFilter());
 
     // Initialize classes and features; add operations and parameters
     initEClass(queryEClass, Query.class, "Query", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -1069,17 +1124,17 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     initEReference(getQueryExclusion_Left(), this.getSubQuery(), null, "left", null, 0, 1, QueryExclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getQueryExclusion_Right(), this.getSubQuery(), null, "right", null, 0, 1, QueryExclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(disjunctionEClass, Disjunction.class, "Disjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getDisjunction_Left(), this.getFilter(), null, "left", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getDisjunction_Right(), this.getFilter(), null, "right", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(disjunctionFilterEClass, DisjunctionFilter.class, "DisjunctionFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getDisjunctionFilter_Left(), this.getFilter(), null, "left", null, 0, 1, DisjunctionFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getDisjunctionFilter_Right(), this.getFilter(), null, "right", null, 0, 1, DisjunctionFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(conjunctionEClass, Conjunction.class, "Conjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getConjunction_Left(), this.getFilter(), null, "left", null, 0, 1, Conjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getConjunction_Right(), this.getFilter(), null, "right", null, 0, 1, Conjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(conjunctionFilterEClass, ConjunctionFilter.class, "ConjunctionFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getConjunctionFilter_Left(), this.getFilter(), null, "left", null, 0, 1, ConjunctionFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getConjunctionFilter_Right(), this.getFilter(), null, "right", null, 0, 1, ConjunctionFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(exclusionEClass, Exclusion.class, "Exclusion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getExclusion_Left(), this.getPropertyFilter(), null, "left", null, 0, 1, Exclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getExclusion_Right(), this.getPropertyFilter(), null, "right", null, 0, 1, Exclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(exclusionFilterEClass, ExclusionFilter.class, "ExclusionFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getExclusionFilter_Left(), this.getPropertyFilter(), null, "left", null, 0, 1, ExclusionFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getExclusionFilter_Right(), this.getPropertyFilter(), null, "right", null, 0, 1, ExclusionFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     // Initialize enums and add enum literals
     initEEnum(lexicalSearchTypeEEnum, LexicalSearchType.class, "LexicalSearchType");

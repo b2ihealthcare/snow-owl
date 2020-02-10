@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 /**
  * @since 7.1.0
  */
-public class DatastoreLocks extends PageableCollectionResource<DatastoreLockIndexEntry> {
+public final class DatastoreLocks extends PageableCollectionResource<DatastoreLockIndexEntry> {
 
 	private static final long serialVersionUID = 1L;
 	
-	public DatastoreLocks(List<DatastoreLockIndexEntry> items, String scrollId, String searchAfter, int limit, int total) {
-		super(items, scrollId, searchAfter, limit, total);
+	public DatastoreLocks(List<DatastoreLockIndexEntry> items, String searchAfter, int limit, int total) {
+		super(items, searchAfter, limit, total);
 	}
 
 }

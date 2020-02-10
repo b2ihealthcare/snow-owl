@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest.branches;
 
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
-import static com.b2international.snowowl.snomed.core.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
@@ -50,7 +49,6 @@ import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
@@ -68,9 +66,9 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
-		changeCaseSignificance(branchPath, descriptionId, CaseSignificance.CASE_INSENSITIVE); // Parent branch changes to CaseSignificance.CASE_INSENSITIVE
+		changeCaseSignificance(branchPath, descriptionId, Concepts.ENTIRE_TERM_CASE_INSENSITIVE); // Parent branch changes to CaseSignificance.CASE_INSENSITIVE
 		changeCaseSignificance(a, descriptionId); // Child branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
 
 		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased case significance change over case significance change")
@@ -82,8 +80,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
 				.property("caseSignificanceId")
-				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
-				.value(CaseSignificance.CASE_INSENSITIVE.getConceptId())
+				.oldValue(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.value(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.build();
 
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
@@ -99,16 +97,16 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		Map<?, ?> changesOnParent = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.put("moduleId", Concepts.MODULE_ROOT)
 				.put("commitComment", "Changed case significance and module on parent")
 				.build();
 
 		Map<?, ?> changesOnBranch = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE)
 				.put("moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT)
 				.put("commitComment", "Changed case significance and module on branch")
 				.build();
@@ -132,8 +130,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		Map<String, ConflictingAttribute> expectedAttributes = newHashMap();
 		expectedAttributes.put("caseSignificanceId", ConflictingAttributeImpl.builder()
 				.property("caseSignificanceId")
-				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
-				.value(CaseSignificance.CASE_INSENSITIVE.getConceptId())
+				.oldValue(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.value(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.build());
 
 		expectedAttributes.put("moduleId", ConflictingAttributeImpl.builder()
@@ -156,7 +154,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String memberId = createNewRefSetMember(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		Date nextEffectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 		String nextEffectiveTimeAsString = EffectiveTimes.format(nextEffectiveTime, DateFormats.SHORT);
@@ -206,7 +204,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 	@Test
 	public void addedInSourceAndTargetMergeConflict() {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		String descriptionId = createNewDescription(branchPath);
 
@@ -218,7 +216,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 				.put("term", "Synonym of root concept")
 				.put("languageCode", "en")
 				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
-				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.put("commitComment", "Created new synonym with duplicate SCTID")
 				.build();
 
@@ -245,7 +243,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 		String relationshipId = createNewRelationship(a, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
@@ -274,7 +272,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
 		deleteComponent(a, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
@@ -298,7 +296,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 		String memberId = createNewRefSetMember(a, conceptId);
@@ -328,7 +326,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		createNewRefSetMember(branchPath, conceptId);
 		deleteComponent(a, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
@@ -352,7 +350,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		/*
 		 * XXX: Creating a new description on the concept itself would result in a DELETED_WHILE_CHANGED conflict;
@@ -361,7 +359,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		createNewDescription(a, Concepts.ROOT_CONCEPT, conceptId);
 
 		IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
-		createBranch(b).statusCode(201);
+		branching.createBranch(b).statusCode(201);
 
 		deleteComponent(b, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
@@ -385,12 +383,12 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
+		branching.createBranch(a).statusCode(201);
 
 		createNewRelationship(a, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
 
 		IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
-		createBranch(b).statusCode(201);
+		branching.createBranch(b).statusCode(201);
 
 		deleteComponent(b, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 

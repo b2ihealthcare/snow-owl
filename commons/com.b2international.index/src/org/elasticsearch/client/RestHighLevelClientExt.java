@@ -143,17 +143,11 @@ public class RestHighLevelClientExt {
                     if (Strings.hasLength(writeRequest.index())) {
                         metadata.field("_index", writeRequest.index());
                     }
-                    if (Strings.hasLength(writeRequest.type())) {
-                        metadata.field("_type", writeRequest.type());
-                    }
                     if (Strings.hasLength(writeRequest.id())) {
                         metadata.field("_id", writeRequest.id());
                     }
                     if (Strings.hasLength(writeRequest.routing())) {
                         metadata.field("routing", writeRequest.routing());
-                    }
-                    if (Strings.hasLength(writeRequest.parent())) {
-                        metadata.field("parent", writeRequest.parent());
                     }
                     if (writeRequest.version() != Versions.MATCH_ANY) {
                         metadata.field("version", writeRequest.version());
@@ -165,8 +159,6 @@ public class RestHighLevelClientExt {
                             metadata.field("version_type", "external");
                         } else if (versionType == VersionType.EXTERNAL_GTE) {
                             metadata.field("version_type", "external_gte");
-                        } else if (versionType == VersionType.FORCE) {
-                            metadata.field("version_type", "force");
                         }
                     }
 

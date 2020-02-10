@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,32 +27,38 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class RelationshipChanges extends PageableCollectionResource<RelationshipChange> {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Instantiates an empty pageable collection for relationship changes.
 	 * 
-	 * @param limit of items for a single page
-	 * @param total number of items in the result set
+	 * @param limit
+	 *            - number of items for a single page
+	 * @param total
+	 *            - number of items in the result set
 	 */
 	public RelationshipChanges(final int limit, final int total) {
-		super(Collections.emptyList(), null, null, limit, total);
+		super(Collections.emptyList(), null, limit, total);
 	}
 
 	/**
 	 * Instantiates a pageable collection of relationship changes.
 	 * 
-	 * @param list of @link {@link RelationshipChange}s
-	 * @param scrollId for paging the result set continuously
-	 * @param searchAfter for paging the result set with a live cursor
-	 * @param limit of items for a single page
-	 * @param total number of items in the result set
+	 * @param items
+	 *            - list of @link {@link RelationshipChange}s
+	 * @param searchAfter
+	 *            - for paging the result set with a live cursor
+	 * @param limit
+	 *            - number of items for a single page
+	 * @param total
+	 *            - number of items in the result set
 	 */
 	@JsonCreator
 	public RelationshipChanges(
 			@JsonProperty("items") final List<RelationshipChange> items, 
-			@JsonProperty("scrollId") final String scrollId,
 			@JsonProperty("searchAfter") final String searchAfter,
 			@JsonProperty("limit") final int limit, 
 			@JsonProperty("total") final int total) {
-		super(items, scrollId, searchAfter, limit, total);
+		super(items, searchAfter, limit, total);
 	}
 }

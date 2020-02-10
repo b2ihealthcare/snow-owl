@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.google.common.base.Strings;
 
 /**
@@ -29,23 +28,17 @@ public final class SnomedOWLAxiomHelper {
 
 	private static final String EQUIVALENTCLASSES = "equivalentclasses";
 
-	public static DefinitionStatus getDefinitionStatusFromExpressions(Set<String> owlExpressions) {
-		
+	public static String getDefinitionStatusFromExpressions(Set<String> owlExpressions) {
 		if (owlExpressions.isEmpty()) {
 			return null;
 		}
 		
-		Optional<String> equivalenClassesExpression = owlExpressions.stream()
+		return owlExpressions.stream()
 				.filter(expression -> !Strings.isNullOrEmpty(expression))
 				.filter(expression -> expression.toLowerCase(Locale.ENGLISH).contains(EQUIVALENTCLASSES))
-				.findFirst();
-		
-		if (equivalenClassesExpression.isPresent()) {
-			return DefinitionStatus.FULLY_DEFINED;
-		}
-		
-		return DefinitionStatus.PRIMITIVE;
-
+				.findFirst()
+				.map(equivalentClassesAxiom -> Concepts.FULLY_DEFINED)
+				.orElse(Concepts.PRIMITIVE);
 	}
 
 }

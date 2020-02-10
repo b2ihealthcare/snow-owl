@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.commit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
 import java.util.Collection;
@@ -29,9 +30,9 @@ import com.b2international.commons.options.Options;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.CommitDetail;
 import com.b2international.snowowl.core.commit.CommitInfo.Builder;
-import com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.2
@@ -46,8 +47,8 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 	}
 
 	@Override
-	protected CommitInfos createCollectionResource(final List<CommitInfo> results, final String scrollId, String searchAfter, final int limit, final int total) {
-		return new CommitInfos(results, scrollId, searchAfter, limit, total);
+	protected CommitInfos createCollectionResource(final List<CommitInfo> results, String searchAfter, final int limit, final int total) {
+		return new CommitInfos(results, searchAfter, limit, total);
 	}
 
 	@Override
@@ -56,32 +57,37 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 		
 		// expand details if requested
 		if (expand().containsKey(CommitInfo.Expand.DETAILS)) {
-			final Collection<CommitDetail> commitDetails = getCommitDetails(doc);
+			final Options detailsExpandOptions = expand().get(CommitInfo.Expand.DETAILS, Options.class);
+			final Collection<CommitDetail> commitDetails = getCommitDetails(doc, detailsExpandOptions);
 			final List<CommitInfoDetail> commitInfoDetails = commitDetails.stream()
 					.flatMap(info -> toCommitInfoDetail(info))
 					.collect(Collectors.toList());
 			
-			builder.details(new CommitInfoDetails(commitInfoDetails, null, null, commitInfoDetails.size(), commitInfoDetails.size()));
+			builder.details(new CommitInfoDetails(commitInfoDetails, null, commitInfoDetails.size(), commitInfoDetails.size()));
 		}
 		
 		return builder.build();
 	}
 
-	private Collection<CommitDetail> getCommitDetails(final Commit commit) {
-		if (filterContainsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT)) {
-			final String affectedComponentId = filterGetString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT); 
+	private Collection<CommitDetail> getCommitDetails(final Commit commit, Options detailsExpandOptions) {
+		// use the filter defined affectedComponentId if present
+		final String affectedComponentId = getDetailsAffectedComponentId(filters, detailsExpandOptions);
+		if (!Strings.isNullOrEmpty(affectedComponentId)) {
 			return commit.getDetailsByObject(affectedComponentId);
+		} else {
+			return commit.getDetails();
 		}
-		
-		return commit.getDetails();
 	}
 
-	private boolean filterContainsKey(OptionKey key) {
-		return filters.containsKey(key.name());
-	}
-
-	private String filterGetString(OptionKey key) {
-		return filters.getString(key.name());
+	private String getDetailsAffectedComponentId(Options filters, Options expandOptions) {
+		checkNotNull(filters, "At least one filter source must be defined");
+		if (filters.containsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID)) {
+			return filters.getString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID.name());
+		} else if (expandOptions.containsKey("affectedComponentId")) {
+			return expandOptions.getString("affectedComponentId");
+		} else {
+			return null;
+		}
 	}
 
 	private Stream<CommitInfoDetail> toCommitInfoDetail(CommitDetail detail) {
