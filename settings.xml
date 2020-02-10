@@ -2,26 +2,16 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                       http://maven.apache.org/xsd/settings-1.0.0.xsd">
-	<profiles>
-		<profile>
-			<id>repositories</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<!-- Nexus instance URL, example: http://example:8081/nexus -->
-				<nexus.url>url/to/local/nexus/instance</nexus.url>
-				<nexus.snapshots.url>${nexus.url}/content/repositories/snapshots</nexus.snapshots.url>
-				<nexus.releases.url>${nexus.url}/content/repositories/releases</nexus.releases.url>
-			</properties>
-		</profile>
-	</profiles>
 	<servers>
-		<!-- Example deployment user and pass, replace with your deployment user and pass, see Nexus OSS guide for more information -->
 		<server>
-			<id>nexus_deployment</id>
-			<username>nexus_deployment_user</username>
-			<password>nexus_deployment_pass</password>
+			<id>artifactory-releases</id>
+			<username>${env.ARTIFACTORY_USER_RW}</username>
+			<password>${env.ARTIFACTORY_PWD_RW}</password>
+		</server>
+		<server>
+			<id>artifactory-snapshots</id>
+			<username>${env.ARTIFACTORY_USER_RW}</username>
+			<password>${env.ARTIFACTORY_PWD_RW}</password>
 		</server>
 	</servers>
 
