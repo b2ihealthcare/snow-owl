@@ -14,6 +14,10 @@ env: &env
   resource_class: large
   docker:
     - image: docker:17.03.0-ce-git
+      environment:
+        JAVA_HOME: /usr/lib/jvm/java-11-openjdk
+  environment:
+    JAVA_HOME: /usr/lib/jvm/java-11-openjdk
 
 jobs:
   deploy:
@@ -31,6 +35,7 @@ jobs:
       - run:
           name: Build prerequisites
           command: |
+            echo $JAVA_HOME
             echo $PATH
             echo "${ARTIFACTORY_URL}" | sha512sum
             echo "${ARTIFACTORY_USER_RW}" | sha512sum
@@ -42,6 +47,8 @@ jobs:
             echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> $BASH_ENV
             echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
+            echo $JAVA_HOME
+            echo $PATH
             npm config set unsafe-perm true
             npm install -g npm
       - save_cache:
@@ -52,6 +59,7 @@ jobs:
       - run:
           name: Build and deploy
           command: |
+            echo $JAVA_HOME
             echo $PATH
             ./mvnw -s .circleci/settings.xml deploy -DskipTests -Dtycho.localArtifacts="${LOCAL_ARTIFACTS}"
 
