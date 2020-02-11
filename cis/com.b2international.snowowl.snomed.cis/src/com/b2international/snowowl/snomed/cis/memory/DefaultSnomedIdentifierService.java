@@ -116,10 +116,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
 				SctId::isAvailable, 
 				SctId::isReserved, 
-				SctId::isAssigned))));
+				SctId::isAssigned,
+				SctId::isPublished))));
 		
 		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot register %s component IDs because they are not available, reserved, or already assigned.", problemSctIds);
+			throw new SctIdStatusException("Cannot register %s component IDs because they are not available, reserved, assigned, or already released.", problemSctIds);
 		}
 
 		final Map<String, SctId> availableOrReservedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(
