@@ -51,8 +51,6 @@ import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -160,7 +158,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createRelationshipInferred() {
 		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT,  
-				CharacteristicType.INFERRED_RELATIONSHIP)
+				Concepts.INFERRED_RELATIONSHIP)
 				.put("commitComment", "Created new relationship with inferred characteristic type")
 				.build();
 
@@ -169,7 +167,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 				.extract().header("Location"));
 
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("characteristicType", equalTo(CharacteristicType.INFERRED_RELATIONSHIP.name()));
+		.body("characteristicTypeId", equalTo(Concepts.INFERRED_RELATIONSHIP));
 	}
 
 	@Test
@@ -298,26 +296,26 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	public void changeRelationshipCharacteristicType() {
 		String relationshipId = createNewRelationship(branchPath);
 		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("characteristicType", CharacteristicType.ADDITIONAL_RELATIONSHIP)
+				.put("characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP)
 				.put("commitComment", "Updated relationship characteristic type")
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("characteristicType", equalTo(CharacteristicType.ADDITIONAL_RELATIONSHIP.name()));
+			.body("characteristicTypeId", equalTo(Concepts.ADDITIONAL_RELATIONSHIP));
 	}
 
 	@Test
 	public void changeRelationshipModifier() {
 		String relationshipId = createNewRelationship(branchPath);
 		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("modifier", RelationshipModifier.UNIVERSAL)
+				.put("modifierId", Concepts.UNIVERSAL_RESTRICTION_MODIFIER)
 				.put("commitComment", "Updated relationship modifier")
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("modifier", equalTo(RelationshipModifier.UNIVERSAL.name()));
+		.body("modifierId", equalTo(Concepts.UNIVERSAL_RESTRICTION_MODIFIER));
 	}
 
 	@Test

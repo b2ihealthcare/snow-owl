@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.assertInactivation;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
@@ -45,6 +46,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -71,8 +73,8 @@ import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
+import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -305,84 +307,60 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void inactivateWithIndicator() {
 		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
-				.put("commitComment", "Inactivated description with indicator")
-				.build();
-
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()").statusCode(200)
-		.body("active", equalTo(false))
-		.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.DUPLICATE.name()));
+		assertInactivation(
+			branchPath, 
+			descriptionId, 
+			new InactivationProperties(Concepts.DUPLICATE, Collections.emptyList())
+		);
 	}
 
 	@Test
 	public void inactivateWithIndicatorAndAssociationTarget() {
-		String description1Id = createNewDescription(branchPath);
-		String description2Id = createNewDescription(branchPath);
+		String descriptionToInactivate = createNewDescription(branchPath);
+		String associationTarget = createNewDescription(branchPath);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
-				.put("associationTargets", ImmutableMap.of(AssociationType.POSSIBLY_EQUIVALENT_TO.name(), ImmutableList.of(description1Id)))
-				.put("commitComment", "Inactivated description with indicator and association target")
-				.build();
-
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id, requestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(false))
-			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.DUPLICATE.name()))
-			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(description1Id));
+		assertInactivation(
+			branchPath, 
+			descriptionToInactivate, 
+			new InactivationProperties(Concepts.DUPLICATE, ImmutableList.of(new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, associationTarget)))
+		);
 	}
 
 	@Test
 	public void updateIndicatorAfterInactivation() {
-		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
-				.put("commitComment", "Inactivated description with indicator")
-				.build();
+		String descriptionToInactivate = createNewDescription(branchPath);
+		
+		assertInactivation(
+			branchPath, 
+			descriptionToInactivate, 
+			new InactivationProperties(Concepts.DUPLICATE, Collections.emptyList())
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivationRequestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(false))
-			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.DUPLICATE.name()));
-
-		Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("inactivationIndicator", DescriptionInactivationIndicator.OUTDATED)
-				.put("commitComment", "Updated inactivation indicator on description")
-				.build();
-
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, updateRequestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(false))
-			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.OUTDATED.name()));
+		assertInactivation(
+			branchPath, 
+			descriptionToInactivate, 
+			new InactivationProperties(Concepts.OUTDATED, Collections.emptyList())
+		);
 	}
 	
 	@Test
 	public void updateInactivationIndicatorOnActiveReleasedDescription() throws Exception {
-		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
-				.put("inactivationIndicator", DescriptionInactivationIndicator.PENDING_MOVE)
-				.put("commitComment", "Add pending move to description")
-				.build();
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivationRequestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()").statusCode(200)
-			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.PENDING_MOVE.name()));
+		String descriptionToInactivate = createNewDescription(branchPath);
+		
+		assertInactivation(
+			branchPath, 
+			descriptionToInactivate, 
+			new InactivationProperties(Concepts.PENDING_MOVE, Collections.emptyList())
+		);
 		
 		// release component
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-INACTIVATIONINDICATOR", "v1", "20180701");
 		
-		Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("inactivationIndicator", DescriptionInactivationIndicator.CONCEPT_NON_CURRENT)
-				.put("commitComment", "Updated inactivation indicator on description")
-				.build();
-		
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, updateRequestBody).statusCode(204);
-		SnomedDescription description = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200).extract().as(SnomedDescription.class);
+		SnomedDescription description = assertInactivation(
+			branchPath, 
+			descriptionToInactivate, 
+			new InactivationProperties(Concepts.CONCEPT_NON_CURRENT, Collections.emptyList())
+		).extract().as(SnomedDescription.class);
 		
 		SnomedReferenceSetMember inactivationIndicator = description.getMembers().stream()
 			.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))

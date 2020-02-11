@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	
 	private RemoteJobs search(Expression query, List<String> fields, SortBy sortBy, int limit) {
 		final Hits<RemoteJobEntry> hits = searchHits(query, fields, sortBy, limit);
-		return new RemoteJobs(hits.getHits(), null, null, hits.getLimit(), hits.getTotal());
+		return new RemoteJobs(hits.getHits(), null, hits.getLimit(), hits.getTotal());
 	}
 	
 	private Hits<RemoteJobEntry> searchHits(Expression query, List<String> fields, SortBy sortBy, int limit) {

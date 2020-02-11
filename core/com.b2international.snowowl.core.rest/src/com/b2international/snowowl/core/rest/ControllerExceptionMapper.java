@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.b2international.commons.exceptions.*;
 import com.b2international.commons.platform.PlatformUtil;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
 /**
@@ -49,7 +50,8 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody RestApiError handle(final Exception ex) {
-		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
+		final String message = Throwables.getRootCause(ex).getMessage();
+		if (!Strings.isNullOrEmpty(message) && message.toLowerCase().contains("broken pipe")) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
 	    	if (PlatformUtil.isDevVersion()) {

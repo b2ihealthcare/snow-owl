@@ -41,7 +41,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
@@ -207,19 +206,19 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static String createNewRelationship(IBranchPath relationshipPath) {
-		return createNewRelationship(relationshipPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.STATED_RELATIONSHIP, 0);
+		return createNewRelationship(relationshipPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.STATED_RELATIONSHIP, 0);
 	}
 
 	public static String createNewRelationship(IBranchPath relationshipPath, String sourceId, String typeId, String destinationId) {
-		return createNewRelationship(relationshipPath, sourceId, typeId, destinationId, CharacteristicType.STATED_RELATIONSHIP, 0);
+		return createNewRelationship(relationshipPath, sourceId, typeId, destinationId, Concepts.STATED_RELATIONSHIP, 0);
 	}
 
-	public static String createNewRelationship(IBranchPath relationshipPath, String sourceId, String typeId, String destinationId, CharacteristicType characteristicType) {
-		return createNewRelationship(relationshipPath, sourceId, typeId, destinationId, characteristicType, 0);
+	public static String createNewRelationship(IBranchPath relationshipPath, String sourceId, String typeId, String destinationId, String characteristicTypeId) {
+		return createNewRelationship(relationshipPath, sourceId, typeId, destinationId, characteristicTypeId, 0);
 	}
 
-	public static String createNewRelationship(IBranchPath relationshipPath, String sourceId, String typeId, String destinationId, CharacteristicType characteristicType, int group) {
-		Map<?, ?> relationshipRequestBody = createRelationshipRequestBody(sourceId, typeId, destinationId, Concepts.MODULE_SCT_CORE, characteristicType, group)
+	public static String createNewRelationship(IBranchPath relationshipPath, String sourceId, String typeId, String destinationId, String characteristicTypeId, int group) {
+		Map<?, ?> relationshipRequestBody = createRelationshipRequestBody(sourceId, typeId, destinationId, Concepts.MODULE_SCT_CORE, characteristicTypeId, group)
 				.put("commitComment", "Created new relationship")
 				.build();
 
@@ -230,24 +229,24 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static Builder<String, Object> createRelationshipRequestBody(String sourceId, String typeId, String destinationId) {
-		return createRelationshipRequestBody(sourceId, typeId, destinationId, Concepts.MODULE_SCT_CORE, CharacteristicType.STATED_RELATIONSHIP, 0);
+		return createRelationshipRequestBody(sourceId, typeId, destinationId, Concepts.MODULE_SCT_CORE, Concepts.STATED_RELATIONSHIP, 0);
 	}
 
-	public static Builder<String, Object> createRelationshipRequestBody(String sourceId, String typeId, String destinationId, CharacteristicType characteristicType) {
-		return createRelationshipRequestBody(sourceId, typeId, destinationId, Concepts.MODULE_SCT_CORE, characteristicType, 0);
+	public static Builder<String, Object> createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String characteristicTypeId) {
+		return createRelationshipRequestBody(sourceId, typeId, destinationId, Concepts.MODULE_SCT_CORE, characteristicTypeId, 0);
 	}
 
-	public static Builder<String, Object> createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String moduleId) {
-		return createRelationshipRequestBody(sourceId, typeId, destinationId, moduleId, CharacteristicType.STATED_RELATIONSHIP, 0);
+	public static Builder<String, Object> createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String moduleId, String characteristicTypeId) {
+		return createRelationshipRequestBody(sourceId, typeId, destinationId, moduleId, characteristicTypeId, 0);
 	}
 
-	public static Builder<String, Object> createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String moduleId, CharacteristicType characteristicType, int group) {
+	public static Builder<String, Object> createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String moduleId, String characteristicTypeId, int group) {
 		return ImmutableMap.<String, Object>builder()
 				.put("moduleId", moduleId)
 				.put("sourceId", sourceId)
 				.put("typeId", typeId)
 				.put("destinationId", destinationId)
-				.put("characteristicType", characteristicType)
+				.put("characteristicTypeId", characteristicTypeId)
 				.put("group", group);
 	}
 

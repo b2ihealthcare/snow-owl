@@ -65,6 +65,7 @@ import com.google.common.hash.Hashing;
  * - Converted internal streams into a regular DataInputStream/DataOutputStream
  * - Converted Solr Cache and hashing methods to use Guava counterparts
  */
+@SuppressWarnings({"lgtm[java/dereferenced-value-may-be-null]"})
 public class JavaBinCodec {
 
   public static final byte

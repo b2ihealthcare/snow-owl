@@ -82,7 +82,7 @@ public final class SearchMergeRequest extends SearchResourceRequest<RepositoryCo
 		final RemoteJobs jobs = context.service(RemoteJobTracker.class).search(queryBuilder.build(), Integer.MAX_VALUE);
 		final ObjectMapper mapper = context.service(ObjectMapper.class);
 		final List<Merge> items = jobs.stream().map(job -> createMergefromJobEntry(job, mapper)).collect(Collectors.toList());
-		return new Merges(items, jobs.getScrollId(), jobs.getSearchAfter(), jobs.getLimit(), jobs.getTotal());
+		return new Merges(items, jobs.getSearchAfter(), jobs.getLimit(), jobs.getTotal());
 	}
 	
 	@Override

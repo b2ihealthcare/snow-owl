@@ -327,7 +327,7 @@ public class SortIndexTest extends BaseIndexTest {
 			
 			final Data data = new Data();
 			data.setField1(item); 
-			data.setFloatField(100.0f - i);
+			data.setFloatField(NUM_DOCS - i);
 			documents.put(Integer.toString(i), data);
 		}
 		

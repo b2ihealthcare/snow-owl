@@ -130,8 +130,6 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		return req
 					.setLocales(extendedLocales)
 					.setLimit(params.getLimit())
-					.setScroll(params.getScrollKeepAlive())
-					.setScrollId(params.getScrollId())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())
 					.sortBy(sorts)

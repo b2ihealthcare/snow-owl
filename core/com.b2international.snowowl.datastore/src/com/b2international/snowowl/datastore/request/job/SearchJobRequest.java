@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 	
 	@Override
 	protected RemoteJobs toCollectionResource(ServiceProvider context, Hits<RemoteJobEntry> hits) {
-		return new RemoteJobs(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
+		return new RemoteJobs(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
 	}
 
 	@Override
@@ -92,7 +92,7 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 	
 	@Override
 	protected RemoteJobs createEmptyResult(int limit) {
-		return new RemoteJobs(Collections.emptyList(), null, null, limit, 0);
+		return new RemoteJobs(Collections.emptyList(), null, limit, 0);
 	}
 
 }

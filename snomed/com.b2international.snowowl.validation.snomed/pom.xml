@@ -52,7 +52,6 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
-				<version>${tycho.version}</version>
 				<executions>
 					<execution>
             			<id>snomed-validation-tests</id>
@@ -60,6 +59,7 @@
 				        	<goal>test</goal>
 				        </goals>
 						<configuration>
+							<argLine>${tycho.testArgLine} -Xms1g -Xmx1g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch</argLine>
 							<includes>
 								<include>**/AllGenericValidationTests.java</include>
 							</includes>

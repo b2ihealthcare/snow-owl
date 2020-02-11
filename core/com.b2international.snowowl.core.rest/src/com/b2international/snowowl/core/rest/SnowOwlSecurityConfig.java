@@ -43,6 +43,7 @@ public class SnowOwlSecurityConfig extends WebSecurityConfigurerAdapter {
 	    return firewall;
 	}
 	
+	@SuppressWarnings({"lgtm[java/spring-disabled-csrf-protection]"})
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
 		http

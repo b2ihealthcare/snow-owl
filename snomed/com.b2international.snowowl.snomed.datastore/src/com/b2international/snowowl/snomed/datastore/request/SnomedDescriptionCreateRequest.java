@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.collect.ImmutableSet;
@@ -54,8 +53,8 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 
 	@NotEmpty
 	private Map<String, Acceptability> acceptability;
-
-	private DescriptionInactivationIndicator inactivationIndicator;
+	
+	private String inactivationIndicatorId;
 
 	SnomedDescriptionCreateRequest() {
 	}
@@ -96,8 +95,8 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 		this.acceptability = acceptability;
 	}
 	
-	void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
+	void setInactivationIndicatorId(String inactivationIndicatorId) {
+		this.inactivationIndicatorId = inactivationIndicatorId;
 	}
 	
 	@Override
@@ -142,9 +141,9 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 			convertMembers(context, descriptionId);
 			context.add(description);
 			
-			if (inactivationIndicator != null) {
+			if (inactivationIndicatorId != null) {
 				final SnomedInactivationReasonUpdateRequest inactivationUpdate =  new SnomedInactivationReasonUpdateRequest(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
-				inactivationUpdate.setInactivationValueId(inactivationIndicator.getConceptId());
+				inactivationUpdate.setInactivationValueId(inactivationIndicatorId);
 				inactivationUpdate.execute(context);
 			}
 			

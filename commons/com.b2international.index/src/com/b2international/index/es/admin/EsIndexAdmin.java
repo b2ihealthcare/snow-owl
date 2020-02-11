@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	private static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE);
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
-	private static final int BATCHS_SIZE = 10_000;
+	private static final int BATCH_SIZE = 10_000;
 	
 	private final Random random = new Random();
 	private final EsClient client;
@@ -109,6 +109,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
+		this.settings.putIfAbsent(IndexClientFactory.MAX_TERMS_COUNT_KEY, ""+IndexClientFactory.DEFAULT_MAX_TERMS_COUNT);
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 		
 		final String prefix = (String) settings.getOrDefault(IndexClientFactory.INDEX_PREFIX, IndexClientFactory.DEFAULT_INDEX_PREFIX);
@@ -145,24 +146,23 @@ public final class EsIndexAdmin implements IndexAdmin {
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
 			final String type = mapping.typeAsString();
-			final Map<String, Object> typeMapping = ImmutableMap.of(type,
-					ImmutableMap.builder()
+			final Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
 					.put("date_detection", false)
 					.put("numeric_detection", false)
 					.putAll(toProperties(mapping))
-					.build());
+					.build();
 			
 			if (exists(mapping)) {
 				// update mapping if required
 				ImmutableOpenMap<String, MappingMetaData> currentIndexMapping;
 				try {
-					currentIndexMapping = client.indices().getMapping(new GetMappingsRequest().indices(index).types(type)).mappings().get(index);
+					currentIndexMapping = client.indices().getMapping(new GetMappingsRequest().types(type).indices(index)).mappings().get(index);
 				} catch (Exception e) {
 					throw new IndexException(String.format("Failed to get mapping of '%s' for type '%s'", name, mapping.typeAsString()), e);
 				}
 				
 				try {
-					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping.get(type));
+					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping);
 					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.get(type).getSourceAsMap());
 					final JsonNode diff = JsonDiff.asJson(currentTypeMapping, newTypeMapping, DIFF_FLAGS);
 					final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
@@ -236,10 +236,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 				.put("number_of_replicas", "0")
 				// disable es refresh, we will do it manually on each commit
 				.put("refresh_interval", "-1")
-				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
-				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
+				// use async durability for the translog
 				.put("translog.durability", "async")
+				// wait all shards during writes
 				.put("write.wait_for_active_shards", "all")
+				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
+				.put(IndexClientFactory.MAX_TERMS_COUNT_KEY, settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY))
+				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
 				.build();
 	}
 	
@@ -306,8 +309,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 				Doc annotation = fieldType.getAnnotation(Doc.class);
 				// this is a nested document type create a nested mapping
 				final Map<String, Object> prop = newHashMap();
-				prop.put("type", annotation.nested() ? "nested" : "object");
-				prop.put("enabled", annotation.index() ? true : false);
+				// XXX type: object is the default for nested objects, ES won't store it in the mapping and will default to object even if explicitly set, which would cause unnecessary mapping update during boot
+				if (annotation.nested()) {
+					prop.put("type", "nested");
+				}
+				// XXX enabled: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+				if (!annotation.index()) {
+					prop.put("enabled", false);
+				}
 				prop.putAll(toProperties(new DocumentMapping(fieldType)));
 				properties.put(property, prop);
 			} else {
@@ -542,7 +551,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final Set<DocumentMapping> mappingsToRefresh) {
 		
 		final DocumentMapping mapping = mappings().getMapping(op.getType());
-		final QueryBuilder query = new EsQueryBuilder(mapping).build(op.getFilter());
+		final QueryBuilder query = new EsQueryBuilder(mapping, settings).build(op.getFilter());
 		
 		long versionConflicts = 0;
 		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;
@@ -553,9 +562,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 				final BulkByScrollResponse response; 
 				if ("update".equals(command)) {
-					response = client.updateByQuery(getTypeIndex(mapping), mapping.typeAsString(), BATCHS_SIZE, script, getConcurrencyLevel(), query);
+					response = client.updateByQuery(getTypeIndex(mapping), BATCH_SIZE, script, getConcurrencyLevel(), query);
 				} else if ("delete".equals(command)) {
-					response = client.deleteByQuery(getTypeIndex(mapping), mapping.typeAsString(), BATCHS_SIZE, getConcurrencyLevel(), query);
+					response = client.deleteByQuery(getTypeIndex(mapping), BATCH_SIZE, getConcurrencyLevel(), query);
 				} else {
 					throw new UnsupportedOperationException("Not implemented command: " + command);
 				}

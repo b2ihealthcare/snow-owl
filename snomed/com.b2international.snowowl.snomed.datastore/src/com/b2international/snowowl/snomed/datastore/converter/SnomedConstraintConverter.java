@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,8 +62,8 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 	}
 
 	@Override
-	protected SnomedConstraints createCollectionResource(List<SnomedConstraint> results, String scrollId, String searchAfter, int limit, int total) {
-		return new SnomedConstraints(results, scrollId, searchAfter, limit, total);
+	protected SnomedConstraints createCollectionResource(List<SnomedConstraint> results, String searchAfter, int limit, int total) {
+		return new SnomedConstraints(results, searchAfter, limit, total);
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 
 /**
  * <i>Builder</i> class to build requests responsible for creating SNOMED CT relationships.
@@ -26,12 +25,12 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
  */
 public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedRelationshipCreateRequestBuilder> {
 
-	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	private String destinationId;
 	private String sourceId;
 	private boolean destinationNegated;
 	private int group = 0;
-	private RelationshipModifier modifier = RelationshipModifier.EXISTENTIAL;
+	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 	private Integer unionGroup = 0;
 	private String typeId;
 
@@ -49,8 +48,8 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 		return getSelf();
 	}
 	
-	public SnomedRelationshipCreateRequestBuilder setCharacteristicType(CharacteristicType characteristicType) {
-		this.characteristicType = characteristicType;
+	public SnomedRelationshipCreateRequestBuilder setCharacteristicTypeId(String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
 		return getSelf();
 	}
 	
@@ -64,8 +63,8 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 		return getSelf();
 	}
 	
-	public SnomedRelationshipCreateRequestBuilder setModifier(RelationshipModifier modifier) {
-		this.modifier = modifier;
+	public SnomedRelationshipCreateRequestBuilder setModifierId(String modifierid) {
+		this.modifierId = modifierid;
 		return getSelf();
 	}
 	
@@ -82,12 +81,12 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	@Override
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedRelationshipCreateRequest req = (SnomedRelationshipCreateRequest) request;
-		req.setCharacteristicType(characteristicType);
+		req.setCharacteristicTypeId(characteristicTypeId);
 		req.setDestinationId(destinationId);
 		req.setSourceId(sourceId);
 		req.setDestinationNegated(destinationNegated);
 		req.setGroup(group);
-		req.setModifier(modifier);
+		req.setModifier(modifierId);
 		req.setUnionGroup(unionGroup);
 		req.setTypeId(typeId);
 	}

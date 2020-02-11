@@ -31,8 +31,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -147,8 +145,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.addDescription(createDescription(refsetName + "FHIR Automated Test Query Type Refset (foundation metadata concept)", FULLY_SPECIFIED_NAME))
 			.addDescription(createDescription(refsetName, SYNONYM))
-			.addRelationship(createIsaRelationship(CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.QUERY)))
-			.addRelationship(createIsaRelationship(CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.QUERY)))
+			.addRelationship(createIsaRelationship(Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.QUERY)))
+			.addRelationship(createIsaRelationship(Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.QUERY)))
 			.setRefSet(SnomedRequests.prepareNewRefSet()
 				.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.setType(SnomedRefSetType.QUERY))
@@ -188,8 +186,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.addDescription(createDescription(refsetName +" (foundation metadata concept)", FULLY_SPECIFIED_NAME))
 			.addDescription(createDescription(refsetName, SYNONYM))
-			.addRelationship(createIsaRelationship(CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
-			.addRelationship(createIsaRelationship(CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
+			.addRelationship(createIsaRelationship(Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
+			.addRelationship(createIsaRelationship(Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
 			.setRefSet(SnomedRequests.prepareNewRefSet()
 					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 					.setType(SnomedRefSetType.SIMPLE))
@@ -212,15 +210,15 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setAcceptability(ImmutableMap.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
 	}
 
-	private static SnomedRelationshipCreateRequestBuilder createIsaRelationship(final CharacteristicType characteristicType, String destinationId) {
+	private static SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String characteristicTypeId, String destinationId) {
 		return SnomedRequests.prepareNewRelationship() 
 			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setDestinationId(destinationId)
 			.setTypeId(IS_A)
-			.setCharacteristicType(characteristicType)
-			.setModifier(RelationshipModifier.EXISTENTIAL);
+			.setCharacteristicTypeId(characteristicTypeId)
+			.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
 }

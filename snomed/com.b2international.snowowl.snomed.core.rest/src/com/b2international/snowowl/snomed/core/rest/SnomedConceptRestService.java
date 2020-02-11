@@ -111,8 +111,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		return SnomedRequests
 					.prepareSearchConcept()
 					.setLimit(params.getLimit())
-					.setScroll(params.getScrollKeepAlive())
-					.setScrollId(params.getScrollId())
 					.setSearchAfter(params.getSearchAfter())
 					.filterByIds(params.getId())
 					.filterByEffectiveTime(params.getEffectiveTime())

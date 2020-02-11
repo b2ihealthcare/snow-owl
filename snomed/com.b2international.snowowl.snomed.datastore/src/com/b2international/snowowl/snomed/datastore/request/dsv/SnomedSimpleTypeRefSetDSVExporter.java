@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -142,7 +141,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			.setExpand(expand)
 			.filterByActive(true)
 			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
-			.setScroll("15m")
 			.setLimit(10_000);
 		
 		if (includeInactiveMembers) {
@@ -188,8 +186,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						Map<Integer, Integer> matchingRelationships = concept.getRelationships()
 								.stream()
 								.filter(r -> relationshipTypeId.equals(r.getTypeId()) 
-										&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
-										|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
+										&& (Concepts.INFERRED_RELATIONSHIP.equals(r.getCharacteristicTypeId()) 
+										|| Concepts.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicTypeId())))
 								.collect(Collectors.groupingBy(
 										SnomedRelationship::getGroup,
 										Collectors.reducing(0, relationship -> 1, Integer::sum)));
@@ -440,8 +438,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									.stream()
 									.filter(r -> typeId.equals(r.getTypeId())
 											&& Objects.equals(r.getGroup(), propertyGroup) 
-											&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
-													|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
+											&& (Concepts.INFERRED_RELATIONSHIP.equals(r.getCharacteristicTypeId()) 
+													|| Concepts.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicTypeId())))
 									.forEach(relationship -> {
 										addCells(dataRow, occurrences, includeRelationshipId, ImmutableMap.of(relationship.getDestinationId(), getPreferredTerm(relationship.getDestination())));
 									});

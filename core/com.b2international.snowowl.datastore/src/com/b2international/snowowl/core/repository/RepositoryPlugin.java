@@ -106,16 +106,23 @@ public final class RepositoryPlugin extends Plugin {
 	}
 	
 	private Map<String, Object> initIndexSettings(Environment env) {
+		final RepositoryConfiguration repositoryConfig = env.service(SnowOwlConfiguration.class)
+				.getModuleConfig(RepositoryConfiguration.class);
+		final IndexConfiguration indexConfig = repositoryConfig.getIndexConfiguration();
+		
+		if (indexConfig.getClusterHealthTimeout() <= indexConfig.getSocketTimeout()) {
+			throw new IllegalStateException(String.format("Cluster health timeout (%s ms) must be greater than the socket timeout (%s ms).", 
+					indexConfig.getClusterHealthTimeout(),
+					indexConfig.getSocketTimeout()));
+		}
+		
+		
 		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 		builder.put(IndexClientFactory.DATA_DIRECTORY, env.getDataPath().resolve("indexes").toString());
 		builder.put(IndexClientFactory.CONFIG_DIRECTORY, env.getConfigPath().toString());
-		
-		final RepositoryConfiguration repositoryConfig = env.service(SnowOwlConfiguration.class)
-				.getModuleConfig(RepositoryConfiguration.class);
 		builder.put(IndexClientFactory.INDEX_PREFIX, repositoryConfig.getDeploymentId());
-		
-		final IndexConfiguration indexConfig = repositoryConfig.getIndexConfiguration();
 		builder.put(IndexClientFactory.CLUSTER_NAME, indexConfig.getClusterName());
+		// remove cluster configuration
 		if (indexConfig.getClusterUrl() != null) {
 			builder.put(IndexClientFactory.CLUSTER_URL, indexConfig.getClusterUrl());
 			if (indexConfig.getClusterUsername() != null) {
@@ -126,16 +133,11 @@ public final class RepositoryPlugin extends Plugin {
 			}
 		}
 		
+		builder.put(IndexClientFactory.RESULT_WINDOW_KEY, ""+indexConfig.getResultWindow());
+		builder.put(IndexClientFactory.MAX_TERMS_COUNT_KEY, ""+indexConfig.getMaxTermsCount());
 		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, indexConfig.getCommitInterval());
 		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, indexConfig.getCommitConcurrencyLevel());
 		builder.put(IndexClientFactory.CONNECT_TIMEOUT, indexConfig.getConnectTimeout());
-		
-		if (indexConfig.getClusterHealthTimeout() <= indexConfig.getSocketTimeout()) {
-			throw new IllegalStateException(String.format("Cluster health timeout (%s ms) must be greater than the socket timeout (%s ms).", 
-					indexConfig.getClusterHealthTimeout(),
-					indexConfig.getSocketTimeout()));
-		}
-		
 		builder.put(IndexClientFactory.SOCKET_TIMEOUT, indexConfig.getSocketTimeout());
 		builder.put(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, indexConfig.getClusterHealthTimeout());
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -40,7 +41,6 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -88,10 +88,10 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final Set<String> inferredSourceIds = Sets.newHashSet();
 		final Set<String> inferredDestinationIds = Sets.newHashSet();
 		
-		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.STATED_RELATIONSHIP);
-		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), CharacteristicType.STATED_RELATIONSHIP);
-		collectIds(inferredSourceIds, inferredDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.INFERRED_RELATIONSHIP);
-		collectIds(inferredSourceIds, inferredDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), CharacteristicType.INFERRED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), Concepts.STATED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), Concepts.STATED_RELATIONSHIP);
+		collectIds(inferredSourceIds, inferredDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), Concepts.INFERRED_RELATIONSHIP);
+		collectIds(inferredSourceIds, inferredDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), Concepts.INFERRED_RELATIONSHIP);
 		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRefSetMemberIndexEntry.class), expressionConverter);
 		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision), expressionConverter);
 		
@@ -209,8 +209,6 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, expressionConverter, staging, inferredConceptIds, checkCycles);
 		final Taxonomy statedTaxonomy = Taxonomies.stated(index, expressionConverter, staging, statedConceptIds, checkCycles);
 
-		final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
-		
 		// XXX change processor execution order is important!!!
 		return ImmutableList.<ChangeSetProcessor>builder()
 				// execute description change processor to get proper acceptabilityMap values before executing other change processors
@@ -218,10 +216,19 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 				.add(new DescriptionChangeProcessor())
 				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.INSTANCE.getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new RelationshipChangeProcessor())
-				// effective time restore should be the last processing unit before we send the changes to commit
-				.add(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp))
 				.build();
-		
+	}
+	
+	@Override
+	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
+		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
+		final FeatureToggles featureToggles = context.service(FeatureToggles.class);
+		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(context.id(), index.branch()));
+		if (!importRunning) {
+			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
+			// XXX effective time restore should be the last processing unit before we send the changes to commit
+			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);
+		}
 	}
 	
 	@Override
@@ -240,10 +247,10 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		throw new UnsupportedOperationException("Unsupported revision document: " + revision);
 	}
 	
-	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, CharacteristicType characteristicType) {
+	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, String characteristicTypeId) {
 		newRelationships
 			.filter(newRelationship -> Concepts.IS_A.equals(newRelationship.getTypeId()))
-			.filter(newRelationship -> newRelationship.getCharacteristicTypeId().equals(characteristicType.getConceptId()))
+			.filter(newRelationship -> newRelationship.getCharacteristicTypeId().equals(characteristicTypeId))
 			.forEach(newRelationship -> {
 				sourceIds.add(newRelationship.getSourceId());
 				destinationIds.add(newRelationship.getDestinationId());

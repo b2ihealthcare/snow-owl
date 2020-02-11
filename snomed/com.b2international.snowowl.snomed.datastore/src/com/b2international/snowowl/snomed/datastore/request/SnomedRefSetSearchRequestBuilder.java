@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -27,26 +26,26 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets
 import com.google.common.base.Strings;
 
 /**
- * <i>Builder</i> class to build requests responsible for searching SNOMED CT reference sets.
- * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
- * Filter methods restrict the results set returned from the search requests; 
- * what passes the filters will be returned as part of the pageable resultset.
+ * <i>Builder</i> class to build requests responsible for searching SNOMED CT reference sets. This class should be instantiated from the corresponding
+ * static method on the central {@link SnomedRequests} class. Filter methods restrict the results set returned from the search requests; what passes
+ * the filters will be returned as part of the pageable resultset.
  * 
  * @since 4.5
  */
 public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRefSetSearchRequestBuilder, SnomedReferenceSets> {
 
-	SnomedRefSetSearchRequestBuilder() {}
+	SnomedRefSetSearchRequestBuilder() {
+	}
 
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedReferenceSets> createSearch() {
 		return new SnomedRefSetSearchRequest();
 	}
-	
+
 	public SnomedRefSetSearchRequestBuilder filterByType(SnomedRefSetType refSetType) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, refSetType);
 	}
-	
+
 	public SnomedRefSetSearchRequestBuilder filterByTypes(Collection<SnomedRefSetType> refSetTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, Collections3.toImmutableSet(refSetTypes));
 	}
@@ -61,22 +60,24 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		final int referencedComponentTypeAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(referencedComponentType).shortId();
 		return filterByReferencedComponentType(referencedComponentTypeAsInt);
 	}
-	
+
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentType(Integer referencedComponentType) {
 		if (referencedComponentType == null) {
 			return getSelf();
 		}
 		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentType);
 	}
-	
+
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Collection<Integer> referencedComponentTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, Collections3.toImmutableSet(referencedComponentTypes));
 	}
 
 	/**
-	 * Returns map type reference sets that have the exact matching map targe component type.
-	 * Only applicable for maps
-	 * @param map target component type integer
+	 * Returns map type reference sets that have the exact matching map target component type. Only applicable for maps, other refsets will not match
+	 * this filter.
+	 * 
+	 * @param mapTargetComponentType
+	 *            - map target component type integer
 	 */
 	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentType(Integer mapTargetComponentType) {
 		if (mapTargetComponentType == null) {
@@ -84,11 +85,13 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		}
 		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
 	}
-	
+
 	/**
-	 * Returns map type reference sets that have the exact matching map targe component types.
-	 * Only applicable for maps
-	 * @param map target component types
+	 * Returns map type reference sets that have the exact matching map target component types. Only applicable for maps, other refsets will not match
+	 * this filter.
+	 * 
+	 * @param mapTargetComponentTypes
+	 *            - map target component type values
 	 */
 	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentTypes(Collection<Integer> mapTargetComponentTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, Collections3.toImmutableSet(mapTargetComponentTypes));

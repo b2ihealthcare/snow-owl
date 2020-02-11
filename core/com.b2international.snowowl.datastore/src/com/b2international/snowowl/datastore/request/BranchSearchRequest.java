@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 	
 	@Override
 	protected Branches createEmptyResult(int limit) {
-		return new Branches(Collections.emptyList(), null, null, limit, 0);
+		return new Branches(Collections.emptyList(), null, limit, 0);
 	}
 
 	@Override
@@ -99,7 +99,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 		
 		expand(context, branchHits);
 		
-		return new Branches(branchHits, hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
+		return new Branches(branchHits, hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 
 	private List<Branch> toBranchData(final BaseRevisionBranching branching, final Iterable<RevisionBranch> hits) {
@@ -129,7 +129,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 			final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
 			for (Branch branchHit : branchHits) {
 				final List<Branch> children = toBranchData(branching, branching.getChildren(branchHit.path()));
-				branchHit.setChildren(new Branches(children, null, null, children.size(), children.size()));
+				branchHit.setChildren(new Branches(children, null, children.size(), children.size()));
 			}
 		}
 	}

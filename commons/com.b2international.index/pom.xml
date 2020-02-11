@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>6.8.2</elasticsearch.version>
+		<elasticsearch.version>7.5.2</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
@@ -96,12 +96,14 @@
 								elasticsearch,
 								elasticsearch-cli,
 								elasticsearch-core,
+								elasticsearch-geo,
 								elasticsearch-rest-client,
 								elasticsearch-rest-high-level-client,
 								elasticsearch-secure-sm,
 								elasticsearch-ssl-config,
 								elasticsearch-x-content,
 								hppc,
+								hppcrt,
 								jna,
 								joda-time,
 								jopt-simple,
@@ -124,12 +126,14 @@
 								lucene-spatial-extras,
 								lucene-spatial3d,
 								lucene-suggest,
+								mapper-extras-client,
 								parent-join-client,
 								percolator-client,
 								rank-eval-client,
 								reindex,
 								reindex-client,
 								scripting-painless-spi,
+								ssl-config,
 								t-digest,
 								transport,
 								transport-netty4,

@@ -18,9 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.5
@@ -28,9 +25,7 @@ import com.google.common.collect.Multimap;
 public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedDescriptionUpdateRequestBuilder, SnomedDescriptionUpdateRequest> {
 
 	private Map<String, Acceptability> acceptability;
-	private Multimap<AssociationType, String> associationTargets;
 	private String caseSignificanceId;
-	private DescriptionInactivationIndicator inactivationIndicator;
 	private String languageCode;
 	private String typeId;
 	private String term;
@@ -44,18 +39,8 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 		return getSelf();
 	}
 	
-	public SnomedDescriptionUpdateRequestBuilder setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
-		this.associationTargets = associationTargets;
-		return getSelf();
-	}
-	
 	public SnomedDescriptionUpdateRequestBuilder setCaseSignificanceId(String caseSignificanceId) {
 		this.caseSignificanceId = caseSignificanceId;
-		return getSelf();
-	}
-	
-	public SnomedDescriptionUpdateRequestBuilder setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
 		return getSelf();
 	}
 	
@@ -83,9 +68,7 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 	protected void init(SnomedDescriptionUpdateRequest req) {
 		super.init(req);
 		req.setAcceptability(acceptability);
-		req.setAssociationTargets(associationTargets);
 		req.setCaseSignificanceId(caseSignificanceId);
-		req.setInactivationIndicator(inactivationIndicator);
 		req.setLanguageCode(languageCode);
 		req.setTypeId(typeId);
 		req.setTerm(term);

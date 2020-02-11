@@ -17,15 +17,12 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.List;
 
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.5
@@ -34,8 +31,6 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 
 	private String definitionStatusId;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
-	private Multimap<AssociationType, String> associationTargets;
-	private InactivationIndicator inactivationIndicator;
 	private List<SnomedDescription> descriptions;
 	private List<SnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
@@ -50,18 +45,8 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		return new SnomedConceptUpdateRequest(componentId);
 	}
 	
-	public SnomedConceptUpdateRequestBuilder setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
-		this.associationTargets = associationTargets;
-		return getSelf();
-	}
-	
 	public SnomedConceptUpdateRequestBuilder setDefinitionStatusId(String definitionStatusId) {
 		this.definitionStatusId = definitionStatusId;
-		return getSelf();
-	}
-	
-	public SnomedConceptUpdateRequestBuilder setInactivationIndicator(InactivationIndicator inactivationIndicator) {
-		this.inactivationIndicator = inactivationIndicator;
 		return getSelf();
 	}
 	
@@ -95,8 +80,6 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		super.init(req);
 		req.setDefinitionStatusId(definitionStatusId);
 		req.setSubclassDefinitionStatus(subclassDefinitionStatus);
-		req.setAssociationTargets(associationTargets);
-		req.setInactivationIndicator(inactivationIndicator);
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
 		req.setMembers(members);

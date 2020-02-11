@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,8 +92,6 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.filterByGroup(params.getGroup())
 					.filterByUnionGroup(params.getUnionGroup())
 					.setLimit(params.getLimit())
-					.setScroll(params.getScrollKeepAlive())
-					.setScrollId(params.getScrollId())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())
 					.setLocales(extendedLocales)
@@ -223,10 +221,10 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.prepareUpdateRelationship(relationshipId)
 			.setActive(update.isActive())
 			.setModuleId(update.getModuleId())
-			.setCharacteristicType(update.getCharacteristicType())
+			.setCharacteristicTypeId(update.getCharacteristicTypeId())
 			.setGroup(update.getGroup())
 			.setUnionGroup(update.getUnionGroup())
-			.setModifier(update.getModifier())
+			.setModifierId(update.getModifierId())
 			.setTypeId(update.getTypeId())
 			.setDestinationId(update.getDestinationId())
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)

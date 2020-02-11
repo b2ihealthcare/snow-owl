@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.analyzer;
+package com.b2international.index.compat;
 
 import org.apache.lucene.analysis.util.CharTokenizer;
 
@@ -23,18 +23,13 @@ import com.google.common.base.CharMatcher;
  * A variant of {@link CharTokenizer} which splits tokens according to the specified {@link CharMatcher},
  * converting characters to lower case in the normalization step.
  */
-public class CharMatcherTokenizer extends CharTokenizer {
+final class CharMatcherTokenizer extends CharTokenizer {
 
 	private final CharMatcher tokenBoundaryMatcher;
 
 	public CharMatcherTokenizer(final CharMatcher tokenBoundaryMatcher) {
 		super();
 		this.tokenBoundaryMatcher = tokenBoundaryMatcher;
-	}
-
-	@Override
-	protected int normalize(final int c) {
-		return Character.toLowerCase(c);
 	}
 
 	@Override

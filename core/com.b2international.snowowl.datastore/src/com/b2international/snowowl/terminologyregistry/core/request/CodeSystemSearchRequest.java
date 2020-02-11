@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,12 +55,12 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 
 	@Override
 	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<CodeSystemEntry> hits) {
-		return new CodeSystems(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
+		return new CodeSystems(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	
 	@Override
 	protected CodeSystems createEmptyResult(int limit) {
-		return new CodeSystems(Collections.emptyList(), null, null, limit, 0);
+		return new CodeSystems(Collections.emptyList(), null, limit, 0);
 	}
 	
 	@Override

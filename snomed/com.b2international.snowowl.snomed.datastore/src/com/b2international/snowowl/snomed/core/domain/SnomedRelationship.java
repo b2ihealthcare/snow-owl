@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		public static final String SOURCE = "source";
 		public static final String TYPE = "type";
 		public static final String DESTINATION = "destination";
+		public static final String CHARACTERISTIC_TYPE = "characteristicType";
+		public static final String MODIFIER = "modifier";
 	}
 
  /*
@@ -112,8 +114,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	private boolean destinationNegated;
 	private Integer group;
 	private Integer unionGroup;
-	private CharacteristicType characteristicType;
-	private RelationshipModifier modifier;
+	private SnomedConcept characteristicType;
+	private SnomedConcept modifier;
 	private SnomedConcept source;
 	private SnomedConcept destination;
 	private SnomedConcept type;
@@ -208,10 +210,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * Returns the characteristic type of the relationship.
 	 * 
 	 * @return the relationship's characteristic type
-	 * @deprecated - get the characteristicTypeId from {@link #getCharacteristicTypeId()} method
 	 */
-	@JsonProperty
-	public CharacteristicType getCharacteristicType() {
+	public SnomedConcept getCharacteristicType() {
 		return characteristicType;
 	}
 	
@@ -219,17 +219,16 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @return the characteristicType ID of the relationship
 	 */
 	public String getCharacteristicTypeId() {
-		return getCharacteristicType() == null ? null : getCharacteristicType().getConceptId();
+		return getCharacteristicType() == null ? null : getCharacteristicType().getId();
 	}
 	
 	/**
 	 * Returns the relationship's modifier value.
 	 * 
 	 * @return the modifier of this relationship
-	 * @deprecated - get the modifierId from {@link #getModifierId()} method
 	 */
 	@JsonProperty
-	public RelationshipModifier getModifier() {
+	public SnomedConcept getModifier() {
 		return modifier;
 	}
 	
@@ -237,7 +236,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @return the modifierId of the relationship.
 	 */
 	public String getModifierId() {
-		return getModifier() == null ? null : getModifier().getConceptId();
+		return getModifier() == null ? null : getModifier().getId();
 	}
 
 	public void setSource(SnomedConcept source) {
@@ -281,10 +280,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 
 	/**
 	 * @param characteristicType
-	 * @deprecated - set characteristicTypeId via {@link #setCharacteristicTypeId(String)} method
 	 */
-	@JsonIgnore
-	public void setCharacteristicType(final CharacteristicType characteristicType) {
+	public void setCharacteristicType(final SnomedConcept characteristicType) {
 		this.characteristicType = characteristicType;
 	}
 	
@@ -292,15 +289,13 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @param characteristicTypeId
 	 */
 	public void setCharacteristicTypeId(final String characteristicTypeId) {
-		this.characteristicType = CharacteristicType.getByConceptId(characteristicTypeId);
+		setCharacteristicType(new SnomedConcept(characteristicTypeId));
 	}
 
 	/**
 	 * @param modifier
-	 * @deprecated - set modifierId via {@link #setModifierId(String)} method
 	 */
-	@JsonIgnore
-	public void setModifier(final RelationshipModifier modifier) {
+	public void setModifier(final SnomedConcept modifier) {
 		this.modifier = modifier;
 	}
 	
@@ -308,19 +303,19 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @param modifierId
 	 */
 	public void setModifierId(final String modifierId) {
-		this.modifier = RelationshipModifier.getByConceptId(modifierId);
+		setModifier(new SnomedConcept(modifierId));
 	}
 
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(String containerId) {
 		return SnomedRequests.prepareNewRelationship()
 				.setActive(isActive())
-				.setCharacteristicType(getCharacteristicType())
+				.setCharacteristicTypeId(getCharacteristicTypeId())
 				.setDestinationId(getDestinationId())
 				.setDestinationNegated(isDestinationNegated())
 				.setGroup(getGroup())
 				.setId(getId())
-				.setModifier(getModifier())
+				.setModifierId(getModifierId())
 				.setModuleId(getModuleId())
 				.setSourceId(containerId)
 				.setTypeId(getTypeId())
@@ -332,9 +327,9 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	public Request<TransactionContext, Boolean> toUpdateRequest() {
 		return SnomedRequests.prepareUpdateRelationship(getId())
 				.setActive(isActive())
-				.setCharacteristicType(getCharacteristicType())
 				.setGroup(getGroup())
-				.setModifier(getModifier())
+				.setCharacteristicTypeId(getCharacteristicTypeId())
+				.setModifierId(getModifierId())
 				.setModuleId(getModuleId())
 				.setUnionGroup(getUnionGroup())
 				.setTypeId(getTypeId())

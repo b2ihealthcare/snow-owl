@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,9 +95,9 @@ public final class SnomedCommand extends Command {
 				out.println("Unrecognized import format: '%s'. Supported formats are: %s", format, SUPPORTED_FORMAT);
 			}
 			
-			final User user = out.authenticate();
+			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(new Permission(Permission.IMPORT, SnomedDatastoreActivator.REPOSITORY_UUID, ""))) {
+			if (user == null || !user.hasPermission(new Permission(Permission.IMPORT, Permission.asResource(SnomedDatastoreActivator.REPOSITORY_UUID, branch), ""))) {
 				out.println("User is unauthorized to import SNOMED CT content.");
 				return;
 			}

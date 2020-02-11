@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 
 /**
  * @since 4.5
@@ -30,6 +31,7 @@ public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnom
 
 	private final String componentId;
 	
+	private InactivationProperties inactivationProperties; 
 	private String moduleId;
 	private Boolean active;
 
@@ -48,6 +50,11 @@ public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnom
 		return getSelf();
 	}
 	
+	public final B setInactivationProperties(InactivationProperties inactivationProperties) {
+		this.inactivationProperties = inactivationProperties;
+		return getSelf();
+	}
+	
 	@Override
 	protected final Request<TransactionContext, Boolean> doBuild() {
 		final R req = create(componentId);
@@ -59,6 +66,7 @@ public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnom
 	protected void init(R req) {
 		req.setActive(active);
 		req.setModuleId(moduleId);
+		req.setInactivationProperties(inactivationProperties);
 	}
 
 	protected abstract R create(String componentId);

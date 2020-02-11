@@ -51,7 +51,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -72,6 +71,10 @@ import com.google.common.collect.Iterables;
 @BranchBase(value = SnomedApiTestConstants.EXTENSION_PATH, isolateTests = false)
 public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 
+	private String getFirstRelationshipId(SnomedConcept concept, String characteristicTypeId) {
+		return concept.getRelationships().getItems().stream().filter(r -> characteristicTypeId.equals(r.getCharacteristicTypeId())).findFirst().get().getId();
+	}
+	
 	@Test
 	public void upgradeWithoutChanges() {
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
@@ -339,12 +342,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionSynonymTerm, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 
 		Map<String, Object> statedIsaRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> inferredIsaRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> additionalRelationshipRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+				Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
 
 		Map<String, Object> extensionConceptRequestBody = createConceptRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
 				ImmutableList.of(statedIsaRequestBody, inferredIsaRequestBody, additionalRelationshipRequestBody), 
@@ -366,12 +369,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String extensionSynonymId = extensionConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionSynonymTerm))
 				.findFirst().get().getId();
 
-		String extensionStatedIsaId = extensionConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String extensionInferredIsaId = extensionConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
-		String extensionAdditionalRelationshipId = extensionConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.ADDITIONAL_RELATIONSHIP).findFirst().get().getId();
+		String extensionStatedIsaId = getFirstRelationshipId(extensionConcept, Concepts.STATED_RELATIONSHIP);
+		String extensionInferredIsaId = getFirstRelationshipId(extensionConcept, Concepts.INFERRED_RELATIONSHIP);
+		String extensionAdditionalRelationshipId = getFirstRelationshipId(extensionConcept, Concepts.ADDITIONAL_RELATIONSHIP);
 
 		// create new version on MAIN
 		
@@ -394,9 +394,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionPtTerm, SnomedApiTestConstants.UK_PREFERRED_MAP);
 
 		Map<String, Object> intStatedIsaRequestBody = createRelationshipRequestBody("", Concepts.MODULE_SCT_CORE, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> intInferredIsaRequestBody = createRelationshipRequestBody("", Concepts.MODULE_SCT_CORE,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> intConceptRequestBody = createConceptRequestBody(extensionConceptId, "", Concepts.MODULE_SCT_CORE,
 				ImmutableList.of(intStatedIsaRequestBody, intInferredIsaRequestBody), 
@@ -416,10 +416,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.getId();
 		String intPtId = intConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm)).findFirst().get().getId();
 
-		String intStatedIsaId = intConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String intInferredIsaId = intConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String intStatedIsaId = getFirstRelationshipId(intConcept, Concepts.STATED_RELATIONSHIP);
+		String intInferredIsaId = getFirstRelationshipId(intConcept, Concepts.INFERRED_RELATIONSHIP);
 
 		assertEquals(intConceptId, extensionConceptId);
 		assertNotEquals(intConcept.getModuleId(), extensionConcept.getModuleId());
@@ -572,7 +570,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 			.put("sourceId", Concepts.ROOT_CONCEPT)
 			.put("typeId", Concepts.PART_OF)
 			.put("destinationId", Concepts.NAMESPACE_ROOT)
-			.put("characteristicType", CharacteristicType.ADDITIONAL_RELATIONSHIP)
+			.put("characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP)
 			.put("group", 0)
 			.put("commitComment", "Created new extension relationship")
 			.build();
@@ -585,7 +583,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(SnomedRelationship.class);
 		
-		assertEquals(CharacteristicType.ADDITIONAL_RELATIONSHIP, extensionRelationship.getCharacteristicType());
+		assertEquals(Concepts.ADDITIONAL_RELATIONSHIP, extensionRelationship.getCharacteristicTypeId());
 		assertEquals(0, extensionRelationship.getGroup().intValue());
 		
 		// create new version on MAIN
@@ -609,7 +607,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.put("sourceId", Concepts.ROOT_CONCEPT)
 				.put("typeId", Concepts.PART_OF)
 				.put("destinationId", Concepts.NAMESPACE_ROOT)
-				.put("characteristicType", CharacteristicType.INFERRED_RELATIONSHIP)
+				.put("characteristicTypeId", Concepts.INFERRED_RELATIONSHIP)
 				.put("group", 1)
 				.put("commitComment", "Created new donated INT relationship")
 				.build();
@@ -624,7 +622,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(SnomedRelationship.class);
 		
-		assertEquals(CharacteristicType.INFERRED_RELATIONSHIP, donatedRelationship.getCharacteristicType());
+		assertEquals(Concepts.INFERRED_RELATIONSHIP, donatedRelationship.getCharacteristicTypeId());
 		assertEquals(1, donatedRelationship.getGroup().intValue());
 		
 		// upgrade extension to new INT version
@@ -644,7 +642,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.extract().as(SnomedRelationship.class);
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedRelationshipInExtension.getModuleId());
-		assertEquals(CharacteristicType.INFERRED_RELATIONSHIP, donatedRelationshipInExtension.getCharacteristicType());
+		assertEquals(Concepts.INFERRED_RELATIONSHIP, donatedRelationshipInExtension.getCharacteristicTypeId());
 		assertEquals(1, donatedRelationshipInExtension.getGroup().intValue());
 	}
 	
@@ -665,9 +663,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionSynonymTerm, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	
 		Map<String, Object> statedIsaRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> inferredIsaRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 	
 		Map<String, Object> extensionConceptRequestBody = createConceptRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
 				ImmutableList.of(statedIsaRequestBody, inferredIsaRequestBody), 
@@ -689,10 +687,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String extensionSynonymId = extensionConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionSynonymTerm))
 				.findFirst().get().getId();
 	
-		String extensionStatedIsaId = extensionConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String extensionInferredIsaId = extensionConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String extensionStatedIsaId = getFirstRelationshipId(extensionConcept, Concepts.STATED_RELATIONSHIP);
+		String extensionInferredIsaId = getFirstRelationshipId(extensionConcept, Concepts.INFERRED_RELATIONSHIP);
 	
 		// create new version on MAIN
 		
@@ -715,9 +711,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionPtTerm, SnomedApiTestConstants.UK_PREFERRED_MAP);
 	
 		Map<String, Object> intStatedIsaRequestBody = createRelationshipRequestBody("", Concepts.MODULE_SCT_CORE, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> intInferredIsaRequestBody = createRelationshipRequestBody("", Concepts.MODULE_SCT_CORE,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> intConceptRequestBody = createConceptRequestBody(extensionConceptId, "", Concepts.MODULE_SCT_CORE,
 				ImmutableList.of(intStatedIsaRequestBody, intInferredIsaRequestBody), 
@@ -737,10 +733,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.getId();
 		String intPtId = intConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm)).findFirst().get().getId();
 	
-		String intStatedIsaId = intConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String intInferredIsaId = intConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String intStatedIsaId = getFirstRelationshipId(intConcept, Concepts.STATED_RELATIONSHIP);
+		String intInferredIsaId = getFirstRelationshipId(intConcept, Concepts.INFERRED_RELATIONSHIP);
 	
 		assertEquals(intConceptId, extensionConceptId);
 		assertNotEquals(intConcept.getModuleId(), extensionConcept.getModuleId());
@@ -812,9 +806,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionSynonymTerm, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	
 		Map<String, Object> statedIsaRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> inferredIsaRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 	
 		Map<String, Object> extensionConceptRequestBody = createConceptRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
 				ImmutableList.of(statedIsaRequestBody, inferredIsaRequestBody), 
@@ -836,10 +830,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String extensionSynonymId = extensionConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionSynonymTerm))
 				.findFirst().get().getId();
 	
-		String extensionStatedIsaId = extensionConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String extensionInferredIsaId = extensionConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String extensionStatedIsaId = getFirstRelationshipId(extensionConcept, Concepts.STATED_RELATIONSHIP);
+		String extensionInferredIsaId = getFirstRelationshipId(extensionConcept, Concepts.INFERRED_RELATIONSHIP);
 	
 		// create new version on MAIN
 		
@@ -862,9 +854,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionPtTerm, SnomedApiTestConstants.UK_PREFERRED_MAP);
 	
 		Map<String, Object> intStatedIsaRequestBody = createRelationshipRequestBody(extensionStatedIsaId, "", Concepts.MODULE_SCT_CORE, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> intInferredIsaRequestBody = createRelationshipRequestBody(extensionInferredIsaId, "", Concepts.MODULE_SCT_CORE,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> intConceptRequestBody = createConceptRequestBody(extensionConceptId, "", Concepts.MODULE_SCT_CORE,
 				ImmutableList.of(intStatedIsaRequestBody, intInferredIsaRequestBody), 
@@ -884,10 +876,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.getId();
 		String intPtId = intConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm)).findFirst().get().getId();
 	
-		String intStatedIsaId = intConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String intInferredIsaId = intConcept.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String intStatedIsaId = getFirstRelationshipId(intConcept, Concepts.STATED_RELATIONSHIP);
+		String intInferredIsaId = getFirstRelationshipId(intConcept, Concepts.INFERRED_RELATIONSHIP);
 	
 		assertEquals(intConceptId, extensionConceptId);
 		assertNotEquals(intConcept.getModuleId(), extensionConcept.getModuleId());
@@ -936,7 +926,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertTrue(descriptionIds.contains(extensionSynonymId));
 		
 		List<SnomedRelationship> donatedStatedIsas = donatedConceptInExtension.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, donatedStatedIsas.size());
@@ -945,7 +935,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedStatedIsa.getModuleId());
 		
 		List<SnomedRelationship> donatedInferredIsas = donatedConceptInExtension.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.INFERRED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, donatedInferredIsas.size());
@@ -972,9 +962,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionSynonymTerm1, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	
 		Map<String, Object> statedIsaRequestBody1 = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> inferredIsaRequestBody1 = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 	
 		Map<String, Object> extensionConceptRequestBody1 = createConceptRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
 				ImmutableList.of(statedIsaRequestBody1, inferredIsaRequestBody1), 
@@ -996,10 +986,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String extensionSynonymId1 = extensionConcept1.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionSynonymTerm1))
 				.findFirst().get().getId();
 	
-		String extensionStatedIsaId1 = extensionConcept1.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String extensionInferredIsaId1 = extensionConcept1.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String extensionStatedIsaId1 = getFirstRelationshipId(extensionConcept1, Concepts.STATED_RELATIONSHIP);
+		String extensionInferredIsaId1 = getFirstRelationshipId(extensionConcept1, Concepts.INFERRED_RELATIONSHIP);
 	
 		// create another extension concept which references the previous one
 		
@@ -1015,12 +1003,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionSynonymTerm2, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	
 		Map<String, Object> statedIsaRequestBody2 = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> inferredIsaRequestBody2 = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> partOfRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.PART_OF, extensionConceptId1, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+				Concepts.PART_OF, extensionConceptId1, Concepts.ADDITIONAL_RELATIONSHIP);
 	
 		Map<String, Object> extensionConceptRequestBody2 = createConceptRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
 				ImmutableList.of(statedIsaRequestBody2, inferredIsaRequestBody2, partOfRequestBody), 
@@ -1042,12 +1030,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String extensionSynonymId2 = extensionConcept2.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionSynonymTerm2))
 				.findFirst().get().getId();
 	
-		String extensionStatedIsaId2 = extensionConcept2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String extensionInferredIsaId2 = extensionConcept2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
-		String extensionPartOfId = extensionConcept2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.ADDITIONAL_RELATIONSHIP).findFirst().get().getId();
+		String extensionStatedIsaId2 = getFirstRelationshipId(extensionConcept2, Concepts.STATED_RELATIONSHIP);
+		String extensionInferredIsaId2 = getFirstRelationshipId(extensionConcept2, Concepts.INFERRED_RELATIONSHIP);
+		String extensionPartOfId = getFirstRelationshipId(extensionConcept2, Concepts.ADDITIONAL_RELATIONSHIP);
 		
 		// create new version on MAIN
 		
@@ -1070,9 +1055,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionPtTerm1, SnomedApiTestConstants.UK_PREFERRED_MAP);
 	
 		Map<String, Object> intStatedIsaRequestBody1 = createRelationshipRequestBody(extensionStatedIsaId1, "", Concepts.MODULE_SCT_CORE, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> intInferredIsaRequestBody1 = createRelationshipRequestBody(extensionInferredIsaId1, "", Concepts.MODULE_SCT_CORE,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> intConceptRequestBody1 = createConceptRequestBody(extensionConceptId1, "", Concepts.MODULE_SCT_CORE,
 				ImmutableList.of(intStatedIsaRequestBody1, intInferredIsaRequestBody1), 
@@ -1092,10 +1077,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.getId();
 		String intPtId1 = intConcept1.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm1)).findFirst().get().getId();
 	
-		String intStatedIsaId1 = intConcept1.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String intInferredIsaId1 = intConcept1.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String intStatedIsaId1 = getFirstRelationshipId(intConcept1, Concepts.STATED_RELATIONSHIP);
+		String intInferredIsaId1 = getFirstRelationshipId(intConcept1, Concepts.INFERRED_RELATIONSHIP);
 	
 		assertEquals(intConceptId1, extensionConceptId1);
 		assertNotEquals(intConcept1.getModuleId(), extensionConcept1.getModuleId());
@@ -1113,9 +1096,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionPtTerm2, SnomedApiTestConstants.UK_PREFERRED_MAP);
 	
 		Map<String, Object> intStatedIsaRequestBody2 = createRelationshipRequestBody(extensionStatedIsaId2, "", Concepts.MODULE_SCT_CORE, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> intInferredIsaRequestBody2 = createRelationshipRequestBody(extensionInferredIsaId2, "", Concepts.MODULE_SCT_CORE,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> intConceptRequestBody2 = createConceptRequestBody(extensionConceptId2, "", Concepts.MODULE_SCT_CORE,
 				ImmutableList.of(intStatedIsaRequestBody2, intInferredIsaRequestBody2), 
@@ -1135,10 +1118,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.getId();
 		String intPtId2 = intConcept2.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm2)).findFirst().get().getId();
 	
-		String intStatedIsaId2 = intConcept2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String intInferredIsaId2 = intConcept2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String intStatedIsaId2 = getFirstRelationshipId(intConcept2, Concepts.STATED_RELATIONSHIP);
+		String intInferredIsaId2 = getFirstRelationshipId(intConcept2, Concepts.INFERRED_RELATIONSHIP);
 	
 		assertEquals(intConceptId2, extensionConceptId2);
 		assertNotEquals(intConcept2.getModuleId(), extensionConcept2.getModuleId());
@@ -1195,7 +1176,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_B2I_EXTENSION, additionalSyonym.getModuleId());
 		
 		List<SnomedRelationship> donatedStatedIsas = donatedConceptInExtension1.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, donatedStatedIsas.size());
@@ -1204,7 +1185,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedStatedIsa.getModuleId());
 		
 		List<SnomedRelationship> donatedInferredIsas = donatedConceptInExtension1.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.INFERRED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, donatedInferredIsas.size());
@@ -1247,7 +1228,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_B2I_EXTENSION, additionalSyonym2.getModuleId());
 		
 		List<SnomedRelationship> donatedStatedIsas2 = donatedConceptInExtension2.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, donatedStatedIsas2.size());
@@ -1256,7 +1237,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedStatedIsa2.getModuleId());
 		
 		List<SnomedRelationship> donatedInferredIsas2 = donatedConceptInExtension2.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.INFERRED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, donatedInferredIsas2.size());
@@ -1265,7 +1246,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedInferredIsa2.getModuleId());
 		
 		List<SnomedRelationship> additionalRelationships = donatedConceptInExtension2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.ADDITIONAL_RELATIONSHIP)
+				.filter(r -> Concepts.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, additionalRelationships.size());
@@ -1293,9 +1274,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionSynonymTerm1, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	
 		Map<String, Object> statedIsaRequestBody1 = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> inferredIsaRequestBody1 = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 	
 		Map<String, Object> extensionConceptRequestBody1 = createConceptRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
 				ImmutableList.of(statedIsaRequestBody1, inferredIsaRequestBody1), 
@@ -1317,10 +1298,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String extensionSynonymId1 = extensionConcept1.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionSynonymTerm1))
 				.findFirst().get().getId();
 	
-		String extensionStatedIsaId1 = extensionConcept1.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String extensionInferredIsaId1 = extensionConcept1.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String extensionStatedIsaId1 = getFirstRelationshipId(extensionConcept1, Concepts.STATED_RELATIONSHIP);
+		String extensionInferredIsaId1 = getFirstRelationshipId(extensionConcept1, Concepts.INFERRED_RELATIONSHIP);
 	
 		// create another extension concept which references the previous one
 		
@@ -1336,12 +1315,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionSynonymTerm2, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	
 		Map<String, Object> statedIsaRequestBody2 = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> inferredIsaRequestBody2 = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> partOfRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-				Concepts.PART_OF, extensionConceptId1, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+				Concepts.PART_OF, extensionConceptId1, Concepts.ADDITIONAL_RELATIONSHIP);
 	
 		Map<String, Object> extensionConceptRequestBody2 = createConceptRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
 				ImmutableList.of(statedIsaRequestBody2, inferredIsaRequestBody2, partOfRequestBody), 
@@ -1363,12 +1342,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		String extensionSynonymId2 = extensionConcept2.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionSynonymTerm2))
 				.findFirst().get().getId();
 	
-		String extensionStatedIsaId2 = extensionConcept2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String extensionInferredIsaId2 = extensionConcept2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
-		String extensionPartOfId = extensionConcept2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.ADDITIONAL_RELATIONSHIP).findFirst().get().getId();
+		String extensionStatedIsaId2 = getFirstRelationshipId(extensionConcept2, Concepts.STATED_RELATIONSHIP);
+		String extensionInferredIsaId2 = getFirstRelationshipId(extensionConcept2, Concepts.INFERRED_RELATIONSHIP);
+		String extensionPartOfId = getFirstRelationshipId(extensionConcept2, Concepts.ADDITIONAL_RELATIONSHIP);
 		
 		// create new version on MAIN
 		
@@ -1391,9 +1367,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				Concepts.SYNONYM, extensionPtTerm1, SnomedApiTestConstants.UK_PREFERRED_MAP);
 	
 		Map<String, Object> intStatedIsaRequestBody1 = createRelationshipRequestBody(extensionStatedIsaId1, "", Concepts.MODULE_SCT_CORE, 
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.STATED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
 		Map<String, Object> intInferredIsaRequestBody1 = createRelationshipRequestBody(extensionInferredIsaId1, "", Concepts.MODULE_SCT_CORE,
-				Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
+				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
 		
 		Map<String, Object> intConceptRequestBody1 = createConceptRequestBody(extensionConceptId1, "", Concepts.MODULE_SCT_CORE,
 				ImmutableList.of(intStatedIsaRequestBody1, intInferredIsaRequestBody1), 
@@ -1413,10 +1389,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 				.getId();
 		String intPtId1 = intConcept1.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm1)).findFirst().get().getId();
 	
-		String intStatedIsaId1 = intConcept1.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP).findFirst().get().getId();
-		String intInferredIsaId1 = intConcept1.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP).findFirst().get().getId();
+		String intStatedIsaId1 = getFirstRelationshipId(intConcept1, Concepts.STATED_RELATIONSHIP);
+		String intInferredIsaId1 = getFirstRelationshipId(intConcept1, Concepts.INFERRED_RELATIONSHIP);
 	
 		assertEquals(intConceptId1, extensionConceptId1);
 		assertNotEquals(intConcept1.getModuleId(), extensionConcept1.getModuleId());
@@ -1475,7 +1449,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_B2I_EXTENSION, additionalSyonym.getModuleId());
 		
 		List<SnomedRelationship> donatedStatedIsas = donatedConceptInExtension1.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, donatedStatedIsas.size());
@@ -1484,7 +1458,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedStatedIsa.getModuleId());
 		
 		List<SnomedRelationship> donatedInferredIsas = donatedConceptInExtension1.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.INFERRED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, donatedInferredIsas.size());
@@ -1527,7 +1501,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_B2I_EXTENSION, additionalSyonym2.getModuleId());
 		
 		List<SnomedRelationship> extensionStatedIsas2 = extensionConceptInExtension2.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.STATED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, extensionStatedIsas2.size());
@@ -1536,7 +1510,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_B2I_EXTENSION, extensionStatedIsa2.getModuleId());
 		
 		List<SnomedRelationship> extensionInferredIsas2 = extensionConceptInExtension2.getRelationships().getItems().stream()
-				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && r.getCharacteristicType() == CharacteristicType.INFERRED_RELATIONSHIP)
+				.filter(r -> r.getTypeId().equals(Concepts.IS_A) && Concepts.INFERRED_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, extensionInferredIsas2.size());
@@ -1545,7 +1519,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.MODULE_B2I_EXTENSION, extensionInferredIsa2.getModuleId());
 		
 		List<SnomedRelationship> additionalRelationships = extensionConceptInExtension2.getRelationships().getItems().stream()
-				.filter(r -> r.getCharacteristicType() == CharacteristicType.ADDITIONAL_RELATIONSHIP)
+				.filter(r -> Concepts.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicTypeId()))
 				.collect(toList());
 		
 		assertEquals(1, additionalRelationships.size());
@@ -1608,18 +1582,18 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		return builder.build();
 	}
 
-	private Map<String, Object> createRelationshipRequestBody(String namespace, String moduleId, String typeId, String destinationId, CharacteristicType characteristicType) {
-		return createRelationshipRequestBody("", namespace, moduleId, typeId, destinationId, characteristicType);
+	private Map<String, Object> createRelationshipRequestBody(String namespace, String moduleId, String typeId, String destinationId, String characteristicTypeId) {
+		return createRelationshipRequestBody("", namespace, moduleId, typeId, destinationId, characteristicTypeId);
 	}
 	
-	private Map<String, Object> createRelationshipRequestBody(String id, String namespace, String moduleId, String typeId, String destinationId, CharacteristicType characteristicType) {
+	private Map<String, Object> createRelationshipRequestBody(String id, String namespace, String moduleId, String typeId, String destinationId, String characteristicTypeId) {
 		
 		Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
 			.put("moduleId", moduleId)
 			.put("namespaceId", Strings.isNullOrEmpty(namespace) ? "" : namespace)
 			.put("typeId", typeId)
 			.put("destinationId", destinationId)
-			.put("characteristicType", characteristicType);
+			.put("characteristicType", characteristicTypeId);
 		
 		if (!Strings.isNullOrEmpty(id)) {
 			builder.put("id", id);

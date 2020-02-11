@@ -36,7 +36,6 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
@@ -120,8 +119,8 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
  				.setModuleId(Concepts.MODULE_SCT_CORE)
  				.addDescription(createDescriptionRequest(Concepts.FULLY_SPECIFIED_NAME, "fsn"))
  				.addDescription(createDescriptionRequest(Concepts.SYNONYM, "pt"))
- 				.addRelationship(createRelationshipRequest(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP, Concepts.MODULE_SCT_CORE))
- 				.addRelationship(createRelationshipRequest(Concepts.IS_A, CharacteristicType.INFERRED_RELATIONSHIP, Concepts.MODULE_SCT_CORE));
+ 				.addRelationship(createRelationshipRequest(Concepts.IS_A, Concepts.STATED_RELATIONSHIP, Concepts.MODULE_SCT_CORE))
+ 				.addRelationship(createRelationshipRequest(Concepts.IS_A, Concepts.INFERRED_RELATIONSHIP, Concepts.MODULE_SCT_CORE));
  			
  			bulk.add(conceptCreateRequestBuilder);
 		}
@@ -141,13 +140,13 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 				.collect(Collectors.toSet());
 	}
 	
-	private SnomedRelationshipCreateRequestBuilder createRelationshipRequest(String typeId, CharacteristicType characteristicType, String desctinationId) {
+	private SnomedRelationshipCreateRequestBuilder createRelationshipRequest(String typeId, String characteristicTypeId, String desctinationId) {
 		return SnomedRequests.prepareNewRelationship()
 				.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 				.setModuleId(Concepts.MODULE_SCT_CORE)
 				.setDestinationId(desctinationId)
 				.setTypeId(typeId)
-				.setCharacteristicType(characteristicType);
+				.setCharacteristicTypeId(characteristicTypeId);
 	}
 
 	private SnomedDescriptionCreateRequestBuilder createDescriptionRequest(String typeId, String term) {

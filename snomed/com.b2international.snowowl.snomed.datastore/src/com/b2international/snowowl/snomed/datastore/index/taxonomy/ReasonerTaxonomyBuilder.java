@@ -62,8 +62,6 @@ import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
@@ -346,7 +344,7 @@ public final class ReasonerTaxonomyBuilder {
 
 		Stream<SnomedRelationship> filteredRelationships = relationships.filter(r -> r.isActive() 
 				&& Concepts.IS_A.equals(r.getTypeId())
-				&& CharacteristicType.STATED_RELATIONSHIP.equals(r.getCharacteristicType())
+				&& Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId())
 				&& !excludedModuleIds.contains(r.getModuleId()));
 		
 		final List<String> sourceIds = newArrayListWithExpectedSize(SCROLL_LIMIT);
@@ -457,7 +455,7 @@ public final class ReasonerTaxonomyBuilder {
 		entering("Registering active stated non-IS A relationships using relationship stream");
 	
 		Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
-				&& CharacteristicType.STATED_RELATIONSHIP.equals(relationship.getCharacteristicType())
+				&& Concepts.STATED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
 				&& !Concepts.IS_A.equals(relationship.getTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
@@ -495,7 +493,7 @@ public final class ReasonerTaxonomyBuilder {
 		entering("Registering active additional grouped relationships using relationship stream");
 	
 		Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
-				&& CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicType())
+				&& Concepts.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
 				&& relationship.getGroup() > 0
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
@@ -621,7 +619,7 @@ public final class ReasonerTaxonomyBuilder {
 		entering("Registering active inferred relationships using relationship stream");
 		
 		final Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
-				&& CharacteristicType.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType())
+				&& Concepts.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
 		addRelationships(sortedRelationships.filter(predicate), existingInferredRelationships::putAll);
@@ -746,7 +744,7 @@ public final class ReasonerTaxonomyBuilder {
 				final boolean destinationNegated = relationship.isDestinationNegated();
 				final int group = relationship.getGroup();
 				final int unionGroup = relationship.getUnionGroup();
-				final boolean universal = RelationshipModifier.UNIVERSAL.equals(relationship.getModifier());
+				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship.getModifierId());
 
 				final StatementFragment statement = new StatementFragment(
 						typeId,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,7 +192,7 @@ final class ValidationIssueSearchRequest
 
 	@Override
 	protected ValidationIssues toCollectionResource(ServiceProvider context, Hits<ValidationIssue> hits) {
-		return new ValidationIssues(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
+		return new ValidationIssues(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
 	}
 
 	@Override

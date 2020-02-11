@@ -40,7 +40,6 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -142,11 +141,11 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		
 		// create both inferred and stated relationships
 		Map<?, ?> inferredRelationshipRequestBody = SnomedRestFixtures
-				.createRelationshipRequestBody(NORWEGIAN_MODULE_CONCEPT_ID, Concepts.IS_A, Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, CharacteristicType.INFERRED_RELATIONSHIP, 0)
+				.createRelationshipRequestBody(NORWEGIAN_MODULE_CONCEPT_ID, Concepts.IS_A, Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, Concepts.INFERRED_RELATIONSHIP, 0)
 				.put("commitComment", "Created inferred is_a from the norwegian module concept to SCT_MODULE_CORE").build();
 		
 		Map<?, ?> statedRelationshipRequestBody = SnomedRestFixtures
-				.createRelationshipRequestBody(NORWEGIAN_MODULE_CONCEPT_ID, Concepts.IS_A, Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, CharacteristicType.STATED_RELATIONSHIP, 0)
+				.createRelationshipRequestBody(NORWEGIAN_MODULE_CONCEPT_ID, Concepts.IS_A, Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, Concepts.STATED_RELATIONSHIP, 0)
 				.put("commitComment", "Created state is_a from the norwegian module concept to SCT_MODULE_CORE").build();
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, inferredRelationshipRequestBody).statusCode(201);

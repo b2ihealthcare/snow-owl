@@ -39,8 +39,8 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 	}
 
 	@Override
-	protected SnomedReferenceSets createCollectionResource(List<SnomedReferenceSet> results, String scrollId, String searchAfter, int limit, int total) {
-		return new SnomedReferenceSets(results, scrollId, searchAfter, limit, total);
+	protected SnomedReferenceSets createCollectionResource(List<SnomedReferenceSet> results, String searchAfter, int limit, int total) {
+		return new SnomedReferenceSets(results, searchAfter, limit, total);
 	}
 	
 	@Override

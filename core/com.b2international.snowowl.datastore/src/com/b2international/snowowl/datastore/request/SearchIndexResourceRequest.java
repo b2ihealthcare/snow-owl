@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
@@ -58,21 +57,15 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	protected final B doExecute(C context) throws IOException {
 		final Class<D> docType = getDocumentType();
 		final Searcher searcher = searcher(context);
-		final Hits<D> hits;
-		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(docType, docType, fields(), scrollId(), scrollKeepAlive()));
-		} else {
-			final Expression where = prepareQuery(context);
-			hits = searcher.search(Query.select(docType)
-					.fields(fields())
-					.where(where)
-					.scroll(scrollKeepAlive())
-					.searchAfter(searchAfter())
-					.limit(limit())
-					.sortBy(sortBy())
-					.withScores(trackScores())
-					.build());
-		}
+		final Expression where = prepareQuery(context);
+		final Hits<D> hits = searcher.search(Query.select(docType)
+				.fields(fields())
+				.where(where)
+				.searchAfter(searchAfter())
+				.limit(limit())
+				.sortBy(sortBy())
+				.withScores(trackScores())
+				.build());
 		
 		return toCollectionResource(context, hits);
 	}

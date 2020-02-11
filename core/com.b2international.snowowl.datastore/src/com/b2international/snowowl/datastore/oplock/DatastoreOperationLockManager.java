@@ -389,7 +389,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	
 	private DatastoreLocks search(Expression query, List<String> fields, SortBy sortBy, int limit) {
 		final Hits<DatastoreLockIndexEntry> hits = searchHits(query, fields, sortBy, limit);
-		return new DatastoreLocks(hits.getHits(), null, null, hits.getLimit(), hits.getTotal());
+		return new DatastoreLocks(hits.getHits(), null, hits.getLimit(), hits.getTotal());
 	}
 	
 	private Hits<DatastoreLockIndexEntry> searchHits(Expression query, List<String> fields, SortBy sortBy, int limit) {

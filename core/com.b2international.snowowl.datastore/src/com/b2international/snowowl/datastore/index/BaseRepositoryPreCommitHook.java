@@ -90,7 +90,7 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 		
 		preUpdateDocuments(staging, index);
 		doProcess(getChangeSetProcessors(staging, index), staging, index);
-		postUpdateDocuments(staging);
+		postUpdateDocuments(staging, index);
 		log.info("Processing changes successfully finished.");
 	}
 
@@ -118,6 +118,7 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	 * Subclasses may override this method to execute additional logic before the processing of the changeset.
 	 * 
 	 * @param staging - the staging area before committing it to the repository
+	 * @param index 
 	 * @throws IOException 
 	 */
 	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
@@ -126,9 +127,12 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	/**
 	 * Return a list of {@link ChangeSetProcessor}s to process the commit changeset.
 	 * 
+	 * @param staging - the staging area before committing it to the repository
+	 * @param index 
 	 * @return
+	 * @throws IOException
 	 */
-	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea stagingArea, RevisionSearcher index) throws IOException {
+	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
 		return Collections.emptySet();
 	}
 
@@ -136,8 +140,10 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	 * Subclasses may override this method to execute additional logic after the processing of the changeset, but before committing it.
 	 * 
 	 * @param staging - the staging area before committing it to the repository
+	 * @param index 
+	 * @throws IOException 
 	 */
-	protected void postUpdateDocuments(StagingArea staging) {
+	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 	}
 
 //	@SuppressWarnings("restriction")

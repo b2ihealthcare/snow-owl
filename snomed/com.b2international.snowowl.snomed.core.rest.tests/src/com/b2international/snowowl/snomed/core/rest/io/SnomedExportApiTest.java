@@ -77,7 +77,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -226,9 +225,9 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void exportUnpublishedDeltaRelationships() throws Exception {
-		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.STATED_RELATIONSHIP);
-		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP);
-		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.STATED_RELATIONSHIP);
+		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP);
+		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
 
 		String transientEffectiveTime = "20170301";
 
@@ -255,7 +254,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.STATED_RELATIONSHIP.getConceptId(),
+				Concepts.STATED_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
 
 		String inferredLine = TAB_JOINER.join(inferredRelationshipId, 
@@ -266,7 +265,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.INFERRED_RELATIONSHIP.getConceptId(),
+				Concepts.INFERRED_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
 		String additionalLine = TAB_JOINER.join(additionalRelationshipId, 
@@ -277,7 +276,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.ADDITIONAL_RELATIONSHIP.getConceptId(),
+				Concepts.ADDITIONAL_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
@@ -364,9 +363,9 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	public void exportDeltaInDateRangeFromVersion() throws Exception {
 		createCodeSystem(branchPath, "SNOMEDCT-DELTA").statusCode(201);
 
-		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.STATED_RELATIONSHIP);
-		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP);
-		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.STATED_RELATIONSHIP);
+		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP);
+		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
 
 		String versionEffectiveTime = "20170302";
 		createVersion("SNOMEDCT-DELTA", "v1", versionEffectiveTime).statusCode(201);
@@ -398,7 +397,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.STATED_RELATIONSHIP.getConceptId(),
+				Concepts.STATED_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
 
 		String inferredLine = TAB_JOINER.join(inferredRelationshipId, 
@@ -409,7 +408,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.INFERRED_RELATIONSHIP.getConceptId(),
+				Concepts.INFERRED_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
 		String additionalLine = TAB_JOINER.join(additionalRelationshipId, 
@@ -420,7 +419,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.ADDITIONAL_RELATIONSHIP.getConceptId(),
+				Concepts.ADDITIONAL_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
@@ -439,9 +438,9 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	public void exportDeltaInDateRangeAndUnpublishedComponents() throws Exception {
 		createCodeSystem(branchPath, "SNOMEDCT-GAMMA").statusCode(201);
 
-		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.STATED_RELATIONSHIP);
-		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP);
-		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.STATED_RELATIONSHIP);
+		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP);
+		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
 
 		String relationshipEffectiveTime = "20170303";
 		createVersion("SNOMEDCT-GAMMA", "v1", relationshipEffectiveTime).statusCode(201);
@@ -481,7 +480,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.STATED_RELATIONSHIP.getConceptId(),
+				Concepts.STATED_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
 
 		String inferredLine = TAB_JOINER.join(inferredRelationshipId, 
@@ -492,7 +491,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.INFERRED_RELATIONSHIP.getConceptId(),
+				Concepts.INFERRED_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
 		String additionalLine = TAB_JOINER.join(additionalRelationshipId, 
@@ -503,7 +502,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.NAMESPACE_ROOT,
 				"0",
 				Concepts.PART_OF,
-				CharacteristicType.ADDITIONAL_RELATIONSHIP.getConceptId(),
+				Concepts.ADDITIONAL_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
 
 		String conceptLine = TAB_JOINER.join(conceptId, 
@@ -1078,9 +1077,9 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final String conceptId = createNewConcept(branchPath);
 		createNewDescription(branchPath, conceptId, Concepts.SYNONYM, UK_ACCEPTABLE_MAP, "en");
 		
-		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.STATED_RELATIONSHIP);
-		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP);
-		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.STATED_RELATIONSHIP);
+		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP);
+		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
 		
 		createNewRefSet(branchPath, SnomedRefSetType.OWL_AXIOM, Concepts.REFSET_OWL_AXIOM);
 		
@@ -1111,14 +1110,14 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String conceptLine = TAB_JOINER.join(conceptId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.PRIMITIVE);
 		
 		String statedLine = TAB_JOINER.join(statedRelationshipId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.ROOT_CONCEPT, Concepts.NAMESPACE_ROOT,
-				"0", Concepts.PART_OF, CharacteristicType.STATED_RELATIONSHIP.getConceptId(), Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
+				"0", Concepts.PART_OF, Concepts.STATED_RELATIONSHIP, Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
 		String inferredLine = TAB_JOINER.join(inferredRelationshipId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.ROOT_CONCEPT,
-				Concepts.NAMESPACE_ROOT, "0", Concepts.PART_OF, CharacteristicType.INFERRED_RELATIONSHIP.getConceptId(),
+				Concepts.NAMESPACE_ROOT, "0", Concepts.PART_OF, Concepts.INFERRED_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
 		String additionalLine = TAB_JOINER.join(additionalRelationshipId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.ROOT_CONCEPT,
-				Concepts.NAMESPACE_ROOT, "0", Concepts.PART_OF, CharacteristicType.ADDITIONAL_RELATIONSHIP.getConceptId(),
+				Concepts.NAMESPACE_ROOT, "0", Concepts.PART_OF, Concepts.ADDITIONAL_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 		
 		String owlMemberLine = TAB_JOINER.join(memberId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT,
