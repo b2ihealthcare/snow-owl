@@ -29,7 +29,7 @@ public interface SnomedComponentCreateRequest extends SnomedComponentRequest<Str
 	
 	@Override
 	default String getOperation() {
-		return Permission.BROWSE;
+		return Permission.EDIT;
 	}
 
 }
