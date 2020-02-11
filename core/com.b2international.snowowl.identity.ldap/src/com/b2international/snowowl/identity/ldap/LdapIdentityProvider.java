@@ -231,7 +231,10 @@ final class LdapIdentityProvider implements IdentityProvider {
 					
 					// process permissions
 					for (final Object permission : ImmutableList.copyOf(Iterators.forEnumeration(permissionEnumeration))) {
-						permissions.add(Permission.valueOf((String) permission));
+						if ("unused".equals(permission)) {
+							continue;
+						}
+						permissions.add(Permission.valueOf(((String) permission).trim()));
 					}
 					
 					// process members
