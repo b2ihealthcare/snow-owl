@@ -150,8 +150,10 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(Expressions.builder()
+						.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(inactivatedComponentIds))
+						.setMinimumNumberShouldMatch(1)
 						.build())
 				.limit(PAGE_SIZE)
 				.build())) {
