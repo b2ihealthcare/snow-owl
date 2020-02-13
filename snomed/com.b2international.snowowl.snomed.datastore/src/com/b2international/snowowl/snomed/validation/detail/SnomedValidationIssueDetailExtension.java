@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -345,7 +345,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 				final String typeTerm = Iterables.getFirst(affectedComponentLabelsByConcept.get(typeId), typeId);
 				final String destinationTerm = Iterables.getFirst(affectedComponentLabelsByConcept.get(destinationId), destinationId);
 
-				issue.setAffectedComponentLabels(ImmutableList.of(String.format("%s %s %s", sourceTerm, typeTerm, destinationTerm)));
+				issue.setAffectedComponentLabels(ImmutableList.of(String.format("%s - %s - %s", sourceTerm, typeTerm, destinationTerm)));
 			});
 			
 		}
