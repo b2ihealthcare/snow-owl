@@ -27,27 +27,12 @@
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>ch.qos.logback.classic</id>
-								<versionRange>${logback.versionRange}</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>ch.qos.logback.core</id>
-								<versionRange>${logback.versionRange}</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
 								<id>com.b2international.snowowl.identity.file</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>com.b2international.collections.fastutil</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>com.sun.el</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
