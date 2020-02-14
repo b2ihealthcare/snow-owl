@@ -44,7 +44,7 @@ public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
 
 		final ExecutorService context = new ThreadPoolExecutor(
 				Ints.constrainToRange(Runtime.getRuntime().availableProcessors(), 1, maxThreads), maxThreads, 
-				0L, TimeUnit.MILLISECONDS,
+				1L, TimeUnit.MINUTES,
 				new LinkedBlockingQueue<Runnable>(), 
 				threadFactory) {
 
