@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,15 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.primitives.Ints;
+
 /**
  * @since 4.5.1
  */
 public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
 
 	@Override
-	public ExecutorService createExecutorService(String description, int numberOfWorkers) {
+	public ExecutorService createExecutorService(String description, int maxThreads) {
 		final ThreadGroup group = new ThreadGroup(description);
 
 		ThreadFactory threadFactory = new ThreadFactory() {
@@ -40,7 +42,8 @@ public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
 			}
 		};
 
-		final ExecutorService context = new ThreadPoolExecutor(numberOfWorkers, numberOfWorkers, 
+		final ExecutorService context = new ThreadPoolExecutor(
+				Ints.constrainToRange(Runtime.getRuntime().availableProcessors(), 1, maxThreads), maxThreads, 
 				0L, TimeUnit.MILLISECONDS,
 				new LinkedBlockingQueue<Runnable>(), 
 				threadFactory) {
