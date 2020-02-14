@@ -23,22 +23,7 @@
 						<extraRequirements>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>ch.qos.logback.classic</id>
-								<versionRange>${logback.versionRange}</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>ch.qos.logback.core</id>
-								<versionRange>${logback.versionRange}</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
 								<id>com.b2international.collections.fastutil</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>com.sun.el</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 						</extraRequirements>
@@ -50,7 +35,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<useUIThread>false</useUIThread>
-					<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch</argLine>
+					<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
 					<includes>
 						<include>**/AllCoreTests.java</include>
 					</includes>

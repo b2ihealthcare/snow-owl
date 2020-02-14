@@ -88,7 +88,11 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 		if (CompareUtils.isEmpty(effectiveTime)) {
 			return getSelf(); 
 		} else {
-			return filterByEffectiveTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT).getTime());
+			if (EffectiveTimes.isUnset(effectiveTime)) {
+				return filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			} else {
+				return filterByEffectiveTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT).getTime());
+			}
 		}
 	}
 	
