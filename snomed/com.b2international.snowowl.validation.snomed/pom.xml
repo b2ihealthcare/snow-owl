@@ -19,12 +19,6 @@
 	<profiles>
 		<profile>
 			<id>travis-ci</id>
-			<activation>
-				<property>
-					<name>env.TRAVIS</name>
-					<value>true</value>
-				</property>
-			</activation>
 			<properties>
 				<skip.validation.tests>true</skip.validation.tests>
 			</properties>
@@ -73,7 +67,6 @@
 							<includes>
 								<include>**/AllGenericValidationTests.java</include>
 							</includes>
-							<!-- temporarily disable validation tests when running in TRAVIS -->
 							<skipTests>${skip.validation.tests}</skipTests>
 						</configuration>
 					</execution>
