@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -531,7 +532,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 			final Optional<SnomedReferenceSetMember> moduleDependencyMember = requestBuilder 
 				.build(context.id(), version.getPath())
 				.execute(context.service(IEventBus.class))
-				.getSync()
+				.getSync(1, TimeUnit.MINUTES)
 				.first();
 			
 			return moduleDependencyMember.map(m -> {

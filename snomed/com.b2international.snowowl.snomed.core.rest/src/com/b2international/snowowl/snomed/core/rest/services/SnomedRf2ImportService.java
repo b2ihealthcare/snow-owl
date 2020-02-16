@@ -188,7 +188,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			return CodeSystemRequests.prepareGetCodeSystem(shortName)
 					.build(REPOSITORY_UUID)
 					.execute(bus.get())
-					.getSync();
+					.getSync(1, TimeUnit.MINUTES);
 		} catch (NotFoundException e) {
 			return null;
 		}

@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.console;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.extension.Component;
@@ -97,7 +98,7 @@ public final class CodeSystemsCommand extends Command {
 			.sortBy(SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(cs.getRepositoryUuid())
 			.execute(getBus())
-			.getSync();
+			.getSync(1, TimeUnit.MINUTES);
 		if (versions.isEmpty()) {
 			info.append("\tNo versions have been created yet.");
 		} else {
@@ -115,7 +116,7 @@ public final class CodeSystemsCommand extends Command {
 				.buildAsync()
 				.execute(getBus())
 				.then(repos -> repos.stream().map(RepositoryInfo::id).collect(Collectors.toList()))
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 	private List<CodeSystemEntry> getCodeSystems() {
@@ -131,7 +132,7 @@ public final class CodeSystemsCommand extends Command {
 					}
 					return SHORT_NAME_ORDERING.immutableSortedCopy(codeSystems);
 				})
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 	private CodeSystemEntry getCodeSystemById(String shortNameOrOid) {
@@ -152,7 +153,7 @@ public final class CodeSystemsCommand extends Command {
 					}
 					return null;
 				})
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 	private String getCodeSystemVersionInformation(CodeSystemVersionEntry codeSystemVersion) {

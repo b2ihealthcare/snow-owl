@@ -43,7 +43,7 @@ public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
 		};
 
 		return new ThreadPoolExecutor(
-			Ints.constrainToRange(Runtime.getRuntime().availableProcessors(), 1, maxThreads), maxThreads, 
+			Ints.constrainToRange(Runtime.getRuntime().availableProcessors(), 2, maxThreads), maxThreads, 
 			1L, TimeUnit.MINUTES,
 			new LinkedBlockingQueue<Runnable>(), 
 			threadFactory
