@@ -40,6 +40,7 @@ import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
 import com.google.common.collect.MapMaker;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 3.1
@@ -73,8 +74,8 @@ public class EventBus extends Lifecycle implements IEventBus {
 		this.maxThreads = maxThreads;
 		this.executorServiceFactory = maxThreads == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory();
 		
-		// init stat maps with at least 1 concurrencyLevel
-		final int concurrencyLevel = Math.min(4, maxThreads);
+		// init stat maps with 1-4 concurrencyLevel
+		final int concurrencyLevel = Ints.constrainToRange(maxThreads, 1, 4);
 		this.protocolMap = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
 		this.handlerMap = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
 		this.inQueueMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
