@@ -51,7 +51,6 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 	@NotNull
 	private String caseSignificanceId;
 
-	@NotEmpty
 	private Map<String, Acceptability> acceptability;
 	
 	private String inactivationIndicatorId;
@@ -105,10 +104,12 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 				.add(caseSignificanceId)
 				.add(typeId);
 		
-		acceptability.forEach((refSetId, acceptability) -> {
-			result.add(refSetId);
-			result.add(acceptability.getConceptId());
-		});
+		if (acceptability != null) {
+			acceptability.forEach((refSetId, acceptability) -> {
+				result.add(refSetId);
+				result.add(acceptability.getConceptId());
+			});
+		}
 		
 		if (getModuleId() != null) {
 			result.add(getModuleId());

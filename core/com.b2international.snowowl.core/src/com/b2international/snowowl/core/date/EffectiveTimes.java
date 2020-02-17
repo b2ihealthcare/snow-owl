@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public abstract class EffectiveTimes {
 	public static String format(@Nullable Object effectiveTime, String datePattern) {
 		return format(effectiveTime, datePattern, UNSET_EFFECTIVE_TIME_LABEL);
 	}
-	
+
 	/**
 	 * Formats the given object representing an effective time with the given datePattern and returns the result.
 	 * <p>
@@ -156,19 +156,27 @@ public abstract class EffectiveTimes {
 	}
 
 	/**
-	 * Returns <code>true</code> if the given Object is an unset representation of an effective time value.
+	 * Returns <code>true</code> if the given Object is an unset representation of an effective time value, <code>false</code> otherwise.
+	 * 
 	 * @param effectiveTimeValue
 	 * @return
 	 */
 	public static boolean isUnset(Object effectiveTimeValue) {
 		if (effectiveTimeValue == null) {
 			return true;
-		} else if (UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTimeValue)) {
-			return true;
 		} else if (effectiveTimeValue instanceof Long && UNSET_EFFECTIVE_TIME == (long) effectiveTimeValue) {
 			return true;
-		} else if (effectiveTimeValue instanceof String && UNSET_EFFECTIVE_TIME == Long.parseLong((String) effectiveTimeValue)) {
-			return true;
+		} else if (effectiveTimeValue instanceof String) {
+			if (UNSET_EFFECTIVE_TIME_LABEL.compareToIgnoreCase((String) effectiveTimeValue) == 0) {
+				return true;
+			}
+			try {
+				if (UNSET_EFFECTIVE_TIME == Long.parseLong((String) effectiveTimeValue)) {
+					return true;
+				} 
+			} catch (NumberFormatException e) {
+				// ignore, return false, since the given value cannot be a valid unset effective time value
+			}
 		}
 		return false;
 	}

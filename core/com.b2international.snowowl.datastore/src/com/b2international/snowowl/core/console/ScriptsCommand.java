@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,21 @@
  */
 package com.b2international.snowowl.core.console;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.scripting.api.ScriptEngine;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugins;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 import picocli.CommandLine;
 import picocli.CommandLine.HelpCommand;
@@ -63,15 +68,24 @@ public class ScriptsCommand extends Command {
 		@Override
 		public void run(CommandLineStream out) {
 			try {
+				
 				final String script = Files.lines(Paths.get(path)).collect(Collectors.joining(System.getProperty("line.separator")));
 				final ClassLoader classLoader = ApplicationContext.getServiceForClass(Plugins.class).getCompositeClassLoader();
-				ScriptEngine.run("groovy", classLoader, script, Collections.emptyMap());
+				
+				// Include the CLI-authorized IEventBus when running scripts
+				final ServiceProvider context = ApplicationContext.getServiceForClass(Environment.class)
+						.inject()
+						.bind(IEventBus.class, getBus())
+						.build();
+				
+				final Map<String, Object> binding = newHashMap();
+				binding.put("ctx", context);
+				ScriptEngine.run("groovy", classLoader, script, binding);
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 				out.println(e.getMessage());
 			}
 		}
-		
 	}
-
 }

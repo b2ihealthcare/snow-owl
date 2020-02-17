@@ -29,6 +29,7 @@ import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -149,18 +150,25 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(Expressions.builder()
+						.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(inactivatedComponentIds))
+						.setMinimumNumberShouldMatch(1)
 						.build())
 				.limit(PAGE_SIZE)
 				.build())) {
 			hits.forEach(member -> {
+				// XXX: setting effectiveTime to -1L here should be undone by SnomedRepositoryPreCommitHook's effective time restorer, if needed 
 				if (changedRevisions.containsKey(member.getObjectId())) {
-					stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) changedRevisions.get(member.getObjectId()).newRevision)
-							.active(false)
-							.build());
+//					stageChange(member, SnomedRefSetMemberIndexEntry.builder((SnomedRefSetMemberIndexEntry) changedRevisions.get(member.getObjectId()).newRevision)
+//							.active(false)
+//							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+//							.build());
 				} else {
-					stageChange(member, SnomedRefSetMemberIndexEntry.builder(member).active(false).build());
+					stageChange(member, SnomedRefSetMemberIndexEntry.builder(member)
+							.active(false)
+							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+							.build());
 				}
 			});
 		}
