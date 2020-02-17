@@ -11,6 +11,20 @@
 		<artifactId>snomed-parent</artifactId>
 		<version>7.4.0-SNAPSHOT</version>
 	</parent>
+	
+	<properties>
+		<skip.validation.tests>false</skip.validation.tests>
+	</properties>
+
+	<profiles>
+		<profile>
+			<id>travis-ci</id>
+			<properties>
+				<skip.validation.tests>true</skip.validation.tests>
+			</properties>
+		</profile>
+	</profiles>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -53,8 +67,8 @@
 							<includes>
 								<include>**/AllGenericValidationTests.java</include>
 							</includes>
-							<!-- temporarily disable validation tests when running in TRAVIS -->
-							<skipTests>${TRAVIS}</skipTests>
+							<skip>${skip.validation.tests}</skip>
+							<skipTests>${skip.validation.tests}</skipTests>
 						</configuration>
 					</execution>
 				</executions>

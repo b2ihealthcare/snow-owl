@@ -19,6 +19,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertNull;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -62,7 +63,7 @@ public class EclSerializerTest extends AbstractSnomedApiTest {
 								? throwable.getMessage() 
 								: Throwables.getRootCause(throwable).getClass().getSimpleName();
 					})
-					.getSync();
+					.getSync(1, TimeUnit.MINUTES);
 			
 			assertNull(error, error);
 		}

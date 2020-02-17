@@ -47,9 +47,9 @@ import com.google.inject.Provider;
 public abstract class AbstractRestService {
 
 	/**
-	 * Two minutes timeout value for commit requests in milliseconds.
+	 * Two minutes timeout value for commit requests in minutes.
 	 */
-	protected static final long COMMIT_TIMEOUT = 120L * 1000L;
+	protected static final long COMMIT_TIMEOUT = 2L;
 
 	/**
 	 * The media type produced and accepted by Snow Owl's RESTful API for JSON content.

@@ -282,11 +282,12 @@ public class JdbcUtils {
 	public static Integer executeIntQuery(final Connection connection, final String sql, final Object... parameters) {
 		
 		PreparedStatement statement = null;
+		ResultSet resultSet = null;
 		
 		try {
 			
 			statement = prepareStatement(connection, sql, parameters);
-			final ResultSet resultSet = statement.executeQuery();
+			resultSet = statement.executeQuery();
 			
 			if (resultSet.next()) {
 				final int value = resultSet.getInt(1);
@@ -298,6 +299,7 @@ public class JdbcUtils {
 		} catch (final SQLException e) {
 			throw new RuntimeSQLException("Couldn't execute Integer query for statement '" + sql + "'.", e);
 		} finally {
+			JdbcUtils.close(resultSet);
 			JdbcUtils.close(statement);
 		}			
 	}
@@ -321,11 +323,12 @@ public class JdbcUtils {
 	public static Long executeLongQuery(final Connection connection, final String sql, final Object... parameters) {
 		
 		PreparedStatement statement = null;
+		ResultSet resultSet = null;
 		
 		try {
 			
 			statement = prepareStatement(connection, sql, parameters);
-			final ResultSet resultSet = statement.executeQuery();
+			resultSet = statement.executeQuery();
 			
 			if (resultSet.next()) {
 				final long value = resultSet.getLong(1);
@@ -337,6 +340,7 @@ public class JdbcUtils {
 		} catch (final SQLException e) {
 			throw new RuntimeSQLException("Couldn't execute Long query for statement '" + sql + "'.", e);
 		} finally {
+			JdbcUtils.close(resultSet);
 			JdbcUtils.close(statement);
 		}			
 	}
@@ -360,11 +364,12 @@ public class JdbcUtils {
 	public static String executeStringQuery(final Connection connection, final String sql, final Object... parameters) {
 		
 		PreparedStatement statement = null;
+		ResultSet resultSet = null;
 		
 		try {
 			
 			statement = prepareStatement(connection, sql, parameters);
-			final ResultSet resultSet = statement.executeQuery();
+			resultSet = statement.executeQuery();
 			
 			if (resultSet.next()) {
 				final String value = resultSet.getString(1);
@@ -376,6 +381,7 @@ public class JdbcUtils {
 		} catch (final SQLException e) {
 			throw new RuntimeSQLException("Couldn't execute String query for statement '" + sql + "'.", e);
 		} finally {
+			JdbcUtils.close(resultSet);
 			JdbcUtils.close(statement);
 		}			
 	}
@@ -399,11 +405,12 @@ public class JdbcUtils {
 	public static Boolean executeBooleanQuery(final Connection connection, final String sql, final Object... parameters) {
 		
 		PreparedStatement statement = null;
+		ResultSet resultSet = null;
 		
 		try {
 			
 			statement = prepareStatement(connection, sql, parameters);
-			final ResultSet resultSet = statement.executeQuery();
+			resultSet = statement.executeQuery();
 			
 			if (resultSet.next()) {
 				final boolean value = resultSet.getBoolean(1);
@@ -415,6 +422,7 @@ public class JdbcUtils {
 		} catch (final SQLException e) {
 			throw new RuntimeSQLException("Couldn't execute Boolean query for statement '" + sql + "'.", e);
 		} finally {
+			JdbcUtils.close(resultSet);
 			JdbcUtils.close(statement);
 		}			
 	}

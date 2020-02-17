@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,9 +89,9 @@ public final class RepositoryPlugin extends Plugin {
 		LOG.debug("Preparing RPC communication (config={},gzip={})", rpcConfig, gzip);
 		RpcUtil.prepareContainer(container, rpcConfig, gzip);
 		LOG.debug("Preparing EventBus communication (gzip={})", gzip);
-		int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers();
-		EventBusNet4jUtil.prepareContainer(container, gzip, numberOfWorkers);
-		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container, numberOfWorkers));
+		int maxThreads = configuration.getModuleConfig(RepositoryConfiguration.class).getMaxThreads();
+		EventBusNet4jUtil.prepareContainer(container, gzip, maxThreads);
+		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container, maxThreads));
 		LOG.debug("Preparing JSON support");
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		mapper.registerModule(new PrimitiveCollectionModule());
@@ -176,7 +176,7 @@ public final class RepositoryPlugin extends Plugin {
 			env.services().registerService(RepositoryManager.class, repositoryManager);
 			env.services().registerService(RepositoryContextProvider.class, repositoryManager);
 			
-			int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers();
+			int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getMaxThreads();
 			initializeRequestSupport(env, numberOfWorkers);
 			
 			LOG.debug("Initialized repository plugin.");

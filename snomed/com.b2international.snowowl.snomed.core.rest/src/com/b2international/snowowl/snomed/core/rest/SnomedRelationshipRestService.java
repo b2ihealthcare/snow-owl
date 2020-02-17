@@ -158,7 +158,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final String createdRelationshipId = change.toRequestBuilder()
 				.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 				.execute(getBus())
-				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 				.getResultAs(String.class);
 				
 		return ResponseEntity.created(getResourceLocationURI(branchPath, createdRelationshipId)).build();
@@ -229,7 +229,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.setDestinationId(update.getDestinationId())
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 
 	@ApiOperation(
@@ -268,7 +268,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.force(force)
 			.build(repositoryId, branchPath, author, String.format("Deleted Relationship '%s' from store.", relationshipId))
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 
 }

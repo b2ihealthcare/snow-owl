@@ -65,8 +65,7 @@ public final class Promise<T> extends Observable<T> {
 			final Throwable cause = e.getCause();
 			if (cause instanceof ApiException) {
 				throw (ApiException) cause;
-			}
-			if (cause instanceof RuntimeException) {
+			} else if (cause instanceof RuntimeException) {
 				throw (RuntimeException) cause;
 			} else {
 				throw new SnowowlRuntimeException(cause);
@@ -92,8 +91,7 @@ public final class Promise<T> extends Observable<T> {
 			final Throwable cause = e.getCause();
 			if (cause instanceof ApiException) {
 				throw (ApiException) cause;
-			}
-			if (cause instanceof RuntimeException) {
+			} if (cause instanceof RuntimeException) {
 				throw (RuntimeException) cause;
 			} else {
 				throw new SnowowlRuntimeException(cause);

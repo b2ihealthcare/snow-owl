@@ -191,7 +191,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final String createdDescriptionId = change.toRequestBuilder()
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 			.getResultAs(String.class);
 		
 		return ResponseEntity.created(getResourceLocationURI(branchPath, createdDescriptionId)).build();
@@ -257,7 +257,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.toRequestBuilder(descriptionId)
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 		
 	}
 
@@ -294,7 +294,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.force(force)
 			.build(repositoryId, branchPath, author, String.format("Deleted Description '%s' from store.", descriptionId))
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
 }

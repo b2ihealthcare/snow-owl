@@ -37,6 +37,8 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.util.ClassUtils;
 
 import com.fasterxml.classmate.ResolvedType;
@@ -56,7 +58,6 @@ import springfox.documentation.schema.property.field.FieldProvider;
 import springfox.documentation.service.Parameter;
 import springfox.documentation.spi.schema.AlternateTypeProvider;
 import springfox.documentation.spi.schema.EnumTypeDeterminer;
-import springfox.documentation.spi.service.contexts.DocumentationContext;
 import springfox.documentation.spi.service.contexts.ParameterExpansionContext;
 import springfox.documentation.spring.web.readers.parameter.ExpansionContext;
 import springfox.documentation.spring.web.readers.parameter.ModelAttributeField;
@@ -105,7 +106,7 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 
 			ResolvedType itemType = collectionElementType(each.getFieldType());
 			if (Types.isBaseType(itemType) || enumTypeDeterminer.isEnum(itemType.getErasedType())) {
-				parameters.add(simpleFields(context.getParentName(), context.getDocumentationContext(), each));
+				parameters.add(simpleFields(context.getParentName(), context, each));
 			} else {
 				parameters.addAll(expand(context.childContext(nestedParentName(context.getParentName(), each), itemType,
 						context.getOperationContext())));
@@ -114,7 +115,7 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 
 		FluentIterable<ModelAttributeField> simpleFields = modelAttributes.filter(simpleType());
 		for (ModelAttributeField each : simpleFields) {
-			parameters.add(simpleFields(context.getParentName(), context.getDocumentationContext(), each));
+			parameters.add(simpleFields(context.getParentName(), context, each));
 		}
 		
 		List<String> fieldNamesInOrder = fields.transform(ResolvedField::getName).toList();
@@ -141,7 +142,7 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 		};
 	}
 
-	private Parameter simpleFields(String parentName, DocumentationContext documentationContext, ModelAttributeField each) {
+	private Parameter simpleFields(String parentName, ExpansionContext context, ModelAttributeField each) {
 		LOG.debug("Attempting to expand field: {}", each);
 		String dataTypeName = Optional.fromNullable(typeNameFor(each.getFieldType().getErasedType()))
 				.or(each.getFieldType().getErasedType().getSimpleName());
@@ -149,15 +150,31 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 		ParameterExpansionContext parameterExpansionContext = new ParameterExpansionContext(
 				dataTypeName, 
 				parentName, 
-				each.getFieldType().getTypeName(),
+				determineScalarParameterType(
+		            context.getOperationContext().consumes(),
+		            context.getOperationContext().httpMethod()),
 				new ModelAttributeParameterMetadataAccessor(
 			            each.annotatedElements(),
 			            each.getFieldType(),
 			            each.getName()),
-				documentationContext.getDocumentationType(), 
+				context.getDocumentationContext().getDocumentationType(), 
 				new ParameterBuilder());
 		return pluginsManager.expandParameter(parameterExpansionContext);
 	}
+	
+	private static String determineScalarParameterType(Set<? extends MediaType> consumes, HttpMethod method) {
+	    String parameterType = "query";
+
+	    if (consumes.contains(MediaType.APPLICATION_FORM_URLENCODED)
+	        && method == HttpMethod.POST) {
+	      parameterType = "form";
+	    } else if (consumes.contains(MediaType.MULTIPART_FORM_DATA)
+	        && method == HttpMethod.POST) {
+	      parameterType = "formData";
+	    }
+
+	    return parameterType;
+	  }
 
 	private Predicate<ModelAttributeField> recursiveType(final ExpansionContext context) {
 		return new Predicate<ModelAttributeField>() {

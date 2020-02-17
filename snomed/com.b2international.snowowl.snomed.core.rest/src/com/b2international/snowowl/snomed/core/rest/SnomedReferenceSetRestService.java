@@ -232,7 +232,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		final String createdRefSetId = change.toRequestBuilder() 
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 			.getResultAs(String.class);
 		
 		return ResponseEntity.created(getResourceLocationURI(branchPath, createdRefSetId)).build();
@@ -282,7 +282,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setAuthor(author)
 			.build(repositoryId, branchPath)
 			.execute(getBus())
-			.getSync();
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
 	@ApiOperation(
@@ -334,7 +334,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setCommitComment(commitComment)
 			.build(repositoryId, branchPath)
 			.execute(getBus())
-			.getSync();
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
 	@ApiOperation(
@@ -366,7 +366,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		SnomedRequests.prepareDeleteReferenceSet(referenceSetId, force)
 				.build(repositoryId, branchPath, author, String.format("Deleted Reference Set '%s' from store.", referenceSetId))
 				.execute(getBus())
-				.getSync();
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
 }
