@@ -67,6 +67,7 @@
 							<includes>
 								<include>**/AllGenericValidationTests.java</include>
 							</includes>
+							<skip>${skip.validation.tests}</skip>
 							<skipTests>${skip.validation.tests}</skipTests>
 						</configuration>
 					</execution>
