@@ -13,11 +13,19 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-    - uses: actions/cache@v1
+    - name: Cache Maven Dependencies (~/.m2/repository)
+      uses: actions/cache@v1
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
-          ${{ runner.os }}-maven-:  
+          ${{ runner.os }}-maven-:
+    - name: Cache NPM Dependencies (core/com.b2international.snowowl.core.rest/snow-owl-api-docs/node_modules)
+      uses: actions/cache@v1
+      with:
+        path: core/com.b2international.snowowl.core.rest/snow-owl-api-docs/node_modules
+        key: ${{ runner.os }}-npm-${{ hashFiles('core/com.b2international.snowowl.core.rest/snow-owl-api-docs/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-:
     - name: Build with Maven
       run: mvn clean verify
