@@ -16,7 +16,8 @@
 package com.b2international.snowowl.internal.eventbus;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,7 @@ public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
 	public ExecutorService createExecutorService(String description, int maxThreads) {
 		final ThreadGroup group = new ThreadGroup(description);
 
-		ThreadFactory threadFactory = new ThreadFactory() {
+		final ThreadFactory threadFactory = new ThreadFactory() {
 			@Override
 			public Thread newThread(Runnable r) {
 				final Thread thread = new Thread(group, r);
@@ -42,11 +43,69 @@ public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
 			}
 		};
 
-		return new ThreadPoolExecutor(
+		final ExecutorScalingQueue<Runnable> queue = new ExecutorScalingQueue<Runnable>();
+		final ThreadPoolExecutor executor = new ThreadPoolExecutor(
 			Ints.constrainToRange(Runtime.getRuntime().availableProcessors(), 2, maxThreads), maxThreads, 
 			1L, TimeUnit.MINUTES,
-			new LinkedBlockingQueue<Runnable>(), 
-			threadFactory
+			queue, 
+			threadFactory,
+			new ForceQueuePolicy()
 		);
+		queue.executor = executor;
+		return executor;
 	}
+	
+	/*Elaticsearch maintained class, copied from EsExecutors*/
+	static class ExecutorScalingQueue<E> extends LinkedTransferQueue<E> {
+
+        ThreadPoolExecutor executor;
+
+        ExecutorScalingQueue() {
+        }
+
+        @Override
+        public boolean offer(E e) {
+            // first try to transfer to a waiting worker thread
+            if (!tryTransfer(e)) {
+                // check if there might be spare capacity in the thread
+                // pool executor
+                int left = executor.getMaximumPoolSize() - executor.getCorePoolSize();
+                if (left > 0) {
+                    // reject queuing the task to force the thread pool
+                    // executor to add a worker if it can; combined
+                    // with ForceQueuePolicy, this causes the thread
+                    // pool to always scale up to max pool size and we
+                    // only queue when there is no spare capacity
+                    return false;
+                } else {
+                    return super.offer(e);
+                }
+            } else {
+                return true;
+            }
+        }
+
+    }
+	
+	/*Elaticsearch maintained class, copied from EsExecutors*/
+    /**
+     * A handler for rejected tasks that adds the specified element to this queue,
+     * waiting if necessary for space to become available.
+     */
+    static class ForceQueuePolicy implements RejectedExecutionHandler {
+
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            try {
+                // force queue policy should only be used with a scaling queue
+                assert executor.getQueue() instanceof ExecutorScalingQueue;
+                executor.getQueue().put(r);
+            } catch (final InterruptedException e) {
+                // a scaling queue never blocks so a put to it can never be interrupted
+                throw new AssertionError(e);
+            }
+        }
+
+    }
+	
 }
