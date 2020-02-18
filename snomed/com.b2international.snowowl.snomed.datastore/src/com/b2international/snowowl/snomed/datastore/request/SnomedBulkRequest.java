@@ -46,7 +46,7 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionContext, TransactionContext, R> {
 
-	SnomedBulkRequest(Request<TransactionContext, R> next) {
+	public SnomedBulkRequest(Request<TransactionContext, R> next) {
 		super(next);
 	}
 
