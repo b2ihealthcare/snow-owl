@@ -150,6 +150,7 @@ public class EsDocumentWriter implements Writer {
 			Futures.allAsList(updateFutures).get();
 			executor.awaitTermination(10, TimeUnit.SECONDS);
 		} catch (InterruptedException | ExecutionException e) {
+			admin.log().error("Couldn't execute bulk updates", e);
 			throw new IndexException("Couldn't execute bulk updates", e);
 		}
 		
@@ -238,7 +239,6 @@ public class EsDocumentWriter implements Writer {
 			// Remaining delete operations can be executed on their own
 			for (Class<?> type : ImmutableSet.copyOf(deleteOperations.keySet())) {
 				final DocumentMapping mapping = admin.mappings().getMapping(type);
-				final String typeString = mapping.typeAsString();
 				final String typeIndex = admin.getTypeIndex(mapping);
 				
 				mappingsToRefresh.add(mapping);

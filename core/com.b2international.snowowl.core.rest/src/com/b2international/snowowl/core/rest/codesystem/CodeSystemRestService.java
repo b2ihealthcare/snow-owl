@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -117,7 +119,8 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setCommitComment(commitComment)
 				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
 				.execute(getBus())
-				.getSync().getResultAs(String.class);
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
+				.getResultAs(String.class);
 		
 		return ResponseEntity.created(getResourceLocationURI(shortName)).build();
 	}
@@ -154,7 +157,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setLink(codeSystem.getOrganizationLink())
 				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, author, commitComment)
 				.execute(getBus())
-				.getSync();
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 
 	private void validateUpdateInput(final String shortNameOrOId, final String repositoryUuid) {

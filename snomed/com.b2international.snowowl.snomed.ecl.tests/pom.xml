@@ -59,7 +59,6 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
-				<version>${tycho.version}</version>
 				<configuration>
 					<includes>
 						<include>**/*Test.java</include>

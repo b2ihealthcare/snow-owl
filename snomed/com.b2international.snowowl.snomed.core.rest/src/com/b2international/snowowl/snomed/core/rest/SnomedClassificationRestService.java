@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -355,7 +356,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 					.setUserId(author)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(getBus())
-					.getSync();
+					.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 		}
 	}
 
@@ -377,7 +378,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		ClassificationRequests.prepareDeleteClassification(classificationId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(getBus())
-			.getSync();
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 
 }

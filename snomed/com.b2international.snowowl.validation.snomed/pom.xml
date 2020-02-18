@@ -11,6 +11,7 @@
 		<artifactId>snomed-parent</artifactId>
 		<version>7.4.0-SNAPSHOT</version>
 	</parent>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -42,22 +43,12 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
-				<executions>
-					<execution>
-            			<id>snomed-validation-tests</id>
-				        <goals>
-				        	<goal>test</goal>
-				        </goals>
-						<configuration>
-							<argLine>${tycho.testArgLine} -Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch</argLine>
-							<includes>
-								<include>**/AllGenericValidationTests.java</include>
-							</includes>
-							<!-- temporarily disable validation tests when running in TRAVIS -->
-							<skipTests>${TRAVIS}</skipTests>
-						</configuration>
-					</execution>
-				</executions>
+				<configuration>
+					<argLine>${tycho.testArgLine} -Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch</argLine>
+					<includes>
+						<include>**/AllGenericValidationTests.java</include>
+					</includes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

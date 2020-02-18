@@ -3,14 +3,14 @@ new_status=''
 
 print_usage() {
   echo "Usage: 
-   -a:    Sets id status to available
+   -a:    Sets id status to assigned
    -p:    Sets id status to published 
   "
 }
 
 while getopts 'ap' flag; do
   case "${flag}" in
-    a) new_status='Available' ;;
+    a) new_status='Assigned' ;;
     p) new_status='Published' ;;
     *) print_usage
        exit 1 ;;

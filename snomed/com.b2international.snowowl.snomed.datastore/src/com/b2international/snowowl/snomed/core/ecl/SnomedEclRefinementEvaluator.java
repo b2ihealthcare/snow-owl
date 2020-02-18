@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
@@ -353,10 +354,11 @@ final class SnomedEclRefinementEvaluator {
 			propertyCardinality = Range.closed(min, max);
 		}
 		final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
-		final Set<String> focusConceptIds = focusConcepts.isAnyExpression() 
-				? Collections.singleton(Ecl.ANY) // XXX send ANY expression to evalStatements, to indicate that any source can match
-				: grouped ? focusConcepts.resolveToConceptsWithGroups(context).getSync().keySet() : focusConcepts.resolve(context).getSync();
-		return evalRefinement(context, refinement, grouped, focusConceptIds)
+		final Promise<Set<String>> focusConceptIdsPromise = focusConcepts.isAnyExpression() 
+				? Promise.immediate(Collections.singleton(Ecl.ANY)) // XXX send ANY expression to evalStatements, to indicate that any source can match
+				: grouped ? focusConcepts.resolveToConceptsWithGroups(context).then(Multimap::keySet) : focusConcepts.resolve(context);
+		return focusConceptIdsPromise
+				.thenWith(focusConceptIds -> evalRefinement(context, refinement, grouped, focusConceptIds))
 				.then(filterByCardinality(grouped, groupCardinality, propertyCardinality, idProvider));
 	}
 	
@@ -623,7 +625,7 @@ final class SnomedEclRefinementEvaluator {
 				}
 				
 				// TODO replace sync call to concept search with async promise
-				return EclExpression.of(expression, expressionForm).resolve(context).getSync();
+				return EclExpression.of(expression, expressionForm).resolve(context).getSync(1, TimeUnit.MINUTES);
 			}
 		}
 		return idFilter;

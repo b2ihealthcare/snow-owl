@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,7 +138,8 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 				.filterById(configuration.getCodeSystemShortName())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(getBus())
-				.getSync().getTotal();
+				.getSync(1, TimeUnit.MINUTES)
+				.getTotal();
 			
 			if (hitSize == 0) {
 				throw new BadRequestException("Unknown code system with short name: %s", configuration.getCodeSystemShortName());
@@ -310,7 +312,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 					.prepareGet(branch.parentPath())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.getSync();
+					.getSync(1, TimeUnit.MINUTES);
 				return getEffectiveBranchMetadataValue(parent, metadataKey);
 			}
 		}

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.naming.Context;
@@ -116,7 +117,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 			systemContext = createLdapContext();
 			final String userDN = findUserDN(systemContext, username);
 			if (!Strings.isNullOrEmpty(userDN) && authenticateUser(userDN, token)) {
-				return searchUsers(Collections.singleton(username), 1).getSync().first().get();
+				return searchUsers(Collections.singleton(username), 1).getSync(1, TimeUnit.MINUTES).first().get();
 			} else {
 				return null;
 			}

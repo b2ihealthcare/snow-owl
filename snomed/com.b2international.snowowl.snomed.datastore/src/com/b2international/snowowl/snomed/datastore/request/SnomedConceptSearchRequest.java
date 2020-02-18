@@ -25,6 +25,7 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -177,17 +178,17 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 
 		if (containsKey(OptionKey.ECL)) {
 			final String ecl = getString(OptionKey.ECL);
-			queryBuilder.filter(EclExpression.of(ecl, Trees.INFERRED_FORM).resolveToExpression(context).getSync());
+			queryBuilder.filter(EclExpression.of(ecl, Trees.INFERRED_FORM).resolveToExpression(context).getSync(3, TimeUnit.MINUTES));
 		}
 		
 		if (containsKey(OptionKey.STATED_ECL)) {
 			final String ecl = getString(OptionKey.STATED_ECL);
-			queryBuilder.filter(EclExpression.of(ecl, Trees.STATED_FORM).resolveToExpression(context).getSync());
+			queryBuilder.filter(EclExpression.of(ecl, Trees.STATED_FORM).resolveToExpression(context).getSync(3, TimeUnit.MINUTES));
 		}
 		
 		if (containsKey(OptionKey.QUERY)) {
 			final String ql = getString(OptionKey.QUERY);
-			queryBuilder.filter(SnomedQueryExpression.of(ql).resolveToExpression(context).getSync());
+			queryBuilder.filter(SnomedQueryExpression.of(ql).resolveToExpression(context).getSync(3, TimeUnit.MINUTES));
 		}
 		
 		Expression searchProfileQuery = null;

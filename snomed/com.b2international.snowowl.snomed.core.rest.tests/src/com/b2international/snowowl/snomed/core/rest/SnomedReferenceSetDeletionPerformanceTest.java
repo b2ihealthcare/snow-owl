@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.databene.contiperf.PerfTest;
@@ -134,7 +135,7 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 				.setQuantity(quantity)
 				.buildAsync()
 				.execute(getBus())
-				.getSync()
+				.getSync(1, TimeUnit.MINUTES)
 				.stream()
 				.map(SctId::getSctid)
 				.collect(Collectors.toSet());

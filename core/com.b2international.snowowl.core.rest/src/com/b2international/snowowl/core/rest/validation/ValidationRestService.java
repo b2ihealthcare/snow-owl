@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -242,7 +243,7 @@ public class ValidationRestService extends AbstractRestService {
 									.filterByIds(rulesToFetch)
 									.buildAsync()
 									.execute(bus)
-									.getSync()
+									.getSync(1, TimeUnit.MINUTES)
 									.stream()
 									.collect(Collectors.toMap(ValidationRule::getId, ValidationRule::getMessageTemplate));
 							final Collection<Object> reports = issues.stream().map(issue -> {
@@ -283,7 +284,7 @@ public class ValidationRestService extends AbstractRestService {
 			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
 				.build(repoId)
 				.execute(getBus())
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 			
 			if (codeSystemEntry != null) {
 				return codeSystemEntry;
@@ -299,7 +300,8 @@ public class ValidationRestService extends AbstractRestService {
 					.all()
 					.buildAsync()
 					.execute(getBus())
-					.getSync().stream()
+					.getSync(1, TimeUnit.MINUTES)
+					.stream()
 					.map(RepositoryInfo::id)
 					.collect(Collectors.toSet());
 	}

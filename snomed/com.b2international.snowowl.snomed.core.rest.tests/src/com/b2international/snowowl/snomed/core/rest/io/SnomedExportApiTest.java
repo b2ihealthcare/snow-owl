@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
 import org.junit.Ignore;
@@ -87,7 +88,6 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -315,46 +315,37 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.execute(getBus());
 		
 		String message = Promise.all(first, second)
-			.then(new Function<List<Object>, String>() {
-				@Override
-				public String apply(List<Object> input) {
-					
-					ExportResult firstResult = (ExportResult) input.get(0);
-					ExportResult secondResult = (ExportResult) input.get(1);
-					
-					InternalAttachmentRegistry fileRegistry = (InternalAttachmentRegistry) ApplicationContext.getServiceForClass(AttachmentRegistry.class);
-					
-					File firstArchive = fileRegistry.getAttachment(firstResult.getRegistryId());
-					File secondArchive = fileRegistry.getAttachment(secondResult.getRegistryId());
-					
-					final Map<String, Boolean> firstArchiveMap = ImmutableMap.<String, Boolean>builder()
-							.put("sct2_Concept_Full", true)
-							.build();
-							
-					final Map<String, Boolean> secondArchiveMap = ImmutableMap.<String, Boolean>builder()
-							.put("sct2_Concept_Snapshot", true)
-							.build();
-					
-					try {
-						assertArchiveContainsFiles(firstArchive, firstArchiveMap);
-						assertArchiveContainsFiles(secondArchive, secondArchiveMap);
-					} catch (Exception e) {
-						return e.getMessage();
-					}
-					
-					fileRegistry.delete(firstResult.getRegistryId());
-					fileRegistry.delete(secondResult.getRegistryId());
-					
-					return null;
+			.then(input -> {
+				ExportResult firstResult = (ExportResult) input.get(0);
+				ExportResult secondResult = (ExportResult) input.get(1);
+				
+				InternalAttachmentRegistry fileRegistry = (InternalAttachmentRegistry) ApplicationContext.getServiceForClass(AttachmentRegistry.class);
+				
+				File firstArchive = fileRegistry.getAttachment(firstResult.getRegistryId());
+				File secondArchive = fileRegistry.getAttachment(secondResult.getRegistryId());
+				
+				final Map<String, Boolean> firstArchiveMap = ImmutableMap.<String, Boolean>builder()
+						.put("sct2_Concept_Full", true)
+						.build();
+						
+				final Map<String, Boolean> secondArchiveMap = ImmutableMap.<String, Boolean>builder()
+						.put("sct2_Concept_Snapshot", true)
+						.build();
+				
+				try {
+					assertArchiveContainsFiles(firstArchive, firstArchiveMap);
+					assertArchiveContainsFiles(secondArchive, secondArchiveMap);
+				} catch (Exception e) {
+					return e.getMessage();
 				}
+				
+				fileRegistry.delete(firstResult.getRegistryId());
+				fileRegistry.delete(secondResult.getRegistryId());
+				
+				return null;
 			})
-			.fail(new Function<Throwable, String>() {
-				@Override
-				public String apply(Throwable input) {
-					return input.getMessage();
-				}
-			})
-			.getSync();
+			.fail(input -> input.getMessage())
+			.getSync(2, TimeUnit.MINUTES);
 		
 		assertNull(message, message);
 	}
