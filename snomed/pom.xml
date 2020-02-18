@@ -15,7 +15,7 @@
 	<modules>
 		<!-- SNOMED CT REST API modules -->
 		<module>com.b2international.snowowl.snomed.core.rest</module>
-		<module>com.b2international.snowowl.snomed.core.rest.tests</module>
+<!-- 		<module>com.b2international.snowowl.snomed.core.rest.tests</module> -->
 		<module>com.b2international.snowowl.snomed.core.rest.feature</module>
 		
 		<!-- SNOMED CT Core modules -->
