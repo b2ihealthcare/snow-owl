@@ -36,7 +36,6 @@ monitoring:
   
 repository:
   deploymentId: api-test
-  maxThreads: 24
   index:
     socketTimeout: 60000
 
