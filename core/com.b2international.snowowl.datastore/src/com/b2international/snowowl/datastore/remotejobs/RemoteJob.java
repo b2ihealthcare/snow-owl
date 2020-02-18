@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
@@ -90,13 +91,21 @@ public final class RemoteJob extends Job {
 		} catch (OperationCanceledException e) {
 			return Statuses.cancel();
 		} catch (Throwable e) {
+			final ApiError apiError;
+			
 			if (e instanceof ApiException) {
-				this.response = toJson(mapper, ((ApiException) e).toApiError());
+				apiError = ((ApiException) e).toApiError();
+			} else {
+				apiError = ApiError.Builder.of(e.getMessage())
+					.status(500)
+					.developerMessage("Exception caught while executing request in remote job.")
+					.addInfo("exception-class", e.getClass().getSimpleName())
+					.build();
 			}
 			
+			this.response = toJson(mapper, apiError);
 			// XXX: Don't delete remote jobs with errors
 			autoClean = false;
-			
 			return Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
 		} finally {
 			if (autoClean) {
