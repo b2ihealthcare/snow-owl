@@ -5,7 +5,7 @@ sudo: required
 install: true
 before_script:
   - cp settings.xml $HOME/.m2/settings.xml
-script: MAVEN_OPTS="-Xms2g -Xmx2g" mvn clean verify -Ptravis-ci
+script: MAVEN_OPTS="-Xms2g -Xmx2g" mvn clean verify
 cache:
   directories:
   - $HOME/.m2
