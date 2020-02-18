@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -163,6 +164,13 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 		
 		return changed;
+	}
+	
+	@Override
+	protected <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> void postInactivateComponent(TransactionContext context, T component, B updatedComponent) {
+		// automatically set concept to primitive when inactivating it, unless the user decided to use a different definition status ID 
+		// https://confluence.ihtsdotools.org/display/DOCEXTPG/5.4.2.3+Inactivate+Concept+in+an+Extension
+		((SnomedConceptDocument.Builder) updatedComponent).primitive(definitionStatusId == null ? true : Concepts.PRIMITIVE.equals(definitionStatusId));
 	}
 	
 	@Override

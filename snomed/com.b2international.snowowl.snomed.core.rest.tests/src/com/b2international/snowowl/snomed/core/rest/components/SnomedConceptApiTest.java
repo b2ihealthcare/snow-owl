@@ -225,12 +225,31 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void testConceptInactivation() throws Exception {
+	public void inactivatePrimitiveConcept() throws Exception {
 		String conceptId = createNewConcept(branchPath);
 
 		inactivateConcept(branchPath, conceptId);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
 			.body("active", equalTo(false))
+			.body("definitionStatusId", equalTo(Concepts.PRIMITIVE))
+			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("ancestorIds", equalTo(ImmutableList.of()))
+			.body("statedParentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("statedAncestorIds", equalTo(ImmutableList.of()));
+	}
+	
+	@Test
+	public void inactivateFullyDefinedConcept() throws Exception {
+		Map<String, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.put("definitionStatusId", Concepts.FULLY_DEFINED)
+				.put("commitComment", "Created new concept")
+				.build();
+		String conceptId = createNewConcept(branchPath, conceptRequestBody);
+
+		inactivateConcept(branchPath, conceptId);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
+			.body("active", equalTo(false))
+			.body("definitionStatusId", equalTo(Concepts.PRIMITIVE))
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
 			.body("statedParentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))

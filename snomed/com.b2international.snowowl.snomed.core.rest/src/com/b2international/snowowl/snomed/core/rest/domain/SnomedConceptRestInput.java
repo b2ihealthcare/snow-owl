@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -26,10 +27,15 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptCreateRequestBuilder> {
 
+	private String definitionStatusId = Concepts.PRIMITIVE;
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private List<SnomedRelationshipRestInput> relationships = Collections.emptyList();
 	private List<SnomedRefSetMemberRestInput> members = Collections.emptyList();
 
+	public String getDefinitionStatusId() {
+		return definitionStatusId;
+	}
+	
 	public List<SnomedDescriptionRestInput> getDescriptions() {
 		return descriptions;
 	}
@@ -42,6 +48,10 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 		return members;
 	}
 
+	public void setDefinitionStatusId(String definitionStatusId) {
+		this.definitionStatusId = definitionStatusId;
+	}
+	
 	public void setDescriptions(List<SnomedDescriptionRestInput> descriptions) {
 		this.descriptions = descriptions;
 	}
@@ -56,7 +66,8 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 
 	@Override
 	protected SnomedConceptCreateRequestBuilder createRequestBuilder() {
-		return SnomedRequests.prepareNewConcept();
+		return SnomedRequests.prepareNewConcept()
+				.setDefinitionStatusId(getDefinitionStatusId());
 	}
 	
 	@Override
