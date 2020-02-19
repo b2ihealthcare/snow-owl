@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
 
+import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.CoreActivator;
@@ -90,13 +91,21 @@ public final class RemoteJob extends Job {
 		} catch (OperationCanceledException e) {
 			return Statuses.cancel();
 		} catch (Throwable e) {
+			final ApiError apiError;
+			
 			if (e instanceof ApiException) {
-				this.response = toJson(mapper, ((ApiException) e).toApiError());
+				apiError = ((ApiException) e).toApiError();
+			} else {
+				apiError = ApiError.Builder.of(e.getMessage())
+					.status(500)
+					.developerMessage("Exception caught while executing request in remote job.")
+					.addInfo("exception-class", e.getClass().getSimpleName())
+					.build();
 			}
 			
+			this.response = toJson(mapper, apiError);
 			// XXX: Don't delete remote jobs with errors
 			autoClean = false;
-			
 			return Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
 		} finally {
 			if (autoClean) {
