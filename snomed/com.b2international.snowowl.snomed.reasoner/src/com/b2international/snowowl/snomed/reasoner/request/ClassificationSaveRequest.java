@@ -73,9 +73,13 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 	// @Nullable
 	private String namespace;
 
+	// @Nullable
+	private String assignerType;
+	
 	private boolean fixEquivalences;
 
 	private boolean handleConcreteDomains;
+
 
 	ClassificationSaveRequest() {}
 	
@@ -101,6 +105,10 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 
 	void setNamespace(final String namespace) {
 		this.namespace = namespace;
+	}
+	
+	void setAssignerType(final String assignerType) {
+		this.assignerType = assignerType;
 	}
 
 	void setFixEquivalences(final boolean fixEquivalences) {
@@ -147,6 +155,7 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.setCommitComment(commitComment)
 				.setModuleId(moduleId)
 				.setNamespace(namespace)
+				.setAssignerType(assignerType)
 				.setFixEquivalences(fixEquivalences)
 				.setHandleConcreteDomains(handleConcreteDomains)
 				.build(context.id(), branchPath);

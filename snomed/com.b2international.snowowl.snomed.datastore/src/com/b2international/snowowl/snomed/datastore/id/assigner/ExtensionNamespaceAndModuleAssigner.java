@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,18 @@ public final class ExtensionNamespaceAndModuleAssigner implements SnomedNamespac
 	private final LongKeyLongMap relationshipModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 	private final LongKeyLongMap concreteDomainModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 	private String defaultNamespace;
-	private String defaultModuleId;
+	private String defaultModule;
 	private Set<String> internationalModuleIds = Sets.newHashSet();
 	
 	// Empty constructor required for executable extension-based initialization 
 	public ExtensionNamespaceAndModuleAssigner() { }
 	
+	@Override
+	public void setDefaults(final String defaultNamespace, final String defaultModule) {
+		this.defaultNamespace = defaultNamespace;
+		this.defaultModule = defaultModule;
+	}
+
 	@Override
 	public String getRelationshipNamespace(final String sourceConceptId) {
 		String namespace = SnomedIdentifiers.getNamespace(sourceConceptId);
@@ -61,8 +67,9 @@ public final class ExtensionNamespaceAndModuleAssigner implements SnomedNamespac
 		final String moduleId = Long.toString(relationshipModuleMap.get(sourceConceptIdAsLong));
 		
 		if (internationalModuleIds.contains(moduleId)) {
-			return defaultModuleId;
+			return defaultModule;
 		}
+		
 		return moduleId;
 	}
 
@@ -73,8 +80,9 @@ public final class ExtensionNamespaceAndModuleAssigner implements SnomedNamespac
 		final String moduleId = Long.toString(concreteDomainModuleMap.get(referencedConceptIdAsLong));
 		
 		if (internationalModuleIds.contains(moduleId)) {
-			return defaultModuleId;
+			return defaultModule;
 		}
+		
 		return moduleId;
 	}
 
@@ -88,8 +96,8 @@ public final class ExtensionNamespaceAndModuleAssigner implements SnomedNamespac
 			relationshipModuleMap.put(conceptId, moduleId);
 		});
 		
-		defaultNamespace = context.service(SnomedCoreConfiguration.class).getDefaultNamespace();
-		defaultModuleId = context.service(SnomedCoreConfiguration.class).getDefaultModule();
+		initializeDefaultNamespace(context);
+		initializeDefaultModule(context);
 		initializeInternationalModules(context);
 	}
 
@@ -103,10 +111,25 @@ public final class ExtensionNamespaceAndModuleAssigner implements SnomedNamespac
 			concreteDomainModuleMap.put(conceptId, moduleId);
 		});
 		
-		defaultModuleId = context.service(SnomedCoreConfiguration.class).getDefaultModule();
+		initializeDefaultModule(context);
 		initializeInternationalModules(context);
 	}
 	
+	private void initializeDefaultNamespace(final BranchContext context) {
+		if (defaultNamespace == null) {
+			defaultNamespace = context.service(SnomedCoreConfiguration.class).getDefaultNamespace();
+		}
+	}
+
+	private void initializeDefaultModule(final BranchContext context) {
+		if (defaultModule == null) {
+			defaultModule = context.service(SnomedCoreConfiguration.class).getDefaultModule();
+			
+			// verify that the default module concept exists
+			SnomedRequests.prepareGetConcept(defaultModule).build().execute(context);
+		}
+	}
+
 	private void initializeInternationalModules(BranchContext context) {
 		if (internationalModuleIds.isEmpty()) {
 			SnomedRequests.prepareSearchConcept()

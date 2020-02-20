@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public final class ClassificationSaveRequestBuilder
 	private String commitComment = "Classified ontology.";
 	private String moduleId = null;
 	private String namespace = null;
+	private String assignerType = null;
 	private boolean fixEquivalences = true;
 	private boolean handleConcreteDomains = true;
 	
@@ -69,6 +70,11 @@ public final class ClassificationSaveRequestBuilder
 		return getSelf();
 	}
 	
+	public ClassificationSaveRequestBuilder setAssignerType(String assignerType) {
+		this.assignerType = assignerType;
+		return getSelf();
+	}
+	
 	public ClassificationSaveRequestBuilder setFixEquivalences(boolean fixEquivalences) {
 		this.fixEquivalences = fixEquivalences;
 		return getSelf();
@@ -88,6 +94,7 @@ public final class ClassificationSaveRequestBuilder
 		request.setCommitComment(commitComment);
 		request.setModuleId(moduleId);
 		request.setNamespace(namespace);
+		request.setAssignerType(assignerType);
 		request.setFixEquivalences(fixEquivalences);
 		request.setHandleConcreteDomains(handleConcreteDomains);
 		return request;
