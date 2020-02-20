@@ -16,14 +16,8 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.datastore.request.HealthCheckingRequest;
 import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
-import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 
 /**
  * @since 4.5
@@ -46,22 +40,6 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 		return new ModuleRequest<>(
 			new IdRequest<>(new SnomedBulkRequest<>(super.getBody())),
 			defaultModuleId);
-	}
-	
-	@Override
-	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {
-		return new AsyncRequest<>(
-			new RepositoryRequest<>(repositoryId,
-				new HealthCheckingRequest<>(
-					new BranchRequest<>(branch,
-						new RevisionIndexReadRequest<>(
-							build()
-						)
-					),
-					allowedHealthstates()
-				)
-			)
-		);
 	}
 
 }

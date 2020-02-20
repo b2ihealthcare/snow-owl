@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.b2international.commons.BooleanUtils;
+import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
@@ -46,7 +47,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.CaseFormat;
-import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -55,13 +55,6 @@ import com.google.common.collect.Iterables;
  */
 public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers, SnomedReferenceSetMember> {
 
-	private static final char[] INVALID_RESOURCE_CHARACTERS = { '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0' };
-	
-	private static final CharMatcher INVALID_RESOURCE_MATCHER = CharMatcher.WHITESPACE
-			.or(CharMatcher.anyOf(String.valueOf(INVALID_RESOURCE_CHARACTERS)))
-			.or(CharMatcher.JAVA_ISO_CONTROL)
-			.precomputed();
-	
 	protected final Rf2RefSetExportLayout refSetExportLayout;
 	protected final SnomedRefSetType refSetType;
 	protected final Collection<SnomedConcept> referenceSets;
@@ -174,7 +167,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				: singleReferenceSet.getId();
 				
 		// Replace dangerous characters with an underscore
-		return INVALID_RESOURCE_MATCHER.replaceFrom(refSetName, '_');
+		return FileUtils.INVALID_RESOURCE_MATCHER.replaceFrom(refSetName, '_');
 	}
 
 	private String toCamelCase(final String term) {
