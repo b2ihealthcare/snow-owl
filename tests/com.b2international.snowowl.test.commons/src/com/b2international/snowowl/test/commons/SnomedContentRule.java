@@ -55,10 +55,14 @@ public class SnomedContentRule extends ExternalResource {
 	}
 	
 	public SnomedContentRule(final String codeSystemShortName, final String branchPath, final Class<?> relativeClass, final String importArchivePath, final Rf2ReleaseType contentType) {
+		this(codeSystemShortName, branchPath, relativeClass, false, importArchivePath, contentType);
+	}
+	
+	public SnomedContentRule(final String codeSystemShortName, final String branchPath, final Class<?> relativeClass, final boolean isFragment, final String importArchivePath, final Rf2ReleaseType contentType) {
 		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystem");
 		this.codeSystemBranchPath = checkNotNull(branchPath, "branchPath");
 		this.contentType = checkNotNull(contentType, "contentType");
-		this.importArchive = PlatformUtil.toAbsolutePathBundleEntry(relativeClass, importArchivePath).toFile();
+		this.importArchive = isFragment ? PlatformUtil.toAbsolutePath(relativeClass, importArchivePath).toFile() : PlatformUtil.toAbsolutePathBundleEntry(relativeClass, importArchivePath).toFile();
 	}
 
 	@Override
