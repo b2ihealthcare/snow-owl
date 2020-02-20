@@ -16,10 +16,6 @@
 package com.b2international.snowowl.core.repository;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.function.Predicate;
-
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 
 /**
  * @since 7.0
@@ -39,6 +35,6 @@ public interface TerminologyRepositoryConfigurer {
 	/**
 	 * @return additional component deletion policies for subtypes of RevisionDocument
 	 */
-	Map<Class<?>, Predicate<RevisionDocument>> getComponentDeletionPolicies();
+	CompositeComponentDeletionPolicy getComponentDeletionPolicy();
 	
 }

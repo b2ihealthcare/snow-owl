@@ -118,9 +118,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	protected ComponentDeletionPolicy getComponentDeletionPolicy() {
-		return CompositeComponentDeletionPolicy.builder()
-				.withPolicy(SnomedDocument.class, doc -> !((SnomedDocument) doc).isReleased())
-				.build();
+		return CompositeComponentDeletionPolicy.of(SnomedDocument.class, doc -> !((SnomedDocument) doc).isReleased());
 	}
 	
 	@Override

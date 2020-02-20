@@ -15,21 +15,18 @@
  */
 package com.b2international.snowowl.snomed.reasoner;
 
-import static java.util.Collections.singletonMap;
-
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
+import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryConfigurer;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
@@ -79,8 +76,8 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 	}
 	
 	@Override
-	public Map<Class<?>, Predicate<RevisionDocument>> getComponentDeletionPolicies() {
-		return singletonMap(SnomedConstraintDocument.class, doc -> true);
+	public CompositeComponentDeletionPolicy getComponentDeletionPolicy() {
+		return CompositeComponentDeletionPolicy.of(SnomedConstraintDocument.class, ComponentDeletionPolicy.ALLOW);
 	}
 	
 }
