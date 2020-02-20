@@ -126,6 +126,7 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 			inactivateComponent(context, component, updatedComponent);
 			updateInactivationIndicator(context, component, newInactivationIndicatorId);
 			updateAssociationTargets(context, component, newAssociationTargets.build());
+			postInactivateComponent(context, component, updatedComponent);
 			return true;
 			
 		} else if (!currentStatus && newStatus) {
@@ -135,6 +136,7 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 			reactivateComponent(context, component, updatedComponent);
 			updateInactivationIndicator(context, component, newInactivationIndicatorId);
 			updateAssociationTargets(context, component, newAssociationTargets.build());
+			postReactivateComponent(context, component, updatedComponent);
 			return true;
 			
 		} else if (currentStatus == newStatus) {
@@ -151,6 +153,30 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 		}
 	}
 
+	/**
+	 * Subclasses may override this method to provide additional inactivation logic after inactivating the given component.
+	 * @param <B>
+	 * @param <T>
+	 * @param context
+	 * @param component
+	 * @param updatedComponent
+	 */
+	protected <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> void postInactivateComponent(TransactionContext context, T component, B updatedComponent) {
+		// do nothing by default
+	}
+
+	/**
+	 * Subclasses may override this method to provide additional reactivation logic after reactivating the given component.
+	 * @param <B>
+	 * @param <T>
+	 * @param context
+	 * @param component
+	 * @param updatedComponent
+	 */
+	protected <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> void postReactivateComponent(TransactionContext context, T component, B updatedComponent) {
+		// do nothing by default
+	}
+	
 	protected final void updateAssociationTargets(final TransactionContext context, SnomedComponentDocument concept, Multimap<String, String> associationTargets) {
 		if (associationTargets == null) {
 			return;

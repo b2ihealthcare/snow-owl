@@ -317,6 +317,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAnyInt(Fields.MAP_PRIORITY, mapPriorities);
 		}
 
+		public static Expression mapBlock(Collection<Integer> mapBlocks) {
+			return matchAnyInt(Fields.MAP_BLOCK, mapBlocks);
+		}
+		
 		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
 			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes.stream().map(Short::intValue).collect(Collectors.toSet()));
 		}
