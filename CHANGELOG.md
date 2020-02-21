@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.25.0
+
+### API
+- Support `definitionStatusId` in `POST /concepts` endpoint (8552b99)
+- Set definitionStatus to primitive automatically when inactivating a concept (8552b99) 
+
+### Bugs/Improvements
+- [cis] allow ID registration of already published IDs (ccc225d)
+- [cis] do not report unauthorized and forbidden errors in the log (28ac77a)
+- [cis] add CIS SCTID status update bash script (96776cc, f78ea65)
+
 ## 6.24.0
 
 ### API
