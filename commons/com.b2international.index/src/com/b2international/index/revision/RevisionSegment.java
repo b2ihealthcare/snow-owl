@@ -109,11 +109,7 @@ public final class RevisionSegment implements Comparable<RevisionSegment> {
 	}
 
 	public RevisionSegment withEnd(long newEnd) {
-		if (end <= newEnd) {
-			return this;
-		} else {
-			return new RevisionSegment(branchId, start, newEnd);
-		}
+		return new RevisionSegment(branchId, start, newEnd);
 	}
 
 	@Override
