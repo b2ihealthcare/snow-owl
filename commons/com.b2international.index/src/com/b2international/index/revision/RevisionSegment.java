@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,6 +110,14 @@ public final class RevisionSegment implements Comparable<RevisionSegment> {
 
 	public RevisionSegment withEnd(long newEnd) {
 		return new RevisionSegment(branchId, start, newEnd);
+	}
+	
+	public RevisionSegment restrictEnd(long restrictTo) {
+		if (end <= restrictTo) {
+			return this;
+		} else {
+			return withEnd(restrictTo);
+		}
 	}
 
 	@Override
