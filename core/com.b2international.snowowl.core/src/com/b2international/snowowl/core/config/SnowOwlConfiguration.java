@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class SnowOwlConfiguration extends Configuration {
 
-	private boolean systemUserNeeded = false;
-	
 	private String description = "You Know, for Terminologies";
 
 	private boolean gzip = true;
@@ -42,16 +40,6 @@ public class SnowOwlConfiguration extends Configuration {
 	
 	public void setDescription(String description) {
 		this.description = description;
-	}
-	
-	@JsonProperty("systemUser")
-	public boolean isSystemUserNeeded() {
-		return systemUserNeeded;
-	}
-
-	@JsonProperty("systemUser")
-	public void setSystemUserNeeded(boolean systemUserNeeded) {
-		this.systemUserNeeded = systemUserNeeded;
 	}
 	
 	public boolean isGzip() {

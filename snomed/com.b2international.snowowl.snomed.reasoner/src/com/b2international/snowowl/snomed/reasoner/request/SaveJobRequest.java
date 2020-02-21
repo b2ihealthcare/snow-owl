@@ -56,7 +56,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -114,6 +113,9 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	// @Nullable
 	private String namespace;
 	
+	// @Nullable
+	private String assignerType;
+	
 	private boolean fixEquivalences;
 	
 	private boolean handleConcreteDomains;
@@ -142,6 +144,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	
 	void setNamespace(final String namespace) {
 		this.namespace = namespace;
+	}
+	
+	void setAssignerType(final String assignerType) {
+		this.assignerType = assignerType;
 	}
 	
 	void setFixEquivalences(final boolean fixEquivalences) {
@@ -585,14 +591,23 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	}
 
 	private SnomedNamespaceAndModuleAssigner createNamespaceAndModuleAssigner(final BranchContext context) {
-		final SnomedNamespaceAndModuleAssigner assigner;
-		if (namespace != null || moduleId != null) {
-			assigner = new DefaultNamespaceAndModuleAssigner(namespace, moduleId);
+		// Override assigner type if given
+		final String selectedType;
+		if (assignerType != null) {
+			selectedType = assignerType;
 		} else {
 			final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
-			final String namespaceModuleAssignerType = configuration.getNamespaceModuleAssigner();
-			assigner = context.service(SnomedNamespaceAndModuleAssignerProvider.class).get(namespaceModuleAssignerType);
+			selectedType = configuration.getNamespaceModuleAssigner();
 		}
+		
+		final SnomedNamespaceAndModuleAssigner assigner = context
+				.service(SnomedNamespaceAndModuleAssignerProvider.class)
+				.get(selectedType);
+
+		// Override defaults if given
+		if (namespace != null || moduleId != null) {
+			assigner.setDefaults(namespace, moduleId);
+		}		
 
 		final String assignerName = assigner.getClass().getSimpleName();
 		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assignerName);

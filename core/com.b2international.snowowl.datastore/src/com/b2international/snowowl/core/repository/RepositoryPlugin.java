@@ -184,14 +184,13 @@ public final class RepositoryPlugin extends Plugin {
 			LOG.debug("Snow Owl application is running in remote mode.");
 		}
 		
-		if (configuration.isSystemUserNeeded() || env.isServer()) {
+		if (env.isServer()) {
 			try {
 				connectSystemUser(env.container());
 			} catch (SnowowlServiceException e) {
 				throw new SnowowlRuntimeException(e);
 			}
 		}
-		
 	}
 	
 	private void registerRequestMetrics(MeterRegistry registry, IEventBus eventBus) {
