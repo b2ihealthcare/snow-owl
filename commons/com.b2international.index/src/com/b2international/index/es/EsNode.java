@@ -129,8 +129,15 @@ public final class EsNode extends Node {
 		putSettingIfAbsent(esSettings, "http.cors.allow-origin", "/https?:\\/\\/localhost(:[0-9]+)?/");
 		putSettingIfAbsent(esSettings, "rest.action.multi.allow_explicit_index", false);
 		putSettingIfAbsent(esSettings, "discovery.type", "single-node");
+		putSettingIfAbsent(esSettings, "search.max_buckets", 1_500_000); // TODO hardcoded max buckets value to allow large aggregations to complete, fix and remove the config in 7.5
 		
 		return esSettings.build();
+	}
+	
+	private static void putSettingIfAbsent(Settings.Builder settings, String key, int value) {
+		if (!settings.keys().contains(key)) {
+			settings.put(key, value);
+		}
 	}
 	
 	private static void putSettingIfAbsent(Settings.Builder settings, String key, String value) {
