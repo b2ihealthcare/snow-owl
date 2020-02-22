@@ -33,5 +33,5 @@ jobs:
       uses: codecov/codecov-action@v1.0.5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        yml: ./codecov.yml #optional
+        yml: ./codecov.yml
         fail_ci_if_error: true
