@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@ package com.b2international.snowowl.core.identity;
 
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -31,9 +28,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.setup.Environment;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 
@@ -80,50 +75,6 @@ public interface IdentityProvider {
 		
 	};
 	
-	/**
-	 * @since 5.11
-	 */
-	final class Factory {
-		
-		private static ServiceLoader<IdentityProviderFactory> FACTORIES;
-		
-		static {
-			FACTORIES = ServiceLoader.load(IdentityProviderFactory.class, IdentityProviderFactory.class.getClassLoader());
-		}
-		
-		private Factory() {}
-		
-		/**
-		 * Creates a new {@link IdentityProvider} instance based on the currently available {@link IdentityProviderFactory} instances provided by the fragments of this bundle.
-		 * @return
-		 */
-		public static List<IdentityProvider> createProviders(Environment env, Collection<IdentityProviderConfig> providerConfigurations) {
-			final ImmutableList.Builder<IdentityProvider> providers = ImmutableList.builder();
-			Iterator<IdentityProviderFactory> it = FACTORIES.iterator();
-			while (it.hasNext()) {
-				IdentityProviderFactory<IdentityProviderConfig> factory = it.next();
-				Optional<IdentityProviderConfig> providerConfig = providerConfigurations.stream().filter(conf -> conf.getClass() == factory.getConfigType()).findFirst();
-				if (providerConfig.isPresent()) {
-					try {
-						providers.add(factory.create(env, providerConfig.get()));
-					} catch (Exception e) {
-						throw new SnowowlRuntimeException(String.format("Couldn't initialize '%s' identity provider", factory), e);
-					}
-				}
-			}
-			return providers.build();
-		}
-
-		public static Collection<Class<? extends IdentityProviderConfig>> getAvailableConfigClasses() {
-			final ImmutableList.Builder<Class<? extends IdentityProviderConfig>> configs = ImmutableList.builder();
-			final Iterator<IdentityProviderFactory> it = FACTORIES.iterator();
-			while (it.hasNext()) {
-				configs.add(it.next().getConfigType());
-			}
-			return configs.build();
-		}
-		
-	}
 	
 	/**
 	 * Authenticates an authorization token.

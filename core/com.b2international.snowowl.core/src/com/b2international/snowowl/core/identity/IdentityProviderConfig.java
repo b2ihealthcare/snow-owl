@@ -49,7 +49,7 @@ public interface IdentityProviderConfig {
 		private JavaType baseType;
 
 		public IdentityProviderTypeIdResolver() throws IOException {
-			this.subTypeCache = IdentityProvider.Factory.getAvailableConfigClasses().stream() 
+			this.subTypeCache = IdentityPlugin.getAvailableConfigClasses().stream() 
 				.filter(this::isValid)
 				.collect(Collectors.toMap(this::getType, Function.identity()));
 		}

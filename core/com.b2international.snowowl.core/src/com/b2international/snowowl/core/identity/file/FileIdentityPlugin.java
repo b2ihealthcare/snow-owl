@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity.file;
+package com.b2international.snowowl.core.identity.file;
 
+import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.IdentityProviderFactory;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.IdentityProviderFactory;
+import com.b2international.snowowl.core.setup.Plugin;
 
 /**
- * @since 5.11
+ * @since 7.5
  */
-public final class FileIdentityProviderFactory implements IdentityProviderFactory<FileIdentityProviderConfig> {
+@Component
+public final class FileIdentityPlugin extends Plugin implements IdentityProviderFactory<FileIdentityProviderConfig> {
 
 	@Override
 	public IdentityProvider create(Environment env, FileIdentityProviderConfig configuration) throws Exception {
@@ -33,5 +36,5 @@ public final class FileIdentityProviderFactory implements IdentityProviderFactor
 	public Class<FileIdentityProviderConfig> getConfigType() {
 		return FileIdentityProviderConfig.class;
 	}
-
+	
 }

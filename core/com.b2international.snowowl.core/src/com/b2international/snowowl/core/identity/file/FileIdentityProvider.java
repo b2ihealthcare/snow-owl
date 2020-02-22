@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity.file;
+package com.b2international.snowowl.core.identity.file;
 
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -33,11 +33,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.IdentityWriter;
-import com.b2international.snowowl.identity.domain.Role;
-import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.identity.domain.Users;
+import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.IdentityWriter;
+import com.b2international.snowowl.core.identity.Role;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.identity.Users;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;

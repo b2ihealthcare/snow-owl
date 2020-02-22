@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,24 @@
  */
 package com.b2international.snowowl.core.identity;
 
+import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
+
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
@@ -41,7 +49,7 @@ public final class IdentityPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IdentityConfiguration conf = configuration.getModuleConfig(IdentityConfiguration.class);
-		final List<IdentityProvider> providers = IdentityProvider.Factory.createProviders(env, conf.getProviderConfigurations());
+		final List<IdentityProvider> providers = createProviders(env, conf.getProviderConfigurations());
 		
 		IdentityProvider identityProvider = null; 
 		if (providers.isEmpty()) {
@@ -65,6 +73,33 @@ public final class IdentityPlugin extends Plugin {
 				.withIssuer(conf.getIssuer())
 				.acceptLeeway(3L) // 3 seconds
 				.build());
+	}
+	
+	private List<IdentityProvider> createProviders(Environment env, List<IdentityProviderConfig> providerConfigurations) {
+		final List<IdentityProvider> providers = newArrayListWithExpectedSize(3);
+		env.plugins().getPlugins().stream()
+			.filter(IdentityProviderFactory.class::isInstance)
+			.map(IdentityProviderFactory.class::cast)
+			.forEach(factory -> {
+				Optional<IdentityProviderConfig> providerConfig = providerConfigurations.stream().filter(conf -> conf.getClass() == factory.getConfigType()).findFirst();
+				if (providerConfig.isPresent()) {
+					try {
+						providers.add(factory.create(env, providerConfig.get()));
+					} catch (Exception e) {
+						throw new SnowowlRuntimeException(String.format("Couldn't initialize '%s' identity provider", factory), e);
+					}
+				}
+			});
+		return providers;
+	}
+
+	static Collection<Class<? extends IdentityProviderConfig>> getAvailableConfigClasses() {
+		final ImmutableList.Builder<Class<? extends IdentityProviderConfig>> configs = ImmutableList.builder();
+		final Iterator<IdentityProviderFactory> it = ClassPathScanner.INSTANCE.getComponentsByInterface(IdentityProviderFactory.class).iterator();
+		while (it.hasNext()) {
+			configs.add(it.next().getConfigType());
+		}
+		return configs.build();
 	}
 	
 }
