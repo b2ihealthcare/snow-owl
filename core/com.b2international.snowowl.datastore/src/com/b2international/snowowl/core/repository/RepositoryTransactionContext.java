@@ -57,6 +57,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -69,7 +70,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;

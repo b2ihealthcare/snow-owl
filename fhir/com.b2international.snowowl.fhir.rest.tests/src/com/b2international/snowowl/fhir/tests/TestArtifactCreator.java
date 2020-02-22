@@ -20,10 +20,10 @@ import java.util.Date;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.b2international.snowowl.test.commons.Services;
 

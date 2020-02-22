@@ -22,35 +22,8 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCompositeDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConceptSetDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDependencyPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedEnumeratedDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedHierarchyDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedReferenceSetDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedSingletonDefinition;
-import com.b2international.snowowl.snomed.datastore.index.constraint.CardinalityPredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.CompositeDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.ConcreteDomainPredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.DependencyPredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.DescriptionPredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.EnumeratedDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.ReferenceSetDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SingletonDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.core.domain.constraint.*;
+import com.b2international.snowowl.snomed.datastore.index.constraint.*;
 
 /**
  * @since 5.7

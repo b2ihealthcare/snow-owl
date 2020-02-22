@@ -32,8 +32,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.google.common.collect.Lists;
 
 /**

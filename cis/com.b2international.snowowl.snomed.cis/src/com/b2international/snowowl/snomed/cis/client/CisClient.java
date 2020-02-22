@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.identity.Credentials;
+import com.b2international.snowowl.core.identity.Credentials;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

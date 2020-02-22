@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.core.console;
 
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.User;
 
 /**
  * @since 7.0

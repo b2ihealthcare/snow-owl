@@ -27,9 +27,9 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**

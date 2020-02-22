@@ -21,9 +21,9 @@ import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.identity.request.UserRequests;
 import com.google.common.base.Strings;
 
 /**

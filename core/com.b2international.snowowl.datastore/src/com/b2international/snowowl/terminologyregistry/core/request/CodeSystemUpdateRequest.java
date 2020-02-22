@@ -19,10 +19,10 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.UpdateRequest;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 4.7

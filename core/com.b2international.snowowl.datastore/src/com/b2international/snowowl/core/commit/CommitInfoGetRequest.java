@@ -17,8 +17,8 @@ package com.b2international.snowowl.core.commit;
 
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * @since 5.7

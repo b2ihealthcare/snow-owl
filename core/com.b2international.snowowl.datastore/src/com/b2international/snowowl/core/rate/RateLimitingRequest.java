@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.ResponseHeaders;
-import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.core.identity.User;
 
 /**
  * @since 7.2

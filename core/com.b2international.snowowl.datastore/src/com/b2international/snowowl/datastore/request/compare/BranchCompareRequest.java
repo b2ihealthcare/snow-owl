@@ -29,11 +29,11 @@ import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.TerminologyComponents;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

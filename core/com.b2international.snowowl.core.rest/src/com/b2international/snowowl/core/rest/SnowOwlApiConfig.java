@@ -63,6 +63,7 @@ import com.b2international.commons.options.MetadataMixin;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
+import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
@@ -70,7 +71,6 @@ import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandle
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewMixin;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.IdentityProvider;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

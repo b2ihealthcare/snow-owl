@@ -18,11 +18,11 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.COMPLEX_BLOCK_MAP_TYPE_HEADER;
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_CORRELATION_ID;
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_ADVICE;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_BLOCK;
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_GROUP;
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_PRIORITY;
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_RULE;
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_TARGET;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_BLOCK;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
