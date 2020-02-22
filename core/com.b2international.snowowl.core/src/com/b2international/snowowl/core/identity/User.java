@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity.domain;
+package com.b2international.snowowl.core.identity;
 
 import java.io.Serializable;
 import java.util.Collection;

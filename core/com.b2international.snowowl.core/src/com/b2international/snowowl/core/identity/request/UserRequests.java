@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity.domain;
-
-import java.util.Collections;
-import java.util.List;
-
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
+package com.b2international.snowowl.core.identity.request;
 
 /**
- * @since 5.11
+ * @since 5.11.0
  */
-public final class Users extends PageableCollectionResource<User> {
+public final class UserRequests {
 
-	public Users(int limit, int total) {
-		this(Collections.emptyList(), limit, total);
+	public static UserGetRequestBuilder prepareGet(String username) {
+		return new UserGetRequestBuilder(username);
 	}
 	
-	public Users(List<User> items, int limit, int total) {
-		super(items, null, limit, total);
+	public static UserSearchRequestBuilder prepareSearch() {
+		return new UserSearchRequestBuilder();
 	}
+
+	public static UserLoginRequestBuilder prepareLogin() {
+		return new UserLoginRequestBuilder();
+	}
+
 }

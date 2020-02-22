@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity.request;
+package com.b2international.snowowl.core.identity.request;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -21,10 +21,10 @@ import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.JWTGenerator;
-import com.b2international.snowowl.identity.Token;
-import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.Token;
+import com.b2international.snowowl.core.identity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

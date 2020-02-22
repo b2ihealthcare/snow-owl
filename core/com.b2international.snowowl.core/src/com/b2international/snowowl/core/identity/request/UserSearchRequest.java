@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity.request;
+package com.b2international.snowowl.core.identity.request;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.Users;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.domain.Users;
 
 /**
  * @since 5.11

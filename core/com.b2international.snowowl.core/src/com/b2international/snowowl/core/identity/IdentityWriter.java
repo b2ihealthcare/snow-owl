@@ -13,30 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity;
-
-import com.b2international.snowowl.core.setup.Environment;
+package com.b2international.snowowl.core.identity;
 
 /**
+ * An {@link IdentityProvider} can additionally implement this interface to provide a way to change the underlying identities (add/modify/delete/etc.).
+ * 
  * @since 5.11
  */
-public interface IdentityProviderFactory<T extends IdentityProviderConfig> {
+public interface IdentityWriter {
 
 	/**
-	 * Creates a new {@link IdentityProvider} instance based on the given {@link Environment} and configuration properties.
-	 * 
-	 * @param env
-	 * @param configuration
-	 * @return
-	 * @throws Exception 
+	 * Add a user to the identity provider, so that the user can authenticate and access resources.
+	 * @param username
+	 * @param password
 	 */
-	IdentityProvider create(Environment env, T configuration) throws Exception;
-
-	/**
-	 * Returns the type of the identity provider this factory can create.
-	 * 
-	 * @return
-	 */
-	Class<T> getConfigType();
-
+	void addUser(String username, String password);
+	
 }

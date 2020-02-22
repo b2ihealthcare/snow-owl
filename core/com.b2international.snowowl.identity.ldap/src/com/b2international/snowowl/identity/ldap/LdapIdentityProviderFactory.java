@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.identity.ldap;
 
+import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.IdentityProviderFactory;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.IdentityProviderFactory;
 
 /**
  * @since 5.11

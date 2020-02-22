@@ -17,7 +17,7 @@ package com.b2international.snowowl.identity.ldap;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.identity.IdentityProviderConfig;
+import com.b2international.snowowl.core.identity.IdentityProviderConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 

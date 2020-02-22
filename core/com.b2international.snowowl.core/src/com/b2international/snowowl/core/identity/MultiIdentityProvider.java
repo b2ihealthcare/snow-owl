@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity;
+package com.b2international.snowowl.core.identity;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.identity.domain.Users;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 

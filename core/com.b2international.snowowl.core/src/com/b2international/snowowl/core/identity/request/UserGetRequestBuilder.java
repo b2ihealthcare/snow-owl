@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity.request;
+package com.b2international.snowowl.core.identity.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.identity.domain.User;
 
 /**
  * @since 5.11

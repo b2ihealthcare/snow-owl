@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.identity;
+package com.b2international.snowowl.core.identity;
 
 import java.util.Date;
 import java.util.List;
@@ -25,9 +25,6 @@ import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.Role;
-import com.b2international.snowowl.identity.domain.User;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
