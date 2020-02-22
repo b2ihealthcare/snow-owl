@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,17 @@
  */
 package com.b2international.snowowl.identity.ldap;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.IdentityProviderFactory;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.Plugin;
 
 /**
- * @since 5.11
+ * @since 7.5
  */
-public final class LdapIdentityProviderFactory implements IdentityProviderFactory<LdapIdentityProviderConfig> {
+@Component
+public class LdapIdentityPlugin extends Plugin implements IdentityProviderFactory<LdapIdentityProviderConfig> {
 
 	@Override
 	public IdentityProvider create(Environment env, LdapIdentityProviderConfig configuration) throws Exception {
