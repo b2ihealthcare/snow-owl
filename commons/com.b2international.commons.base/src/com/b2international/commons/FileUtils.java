@@ -50,7 +50,7 @@ public final class FileUtils {
 
 	public static final String TEMP_DIR_PROPERTY = "java.io.tmpdir";
 	
-	private static final char[] INVALID_RESOURCE_CHARACTERS = { '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0' };
+	public static final char[] INVALID_RESOURCE_CHARACTERS = { '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0' };
 	
 	public static final CharMatcher INVALID_RESOURCE_MATCHER = CharMatcher.whitespace()
 			.or(CharMatcher.anyOf(String.valueOf(INVALID_RESOURCE_CHARACTERS)))
