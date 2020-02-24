@@ -27,8 +27,6 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -82,10 +80,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
-	
-	@Deprecated
-	@Valid
-	private SnomedIdentifierConfiguration ids;
 	
 	@Valid
 	private SnomedExportDefaultConfiguration export = new SnomedExportDefaultConfiguration();
@@ -216,18 +210,6 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("collectSystemChanges")
 	public void setCollectSystemChanges(boolean collectSystemChanges) {
 		this.collectSystemChanges = collectSystemChanges;
-	}
-	
-	/**
-	 * @return the identifier generation sub-section of the SNOMED CT core configuration object
-	 * @deprecated - no longer supported and it will be removed in a future release, access the identifiers configuration via {@link SnowOwlConfiguration#getModuleConfig(Class)}
-	 */
-	public SnomedIdentifierConfiguration getIds() {
-		return ids;
-	}
-	
-	public void setIds(SnomedIdentifierConfiguration ids) {
-		this.ids = ids;
 	}
 	
 	/**
