@@ -31,7 +31,7 @@ import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRestInput;
+import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRunRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRunRestUpdate;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
@@ -120,7 +120,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 	public Promise<ResponseEntity<?>> beginClassification(
 			@ApiParam(value ="Classification parameters")
 			@RequestBody 
-			final ClassificationRestInput request,
+			final ClassificationRunRestInput request,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -344,15 +344,20 @@ public class SnomedClassificationRestService extends AbstractRestService {
 
 			@ApiParam(value = "The updated classification parameters")
 			@RequestBody 
-			final ClassificationRunRestUpdate updatedRun,
+			final ClassificationRunRestUpdate update,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		
+		ApiValidation.checkInput(update);
+		
 		// TODO: compare all fields to find out what the client wants us to do, check for conflicts, etc.
-		if (ClassificationStatus.SAVED.equals(updatedRun.getStatus())) {
+		if (ClassificationStatus.SAVED.equals(update.getStatus())) {
 			ClassificationRequests.prepareSaveClassification()
 					.setClassificationId(classificationId)
+					.setAssignerType(update.getAssigner())
+					.setModuleId(update.getModule())
+					.setNamespace(update.getNamespace())
 					.setUserId(author)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(getBus())

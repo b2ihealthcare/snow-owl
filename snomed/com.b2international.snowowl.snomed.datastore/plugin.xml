@@ -2,7 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="snomedImportPostProcessor" name="SNOMED CT Import Post Processor" schema="schema/snomedImportPostProcessor.exsd"/>
-   <extension-point id="snomedNamespaceAndModuleAssigner" name="SNOMED CT Namespace and Module Assigner" schema="schema/snomedNamespaceAndModuleAssigner.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.contentAvailabilityInfoProvider">
       <provider
@@ -14,14 +13,5 @@
       <validationIssueDetailExtension
             class="com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension">
       </validationIssueDetailExtension>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner">
-      <assigner
-            class="com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner">
-      </assigner>
-      <assigner
-            class="com.b2international.snowowl.snomed.datastore.id.assigner.ExtensionNamespaceAndModuleAssigner">
-      </assigner>
    </extension>
 </plugin>

@@ -57,7 +57,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
-import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.IdRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
@@ -67,16 +66,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCr
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
-import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
-import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
-import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSet;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerConcreteDomainMember;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.google.common.base.Strings;
@@ -107,13 +97,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	@NotEmpty
 	private String commitComment;
 
-	// @Nullable
+	@NotEmpty
 	private String moduleId;
 
-	// @Nullable
+	@NotNull
 	private String namespace;
 	
-	// @Nullable
 	private String assignerType;
 	
 	private boolean fixEquivalences;
@@ -600,17 +589,9 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			selectedType = configuration.getNamespaceModuleAssigner();
 		}
 		
-		final SnomedNamespaceAndModuleAssigner assigner = context
-				.service(SnomedNamespaceAndModuleAssignerProvider.class)
-				.get(selectedType);
+		final SnomedNamespaceAndModuleAssigner assigner = SnomedNamespaceAndModuleAssigner.create(selectedType, moduleId, namespace);
 
-		// Override defaults if given
-		if (namespace != null || moduleId != null) {
-			assigner.setDefaults(namespace, moduleId);
-		}		
-
-		final String assignerName = assigner.getClass().getSimpleName();
-		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assignerName);
+		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assigner);
 		return assigner;
 	}
 

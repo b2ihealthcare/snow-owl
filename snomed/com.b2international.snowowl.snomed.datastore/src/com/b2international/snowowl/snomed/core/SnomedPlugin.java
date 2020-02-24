@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,6 @@ import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
@@ -99,7 +98,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		// register SNOMED CT Query based validation rule evaluator
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
 
-		env.services().registerService(SnomedNamespaceAndModuleAssignerProvider.class, SnomedNamespaceAndModuleAssignerProvider.INSTANCE);
 	}
 	
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,42 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 
 /**
  */
 public class ClassificationRunRestUpdate {
 
+	@NotNull
 	private ClassificationStatus status;
+
+	@NotEmpty
+	private String module;
+
+	@NotNull
+	private String namespace;
+
+	private String assigner = "default";
+
+	public String getModule() {
+		return module;
+	}
+
+	public void setModule(String module) {
+		this.module = module;
+	}
+
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
 
 	public ClassificationStatus getStatus() {
 		return status;
@@ -31,12 +60,16 @@ public class ClassificationRunRestUpdate {
 		this.status = status;
 	}
 
+	public String getAssigner() {
+		return assigner;
+	}
+
+	public void setAssigner(String assigner) {
+		this.assigner = assigner;
+	}
+
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("ClassificationRestRun [status=");
-		builder.append(status);
-		builder.append("]");
-		return builder.toString();
+		return "ClassificationRunRestUpdate [status=" + status + ", module=" + module + ", namespace=" + namespace + ", assigner=" + assigner + "]";
 	}
 }
