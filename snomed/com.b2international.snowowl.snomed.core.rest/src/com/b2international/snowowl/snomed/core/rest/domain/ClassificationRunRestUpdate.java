@@ -34,8 +34,7 @@ public class ClassificationRunRestUpdate {
 	@NotNull
 	private String namespace;
 
-	@NotEmpty
-	private String assigner = "default";
+	private String assigner;
 
 	public String getModule() {
 		return module;
