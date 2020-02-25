@@ -6,7 +6,7 @@ NOTE: It is highly recommended to keep the previous Snow Owl 6 deployment up and
 
 ## Java 11
 
-From Snow Owl 7.1, Snow Owl compiles and runs on Java 11+ versions. It is recommended to use the latest OpenJDK or OracleJDK 11 LTS version. Install from [here](https://openjdk.java.net/), [here](https://www.oracle.com/java/technologies/javase-downloads.html) or [here](https://adoptopenjdk.net/).
+From Snow Owl 7.1, Snow Owl compiles and runs on Java 11+ versions. It is recommended to use the latest OpenJDK or OracleJDK 11 LTS version. Install from [OpenJDK](https://openjdk.java.net/), [Oracle](https://www.oracle.com/java/technologies/javase-downloads.html) or [AdoptJDK](https://adoptopenjdk.net/). The Oracle JDK comes with commercial usage restrictions, see [here](https://www.oracle.com/technetwork/java/javase/overview/oracle-jdk-faqs.html) before installing.
 
 ## RDBMS vs Elasticsearch
 
