@@ -181,7 +181,7 @@ public abstract class AbstractRestService {
 	 * @return a URI to be added as Location header value
 	 */
 	protected final URI getResourceLocationURI(String branch, String resourceId) {
-		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(branch, resourceId).build().toUri();
+		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(resourceId).build(branch);
 	}
 
 }
