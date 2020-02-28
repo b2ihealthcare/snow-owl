@@ -125,6 +125,7 @@ public abstract class SnomedTerminologyComponentConstants {
 			case REFSET_NUMBER: return REFSET;
 			case REFSET_MEMBER_NUMBER: return REFSET_MEMBER;
 			case CONSTRAINT_NUMBER: return CONSTRAINT;
+			case TEMPLATE_NUMBER: return TEMPLATE;
 			default: throw new IllegalArgumentException("Unknown terminology component identifier value: " + value);
 		}
 	}
@@ -142,6 +143,7 @@ public abstract class SnomedTerminologyComponentConstants {
 			case REFSET: return REFSET_NUMBER;
 			case REFSET_MEMBER: return REFSET_MEMBER_NUMBER;
 			case CONSTRAINT: return CONSTRAINT_NUMBER;
+			case TEMPLATE: return TEMPLATE_NUMBER;
 			default: throw new IllegalArgumentException("Unknown terminology component identifier: " + id);
 		}
 	}
