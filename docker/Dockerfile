@@ -5,11 +5,25 @@ ARG BUILD_TIMESTAMP
 ARG VERSION
 ARG GIT_REVISION
 
+ENV container docker
+RUN yum -y update; yum clean all
+RUN yum -y install systemd; yum clean all; \
+(cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]
+
 # Install java-11-openjdk as a pre requirement
-RUN rpmkeys --import file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
-    yum update --setopt=tsflags=nodocs -y -q -e 0 && \
-    yum install --setopt=tsflags=nodocs -y -q -e 0 java-11-openjdk && \
-    yum clean all
+RUN rpmkeys --import file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+RUN yum update --setopt=tsflags=nodocs -y -q -e 0
+RUN yum install --setopt=tsflags=nodocs -y -q -e 0 java-11-openjdk
+RUN yum clean all
 
 # Set JAVA_HOME environment variable
 ENV JAVA_HOME /etc/alternatives/jre

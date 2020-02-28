@@ -28,7 +28,19 @@ snomed:
     -
       code: en-gb
       refSetIds: ["900000000000508004"]
+    -
+      code: en-x-999001261000000100
+      refSetIds: ["999001261000000100"]
+    -
+      code: en-x-999000671000001103
+      refSetIds: ["999000671000001103"]
 
 monitoring:
   enabled: true
+
+repository:
+  index:
+    clusterUrl: "${ELASTICSEARCH_CLUSTER_URL}"
+    connectTimeout: "${ELASTICSEARCH_CONNECT_TIMEOUT}"
+    socketTimeout: "${ELASTICSEARCH_SOCKET_TIMEOUT}"
 

@@ -50,9 +50,14 @@ jobs:
             - "~/.m2"
             - "/root/.m2"
       - run:
-          name: Build and deploy
+          name: Build and deploy libraries
           command: |
             echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
             ./mvnw -s .circleci/settings.xml deploy -DskipTests -Dtycho.localArtifacts=$LOCAL_ARTIFACTS
+      - run:
+          name: Build and push docker image
+          command: |
+            make build
+
 
