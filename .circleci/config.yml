@@ -3,24 +3,37 @@ workflows:
   version: 2
   flow:
     jobs:
-      - deploy:
+      - release-libraries:
           context: babylon
           filters:
             branches:
               only:
                 - 7.x
+      - deploy-service-dev:
+          context: babylon
+          filters:
+            branches:
+              only:
+                - 7.x
+      - deploy-service-staging:
+          context: babylon
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /bbl-.*/
 env: &env
   working_directory: ~/project
   resource_class: large
   docker:
-    - image: docker:17.03.0-ce-git
+    - image: docker:19.03.6-git
       environment:
         JAVA_HOME: /usr/lib/jvm/java-11-openjdk
   environment:
     JAVA_HOME: /usr/lib/jvm/java-11-openjdk
 
 jobs:
-  deploy:
+  release-libraries:
     <<: *env
     steps:
       - checkout
@@ -35,13 +48,8 @@ jobs:
       - run:
           name: Build prerequisites
           command: |
-            echo "${ARTIFACTORY_URL}" | sha512sum
-            echo "${ARTIFACTORY_USER_RW}" | sha512sum
-            echo "${ARTIFACTORY_PWD_RW}" | sha512sum
-            echo "$CIRCLE_SHA1" > .commit-keyId
-            docker --version
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
-            apk add --no-cache make=4.2.1-r0 nodejs openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+            apk add --no-cache make=4.2.1-r2 nodejs npm openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
             npm config set unsafe-perm true
             npm install -g npm
       - save_cache:
@@ -50,9 +58,72 @@ jobs:
             - "~/.m2"
             - "/root/.m2"
       - run:
-          name: Build and deploy
+          name: Build and deploy libraries
           command: |
             echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
             ./mvnw -s .circleci/settings.xml deploy -DskipTests -Dtycho.localArtifacts=$LOCAL_ARTIFACTS
+  deploy-service-dev:
+    <<: *env
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_cache:
+          keys:
+            - snow-owl-mvn-cache-{{ checksum "pom.xml" }}
+            - snow-owl-mvn-cache-
+          paths:
+            - "~/.m2"
+            - "/root/.m2"
+      - run:
+          name: Build prerequisites
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
+            apk add --no-cache make=4.2.1-r2 nodejs npm openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+            npm config set unsafe-perm true
+            npm install -g npm
+      - save_cache:
+          key: snow-owl-mvn-cache-{{ checksum "pom.xml" }}
+          paths:
+            - "~/.m2"
+            - "/root/.m2"
+      - run:
+          name: Build and push docker image
+          command: |
+            echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+            make build-project
+            export SNOWOWL_RPM_PACKAGE=`find ./releng/com.b2international.snowowl.server.update/target -name "snow-owl-oss*.rpm"`
+            cp "${SNOWOWL_RPM_PACKAGE}"  ./docker/`basename "${SNOWOWL_RPM_PACKAGE}"`
+            export RELEASE_VERSION=`git describe --abbrev=0 --tags`
+            make build-docker
+            make push
+      - deploy:
+          name: Deploy dev
+          command: make deploy-dev
+  deploy-service-staging:
+    <<: *env
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_cache:
+          keys:
+            - snow-owl-mvn-cache-{{ checksum "pom.xml" }}
+            - snow-owl-mvn-cache-
+          paths:
+            - "~/.gradle"
+            - "~/.m2"
+            - "/root/.gradle"
+      - run:
+          name: Build prerequisites
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
+            apk add --no-cache make=4.2.1-r2 nodejs npm openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+      - deploy:
+          name: Staging Deploy
+          command: |
+            make deploy-staging
+
+
+
 
