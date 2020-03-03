@@ -1,5 +1,5 @@
 NAME=chr-terminology-server
-GIT_VERSION=$(shell git rev-parse HEAD)
+RELEASE_VERSION=$(shell git rev-parse HEAD)
 SEMVER_VERSION=$(shell git describe --abbrev=0 --tags)
 REPO=quay.io/babylonhealth
 DEPLOY_DEV_URL=http://dev-ai-deploy.babylontech.co.uk:5199/job/kube-deploy-dev/buildWithParameters
@@ -15,7 +15,7 @@ build-docker:
 	--build-arg SNOWOWL_RPM_PACKAGE=`basename "${SNOWOWL_RPM_PACKAGE}"` \
 	--build-arg BUILD_TIMESTAMP=`date +%s` \
 	--build-arg VERSION="${RELEASE_VERSION}" \
-	--build-arg GIT_REVISION="${GIT_VERSION}" \
+	--build-arg GIT_REVISION="${RELEASE_VERSION}" \
 	-t $(REPO)/$(NAME):$(RELEASE_VERSION)
 
 push:
