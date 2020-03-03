@@ -21,6 +21,12 @@ snomed:
     -
       code: en-gb
       refSetIds: ["900000000000508004"]
+    -
+      code: en-x-999001261000000100
+      refSetIds: ["999001261000000100"]
+    -
+      code: en-x-999000671000001103
+      refSetIds: ["999000671000001103"]
   # Disable concrete domains, we are going to import the required concepts to an extension
   concreteDomainSupport: false
   maxReasonerCount: 1
