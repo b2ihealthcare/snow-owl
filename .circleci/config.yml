@@ -79,7 +79,7 @@ jobs:
           name: Build prerequisites
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
-            apk add --no-cache make=4.2.1-r2 nodejs npm openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+            apk add --no-cache make=4.2.1-r2 nodejs npm curl openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
             npm config set unsafe-perm true
             npm install -g npm
       - save_cache:
@@ -95,12 +95,12 @@ jobs:
             make build-project
             export SNOWOWL_RPM_PACKAGE=`find ./releng/com.b2international.snowowl.server.update/target -name "snow-owl-oss*.rpm"`
             cp "${SNOWOWL_RPM_PACKAGE}"  ./docker/`basename "${SNOWOWL_RPM_PACKAGE}"`
-            export RELEASE_VERSION=`git describe --abbrev=0 --tags`
             make build-docker
             make push
       - deploy:
           name: Deploy dev
-          command: make deploy-dev
+          command: |
+            make deploy-dev
   deploy-service-staging:
     <<: *env
     steps:
@@ -118,12 +118,8 @@ jobs:
           name: Build prerequisites
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
-            apk add --no-cache make=4.2.1-r2 nodejs npm openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+            apk add --no-cache make=4.2.1-r2 nodejs npm curl openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
       - deploy:
           name: Staging Deploy
           command: |
             make deploy-staging
-
-
-
-
