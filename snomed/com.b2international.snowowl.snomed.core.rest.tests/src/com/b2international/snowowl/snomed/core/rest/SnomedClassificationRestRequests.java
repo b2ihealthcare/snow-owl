@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.google.common.collect.ImmutableMap;
@@ -90,7 +91,11 @@ public abstract class SnomedClassificationRestRequests {
 	}
 
 	public static ValidatableResponse beginClassificationSave(IBranchPath branchPath, String classificationId) {
-		Map<String, Object> requestBody = ImmutableMap.<String, Object>of("status", ClassificationStatus.SAVED.toString());
+		Map<String, Object> requestBody = ImmutableMap.<String, Object>of(
+			"status", ClassificationStatus.SAVED.toString(),
+			"module", Concepts.MODULE_SCT_CORE,
+			"namespace", ""
+		);
 
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
+import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
@@ -61,9 +62,7 @@ import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
@@ -99,7 +98,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		// register SNOMED CT Query based validation rule evaluator
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
 
-		env.services().registerService(SnomedNamespaceAndModuleAssignerProvider.class, SnomedNamespaceAndModuleAssignerProvider.INSTANCE);
 	}
 	
 	@Override
@@ -118,7 +116,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	protected ComponentDeletionPolicy getComponentDeletionPolicy() {
-		return doc -> (doc instanceof SnomedDocument && !((SnomedDocument) doc).isReleased()) || doc instanceof SnomedConstraintDocument;
+		return CompositeComponentDeletionPolicy.of(SnomedDocument.class, doc -> !((SnomedDocument) doc).isReleased());
 	}
 	
 	@Override

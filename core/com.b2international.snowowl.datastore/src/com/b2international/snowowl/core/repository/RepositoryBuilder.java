@@ -145,6 +145,10 @@ public final class RepositoryBuilder {
 				configurer.getAdditionalMappings().forEach(mappings::putMapping);
 			});
 		
+		if (deletionPolicy instanceof CompositeComponentDeletionPolicy) {
+			repositoryConfigurers.forEach(configurer -> ((CompositeComponentDeletionPolicy) deletionPolicy).mergeWith(configurer.getComponentDeletionPolicy()));
+		}
+		
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, mergeMaxResults, env, mappings, log);
 		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
 		repository.bind(ComponentDeletionPolicy.class, deletionPolicy);

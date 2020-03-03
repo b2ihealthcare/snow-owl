@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public final class SaveJobRequestBuilder
 	private String commitComment;
 	private String moduleId;
 	private String namespace;
+	private String assignerType;
 	private boolean fixEquivalences;
 	private boolean handleConcreteDomains;
 
@@ -67,6 +68,11 @@ public final class SaveJobRequestBuilder
 		return getSelf();
 	}
 	
+	public SaveJobRequestBuilder setAssignerType(String assignerType) {
+		this.assignerType = assignerType;
+		return getSelf();
+	}
+	
 	public SaveJobRequestBuilder setFixEquivalences(boolean fixEquivalences) {
 		this.fixEquivalences = fixEquivalences;
 		return getSelf();
@@ -86,6 +92,7 @@ public final class SaveJobRequestBuilder
 		request.setCommitComment(commitComment);
 		request.setModuleId(moduleId);
 		request.setNamespace(namespace);
+		request.setAssignerType(assignerType);
 		request.setFixEquivalences(fixEquivalences);
 		request.setHandleConcreteDomains(handleConcreteDomains);
 		return request;

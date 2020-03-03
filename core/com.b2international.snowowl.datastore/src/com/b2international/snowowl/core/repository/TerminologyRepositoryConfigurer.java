@@ -32,4 +32,9 @@ public interface TerminologyRepositoryConfigurer {
 	 */
 	Collection<Class<?>> getAdditionalMappings();
 
+	/**
+	 * @return additional component deletion policies for subtypes of RevisionDocument
+	 */
+	CompositeComponentDeletionPolicy getComponentDeletionPolicy();
+	
 }

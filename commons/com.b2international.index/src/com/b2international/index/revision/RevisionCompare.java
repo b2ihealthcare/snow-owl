@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,17 +82,6 @@ public final class RevisionCompare {
 					}
 					
 					details.forEach(compareDetail -> {
-						switch (compareDetail.getOp()) {
-						case ADD:
-							added++;
-							break;
-						case CHANGE:
-							changed++;
-							break;
-						case REMOVE:
-							removed++;
-							break;
-						}
 						detailsByComponent.merge(compareDetail.key(), compareDetail, (oldV, newV) -> oldV.merge(newV));
 					});
 				}
@@ -101,10 +90,24 @@ public final class RevisionCompare {
 		}
 		
 		public RevisionCompare build() {
+			final List<RevisionCompareDetail> details = ImmutableList.copyOf(detailsByComponent.values());
+			details.forEach(compareDetail -> {
+				switch (compareDetail.getOp()) {
+				case ADD:
+					added++;
+					break;
+				case CHANGE:
+					changed++;
+					break;
+				case REMOVE:
+					removed++;
+					break;
+				}
+			});
 			return new RevisionCompare(
 					base, 
 					compare,
-					ImmutableList.copyOf(detailsByComponent.values()),
+					details,
 					added,
 					changed,
 					removed);

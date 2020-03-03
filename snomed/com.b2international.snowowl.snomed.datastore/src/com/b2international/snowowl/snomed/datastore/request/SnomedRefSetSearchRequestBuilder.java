@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
-
-import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
@@ -46,8 +43,8 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, refSetType);
 	}
 
-	public SnomedRefSetSearchRequestBuilder filterByTypes(Collection<SnomedRefSetType> refSetTypes) {
-		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, Collections3.toImmutableSet(refSetTypes));
+	public SnomedRefSetSearchRequestBuilder filterByTypes(Iterable<SnomedRefSetType> refSetTypes) {
+		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, refSetTypes);
 	}
 
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentType(String referencedComponentType) {
@@ -68,8 +65,8 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentType);
 	}
 
-	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Collection<Integer> referencedComponentTypes) {
-		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, Collections3.toImmutableSet(referencedComponentTypes));
+	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Iterable<Integer> referencedComponentTypes) {
+		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 	}
 
 	/**
@@ -93,8 +90,8 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	 * @param mapTargetComponentTypes
 	 *            - map target component type values
 	 */
-	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentTypes(Collection<Integer> mapTargetComponentTypes) {
-		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, Collections3.toImmutableSet(mapTargetComponentTypes));
+	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentTypes(Iterable<Integer> mapTargetComponentTypes) {
+		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 	}
 
 }

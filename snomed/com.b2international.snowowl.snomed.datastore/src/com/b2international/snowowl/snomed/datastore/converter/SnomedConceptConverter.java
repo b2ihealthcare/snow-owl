@@ -28,9 +28,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.ExplicitFirstOrdering;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.functions.LongToStringFunction;
@@ -46,17 +48,28 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 /**
@@ -223,7 +236,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			}
 		}
 		
-		final Map<String, SnomedDescription> terms = DescriptionRequestHelper.indexBestPreferredByConceptId(synonyms, locales());
+		final Map<String, SnomedDescription> terms = indexBestPreferredByConceptId(synonyms, locales());
 		for (SnomedConcept concept : results) {
 			concept.setPt(terms.get(concept.getId()));
 		}
@@ -247,7 +260,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			}
 		}
 		
-		final Map<String, SnomedDescription> terms = DescriptionRequestHelper.indexBestPreferredByConceptId(fsns, locales());
+		final Map<String, SnomedDescription> terms = indexBestPreferredByConceptId(fsns, locales());
 		
 		for (SnomedConcept concept : results) {
 			SnomedDescription fsn = terms.get(concept.getId());
@@ -549,4 +562,63 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 	private SubclassDefinitionStatus toSubclassDefinitionStatus(final boolean exhaustive) {
 		return exhaustive ? SubclassDefinitionStatus.DISJOINT_SUBCLASSES : SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 	}
+	
+	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(Iterable<SnomedDescription> descriptions, List<ExtendedLocale> orderedLocales) {
+		List<String> languageRefSetIds = SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(orderedLocales);
+		ExplicitFirstOrdering<String> languageRefSetOrdering = ExplicitFirstOrdering.create(languageRefSetIds);
+		
+		return extractBest(indexByConceptId(descriptions), languageRefSetIds, description -> {
+			Set<String> preferredLanguageRefSetIds = Maps.filterValues(description.getAcceptabilityMap(), Predicates.equalTo(Acceptability.PREFERRED)).keySet();
+			// the explicit first ordering will put the VIP / anticipated / first priority languages codes to the min end.
+			return languageRefSetOrdering.min(preferredLanguageRefSetIds);
+		});
+	}
+	
+	private static Multimap<String, SnomedDescription> indexByConceptId(Iterable<SnomedDescription> descriptions) {
+		return Multimaps.index(descriptions, description -> description.getConceptId());
+	}
+	
+	private static <T> Map<String, SnomedDescription> extractBest(Multimap<String, SnomedDescription> descriptionsByConceptId, 
+			List<T> orderedValues, 
+			Function<SnomedDescription, T> predicateFactory) {
+		
+		Map<String, SnomedDescription> uniqueMap = Maps.transformValues(descriptionsByConceptId.asMap(), new ExtractBestFunction<T>(orderedValues, predicateFactory));
+		return ImmutableMap.copyOf(Maps.filterValues(uniqueMap, Predicates.notNull()));
+	}
+	
+	private static class ExtractBestFunction<T> implements Function<Collection<SnomedDescription>, SnomedDescription> {
+		
+		private final List<T> orderedValues;
+		private final Function<SnomedDescription, T> valuesExtractor;
+		private final Ordering<SnomedDescription> ordering;
+
+		private ExtractBestFunction(List<T> orderedValues, Function<SnomedDescription, T> valuesExtractor) {
+			this.orderedValues = orderedValues;
+			this.valuesExtractor = valuesExtractor;
+			this.ordering = ExplicitFirstOrdering.create(orderedValues).onResultOf(valuesExtractor);
+		}
+
+		@Override 
+		public SnomedDescription apply(Collection<SnomedDescription> descriptions) {
+			try {
+				
+				SnomedDescription candidate = ordering.min(descriptions);
+				
+				/*
+				 * We're using ExplicitFirstOrdering so that it doesn't break in the middle of processing 
+				 * the collection, but this means that we have to test the final SnomedDescription again 
+				 * to see if it is suitable for our needs.
+				 */
+				if (orderedValues.contains(valuesExtractor.apply(candidate))) {
+					return candidate;
+				} else {
+					return null;
+				}
+				
+			} catch (NoSuchElementException e) {
+				return null;
+			}
+		}
+	}
+	
 }

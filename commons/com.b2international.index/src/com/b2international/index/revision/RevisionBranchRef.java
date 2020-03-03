@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ final class RevisionBranchRef {
 	public RevisionBranchRef(long branchId, String branchPath, SortedSet<RevisionSegment> segments) {
 		this.branchId = branchId;
 		this.branchPath = branchPath;
-//		checkArgument(!segments.isEmpty(), "At least one revision segment must be specified");
 		this.segments = segments;
 	}
 	
@@ -200,7 +199,7 @@ final class RevisionBranchRef {
 		return new RevisionBranchRef(branchId(), path(), segments()
 				.stream()
 				.filter(segment -> segment.isBefore(timestamp)) // consider segments that are before the currently desired timestamp
-				.map(segment -> segment.withEnd(timestamp))
+				.map(segment -> segment.restrictEnd(timestamp))
 				.collect(Collectors.toCollection(TreeSet::new)));
 	}
 	

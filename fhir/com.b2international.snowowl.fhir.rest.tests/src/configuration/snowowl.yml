@@ -2,9 +2,6 @@
 # Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
-# necessary to connect one user to the system otherwise Snow Owl startup fails
-systemUser: true
-
 identity:
   providers:
     - file:

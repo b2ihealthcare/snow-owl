@@ -81,10 +81,11 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 
 	private String getDetailsAffectedComponentId(Options filters, Options expandOptions) {
 		checkNotNull(filters, "At least one filter source must be defined");
-		if (filters.containsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID)) {
-			return filters.getString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID.name());
-		} else if (expandOptions.containsKey("affectedComponentId")) {
+		// prefer details() expand options first, then outer affectedComponentId filter
+		if (expandOptions.containsKey("affectedComponentId")) {
 			return expandOptions.getString("affectedComponentId");
+		} else if (filters.containsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID.name())) {
+			return filters.getString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID.name());
 		} else {
 			return null;
 		}

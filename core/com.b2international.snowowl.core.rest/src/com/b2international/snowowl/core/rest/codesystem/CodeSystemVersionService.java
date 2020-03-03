@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -119,7 +120,7 @@ public class CodeSystemVersionService {
 				.filterByVersionId(versionId)
 				.build(codeSystem.getRepositoryUuid())
 				.execute(bus.get())
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 		
 		final CodeSystemVersionEntry version = Iterables.getOnlyElement(versions, null);
 		if (version == null) {
@@ -152,7 +153,7 @@ public class CodeSystemVersionService {
 				.setRequest(req)
 				.buildAsync()
 				.execute(bus.get())
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 		
 		RemoteJobEntry job = null;
 		do {
@@ -165,7 +166,7 @@ public class CodeSystemVersionService {
 			job = JobRequests.prepareGet(jobId)
 					.buildAsync()
 					.execute(bus.get())
-					.getSync();
+					.getSync(1, TimeUnit.MINUTES);
 		} while (job == null || !job.isDone());
 		
 		if (job.isSuccessful()) {
@@ -185,7 +186,7 @@ public class CodeSystemVersionService {
 				.filterByCodeSystemShortName(shortName)
 				.build(repositoryId)
 				.execute(bus.get())
-				.getSync()
+				.getSync(1, TimeUnit.MINUTES)
 				.getItems();
 	}
 	

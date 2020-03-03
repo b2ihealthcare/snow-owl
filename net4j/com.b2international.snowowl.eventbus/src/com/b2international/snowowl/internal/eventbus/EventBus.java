@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
 import com.google.common.collect.MapMaker;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 3.1
@@ -57,7 +58,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	private final ConcurrentMap<String, AtomicLong> completedMessages;
 	private final ConcurrentMap<String, AtomicLong> failedMessages;
 	private final String description;
-	private final int numberOfWorkers;
+	private final int maxThreads;
 	private final ExecutorServiceFactory executorServiceFactory;
 	
 	private ExecutorService executorService;
@@ -66,15 +67,15 @@ public class EventBus extends Lifecycle implements IEventBus {
 		this(EventBusConstants.GLOBAL_BUS, Runtime.getRuntime().availableProcessors());
 	}
 	
-	public EventBus(String description, int numberOfWorkers) {
+	public EventBus(String description, int maxThreads) {
 		CheckUtil.checkArg(description, "Description should be specified");
-		CheckUtil.checkArg(numberOfWorkers >= 0, "Number of workers must be greater than zero");
+		CheckUtil.checkArg(maxThreads >= 0, "Number of workers must be greater than zero");
 		this.description = description;
-		this.numberOfWorkers = numberOfWorkers;
-		this.executorServiceFactory = numberOfWorkers == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory();
+		this.maxThreads = maxThreads;
+		this.executorServiceFactory = maxThreads == 0 ? ExecutorServiceFactory.DIRECT : new WorkerExecutorServiceFactory();
 		
-		// init stat maps with at least 1 concurrencyLevel
-		final int concurrencyLevel = Math.max(1, numberOfWorkers);
+		// init stat maps with 1-4 concurrencyLevel
+		final int concurrencyLevel = Ints.constrainToRange(maxThreads, 1, 4);
 		this.protocolMap = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
 		this.handlerMap = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
 		this.inQueueMessages = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
@@ -87,7 +88,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
-		executorService = executorServiceFactory.createExecutorService(description, numberOfWorkers);
+		executorService = executorServiceFactory.createExecutorService(description, maxThreads);
 	}
 
 	@Override

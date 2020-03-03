@@ -33,7 +33,6 @@ SnomedRequests.prepareSearchConcept()
 SnomedConceptSearchRequestBuilder conceptsRequestBuilder = SnomedRequests.prepareSearchConcept()
 		.filterByActive(true)
 		.setLimit(50_000)
-		.setScroll("5m")
 		.setExpand("preferredDescriptions()")
 				
 if (params.isUnpublishedOnly) {

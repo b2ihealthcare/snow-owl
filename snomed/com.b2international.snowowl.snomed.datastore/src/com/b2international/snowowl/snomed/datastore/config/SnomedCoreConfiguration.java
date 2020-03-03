@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -83,10 +81,6 @@ public class SnomedCoreConfiguration {
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
 	
-	@Deprecated
-	@Valid
-	private SnomedIdentifierConfiguration ids;
-	
 	@Valid
 	private SnomedExportDefaultConfiguration export = new SnomedExportDefaultConfiguration();
 	
@@ -99,12 +93,6 @@ public class SnomedCoreConfiguration {
 	//enables the manual editing of inferred relationships and concrete data types
 	private boolean inferredEditingEnabled = false;
 
-	@NotNull
-	private String defaultNamespace = DEFAULT_NAMESPACE;
-	
-	@NotEmpty
-	private String defaultModule = DEFAULT_MODULE;
-	
 	@NotNull
 	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
 	
@@ -216,18 +204,6 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("collectSystemChanges")
 	public void setCollectSystemChanges(boolean collectSystemChanges) {
 		this.collectSystemChanges = collectSystemChanges;
-	}
-	
-	/**
-	 * @return the identifier generation sub-section of the SNOMED CT core configuration object
-	 * @deprecated - no longer supported and it will be removed in a future release, access the identifiers configuration via {@link SnowOwlConfiguration#getModuleConfig(Class)}
-	 */
-	public SnomedIdentifierConfiguration getIds() {
-		return ids;
-	}
-	
-	public void setIds(SnomedIdentifierConfiguration ids) {
-		this.ids = ids;
 	}
 	
 	/**
@@ -361,35 +337,9 @@ public class SnomedCoreConfiguration {
 		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
 	}
 	
-	/**
-	 * @return the default module ID to use when not set in any other way
-	 */
-	@JsonProperty
-	public String getDefaultModule() {
-		return defaultModule;
-	}
-	
-	/**
-	 * @return the default namespace to use for ID generation when not set in any other way
-	 */
-	@JsonProperty
-	public String getDefaultNamespace() {
-		return defaultNamespace;
-	}
-	
 	@JsonProperty
 	public String getNamespaceModuleAssigner() {
 		return namespaceModuleAssigner;
-	}
-	
-	@JsonProperty
-	public void setDefaultModule(String defaultModule) {
-		this.defaultModule = defaultModule;
-	}
-	
-	@JsonProperty
-	public void setDefaultNamespace(String defaultNamespace) {
-		this.defaultNamespace = defaultNamespace;
 	}
 	
 	@JsonProperty

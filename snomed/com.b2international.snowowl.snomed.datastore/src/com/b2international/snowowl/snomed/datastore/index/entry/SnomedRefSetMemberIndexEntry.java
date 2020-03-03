@@ -50,7 +50,6 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -318,6 +317,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAnyInt(Fields.MAP_PRIORITY, mapPriorities);
 		}
 
+		public static Expression mapBlock(Collection<Integer> mapBlocks) {
+			return matchAnyInt(Fields.MAP_BLOCK, mapBlocks);
+		}
+		
 		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
 			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes.stream().map(Short::intValue).collect(Collectors.toSet()));
 		}
@@ -1335,11 +1338,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	@JsonIgnore
 	public Acceptability getAcceptability() {
 		return Acceptability.getByConceptId(getAcceptabilityId());
-	}
-	
-	@JsonIgnore
-	public RelationshipRefinability getRefinability() {
-		return RelationshipRefinability.getByConceptId(getValueId());
 	}
 	
 	@JsonIgnore
