@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.cis;
 
-import org.junit.Before;
+import static org.junit.Assert.fail;
 
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.cis.client.CisSnomedIdentifierService;
@@ -53,4 +60,18 @@ public class CisSnomedIdentifierServiceTest extends AbstractIdentifierServiceTes
 		service = new CisSnomedIdentifierService(conf, reservationService, mapper);
 	}
 
+	@Test
+	public void whenReleasingPublishedId_ThenExceptionShouldBeThrown() {
+		try {
+			final Set<String> componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 1);
+			getIdentifierService().publish(componentIds);
+			getIdentifierService().release(componentIds);
+			fail("No exception was thrown when releasing already published ID.");
+		} catch (BadRequestException e) {
+			// correct behavior
+		} catch (Exception e) {
+			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+		}
+	}
+	
 }

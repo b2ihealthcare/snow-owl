@@ -78,7 +78,9 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 	}
 	
 	public SnomedDescriptionCreateRequestBuilder setAcceptability(Map<String, Acceptability> acceptabilityMap) {
-		this.acceptabilityMap.putAll(acceptabilityMap);
+		if (acceptabilityMap != null) {
+			this.acceptabilityMap.putAll(acceptabilityMap);
+		}
 		return getSelf();
 	}
 	

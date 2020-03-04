@@ -166,6 +166,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_PRIORITY)) {
 				queryBuilder.filter(mapPriority(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class)));
 			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_BLOCK)) {
+				queryBuilder.filter(mapBlock(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_BLOCK, Integer.class)));
+			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
 				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::valueIds);
 			}

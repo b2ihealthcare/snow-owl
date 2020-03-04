@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,10 @@ class CisClient {
 		final String reasonPhrase = statusLine.getReasonPhrase();
 		
 		if (statusCode != HttpStatus.SC_OK) {
-			LOGGER.error("{} {}", statusCode, reasonPhrase);
+			// log non-authentication related errors 
+			if (statusCode != HttpStatus.SC_UNAUTHORIZED && statusCode != HttpStatus.SC_FORBIDDEN) {
+				LOGGER.error("{} {}", statusCode, reasonPhrase);
+			}
 			throw new CisClientException(statusCode, reasonPhrase);
 		}
 	}

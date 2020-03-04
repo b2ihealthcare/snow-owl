@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.validation.UnexpectedTypeException;
@@ -174,7 +175,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 				.all()
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 
 		final Map<String, CodeSystemEntry> codeSystemsByMainBranch = Maps.uniqueIndex(codeSystems, CodeSystemEntry::getBranchPath);
 
@@ -226,7 +227,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 						.filterByCodeSystemShortName(codeSystem.getShortName())
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 						.execute(bus)
-						.getSync()
+						.getSync(1, TimeUnit.MINUTES)
 						.stream()
 						.collect(Collectors.toMap(version -> version.getPath(), v -> v));
 

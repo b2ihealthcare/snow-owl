@@ -1,6 +1,6 @@
 /*
  * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +21,7 @@ import java.util.List;
 import org.eclipse.emf.ecore.EPackage;
 
 public abstract class AbstractEtlValidator extends EclValidator {
-	
+
 	@Override
 	protected List<EPackage> getEPackages() {
 		List<EPackage> result = new ArrayList<EPackage>(super.getEPackages());

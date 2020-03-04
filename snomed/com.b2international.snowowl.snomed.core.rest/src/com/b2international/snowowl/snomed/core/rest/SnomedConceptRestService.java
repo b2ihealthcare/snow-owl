@@ -238,7 +238,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final String createdConceptId = change.toRequestBuilder()
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 			.getResultAs(String.class);
 		
 		
@@ -289,7 +289,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		change.toRequestBuilder(conceptId)
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 
 	@ApiOperation(
@@ -328,7 +328,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.force(force)
 			.build(repositoryId, branchPath, author, String.format("Deleted Concept '%s' from store.", conceptId))
 			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
 	@Override
@@ -345,7 +345,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.setFields(SnomedConcept.Fields.ID)
 			.build(repositoryId, branchPath)
 			.execute(getBus())
-			.getSync()
+			.getSync(1, TimeUnit.MINUTES)
 			.getItems()
 			.stream()
 			.map(IComponent::getId)

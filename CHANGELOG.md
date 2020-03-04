@@ -1,6 +1,69 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.4.0
+
+### Changes from 6.x stream since 7.3.0 release
+
+All changes from the `6.x` stream (the 6.25.0 release) have been merged into the `7.4.0` release. See changelog entry `6.25.0` for details.
+
+### Elasticsearch 7.x upgrade
+The supported Elasticsearch version has been upgraded to `7.5.2` (see #478, e19ed34). 
+Elasticsearch 7.5.2 is backwards compatible with Elasticsearch 6.x, so any dataset that has been created with an earlier Snow Owl 7.x release should be compatible with this release.
+
+### New Swagger Documentation
+From Snow Owl 7.4.0, the API documentation can be found at the URL `http://localhost:8080/snowowl`. (see 418feef)
+This new documentation will gather and render all available groups from all available modules.   
+
+### Core
+- Add `id` filter to `/commits` API (121d15a, #473)
+- Support `affectedComponentId` in `GET /commits` `details()` expand parameter (af8da80, #473)
+- Implement RepositoryTransactionContext#clearContents (a540784)
+- Change default REST API timeout to 2 minutes in most of the endpoints (ee51b29)
+
+### Configuration
+- Introduce `repository.maxThreads` configuration key (90ddade)
+  * Replaces `numberOfWorkers` configuration key
+  * Default value is set to `200`
+  * The underlying worker pool will start with less threads and grow/shrink based on the number of incoming requests
+  * Excess threads will terminate after 1 minute (4577b2a)
+- Remove unnecessary `systemUser` configuration key, mostly used by tests (24d3785)  
+
+### SNOMED CT
+- Add support for "complex map with map block" type reference (b0ce5ce, 824c3b8)
+- Allow filtering reference set members by complex `mapBlock` property (4a03c51)
+- Support for `module()` expand in all component API endpoints (cd3e5b3)
+- Support expansion of `definitionStatus()` in `GET /concept` API (f4ba3e6, 97f1ff9)
+- Support `acceptabilities()` expansion in `GET /descriptions` APIs (ecba5d6)
+- Support `caseSignificance()` expansion in `GET /descriptions` APIs (81659ce)
+- Support `characteristicType()` expansion in `GET /relationships` APIs (a0cd98f)
+- Support `modifier()` expansion in `GET /relationships` APIs (a0cd98f)
+- Redesign `inactivationProperties` in component endpoints (c0abbdc)
+- Support unpublished effectiveTime filter in REST API via `-1` and `Unpublished` values (#485, ebd5521)
+- Allow descriptions to be created without any language reference set members (e2fa3c5)
+- Change type of `SnomedConcept.definitionStatus` to `SnomedConcept` (f4ba3e6, 2435c7c)
+- Migrate validation rule from `6.x` stream to `7.x` (#471)
+- Make sure we time out from ECL evaluations after 3 minutes (09293f4)
+
+### FHIR
+- Change ValueSet `compose` property cardinality to `0..1` (e4c4407)
+
+### Bugs/Improvements
+- [core] increase embedded Elasticsearch max_buckets to `1.500.000` temporarily (e164183)
+- [core] fix unauthorized issue when executing console commands (14fe6b2)
+- [core] prevent unnecessary mapping updates during startup (9f14138)
+- [core] fix calculation of RevisionCompare added/changed/removed numbers (9384003)
+- [core] fix incorrect paramType value for nested query parameters (5222a5f, #441)
+- [core] fix RevisionSegment.withEnd(newEnd) logic, fixes `branch@timestamp` queries in certain deep branching scenarios (4651965)
+- [core] respond with HTTP Method Not Allowed properly in REST API (5a16c02)
+- [core] improve performance of deletion of huge amounts of validation issues (b5a9f16)
+- [snomed] run effective time restore only in non-import scenarios (2eb05b2)
+- [snomed] fix OWL expression conversion issue (c49ed26)
+- [snomed] fix incorrect conversion of `null` values to empty filter values in refset API (refSetType, referencedComponentType and mapTargetComponentType filters) (f737c14, #482)
+- [snomed] unset effective time of inactivated members properly during save (inactivated by another component inactivation) (307879a, b60acf1, eb988de)
+- [lgtm] fix errors/warnings reported by LGTM (eacca94, 61f79f5, 4659b04, 0d00a34, c63c1a2, c4d3995, 37b4685, 8f331c2, 5497d95, e018278, a438fe1, e3fdf56, c6368dc, 72faec7, 5456f5a, 204632c, cb17a33, b808eed, 7d8fb27, 325ce93, e02857b, 64623ef, a7226e1, fc2e4b1, 0b769ac)
+
+
 ## 7.3.0
 
 ### Changes from 6.x stream since 7.2.0 release
@@ -229,6 +292,17 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://d
   * `resources/defaults` XML configuration folder and support 
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
+
+## 6.25.0
+
+### API
+- Support `definitionStatusId` in `POST /concepts` endpoint (8552b99)
+- Set definitionStatus to primitive automatically when inactivating a concept (8552b99) 
+
+### Bugs/Improvements
+- [cis] allow ID registration of already published IDs (ccc225d)
+- [cis] do not report unauthorized and forbidden errors in the log (28ac77a)
+- [cis] add CIS SCTID status update bash script (96776cc, f78ea65)
 
 ## 6.24.0
 

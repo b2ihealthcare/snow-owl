@@ -81,7 +81,11 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		// initialize OWL Expression converter on the current branch
-		final SnomedOWLExpressionConverter expressionConverter = new BranchRequest<>(staging.getBranchPath(), branchContext -> new SnomedOWLExpressionConverter(branchContext)).execute(context);
+		final SnomedOWLExpressionConverter expressionConverter = new BranchRequest<>(staging.getBranchPath(), branchContext -> {
+			return new SnomedOWLExpressionConverter(branchContext.inject()
+					.bind(RevisionSearcher.class, index)
+					.build());
+		}).execute(context);
 		
 		final Set<String> statedSourceIds = Sets.newHashSet();
 		final Set<String> statedDestinationIds = Sets.newHashSet();

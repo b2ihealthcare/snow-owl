@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -120,7 +121,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				.prepareGet(newVersionPath)
 				.build(repositoryId)
 				.execute(context.service(IEventBus.class))
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
 		} catch (NotFoundException e) {
 			// ignore
@@ -199,7 +200,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.filterByCodeSystemShortName(codeSystem.getShortName())
 			.build(codeSystem.getRepositoryUuid())
 			.execute(context.service(IEventBus.class))
-			.getSync()
+			.getSync(1, TimeUnit.MINUTES)
 			.stream()
 			.max(CodeSystemVersionEntry.VERSION_EFFECTIVE_DATE_COMPARATOR)
 			.map(CodeSystemVersionEntry::getEffectiveDate)
@@ -245,7 +246,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.setName(versionId)
 			.build(codeSystem.getRepositoryUuid())
 			.execute(context.service(IEventBus.class))
-			.getSync();
+			.getSync(1, TimeUnit.MINUTES);
 		monitor.worked(1);
 	}
 	

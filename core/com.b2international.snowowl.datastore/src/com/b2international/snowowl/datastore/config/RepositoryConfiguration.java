@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,8 @@ public class RepositoryConfiguration {
 	@NotNull
 	private IndexConfiguration indexConfiguration = new IndexConfiguration();
 	
-	@Min(0)
-	@Max(100)
-	private int numberOfWorkers = 3 * Runtime.getRuntime().availableProcessors();
+	@Min(1)
+	private int maxThreads = 200;
 	
 	@Min(10)
 	@Max(1000)
@@ -98,19 +97,35 @@ public class RepositoryConfiguration {
 	}
 
 	/**
-	 * @return the number of workers threads per repository
+	 * @return the number of workers threads
+	 * @deprecated - use #getMaxThreads() instead, will be unsupported in 7.5
 	 */
 	@JsonProperty
 	public int getNumberOfWorkers() {
-		return numberOfWorkers;
+		return getMaxThreads();
 	}
 	
 	/**
-	 * @param numberOfWorkers the number of workers per repository to set
+	 * @return number of maximum threads to allow in the underlying event bus instance
+	 */
+	public int getMaxThreads() {
+		return maxThreads;
+	}
+	
+	/**
+	 * @param numberOfWorkers - the number of workers to set
+	 * @deprecated - use #setMaxThreads(int) instead, will be unsupported in 7.5
 	 */
 	@JsonProperty
 	public void setNumberOfWorkers(int numberOfWorkers) {
-		this.numberOfWorkers = numberOfWorkers;
+		setMaxThreads(numberOfWorkers);
+	}
+	
+	/**
+	 * @param maxThreads - the maximum number of threads to allow in the underlying event bus instance
+	 */
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
 	}
 	
 	@JsonProperty("index")

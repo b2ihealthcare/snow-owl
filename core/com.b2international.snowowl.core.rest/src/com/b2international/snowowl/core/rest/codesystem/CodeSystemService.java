@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,7 @@ public final class CodeSystemService {
 					}
 					return SHORT_NAME_ORDERING.immutableSortedCopy(codeSystems);
 				})
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 	}
 
 	/**
@@ -98,7 +99,7 @@ public final class CodeSystemService {
 					}
 					throw new NotFoundException("CodeSystem", shortNameOrOid);
 				})
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 	private List<String> getRepositoryIds() {
@@ -107,7 +108,7 @@ public final class CodeSystemService {
 				.buildAsync()
 				.execute(bus.get())
 				.then(repos -> repos.stream().map(RepositoryInfo::id).collect(Collectors.toList()))
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 }

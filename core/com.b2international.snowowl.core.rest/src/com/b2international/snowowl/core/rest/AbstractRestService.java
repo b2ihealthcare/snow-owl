@@ -47,9 +47,9 @@ import com.google.inject.Provider;
 public abstract class AbstractRestService {
 
 	/**
-	 * Two minutes timeout value for commit requests in milliseconds.
+	 * Two minutes timeout value for commit requests in minutes.
 	 */
-	protected static final long COMMIT_TIMEOUT = 120L * 1000L;
+	protected static final long COMMIT_TIMEOUT = 2L;
 
 	/**
 	 * The media type produced and accepted by Snow Owl's RESTful API for JSON content.
@@ -164,7 +164,7 @@ public abstract class AbstractRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
 	 * @param resourceId - the identifier of the resource
@@ -173,7 +173,7 @@ public abstract class AbstractRestService {
 	protected final URI getResourceLocationURI(String resourceId) {
 		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(resourceId).build().toUri();
 	}
-	
+
 	/**
 	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
 	 * @param branch - the branch where the resource has been created
@@ -181,7 +181,7 @@ public abstract class AbstractRestService {
 	 * @return a URI to be added as Location header value
 	 */
 	protected final URI getResourceLocationURI(String branch, String resourceId) {
-		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(branch, resourceId).build().toUri();
+		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(resourceId).build(branch);
 	}
 
 }

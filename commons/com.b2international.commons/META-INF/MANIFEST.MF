@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: B2i Commons
 Bundle-SymbolicName: com.b2international.commons;singleton:=true
-Bundle-Version: 7.4.0.qualifier
+Bundle-Version: 7.5.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.b2international.commons,
@@ -11,6 +11,7 @@ Export-Package: com.b2international.commons,
  com.b2international.commons.collect,
  com.b2international.commons.concurrent.equinox,
  com.b2international.commons.config,
+ com.b2international.commons.db,
  com.b2international.commons.emf,
  com.b2international.commons.exceptions,
  com.b2international.commons.extension,
@@ -102,16 +103,15 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.fasterxml.classmate;bundle-version="1.3.4",
  javax.el;bundle-version="2.2.0",
  com.sun.el;bundle-version="2.2.0",
- jaxb-api;bundle-version="2.3.0"
+ jaxb-api;bundle-version="2.3.0",
+ ch.qos.logback.classic;bundle-version="[1.2.3,2.0.0)",
+ ch.qos.logback.core;bundle-version="[1.2.3,2.0.0)"
 Bundle-Activator: com.b2international.commons.CommonsActivator
-Import-Package: ch.qos.logback.classic;version="[1.1.3,2.0.0)",
- ch.qos.logback.classic.turbo;version="[1.1.3,2.0.0)",
- ch.qos.logback.core;version="[1.1.3,2.0.0)",
- ch.qos.logback.core.spi;version="[1.1.3,2.0.0)",
- org.slf4j;version="1.7.25"
+Import-Package: org.slf4j;version="1.7.25"
 Bundle-ClassPath: .,
  lib/LatencyUtils-2.0.3.jar,
  lib/bucket4j-core-4.4.1.jar,
+ lib/h2-1.4.199.jar,
  lib/hibernate-validator-5.1.1.Final.jar,
  lib/jboss-logging-3.1.3.GA.jar,
  lib/jgrapht-core-1.3.0.jar,

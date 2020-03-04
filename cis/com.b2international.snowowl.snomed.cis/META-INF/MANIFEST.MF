@@ -2,16 +2,16 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT CIS
 Bundle-SymbolicName: com.b2international.snowowl.snomed.cis;singleton:=true
-Bundle-Version: 7.4.0.qualifier
+Bundle-Version: 7.5.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Automatic-Module-Name: com.b2international.snowowl.snomed.cis
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.datastore;visibility:=reexport,
- org.apache.httpcomponents.httpasyncclient;bundle-version="4.1.4",
- org.apache.httpcomponents.httpclient;bundle-version="4.5.3",
- org.apache.httpcomponents.httpcore;bundle-version="4.4.10"
+ org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.4,4.1.5)",
+ org.apache.httpcomponents.httpclient;bundle-version="[4.5.3,4.5.4)",
+ org.apache.httpcomponents.httpcore;bundle-version="[4.4.10,4.4.11)"
 Import-Package: org.slf4j;version="1.7.25"
 Export-Package: com.b2international.snowowl.snomed.cis,
  com.b2international.snowowl.snomed.cis.action,
