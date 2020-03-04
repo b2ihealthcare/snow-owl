@@ -21,7 +21,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /bbl-.*/
+              only: /^.*/
 env: &env
   working_directory: ~/project
   resource_class: large
