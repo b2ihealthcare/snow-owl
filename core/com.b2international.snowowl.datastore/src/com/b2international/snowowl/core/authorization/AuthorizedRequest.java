@@ -100,7 +100,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 						newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, branchRequest.getBranchPath());
 					}
 							
-					return new Permission(permission.getOperation(), newResource);
+					return Permission.of(permission.getOperation(), newResource);
 				})
 				.forEach(permissionRequirement -> {
 					if (!user.hasPermission(permissionRequirement)) {
