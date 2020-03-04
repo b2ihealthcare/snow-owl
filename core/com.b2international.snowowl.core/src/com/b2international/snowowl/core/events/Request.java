@@ -106,6 +106,15 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 
 	/**
 	 * @param <T>
+	 * @param type
+	 * @return
+	 */
+	default <T> T getNestedRequest(Class<T> type) {
+		return Request.getNestedRequest(this, type);
+	}
+	
+	/**
+	 * @param <T>
 	 * @param req
 	 * @param type
 	 * @return
