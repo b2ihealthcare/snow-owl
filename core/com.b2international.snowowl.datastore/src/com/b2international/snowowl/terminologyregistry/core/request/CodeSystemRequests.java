@@ -20,10 +20,8 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Repositories;
-import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.version.CodeSystemVersionCreateRequestBuilder;
 
@@ -71,11 +69,13 @@ public class CodeSystemRequests {
 		
 		return repositories.getItems()
 			.stream()
-			.filter( repository -> RepositoryInfo.Health.GREEN == repository.health() || RepositoryInfo.Health.YELLOW == repository.health() )
 			.flatMap(repository -> {
-				return new RepositoryRequest<>(repository.id(), CodeSystemRequests.prepareSearchCodeSystem()
+				return CodeSystemRequests.prepareSearchCodeSystem()
 						.all()
-						.build()).execute(context).stream();
+						.build(repository.id())
+						.getRequest()
+						.execute(context)
+						.stream();
 			})
 			.collect(Collectors.toList());
 	}
@@ -88,12 +88,14 @@ public class CodeSystemRequests {
 			
 		return repositories.getItems()
 			.stream()
-			.filter( repository -> RepositoryInfo.Health.GREEN == repository.health() || RepositoryInfo.Health.YELLOW == repository.health() )
 			.flatMap(repository -> {
-				return new RepositoryRequest<>(repository.id(), CodeSystemRequests.prepareSearchCodeSystem()
+				return CodeSystemRequests.prepareSearchCodeSystem()
 						.one()
 						.filterById(codeSystem)
-						.build()).execute(context).stream();
+						.build(repository.id())
+						.getRequest()
+						.execute(context)
+						.stream();
 			})
 			.findFirst()
 			.orElseThrow(() -> new BadRequestException("CodeSystem '%s' cannot be found", codeSystem));
