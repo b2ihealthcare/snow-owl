@@ -68,14 +68,15 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 	
 	public String getBranchPath(ServiceProvider context) {
 		if (branchPath == null) {
-			CodeSystemVersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName(codeSystem.getShortName());
 			
 			if (uri.isHead()) {
 				// use code system working branch directly when HEAD is specified
 				branchPath = codeSystem.getBranchPath();
 			} else {
+				CodeSystemVersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchCodeSystemVersion()
+						.one()
+						.filterByCodeSystemShortName(codeSystem.getShortName());
+				
 				if (uri.isLatest()) {
 					// fetch the latest code system version if LATEST is specified in the URI
 					versionSearch.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE));

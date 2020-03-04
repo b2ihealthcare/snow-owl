@@ -71,7 +71,7 @@ public class CodeSystemRequests {
 		
 		return repositories.getItems()
 			.stream()
-			.filter( repository -> RepositoryInfo.Health.GREEN == repository.health() )
+			.filter( repository -> RepositoryInfo.Health.GREEN == repository.health() || RepositoryInfo.Health.YELLOW == repository.health() )
 			.flatMap(repository -> {
 				return new RepositoryRequest<>(repository.id(), CodeSystemRequests.prepareSearchCodeSystem()
 						.all()
@@ -88,7 +88,7 @@ public class CodeSystemRequests {
 			
 		return repositories.getItems()
 			.stream()
-			.filter( repository -> RepositoryInfo.Health.GREEN == repository.health() )
+			.filter( repository -> RepositoryInfo.Health.GREEN == repository.health() || RepositoryInfo.Health.YELLOW == repository.health() )
 			.flatMap(repository -> {
 				return new RepositoryRequest<>(repository.id(), CodeSystemRequests.prepareSearchCodeSystem()
 						.one()
