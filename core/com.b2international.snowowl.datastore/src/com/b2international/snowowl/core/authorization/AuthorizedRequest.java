@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.authorization;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Collection;
 
 import com.b2international.commons.exceptions.ForbiddenException;
@@ -27,6 +25,7 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.RequestHeaders;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.CodeSystemResourceRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
@@ -79,8 +78,9 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				throw new UnauthorizedException("Incorrect authorization token");
 			}
 			
-			RepositoryRequest<?> repositoryRequest = getNestedRepositoryRequest(next());
-			BranchRequest<?> branchRequest = getNestedBranchRequest(next());
+			RepositoryRequest<?> repositoryRequest = Request.getNestedRequest(next(), RepositoryRequest.class);
+			BranchRequest<?> branchRequest = Request.getNestedRequest(next(), BranchRequest.class);
+			CodeSystemResourceRequest<?> codeSystemResourceRequest = Request.getNestedRequest(next(), CodeSystemResourceRequest.class);
 			
 			// authorize user whether it is permitted to execute the operation or not
 			requests
@@ -91,13 +91,23 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				.map(permission -> {
 					String newResource = permission.getResource();
 					if (newResource.contains(RepositoryAccessControl.REPOSITORY_TEMPLATE)) {
-						checkArgument(repositoryRequest != null, "Repository context is missing from request: " + next());
-						newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, repositoryRequest.getContextId());
+						if (repositoryRequest != null) {
+							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, repositoryRequest.getContextId());
+						} else if (codeSystemResourceRequest != null) {
+							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, codeSystemResourceRequest.getRepositoryId(context));
+						} else {
+							throw new IllegalArgumentException("Repository context is missing from request: " + next());
+						}
 					}
 					
 					if (newResource.contains(BranchAccessControl.BRANCH_TEMPLATE)) {
-						checkArgument(branchRequest != null, "Branch context is missing from request: " + next());
-						newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, branchRequest.getBranchPath());
+						if (branchRequest != null) {
+							newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, branchRequest.getBranchPath());
+						} else if (codeSystemResourceRequest != null) {
+							newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, codeSystemResourceRequest.getBranchPath(context));
+						} else {
+							throw new IllegalArgumentException("Branch context is missing from request: " + next());
+						}
 					}
 							
 					return new Permission(permission.getOperation(), newResource);
@@ -116,22 +126,4 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 				.build());
 	}
 
-	private RepositoryRequest<?> getNestedRepositoryRequest(Request<?, ?> req) {
-		if (req instanceof RepositoryRequest<?>) {
-			return (RepositoryRequest<?>) req;
-		} else if (req instanceof DelegatingRequest<?, ?, ?>) {
-			return getNestedRepositoryRequest(((DelegatingRequest) req).next());
-		}
-		return null;
-	}
-	
-	private BranchRequest<?> getNestedBranchRequest(Request<?, ?> req) {
-		if (req instanceof BranchRequest<?>) {
-			return (BranchRequest<?>) req;
-		} else if (req instanceof DelegatingRequest<?, ?, ?>) {
-			return getNestedBranchRequest(((DelegatingRequest) req).next());
-		}
-		return null;
-	}
-	
 }

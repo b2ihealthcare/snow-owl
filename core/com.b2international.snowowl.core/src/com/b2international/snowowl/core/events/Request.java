@@ -104,4 +104,19 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 		return ImmutableList.of(this);
 	}
 
+	/**
+	 * @param <T>
+	 * @param req
+	 * @param type
+	 * @return
+	 */
+	static <T> T getNestedRequest(Request<?, ?> req, Class<T> type) {
+		if (type.isInstance(req)) {
+			return type.cast(req);
+		} else if (req instanceof DelegatingRequest<?, ?, ?>) {
+			return getNestedRequest(((DelegatingRequest) req).next(), type);
+		}
+		return null;
+	}
+
 }

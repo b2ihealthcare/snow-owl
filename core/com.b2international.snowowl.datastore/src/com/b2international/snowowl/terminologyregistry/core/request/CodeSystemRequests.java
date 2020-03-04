@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,16 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.Repositories;
+import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.version.CodeSystemVersionCreateRequestBuilder;
 
 /**
@@ -46,6 +56,47 @@ public class CodeSystemRequests {
 	
 	public static CodeSystemVersionCreateRequestBuilder prepareNewCodeSystemVersion() {
 		return new CodeSystemVersionCreateRequestBuilder();
+	}
+
+	/**
+	 * Returns all {@link CodeSystemEntry}s from all repositories.
+	 * @param context
+	 * @return
+	 */
+	public static List<CodeSystemEntry> getAllCodeSystems(ServiceProvider context) {
+		final Repositories repositories = RepositoryRequests.prepareSearch()
+			.all()
+			.build()
+			.execute(context);
+		
+		return repositories.getItems()
+			.stream()
+			.filter( repository -> RepositoryInfo.Health.GREEN == repository.health() )
+			.flatMap(repository -> {
+				return new RepositoryRequest<>(repository.id(), CodeSystemRequests.prepareSearchCodeSystem()
+						.all()
+						.build()).execute(context).stream();
+			})
+			.collect(Collectors.toList());
+	}
+
+	public static CodeSystemEntry getCodeSystem(ServiceProvider context, String codeSystem) {
+		final Repositories repositories = RepositoryRequests.prepareSearch()
+				.all()
+				.build()
+				.execute(context);
+			
+		return repositories.getItems()
+			.stream()
+			.filter( repository -> RepositoryInfo.Health.GREEN == repository.health() )
+			.flatMap(repository -> {
+				return new RepositoryRequest<>(repository.id(), CodeSystemRequests.prepareSearchCodeSystem()
+						.one()
+						.filterById(codeSystem)
+						.build()).execute(context).stream();
+			})
+			.findFirst()
+			.orElseThrow(() -> new BadRequestException("CodeSystem '%s' cannot be found", codeSystem));
 	}
 	
 }
