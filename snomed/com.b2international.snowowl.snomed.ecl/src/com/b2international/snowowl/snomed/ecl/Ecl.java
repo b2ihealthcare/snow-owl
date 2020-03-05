@@ -37,5 +37,9 @@ public final class Ecl {
 	public static String or(Collection<String> eclExpressions) {
 		return OR_JOINER.join(eclExpressions);
 	}
+
+	public static String exclude(String from, String exclusion) {
+		return String.format("(%s) MINUS (%s)", from, exclusion);
+	}
 	
 }
