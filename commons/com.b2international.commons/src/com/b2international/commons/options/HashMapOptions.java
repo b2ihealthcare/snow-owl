@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,14 +61,29 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	}
 	
 	@Override
+	public Object get(Enum<?> key) {
+		return get(key.name());
+	}
+	
+	@Override
 	public final boolean getBoolean(final String key) {
 		final Boolean value = get(key, Boolean.class);
 		return value == null ? false : value;
 	}
 	
 	@Override
+	public boolean getBoolean(Enum<?> key) {
+		return getBoolean(key.name());
+	}
+	
+	@Override
 	public final String getString(final String key) {
 		return get(key, String.class);
+	}
+	
+	@Override
+	public String getString(Enum<?> key) {
+		return getString(key.name());
 	}
 	
 	@Override
@@ -86,6 +101,11 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public <T> T get(Enum<?> key, Class<T> expectedType) {
+		return get(key.name(), expectedType);
 	}
 	
 	@Override
@@ -108,6 +128,11 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	}
 	
 	@Override
+	public <T> Collection<T> getCollection(Enum<?> key, Class<T> type) {
+		return getCollection(key.name(), type);
+	}
+	
+	@Override
 	@SuppressWarnings("unchecked")
 	public final <T> List<T> getList(String key, Class<T> type) {
 		final Object value = get(key);
@@ -127,8 +152,18 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	}
 	
 	@Override
+	public <T> List<T> getList(Enum<?> key, Class<T> type) {
+		return getList(key.name(), type);
+	}
+	
+	@Override
 	public final Options getOptions(String key) {
 		return containsKey(key) ? get(key, Options.class) : OptionsBuilder.newBuilder().build();
+	}
+	
+	@Override
+	public Options getOptions(Enum<?> key) {
+		return getOptions(key.name());
 	}
 	
 	@Nonnull
