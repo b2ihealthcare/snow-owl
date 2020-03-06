@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.HealthCheckingRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -114,7 +115,8 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 			bus.registerHandler(Request.ADDRESS, message -> {
 				try {
 					final RepositoryRequest<?> repoReq = message.body(RepositoryRequest.class);
-					final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
+					final HealthCheckingRequest<?> healthReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
+					final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, healthReq, "next");
 					final Request<BranchContext, ?> innerReq = ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next");
 					message.reply(innerReq.execute(context));
 				} catch (WrappedException e1) {

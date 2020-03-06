@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
@@ -28,7 +27,8 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
  * 
  * @since 4.5
  */
-public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, BranchContext, CommitResult> implements AllowedHealthStates {
+public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, BranchContext, CommitResult>
+		implements RevisionIndexRequestBuilder<CommitResult>, AllowedHealthStates {
 
 	private String author;
 	private String commitComment = "";
@@ -54,9 +54,10 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 		this.commitComment = commitComment;
 		return getSelf();
 	}
-	
+
 	/**
 	 * Subclasses may override to provide additional request where the wrapper request requires {@link TransactionContext} for its functionality.
+	 * 
 	 * @return
 	 */
 	protected Request<TransactionContext, ?> getBody() {
@@ -74,7 +75,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 		this.preparationTime = preparationTime;
 		return getSelf();
 	}
-	
+
 	public final RepositoryCommitRequestBuilder setParentContextDescription(String parentContextDescription) {
 		this.parentContextDescription = parentContextDescription;
 		return getSelf();
@@ -84,18 +85,5 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 	protected final Request<BranchContext, CommitResult> doBuild() {
 		return new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription);
 	}
-	
-	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {
-		return new AsyncRequest<>(
-			new RepositoryRequest<>(repositoryId,
-				new HealthCheckingRequest<>(
-					new BranchRequest<>(branch,
-						new RevisionIndexReadRequest<CommitResult>(build())
-					),
-					allowedHealthstates()
-				)
-			)
-		);
-	}
-	
+
 }
