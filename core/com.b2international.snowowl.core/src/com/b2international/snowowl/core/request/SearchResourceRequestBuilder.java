@@ -119,7 +119,9 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B sortBy(List<Sort> sorts) {
-		optionsBuilder.put(OptionKey.SORT_BY, ImmutableList.copyOf(sorts));
+		if (sorts != null) {
+			optionsBuilder.put(OptionKey.SORT_BY, ImmutableList.copyOf(sorts));
+		}
 		return getSelf();
 	}
 	
