@@ -110,7 +110,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 						}
 					}
 							
-					return new Permission(permission.getOperation(), newResource);
+					return Permission.of(permission.getOperation(), newResource);
 				})
 				.forEach(permissionRequirement -> {
 					if (!user.hasPermission(permissionRequirement)) {
