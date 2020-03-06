@@ -73,7 +73,7 @@ public interface Options {
 	 *
 	 * <p>
 	 * More formally, if this map contains a mapping from a key {@code k} to a value {@code v} such that {@code (key==null ? k==null :
-	 * key.equals(k))}, then this method returns {@code v}; otherwise it returns {@code null}. (There can be at most one such mapping.)
+	 * key.name().equals(k))}, then this method returns {@code v}; otherwise it returns {@code null}. (There can be at most one such mapping.)
 	 *
 	 * @param key
 	 *            the key whose associated value is to be returned
