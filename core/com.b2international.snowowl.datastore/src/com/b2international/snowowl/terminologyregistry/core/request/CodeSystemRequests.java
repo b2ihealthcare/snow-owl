@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.version.CodeSystemVersionCreateRequestBuilder;
@@ -54,6 +55,15 @@ public class CodeSystemRequests {
 	
 	public static CodeSystemVersionCreateRequestBuilder prepareNewCodeSystemVersion() {
 		return new CodeSystemVersionCreateRequestBuilder();
+	}
+	
+	/**
+	 * Creates a new generic concept search request builder.
+	 * 
+	 * @return the builder to configure for generic concept search
+	 */
+	public static ConceptSearchRequestBuilder prepareSearchConcepts() {
+		return new ConceptSearchRequestBuilder();
 	}
 
 	/**
@@ -100,5 +110,5 @@ public class CodeSystemRequests {
 			.findFirst()
 			.orElseThrow(() -> new BadRequestException("CodeSystem '%s' cannot be found", codeSystem));
 	}
-	
+
 }
