@@ -32,6 +32,8 @@ public final class OptionsBuilder {
 	public OptionsBuilder put(String key, Object value) {
 		if (value != null) {
 			options.put(key, value);
+		} else {
+			options.remove(key);
 		}
 		return this;
 	}
@@ -62,5 +64,5 @@ public final class OptionsBuilder {
 	public static OptionsBuilder newBuilder() {
 		return new OptionsBuilder();
 	}
-
+	
 }
