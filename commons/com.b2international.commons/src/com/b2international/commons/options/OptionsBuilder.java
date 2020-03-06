@@ -30,7 +30,9 @@ public final class OptionsBuilder {
 	OptionsBuilder() {}
 	
 	public OptionsBuilder put(String key, Object value) {
-		options.put(key, value);
+		if (value != null) {
+			options.put(key, value);
+		}
 		return this;
 	}
 	

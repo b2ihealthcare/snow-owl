@@ -56,6 +56,15 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	}
 	
 	@Override
+	public boolean containsKey(Object key) {
+		if (key instanceof Enum) {
+			return super.containsKey(((Enum<?>) key).name());
+		} else {
+			return super.containsKey(key);
+		}
+	}
+	
+	@Override
 	public final Object get(String key) {
 		return super.get(key);
 	}

@@ -71,6 +71,17 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	}
 
 	/**
+	 * Exclude matches by specifying one exclusion query defined in the target code system's query language.
+	 * 
+	 * @param exclusion
+	 *            - query expression that exclude matches
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByExclusion(String exclusion) {
+		return addOption(OptionKey.MUST_NOT_QUERY, exclusion);
+	}
+	
+	/**
 	 * Exclude matches by specifying one or more exclusion queries defined in the target code system's query language.
 	 * 
 	 * @param exclusions

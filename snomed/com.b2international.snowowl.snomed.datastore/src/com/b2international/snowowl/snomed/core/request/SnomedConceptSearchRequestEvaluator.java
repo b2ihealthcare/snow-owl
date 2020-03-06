@@ -60,7 +60,6 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			req.filterByQuery(query.toString());
 		}
 		
-		
 		SnomedConcepts matches = req
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
 				.setSearchAfter(search.getString(OptionKey.AFTER))

@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.b2international.snowowl.test.commons.Services;
@@ -45,11 +46,23 @@ public class ConceptSearchRequestSnomedTest {
 	public void filterById() throws Exception {
 		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
 			.one()
-			.filterById(com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ROOT_CONCEPT)
+			.filterById(SnomedConstants.Concepts.ROOT_CONCEPT)
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync();
 		assertThat(matches).hasSize(1);
+	}
+	
+	@Test
+	public void filterByQuery() throws Exception {
+		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
+			.setLimit(0)
+			.filterByQuery("*")
+			.filterByExclusion(SnomedConstants.Concepts.ROOT_CONCEPT)
+			.build(CODESYSTEM)
+			.execute(Services.bus())
+			.getSync();
+		assertThat(matches.getTotal()).isEqualTo(1870);
 	}
 	
 }
