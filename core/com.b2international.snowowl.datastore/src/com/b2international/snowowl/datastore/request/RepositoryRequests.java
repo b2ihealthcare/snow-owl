@@ -77,4 +77,9 @@ public final class RepositoryRequests {
 	public static RepositoryClearRequestBuilder prepareClear() {
 		return new RepositoryClearRequestBuilder();
 	}
+	
+	public static RepositoryCommitRequestBuilder prepareCommit() {
+		return new RepositoryCommitRequestBuilder();
+	}
+	
 }
