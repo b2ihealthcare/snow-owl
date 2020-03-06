@@ -44,12 +44,12 @@ public interface ConceptSearchRequestEvaluator {
 		TERM_EXACT,
 
 		/**
-		 * A query expression defined in the target code system's query language
+		 * One or more query expressions (defined in the target code system's query language) to include matches.
 		 */
 		QUERY,
 
 		/**
-		 * 
+		 * One or more query expressions (defined in the target code system's query language) to exclude matches from the results.
 		 */
 		MUST_NOT_QUERY, 
 		
