@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
@@ -35,7 +36,7 @@ import com.b2international.snowowl.snomed.ecl.Ecl;
 public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchRequestEvaluator {
 
 	@Override
-	public Concepts evaluate(BranchContext context, Options search) {
+	public Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search) {
 		final SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareSearchConcept();
 		
 		if (search.containsKey(OptionKey.ID)) {
@@ -72,11 +73,11 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 				.build()
 				.execute(context);
 
-		return new Concepts(matches.stream().map(this::toConcept).collect(Collectors.toList()), matches.getSearchAfter(), matches.getLimit(), matches.getTotal());
+		return new Concepts(matches.stream().map(c -> toConcept(uri, c)).collect(Collectors.toList()), matches.getSearchAfter(), matches.getLimit(), matches.getTotal());
 	}
 	
-	private Concept toConcept(SnomedConcept concept) {
-		Concept result = new Concept();
+	private Concept toConcept(CodeSystemURI codeSystem, SnomedConcept concept) {
+		Concept result = new Concept(codeSystem.toString(), concept.getTerminologyComponentId());
 		result.setId(concept.getId());
 		result.setReleased(concept.isReleased());
 		result.setIconId(concept.getIconId());

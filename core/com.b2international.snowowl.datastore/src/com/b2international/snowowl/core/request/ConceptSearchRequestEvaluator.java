@@ -19,6 +19,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.5
@@ -73,10 +74,11 @@ public interface ConceptSearchRequestEvaluator {
 	 * Evaluate the given search options on the given context and return generic {@link Concept} instances back in a {@link Concepts} pageable
 	 * resource.
 	 * 
+	 * @param uri - the code system uri where the search is being evaluated
 	 * @param context - the context prepared for the search
 	 * @param search - the search filters and options to apply to the code system specific search
 	 * @return
 	 */
-	Concepts evaluate(BranchContext context, Options search);
+	Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search);
 
 }

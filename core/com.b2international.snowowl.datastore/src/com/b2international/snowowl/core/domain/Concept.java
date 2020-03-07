@@ -22,8 +22,20 @@ public final class Concept extends BaseComponent {
 
 	private static final long serialVersionUID = 1L;
 
+	private final String codeSystem;
+	private final short terminologyComponentId;
+
 	private String term;
 	private String iconId;
+
+	public Concept(String codeSystem, short terminologyComponentId) {
+		this.codeSystem = codeSystem;
+		this.terminologyComponentId = terminologyComponentId;
+	}
+	
+	public String getCodeSystem() {
+		return codeSystem;
+	}
 	
 	public String getTerm() {
 		return term;
@@ -43,7 +55,7 @@ public final class Concept extends BaseComponent {
 	
 	@Override
 	public short getTerminologyComponentId() {
-		return 0;
+		return terminologyComponentId;
 	}
 
 }

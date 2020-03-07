@@ -20,6 +20,7 @@ import java.io.IOException;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * A generic concept search request that can be executed in any code system using generic query expressions and filters to get back primary
@@ -45,7 +46,7 @@ public final class ConceptSearchRequest extends SearchResourceRequest<BranchCont
 				.put(ConceptSearchRequestEvaluator.OptionKey.LIMIT, limit())
 				.put(ConceptSearchRequestEvaluator.OptionKey.LOCALES, locales())
 				.build();
-		return context.service(ConceptSearchRequestEvaluator.class).evaluate(context, options);
+		return context.service(ConceptSearchRequestEvaluator.class).evaluate(context.service(CodeSystemURI.class), context, options);
 	}
 
 }
