@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.repository;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +34,6 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
@@ -42,7 +42,6 @@ import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
-import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 
 /**
  * @since 4.5
@@ -56,8 +55,6 @@ public final class RepositoryBuilder {
 	private int mergeMaxResults;
 	private TerminologyRepositoryInitializer initializer;
 	private Hooks.PreCommitHook hook;
-	private VersioningRequestBuilder versioningRequestBuilder;
-	private ComponentDeletionPolicy deletionPolicy;
 	
 	private final Mappings mappings = new Mappings(
 		Review.class, 
@@ -66,13 +63,14 @@ public final class RepositoryBuilder {
 		CodeSystemVersionEntry.class
 	);
 	private final TerminologyComponents terminologyComponents;
-	private ComponentRevisionConflictProcessor componentRevisionConflictProcessor;
+	private final Map<Class<?>, Object> bindings = newHashMap();
 
 	RepositoryBuilder(DefaultRepositoryManager manager, String repositoryId) {
 		this.manager = manager;
 		this.repositoryId = repositoryId;
 		this.log = LoggerFactory.getLogger("repository."+repositoryId);
 		this.terminologyComponents = new TerminologyComponents(this.log);
+		bind(TerminologyComponents.class, this.terminologyComponents);
 	}
 	
 	public Logger log() {
@@ -118,18 +116,10 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
-	public RepositoryBuilder withVersioningRequestBuilder(VersioningRequestBuilder versioningRequestBuilder) {
-		this.versioningRequestBuilder = versioningRequestBuilder;
-		return this;
-	}
-	
-	public RepositoryBuilder withComponentDeletionPolicy(ComponentDeletionPolicy deletionPolicy) {
-		this.deletionPolicy = deletionPolicy;
-		return this;
-	}
-
-	public RepositoryBuilder withComponentRevisionConflictProcessor(ComponentRevisionConflictProcessor componentRevisionConflictProcessor) {
-		this.componentRevisionConflictProcessor = componentRevisionConflictProcessor;
+	public <T> RepositoryBuilder bind(Class<T> type, T instance) {
+		if (type != null && instance != null) {
+			this.bindings.put(type, instance);
+		}
 		return this;
 	}
 	
@@ -145,15 +135,14 @@ public final class RepositoryBuilder {
 			addMappings(configurer.getAdditionalMappings());
 		});
 		
+		final ComponentDeletionPolicy deletionPolicy = (ComponentDeletionPolicy) bindings.get(ComponentDeletionPolicy.class);
 		if (deletionPolicy instanceof CompositeComponentDeletionPolicy) {
 			repositoryConfigurers.forEach(configurer -> ((CompositeComponentDeletionPolicy) deletionPolicy).mergeWith(configurer.getComponentDeletionPolicy()));
 		}
 		
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, mergeMaxResults, env, mappings, log);
-		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
-		repository.bind(ComponentDeletionPolicy.class, deletionPolicy);
-		repository.bind(ComponentRevisionConflictProcessor.class, componentRevisionConflictProcessor);
-		repository.bind(TerminologyComponents.class, terminologyComponents);
+		// attach all custom bindings
+		repository.bindAll(bindings);
 		repository.activate();
 		repository.service(RevisionIndex.class).hooks().addHook(hook);
 		manager.put(repositoryId, repository);

@@ -76,7 +76,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterById(String id) {
-		return filterByIds(ImmutableSet.of(id));
+		return filterByIds(id == null ? null : ImmutableSet.of(id));
 	}
 	
 	/**
@@ -85,9 +85,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterByIds(Collection<String> ids) {
-		if (ids != null) {
-			this.componentIds = ImmutableSet.copyOf(ids);
-		}
+		this.componentIds = ids == null ? null : ImmutableSet.copyOf(ids);
 		return getSelf();
 	}
 	
@@ -121,7 +119,9 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B sortBy(List<Sort> sorts) {
-		optionsBuilder.put(OptionKey.SORT_BY.name(), ImmutableList.copyOf(sorts));
+		if (sorts != null) {
+			optionsBuilder.put(OptionKey.SORT_BY, ImmutableList.copyOf(sorts));
+		}
 		return getSelf();
 	}
 	

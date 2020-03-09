@@ -52,7 +52,9 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 			new BranchRequest<R>(getBranchPath(context),
 				next()
 			)
-		).execute(context);
+		).execute(context.inject()
+				.bind(CodeSystemURI.class, uri)
+				.build());
 	}
 
 	public CodeSystemEntry getCodeSystem(ServiceProvider context) {
