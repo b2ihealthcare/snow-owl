@@ -20,8 +20,11 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.elasticsearch.common.Strings;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -52,9 +55,17 @@ public final class CodeSystemURI implements Serializable {
 	
 	@JsonCreator
 	public CodeSystemURI(String uri) throws BadRequestException {
+		if (Strings.isNullOrEmpty(uri)) {
+			throw new BadRequestException("Malformed CodeSystem URI value: '%s' is empty.", uri);
+		}
+
+		if (uri.startsWith(Branch.MAIN_PATH)) {
+			throw new BadRequestException("Malformed CodeSystem URI value: '%s' cannot start with MAIN.", uri);
+		}
+		
 		final Matcher matcher = URI_PATTERN.matcher(uri);
 		if (!matcher.matches()) {
-			throw new BadRequestException("Malformed CodeSystem URI value: '%s'", uri);
+			throw new BadRequestException("Malformed CodeSystem URI value: '%s' must be in format '<shortName>/<path>'.", uri);
 		}
 		this.uri = uri;
 		this.codeSystem = matcher.group(1);
