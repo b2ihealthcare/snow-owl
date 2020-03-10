@@ -83,6 +83,14 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 			@RequestParam(value="timestamp", required=false)
 			final Long timestamp,
 			
+			@ApiParam(value = "Minimum commit timestamp to search matches from")
+			@RequestParam(value="timestampFrom", required=false)
+			final Long timestampFrom,
+			
+			@ApiParam(value = "Maximum commit timestamp to search matches to")
+			@RequestParam(value="timestampTo", required=false)
+			final Long timestampTo,
+			
 			@ApiParam(value = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
@@ -107,6 +115,7 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 					.filterByComment(comment)
 					.filterByBranches(branch)
 					.filterByTimestamp(timestamp)
+					.filterByTimestamp(timestampFrom, timestampTo)
 					.setExpand(expand)
 					.setSearchAfter(searchAfter)
 					.setLimit(limit)
