@@ -20,6 +20,8 @@ import java.io.Serializable;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -163,6 +165,7 @@ public final class CommitInfo implements Serializable {
 		return comment;
 	}
 	
+	@JsonFormat(shape = Shape.STRING)
 	public long getTimestamp() {
 		return timestamp;
 	}
