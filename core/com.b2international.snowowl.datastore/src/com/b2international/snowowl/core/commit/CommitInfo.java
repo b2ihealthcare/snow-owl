@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import java.io.Serializable;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -70,7 +68,7 @@ public final class CommitInfo implements Serializable {
 		private String branch;
 		private String author;
 		private String comment;
-		private long timestamp;
+		private Long timestamp;
 		private String groupId;
 		private RevisionBranchPoint mergeSource;
 		private CommitInfoDetails details;
@@ -95,7 +93,7 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
-		public Builder timestamp(final long timestamp) {
+		public Builder timestamp(final Long timestamp) {
 			this.timestamp = timestamp;
 			return this;
 		}
@@ -125,7 +123,7 @@ public final class CommitInfo implements Serializable {
 	private final String branch;
 	private final String author;
 	private final String comment;
-	private final long timestamp;
+	private final Long timestamp;
 	private final String groupId;
 	private final RevisionBranchPoint mergeSource;
 	private final CommitInfoDetails details;
@@ -135,7 +133,7 @@ public final class CommitInfo implements Serializable {
 			final String branch,
 			final String author,
 			final String comment,
-			final long timestamp, 
+			final Long timestamp, 
 			final String groupId,
 			final RevisionBranchPoint mergeSource,
 			final CommitInfoDetails details) {
@@ -165,9 +163,12 @@ public final class CommitInfo implements Serializable {
 		return comment;
 	}
 	
-	@JsonFormat(shape = Shape.STRING)
-	public long getTimestamp() {
+	public Long getTimestamp() {
 		return timestamp;
+	}
+	
+	public String getTimestampString() {
+		return timestamp == null ? null : Long.toString(timestamp);
 	}
 	
 	public String getGroupId() {
