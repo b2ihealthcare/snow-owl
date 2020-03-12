@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -25,8 +27,18 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.b2international.commons.exceptions.*;
+import com.b2international.commons.exceptions.ApiError;
+import com.b2international.commons.exceptions.ApiErrorException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.exceptions.ForbiddenException;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.commons.exceptions.RequestTimeoutException;
+import com.b2international.commons.exceptions.TooManyRequestsException;
+import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.commons.platform.PlatformUtil;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Strings;
@@ -178,6 +190,29 @@ public class ControllerExceptionMapper {
 		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
 				.header("X-Rate-Limit-Retry-After-Seconds", Long.toString(ex.getSecondsToWait()))
 				.body(RestApiError.of(ex.toApiError()).build(HttpStatus.TOO_MANY_REQUESTS.value()));
+	}
+	
+	/**
+	 * Exception handler for exceptions thrown by conversions performed by {@link Converter}
+	 * implementations.
+	 * @param ex
+	 * @return
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody RestApiError handle(ConversionFailedException ex) {
+		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+    }
+
+	/**
+	 * Exception handler for exceptions thrown due to incorrect arguments.
+	 * @param ex
+	 * @return
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody RestApiError handle(MethodArgumentTypeMismatchException ex) {
+		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 }
