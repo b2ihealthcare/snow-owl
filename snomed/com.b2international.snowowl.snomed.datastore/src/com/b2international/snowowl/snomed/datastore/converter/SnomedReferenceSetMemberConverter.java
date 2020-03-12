@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -227,13 +228,13 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		if (Concepts.REFSET_OWL_AXIOM.equals(entry.getReferenceSetId()) &&
 				expand().containsKey("owlRelationships") && 
 				!Strings.isNullOrEmpty(owlExpression)) {
-			if (!entry.getClassAxiomRelationships().isEmpty()) {
+			if (!CompareUtils.isEmpty(entry.getClassAxiomRelationships())) {
 				if (owlExpression.startsWith("EquivalentClasses")) {
 					member.setEquivalentOWLRelationships(entry.getClassAxiomRelationships());
 				} else {
 					member.setClassOWLRelationships(entry.getClassAxiomRelationships());
 				}
-			} else if (!entry.getGciAxiomRelationships().isEmpty()) {
+			} else if (!CompareUtils.isEmpty(entry.getGciAxiomRelationships())) {
 				member.setGciOWLRelationships(entry.getGciAxiomRelationships());
 			}
 		}
