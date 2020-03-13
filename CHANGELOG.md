@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.25.1
+
+### Bugs/Improvements
+- [snomed] fix NPE when expanding `owlExpressions()` on inactive concept (3b79cbb6c308e33cb020410350cd1f8b8be8005d)
+- [cis] decrease default bulk request size to 10.000 ids (797af884b22bcb61ea3c06dbe142cb049acd8e8a)
+- [cis] remove status check from CisClient Register call (25f48375ca80aed95f62d02e95ac58e012be04c0)
+
 ## 6.25.0
 
 ### API
