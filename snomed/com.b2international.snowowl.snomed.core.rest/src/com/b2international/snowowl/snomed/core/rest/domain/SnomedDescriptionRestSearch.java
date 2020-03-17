@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 
 import io.swagger.annotations.ApiParam;
 
@@ -54,9 +53,6 @@ public final class SnomedDescriptionRestSearch extends ResourceRestSearch {
 
 	@ApiParam(value = "Semantic tag(s) to match")
 	private String[] semanticTag;
-
-	@ApiParam(value = "The acceptability to match. DEPRECATED! Use acceptableIn or preferredIn!")
-	private Acceptability acceptability;
 
 	@ApiParam(value = "Acceptable membership to match in these language refsets")
 	private String[] acceptableIn;
@@ -145,14 +141,6 @@ public final class SnomedDescriptionRestSearch extends ResourceRestSearch {
 
 	public void setSemanticTag(String[] semanticTag) {
 		this.semanticTag = semanticTag;
-	}
-
-	public Acceptability getAcceptability() {
-		return acceptability;
-	}
-
-	public void setAcceptability(Acceptability acceptability) {
-		this.acceptability = acceptability;
 	}
 
 	public String[] getAcceptableIn() {

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -26,21 +25,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestUpdate;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableSet;
 
@@ -83,8 +79,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
-		List<Sort> sorts = extractSortFields(params.getSort(), branch, extendedLocales);
+		List<Sort> sorts = extractSortFields(params.getSort(), branch, acceptLanguage);
 		
 		if (sorts.isEmpty()) {
 			final SortField sortField = StringUtils.isEmpty(params.getTerm()) 
@@ -93,48 +88,29 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			sorts = Collections.singletonList(sortField);
 		}
 		
-		final SnomedDescriptionSearchRequestBuilder req = SnomedRequests
-			.prepareSearchDescription()
-			.filterByIds(params.getId())
-			.filterByEffectiveTime(params.getEffectiveTime())
-			.filterByActive(params.getActive())
-			.filterByModule(params.getModule())
-			.filterByConcept(params.getConcept())
-			.filterByLanguageCodes(params.getLanguageCode() == null ? null : ImmutableSet.copyOf(params.getLanguageCode()))
-			.filterByType(params.getType())
-			.filterByTerm(params.getTerm())
-			.filterByCaseSignificance(params.getCaseSignificance())
-			.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
-			.filterByNamespace(params.getNamespace());
-
-		if (params.getAcceptableIn() == null && params.getPreferredIn() == null && params.getLanguageRefSet() == null) {
-			if (params.getAcceptability() != null) {
-				if (Acceptability.ACCEPTABLE == params.getAcceptability()) {
-					req.filterByAcceptableIn(extendedLocales);
-				} else if (Acceptability.PREFERRED == params.getAcceptability()) {
-					req.filterByPreferredIn(extendedLocales);
-				}
-			}
-		} else {
-			if (params.getLanguageRefSet() != null) {
-				req.filterByLanguageRefSets(Arrays.asList(params.getLanguageRefSet()));
-			}
-			if (params.getAcceptableIn() != null) {
-				req.filterByAcceptableIn(Arrays.asList(params.getAcceptableIn()));
-			}
-			if (params.getPreferredIn() != null) {
-				req.filterByPreferredIn(Arrays.asList(params.getPreferredIn()));
-			}
-		}
-		
-		return req
-					.setLocales(extendedLocales)
-					.setLimit(params.getLimit())
-					.setSearchAfter(params.getSearchAfter())
-					.setExpand(params.getExpand())
-					.sortBy(sorts)
-					.build(repositoryId, branch)
-					.execute(getBus());
+		return SnomedRequests
+				.prepareSearchDescription()
+				.filterByIds(params.getId())
+				.filterByEffectiveTime(params.getEffectiveTime())
+				.filterByActive(params.getActive())
+				.filterByModule(params.getModule())
+				.filterByConcept(params.getConcept())
+				.filterByLanguageCodes(params.getLanguageCode() == null ? null : ImmutableSet.copyOf(params.getLanguageCode()))
+				.filterByType(params.getType())
+				.filterByTerm(params.getTerm())
+				.filterByCaseSignificance(params.getCaseSignificance())
+				.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
+				.filterByNamespace(params.getNamespace())
+				.filterByLanguageRefSets(params.getLanguageRefSet() == null ? null : ImmutableSet.copyOf(params.getLanguageRefSet()))
+				.filterByAcceptableIn(params.getAcceptableIn() == null ? null : ImmutableSet.copyOf(params.getAcceptableIn()))
+				.filterByPreferredIn(params.getPreferredIn() == null ? null : ImmutableSet.copyOf(params.getPreferredIn()))
+				.setLocales(acceptLanguage)
+				.setLimit(params.getLimit())
+				.setSearchAfter(params.getSearchAfter())
+				.setExpand(params.getExpand())
+				.sortBy(sorts)
+				.build(repositoryId, branch)
+				.execute(getBus());
 	}
 	
 	@ApiOperation(

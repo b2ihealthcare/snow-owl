@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -31,8 +29,6 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.AcceptHeader;
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
@@ -111,7 +107,7 @@ public abstract class AbstractRestService {
 	 * @return
 	 */ 
 	protected final List<Sort> extractSortFields(List<String> sortKeys) {
-		return extractSortFields(sortKeys, null, Collections.emptyList());
+		return extractSortFields(sortKeys, null, null);
 	}
 	
 	/**
@@ -120,10 +116,10 @@ public abstract class AbstractRestService {
 	 * 
 	 * @param sortKeys
 	 * @param branch 
-	 * @param extendedLocales 
+	 * @param acceptLanguage 
 	 * @return
 	 */
-	protected final List<Sort> extractSortFields(List<String> sortKeys, String branch, List<ExtendedLocale> extendedLocales) {
+	protected final List<Sort> extractSortFields(List<String> sortKeys, String branch, String acceptLanguage) {
 		if (CompareUtils.isEmpty(sortKeys)) {
 			return Collections.emptyList();
 		}
@@ -133,7 +129,7 @@ public abstract class AbstractRestService {
 			if (matcher.matches()) {
 				String field = matcher.group(1);
 				String order = matcher.group(2);
-				result.add(toSort(field, !"desc".equals(order), branch, extendedLocales));
+				result.add(toSort(field, !"desc".equals(order), branch, acceptLanguage));
 			} else {
 				throw new BadRequestException("Sort key '%s' is not supported, or incorrect sort field pattern.", sortKey);				
 			}
@@ -148,21 +144,11 @@ public abstract class AbstractRestService {
 	 * @param field
 	 * @param ascending
 	 * @param branch 
-	 * @param extendedLocales 
+	 * @param acceptLanguage 
 	 * @return
 	 */
-	protected Sort toSort(String field, boolean ascending, String branch, List<ExtendedLocale> extendedLocales) {
+	protected Sort toSort(String field, boolean ascending, String branch, String acceptLanguage) {
 		return SearchResourceRequest.SortField.of(field, ascending);
-	}
-	
-	protected final List<ExtendedLocale> getExtendedLocales(final String acceptLanguage) {
-		try {
-			return AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
 	}
 	
 	/**

@@ -35,10 +35,23 @@ public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B,
 	private List<ExtendedLocale> locales = Collections.emptyList();
 	
 	/**
+	 * Sets the request to return the preferred locale for the returned display labels. 
+	 * 
+	 * @param locales - the locale list in Accept-Language header format
+	 * @return ResourceRequestBuilder
+	 */
+	public final B setLocales(String locales) {
+		if (locales != null) {
+			setLocales(ExtendedLocale.parseLocales(locales));
+		}
+		return getSelf();
+	}
+	
+	/**
 	 * Sets the request to return the preferred locale for the returned display labels.
 	 * 
 	 * @param locales for the labels returns by the request
-	 * @return BaseResourceRequestBuilder   
+	 * @return ResourceRequestBuilder   
 	 */
 	public final B setLocales(List<ExtendedLocale> locales) {
 		if (!CompareUtils.isEmpty(locales)) {
