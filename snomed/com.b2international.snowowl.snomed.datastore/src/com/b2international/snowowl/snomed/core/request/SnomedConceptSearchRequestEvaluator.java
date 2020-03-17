@@ -51,15 +51,19 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			StringBuilder query = new StringBuilder();
 			
 			if (search.containsKey(OptionKey.QUERY)) {
-				query.append(Ecl.or(search.getCollection(OptionKey.QUERY, String.class)));
+				query
+					.append("(")
+					.append(Ecl.or(search.getCollection(OptionKey.QUERY, String.class)))
+					.append(")");
 			} else {
 				query.append(Ecl.ANY);
 			}
 			
 			if (search.containsKey(OptionKey.MUST_NOT_QUERY)) {
 				query
-					.append(" MINUS ")
-					.append(Ecl.or(search.getCollection(OptionKey.MUST_NOT_QUERY, String.class)));
+					.append(" MINUS (")
+					.append(Ecl.or(search.getCollection(OptionKey.MUST_NOT_QUERY, String.class)))
+					.append(")");
 			}
 			
 			req.filterByQuery(query.toString());
