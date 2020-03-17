@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
@@ -94,7 +95,13 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 						.stream()
 						.findFirst()
 						.map(CodeSystemVersionEntry::getPath)
-						.orElse(codeSystem.getRelativeBranchPath(uri.getPath()));
+						.orElseGet(() -> {
+							if (uri.isLatest()) {
+								throw new BadRequestException("No CodeSystem version is present in '%s'. Explicit '%s/HEAD' can be used to retrieve the latest work in progress version of the CodeSystem.", codeSystem.getShortName(), codeSystem.getShortName());
+							} else {
+								return codeSystem.getRelativeBranchPath(uri.getPath()); 
+							}
+						});
 			}
 			
 		}
