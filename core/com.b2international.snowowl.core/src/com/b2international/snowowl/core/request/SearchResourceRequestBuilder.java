@@ -33,7 +33,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 5.2
  */
-public abstract class SearchResourceRequestBuilder<B extends SearchResourceRequestBuilder<B, C, R>, C extends ServiceProvider, R> extends ResourceRequestBuilder<B, C, R> {
+public abstract class SearchResourceRequestBuilder<B extends SearchResourceRequestBuilder<B, C, R>, C extends ServiceProvider, R> extends IndexResourceRequestBuilder<B, C, R> {
 	
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
@@ -161,7 +161,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	@Override
-	protected ResourceRequest<C, R> create() {
+	protected IndexResourceRequest<C, R> create() {
 		final SearchResourceRequest<C, R> req = createSearch();
 		req.setComponentIds(componentIds);
 		req.setSearchAfter(searchAfter);

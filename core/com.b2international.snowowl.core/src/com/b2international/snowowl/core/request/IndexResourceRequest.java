@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,41 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 4.6
- * 
- * @param <C>
- * @param <R>
+ * @since 7.5
  */
-public abstract class ResourceRequest<C extends ServiceProvider, R> implements Request<C, R> {
+public abstract class IndexResourceRequest<C extends ServiceProvider, R> extends ResourceRequest<C, R> {
 
 	@NotNull
-	private List<ExtendedLocale> locales;
+	private Options expand;
+
+	private List<String> fields = Collections.emptyList();
 	
 	@JsonProperty
-	protected final List<ExtendedLocale> locales() {
-		return locales;
+	protected final Options expand() {
+		return expand;
 	}
 	
-	final void setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
+	@JsonProperty
+	protected final List<String> fields() {
+		return fields;
+	}
+	
+	final void setExpand(Options expand) {
+		this.expand = expand;
+	}
+	
+	final void setFields(List<String> fields) {
+		this.fields = fields;
 	}
 	
 }
