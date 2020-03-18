@@ -459,7 +459,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test
 	public void rule_duplicate_members() throws Exception {
-		final String ruleId = "rule_duplicate_members";
+		final String ruleId = "669";
 		indexRule(ruleId);
 		
 		final SnomedRefSetMemberIndexEntry duplicateMember1 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
