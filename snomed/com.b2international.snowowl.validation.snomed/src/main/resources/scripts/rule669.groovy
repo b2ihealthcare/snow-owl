@@ -31,7 +31,7 @@ if (params.isUnpublishedOnly) {
 }
 
 final Aggregation<String> memberAggregation = searcher
-		.aggregate(AggregationBuilder.bucket("rule_validate_duplicate_members", String.class, SnomedRefSetMemberIndexEntry.class)
+		.aggregate(AggregationBuilder.bucket("rule669", String.class, SnomedRefSetMemberIndexEntry.class)
 		.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 		.query(queryBuilder.build())
 		.onScriptValue(script)
