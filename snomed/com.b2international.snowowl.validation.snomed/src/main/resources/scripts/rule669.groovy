@@ -13,6 +13,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
 import com.google.common.collect.Lists
+import com.google.common.collect.ImmutableList
 
 final RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 
@@ -23,7 +24,7 @@ final String script = String.format("return %s + '_' + %s",
 					"doc.referencedComponentId.value")
 
 final ExpressionBuilder queryBuilder = Expressions.builder()
-		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(SnomedRefSetType.SIMPLE)))
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(ImmutableList.of(SnomedRefSetType.SIMPLE, SnomedRefSetType.LANGUAGE, SnomedRefSetType.ATTRIBUTE_VALUE)))
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.active(true))
 
 if (params.isUnpublishedOnly) {
