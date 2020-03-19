@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,11 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -32,10 +30,9 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  * @since 5.7
  */
 public final class SnomedRf2ExportRequestBuilder 
-		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, ExportResult> 
+		extends ResourceRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, ExportResult> 
 		implements RepositoryRequestBuilder<ExportResult> {
 
-	private String codeSystem;
 	private String referenceBranch;
 	private Rf2ReleaseType releaseType;
 	private Rf2RefSetExportLayout refSetExportLayout;
@@ -49,14 +46,8 @@ public final class SnomedRf2ExportRequestBuilder
 	private Collection<String> refSets = null;
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
-	private List<ExtendedLocale> locales;
 	
 	SnomedRf2ExportRequestBuilder() {}
-	
-	public SnomedRf2ExportRequestBuilder setCodeSystem(final String codeSystem) {
-		this.codeSystem = codeSystem;
-		return getSelf();
-	}
 	
 	public SnomedRf2ExportRequestBuilder setReferenceBranch(final String referenceBranch) {
 		this.referenceBranch = referenceBranch;
@@ -122,16 +113,10 @@ public final class SnomedRf2ExportRequestBuilder
 		this.extensionOnly = extensionOnly;
 		return getSelf();
 	}
-	
-	public SnomedRf2ExportRequestBuilder setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
-		return getSelf();
-	}
-	
+
 	@Override
-	protected Request<RepositoryContext, ExportResult> doBuild() {
+	protected ResourceRequest<RepositoryContext, ExportResult> create() {
 		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
-		req.setCodeSystem(codeSystem);
 		req.setReferenceBranch(referenceBranch);
 		req.setReleaseType(releaseType);
 		req.setRefSetExportLayout(refSetExportLayout);
@@ -145,7 +130,7 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setRefSets(refSets);
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setExtensionOnly(extensionOnly);
-		req.setLocales(locales);
 		return req;
 	}
+	
 }

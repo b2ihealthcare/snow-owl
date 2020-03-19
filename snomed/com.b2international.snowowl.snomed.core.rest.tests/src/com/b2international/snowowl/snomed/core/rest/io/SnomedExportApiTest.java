@@ -295,7 +295,6 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	public void executeMultipleExportsAtTheSameTime() throws Exception {
 		
 		Promise<ExportResult> first = SnomedRequests.rf2().prepareExport()
-			.setCodeSystem("SNOMEDCT")
 			.setReleaseType(Rf2ReleaseType.FULL)
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
@@ -305,7 +304,6 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.execute(getBus());
 		
 		Promise<ExportResult> second = SnomedRequests.rf2().prepareExport()
-			.setCodeSystem("SNOMEDCT")
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
 			.setReleaseType(Rf2ReleaseType.SNAPSHOT)

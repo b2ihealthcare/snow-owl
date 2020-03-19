@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,66 +15,50 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.AcceptHeader;
-import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.swagger.annotations.ApiParam;
 
 /**
- * @since 1.0
+ * @since 7.5
  */
-public class SnomedExportRestConfiguration {
+public final class SnomedRf2ExportConfiguration {
 
-	@NotNull(message = "RF2 release type was missing from the export configuration.")
-	private Rf2ReleaseType type;
+	@ApiParam(value = "The RF2 type to use (DELTA, SNAPSHOT, FULL)", defaultValue = "SNAPSHOT")
+	private Rf2ReleaseType type = Rf2ReleaseType.SNAPSHOT;
 	
-	@NotEmpty
-	private String branchPath;
-	
-	@NotEmpty
+	@ApiParam(value = "The namespaceId to use in the release archive name")
 	private String namespaceId = "INT";
 	
+	@ApiParam(value = "Optional moduleIds to restrict the exported content")
 	private Collection<String> moduleIds;
-	private Collection<String> refsetIds;
+	
+	@ApiParam(value = "Optional refSetIds to restrict the export content")
+	private Collection<String> refSetIds;
+	
+	@ApiParam(value = "Delta export start effectiveTime. By default unbounded.")
 	private Date startEffectiveTime;
+	
+	@ApiParam(value = "Delta export end effectiveTime. By default unbounded.")
 	private Date endEffectiveTime;
+	
+	@ApiParam(value = "Transient effectiveTime to apply on unpublished content")
 	private String transientEffectiveTime;
-	private boolean includeUnpublished;
 	
+	@ApiParam(value = "To include unreleased changes in the export result")
+	private boolean includeUnpublished = true;
+	
+	@ApiParam(value = "To export the content of the Extension only or all dependencies as well forming an Edition Release.")
 	private boolean extensionOnly = false;
-	private String acceptLanguage = "en-US,en-GB";
-
-	public String getAcceptLanguage() {
-		return acceptLanguage;
-	}
 	
-	public void setAcceptLanguage(String acceptLanguage) {
-		this.acceptLanguage = acceptLanguage;
-	}
-	
-	@JsonIgnore
-	public List<ExtendedLocale> getLocales() {
-		try {
-			return AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
-		} catch (IOException e) {
-			throw new BadRequestException(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			throw new BadRequestException(e.getMessage());
-		}
-	}
+	@ApiParam(value = "The RefSet file layout to use (COMBINED, INDIVIDUAL). Defaults to server configuration key 'snomed.export.refSetLayout'.")
+	private Rf2RefSetExportLayout refSetLayout;
 	
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -86,18 +70,6 @@ public class SnomedExportRestConfiguration {
 	
 	public void setType(Rf2ReleaseType type) {
 		this.type = type;
-	}
-	
-	/** 
-	 * Returns the branch to run the export on.
-	 * @return the branch to export
-	 */
-	public String getBranchPath() {
-		return branchPath;
-	}
-
-	public void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
 	}
 	
 	/**
@@ -160,12 +132,12 @@ public class SnomedExportRestConfiguration {
 	 * 
 	 * @return a collection of refset IDs.
 	 */
-	public Collection<String> getRefsetIds() {
-		return refsetIds;
+	public Collection<String> getRefSetIds() {
+		return refSetIds;
 	}
 	
-	public void setRefsetIds(Collection<String> refsets) {
-		this.refsetIds = refsets;
+	public void setRefSetIds(Collection<String> refSetIds) {
+		this.refSetIds = refSetIds;
 	}
 	
 	/**
@@ -217,4 +189,13 @@ public class SnomedExportRestConfiguration {
 	public boolean isExtensionOnly() {
 		return extensionOnly;
 	}
+	
+	public Rf2RefSetExportLayout getRefSetLayout() {
+		return refSetLayout;
+	}
+	
+	public void setRefSetLayout(Rf2RefSetExportLayout refSetLayout) {
+		this.refSetLayout = refSetLayout;
+	}
+	
 }
