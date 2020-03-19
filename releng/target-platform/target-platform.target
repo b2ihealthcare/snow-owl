@@ -75,7 +75,7 @@
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.xtend" version="1.4.0.v201306110406"/>
 <unit id="org.eclipse.xpand" version="1.4.0.v201306110406"/>
-<repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/releases/xpand/R201306110406"/>
+<repository location="https://download.eclipse.org/modeling/m2t/xpand/updates/releases/R201306110406/"/>
 </location>
 </locations>
 </target>
