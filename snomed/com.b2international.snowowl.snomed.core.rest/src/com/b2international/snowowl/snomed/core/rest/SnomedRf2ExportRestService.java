@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import java.io.File;
-import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -35,10 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ExportResult;
-import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -68,8 +64,8 @@ public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
 	@ApiResponses({
 		@ApiResponse(code=200, message="OK")
 	})
-	@GetMapping(produces = { AbstractRestService.OCTET_STREAM_MEDIA_TYPE })
-	public @ResponseBody ResponseEntity<Resource> export(
+	@GetMapping
+	public @ResponseBody ResponseEntity<?> export(
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
@@ -106,8 +102,9 @@ public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		
 		httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-		httpHeaders.set("Content-Disposition", "attachment; filename=\"snomed_export_" + Dates.formatByHostTimeZone(new Date(), DateFormats.COMPACT_LONG) + ".zip\"");
+		httpHeaders.setContentDispositionFormData("attachment", exportedFile.getName());
 
+		// TODO figure out a smart way to cache export results, probably it could be tied to commitTimestamps/versions/etc. 
 		file.deleteOnExit();
 		return new ResponseEntity<>(exportZipResource, httpHeaders, HttpStatus.OK);
 	}
