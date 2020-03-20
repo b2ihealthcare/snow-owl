@@ -272,18 +272,16 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.setReleaseType(Rf2ReleaseType.FULL)
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
-			.setReferenceBranch(branchPath.getPath())
 			.setLocales(LOCALES)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus());
 		
 		Promise<ExportResult> second = SnomedRequests.rf2().prepareExport()
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
 			.setReleaseType(Rf2ReleaseType.SNAPSHOT)
-			.setReferenceBranch(branchPath.getPath())
 			.setLocales(LOCALES)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus());
 		
 		String message = Promise.all(first, second)

@@ -17,11 +17,11 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ExportResult;
-import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
@@ -29,10 +29,9 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  * @since 5.7
  */
 public final class SnomedRf2ExportRequestBuilder 
-		extends ResourceRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, ExportResult> 
-		implements RepositoryRequestBuilder<ExportResult> {
+		extends ResourceRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, ExportResult> 
+		implements RevisionIndexRequestBuilder<ExportResult> {
 
-	private String referenceBranch;
 	private Rf2ReleaseType releaseType;
 	private Rf2RefSetExportLayout refSetExportLayout;
 	private String countryNamespaceElement;
@@ -47,11 +46,6 @@ public final class SnomedRf2ExportRequestBuilder
 	private boolean extensionOnly;
 	
 	SnomedRf2ExportRequestBuilder() {}
-	
-	public SnomedRf2ExportRequestBuilder setReferenceBranch(final String referenceBranch) {
-		this.referenceBranch = referenceBranch;
-		return getSelf();
-	}
 	
 	public SnomedRf2ExportRequestBuilder setReleaseType(final Rf2ReleaseType releaseType) {
 		this.releaseType = releaseType;
@@ -114,9 +108,8 @@ public final class SnomedRf2ExportRequestBuilder
 	}
 
 	@Override
-	protected ResourceRequest<RepositoryContext, ExportResult> create() {
+	protected ResourceRequest<BranchContext, ExportResult> create() {
 		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
-		req.setReferenceBranch(referenceBranch);
 		req.setReleaseType(releaseType);
 		req.setRefSetExportLayout(refSetExportLayout);
 		req.setCountryNamespaceElement(countryNamespaceElement);
