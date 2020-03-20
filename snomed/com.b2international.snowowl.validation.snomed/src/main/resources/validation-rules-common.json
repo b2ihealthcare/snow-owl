@@ -79,5 +79,14 @@
     "checkType": "FAST",
     "type": "script-groovy",
     "implementation": "scripts/rule669.groovy"
+  },
+  {
+  	"id": "670",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Association type reference set members must not duplicate each ohter.",
+    "severity": "ERROR",
+    "checkType": "FAST",
+    "type": "script-groovy",
+    "implementation": "scripts/rule670.groovy"
   }
 ]
