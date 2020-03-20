@@ -87,7 +87,7 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
-	public RepositoryBuilder addTerminologyComponents(List<Class<? extends IComponent>> terminologyComponents) {
+	public RepositoryBuilder addTerminologyComponents(Collection<Class<? extends IComponent>> terminologyComponents) {
 		for (Class<? extends IComponent> terminologyComponent : terminologyComponents) {
 			TerminologyComponent tc = Terminology.getAnnotation(terminologyComponent);
 			checkNotNull(tc.docType(), "Document must be specified for terminology component: %s", terminologyComponent);
@@ -130,10 +130,10 @@ public final class RepositoryBuilder {
 			.filter(configurer -> repositoryId.equals(configurer.getRepositoryId()))
 			.collect(Collectors.toList());
 		
-		repositoryConfigurers
-			.forEach(configurer -> {
-				configurer.getAdditionalMappings().forEach(mappings::putMapping);
-			});
+		repositoryConfigurers.forEach(configurer -> {
+			addTerminologyComponents(configurer.getAdditionalTerminologyComponents());
+			addMappings(configurer.getAdditionalMappings());
+		});
 		
 		final ComponentDeletionPolicy deletionPolicy = (ComponentDeletionPolicy) bindings.get(ComponentDeletionPolicy.class);
 		if (deletionPolicy instanceof CompositeComponentDeletionPolicy) {

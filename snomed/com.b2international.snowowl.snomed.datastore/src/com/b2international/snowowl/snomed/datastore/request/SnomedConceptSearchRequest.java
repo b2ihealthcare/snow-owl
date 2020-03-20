@@ -50,12 +50,12 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 4.5
  */
-final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
+public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
 
 	private static final float MIN_DOI_VALUE = 1.05f;
 	private static final float MAX_DOI_VALUE = 10288.383f;
 	
-	enum OptionKey {
+	public enum OptionKey {
 
 		/**
 		 * Description term to (smart) match
@@ -129,7 +129,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 
 	}
 	
-	SnomedConceptSearchRequest() {}
+	protected SnomedConceptSearchRequest() {}
 
 	@Override
 	protected Expression prepareQuery(BranchContext context) {
