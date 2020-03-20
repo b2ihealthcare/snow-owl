@@ -94,10 +94,10 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.primitives.Ints;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 5.7
@@ -132,10 +132,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<RepositoryContext, Ex
 	private String namespaceFilter;
 
 	@JsonProperty 
-	private Date startEffectiveTime;
+	private String startEffectiveTime;
 
 	@JsonProperty 
-	private Date endEffectiveTime;
+	private String endEffectiveTime;
 
 	@JsonProperty
 	private boolean includePreReleaseContent;
@@ -177,11 +177,11 @@ final class SnomedRf2ExportRequest extends ResourceRequest<RepositoryContext, Ex
 		this.namespaceFilter = namespaceFilter;
 	}
 
-	void setStartEffectiveTime(final Date startEffectiveTime) {
+	void setStartEffectiveTime(final String startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 	}
 
-	void setEndEffectiveTime(final Date endEffectiveTime) {
+	void setEndEffectiveTime(final String endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 	}
 
@@ -271,8 +271,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<RepositoryContext, Ex
 
 			final Set<String> visitedComponentEffectiveTimes = newHashSet();
 			
-			final long effectiveTimeStart = startEffectiveTime != null ? startEffectiveTime.getTime() : 0;
-			final long effectiveTimeEnd =  endEffectiveTime != null ? endEffectiveTime.getTime() : Long.MAX_VALUE;
+			final long effectiveTimeStart = startEffectiveTime != null ? EffectiveTimes.getEffectiveTime(startEffectiveTime, DateFormats.SHORT) : 0;
+			final long effectiveTimeEnd =  endEffectiveTime != null ? EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT) : Long.MAX_VALUE;
 
 			// export content from the pre-computed version branches
 			for (String branch : branchesToExport) {
@@ -432,7 +432,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<RepositoryContext, Ex
 		Optional<CodeSystemVersionEntry> lastVersionToExport;
 		
 		if (endEffectiveTime != null) {
-			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, endEffectiveTime.getTime()));
+			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT)));
 		} else {
 			lastVersionToExport = !versionsToExport.isEmpty() ? Optional.ofNullable(versionsToExport.last()) : Optional.empty();
 		}

@@ -16,12 +16,9 @@
 package com.b2international.snowowl.snomed.core.rest.domain;
 
 import java.util.Collection;
-import java.util.Date;
 
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 import io.swagger.annotations.ApiParam;
 
@@ -43,10 +40,10 @@ public final class SnomedRf2ExportConfiguration {
 	private Collection<String> refSetIds;
 	
 	@ApiParam(value = "Delta export start effectiveTime. By default unbounded.")
-	private Date startEffectiveTime;
+	private String startEffectiveTime;
 	
 	@ApiParam(value = "Delta export end effectiveTime. By default unbounded.")
-	private Date endEffectiveTime;
+	private String endEffectiveTime;
 	
 	@ApiParam(value = "Transient effectiveTime to apply on unpublished content")
 	private String transientEffectiveTime;
@@ -75,24 +72,22 @@ public final class SnomedRf2ExportConfiguration {
 	/**
 	 * Returns with a restricting export start effective time. Can be {@code null}.
 	 */
-	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	public Date getStartEffectiveTime() {
+	public String getStartEffectiveTime() {
 		return startEffectiveTime;
 	}
 	
-	public void setStartEffectiveTime(Date startEffectiveTime) {
+	public void setStartEffectiveTime(String startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 	}
 
 	/**
 	 * Returns with a restricting export end effective time.May return with {@code null}.
 	 */
-	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	public Date getEndEffectiveTime() {
+	public String getEndEffectiveTime() {
 		return endEffectiveTime;
 	}
 	
-	public void setEndEffectiveTime(Date endEffectiveTime) {
+	public void setEndEffectiveTime(String endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 	}
 	

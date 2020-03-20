@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
-import java.util.Date;
 
 import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -38,8 +37,8 @@ public final class SnomedRf2ExportRequestBuilder
 	private Rf2RefSetExportLayout refSetExportLayout;
 	private String countryNamespaceElement;
 	private String namespaceFilter;
-	private Date startEffectiveTime;
-	private Date endEffectiveTime;
+	private String startEffectiveTime;
+	private String endEffectiveTime;
 	private boolean includePreReleaseContent;
 	private Collection<String> componentTypes = null;
 	private Collection<String> modules = null;
@@ -74,12 +73,12 @@ public final class SnomedRf2ExportRequestBuilder
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final Date startEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final String startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final Date endEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final String endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 		return getSelf();
 	}
