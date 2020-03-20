@@ -22,7 +22,9 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -79,6 +81,18 @@ public class ControllerExceptionMapper {
 	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
 	public @ResponseBody RestApiError handle(final HttpRequestMethodNotSupportedException e) {
 		return RestApiError.of(ApiError.Builder.of("Method " + e.getMethod() + " is not allowed").build()).build(HttpStatus.METHOD_NOT_ALLOWED.value());
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody RestApiError handle(BindException e) {
+		return RestApiError.of(ApiError.Builder.of("Invalid  parameter: '" + e.getMessage() + "'.").build()).build(HttpStatus.BAD_REQUEST.value());
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public RestApiError handle(MissingPathVariableException e) {
+		return RestApiError.of(ApiError.Builder.of("Missing path parameter: '" + e.getVariableName() + "'.").build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
