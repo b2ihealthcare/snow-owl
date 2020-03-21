@@ -76,7 +76,7 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
- * @deprecated - refactored and redesigned to eliminate the necessity of a memory stored object {@link SnomedExportRestRun}
+ * @deprecated - refactored and redesigned - see {@link SnomedRf2ExportRestService} - to eliminate the necessity of a memory stored object {@link SnomedExportRestRun}
  */
 @Api(value = "Exports (deprecated)", description="Exports (deprecated)", tags = "exports (deprecated)")
 @RestController
