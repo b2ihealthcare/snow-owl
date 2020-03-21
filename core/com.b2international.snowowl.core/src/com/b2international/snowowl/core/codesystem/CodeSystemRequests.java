@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.terminologyregistry.core.request;
+package com.b2international.snowowl.core.codesystem;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCreateRequestBuilder;
+import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
-import com.b2international.snowowl.datastore.request.version.CodeSystemVersionCreateRequestBuilder;
 
 /**
  * @since 4.7

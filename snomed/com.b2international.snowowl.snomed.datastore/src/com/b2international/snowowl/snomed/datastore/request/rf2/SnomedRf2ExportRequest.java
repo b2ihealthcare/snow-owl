@@ -48,6 +48,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
@@ -87,7 +88,6 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2Lang
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetDescriptorRefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RelationshipExporter;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;

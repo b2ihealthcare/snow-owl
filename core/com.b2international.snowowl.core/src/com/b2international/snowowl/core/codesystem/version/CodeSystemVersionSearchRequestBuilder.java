@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.terminologyregistry.core.request;
+package com.b2international.snowowl.core.codesystem.version;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
+import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVersionSearchRequest.OptionKey;
 
 /**
  * @since 4.7

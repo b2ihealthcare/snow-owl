@@ -13,28 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.terminologyregistry.core.request;
+package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems>
-		implements RepositoryRequestBuilder<CodeSystems> {
+public final class CodeSystemGetRequestBuilder 
+		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystemEntry>
+		implements RepositoryRequestBuilder<CodeSystemEntry> {
 
-	CodeSystemSearchRequestBuilder() {
-		super();
+	CodeSystemGetRequestBuilder(String uniqueId) {
+		super(new CodeSystemGetRequest(uniqueId));
 	}
-
-	@Override
-	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
-		return new CodeSystemSearchRequest();
-	}
-
+	
 }

@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.Hooks.PreCommitHook;
+import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
@@ -37,7 +38,6 @@ import com.b2international.snowowl.core.request.TransactionalRequest;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
-import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
