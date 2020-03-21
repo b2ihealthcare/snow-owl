@@ -47,6 +47,7 @@ Export-Package: com.auth0.jwt,
  com.b2international.snowowl.core.identity,
  com.b2international.snowowl.core.identity.request,
  com.b2international.snowowl.core.inject,
+ com.b2international.snowowl.core.internal.validation,
  com.b2international.snowowl.core.merge,
  com.b2international.snowowl.core.monitoring,
  com.b2international.snowowl.core.propertytester,
@@ -56,7 +57,11 @@ Export-Package: com.auth0.jwt,
  com.b2international.snowowl.core.setup,
  com.b2international.snowowl.core.terminology,
  com.b2international.snowowl.core.uri,
- com.b2international.snowowl.core.validation
+ com.b2international.snowowl.core.validation,
+ com.b2international.snowowl.core.validation.eval,
+ com.b2international.snowowl.core.validation.issue,
+ com.b2international.snowowl.core.validation.rule,
+ com.b2international.snowowl.core.validation.whitelist
 Import-Package: org.slf4j;version="1.7.25"
 Bundle-ClassPath: .,
  lib/java-jwt-3.8.1.jar
