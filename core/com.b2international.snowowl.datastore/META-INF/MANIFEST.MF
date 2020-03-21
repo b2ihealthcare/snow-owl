@@ -20,7 +20,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  net.jodah.failsafe;bundle-version="2.3.1"
 Export-Package: com.b2international.snowowl.core.console,
  com.b2international.snowowl.core.locks,
- com.b2international.snowowl.core.messaging,
  com.b2international.snowowl.core.validation,
  com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.config,
