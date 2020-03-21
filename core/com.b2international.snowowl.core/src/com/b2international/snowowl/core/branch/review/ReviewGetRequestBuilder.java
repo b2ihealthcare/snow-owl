@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.branch.review;
 
-import com.b2international.snowowl.core.branch.review.ReviewGetConceptChangesRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.review.ConceptChanges;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.datastore.review.Review;
 
 /**
  * @since 5.0
  */
-public final class ConceptChangesGetRequestBuilder extends BaseRequestBuilder<ConceptChangesGetRequestBuilder, RepositoryContext, ConceptChanges> implements RepositoryRequestBuilder<ConceptChanges> {
+public final class ReviewGetRequestBuilder extends BaseRequestBuilder<ReviewGetRequestBuilder, RepositoryContext, Review> implements RepositoryRequestBuilder<Review> {
 
 	private final String reviewId;
 
-	ConceptChangesGetRequestBuilder(String reviewId) {
+	ReviewGetRequestBuilder(String reviewId) {
 		this.reviewId = reviewId;
 	}
 	
 	@Override
-	protected Request<RepositoryContext, ConceptChanges> doBuild() {
-		return new ReviewGetConceptChangesRequest(reviewId);	
+	protected Request<RepositoryContext, Review> doBuild() {
+		return new ReviewGetRequest(reviewId);
 	}
 
 }

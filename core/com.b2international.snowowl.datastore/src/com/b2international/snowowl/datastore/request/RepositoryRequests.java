@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.snowowl.core.branch.Branching;
+import com.b2international.snowowl.core.branch.Merging;
+import com.b2international.snowowl.core.branch.review.Reviews;
 import com.b2international.snowowl.core.commit.CommitInfoRequests;
 import com.b2international.snowowl.datastore.request.repository.RepositoryClearRequestBuilder;
 import com.b2international.snowowl.datastore.request.repository.RepositoryGetRequestBuilder;

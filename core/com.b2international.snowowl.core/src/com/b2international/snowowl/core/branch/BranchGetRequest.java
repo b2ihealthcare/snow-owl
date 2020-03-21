@@ -13,44 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.branch;
 
-import com.b2international.commons.options.Metadata;
-import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
-import com.b2international.snowowl.core.branch.BranchBaseRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.b2international.snowowl.core.request.GetResourceRequest;
 
 /**
- * @since 5.0
+ * @since 4.1
  */
-public final class BranchUpdateRequest extends BranchBaseRequest<Boolean> implements RepositoryAccessControl {
+final class BranchGetRequest 
+		extends GetResourceRequest<BranchSearchRequestBuilder, RepositoryContext, Branch>
+		implements RepositoryAccessControl {
 
-	@JsonProperty
-	private Metadata metadata;
-	
-	BranchUpdateRequest(String branchPath) {
+	BranchGetRequest(final String branchPath) {
 		super(branchPath);
 	}
 	
-	void setMetadata(Metadata metadata) {
-		this.metadata = metadata;
-	}
-	
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		if (metadata != null) {
-			context.service(BaseRevisionBranching.class).updateMetadata(getBranchPath(), metadata);
-			return Boolean.TRUE;
-		}
-		return Boolean.FALSE;
+	protected BranchSearchRequestBuilder createSearchRequestBuilder() {
+		return new BranchSearchRequestBuilder();
 	}
-	
+
 	@Override
 	public String getOperation() {
 		return Permission.BROWSE;
 	}
-
+	
 }

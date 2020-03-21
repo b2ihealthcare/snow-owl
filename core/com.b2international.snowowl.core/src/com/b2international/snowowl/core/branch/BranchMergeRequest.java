@@ -13,52 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.branch;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.BranchMergeException;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.Locks;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.google.common.base.Strings;
 
 /**
- * Rebases {@code target} on {@code source}.
- * <p>
- * The branch represented by {@code target} is not modified; instead, a new branch representing the rebased {@code target} will be created on top of
- * {@code source}, preserving {@code target}'s path. This ensures that any changes that were made to {@code source} in the meantime will be visible on
- * the rebased target branch.
- * <p>
- * Commits available on the previous instance of {@code target}, if present, will also be visible on the resulting {@link Branch} after a successful
- * rebase.
- *
- * @since 4.6
+ * Merges {@code source} into {@code target} (only if {@code target} is the most recent version of {@code source}'s parent).
+ * 
+ * @since 4.1
  */
-public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
+public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 
 	private static final long serialVersionUID = 1L;
 
 	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
 		return !Strings.isNullOrEmpty(commitMessage) 
-				? commitMessage 
-				: String.format("Rebase branch '%s' on '%s'", targetPath, sourcePath);
+				? commitMessage
+				: String.format("Merge branch '%s' into '%s'", sourcePath, targetPath);
 	}
 
-	BranchRebaseRequest(final String sourcePath, final String targetPath, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
+	BranchMergeRequest(final String sourcePath, final String targetPath, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
 		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId, parentLockContext);
 	}
 	
 	@Override
 	protected void applyChanges(RepositoryContext context, Branch source, Branch target) {
-		if (!target.parentPath().equals(source.path())) {
-			throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
-		}
-		
 		final String author = userId(context);
 		try (Locks locks = new Locks(context, author, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
 			context.service(BaseRevisionBranching.class)
@@ -66,14 +53,15 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 				.author(author)
 				.commitMessage(commitMessage)
 				.conflictProcessor(context.service(ComponentRevisionConflictProcessor.class))
+				.squash(true)
 				.context(context)
 				.merge();
 		} catch (BranchMergeException e) {
-			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);
-		} catch (OperationLockException e) {
-			throw new ConflictException("Lock exception caught while rebasing target '%s' on source '%s'. %s", target.path(), source.path(), e.getMessage());
+			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
+		} catch (DatastoreOperationLockException e) {
+			throw new ConflictException("Lock exception caught while merging source '%s' into target '%s'. %s", source.path(), target.path(), e.getMessage());
 		} catch (InterruptedException e) {
-			throw new ConflictException("Lock obtaining process was interrupted while rebasing target '%s' on source '%s'.", target.path(), source.path());
+			throw new ConflictException("Lock obtaining process was interrupted while merging source '%s' into target '%s'.", source.path(), target.path());
 		}
 	}
 	

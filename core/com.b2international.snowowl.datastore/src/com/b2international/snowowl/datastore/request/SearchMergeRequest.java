@@ -24,6 +24,8 @@ import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.branch.BranchMergeRequest;
+import com.b2international.snowowl.core.branch.BranchRebaseRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.merge.Merge;
