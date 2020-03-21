@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.events;
+package com.b2international.snowowl.core.branch;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -24,20 +25,25 @@ import com.b2international.snowowl.core.identity.Permission;
 /**
  * @since 4.1
  */
-public final class DeleteBranchRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
-
-	public DeleteBranchRequest(final String branchPath) {
-		super(branchPath);
+public final class ReopenBranchRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
+	
+	public ReopenBranchRequest(final String path) {
+		super(path);
 	}
-
+	
 	@Override
 	public Boolean execute(RepositoryContext context) {
+		final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
+		final RevisionBranch branch = branching.getBranch(getBranchPath());
+		
 		try {
-			context.service(BaseRevisionBranching.class).delete(getBranchPath());
+			final RevisionBranch parentBranch = branching.getBranch(branch.getParentPath());
+			branching.reopen(parentBranch, branch.getName(), branch.metadata());
+			return true;
 		} catch (NotFoundException e) {
-			// ignore
+			// if parent not found, convert it to BadRequestException
+			throw e.toBadRequestException();
 		}
-		return true;
 	}
 	
 	@Override

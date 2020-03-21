@@ -17,10 +17,10 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
+import com.b2international.snowowl.core.branch.CreateBranchRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.CreateBranchRequest;
 
 /**
  * @since 4.5

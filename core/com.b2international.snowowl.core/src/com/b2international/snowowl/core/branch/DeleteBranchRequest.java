@@ -13,28 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.events;
+package com.b2international.snowowl.core.branch;
 
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
- * Sent when a user requests a review to be deleted.
- * 
- * @since 4.2
+ * @since 4.1
  */
-public final class DeleteReviewRequest extends ReviewRequest<Boolean> implements RepositoryAccessControl {
+public final class DeleteBranchRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
 
-	public DeleteReviewRequest(final String reviewId) {
-		super(reviewId);
+	public DeleteBranchRequest(final String branchPath) {
+		super(branchPath);
 	}
-	
+
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		context.service(ReviewManager.class).delete(getReviewId());
-		return Boolean.TRUE;
+		try {
+			context.service(BaseRevisionBranching.class).delete(getBranchPath());
+		} catch (NotFoundException e) {
+			// ignore
+		}
+		return true;
 	}
 	
 	@Override

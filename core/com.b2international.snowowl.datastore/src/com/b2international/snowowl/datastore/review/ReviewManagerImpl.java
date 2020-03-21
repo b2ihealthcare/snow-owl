@@ -49,7 +49,7 @@ import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.datastore.events.BranchChangedEvent;
+import com.b2international.snowowl.core.branch.BranchChangedEvent;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;

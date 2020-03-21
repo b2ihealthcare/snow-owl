@@ -13,44 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.branch;
 
-import com.b2international.commons.options.Metadata;
-import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
-import com.b2international.snowowl.core.branch.BranchRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.b2international.snowowl.datastore.events.ReviewRequest;
+import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
- * @since 5.0
+ * Sent when a user requests to read the details of a terminology review with the specified identifier.
+ * 
+ * @since 4.2
  */
-public final class BranchUpdateRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
+public final class ReadReviewRequest extends ReviewRequest<Review> implements RepositoryAccessControl {
 
-	@JsonProperty
-	private Metadata metadata;
-	
-	BranchUpdateRequest(String branchPath) {
-		super(branchPath);
-	}
-	
-	void setMetadata(Metadata metadata) {
-		this.metadata = metadata;
+	public ReadReviewRequest(final String reviewId) {
+		super(reviewId);
 	}
 	
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		if (metadata != null) {
-			context.service(BaseRevisionBranching.class).updateMetadata(getBranchPath(), metadata);
-			return Boolean.TRUE;
-		}
-		return Boolean.FALSE;
+	public Review execute(RepositoryContext context) {
+		return context.service(ReviewManager.class).getReview(getReviewId());
 	}
 	
 	@Override
 	public String getOperation() {
 		return Permission.BROWSE;
 	}
-
+	
 }

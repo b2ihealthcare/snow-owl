@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.events;
+package com.b2international.snowowl.core.branch;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

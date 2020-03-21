@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.events;
+package com.b2international.snowowl.core.branch;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.events.RepositoryEvent;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.Request;
 
 /**
- * @since 4.3
+ * An abstract superclass for terminology review events which include the affected review's identifier.
+ * 
+ * @since 4.2
  */
-public final class BranchChangedEvent extends RepositoryEvent {
-	
-	private static final long serialVersionUID = 1L;
-	
-	private final String branch;
-	
-	public BranchChangedEvent(final String repositoryId, final String branch) {
-		super(repositoryId);
-		this.branch = checkNotNull(branch, "branch");
+public abstract class ReviewRequest<B> implements Request<RepositoryContext, B> {
+
+	private final String reviewId;
+
+	public ReviewRequest(final String reviewId) {
+		this.reviewId = checkNotNull(reviewId, "reviewId");
 	}
-	
-	public String getBranch() {
-		return branch;
+
+	protected final String getReviewId() {
+		return reviewId;
 	}
 
 }
