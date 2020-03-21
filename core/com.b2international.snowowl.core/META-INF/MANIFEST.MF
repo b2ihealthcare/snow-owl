@@ -36,6 +36,7 @@ Export-Package: com.auth0.jwt,
  com.b2international.snowowl.core.commit,
  com.b2international.snowowl.core.compare,
  com.b2international.snowowl.core.config,
+ com.b2international.snowowl.core.console,
  com.b2international.snowowl.core.date,
  com.b2international.snowowl.core.domain,
  com.b2international.snowowl.core.domain.exceptions,
@@ -68,3 +69,4 @@ Export-Package: com.auth0.jwt,
 Import-Package: org.slf4j;version="1.7.25"
 Bundle-ClassPath: .,
  lib/java-jwt-3.8.1.jar
+Service-Component: OSGI-INF/console.xml

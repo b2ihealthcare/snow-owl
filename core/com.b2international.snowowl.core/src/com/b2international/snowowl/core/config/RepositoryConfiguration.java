@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.config;
+package com.b2international.snowowl.core.config;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
