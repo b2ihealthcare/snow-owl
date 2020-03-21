@@ -35,15 +35,10 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -115,54 +110,12 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					+ "An import is already in progress. Please try again later.");
 		}
 		
-		final Rf2ReleaseType releaseType = configuration.getRf2ReleaseType();
-		final boolean contentAvailable = ContentAvailabilityInfoManager.INSTANCE.isAvailable(bus.get(), REPOSITORY_UUID);
-		final boolean isMain = Branch.MAIN_PATH.equals(configuration.getBranchPath());
-		
-		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType) && isMain) {
-			throw new BadRequestException("Importing a full release of SNOMED CT "
-					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
-					+ "ontology is already available on the terminology server. "
-					+ "Please perform either a delta or a snapshot import instead.");
-		}
-		
-		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(releaseType) && isMain) {
-			throw new BadRequestException("Importing a delta release of SNOMED CT "
-					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
-					+ "ontology is not available on the terminology server. "
-					+ "Please perform either a full or a snapshot import instead.");
-		}
-		
-		if (!contentAvailable && !isMain) {
-			throw new BadRequestException("Importing a release of SNOMED CT from an "
-					+ "archive to other than MAIN branch is prohibited when SNOMED CT "
-					+ "ontology is not available on the terminology server. "
-					+ "Please perform a full import to MAIN branch first.");
-		}
-		
-		final String branchPath = configuration.getBranchPath();
-		if (!isMain && !BranchPathUtils.exists(bus.get(), REPOSITORY_UUID, branchPath)) {
-			throw new BadRequestException("Importing a release of SNOMED CT from an "
-					+ "archive to other than MAIN branch is prohibited when the given "
-					+ "branch does not exist. Please perform a branch creation first.");
-		}
-		
-		final String codeSystemShortName = configuration.getCodeSystemShortName();
-		final CodeSystemEntry codeSystemEntry = getCodeSystem(codeSystemShortName);
-		if (codeSystemEntry == null && !SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystemShortName)) {
-			throw new BadRequestException("Importing a release of SNOMED CT from an archive is prohibited "
-					+ "when SNOMED CT extension with short name %s does not exist. Please create it before "
-					+ "importing content with this configuration, or use SNOMEDCT for importing the "
-					+ "International Release; in this case the corresponding code system will be created automatically.", 
-					codeSystemShortName);
-		}
-
 		fileRegistry.upload(importId, inputStream);
 		
 		SnomedRequests.rf2().prepareImport()
 			.setRf2ArchiveId(importId)
 			.setCreateVersions(configuration.shouldCreateVersion())
-			.setReleaseType(releaseType)
+			.setReleaseType(configuration.getRf2ReleaseType())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
 			.execute(bus.get())
 			.then(result -> {

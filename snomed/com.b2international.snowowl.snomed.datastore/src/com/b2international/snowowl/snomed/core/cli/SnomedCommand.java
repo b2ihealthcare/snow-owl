@@ -115,10 +115,8 @@ public final class SnomedCommand extends Command {
 			}
 			
 			final Rf2ImportResponse response = SnomedRequests.rf2().prepareImport()
-					.setCodeSystemShortName(codeSystem)
 					.setCreateVersions(createVersions)
 					.setRf2ArchiveId(rf2ArchiveId)
-					.setUserId(user.getUsername())
 					.setReleaseType(rf2ReleaseType)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 					.execute(getBus())

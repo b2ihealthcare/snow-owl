@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,10 +73,8 @@ public class SnomedContentRule extends ExternalResource {
 		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(rf2ArchiveId, new FileInputStream(importArchive));
 		SnomedRequests.rf2().prepareImport()
 			.setRf2ArchiveId(rf2ArchiveId)
-			.setUserId("info@b2international.com")
 			.setReleaseType(contentType)
 			.setCreateVersions(true)
-			.setCodeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, codeSystemBranchPath)
 			.execute(Services.bus())
 			.getSync();

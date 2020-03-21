@@ -167,9 +167,7 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId, new FileInputStream(importArchive));
 		
 		return SnomedRequests.rf2().prepareImport()
-			.setCodeSystemShortName(codeSystemShortName)
 			.setCreateVersions(false)
-			.setUserId("info@b2international.com")
 			.setReleaseType(releaseType)
 			.setRf2ArchiveId(archiveId)
 			.build(REPOSITORY_ID, branchPath.getPath())

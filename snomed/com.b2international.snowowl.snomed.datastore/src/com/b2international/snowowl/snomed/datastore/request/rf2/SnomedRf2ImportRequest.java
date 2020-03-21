@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ApiException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
@@ -94,6 +95,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	
 	@Override
 	public Rf2ImportResponse execute(BranchContext context) {
+		validate(context);
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		final String feature = Features.getImportFeatureToggle(context.id(), context.branchPath());
 
@@ -110,6 +112,32 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 			throw new SnowowlRuntimeException(e);
 		} finally {
 			features.disable(feature);
+		}
+	}
+
+	private void validate(BranchContext context) {
+		final boolean contentAvailable = context.isContentAvailable();
+		final boolean isMain = context.isMain();
+		
+		if (contentAvailable && Rf2ReleaseType.FULL.equals(type) && isMain) {
+			throw new BadRequestException("Importing a full release of SNOMED CT "
+					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is already available on the terminology server. "
+					+ "Please perform either a delta or a snapshot import instead.");
+		}
+		
+		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(type) && isMain) {
+			throw new BadRequestException("Importing a delta release of SNOMED CT "
+					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is not available on the terminology server. "
+					+ "Please perform either a full or a snapshot import instead.");
+		}
+		
+		if (!contentAvailable && !isMain) {
+			throw new BadRequestException("Importing a release of SNOMED CT from an "
+					+ "archive to other than MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is not available on the terminology server. "
+					+ "Please perform a full import to MAIN branch first.");
 		}
 	}
 
