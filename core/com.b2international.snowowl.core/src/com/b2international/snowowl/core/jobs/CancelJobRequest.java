@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.job;
+package com.b2international.snowowl.core.jobs;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.7
  */
-public final class GetJobRequestBuilder extends BaseRequestBuilder<GetJobRequestBuilder, ServiceProvider, RemoteJobEntry> implements SystemRequestBuilder<RemoteJobEntry> {
-
-	private final String jobId;
-
-	GetJobRequestBuilder(String jobId) {
-		this.jobId = jobId;
-	}
+final class CancelJobRequest implements Request<ServiceProvider, Boolean> {
 	
+	private static final long serialVersionUID = 1L;
+	
+	@JsonProperty
+	private final String id;
+
+	CancelJobRequest(String id) {
+		this.id = id;
+	}
+
 	@Override
-	protected Request<ServiceProvider, RemoteJobEntry> doBuild() {
-		return new GetJobRequest(jobId);
+	public Boolean execute(ServiceProvider context) {
+		context.service(RemoteJobTracker.class).requestCancel(id);
+		return Boolean.TRUE;
 	}
 
 }

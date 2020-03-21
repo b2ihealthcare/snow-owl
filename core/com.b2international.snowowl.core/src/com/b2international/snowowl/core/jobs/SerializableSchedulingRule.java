@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.remotejobs;
+package com.b2international.snowowl.core.jobs;
 
-import com.google.common.collect.Lists;
+import java.io.Serializable;
+
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 
 /**
+ * @since 7.0
  */
-public enum RemoteJobState {
-	SCHEDULED, RUNNING, CANCEL_REQUESTED, FINISHED, FAILED, CANCELED;
-
-	public boolean oneOf(RemoteJobState firstState, RemoteJobState... restStates) {
-		return Lists.asList(firstState, restStates).contains(this);
-	}
+public interface SerializableSchedulingRule extends ISchedulingRule, Serializable {
+	// Empty interface body
 }

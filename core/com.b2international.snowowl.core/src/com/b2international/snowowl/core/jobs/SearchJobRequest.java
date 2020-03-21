@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.job;
+package com.b2international.snowowl.core.jobs;
 
 import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Expressions.user;
 import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Fields.USER;

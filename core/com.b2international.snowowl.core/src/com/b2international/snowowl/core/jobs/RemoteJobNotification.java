@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.remotejobs;
+package com.b2international.snowowl.core.jobs;
 
 import java.util.Collection;
 import java.util.Collections;

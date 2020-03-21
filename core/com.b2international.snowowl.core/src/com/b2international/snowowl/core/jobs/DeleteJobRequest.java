@@ -13,36 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.job;
+package com.b2international.snowowl.core.jobs;
 
-import com.b2international.commons.exceptions.NotFoundException;
+import java.util.Collection;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 5.7
  */
-final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry> {
+final class DeleteJobRequest implements Request<ServiceProvider, Boolean> {
 
 	@JsonProperty
-	private final String id;
+	private final Collection<String> jobIds;
 
-	GetJobRequest(String id) {
-		this.id = id;
+	DeleteJobRequest(Collection<String> jobIds) {
+		this.jobIds = jobIds;
 	}
 	
 	@Override
-	public RemoteJobEntry execute(ServiceProvider context) {
-		final RemoteJobEntry entry = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(RemoteJobEntry.Expressions.id(id), 2), null);
-		if (entry == null) {
-			throw new NotFoundException("job", id);
-		} else {
-			return entry;
-		}
+	public Boolean execute(ServiceProvider context) {
+		context.service(RemoteJobTracker.class).requestDeletes(jobIds);
+		return Boolean.TRUE;
 	}
 	
 }

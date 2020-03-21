@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.remotejobs;
+package com.b2international.snowowl.core.jobs;
 
-import org.eclipse.core.runtime.jobs.Job;
+import java.util.List;
 
-import com.google.common.base.Predicate;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 
-public enum RemoteJobFamily implements Predicate<Job> {
-	INSTANCE;
-	
-	@Override
-	public boolean apply(Job input) {
-		return input instanceof RemoteJob;
+/**
+ * @since 5.7
+ */
+public final class RemoteJobs extends PageableCollectionResource<RemoteJobEntry> {
+
+	private static final long serialVersionUID = 1L;
+
+	public RemoteJobs(List<RemoteJobEntry> items, String searchAfter, int limit, int total) {
+		super(items, searchAfter, limit, total);
 	}
 }

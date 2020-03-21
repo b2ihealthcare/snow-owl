@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.job;
+package com.b2international.snowowl.core.jobs;
 
 import java.util.Collection;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 5.7
  */
-final class DeleteJobRequest implements Request<ServiceProvider, Boolean> {
+public final class DeleteJobRequestBuilder extends BaseRequestBuilder<DeleteJobRequestBuilder, ServiceProvider, Boolean> implements SystemRequestBuilder<Boolean> {
 
-	@JsonProperty
 	private final Collection<String> jobIds;
-
-	DeleteJobRequest(Collection<String> jobIds) {
+	
+	DeleteJobRequestBuilder(Collection<String> jobIds) {
 		this.jobIds = jobIds;
 	}
-	
+
 	@Override
-	public Boolean execute(ServiceProvider context) {
-		context.service(RemoteJobTracker.class).requestDeletes(jobIds);
-		return Boolean.TRUE;
+	protected Request<ServiceProvider, Boolean> doBuild() {
+		return new DeleteJobRequest(jobIds);
 	}
-	
+
 }
