@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.branch;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.mapping.DocumentMapping;

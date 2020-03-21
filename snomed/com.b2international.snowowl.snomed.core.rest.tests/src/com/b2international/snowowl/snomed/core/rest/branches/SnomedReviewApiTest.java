@@ -41,9 +41,9 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.branch.review.ConceptChanges;
+import com.b2international.snowowl.core.branch.review.ReviewStatus;
 import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.datastore.review.ConceptChanges;
-import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;

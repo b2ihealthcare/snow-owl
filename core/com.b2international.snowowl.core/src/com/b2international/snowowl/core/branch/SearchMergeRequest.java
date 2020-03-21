@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.branch;
 
 import java.util.List;
 import java.util.Map;
@@ -24,8 +24,6 @@ import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
-import com.b2international.snowowl.core.branch.BranchMergeRequest;
-import com.b2international.snowowl.core.branch.BranchRebaseRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.merge.Merge;

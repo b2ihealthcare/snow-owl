@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.branch;
 
+import com.b2international.snowowl.core.branch.SearchMergeRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.merge.Merges;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.SearchMergeRequest.OptionKey;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 
 /**
  * @since 7.1 
