@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.file;
+package com.b2international.snowowl.core.attachments;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +40,7 @@ import com.google.common.io.Resources;
 /**
  * @since 5.7
  */
-public class FileRegistryTest {
+public class AttachmentRegistryTest {
 
 	private static final Path FOLDER = Paths.get("target", AttachmentRegistry.class.getSimpleName().toLowerCase());
 	private InternalAttachmentRegistry registry;
@@ -87,7 +87,7 @@ public class FileRegistryTest {
 	}
 
 	private void upload(final UUID id, final String resourceName) throws IOException {
-		try (final InputStream in = Resources.getResource(FileRegistryTest.class, resourceName).openStream()) {
+		try (final InputStream in = Resources.getResource(AttachmentRegistryTest.class, resourceName).openStream()) {
 			registry.upload(id, in);
 		}
 	}

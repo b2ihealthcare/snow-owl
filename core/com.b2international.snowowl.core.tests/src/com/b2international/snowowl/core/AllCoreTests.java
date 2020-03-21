@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,26 +19,32 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.core.attachments.AttachmentRegistryTest;
+import com.b2international.snowowl.core.branch.review.ReviewSerializationTest;
+import com.b2international.snowowl.core.events.NotificationsTest;
+import com.b2international.snowowl.core.events.util.PromiseTest;
+import com.b2international.snowowl.core.events.util.RequestTest;
+import com.b2international.snowowl.core.jobs.JobRequestsTest;
+import com.b2international.snowowl.core.merge.MergeConflictSerializationTest;
+import com.b2international.snowowl.core.request.SortParserTest;
 import com.b2international.snowowl.core.validation.ValidationIssueApiTest;
 import com.b2international.snowowl.core.validation.ValidationRuleApiTest;
 import com.b2international.snowowl.core.validation.ValidationThreadPoolTest;
 import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
-import com.b2international.snowowl.datastore.file.FileRegistryTest;
-import com.b2international.snowowl.datastore.request.SortParserTest;
-import com.b2international.snowowl.datastore.request.job.JobRequestsTest;
-import com.b2international.snowowl.datastore.server.internal.merge.MergeConflictSerializationTest;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewSerializationTest;
 
 /**
  * @since 7.1
  */
 @RunWith(Suite.class)
 @SuiteClasses({
+	NotificationsTest.class,
+	PromiseTest.class,
+	RequestTest.class,
 	ValidationIssueApiTest.class,
 	ValidationRuleApiTest.class,
 	ValidationThreadPoolTest.class,
 	ValidationWhiteListApiTest.class,
-	FileRegistryTest.class,
+	AttachmentRegistryTest.class,
 	SortParserTest.class,
 	JobRequestsTest.class,
 	MergeConflictSerializationTest.class,
