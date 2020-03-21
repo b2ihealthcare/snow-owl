@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.scripting.groovy;
+package com.b2international.snowowl.core.scripts;
 
 import java.util.Map;
 
@@ -21,7 +21,6 @@ import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.commons.CompositeClassLoader;
-import com.b2international.scripting.api.ScriptEngine;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

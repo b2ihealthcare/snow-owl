@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.scripting.groovy;
+package com.b2international.snowowl.core.scripts;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -22,7 +22,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import com.b2international.scripting.api.ScriptEngine;
+import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.google.common.collect.ImmutableMap;
 
 /**

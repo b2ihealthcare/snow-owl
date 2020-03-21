@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.scripting.api;
+package com.b2international.snowowl.core.scripts;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

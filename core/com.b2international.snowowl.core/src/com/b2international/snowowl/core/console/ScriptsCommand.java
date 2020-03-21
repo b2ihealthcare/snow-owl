@@ -23,11 +23,10 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.script.ScriptEngine;
-
 import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugins;
 import com.b2international.snowowl.eventbus.IEventBus;
