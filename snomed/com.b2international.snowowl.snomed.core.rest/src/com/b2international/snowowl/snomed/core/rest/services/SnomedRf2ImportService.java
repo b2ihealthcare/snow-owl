@@ -41,7 +41,6 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
@@ -57,6 +56,7 @@ import com.google.inject.Provider;
 /**
  * {@link ISnomedRf2ImportService SNOMED&nbsp;CT RF2 import service} implementation.
  * Used for importing SNOMED&nbsp;CT content into the system from RF2 release archives.
+ * @deprecated - corresponding REST API has been deprecated, will be removed in 7.6
  */
 @Component
 public class SnomedRf2ImportService implements ISnomedRf2ImportService {
@@ -162,8 +162,6 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			.setRf2ArchiveId(importId)
 			.setCreateVersions(configuration.shouldCreateVersion())
 			.setReleaseType(releaseType)
-			.setCodeSystemShortName(configuration.getCodeSystemShortName())
-			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
 			.execute(bus.get())
 			.then(result -> {
