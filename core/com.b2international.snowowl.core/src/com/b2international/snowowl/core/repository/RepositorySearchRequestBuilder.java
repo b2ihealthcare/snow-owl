@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.repository;
+package com.b2international.snowowl.core.repository;
 
-import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 5.8
  */
-public final class RepositoryGetRequestBuilder
-		extends GetResourceRequestBuilder<RepositoryGetRequestBuilder, RepositorySearchRequestBuilder, ServiceProvider, RepositoryInfo>
-		implements SystemRequestBuilder<RepositoryInfo> {
+public final class RepositorySearchRequestBuilder extends SearchResourceRequestBuilder<RepositorySearchRequestBuilder, ServiceProvider, Repositories> 
+		implements SystemRequestBuilder<Repositories>  {
 
-	public RepositoryGetRequestBuilder(String repositoryId) {
-		super(new RepositoryGetRequest(repositoryId));
+	@Override
+	protected SearchResourceRequest<ServiceProvider, Repositories> createSearch() {
+		return new RepositorySearchRequest();
 	}
 
 }

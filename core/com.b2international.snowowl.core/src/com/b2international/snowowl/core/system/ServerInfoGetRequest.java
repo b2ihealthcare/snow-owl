@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.system;
+package com.b2international.snowowl.core.system;
 
 import java.util.List;
 import java.util.Set;
@@ -25,6 +25,7 @@ import org.osgi.framework.Version;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.client.EsClusterStatus;
 import com.b2international.index.es.client.EsIndexStatus;
+import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServerInfo;
@@ -33,7 +34,6 @@ import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.datastore.DatastoreActivator;
 
 /**
  * @since 5.8
@@ -45,7 +45,7 @@ class ServerInfoGetRequest implements Request<ServiceProvider, ServerInfo> {
 
 	@Override
 	public ServerInfo execute(ServiceProvider context) {
-		final Version version = Platform.getBundle(DatastoreActivator.PLUGIN_ID).getVersion();
+		final Version version = Platform.getBundle(CoreActivator.PLUGIN_ID).getVersion();
 		final String description = context.service(SnowOwlConfiguration.class).getDescription();
 		final Repositories repositories = RepositoryRequests.prepareSearch().build().execute(context);
 		final Set<String> repositoryIndices = repositories.stream()

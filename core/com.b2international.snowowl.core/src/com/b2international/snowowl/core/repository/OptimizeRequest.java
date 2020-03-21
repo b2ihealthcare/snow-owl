@@ -13,46 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.repository;
+package com.b2international.snowowl.core.repository;
 
-import com.b2international.index.revision.Purge;
-import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.Index;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 
 /**
- * @since 5.0
+ * @since 4.7
  */
-public final class PurgeRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
+public final class OptimizeRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
 
-	private String branchPath;
-	private Purge purge;
+	private int maxSegments;
 	
-	PurgeRequest() {}
+	OptimizeRequest() {}
 	
-	void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
-	}
-	
-	void setPurge(Purge purge) {
-		this.purge = purge;
+	void setMaxSegments(int maxSegments) {
+		this.maxSegments = maxSegments;
 	}
 	
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		context.service(RevisionIndex.class).purge(branchPath, purge);
+		context.service(Index.class).admin().optimize(maxSegments);
 		return Boolean.TRUE;
 	}
 
-	public static PurgeRequestBuilder builder() {
-		return new PurgeRequestBuilder();
+	public static OptimizeRequestBuilder builder() {
+		return new OptimizeRequestBuilder();
 	}
 
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.BROWSE;
 	}
 
 }
