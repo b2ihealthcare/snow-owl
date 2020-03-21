@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore;
+package com.b2international.snowowl.core.codesystem;
 
 import java.util.List;
 
@@ -22,11 +22,11 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 /**
  * @since 4.7
  */
-public final class CodeSystems extends PageableCollectionResource<CodeSystemEntry> {
+public final class CodeSystemVersions extends PageableCollectionResource<CodeSystemVersionEntry> {
 
 	private static final long serialVersionUID = 1L;
-
-	public CodeSystems(List<CodeSystemEntry> items, String searchAfter, int limit, int total) {
+	
+	public CodeSystemVersions(final List<CodeSystemVersionEntry> items, String searchAfter, int limit, int total) {
 		super(items, searchAfter, limit, total);
 	}
 }

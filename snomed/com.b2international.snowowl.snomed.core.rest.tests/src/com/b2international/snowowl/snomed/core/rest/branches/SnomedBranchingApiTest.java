@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.snomed.core.rest.branches;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
+import static com.b2international.snowowl.core.branch.BranchPathUtils.createPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.google.common.collect.ImmutableMap;
 

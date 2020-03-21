@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.http.ContentType;

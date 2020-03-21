@@ -31,7 +31,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.compare.CompareResult;
 import com.b2international.snowowl.eventbus.IEventBus;
