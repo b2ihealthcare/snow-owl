@@ -105,11 +105,6 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 	
 	@Override
-	public long commit() {
-		return commit(author(), commitComment, parentContextDescription);
-	}
-	
-	@Override
 	public String author() {
 		return !Strings.isNullOrEmpty(author) ? author : service(User.class).getUsername();
 	}
@@ -239,6 +234,21 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		clear();
 	}
 
+	@Override
+	public long commit() {
+		return commit(author(), commitComment, parentContextDescription);
+	}
+	
+	@Override
+	public long commit(String commitComment) {
+		return commit(author(), commitComment, parentContextDescription);
+	}
+	
+	@Override
+	public long commit(String commitComment, String parentContextDescription) {
+		return commit(author(), commitComment, parentContextDescription);
+	}
+	
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
 		final DatastoreLockContext lockContext = createLockContext(userId, parentContextDescription);

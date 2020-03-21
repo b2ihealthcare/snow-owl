@@ -40,7 +40,7 @@ public interface RevisionIndexRequestBuilder<R> extends BranchRequestBuilder<R> 
 				new RepositoryRequest<>(repositoryId,
 					new HealthCheckingRequest<>(
 						new BranchRequest<>(branch, 
-							new RevisionIndexReadRequest<>(build())
+							new RevisionIndexReadRequest<>(build(), snapshot())
 						),
 						allowedHealthstates()
 					)
@@ -55,9 +55,13 @@ public interface RevisionIndexRequestBuilder<R> extends BranchRequestBuilder<R> 
 		return new AsyncRequest<>(
 			new CodeSystemResourceRequest<>(
 				codeSystemUri,
-				new RevisionIndexReadRequest<>(build())
+				new RevisionIndexReadRequest<>(build(), snapshot())
 			)
 		);
+	}
+	
+	default boolean snapshot() {
+		return true;
 	}
 	
 }

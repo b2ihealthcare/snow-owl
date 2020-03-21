@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,15 +183,14 @@ public final class Rf2EffectiveTimeSlice {
 		return new LongTarjan(60000, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
 	}
 	
-	public void doImport(Rf2ImportConfiguration importConfig, BranchContext context) throws Exception {
+	public void doImport(final BranchContext context, final String codeSystem, Rf2ImportConfiguration importConfig) throws Exception {
 		final Stopwatch w = Stopwatch.createStarted();
 		final String importingMessage = isUnpublishedSlice() ? "Importing unpublished components" : String.format("Importing components from %s", effectiveTime);
 		final String commitMessage = isUnpublishedSlice() ? "Imported unpublished components" : String.format("Imported components from %s", effectiveTime);
 		final boolean doCreateVersion = !isUnpublishedSlice() && !isSnapshotSlice() && importConfig.isCreateVersions();
-		final String userId = importConfig.getUserId();
 		
 		LOG.info(importingMessage);
-		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, userId, null, DatastoreLockContextDescriptions.ROOT), loadOnDemand)) {
+		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, null, null, DatastoreLockContextDescriptions.ROOT), loadOnDemand)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
 				LongSet componentsToImportInBatch = importPlan.next();
@@ -220,7 +219,7 @@ public final class Rf2EffectiveTimeSlice {
 				
 				if (doCreateVersion && !importPlan.hasNext()) {
 					tx.add(CodeSystemVersionEntry.builder()
-							.codeSystemShortName(importConfig.getCodeSystemShortName())
+							.codeSystemShortName(codeSystem)
 							.description("")
 							.parentBranchPath(context.branch().path())
 							.effectiveDate(effectiveDate.getTime())
@@ -230,7 +229,7 @@ public final class Rf2EffectiveTimeSlice {
 							.build());
 				}
 				
-				tx.commit(userId, commitMessage, DatastoreLockContextDescriptions.ROOT);
+				tx.commit(commitMessage);
 			}
 			
 			if (doCreateVersion) {
@@ -244,7 +243,7 @@ public final class Rf2EffectiveTimeSlice {
 					.execute(context);
 			}
 		}
-		LOG.info(commitMessage + " in " + w);
+		LOG.info("{} in {}", commitMessage, w);
 	}
 	
 	private boolean isUnpublishedSlice() {

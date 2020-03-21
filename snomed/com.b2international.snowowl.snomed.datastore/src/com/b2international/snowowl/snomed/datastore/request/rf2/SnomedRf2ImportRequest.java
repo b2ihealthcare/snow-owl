@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.zip.ZipFile;
 
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.DBMaker.Maker;
@@ -44,11 +43,10 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
+import com.b2international.snowowl.datastore.CodeSystem;
 import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
@@ -80,11 +78,6 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	@NotNull
 	private Rf2ReleaseType type;
 	
-	@NotEmpty
-	private String codeSystemShortName;
-
-	private String userId;
-	
 	private boolean createVersions = true;
 
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
@@ -95,30 +88,21 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		this.type = type;
 	}
 	
-	void setCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-	}
-	
 	void setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
-	}
-	
-	void setUserId(String userId) {
-		this.userId = userId;
 	}
 	
 	@Override
 	public Rf2ImportResponse execute(BranchContext context) {
 		final FeatureToggles features = context.service(FeatureToggles.class);
-		final String feature = Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, context.branchPath());
+		final String feature = Features.getImportFeatureToggle(context.id(), context.branchPath());
 
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
 		
 		try {
 			features.enable(feature);
-			final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
-			return doImport(rf2Archive, new Rf2ImportConfiguration(user, createVersions, codeSystemShortName, type), context);
+			return doImport(context, rf2Archive, new Rf2ImportConfiguration(type, createVersions));
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
@@ -129,7 +113,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		}
 	}
 
-	Rf2ImportResponse doImport(File rf2Archive, final Rf2ImportConfiguration importconfig, final BranchContext context) throws Exception {
+	Rf2ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
+		final String codeSystem = context.provider(CodeSystem.class).get().getShortName();
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		final Rf2ImportResponse response = new Rf2ImportResponse();
 		
@@ -139,7 +124,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
 			read(rf2Archive, effectiveTimeSlices, reporter);
-			LOG.info("Preparing RF2 import took: " + w);
+			LOG.info("Preparing RF2 import took: {}", w);
 			w.reset().start();
 			
 			// log issues with rows
@@ -161,7 +146,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 			}
 			
 			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
-				slice.doImport(importconfig, context);
+				slice.doImport(context, codeSystem, importconfig);
 			}
 		}
 		return response;
@@ -199,7 +184,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 						try (final InputStream in = zip.getInputStream(entry)) {
 							readFile(entry, in, oReader, slices, reporter);
 						}
-						LOG.info(entry.getName() + " - " + w);
+						LOG.info("{} - {}", entry.getName(), w);
 					}
 				}
 			}
@@ -228,7 +213,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 				}
 
 				if (resolver == null) {
-					LOG.warn("Unrecognized RF2 file: " + entry.getName());
+					LOG.warn("Unrecognized RF2 file: {}", entry.getName());
 					break;
 				}
 				
