@@ -17,9 +17,9 @@ package com.b2international.snowowl.datastore.events;
 
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.ReviewManager;
-import com.b2international.snowowl.identity.domain.Permission;
 
 /**
  * Sent when a user requests to read change set of a terminology review with the specified identifier.

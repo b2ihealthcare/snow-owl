@@ -31,8 +31,8 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 import picocli.CommandLine;

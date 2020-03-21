@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.request.repository;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.core.identity.Permission;
 
 /**
  * Deletes all current revisions from a single branch.

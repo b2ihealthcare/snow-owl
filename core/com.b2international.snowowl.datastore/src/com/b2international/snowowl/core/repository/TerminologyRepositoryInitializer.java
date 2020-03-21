@@ -18,9 +18,9 @@ package com.b2international.snowowl.core.repository;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**

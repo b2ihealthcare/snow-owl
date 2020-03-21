@@ -20,8 +20,6 @@
 		<module>com.b2international.snowowl.core.rest.tests</module>
 		
 		<!-- Identity modules -->
-		<module>com.b2international.snowowl.identity</module>
-		<module>com.b2international.snowowl.identity.file</module>
 		<module>com.b2international.snowowl.identity.ldap</module>
 		
 		<!-- Core Modules -->

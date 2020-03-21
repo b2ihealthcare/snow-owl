@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.authorization;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.core.identity.Permission;
 
 /**
  * Represents an authorization context where a permission is required to get access.

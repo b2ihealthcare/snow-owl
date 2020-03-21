@@ -18,12 +18,18 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  net.jodah.typetools;bundle-version="0.4.8",
  org.eclipse.net4j;bundle-version="4.7.0",
  org.eclipse.net4j.jvm;bundle-version="4.1.600",
- org.eclipse.net4j.tcp;bundle-version="4.1.600"
+ org.eclipse.net4j.tcp;bundle-version="4.1.600",
+ de.svenkubiak.jBCrypt;bundle-version="0.4.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
-Export-Package: com.b2international.snowowl.core,
+Export-Package: com.auth0.jwt,
+ com.auth0.jwt.algorithms,
+ com.auth0.jwt.exceptions,
+ com.auth0.jwt.interfaces,
+ com.b2international.snowowl.core,
  com.b2international.snowowl.core.api,
  com.b2international.snowowl.core.api.component,
+ com.b2international.snowowl.core.attachments,
  com.b2international.snowowl.core.authorization,
  com.b2international.snowowl.core.branch,
  com.b2international.snowowl.core.config,
@@ -36,6 +42,8 @@ Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.exceptions,
  com.b2international.snowowl.core.ft,
  com.b2international.snowowl.core.id,
+ com.b2international.snowowl.core.identity,
+ com.b2international.snowowl.core.identity.request,
  com.b2international.snowowl.core.inject,
  com.b2international.snowowl.core.merge,
  com.b2international.snowowl.core.monitoring,
@@ -46,3 +54,5 @@ Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.uri,
  com.b2international.snowowl.core.validation
 Import-Package: org.slf4j;version="1.7.25"
+Bundle-ClassPath: .,
+ lib/java-jwt-3.8.1.jar
