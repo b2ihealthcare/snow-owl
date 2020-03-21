@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.compare;
+package com.b2international.snowowl.core.branch.compare;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +56,7 @@ public final class CompareResultsDsvExporter {
 	private final String baseBranch;
 	private final String compareBranch;
 	private final Path outputPath;
-	private final CompareResult compareResults;
+	private final BranchCompareResult compareResults;
 	private final BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction;
 	private final Function<IComponent, String> labelResolver;
 	private final BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent;
@@ -67,7 +67,7 @@ public final class CompareResultsDsvExporter {
 			String baseBranch,
 			String compareBranch,
 			Path outputPath,
-			CompareResult compareResults, 
+			BranchCompareResult compareResults, 
 			BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction,
 			Function<IComponent, String> labelResolver,
 			BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent,

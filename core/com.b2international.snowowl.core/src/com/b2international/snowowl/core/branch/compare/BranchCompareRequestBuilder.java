@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.compare;
+package com.b2international.snowowl.core.branch.compare;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -23,8 +23,8 @@ import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 /**
  * @since 5.9
  */
-public final class BranchCompareRequestBuilder extends BaseRequestBuilder<BranchCompareRequestBuilder, RepositoryContext, CompareResult>
-		implements RepositoryRequestBuilder<CompareResult> {
+public final class BranchCompareRequestBuilder extends BaseRequestBuilder<BranchCompareRequestBuilder, RepositoryContext, BranchCompareResult>
+		implements RepositoryRequestBuilder<BranchCompareResult> {
 
 	private String base;
 	private String compare;
@@ -46,7 +46,7 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 	}
 	
 	@Override
-	protected Request<RepositoryContext, CompareResult> doBuild() {
+	protected Request<RepositoryContext, BranchCompareResult> doBuild() {
 		final BranchCompareRequest req = new BranchCompareRequest();
 		req.setBaseBranch(base);
 		req.setCompareBranch(compare);

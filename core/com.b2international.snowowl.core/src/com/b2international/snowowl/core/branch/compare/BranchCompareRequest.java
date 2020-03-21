@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.compare;
+package com.b2international.snowowl.core.branch.compare;
 
 import javax.validation.constraints.Min;
 
@@ -39,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.9
  */
-final class BranchCompareRequest implements Request<RepositoryContext, CompareResult>, RepositoryAccessControl {
+final class BranchCompareRequest implements Request<RepositoryContext, BranchCompareResult>, RepositoryAccessControl {
 
 	@JsonProperty
 	private String base;
@@ -68,7 +68,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	}
 	
 	@Override
-	public CompareResult execute(RepositoryContext context) {
+	public BranchCompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
 		final Branch branchToCompare = RepositoryRequests.branching().prepareGet(compare).build().execute(context);
 		final long compareHeadTimestamp = branchToCompare.headTimestamp();
@@ -83,7 +83,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
-		final CompareResult.Builder result = CompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
+		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
 		
 		int totalNew = 0;
 		int totalChanged = 0;

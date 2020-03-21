@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.compare;
+package com.b2international.snowowl.core.branch.compare;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 5.9
  */
-public final class CompareResult implements Serializable {
+public final class BranchCompareResult implements Serializable {
 
 	public static final class Builder {
 		
@@ -76,8 +76,8 @@ public final class CompareResult implements Serializable {
 			return this;
 		}
 		
-		public CompareResult build() {
-			return new CompareResult(baseBranch, 
+		public BranchCompareResult build() {
+			return new BranchCompareResult(baseBranch, 
 					compareBranch, 
 					compareHeadTimestamp, 
 					newComponents.build(), 
@@ -101,7 +101,7 @@ public final class CompareResult implements Serializable {
 	private final int totalDeleted;
 	
 	@JsonCreator
-	private CompareResult(
+	private BranchCompareResult(
 			@JsonProperty("baseBranch") String baseBranch, 
 			@JsonProperty("compareBranch") String compareBranch, 
 			@JsonProperty("compareHeadTimestamp") long compareHeadTimestamp,
