@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescr
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
+import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.rpc.RpcUtil;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -67,6 +69,7 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
@@ -114,6 +117,18 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			env.services().registerService(MrcmImporter.class, RpcUtil.createProxy(env.container(), MrcmImporter.class));
 			env.services().registerService(MrcmExporter.class, RpcUtil.createProxy(env.container(), MrcmExporter.class));
 		}
+	}
+	
+	@Override
+	protected ContentAvailabilityInfoProvider getContentAvailabilityInfoProvider() {
+		return context -> {
+			return SnomedRequests.prepareSearchConcept()
+				.setLimit(0)
+				.filterById(Concepts.ROOT_CONCEPT)
+				.build()
+				.execute(context)
+				.getTotal() > 0;
+		};
 	}
 	
 	@Override

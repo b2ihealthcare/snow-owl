@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,20 @@
  */
 package com.b2international.snowowl.core.repository;
 
-import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.core.domain.BranchContext;
 
 /**
- * Represents a provider that supplies information about the underlying
- * content availability for a given terminology or content.
- *
+ * Represents a provider that supplies information about the underlying content availability for a given terminology or content.
  */
+@FunctionalInterface
 public interface ContentAvailabilityInfoProvider {
 
 	/**
-	 * Returns with {@code true} if the underlying content is available. 
-	 * Otherwise returns with {@code false}. 
-	 * @param bus 
+	 * Returns with {@code true} if the underlying content is available. Otherwise returns with {@code false}.
+	 * 
+	 * @param context
 	 * @return {@code true} if the content is available.
 	 */
-	boolean isAvailable(IEventBus bus);
-	
+	boolean isAvailable(BranchContext context);
+
 }
