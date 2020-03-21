@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.datastore.ContentAvailabilityInfoProvider;
+import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -35,11 +35,6 @@ public class SnomedAvailabilityInfoProvider implements ContentAvailabilityInfoPr
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
 				.execute(bus)
 				.getSync().getTotal() > 0;
-	}
-
-	@Override
-	public String getRepositoryUuid() {
-		return SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
 
 }

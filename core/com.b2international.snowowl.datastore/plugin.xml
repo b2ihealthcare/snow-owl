@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.4"?>
-<plugin>
-   <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
-   <extension-point id="validationIssueDetailExtension" name="validationIssueDetailExtension" schema="schema/validationDetailExtension.exsd"/>
-   <extension
-         point="org.eclipse.core.expressions.propertyTesters">
-   </extension>
-</plugin>

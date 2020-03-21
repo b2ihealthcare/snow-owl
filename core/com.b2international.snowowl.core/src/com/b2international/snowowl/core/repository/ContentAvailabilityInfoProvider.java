@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore;
+package com.b2international.snowowl.core.repository;
 
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -32,24 +31,5 @@ public interface ContentAvailabilityInfoProvider {
 	 * @return {@code true} if the content is available.
 	 */
 	boolean isAvailable(IEventBus bus);
-	
-	/**
-	 * Returns with the repository UUID for the current provider.
-	 * @return the repository UUID.
-	 */
-	String getRepositoryUuid();
-	
-
-	/**Null implementation.*/
-	ContentAvailabilityInfoProvider NULL_IMPL = new ContentAvailabilityInfoProvider() {
-		@Override
-		public boolean isAvailable(IEventBus bus) {
-			return false;
-		}
-		@Override
-		public String getRepositoryUuid() {
-			return TerminologyRegistry.UNSPECIFIED;
-		}
-	}; 
 	
 }

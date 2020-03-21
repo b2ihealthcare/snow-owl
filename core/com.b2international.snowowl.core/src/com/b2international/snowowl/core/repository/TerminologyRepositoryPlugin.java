@@ -71,6 +71,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(VersioningRequestBuilder.class, getVersioningRequestBuilder())
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
+					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.build(env);
 			RepositoryInfo status = repo.status();
 			if (status.health() == Health.GREEN) {
@@ -81,6 +82,8 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		}
 		afterRun(configuration, env);
 	}
+	
+	protected abstract ContentAvailabilityInfoProvider getContentAvailabilityInfoProvider();
 	
 	/**
 	 * An optional evaluator that can evaluate generic {@link ConceptSearchRequest concept search requests}. 
