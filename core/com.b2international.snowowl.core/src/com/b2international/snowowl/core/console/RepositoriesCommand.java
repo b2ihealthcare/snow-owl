@@ -20,7 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.repository.RepositorySearchRequestBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;

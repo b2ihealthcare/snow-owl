@@ -33,15 +33,15 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
+import com.b2international.snowowl.core.branch.review.ConceptChanges;
+import com.b2international.snowowl.core.branch.review.Review;
+import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
-import com.b2international.snowowl.datastore.review.ConceptChanges;
-import com.b2international.snowowl.datastore.review.Review;
 
 /**
  * @since 4.5

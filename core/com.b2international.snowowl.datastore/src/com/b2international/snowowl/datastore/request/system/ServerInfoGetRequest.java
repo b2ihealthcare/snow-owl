@@ -32,8 +32,8 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.Unprotected;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.datastore.DatastoreActivator;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 /**
  * @since 5.8

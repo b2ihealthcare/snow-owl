@@ -44,9 +44,9 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.locks.OperationLockException;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;

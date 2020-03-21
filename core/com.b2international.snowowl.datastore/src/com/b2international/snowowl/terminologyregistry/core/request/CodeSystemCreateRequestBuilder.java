@@ -18,7 +18,7 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
+import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
 
 /**
  * @since 4.7

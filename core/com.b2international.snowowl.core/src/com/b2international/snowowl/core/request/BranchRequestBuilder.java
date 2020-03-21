@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.request;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
- * @since 5.7
+ * Provides a default method for wrapping {@link BranchContext}-based requests
+ * into {@link AsyncRequest}s. The provided {@code BranchContext} does not
+ * include a service for accessing the repository index.
+ * 
+ * @since 7.0
+ * @param <R> - the return type
  */
-public interface RepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R>, AllowedHealthStates {
+public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
-	/**
-	 * Builds a locally or remotely executable {@link AsyncRequest asynchronous request}.
-	 * @param repositoryId
-	 * @return
-	 */
-	default AsyncRequest<R> build(String repositoryId) {
-		return new AsyncRequest<R>(
-			new RepositoryRequest<R>(repositoryId, 
+	default AsyncRequest<R> build(String repositoryId, String branch) {
+		return new AsyncRequest<>(
+			new RepositoryRequest<>(repositoryId,
 				new HealthCheckingRequest<>(
-					build(), 
+					new BranchRequest<>(branch, build()),
 					allowedHealthstates()
 				)
 			)
 		);
 	}
-
 }

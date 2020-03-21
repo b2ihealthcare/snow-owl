@@ -28,7 +28,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.reasoner.converter.RelationshipChangeConverter;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;

@@ -32,8 +32,8 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.repository.TerminologyComponents;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

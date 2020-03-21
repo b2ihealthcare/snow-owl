@@ -22,8 +22,8 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.version.CodeSystemVersionCreateRequestBuilder;
 
 /**

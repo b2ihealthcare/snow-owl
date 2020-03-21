@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -33,7 +33,6 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
 
 /**
  * @since 5.11

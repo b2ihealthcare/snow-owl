@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.datastore.request.DeleteRequest;
+import com.b2international.snowowl.core.request.DeleteRequest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;

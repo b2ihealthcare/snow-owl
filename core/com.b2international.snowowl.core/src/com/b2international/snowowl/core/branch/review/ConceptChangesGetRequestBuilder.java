@@ -18,8 +18,7 @@ package com.b2international.snowowl.core.branch.review;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
-import com.b2international.snowowl.datastore.review.ConceptChanges;
+import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 
 /**
  * @since 5.0

@@ -19,9 +19,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import org.slf4j.Logger;
 
+import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 

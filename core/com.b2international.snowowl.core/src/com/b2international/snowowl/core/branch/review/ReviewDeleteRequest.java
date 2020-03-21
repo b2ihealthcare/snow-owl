@@ -18,8 +18,6 @@ package com.b2international.snowowl.core.branch.review;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.datastore.events.ReviewRequest;
-import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
  * Sent when a user requests a review to be deleted.

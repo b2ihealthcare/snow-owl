@@ -36,9 +36,9 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.Merges;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 
 import io.swagger.annotations.Api;

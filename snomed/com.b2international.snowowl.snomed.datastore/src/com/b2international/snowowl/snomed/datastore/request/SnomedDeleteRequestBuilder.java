@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import com.b2international.snowowl.core.request.DeleteRequestBuilder;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 
 /**
  * @since 5.7

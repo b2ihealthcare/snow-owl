@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.branch;
 
-import com.b2international.snowowl.datastore.request.compare.BranchCompareRequestBuilder;
+import com.b2international.snowowl.core.branch.compare.BranchCompareRequestBuilder;
 
 /**
  * Central branching class with access to branching features.

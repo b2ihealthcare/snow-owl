@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.domain.BranchContextProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.google.common.collect.ImmutableList;
 
 /**

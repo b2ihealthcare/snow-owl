@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -33,7 +34,6 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 

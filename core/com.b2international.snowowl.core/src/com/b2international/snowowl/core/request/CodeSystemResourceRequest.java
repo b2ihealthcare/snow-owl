@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -22,7 +22,6 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVersionSearchRequestBuilder;

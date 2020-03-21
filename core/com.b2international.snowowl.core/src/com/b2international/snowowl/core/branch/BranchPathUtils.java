@@ -29,7 +29,7 @@ import com.b2international.commons.collections.BackwardListIterator;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;

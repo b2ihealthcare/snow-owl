@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionBranchPoint;
-import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
+import com.b2international.snowowl.core.repository.RepositoryCommitNotification;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 

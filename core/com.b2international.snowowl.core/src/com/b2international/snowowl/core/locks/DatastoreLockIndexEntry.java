@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.core.locks;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
-
-import static com.b2international.index.query.Expressions.*;
 
 import com.b2international.index.Doc;
 import com.b2international.index.mapping.DocumentMapping;

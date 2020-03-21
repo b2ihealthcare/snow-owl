@@ -38,9 +38,9 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.HealthCheckingRequest;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.HealthCheckingRequest;
+import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 

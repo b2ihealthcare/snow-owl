@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Iterables;

@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 

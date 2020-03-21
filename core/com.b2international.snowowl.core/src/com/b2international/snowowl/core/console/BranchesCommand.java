@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Longs;

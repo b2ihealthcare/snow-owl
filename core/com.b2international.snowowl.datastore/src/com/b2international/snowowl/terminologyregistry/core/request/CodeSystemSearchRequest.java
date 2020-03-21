@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 
 /**
  * @since 4.7

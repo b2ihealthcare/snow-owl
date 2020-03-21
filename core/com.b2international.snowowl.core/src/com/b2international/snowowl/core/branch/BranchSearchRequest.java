@@ -31,7 +31,7 @@ import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.google.common.collect.ImmutableList;
 
 /**

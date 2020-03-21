@@ -21,8 +21,8 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.UpdateRequest;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 /**
  * @since 4.7

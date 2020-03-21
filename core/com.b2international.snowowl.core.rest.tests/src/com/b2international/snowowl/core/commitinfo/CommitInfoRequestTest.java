@@ -27,7 +27,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.b2international.snowowl.test.commons.Services;

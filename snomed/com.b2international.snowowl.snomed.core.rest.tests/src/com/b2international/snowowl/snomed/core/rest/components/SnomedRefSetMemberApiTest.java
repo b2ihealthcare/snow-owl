@@ -49,7 +49,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
-import com.b2international.snowowl.datastore.request.CommitResult;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;

@@ -26,10 +26,10 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
-import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 
 /**
  * @since 5.7

@@ -33,7 +33,7 @@ import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.identity.JWTGenerator;
 import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;

@@ -19,7 +19,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 
 /**
  * @since 7.1

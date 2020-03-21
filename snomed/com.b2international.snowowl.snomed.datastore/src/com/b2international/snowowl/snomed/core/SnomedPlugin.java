@@ -33,10 +33,10 @@ import com.b2international.snowowl.core.repository.CompositeComponentDeletionPol
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.TransactionalRequest;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
-import com.b2international.snowowl.datastore.request.TransactionalRequest;
 import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.rpc.RpcUtil;

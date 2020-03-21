@@ -19,7 +19,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
-import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 
 /**
  * @since 7.5

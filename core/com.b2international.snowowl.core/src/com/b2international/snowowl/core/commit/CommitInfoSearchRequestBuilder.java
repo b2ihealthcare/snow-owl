@@ -23,9 +23,9 @@ import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.Op
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.TIME_STAMP_TO;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 
 /**
  * @since 5.2
