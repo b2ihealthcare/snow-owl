@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.oplock.impl;
+package com.b2international.snowowl.core.internal.locks;
 
 /**
  * Contains context descriptions used in {@link DatastoreLockContext}s.

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.oplock;
+package com.b2international.snowowl.core.locks;
 
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 
 /**
  * Represents a lock target listener that receives notifications of an appearing or disappearing {@link IOperationLockTarget} in

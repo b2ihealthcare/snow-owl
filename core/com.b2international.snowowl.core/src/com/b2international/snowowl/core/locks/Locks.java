@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.locks;
 
-import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.ROOT ;
+import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.ROOT;
 
 import java.util.Map;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

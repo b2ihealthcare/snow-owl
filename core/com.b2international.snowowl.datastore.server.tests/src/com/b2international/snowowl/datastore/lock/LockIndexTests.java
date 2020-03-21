@@ -30,9 +30,9 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.util.Reflections;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry;
 import com.b2international.snowowl.core.repository.JsonSupport;
-import com.b2international.snowowl.datastore.oplock.DatastoreLockIndexEntry;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

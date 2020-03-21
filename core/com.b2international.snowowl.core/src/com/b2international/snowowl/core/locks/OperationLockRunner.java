@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.oplock;
+package com.b2international.snowowl.core.locks;
 
 import java.lang.reflect.InvocationTargetException;
 
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 

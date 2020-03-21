@@ -30,14 +30,10 @@ import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.oplock.DatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.OperationLockInfo;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 

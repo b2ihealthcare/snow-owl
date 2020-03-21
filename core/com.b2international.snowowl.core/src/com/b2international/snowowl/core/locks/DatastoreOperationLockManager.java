@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.oplock;
+package com.b2international.snowowl.core.locks;
 
 import java.text.MessageFormat;
 import java.util.BitSet;
@@ -36,11 +36,11 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.datastore.oplock.DatastoreLockIndexEntry.Builder;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
+import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
+import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry.Builder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;

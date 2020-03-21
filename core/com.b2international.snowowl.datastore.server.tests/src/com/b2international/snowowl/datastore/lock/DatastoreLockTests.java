@@ -23,17 +23,17 @@ import org.junit.Test;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
+import com.b2international.snowowl.core.internal.locks.Slf4jOperationLockTargetListener;
+import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry;
+import com.b2international.snowowl.core.locks.DatastoreOperationLockManager;
+import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.core.locks.OperationLock;
+import com.b2international.snowowl.core.locks.OperationLockException;
+import com.b2international.snowowl.core.locks.OperationLockInfo;
 import com.b2international.snowowl.core.repository.JsonSupport;
-import com.b2international.snowowl.datastore.oplock.DatastoreLockIndexEntry;
-import com.b2international.snowowl.datastore.oplock.DatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.OperationLock;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.OperationLockInfo;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
-import com.b2international.snowowl.datastore.oplock.impl.Slf4jOperationLockTargetListener;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

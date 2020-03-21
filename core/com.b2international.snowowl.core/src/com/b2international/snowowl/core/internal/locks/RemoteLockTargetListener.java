@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.oplock.impl;
+package com.b2international.snowowl.core.internal.locks;
 
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.datastore.oplock.IOperationLockTargetListener;
+import com.b2international.snowowl.core.locks.IOperationLockTargetListener;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.google.common.collect.HashMultimap;

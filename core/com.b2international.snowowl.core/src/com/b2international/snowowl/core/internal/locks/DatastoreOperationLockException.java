@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.oplock.impl;
+package com.b2international.snowowl.core.internal.locks;
 
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
+import com.b2international.snowowl.core.locks.OperationLockException;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;

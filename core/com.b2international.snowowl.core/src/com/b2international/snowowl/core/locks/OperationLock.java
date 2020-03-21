@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.oplock;
+package com.b2international.snowowl.core.locks;
 
 import java.text.MessageFormat;
 
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockTarget;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 
 /**
  * Represents a reentrant lock that can be acquired and released in a balanced fashion multiple times by the same context.

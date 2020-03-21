@@ -21,9 +21,10 @@ import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.BranchMergeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.locks.Locks;
+import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.google.common.base.Strings;
 
 /**
