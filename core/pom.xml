@@ -26,7 +26,6 @@
 		<module>com.b2international.snowowl.core</module>
 		<module>com.b2international.snowowl.core.tests</module>
 		<module>com.b2international.snowowl.datastore</module>
-		<module>com.b2international.snowowl.datastore.server.tests</module>
 		
 		<!-- Product modules -->
 		<module>com.b2international.snowowl.server.product</module>
