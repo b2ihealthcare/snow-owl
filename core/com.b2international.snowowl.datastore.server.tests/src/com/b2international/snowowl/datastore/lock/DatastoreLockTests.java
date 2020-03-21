@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.internal.locks.Slf4jOperationLockTargetListener;
 import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry;
 import com.b2international.snowowl.core.locks.DatastoreOperationLockManager;
-import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.locks.OperationLock;
 import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.locks.OperationLockInfo;

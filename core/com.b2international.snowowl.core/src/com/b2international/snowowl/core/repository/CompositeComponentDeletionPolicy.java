@@ -20,7 +20,6 @@ import static java.util.Collections.singletonMap;
 
 import java.util.Map;
 
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.google.common.collect.ImmutableMap;
 
 /**

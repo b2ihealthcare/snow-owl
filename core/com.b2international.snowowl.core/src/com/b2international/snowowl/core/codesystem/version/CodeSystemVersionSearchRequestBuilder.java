@@ -38,7 +38,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 	private Date effectiveDate;
 	private String parentBranchPath;
 
-	CodeSystemVersionSearchRequestBuilder() {
+	public CodeSystemVersionSearchRequestBuilder() {
 		super();
 	}
 

@@ -66,8 +66,6 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.datastore.exception.RepositoryLockException;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
@@ -261,8 +259,6 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			commit = staging.commit(null, timestamp, userId, commitComment);
 			log().info("Changes have been successfully persisted to {}@{}.", branchPath(), timestamp);
 			return commit.getTimestamp();
-		} catch (RepositoryLockException e) {
-			throw new LockedException(e.getMessage());
 		} catch (final IndexException e) {
 			Throwable rootCause = Throwables.getRootCause(e);
 			if (rootCause instanceof CycleDetectedException) {
@@ -338,7 +334,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			locks.lock(lockContext, 1000L, lockTarget);
 		} catch (final DatastoreOperationLockException e) {
 			final DatastoreLockContext lockOwnerContext = e.getContext(lockTarget);
-			throw new RepositoryLockException(MessageFormat.format("Write access to {0} was denied because {1} is {2}. Please try again later.", 
+			throw new LockedException(MessageFormat.format("Write access to {0} was denied because {1} is {2}. Please try again later.", 
 					lockTarget,
 					lockOwnerContext.getUserId(), 
 					lockOwnerContext.getDescription()));

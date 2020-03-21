@@ -23,7 +23,6 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.Discriminator;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.ElementDefinition;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.Slicing;

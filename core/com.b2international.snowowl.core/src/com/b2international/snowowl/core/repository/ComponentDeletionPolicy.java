@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.repository;
 
 import com.b2international.commons.exceptions.ConflictException;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 
 /**
  * @since 7.0

@@ -22,7 +22,6 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
 
 /**
  * A request builder that wraps existing {@link Request} instances to run them as jobs.

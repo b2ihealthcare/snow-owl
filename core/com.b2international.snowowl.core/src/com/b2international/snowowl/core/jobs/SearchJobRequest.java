@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.core.jobs;
 
-import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Expressions.user;
-import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Fields.USER;
+import static com.b2international.snowowl.core.jobs.RemoteJobEntry.Expressions.user;
+import static com.b2international.snowowl.core.jobs.RemoteJobEntry.Fields.USER;
 
 import java.util.Collections;
 
@@ -27,9 +27,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 
 /**
  * @since 5.7

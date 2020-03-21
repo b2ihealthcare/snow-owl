@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.google.common.base.Strings;
 
 import picocli.CommandLine.HelpCommand;

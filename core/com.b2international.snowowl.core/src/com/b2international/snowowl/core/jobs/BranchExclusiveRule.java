@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
 
 /**
  * 

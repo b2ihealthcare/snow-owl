@@ -16,10 +16,10 @@
 package com.b2international.snowowl.core.validation;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleRequests;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListRequests;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 
 /**
  * @since 6.0

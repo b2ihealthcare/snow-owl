@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
@@ -23,8 +23,8 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.google.common.collect.ImmutableList;
 import com.b2international.snowowl.core.request.SortParser;
+import com.google.common.collect.ImmutableList;
 
 public class SortParserTest {
 

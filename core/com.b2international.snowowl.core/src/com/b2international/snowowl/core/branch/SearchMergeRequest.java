@@ -26,14 +26,14 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
+import com.b2international.snowowl.core.jobs.RemoteJobTracker;
+import com.b2international.snowowl.core.jobs.RemoteJobs;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.Merge.Builder;
 import com.b2international.snowowl.core.merge.Merge.Status;
 import com.b2international.snowowl.core.merge.Merges;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 

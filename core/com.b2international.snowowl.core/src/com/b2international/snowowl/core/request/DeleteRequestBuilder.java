@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.core.repository.RevisionDocument;
 
 /**
  * <i>Builder</i> class to build a generic requests responsible for deleting a SNOMED CT component. This class should be instantiated from the

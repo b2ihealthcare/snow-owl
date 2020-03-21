@@ -18,8 +18,6 @@ package com.b2international.snowowl.core.jobs;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-
 /**
  * The central class for managing and manipulating long running operations aka {@link RemoteJobEntry}s.
  * 

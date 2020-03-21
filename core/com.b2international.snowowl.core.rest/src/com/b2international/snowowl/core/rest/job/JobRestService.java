@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
+import com.b2international.snowowl.core.jobs.RemoteJobs;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

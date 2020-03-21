@@ -17,11 +17,11 @@ package com.b2international.snowowl.core.repository;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
  * Ensures that a particular terminology repository is in the expected state at
