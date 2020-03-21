@@ -16,54 +16,30 @@
 package com.b2international.snowowl.core.branch;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.options.Metadata;
-import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 
-
 /**
  * @since 4.1
  */
-public final class CreateBranchRequest extends BranchRequest<String> implements RepositoryAccessControl {
-
-	private final String parent;
-	private final String name;
-	private final Metadata metadata;
-
-	public CreateBranchRequest(final String parent, final String name, final Metadata metadata) {
-		super(path(parent, name));
-		this.parent = parent;
-		this.name = name;
-		this.metadata = nullToEmpty(metadata);
-	}
-
-	private static Metadata nullToEmpty(Metadata metadata) {
-		return metadata == null ? new MetadataImpl() : metadata;
-	}
-
-	private static String path(final String parent, final String name) {
-		return parent + Branch.SEPARATOR + name;
-	}
-
-	public String getParent() {
-		return parent;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Metadata getMetadata() {
-		return metadata;
+public final class BranchReopenRequest extends BranchBaseRequest<Boolean> implements RepositoryAccessControl {
+	
+	public BranchReopenRequest(final String path) {
+		super(path);
 	}
 	
 	@Override
-	public String execute(RepositoryContext context) {
+	public Boolean execute(RepositoryContext context) {
+		final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
+		final RevisionBranch branch = branching.getBranch(getBranchPath());
+		
 		try {
-			return context.service(BaseRevisionBranching.class).createBranch(getParent(), getName(), getMetadata());
+			final RevisionBranch parentBranch = branching.getBranch(branch.getParentPath());
+			branching.reopen(parentBranch, branch.getName(), branch.metadata());
+			return true;
 		} catch (NotFoundException e) {
 			// if parent not found, convert it to BadRequestException
 			throw e.toBadRequestException();

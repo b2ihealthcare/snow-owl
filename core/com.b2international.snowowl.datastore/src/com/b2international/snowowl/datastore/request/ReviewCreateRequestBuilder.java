@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.branch.CreateReviewRequest;
+import com.b2international.snowowl.core.branch.ReviewCreateRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -43,7 +43,7 @@ public final class ReviewCreateRequestBuilder extends BaseRequestBuilder<ReviewC
 
 	@Override
 	protected Request<RepositoryContext, Review> doBuild() {
-		return new CreateReviewRequest(sourceBranch, targetBranch);
+		return new ReviewCreateRequest(sourceBranch, targetBranch);
 	}
 
 }

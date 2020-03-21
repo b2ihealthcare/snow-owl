@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.branch.DeleteBranchRequest;
+import com.b2international.snowowl.core.branch.BranchDeleteRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -33,7 +33,7 @@ public final class BranchDeleteRequestBuilder extends BaseRequestBuilder<BranchD
 	
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
-		return new DeleteBranchRequest(path);
+		return new BranchDeleteRequest(path);
 	}
 
 }

@@ -19,28 +19,28 @@ import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.datastore.events.ReviewRequest;
+import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
- * Sent when a user requests a review to be deleted.
+ * Sent when a user requests to read the details of a terminology review with the specified identifier.
  * 
  * @since 4.2
  */
-public final class DeleteReviewRequest extends ReviewRequest<Boolean> implements RepositoryAccessControl {
+public final class ReviewGetRequest extends ReviewRequest<Review> implements RepositoryAccessControl {
 
-	public DeleteReviewRequest(final String reviewId) {
+	public ReviewGetRequest(final String reviewId) {
 		super(reviewId);
 	}
 	
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		context.service(ReviewManager.class).delete(getReviewId());
-		return Boolean.TRUE;
+	public Review execute(RepositoryContext context) {
+		return context.service(ReviewManager.class).getReview(getReviewId());
 	}
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.BROWSE;
 	}
 	
 }

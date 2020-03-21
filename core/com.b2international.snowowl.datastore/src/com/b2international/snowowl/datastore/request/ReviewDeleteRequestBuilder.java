@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.branch.DeleteReviewRequest;
+import com.b2international.snowowl.core.branch.ReviewDeleteRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -33,7 +33,7 @@ public final class ReviewDeleteRequestBuilder extends BaseRequestBuilder<ReviewD
 	
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
-		return new DeleteReviewRequest(reviewId);
+		return new ReviewDeleteRequest(reviewId);
 	}
 
 }

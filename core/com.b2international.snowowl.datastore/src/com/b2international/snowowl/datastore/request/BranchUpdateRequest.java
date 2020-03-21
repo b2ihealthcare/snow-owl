@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.request;
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
-import com.b2international.snowowl.core.branch.BranchRequest;
+import com.b2international.snowowl.core.branch.BranchBaseRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.0
  */
-public final class BranchUpdateRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
+public final class BranchUpdateRequest extends BranchBaseRequest<Boolean> implements RepositoryAccessControl {
 
 	@JsonProperty
 	private Metadata metadata;

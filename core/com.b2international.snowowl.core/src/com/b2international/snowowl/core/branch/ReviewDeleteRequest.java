@@ -15,35 +15,27 @@
  */
 package com.b2international.snowowl.core.branch;
 
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.revision.BaseRevisionBranching;
-import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.datastore.events.ReviewRequest;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
- * @since 4.1
+ * Sent when a user requests a review to be deleted.
+ * 
+ * @since 4.2
  */
-public final class ReopenBranchRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
-	
-	public ReopenBranchRequest(final String path) {
-		super(path);
+public final class ReviewDeleteRequest extends ReviewRequest<Boolean> implements RepositoryAccessControl {
+
+	public ReviewDeleteRequest(final String reviewId) {
+		super(reviewId);
 	}
 	
 	@Override
 	public Boolean execute(RepositoryContext context) {
-		final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
-		final RevisionBranch branch = branching.getBranch(getBranchPath());
-		
-		try {
-			final RevisionBranch parentBranch = branching.getBranch(branch.getParentPath());
-			branching.reopen(parentBranch, branch.getName(), branch.metadata());
-			return true;
-		} catch (NotFoundException e) {
-			// if parent not found, convert it to BadRequestException
-			throw e.toBadRequestException();
-		}
+		context.service(ReviewManager.class).delete(getReviewId());
+		return Boolean.TRUE;
 	}
 	
 	@Override

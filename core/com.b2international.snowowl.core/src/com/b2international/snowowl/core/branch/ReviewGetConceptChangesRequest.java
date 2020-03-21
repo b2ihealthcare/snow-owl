@@ -15,29 +15,26 @@
  */
 package com.b2international.snowowl.core.branch;
 
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
- * @since 4.1
+ * Sent when a user requests to read change set of a terminology review with the specified identifier.
+ * 
+ * @since 4.2
  */
-public final class DeleteBranchRequest extends BranchRequest<Boolean> implements RepositoryAccessControl {
+public final class ReviewGetConceptChangesRequest extends ReviewRequest<ConceptChanges> implements RepositoryAccessControl {
 
-	public DeleteBranchRequest(final String branchPath) {
-		super(branchPath);
+	public ReviewGetConceptChangesRequest(final String reviewId) {
+		super(reviewId);
 	}
 
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		try {
-			context.service(BaseRevisionBranching.class).delete(getBranchPath());
-		} catch (NotFoundException e) {
-			// ignore
-		}
-		return true;
+	public ConceptChanges execute(RepositoryContext context) {
+		return context.service(ReviewManager.class).getConceptChanges(getReviewId());
 	}
 	
 	@Override

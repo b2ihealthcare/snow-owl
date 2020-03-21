@@ -30,12 +30,12 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
  * 
  * @since 4.2
  */
-public final class CreateReviewRequest implements Request<RepositoryContext, Review>, RepositoryAccessControl {
+public final class ReviewCreateRequest implements Request<RepositoryContext, Review>, RepositoryAccessControl {
 
 	private final String sourcePath;
 	private final String targetPath;
 
-	public CreateReviewRequest(final String sourcePath, final String targetPath) {
+	public ReviewCreateRequest(final String sourcePath, final String targetPath) {
 		this.sourcePath = sourcePath;
 		this.targetPath = targetPath;
 	}

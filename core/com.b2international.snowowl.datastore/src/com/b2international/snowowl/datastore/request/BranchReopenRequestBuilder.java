@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.branch.ReopenBranchRequest;
+import com.b2international.snowowl.core.branch.BranchReopenRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -33,7 +33,7 @@ public final class BranchReopenRequestBuilder extends BaseRequestBuilder<BranchR
 	
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
-		return new ReopenBranchRequest(path);
+		return new BranchReopenRequest(path);
 	}
 
 }

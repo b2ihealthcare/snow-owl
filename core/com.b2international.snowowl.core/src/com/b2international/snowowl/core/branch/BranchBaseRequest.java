@@ -24,11 +24,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.1
  */
-public abstract class BranchRequest<B> implements Request<RepositoryContext, B> {
+public abstract class BranchBaseRequest<B> implements Request<RepositoryContext, B> {
 
 	private final String branchPath;
 
-	public BranchRequest(final String branchPath) {
+	public BranchBaseRequest(final String branchPath) {
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
 
