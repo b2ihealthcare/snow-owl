@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
+import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.snomed.core.domain.constraint.*;
 import com.b2international.snowowl.snomed.datastore.index.constraint.*;
 

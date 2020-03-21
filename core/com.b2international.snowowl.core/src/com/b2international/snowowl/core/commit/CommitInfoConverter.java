@@ -31,7 +31,7 @@ import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.CommitDetail;
 import com.b2international.snowowl.core.commit.CommitInfo.Builder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
+import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.google.common.base.Strings;
 
 /**
