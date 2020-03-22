@@ -172,6 +172,22 @@ public abstract class BranchPathUtils {
 		return true;
 	}
 	
+	/**
+	 * Returns <code>true</code> if the given ancestorBranch is an ancestor of the given descendantBranch, <code>false</code> if not.
+	 * 
+	 * @param ancestorBranch
+	 * @param descendantBranch
+	 * @return
+	 */
+	public static boolean isDescendantOf(final IBranchPath ancestorBranch, final IBranchPath descendantBranch) {
+		for (final Iterator<IBranchPath> itr = BranchPathUtils.bottomToTopIterator(descendantBranch); itr.hasNext(); /* empty */) {
+			if (itr.next().equals(ancestorBranch)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private static IBranchPath getOrCache(final IBranchPath branchPath) {
 		return BRANCH_PATH_INTERNER.intern(branchPath);
 	}

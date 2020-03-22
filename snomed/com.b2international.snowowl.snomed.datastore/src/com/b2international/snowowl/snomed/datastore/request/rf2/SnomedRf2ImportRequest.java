@@ -39,13 +39,14 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
@@ -116,7 +117,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	}
 
 	private void validate(BranchContext context) {
-		final boolean contentAvailable = context.isContentAvailable();
+		final boolean contentAvailable = context.service(ContentAvailabilityInfoProvider.class).isAvailable(context);
 		final boolean isMain = context.isMain();
 		
 		if (contentAvailable && Rf2ReleaseType.FULL.equals(type) && isMain) {
@@ -142,7 +143,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	}
 
 	Rf2ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
-		final String codeSystem = context.provider(CodeSystem.class).get().getShortName();
+		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branchPath()).getShortName();
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		final Rf2ImportResponse response = new Rf2ImportResponse();
 		

@@ -22,11 +22,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.Hooks;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -40,6 +44,7 @@ import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 7.0
@@ -72,6 +77,21 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
+					.bind(RepositoryCodeSystemProvider.class, (referenceBranch) -> {
+						final IBranchPath referencePath = BranchPathUtils.createPath(referenceBranch);
+						return CodeSystemRequests.getAllCodeSystems(env)
+							.stream()
+							.filter(cs -> getId().equals(cs.getTerminologyComponentId()))
+							// sort by longest working branch path
+							.sorted((cs1, cs2) -> -1 * Ints.compare(cs1.getBranchPath().length(), cs2.getBranchPath().length()))
+							// check whether the working branch path is either the parent of the reference branch or is the reference branch
+							.filter(cs -> {
+								final IBranchPath codeSystemPath = BranchPathUtils.createPath(cs.getBranchPath());
+								return BranchPathUtils.isDescendantOf(codeSystemPath, referencePath);
+							})
+							.findFirst()
+							.orElseThrow(() -> new BadRequestException("No relative CodeSystem has been found for reference branch '%s'.", referenceBranch));
+					})
 					.build(env);
 			RepositoryInfo status = repo.status();
 			if (status.health() == Health.GREEN) {
@@ -82,6 +102,8 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		}
 		afterRun(configuration, env);
 	}
+	
+	
 	
 	protected abstract ContentAvailabilityInfoProvider getContentAvailabilityInfoProvider();
 	

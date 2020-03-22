@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.domain;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
-import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 
 /**
  * @since 4.5
@@ -43,13 +42,6 @@ public interface BranchContext extends RepositoryContext {
 	@Override
 	default Builder<? extends BranchContext> inject() {
 		return new DelegatingContext.Builder<BranchContext>(BranchContext.class, this);
-	}
-
-	/**
-	 * @return whether this branch has any content on it or not.
-	 */
-	default boolean isContentAvailable() {
-		return service(ContentAvailabilityInfoProvider.class).isAvailable(this);
 	}
 
 	/**

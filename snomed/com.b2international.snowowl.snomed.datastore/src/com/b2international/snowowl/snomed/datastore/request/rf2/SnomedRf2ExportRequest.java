@@ -38,14 +38,11 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.FileUtils;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -58,11 +55,12 @@ import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -97,7 +95,6 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
-import com.google.common.primitives.Ints;
 
 /**
  * @since 5.7
@@ -236,7 +233,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		final long exportStartTime = Instant.now().toEpochMilli();
 
 		// Step 1: check if the export reference branch is a working branch path descendant
-		final CodeSystemEntry referenceCodeSystem = validateCodeSystem(context);
+		final CodeSystemEntry referenceCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(referenceBranch);
 
 		// Step 2: retrieve code system versions that are visible from the reference branch
 		final TreeSet<CodeSystemVersionEntry> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
@@ -360,22 +357,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		}
 		
 		return branchToLanguageCodes;
-	}
-
-	private CodeSystemEntry validateCodeSystem(final BranchContext context) {
-		final IBranchPath referencePath = context.branch().branchPath();
-		return CodeSystemRequests.getAllCodeSystems(context)
-			.stream()
-			.filter(cs -> SnomedTerminologyComponentConstants.TERMINOLOGY_ID.equals(cs.getTerminologyComponentId()))
-			// sort by longest working branch path
-			.sorted((cs1, cs2) -> -1 * Ints.compare(cs1.getBranchPath().length(), cs2.getBranchPath().length()))
-			// check whether the working branch path is either the parent of the reference branch or is the reference branch
-			.filter(cs -> {
-				final IBranchPath codeSystemPath = BranchPathUtils.createPath(cs.getBranchPath());
-				return isDescendantOf(codeSystemPath, referencePath);
-			})
-			.findFirst()
-			.orElseThrow(() -> new BadRequestException("No relative SNOMED CT CodeSystem has been found for reference branch '%s'.", context.branchPath()));
 	}
 
 	private List<String> computeBranchesToExport(final String referenceBranch, final TreeSet<CodeSystemVersionEntry> versionsToExport) {
@@ -585,7 +566,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		}
 
 		// Otherwise, collect applicable versions using this code system's working path
-		final CodeSystemEntry extensionEnty = getCodeSystem(context, codeSystemEntry.getExtensionOf());
+		final CodeSystemEntry extensionEnty = CodeSystemRequests.getCodeSystem(context, codeSystemEntry.getExtensionOf());
 		collectExportableCodeSystemVersions(context, versionsToExport, extensionEnty, codeSystemEntry.getBranchPath());
 	}
 
@@ -997,16 +978,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		}
 	}
 
-	private static boolean isDescendantOf(final IBranchPath ancestorBranch, final IBranchPath descendantBranch) {
-		for (final Iterator<IBranchPath> itr = BranchPathUtils.bottomToTopIterator(descendantBranch); itr.hasNext(); /* empty */) {
-			if (itr.next().equals(ancestorBranch)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private static long getCutoffBaseTimestamp(final RepositoryContext context, final Branch cutoffBranch, final String versionParentPath) {
 		if (cutoffBranch.path().equals(versionParentPath)) {
 			// We are on the working branch of the code system, all versions are visible for export
@@ -1018,16 +989,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 			// Two or more levels down from a working branch, look "upwards"
 			return getCutoffBaseTimestamp(context, getBranch(context, cutoffBranch.parentPath()), versionParentPath);
 		}
-	}
-
-	private static CodeSystemEntry getCodeSystem(final RepositoryContext context, final String shortName) {
-		return CodeSystemRequests.prepareSearchCodeSystem()
-				.one()
-				.filterById(shortName)
-				.build()
-				.execute(context)
-				.first()
-				.orElse(null);
 	}
 
 	private static Collection<CodeSystemVersionEntry> getCodeSystemVersions(final RepositoryContext context, final String shortName) {
