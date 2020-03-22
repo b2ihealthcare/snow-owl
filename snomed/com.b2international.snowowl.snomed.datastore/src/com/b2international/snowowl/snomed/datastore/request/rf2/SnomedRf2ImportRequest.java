@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Form
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -75,11 +76,14 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	private static final String TXT_EXT = ".txt";
 	
 	@NotNull
+	@JsonProperty
 	private final UUID rf2ArchiveId;
 	
 	@NotNull
+	@JsonProperty
 	private Rf2ReleaseType type;
 	
+	@JsonProperty
 	private boolean createVersions = true;
 
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
