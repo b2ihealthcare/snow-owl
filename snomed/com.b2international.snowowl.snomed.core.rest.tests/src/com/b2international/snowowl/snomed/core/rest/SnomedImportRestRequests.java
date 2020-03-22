@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.google.common.collect.ImmutableSet;
 
-import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -34,21 +34,14 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedImportRestRequests {
 
-	private static Set<String> FINISH_STATES = ImmutableSet.of(ImportStatus.COMPLETED.name(), ImportStatus.FAILED.name());
+	private static Set<String> FINISH_STATES = ImmutableSet.of(RemoteJobState.FINISHED.name(), RemoteJobState.FAILED.name());
 
-	public static ValidatableResponse uploadImportFile(String importId, Class<?> testClass, String importFile) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.multiPart(PlatformUtil.toAbsolutePath(testClass, importFile).toFile())
-				.post("/imports/{id}/archive", importId)
-				.then();
-	}
-
-	public static ValidatableResponse waitForImportJob(String id) {
+	public static ValidatableResponse waitForImportJob(IBranchPath branchPath, String id) {
 
 		long endTime = System.currentTimeMillis() + SnomedApiTestConstants.POLL_TIMEOUT;
 		long currentTime;
 		ValidatableResponse response = null;
-		String mergeStatus = null;
+		String importStatus = null;
 
 		do {
 
@@ -58,33 +51,33 @@ public abstract class SnomedImportRestRequests {
 				fail(e.toString());
 			}
 
-			response = getImport(id).statusCode(200);
-			mergeStatus = response.extract().path("status");
+			response = getImport(branchPath, id).statusCode(200);
+			importStatus = response.extract().path("status");
 			currentTime = System.currentTimeMillis();
 
-		} while (!FINISH_STATES.contains(mergeStatus) && currentTime < endTime);
+		} while (!FINISH_STATES.contains(importStatus) && currentTime < endTime);
 
 		assertNotNull(response);
 		return response;
 	}
 
-	public static ValidatableResponse getImport(String importId) {
+	public static ValidatableResponse getImport(IBranchPath branchPath, String importId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get("/imports/{id}", importId)
+				.get("/{path}/import/{id}", branchPath.toString(), importId)
 				.then();
 	}
 
-	public static ValidatableResponse createImport(Map<?, ?> importConfiguration) {
+	public static ValidatableResponse doImport(final IBranchPath branchPath, Map<String, ?> configuration, Class<?> testClass, String importFile) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.contentType(ContentType.JSON)
-				.body(importConfiguration)
-				.post("/imports")
+				.multiPart(PlatformUtil.toAbsolutePath(testClass, importFile).toFile())
+				.queryParams(configuration)
+				.post("/{path}/import", branchPath.toString())
 				.then();
 	}
 
-	public static ValidatableResponse deleteImport(String importId) {
+	public static ValidatableResponse deleteImport(IBranchPath branchPath, String importId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.delete("/imports/{id}", importId)
+				.delete("/{path}/import/{id}", branchPath, importId)
 				.then();
 	}
 

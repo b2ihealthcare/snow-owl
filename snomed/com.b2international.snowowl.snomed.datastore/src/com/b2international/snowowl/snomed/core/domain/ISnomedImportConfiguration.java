@@ -64,7 +64,6 @@ public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 
 	/**
 	 * Enumerates possible values for the state of an RF2 import process.
-	 * @deprecated - will be remove along with {@link ISnomedImportConfiguration} in 7.6 
 	 */
 	static enum ImportStatus {
 
