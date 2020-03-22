@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
@@ -52,10 +53,8 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.hash.Hashing;
 import com.google.common.net.HttpHeaders;
 
 import io.swagger.annotations.Api;
@@ -86,7 +85,6 @@ public class ValidationRestService extends AbstractRestService {
 	})
 	@GetMapping
 	public @ResponseBody Promise<RemoteJobs> getAllValidationRuns() {
-		
 		return JobRequests.prepareSearch()
 			.all()
 			.buildAsync()
@@ -94,7 +92,7 @@ public class ValidationRestService extends AbstractRestService {
 			.then(jobs -> {
 				final List<RemoteJobEntry> validationJobs = jobs.stream()
 						.filter(ValidationRequests::isValidationJob)
-						.map(entry -> RemoteJobEntry.from(entry).id(getHash(entry.getId())).build())
+						.map(entry -> RemoteJobEntry.from(entry).id(IDs.sha1(entry.getId())).build())
 						.collect(Collectors.toList());
 				return new RemoteJobs(validationJobs, null, jobs.getLimit(), validationJobs.size());
 			});
@@ -170,9 +168,8 @@ public class ValidationRestService extends AbstractRestService {
 			.buildAsync()
 			.execute(getBus())
 			.getSync();
-		final String encodedId = Hashing.sha1().hashString(uniqueJobId, Charsets.UTF_8).toString().substring(0, 7);
 		
-		return ResponseEntity.created(getResourceLocationURI(encodedId)).build();
+		return ResponseEntity.created(getResourceLocationURI(IDs.sha1(uniqueJobId))).build();
 	}
 	
 	@ApiOperation(
@@ -311,24 +308,17 @@ public class ValidationRestService extends AbstractRestService {
 			.all()
 			.buildAsync()
 			.execute(getBus())
-			.getSync()
+			.getSync(1, TimeUnit.MINUTES)
 			.stream()
 			.filter(ValidationRequests::isValidationJob)
-			.filter(validationJob -> {
-				return validationId.equals(getHash(validationJob.getId()));
-			}).map(validationJob -> RemoteJobEntry.from(validationJob).id(validationId).build())
+			.filter(validationJob -> validationId.equals(IDs.sha1(validationJob.getId())))
+			.map(validationJob -> RemoteJobEntry.from(validationJob).id(validationId).build())
 			.findFirst().orElse(null);
 		
 	}
 	
 	private String getBranchFromJob(final RemoteJobEntry validationJob) {
-		final Map<String, Object> jobParams = validationJob.getParameters(objectMapper);
-		final String branchPath = (String) jobParams.get("branchPath");
-		
-		return branchPath;
+		return (String) validationJob.getParameters(objectMapper).get("branchPath");
 	}
 	
-	private String getHash(String validationId) {
-		return Hashing.sha1().hashString(validationId, Charsets.UTF_8).toString().substring(0, 7);
-	}
 }
