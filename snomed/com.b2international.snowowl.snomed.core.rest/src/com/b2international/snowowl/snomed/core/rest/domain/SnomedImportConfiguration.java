@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
 /**
- * Implementation of a {@link ISnomedImportConfiguration SNOMED&nbsp;CT import configuration}.
+ * Implementation of a {@lnk ISnomedImportConfiguration SNOMED&nbsp;CT import configuration}.
+ * @deprecated - refactored and redesigned - see {@link SnomedRf2ImportConfiguration} - to eliminate the necessity of a memory stored object {@link ISnomedImportConfiguration}
  */
 public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Date;
 
 /**
  * Represents the configuration object used by a SNOMED CT RF2 Importer implementation.
+ * @deprecated - refactored and redesigned - see {@link SnomedRf2ImportConfiguration} - to eliminate the necessity of a memory stored object {@link ISnomedImportConfiguration}
  */
 public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 
@@ -62,7 +63,8 @@ public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 	String getCodeSystemShortName();
 
 	/**
-	 * Enumerates possible values for the state of an RF2 import process. 
+	 * Enumerates possible values for the state of an RF2 import process.
+	 * @deprecated - will be remove along with {@link ISnomedImportConfiguration} in 7.6 
 	 */
 	static enum ImportStatus {
 
