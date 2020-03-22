@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.validation.issue;
 
 import java.util.Collection;
 
-import com.b2international.commons.extension.Extensions;
+import com.b2international.commons.extension.ClassPathScanner;
 
 /**
  * @since 6.4
@@ -26,12 +26,10 @@ public enum ValidationIssueDetailExtensionProvider {
 
 	INSTANCE;
 	
-	private static final String VALIDATION_DETAIL_EXTENSION_ID = "com.b2international.snowowl.datastore.validationIssueDetailExtension";
-	
 	private final Collection<ValidationIssueDetailExtension> extensions;
 	
 	private ValidationIssueDetailExtensionProvider() {
-		this.extensions = Extensions.getExtensions(VALIDATION_DETAIL_EXTENSION_ID, ValidationIssueDetailExtension.class);
+		this.extensions = ClassPathScanner.INSTANCE.getComponentsByInterface(ValidationIssueDetailExtension.class);
 	}
 	
 	public ValidationIssueDetailExtension getExtensions(String toolingId) {
