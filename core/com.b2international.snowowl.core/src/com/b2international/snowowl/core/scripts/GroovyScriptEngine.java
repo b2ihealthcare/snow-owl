@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.commons.CompositeClassLoader;
+import com.b2international.commons.extension.Component;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -32,6 +33,7 @@ import groovy.lang.Script;
 /**
  * @since 6.1
  */
+@Component
 public final class GroovyScriptEngine implements ScriptEngine {
 	
 	private final LoadingCache<ClassLoader, GroovyShell> shells = CacheBuilder.newBuilder().build(new CacheLoader<ClassLoader, GroovyShell>() {
