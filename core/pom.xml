@@ -14,26 +14,21 @@
 	
 	<modules>
 		
-		<!-- Core REST API modules -->
-		<module>com.b2international.snowowl.core.rest</module>
-		<module>com.b2international.snowowl.core.rest.feature</module>
-		<module>com.b2international.snowowl.core.rest.tests</module>
+		<!-- Core Modules -->
+		<module>com.b2international.snowowl.core</module>
+		<module>com.b2international.snowowl.core.tests</module>
+		<module>com.b2international.snowowl.server.product</module>
+		<module>com.b2international.snowowl.server.core.feature</module>
+		<module>com.b2international.snowowl.server.dependencies.feature</module>
+		<module>com.b2international.snowowl.server.product.feature</module>
 		
 		<!-- Identity modules -->
 		<module>com.b2international.snowowl.identity.ldap</module>
 		
-		<!-- Core Modules -->
-		<module>com.b2international.snowowl.core</module>
-		<module>com.b2international.snowowl.core.tests</module>
-		<module>com.b2international.snowowl.datastore</module>
-		
-		<!-- Product modules -->
-		<module>com.b2international.snowowl.server.product</module>
-		
-		<!-- Core Features -->
-		<module>com.b2international.snowowl.server.core.feature</module>
-		<module>com.b2international.snowowl.server.dependencies.feature</module>
-		<module>com.b2international.snowowl.server.product.feature</module>
+		<!-- Core REST API modules -->
+		<module>com.b2international.snowowl.core.rest</module>
+		<module>com.b2international.snowowl.core.rest.feature</module>
+		<module>com.b2international.snowowl.core.rest.tests</module>
 		
 	</modules>
 	
