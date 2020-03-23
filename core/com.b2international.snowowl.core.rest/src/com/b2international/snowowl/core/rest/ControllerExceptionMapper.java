@@ -23,13 +23,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingPathVariableException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MultipartException;
 
 import com.b2international.commons.exceptions.*;
 import com.b2international.commons.platform.PlatformUtil;
@@ -40,7 +41,7 @@ import com.google.common.base.Throwables;
 /**
  * @since 4.1
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class ControllerExceptionMapper {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ControllerExceptionMapper.class);
@@ -54,7 +55,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public @ResponseBody RestApiError handle(final Exception ex) {
+	public RestApiError handle(final Exception ex) {
 		final String message = Throwables.getRootCause(ex).getMessage();
 		if (!Strings.isNullOrEmpty(message) && message.toLowerCase().contains("broken pipe")) {
 	        return null; // socket is closed, cannot return any response    
@@ -69,40 +70,52 @@ public class ControllerExceptionMapper {
 	}
 	
 	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public RestApiError handle(final MultipartException e) {
+		return RestApiError.of(ApiError.Builder.of("Couldn't process multipart request: " + e.getMostSpecificCause().getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+	} 
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+	public RestApiError handle(final HttpMediaTypeNotSupportedException e) {
+		return RestApiError.of(ApiError.Builder.of("HTTP Media Type " + e.getContentType() + " is not supported. Supported media types are: " + e.getSupportedMediaTypes()).build()).build(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
+	}
+	
+	@ExceptionHandler
 	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-	public @ResponseBody RestApiError handle(final HttpRequestMethodNotSupportedException e) {
+	public RestApiError handle(final HttpRequestMethodNotSupportedException e) {
 		return RestApiError.of(ApiError.Builder.of("Method " + e.getMethod() + " is not allowed").build()).build(HttpStatus.METHOD_NOT_ALLOWED.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody RestApiError handle(BindException e) {
+	public RestApiError handle(final BindException e) {
 		return RestApiError.of(ApiError.Builder.of("Invalid  parameter: '" + e.getMessage() + "'.").build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public RestApiError handle(MissingPathVariableException e) {
+	public RestApiError handle(final MissingPathVariableException e) {
 		return RestApiError.of(ApiError.Builder.of("Missing path parameter: '" + e.getVariableName() + "'.").build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public @ResponseBody RestApiError handle(final UnauthorizedException ex) {
+	public RestApiError handle(final UnauthorizedException ex) {
 		final ApiError err = ex.toApiError();
 		return RestApiError.of(err).build(HttpStatus.UNAUTHORIZED.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.FORBIDDEN)
-	public @ResponseBody RestApiError handle(final ForbiddenException ex) {
+	public RestApiError handle(final ForbiddenException ex) {
 		final ApiError err = ex.toApiError();
 		return RestApiError.of(err).build(HttpStatus.FORBIDDEN.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
-	public @ResponseBody RestApiError handle(RequestTimeoutException ex) {
+	public RestApiError handle(final RequestTimeoutException ex) {
 		if (PlatformUtil.isDevVersion()) {
     		LOG.error("Timeout during request processing", ex);
     	} else {
@@ -119,7 +132,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody RestApiError handle(HttpMessageNotReadableException ex) {
+	public RestApiError handle(final HttpMessageNotReadableException ex) {
 		LOG.trace("Exception during processing of a JSON document", ex);
 		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").developerMessage(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
@@ -139,7 +152,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	public @ResponseBody RestApiError handle(final NotFoundException ex) {
+	public RestApiError handle(final NotFoundException ex) {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.NOT_FOUND.value());
 	}
 
@@ -151,7 +164,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-	public @ResponseBody RestApiError handle(NotImplementedException ex) {
+	public RestApiError handle(final NotImplementedException ex) {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 
@@ -163,13 +176,13 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody RestApiError handle(final BadRequestException ex) {
+	public RestApiError handle(final BadRequestException ex) {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody RestApiError handle(final IllegalArgumentException ex) {
+	public RestApiError handle(final IllegalArgumentException ex) {
 		ex.printStackTrace();
 		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
@@ -182,7 +195,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.CONFLICT)
-	public @ResponseBody RestApiError handle(final ConflictException ex) {
+	public RestApiError handle(final ConflictException ex) {
 		if (ex.getCause() != null) {
 			LOG.info("Conflict with cause", ex);
 		}
@@ -191,7 +204,7 @@ public class ControllerExceptionMapper {
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
-	public @ResponseBody ResponseEntity<RestApiError> handle(final TooManyRequestsException ex) {
+	public ResponseEntity<RestApiError> handle(final TooManyRequestsException ex) {
 		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
 				.header("X-Rate-Limit-Retry-After-Seconds", Long.toString(ex.getSecondsToWait()))
 				.body(RestApiError.of(ex.toApiError()).build(HttpStatus.TOO_MANY_REQUESTS.value()));
@@ -205,7 +218,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-    public @ResponseBody RestApiError handle(ConversionFailedException ex) {
+    public RestApiError handle(final ConversionFailedException ex) {
 		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
     }
 
@@ -216,7 +229,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody RestApiError handle(MethodArgumentTypeMismatchException ex) {
+	public RestApiError handle(final MethodArgumentTypeMismatchException ex) {
 		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
