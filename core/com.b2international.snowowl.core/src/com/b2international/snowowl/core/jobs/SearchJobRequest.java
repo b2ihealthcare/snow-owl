@@ -39,6 +39,11 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 	enum OptionKey {
 		
 		/**
+		 * Filter matches unique job keys.
+		 */
+		KEY,
+		
+		/**
 		 * Filter matches by description, status, user and created/started/finished date
 		 */
 		TERM
@@ -49,6 +54,10 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addIdFilter(queryBuilder, RemoteJobEntry.Expressions::ids);
+
+		if (containsKey(OptionKey.KEY)) {
+			queryBuilder.filter(RemoteJobEntry.Expressions.keys(getCollection(OptionKey.KEY, String.class)));
+		}
 		
 		if (containsKey(OptionKey.TERM)) {
 			String searchTerm = getString(OptionKey.TERM);

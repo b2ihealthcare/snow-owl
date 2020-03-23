@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,8 @@ public final class RemoteJob extends Job {
 
 	public static final QualifiedName REQUEST_STATUS = new QualifiedName(null, "requestStatus");
 	private final String id;
+	private final String key;
+	private final String description;
 	private final ServiceProvider context;
 	private final Request<ServiceProvider, ?> request;
 	
@@ -52,14 +54,17 @@ public final class RemoteJob extends Job {
 	private boolean autoClean;
 	
 	public RemoteJob(
-			final String id, 
+			final String id,
+			final String key, 
 			final String description, 
 			final String user, 
 			final ServiceProvider context, 
 			final Request<ServiceProvider, ?> request,
 			final boolean autoClean) {
-		super(description);
+		super(key);
 		this.id = id;
+		this.key = key;
+		this.description = description;
 		this.user = user;
 		this.context = context;
 		this.request = request;
@@ -69,7 +74,7 @@ public final class RemoteJob extends Job {
 	@Override
 	protected final IStatus run(IProgressMonitor monitor) {
 		final ObjectMapper mapper = this.context.service(ObjectMapper.class);
-		final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(id, monitor);
+		final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(key, monitor);
 		try {
 			// seed the monitor instance into the current context, so the request can use it for progress reporting
 			final ServiceProvider context = this.context.inject()
@@ -109,7 +114,7 @@ public final class RemoteJob extends Job {
 			return Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
 		} finally {
 			if (autoClean) {
-				cleanUp(context);
+				context.service(RemoteJobTracker.class).requestDeletes(Collections.singleton(id));
 			}
 		}
 	}
@@ -122,10 +127,6 @@ public final class RemoteJob extends Job {
 		}
 	}
 	
-	private void cleanUp(ServiceProvider context) {
-		context.service(RemoteJobTracker.class).requestDeletes(Collections.singleton(id));
-	}
-
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean belongsTo(Object family) {
@@ -136,12 +137,16 @@ public final class RemoteJob extends Job {
 		}
 	}
 	
-	public String getId() {
+	String getId() {
 		return id;
 	}
 	
+	public String getKey() {
+		return key;
+	}
+	
 	String getDescription() {
-		return getName();
+		return description;
 	}
 	
 	public String getUser() {

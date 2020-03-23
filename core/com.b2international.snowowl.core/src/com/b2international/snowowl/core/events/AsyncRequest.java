@@ -117,16 +117,33 @@ public final class AsyncRequest<R> {
 	/**
 	 * Wraps the this {@link AsyncRequest}'s {@link #getRequest()} into a {@link ScheduleJobRequestBuilder} and prepares for execution.
 	 *  
-	 * @param jobId - the id to use for job identification
+	 * @param jobKey - the id to use for job identification
 	 * @param description - the description to use for the job
 	 * @return the prepared {@link AsyncRequest} that will schedule the request as a job and return the job ID as a result
 	 */
-	public AsyncRequest<String> runAsJob(String jobId, String description) {
+	public AsyncRequest<String> runAsJob(String jobKey, String description) {
 		return JobRequests.prepareSchedule()
-				.setId(jobId)
+				.setKey(jobKey)
 				.setDescription(description)
 				.setRequest(this)
 				.buildAsync();
 	}
-
+	
+	/**
+	 * Wraps the this {@link AsyncRequest}'s {@link #getRequest()} into a {@link ScheduleJobRequestBuilder} and prepares for execution.
+	 * The restart flag is enabled for the job scheduling, so it will remove any existing jobs with the same key.
+	 *  
+	 * @param jobKey - the id to use for job identification
+	 * @param description - the description to use for the job
+	 * @return the prepared {@link AsyncRequest} that will schedule the request as a job and return the job ID as a result
+	 */
+	public AsyncRequest<String> runAsJobWithRestart(String jobKey, String description) {
+		return JobRequests.prepareSchedule()
+				.setKey(jobKey)
+				.setDescription(description)
+				.setRequest(this)
+				.setRestart(true)
+				.buildAsync();
+	}
+	
 }

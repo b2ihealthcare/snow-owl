@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.nestedMatch;
+import static com.b2international.index.query.Expressions.prefixMatch;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -73,6 +74,7 @@ public final class RemoteJobEntry implements Serializable {
 
 	public static class Fields {
 		public static final String ID = "id";
+		public static final String KEY = "key";
 		public static final String DELETED = "deleted";
 		public static final String USER = "user";
 		public static final String STATE = "state";
@@ -99,6 +101,18 @@ public final class RemoteJobEntry implements Serializable {
 			return matchAny(DocumentMapping._ID, ids);
 		}
 		
+		public static Expression idPrefix(String id) {
+			return prefixMatch(DocumentMapping._ID, id);
+		}
+		
+		public static Expression key(String key) {
+			return exactMatch(Fields.KEY, key);
+		}
+
+		public static Expression keys(Collection<String> keys) {
+			return matchAny(Fields.KEY, keys);
+		}
+
 		public static Expression deleted(boolean deleted) {
 			return match(Fields.DELETED, deleted);
 		}
@@ -132,6 +146,7 @@ public final class RemoteJobEntry implements Serializable {
 	public static RemoteJobEntry.Builder from(RemoteJobEntry from) {
 		return builder()
 				.id(from.getId())
+				.key(from.getKey())
 				.description(from.getDescription())
 				.user(from.getUser())
 				.scheduleDate(from.getScheduleDate())
@@ -152,6 +167,7 @@ public final class RemoteJobEntry implements Serializable {
 	public static class Builder {
 
 		private String id;
+		private String key;
 		private String description;
 		private String user;
 		private Date scheduleDate;
@@ -169,6 +185,11 @@ public final class RemoteJobEntry implements Serializable {
 		
 		public Builder id(String id) {
 			this.id = id;
+			return this;
+		}
+
+		public Builder key(String key) {
+			this.key = key;
 			return this;
 		}
 		
@@ -223,13 +244,14 @@ public final class RemoteJobEntry implements Serializable {
 		}
 		
 		public RemoteJobEntry build() {
-			return new RemoteJobEntry(id, description, user, scheduleDate, startDate, finishDate, state, completionLevel, deleted, result, parameters);
+			return new RemoteJobEntry(id, key, description, user, scheduleDate, startDate, finishDate, state, completionLevel, deleted, result, parameters);
 		}
 		
 	}
 	
 
 	private final String id;
+	private final String key;
 	
 	@Text(analyzer = Analyzers.TOKENIZED)
 	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
@@ -250,7 +272,8 @@ public final class RemoteJobEntry implements Serializable {
 	private final String parameters;
 
 	private RemoteJobEntry(
-			final String id, 
+			final String id,
+			final String key,
 			final String description, 
 			final String user, 
 			final Date scheduleDate, 
@@ -262,6 +285,7 @@ public final class RemoteJobEntry implements Serializable {
 			final String result,
 			final String parameters) {
 		this.id = id;
+		this.key = key;
 		this.description = description;
 		this.user = user;
 		this.scheduleDate = scheduleDate;
@@ -278,6 +302,10 @@ public final class RemoteJobEntry implements Serializable {
 		return id;
 	}
 
+	public String getKey() {
+		return key;
+	}
+	
 	public String getDescription() {
 		return description;
 	}

@@ -265,6 +265,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				}
 				put(jobId, RemoteJobEntry.builder()
 						.id(jobId)
+						.key(job.getKey())
 						.description(job.getDescription())
 						.user(job.getUser())
 						.parameters(parameters)

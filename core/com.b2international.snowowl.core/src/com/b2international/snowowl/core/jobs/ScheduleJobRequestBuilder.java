@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,28 +30,26 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
  */
 public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<ScheduleJobRequestBuilder, ServiceProvider, String> implements SystemRequestBuilder<String> {
 
-	private String id = UUID.randomUUID().toString();
+	private String key = UUID.randomUUID().toString();
 	private String user;
 	private String description;
-	private boolean autoClean = false;
 	private Request<ServiceProvider, ?> request;
 	private SerializableSchedulingRule schedulingRule;
+	private boolean autoClean = false;
+	private boolean restart = false;
 	
 	ScheduleJobRequestBuilder() {
 	}
 
-	@Override
-	protected Request<ServiceProvider, String> doBuild() {
-		return new ScheduleJobRequest(id, user, request, autoClean, description, schedulingRule);
-	}
-	
 	/**
-	 * Set a custom unique identifier for the job.
-	 * @param id - the identifier the job will be assigned to
+	 * Set a custom unique identifier - a key - to identity this job. The final identifier of the job will be computed from this value.
+	 * 
+	 * @param key
+	 *            - the unique identifier the job will be assigned to
 	 * @return this builder
 	 */
-	public ScheduleJobRequestBuilder setId(final String id) {
-		this.id = id;
+	public ScheduleJobRequestBuilder setKey(final String key) {
+		this.key = key;
 		return getSelf();
 	}
 
@@ -107,6 +105,17 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	}
 	
 	/**
+	 * Restarts (re-schedules) the job if present with the same key.
+	 * 
+	 * @param restart - to restart the job if present with the same key, and it is not running.
+	 * @return
+	 */
+	public ScheduleJobRequestBuilder setRestart(final boolean restart) {
+		this.restart = restart;
+		return getSelf();
+	}
+	
+	/**
 	 * Sets the scheduling rule for the remote job, controlling which instances can be executed side-by-side.
 	 * @param schedulingRule - the scheduling rule to apply for this job
 	 * @return this builder
@@ -115,4 +124,10 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 		this.schedulingRule = schedulingRule;
 		return getSelf();
 	}
+	
+	@Override
+	protected Request<ServiceProvider, String> doBuild() {
+		return new ScheduleJobRequest(key, user, description, request, schedulingRule, autoClean, restart);
+	}
+	
 }
