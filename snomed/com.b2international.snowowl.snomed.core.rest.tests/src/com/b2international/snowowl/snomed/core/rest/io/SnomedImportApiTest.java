@@ -20,7 +20,6 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.doImport;
-import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.getImport;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.waitForImportJob;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
@@ -82,41 +81,24 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import01ImportNoFileSpecified() {
+	public void import01InvalidBranchPath() {
+		final IBranchPath branchPath = BranchPathUtils.createPath("MAIN/notfound");
 		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("createVersions", false)
 				.build();
-		
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.pathParam("path", branchPath.toString())
-			.queryParams(importConfiguration)
-			.post("/{path}/imports")
-			.then();
-	}
-
-	@Test
-	public void import03VersionsAllowedOnBranch() {
-		final Map<?, ?> importConfiguration = ImmutableMap.builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("createVersions", true)
-				.build();
-
-//		final String importId = lastPathSegment(createImport(importConfiguration).statusCode(201)
-//				.extract().header("Location"));
-
-		getImport(branchPath, "TODO").statusCode(200);
-//			.body("status", equalTo(ImportStatus.WAITING_FOR_FILE.name()));
+		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20150131_new_concept.zip").statusCode(201)
+				.extract().header("Location"));
+		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
 	}
 	
 	@Test
-	public void import10InvalidBranchPath() {
-		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("createVersions", false)
-				.build();
-
-		importArchive(BranchPathUtils.createPath("MAIN/x/y/z"), importConfiguration, "SnomedCT_Release_INT_20150131_new_concept.zip");
+	public void import02DefaultsNoFileSpecified() {
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.contentType("multipart/form-data")
+			.post("/{path}/import", branchPath.toString())
+			.then()
+			.statusCode(400);
 	}
 
 	@Test

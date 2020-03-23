@@ -35,8 +35,6 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
@@ -133,17 +131,6 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	
 	private boolean isImportAlreadyRunning() {
 		return Iterables.any(configurationMapping.values(), configuration -> ImportStatus.RUNNING.equals(configuration.getStatus()));
-	}
-	
-	private CodeSystemEntry getCodeSystem(final String shortName) {
-		try {
-			return CodeSystemRequests.prepareGetCodeSystem(shortName)
-					.build(REPOSITORY_UUID)
-					.execute(bus.get())
-					.getSync(1, TimeUnit.MINUTES);
-		} catch (NotFoundException e) {
-			return null;
-		}
 	}
 	
 	@Override

@@ -34,11 +34,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
+import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -46,6 +49,7 @@ import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ImportConfig
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -93,11 +97,6 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "Import file", required = true)
 			@RequestPart("file") 
 			final MultipartFile file) throws IOException {
-		
-//		if (isImportAlreadyRunning()) {
-//			throw new BadRequestException("Cannot perform SNOMED CT import from RF2 archive. "
-//					+ "An import is already in progress. Please try again later.");
-//		}
 		
 		final String importJobId = SnomedRf2Requests.importJobId(branchPath);
 		
@@ -158,7 +157,11 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 	}
 	
 	private SnomedRf2ImportConfiguration toRf2ImportConfiguration(RemoteJobEntry job) {
-		return new SnomedRf2ImportConfiguration(IDs.sha1(job.getId()), job.getState(), null);
+		ApiError error = null;
+		if (job.getState() == RemoteJobState.FAILED) {
+			error = job.getResultAs(ApplicationContext.getServiceForClass(ObjectMapper.class), ApiError.class);
+		}
+		return new SnomedRf2ImportConfiguration(IDs.sha1(job.getId()), job.getState(), error);
 	}
 	
 	private Optional<RemoteJobEntry> getImportJobById(final String importJobId) {
