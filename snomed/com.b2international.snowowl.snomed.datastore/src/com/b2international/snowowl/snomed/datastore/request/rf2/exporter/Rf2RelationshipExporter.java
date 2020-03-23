@@ -43,7 +43,6 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 			final String namespaceFilter, 
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
-			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
 			final Collection<String> characteristicTypes) {
 
@@ -52,7 +51,6 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 				namespaceFilter, 
 				transientEffectiveTime, 
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules);
 		this.characteristicTypes = characteristicTypes;
 	}

@@ -691,7 +691,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				namespaceFilter,
 				transientEffectiveTime,
 				archiveEffectiveTime,
-				includePreReleaseContent,
 				modules);
 		
 		exporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
@@ -739,7 +738,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				namespaceFilter,
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules, 
 				descriptionTypes,
 				languageCode);
@@ -749,7 +747,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules, 
 				ImmutableSet.of(Concepts.TEXT_DEFINITION),
 				languageCode);
@@ -788,7 +785,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules, 
 				ImmutableSet.of(Concepts.STATED_RELATIONSHIP));
 
@@ -797,7 +793,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules, 
 				characteristicTypes);
 
@@ -830,7 +825,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 					namespaceFilter, 
 					transientEffectiveTime,
 					archiveEffectiveTime,
-					includePreReleaseContent,
 					modules,
 					refSetExportLayout,
 					refSetType,
@@ -878,7 +872,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 					namespaceFilter, 
 					transientEffectiveTime,
 					archiveEffectiveTime,
-					includePreReleaseContent,
 					modules,
 					refSetExportLayout,
 					entry.getKey(),
@@ -919,7 +912,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 					namespaceFilter,
 					transientEffectiveTime,
 					archiveEffectiveTime,
-					includePreReleaseContent,
 					modules,
 					SnomedRefSetType.LANGUAGE,
 					languageRefSets,

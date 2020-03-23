@@ -48,7 +48,6 @@ public final class Rf2ConceptExporter extends Rf2CoreComponentExporter<SnomedCon
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules);
 	}
 
