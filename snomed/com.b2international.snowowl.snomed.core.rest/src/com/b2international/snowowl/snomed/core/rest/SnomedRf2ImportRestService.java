@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -35,9 +34,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.b2international.commons.exceptions.ApiError;
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
@@ -108,11 +107,11 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-			.runAsJob(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))
+			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
 		
-		return ResponseEntity.created(getResourceLocationURI(branchPath, IDs.sha1(jobId))).build();
+		return ResponseEntity.created(getResourceLocationURI(branchPath, jobId)).build();
 	}
 	
 	@ApiOperation(
@@ -124,13 +123,14 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class),
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public SnomedRf2ImportConfiguration getImport(
+	public Promise<SnomedRf2ImportConfiguration> getImport(
 			@ApiParam(value = "The import identifier")
 			@PathVariable(value="id") 
 			final String id) {
-		return getImportJobById(id)
-			.map(this::toRf2ImportConfiguration)
-			.orElseThrow(() -> new NotFoundException("Import", id));
+		return JobRequests.prepareGet(id)
+				.buildAsync()
+				.execute(getBus())
+				.then(this::toRf2ImportConfiguration);
 	}
 	
 	@ApiOperation(
@@ -147,13 +147,9 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "The import identifier")
 			@PathVariable(value="id") 
 			final String id) {
-		getImportJobById(id)
-			.ifPresent(job -> {
-				JobRequests.prepareDelete(job.getId())
-					.buildAsync()
-					.execute(getBus())
-					.getSync(1, TimeUnit.MINUTES);
-			});
+		JobRequests.prepareDelete(id)
+				.buildAsync()
+				.execute(getBus());
 	}
 	
 	private SnomedRf2ImportConfiguration toRf2ImportConfiguration(RemoteJobEntry job) {
@@ -162,19 +158,6 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			error = job.getResultAs(ApplicationContext.getServiceForClass(ObjectMapper.class), ApiError.class);
 		}
 		return new SnomedRf2ImportConfiguration(IDs.sha1(job.getId()), job.getState(), error);
-	}
-	
-	private Optional<RemoteJobEntry> getImportJobById(final String importJobId) {
-		return JobRequests.prepareSearch()
-			.all()
-			.buildAsync()
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES)
-			.stream()
-			.filter(SnomedRf2Requests::isSnomedImportJob)
-			.filter(job -> importJobId.equals(IDs.sha1(job.getId())))
-			.findFirst();
-		
 	}
 	
 }

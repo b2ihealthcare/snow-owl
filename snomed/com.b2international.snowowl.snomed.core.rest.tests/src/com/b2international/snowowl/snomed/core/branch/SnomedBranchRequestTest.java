@@ -149,7 +149,6 @@ public class SnomedBranchRequestTest {
 		final Branching branches = RepositoryRequests.branching();
 		final Merging merges = RepositoryRequests.merging();
 		
-		final String mergeJobId = UUID.randomUUID().toString();
 		final String branchA = UUID.randomUUID().toString();
 		final String branchB = UUID.randomUUID().toString();
 
@@ -194,8 +193,7 @@ public class SnomedBranchRequestTest {
 				.build(REPOSITORY_ID)
 				.getRequest();
 		
-		JobRequests.prepareSchedule()
-			.setId(mergeJobId)
+		final String mergeJobId = JobRequests.prepareSchedule()
 			.setDescription("Merging changes")
 			.setRequest(mergeRequest)
 			.setUser(User.SYSTEM.getUsername())
