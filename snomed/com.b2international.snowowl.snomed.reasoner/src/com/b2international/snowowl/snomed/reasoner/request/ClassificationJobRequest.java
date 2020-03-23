@@ -89,7 +89,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 	@Override
 	public Boolean execute(final BranchContext context) {
 		final RemoteJob job = context.service(RemoteJob.class);
-		final String classificationId = job.getId();
+		final String classificationId = job.getKey();
 		final String userId = job.getUser();
 
 		final Branch branch = context.branch();

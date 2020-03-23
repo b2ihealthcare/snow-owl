@@ -431,7 +431,7 @@ public final class ClassificationTracker implements IDisposableService {
 				if (isClassifyJob) {
 					final IStatus result = job.getResult();
 					if (result == null) {
-						classificationCancelled(job.getId());
+						classificationCancelled(job.getKey());
 					}
 				}
 			}

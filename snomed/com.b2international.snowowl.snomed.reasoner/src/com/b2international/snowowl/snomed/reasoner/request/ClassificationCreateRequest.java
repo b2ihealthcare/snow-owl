@@ -104,14 +104,16 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				repositoryId, 
 				branch.path());
 
-		return JobRequests.prepareSchedule()
-				.setId(classificationId)
+		JobRequests.prepareSchedule()
+				.setKey(classificationId)
 				.setUser(user)
 				.setRequest(jobRequest)
 				.setDescription(String.format("Classifying the ontology on %s", branch.path()))
 				.setSchedulingRule(rule)
 				.buildAsync()
 				.get(context, SCHEDULE_TIMEOUT_MILLIS);
+		
+		return classificationId;
 	}
 	
 	@Override
