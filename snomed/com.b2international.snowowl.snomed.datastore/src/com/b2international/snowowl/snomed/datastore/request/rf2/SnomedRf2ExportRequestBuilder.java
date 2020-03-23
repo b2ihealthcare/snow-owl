@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.request.ResourceRequest;
@@ -36,8 +38,8 @@ public final class SnomedRf2ExportRequestBuilder
 	private Rf2RefSetExportLayout refSetExportLayout;
 	private String countryNamespaceElement;
 	private String namespaceFilter;
-	private String startEffectiveTime;
-	private String endEffectiveTime;
+	private Long startEffectiveTime;
+	private Long endEffectiveTime;
 	private boolean includePreReleaseContent;
 	private Collection<String> componentTypes = null;
 	private Collection<String> modules = null;
@@ -68,11 +70,19 @@ public final class SnomedRf2ExportRequestBuilder
 	}
 
 	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final String startEffectiveTime) {
+		return setStartEffectiveTime(EffectiveTimes.getEffectiveTime(startEffectiveTime, DateFormats.SHORT));
+	}
+	
+	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final Long startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 		return getSelf();
 	}
 	
 	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final String endEffectiveTime) {
+		return setEndEffectiveTime(EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT));
+	}
+	
+	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final Long endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 		return getSelf();
 	}

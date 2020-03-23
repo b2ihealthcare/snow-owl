@@ -125,10 +125,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	private String namespaceFilter;
 
 	@JsonProperty 
-	private String startEffectiveTime;
+	private Long startEffectiveTime;
 
 	@JsonProperty 
-	private String endEffectiveTime;
+	private Long endEffectiveTime;
 
 	@JsonProperty
 	private boolean includePreReleaseContent;
@@ -166,11 +166,11 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		this.namespaceFilter = namespaceFilter;
 	}
 
-	void setStartEffectiveTime(final String startEffectiveTime) {
+	void setStartEffectiveTime(final Long startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 	}
 
-	void setEndEffectiveTime(final String endEffectiveTime) {
+	void setEndEffectiveTime(final Long endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 	}
 
@@ -262,8 +262,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 
 			final Set<String> visitedComponentEffectiveTimes = newHashSet();
 			
-			final long effectiveTimeStart = startEffectiveTime != null ? EffectiveTimes.getEffectiveTime(startEffectiveTime, DateFormats.SHORT) : 0;
-			final long effectiveTimeEnd =  endEffectiveTime != null ? EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT) : Long.MAX_VALUE;
+			final long effectiveTimeStart = startEffectiveTime != null ? startEffectiveTime : 0;
+			final long effectiveTimeEnd =  endEffectiveTime != null ? endEffectiveTime : Long.MAX_VALUE;
 
 			// export content from the pre-computed version branches
 			for (String branch : branchesToExport) {
@@ -408,7 +408,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		Optional<CodeSystemVersionEntry> lastVersionToExport;
 		
 		if (endEffectiveTime != null) {
-			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT)));
+			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, endEffectiveTime));
 		} else {
 			lastVersionToExport = !versionsToExport.isEmpty() ? Optional.ofNullable(versionsToExport.last()) : Optional.empty();
 		}
