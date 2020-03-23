@@ -38,14 +38,24 @@ public class IDs {
 	}
 
 	/**
-	 * Create an SHA-1 hash digest from the given value and returns the first seven characters. Similar to how Git creates a unique shortened SHA-1
+	 * Create an SHA-1 hash digest from the given value and returns the first N characters. Similar to how Git creates a unique shortened SHA-1
 	 * commit for Git commits, this can be useful for ID generation in certain scenarios.
 	 * 
 	 * @param value
 	 * @return
 	 */
+	public static String shortSha1(String value, int length) {
+		return sha1(value).substring(0, length);
+	}
+	
+	/**
+	 * Create an SHA-1 hash digest from the given value and returns it.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public static String sha1(String value) {
-		return Hashing.sha1().hashString(value, Charsets.UTF_8).toString().substring(0, 7);
+		return Hashing.sha1().hashString(value, Charsets.UTF_8).toString();
 	}
 
 }
