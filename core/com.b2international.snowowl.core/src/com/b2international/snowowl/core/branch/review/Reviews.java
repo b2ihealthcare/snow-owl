@@ -30,8 +30,8 @@ public final class Reviews {
 		return new ReviewGetRequestBuilder(reviewId);
 	}
 
-	public ConceptChangesGetRequestBuilder prepareGetConceptChanges(String reviewId) {
-		return new ConceptChangesGetRequestBuilder(reviewId);
+	public ReviewGetConceptChangesRequestBuilder prepareGetConceptChanges(String reviewId) {
+		return new ReviewGetConceptChangesRequestBuilder(reviewId);
 	}
 
 	public ReviewDeleteRequestBuilder prepareDelete(String reviewId) {

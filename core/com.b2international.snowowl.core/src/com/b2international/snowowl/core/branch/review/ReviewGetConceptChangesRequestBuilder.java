@@ -23,11 +23,11 @@ import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 /**
  * @since 5.0
  */
-public final class ConceptChangesGetRequestBuilder extends BaseRequestBuilder<ConceptChangesGetRequestBuilder, RepositoryContext, ConceptChanges> implements RepositoryRequestBuilder<ConceptChanges> {
+public final class ReviewGetConceptChangesRequestBuilder extends BaseRequestBuilder<ReviewGetConceptChangesRequestBuilder, RepositoryContext, ConceptChanges> implements RepositoryRequestBuilder<ConceptChanges> {
 
 	private final String reviewId;
 
-	ConceptChangesGetRequestBuilder(String reviewId) {
+	ReviewGetConceptChangesRequestBuilder(String reviewId) {
 		this.reviewId = reviewId;
 	}
 	
