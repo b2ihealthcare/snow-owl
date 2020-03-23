@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 package com.b2international.snowowl.core.repository;
 
 import java.util.Collection;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.IComponent;
 
 /**
  * @since 7.0
@@ -30,11 +33,19 @@ public interface TerminologyRepositoryConfigurer {
 	/**
 	 * @return additional mappings that should be managed and configured for use within the configured repository.
 	 */
-	Collection<Class<?>> getAdditionalMappings();
+	default Collection<Class<?>> getAdditionalMappings() {
+		return List.of();
+	}
+
+	/**
+	 * @return additional terminology components that should be handled by the configured repository.
+	 */
+	default Collection<Class<? extends IComponent>> getAdditionalTerminologyComponents() {
+		return List.of();
+	}
 
 	/**
 	 * @return additional component deletion policies for subtypes of RevisionDocument
 	 */
 	CompositeComponentDeletionPolicy getComponentDeletionPolicy();
-	
 }

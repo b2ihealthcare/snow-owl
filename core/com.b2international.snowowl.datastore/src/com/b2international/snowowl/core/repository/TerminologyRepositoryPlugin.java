@@ -30,6 +30,9 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
+import com.b2international.snowowl.core.request.ConceptSearchRequest;
+import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
+import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.Terminology;
@@ -65,9 +68,10 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.addTerminologyComponents(getTerminologyComponents())
 					.addTerminologyComponents(getAdditionalTerminologyComponents())
 					.addMappings(getAdditionalMappings())
-					.withComponentDeletionPolicy(getComponentDeletionPolicy())
-					.withVersioningRequestBuilder(getVersioningRequestBuilder())
-					.withComponentRevisionConflictProcessor(getComponentRevisionConflictProcessor())
+					.bind(ComponentDeletionPolicy.class, getComponentDeletionPolicy())
+					.bind(VersioningRequestBuilder.class, getVersioningRequestBuilder())
+					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
+					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
 					.build(env);
 			RepositoryInfo status = repo.status();
 			if (status.health() == Health.GREEN) {
@@ -77,6 +81,16 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 			}
 		}
 		afterRun(configuration, env);
+	}
+	
+	/**
+	 * An optional evaluator that can evaluate generic {@link ConceptSearchRequest concept search requests}. 
+	 * @return a {@link ConceptSearchRequestEvaluator} instance
+	 * @see ConceptSearchRequestBuilder
+	 * @see ConceptSearchRequest
+	 */
+	protected ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator() {
+		return null;
 	}
 	
 	/**

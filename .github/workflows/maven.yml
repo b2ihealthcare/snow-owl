@@ -1,0 +1,43 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - 7.x
+  pull_request:
+    branches:
+      - 7.x
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Cache Maven Dependencies (~/.m2/repository)
+      uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-:
+    - name: Cache NPM Dependencies (core/com.b2international.snowowl.core.rest/snow-owl-api-docs/node_modules)
+      uses: actions/cache@v1
+      with:
+        path: core/com.b2international.snowowl.core.rest/snow-owl-api-docs/node_modules
+        key: ${{ runner.os }}-npm-${{ hashFiles('core/com.b2international.snowowl.core.rest/snow-owl-api-docs/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-:
+    - name: Build with Maven
+      run: mvn clean verify
+    - name: Upload Codecov
+      uses: codecov/codecov-action@v1.0.5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        yml: ./codecov.yml
+        fail_ci_if_error: true

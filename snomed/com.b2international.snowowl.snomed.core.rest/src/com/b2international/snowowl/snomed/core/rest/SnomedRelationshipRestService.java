@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
@@ -77,7 +75,6 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		return SnomedRequests
 					.prepareSearchRelationship()
 					.filterByIds(params.getId())
@@ -94,7 +91,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.setLimit(params.getLimit())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())
-					.setLocales(extendedLocales)
+					.setLocales(acceptLanguage)
 					.sortBy(extractSortFields(params.getSort()))
 					.build(repositoryId, branch)
 					.execute(getBus());

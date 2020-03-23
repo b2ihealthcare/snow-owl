@@ -27,15 +27,19 @@ public final class Ecl {
 	public static final String ANY = "*";
 	public static final int MAX_CARDINALITY = -1;
 	public static final Joiner OR_JOINER = Joiner.on(" OR ");
-	
+
 	private Ecl() {}
 
 	public static String or(String...eclExpressions) {
 		return OR_JOINER.join(eclExpressions);
 	}
-	
+
 	public static String or(Collection<String> eclExpressions) {
 		return OR_JOINER.join(eclExpressions);
 	}
-	
+
+	public static String exclude(String from, String exclusion) {
+		return String.format("(%s) MINUS (%s)", from, exclusion);
+	}
+
 }

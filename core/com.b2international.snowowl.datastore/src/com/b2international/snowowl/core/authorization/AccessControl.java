@@ -29,7 +29,7 @@ public interface AccessControl {
 	 * @return the {@link Permission} required to access/execute/etc. this object.
 	 */
 	default Permission getPermission(ServiceProvider context) {
-		return new Permission(getOperation(), getResource(context));
+		return Permission.of(getOperation(), getResource(context));
 	}
 
 	String getResource(ServiceProvider context);
