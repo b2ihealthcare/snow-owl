@@ -70,7 +70,7 @@ public final class SnomedRf2ExportRequestBuilder
 	}
 
 	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final String startEffectiveTime) {
-		return setStartEffectiveTime(EffectiveTimes.getEffectiveTime(startEffectiveTime, DateFormats.SHORT));
+		return setStartEffectiveTime(startEffectiveTime == null ? null : EffectiveTimes.getEffectiveTime(startEffectiveTime, DateFormats.SHORT));
 	}
 	
 	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final Long startEffectiveTime) {
@@ -79,7 +79,7 @@ public final class SnomedRf2ExportRequestBuilder
 	}
 	
 	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final String endEffectiveTime) {
-		return setEndEffectiveTime(EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT));
+		return setEndEffectiveTime(endEffectiveTime == null ? null : EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT));
 	}
 	
 	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final Long endEffectiveTime) {
