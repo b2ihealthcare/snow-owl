@@ -33,7 +33,6 @@
       <feature id="com.b2international.snowowl.core.feature"/>
       <feature id="com.b2international.snowowl.server.product.feature"/>
       <feature id="com.b2international.snowowl.snomed.core.feature"/>
-      <feature id="com.b2international.snowowl.server.dependencies.feature"/>
       <feature id="com.b2international.snowowl.snomed.cis.feature"/>
       <feature id="com.b2international.snowowl.core.rest.feature"/>
       <feature id="com.b2international.snowowl.snomed.core.rest.feature"/>
