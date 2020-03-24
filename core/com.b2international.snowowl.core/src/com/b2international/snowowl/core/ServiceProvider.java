@@ -41,7 +41,8 @@ public interface ServiceProvider {
 
 	/**
 	 * Returns the given service wrapped in an {@link Optional} indicating that the service might not be available. If not available the
-	 * {@link Optional#empty()} will be returned.
+	 * {@link Optional#empty()} will be returned. 
+	 * NOTE: this method is available in certain ServiceProvider context's in not in all contexts.
 	 * 
 	 * @param <T>
 	 *            - the type of the service
@@ -50,12 +51,7 @@ public interface ServiceProvider {
 	 * @return an {@link Optional}
 	 */
 	default <T> Optional<T> optionalService(Class<T> type) {
-		try {
-			return Optional.of(service(type));
-		} catch (NullPointerException e) {
-			// not the nicest to catch NPE here, but the internal are throwing that exception when the service is not available yet
-			return Optional.empty();
-		}
+		throw new UnsupportedOperationException(String.format("Optional Service injection for type '%s' is not available in provider '%s'", type.getClass(), getClass().getSimpleName()));
 	}
 
 	/**
