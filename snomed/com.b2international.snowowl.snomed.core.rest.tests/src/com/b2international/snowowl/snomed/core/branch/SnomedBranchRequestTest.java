@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
@@ -201,20 +202,8 @@ public class SnomedBranchRequestTest {
 			.execute(bus)
 			.getSync();
 		
-		boolean isDone = false;
-		do {
-			isDone = JobRequests.prepareGet(mergeJobId)
-					.buildAsync()
-					.execute(bus)
-					.getSync()
-					.isDone();
-		} while (!isDone);
-		
-		final Merge merge = JobRequests.prepareGet(mergeJobId)
-			.buildAsync()
-			.execute(bus)
-			.getSync()
-			.getResultAs(JsonSupport.getDefaultObjectMapper(), Merge.class);
+		final RemoteJobEntry mergeJobResult = JobRequests.waitForJob(bus, mergeJobId);
+		final Merge merge = mergeJobResult.getResultAs(JsonSupport.getDefaultObjectMapper(), Merge.class);
 		
 		assertEquals(true, merge.getConflicts().isEmpty());
 		

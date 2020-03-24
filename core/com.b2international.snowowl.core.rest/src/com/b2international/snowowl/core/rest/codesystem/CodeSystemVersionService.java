@@ -155,19 +155,7 @@ public class CodeSystemVersionService {
 				.execute(bus.get())
 				.getSync(1, TimeUnit.MINUTES);
 		
-		RemoteJobEntry job = null;
-		do {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				throw new SnowowlRuntimeException(e);
-			}
-			
-			job = JobRequests.prepareGet(jobId)
-					.buildAsync()
-					.execute(bus.get())
-					.getSync(1, TimeUnit.MINUTES);
-		} while (job == null || !job.isDone());
+		RemoteJobEntry job = JobRequests.waitForJob(bus.get(), jobId, 1000);
 		
 		if (job.isSuccessful()) {
 			return getCodeSystemVersionById(shortName, properties.getVersion());

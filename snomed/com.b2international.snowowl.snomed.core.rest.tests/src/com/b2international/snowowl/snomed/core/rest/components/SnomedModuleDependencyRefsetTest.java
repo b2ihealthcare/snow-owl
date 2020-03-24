@@ -185,7 +185,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponent().getId());
 			final Date originalMemberEffectiveTime = moduleToReferencedComponentAndEffectiveDateMap.get(pair);
 			if (originalMemberEffectiveTime != null) {
-				assertEquals("Effective dates on unaffected existing module dependency members shouldn't be updated after versioning" , originalMemberEffectiveTime,  member.getEffectiveTime());
+				assertEquals(String.format("Effective dates on unaffected existing module dependency members shouldn't be updated after versioning. ModuleID: %s", member.getReferencedComponentId()), originalMemberEffectiveTime,  member.getEffectiveTime());
 			} else {
 				assertEquals("The new members effective time should match the versionDate", effectiveDate, member.getEffectiveTime());
 			}

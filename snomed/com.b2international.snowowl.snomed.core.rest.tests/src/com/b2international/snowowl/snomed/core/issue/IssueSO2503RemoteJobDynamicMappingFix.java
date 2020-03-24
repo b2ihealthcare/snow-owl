@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.jobs.JobRequests;
-import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 
 /**
@@ -77,16 +76,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 	}
 
 	private Object waitDone(String jobId) {
-		RemoteJobEntry job;
-		do {
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			job = JobRequests.prepareGet(jobId).buildAsync().execute(getBus()).getSync();
-		} while (!job.isDone());
-		return null;
+		return JobRequests.waitForJob(getBus(), jobId, 50);
 	}
 	
 }
