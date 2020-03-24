@@ -74,7 +74,7 @@
   {
   	"id": "669",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Members must not duplicate each ohter.",
+    "messageTemplate": "Members must not duplicate each other.",
     "severity": "ERROR",
     "checkType": "FAST",
     "type": "script-groovy",
@@ -83,7 +83,7 @@
   {
   	"id": "670",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Association type reference set members must not duplicate each ohter.",
+    "messageTemplate": "Association type reference set members must not duplicate each other.",
     "severity": "ERROR",
     "checkType": "FAST",
     "type": "script-groovy",
