@@ -34,19 +34,19 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.branch.Branching;
+import com.b2international.snowowl.core.branch.Merging;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.repository.JsonSupport;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.request.Branching;
-import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.datastore.request.Merging;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -149,7 +149,6 @@ public class SnomedBranchRequestTest {
 		final Branching branches = RepositoryRequests.branching();
 		final Merging merges = RepositoryRequests.merging();
 		
-		final String mergeJobId = UUID.randomUUID().toString();
 		final String branchA = UUID.randomUUID().toString();
 		final String branchB = UUID.randomUUID().toString();
 
@@ -194,8 +193,7 @@ public class SnomedBranchRequestTest {
 				.build(REPOSITORY_ID)
 				.getRequest();
 		
-		JobRequests.prepareSchedule()
-			.setId(mergeJobId)
+		final String mergeJobId = JobRequests.prepareSchedule()
 			.setDescription("Merging changes")
 			.setRequest(mergeRequest)
 			.setUser(User.SYSTEM.getUsername())

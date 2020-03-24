@@ -22,7 +22,7 @@ Export-Package: com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.fhir.core.provider,
  com.b2international.snowowl.fhir.core.search,
  com.b2international.snowowl.fhir.core.valueset
-Require-Bundle: com.b2international.snowowl.datastore;visibility:=reexport,
+Require-Bundle: com.b2international.snowowl.core,
  io.swagger.annotations;bundle-version="1.5.14"
 Bundle-ClassPath: .
 Import-Package: org.osgi.framework;version="1.7.0",

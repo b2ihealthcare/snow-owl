@@ -3,11 +3,11 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl LDAP Identity Module
 Bundle-SymbolicName: com.b2international.snowowl.identity.ldap
 Bundle-Version: 7.5.0.qualifier
-Fragment-Host: com.b2international.snowowl.identity
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Import-Package: com.fasterxml.jackson.annotation;version="2.9.9",
- javax.naming,
+Import-Package: javax.naming,
  javax.naming.directory,
  javax.naming.ldap
 Automatic-Module-Name: com.b2international.snowowl.identity.ldap
 Export-Package: com.b2international.snowowl.identity.ldap;x-internal:=true
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
+ com.b2international.snowowl.core

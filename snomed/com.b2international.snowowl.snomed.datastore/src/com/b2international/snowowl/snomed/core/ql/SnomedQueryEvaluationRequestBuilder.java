@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 
 /**
  * @since 6.12

@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
-import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.core.identity.Permission;
 
 /**
  * @since 6.5

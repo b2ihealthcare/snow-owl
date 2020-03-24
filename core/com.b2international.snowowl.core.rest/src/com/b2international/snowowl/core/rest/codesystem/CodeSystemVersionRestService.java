@@ -30,10 +30,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.validation.ApiValidation;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.CodeSystemVersion;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

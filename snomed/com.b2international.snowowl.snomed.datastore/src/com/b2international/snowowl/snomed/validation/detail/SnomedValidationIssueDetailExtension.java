@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -73,6 +74,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 6.4
  */
+@Component
 public class SnomedValidationIssueDetailExtension implements ValidationIssueDetailExtension {
 	
 	public final static class SnomedIssueDetailFilterFields {

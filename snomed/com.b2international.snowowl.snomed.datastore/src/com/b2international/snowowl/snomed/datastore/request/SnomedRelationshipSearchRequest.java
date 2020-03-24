@@ -24,7 +24,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;

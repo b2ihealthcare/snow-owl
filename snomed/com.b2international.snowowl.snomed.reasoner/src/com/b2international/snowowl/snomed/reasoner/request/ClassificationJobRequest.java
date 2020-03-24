@@ -35,11 +35,11 @@ import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
-import com.b2international.snowowl.datastore.request.Locks;
-import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.jobs.RemoteJob;
+import com.b2international.snowowl.core.locks.Locks;
+import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -89,7 +89,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 	@Override
 	public Boolean execute(final BranchContext context) {
 		final RemoteJob job = context.service(RemoteJob.class);
-		final String classificationId = job.getId();
+		final String classificationId = job.getKey();
 		final String userId = job.getUser();
 
 		final Branch branch = context.branch();

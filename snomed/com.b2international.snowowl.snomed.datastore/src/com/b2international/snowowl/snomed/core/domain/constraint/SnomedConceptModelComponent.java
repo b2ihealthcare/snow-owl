@@ -23,8 +23,6 @@ import java.util.Objects;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptModelComponentFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.google.common.base.Strings;
 
 /**

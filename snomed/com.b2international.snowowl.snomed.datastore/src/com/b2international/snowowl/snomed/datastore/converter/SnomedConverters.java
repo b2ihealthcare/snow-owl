@@ -20,7 +20,7 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.converter.ResourceConverter;
+import com.b2international.snowowl.core.request.ResourceConverter;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;

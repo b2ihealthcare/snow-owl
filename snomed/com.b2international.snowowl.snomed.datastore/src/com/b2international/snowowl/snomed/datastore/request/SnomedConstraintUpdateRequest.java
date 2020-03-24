@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 

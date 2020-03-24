@@ -17,20 +17,45 @@ package com.b2international.snowowl.core.id;
 
 import org.elasticsearch.common.UUIDs;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
+
 /**
- * Class to use to generate decentralized random UUIDs. 
+ * Class to use to generate decentralized random UUIDs.
  * 
  * @since 7.3
  */
 public class IDs {
 
 	/**
-	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index as primary key. 
+	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index as primary key.
+	 * 
 	 * @return
 	 * @see UUIDs
 	 */
 	public static final String base64UUID() {
 		return UUIDs.base64UUID();
 	}
+
+	/**
+	 * Create an SHA-1 hash digest from the given value and returns the first N characters. Similar to how Git creates a unique shortened SHA-1
+	 * commit for Git commits, this can be useful for ID generation in certain scenarios.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static String shortSha1(String value, int length) {
+		return sha1(value).substring(0, length);
+	}
 	
+	/**
+	 * Create an SHA-1 hash digest from the given value and returns it.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static String sha1(String value) {
+		return Hashing.sha1().hashString(value, Charsets.UTF_8).toString();
+	}
+
 }

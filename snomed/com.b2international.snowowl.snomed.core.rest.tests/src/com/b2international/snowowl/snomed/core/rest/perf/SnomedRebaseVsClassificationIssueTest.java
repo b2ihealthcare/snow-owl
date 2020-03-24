@@ -24,8 +24,8 @@ import java.util.concurrent.Callable;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.google.common.base.Function;
 
 /**

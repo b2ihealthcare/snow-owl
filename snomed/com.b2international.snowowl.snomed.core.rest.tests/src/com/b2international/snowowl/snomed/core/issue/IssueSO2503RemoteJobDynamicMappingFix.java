@@ -23,14 +23,14 @@ import java.util.Date;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
  * @since 5.11.3
