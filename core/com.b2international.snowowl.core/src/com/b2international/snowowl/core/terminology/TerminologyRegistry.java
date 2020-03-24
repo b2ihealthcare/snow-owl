@@ -106,6 +106,10 @@ public enum TerminologyRegistry {
 		return terminologyComponentsByShortId.get(shortId);
 	}
 	
+	public boolean hasTerminologyComponentByShortId(short shortId) {
+		return terminologyComponentsByShortId.containsKey(shortId);
+	}
+	
 	public TerminologyComponent getTerminologyComponentById(String id) {
 		checkArgument(terminologyComponentsById.containsKey(id), "Missing terminology component for ID '%s'.", id);
 		return terminologyComponentsById.get(id);

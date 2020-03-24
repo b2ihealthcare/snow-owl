@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableSet;
 public final class Role implements Serializable {
 	
 	public static final Role UNSPECIFIED = new Role("Unspecified", Collections.emptySet());
-	public static final Role ADMINISTRATOR = new Role("Administrator", ImmutableSet.of(new Permission(Permission.ALL, Permission.ALL, "")));
+	public static final Role ADMINISTRATOR = new Role("Administrator", ImmutableSet.of(Permission.toAll(Permission.ALL)));
 	
 	private static final long serialVersionUID = 1601508745318826995L;
 

@@ -37,14 +37,10 @@ import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.index.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -233,22 +229,6 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			// XXX effective time restore should be the last processing unit before we send the changes to commit
 			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);
 		}
-	}
-	
-	@Override
-	protected short getTerminologyComponentId(RevisionDocument revision) {
-		if (revision instanceof SnomedConceptDocument) {
-			return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-		} else if (revision instanceof SnomedDescriptionIndexEntry) {
-			return SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-		} else if (revision instanceof SnomedRelationshipIndexEntry) {
-			return SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-		} else if (revision instanceof SnomedConstraintDocument) {
-			return SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER;
-		} else if (revision instanceof SnomedRefSetMemberIndexEntry) {
-			return SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
-		}
-		throw new UnsupportedOperationException("Unsupported revision document: " + revision);
 	}
 	
 	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, String characteristicTypeId) {

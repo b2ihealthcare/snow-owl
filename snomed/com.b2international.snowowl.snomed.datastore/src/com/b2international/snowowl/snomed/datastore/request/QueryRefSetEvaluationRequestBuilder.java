@@ -16,14 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.request.ResourceRequest;
-import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.core.request.IndexResourceRequest;
+import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluations;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetEvaluationRequestBuilder extends ResourceRequestBuilder<QueryRefSetEvaluationRequestBuilder, BranchContext, QueryRefSetMemberEvaluations> {
+public final class QueryRefSetEvaluationRequestBuilder extends IndexResourceRequestBuilder<QueryRefSetEvaluationRequestBuilder, BranchContext, QueryRefSetMemberEvaluations> {
 
 	private String referenceSetId;
 
@@ -35,7 +35,7 @@ public final class QueryRefSetEvaluationRequestBuilder extends ResourceRequestBu
 	}
 	
 	@Override
-	protected ResourceRequest<BranchContext, QueryRefSetMemberEvaluations> create() {
+	protected IndexResourceRequest<BranchContext, QueryRefSetMemberEvaluations> create() {
 		return new EvaluateQueryRefSetRequest(referenceSetId);
 	}
 

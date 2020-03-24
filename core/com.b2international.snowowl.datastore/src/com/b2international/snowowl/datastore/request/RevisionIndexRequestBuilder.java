@@ -16,9 +16,10 @@
 package com.b2international.snowowl.datastore.request;
 
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.RequestBuilder;
+import com.google.common.base.Strings;
 
 /**
  * Provides a default method for wrapping {@link BranchContext}-based requests
@@ -29,14 +30,32 @@ import com.b2international.snowowl.core.events.RequestBuilder;
  * @since 5.7
  * @param <R> - the return type
  */
-public interface RevisionIndexRequestBuilder<R> extends RequestBuilder<BranchContext, R> {
+public interface RevisionIndexRequestBuilder<R> extends BranchRequestBuilder<R> {
 
+	@Override
 	default AsyncRequest<R> build(String repositoryId, String branch) {
-		return new AsyncRequest<>(
-			new RepositoryRequest<>(repositoryId,
-				new BranchRequest<>(branch, 
-					new RevisionIndexReadRequest<>(build())
+		// if the branch starts with MAIN, then it is an explicit branch path with a repositoryId
+		if (Strings.nullToEmpty(branch).startsWith(Branch.MAIN_PATH)) {
+			return new AsyncRequest<>(
+				new RepositoryRequest<>(repositoryId,
+					new HealthCheckingRequest<>(
+						new BranchRequest<>(branch,
+							new RevisionIndexReadRequest<>(build())
+						),
+						allowedHealthstates()
+					)
 				)
+			);
+		} else {
+			return build(branch);
+		}
+	}
+
+	default AsyncRequest<R> build(String codeSystemUri) {
+		return new AsyncRequest<>(
+			new CodeSystemResourceRequest<>(
+				codeSystemUri,
+				new RevisionIndexReadRequest<>(build())
 			)
 		);
 	}
