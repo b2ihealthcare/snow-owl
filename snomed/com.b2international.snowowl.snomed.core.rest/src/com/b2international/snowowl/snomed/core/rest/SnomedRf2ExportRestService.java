@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -79,7 +80,7 @@ public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
 		final Rf2RefSetExportLayout globalExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
 		final ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
-			.setReleaseType(params.getType())
+			.setReleaseType(params.getType() == null ? null : Rf2ReleaseType.getByNameIgnoreCase(params.getType()))
 			.setExtensionOnly(params.isExtensionOnly())
 			.setLocales(acceptLanguage)
 			.setIncludePreReleaseContent(params.isIncludeUnpublished())
@@ -90,7 +91,7 @@ public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
 			.setTransientEffectiveTime(params.getTransientEffectiveTime())
 			.setStartEffectiveTime(params.getStartEffectiveTime())
 			.setEndEffectiveTime(params.getEndEffectiveTime())
-			.setRefSetExportLayout(params.getRefSetLayout() == null ? globalExportLayout : params.getRefSetLayout())
+			.setRefSetExportLayout(params.getRefSetLayout() == null ? globalExportLayout : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
 			.build(this.repositoryId, branch)
 			.execute(getBus())
 			.getSync();

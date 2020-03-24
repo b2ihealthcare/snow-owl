@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
 import io.swagger.annotations.ApiParam;
@@ -27,8 +26,8 @@ import io.swagger.annotations.ApiParam;
  */
 public final class SnomedRf2ExportConfiguration {
 
-	@ApiParam(value = "The RF2 type to use (DELTA, SNAPSHOT, FULL)", defaultValue = "SNAPSHOT")
-	private Rf2ReleaseType type = Rf2ReleaseType.SNAPSHOT;
+	@ApiParam(value = "The RF2 type to use", allowableValues = "full,snapshot,delta", defaultValue = "snapshot")
+	private String type = Rf2ReleaseType.SNAPSHOT.name();
 	
 	@ApiParam(value = "The namespaceId to use in the release archive name")
 	private String namespaceId = "INT";
@@ -54,18 +53,18 @@ public final class SnomedRf2ExportConfiguration {
 	@ApiParam(value = "To export the content of the Extension only or all dependencies as well forming an Edition Release.")
 	private boolean extensionOnly = false;
 	
-	@ApiParam(value = "The RefSet file layout to use (COMBINED, INDIVIDUAL). Defaults to server configuration key 'snomed.export.refSetLayout'.")
-	private Rf2RefSetExportLayout refSetLayout;
+	@ApiParam(value = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
+	private String refSetLayout;
 	
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
 	 * @return the desired RF2 release type.
 	 */
-	public Rf2ReleaseType getType() {
+	public String getType() {
 		return type;
 	}
 	
-	public void setType(Rf2ReleaseType type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 	
@@ -185,11 +184,11 @@ public final class SnomedRf2ExportConfiguration {
 		return extensionOnly;
 	}
 	
-	public Rf2RefSetExportLayout getRefSetLayout() {
+	public String getRefSetLayout() {
 		return refSetLayout;
 	}
 	
-	public void setRefSetLayout(Rf2RefSetExportLayout refSetLayout) {
+	public void setRefSetLayout(String refSetLayout) {
 		this.refSetLayout = refSetLayout;
 	}
 	
