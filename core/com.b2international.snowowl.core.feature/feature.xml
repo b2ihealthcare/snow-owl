@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.b2international.snowowl.server.core.feature"
+      id="com.b2international.snowowl.core.feature"
       label="Snow Owl Common Server Core"
       version="7.5.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
-      Snow Owl Terminology Server core feature.
+      Snow Owl Core feature.
 Visit us at http://b2i.sg
    </description>
 
    <copyright>
-      Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+      Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
    </copyright>
 
    <license url="http://www.example.com/license">
@@ -19,7 +19,7 @@ Visit us at http://b2i.sg
    </license>
 
    <includes
-         id="com.b2international.snowowl.server.dependencies.feature"
+         id="com.b2international.snowowl.core.dependencies.feature"
          version="0.0.0"/>
 
    <plugin
@@ -88,13 +88,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.index"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.mapdb"
          download-size="0"
          install-size="0"
          version="0.0.0"

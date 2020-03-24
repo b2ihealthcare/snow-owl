@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.b2international.snowowl.server.core.feature_7.5.0.qualifier.jar" id="com.b2international.snowowl.server.core.feature" version="7.5.0.qualifier">
+   <feature url="features/com.b2international.snowowl.core.feature_7.5.0.qualifier.jar" id="com.b2international.snowowl.core.feature" version="7.5.0.qualifier">
       <category name="server-core"/>
    </feature>
    <feature url="features/com.b2international.snowowl.server.product.feature_7.5.0.qualifier.jar" id="com.b2international.snowowl.server.product.feature" version="7.5.0.qualifier">
