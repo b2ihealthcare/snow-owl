@@ -332,11 +332,15 @@
 									<additionalArgument>-windowtitle "Snow Owl Scripting API"</additionalArgument>
 								</additionalArguments>
 								<includes>
-									<include>com.b2international.snowowl.datastore.request</include>
-									<include>com.b2international.snowowl.datastore.request.compare</include>
-									<include>com.b2international.snowowl.datastore.request.job</include>
-									<include>com.b2international.snowowl.datastore.request.repository</include>
-									<include>com.b2international.snowowl.datastore.request.version</include>
+									<include>com.b2international.snowowl.core.branch</include>
+									<include>com.b2international.snowowl.core.branch.compare</include>
+									<include>com.b2international.snowowl.core.codesystem</include>
+									<include>com.b2international.snowowl.core.codesystem.version</include>
+									<include>com.b2international.snowowl.core.commit</include>
+									<include>com.b2international.snowowl.core.request</include>
+									<include>com.b2international.snowowl.core.jobs</include>
+									<include>com.b2international.snowowl.core.repository</include>
+									<include>com.b2international.snowowl.core.version</include>
 									<include>com.b2international.snowowl.snomed.datastore.request</include>
 									<include>com.b2international.snowowl.snomed.datastore.request.dsv</include>
 									<include>com.b2international.snowowl.snomed.datastore.request.rf2</include>
