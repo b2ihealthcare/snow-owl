@@ -21,8 +21,8 @@ import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -43,7 +43,6 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 			final String namespaceFilter, 
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
-			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
 			final Collection<String> characteristicTypes) {
 
@@ -52,7 +51,6 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 				namespaceFilter, 
 				transientEffectiveTime, 
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules);
 		this.characteristicTypes = characteristicTypes;
 	}

@@ -4,6 +4,7 @@ Bundle-Name: Snow Owl Core Tests
 Bundle-SymbolicName: com.b2international.snowowl.core.tests
 Bundle-Version: 7.5.0.qualifier
 Bundle-Vendor: B2i Healthcare
-Fragment-Host: com.b2international.snowowl.core;bundle-version="4.1.0"
+Fragment-Host: com.b2international.snowowl.core;bundle-version="7.5.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: org.junit;bundle-version="4.11.0"
+Require-Bundle: org.junit;bundle-version="4.12.0",
+ org.assertj.core;bundle-version="1.7.1"

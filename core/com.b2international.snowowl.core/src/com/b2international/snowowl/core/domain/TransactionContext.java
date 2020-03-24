@@ -79,6 +79,23 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	long commit();
 	
 	/**
+	 * Commits all changes made so far using the current userId, the given commit comment and no lock context.
+	 * 
+	 * @param commitComment - the commit comment to use for the commit
+	 * @return - the timestamp of the successful commit
+	 */
+	long commit(String commitComment);
+	
+	/**
+	 * Commits all changes made so far using the current userId and the given commitComment and lock context.
+	 * 
+	 * @param commitComment - the commit comment to use for the commit
+	 * @param parentContextDescription - the parent lock context to use for the commit
+	 * @return - the timestamp of the successful commit
+	 */
+	long commit(String commitComment, String parentContextDescription);
+	
+	/**
 	 * Commits all changes made so far.
 	 * 
 	 * @param userId

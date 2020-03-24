@@ -10,5 +10,12 @@
              properties="devVersion"
              type="java.lang.Object">
        </propertyTester>
+       <propertyTester
+            class="com.b2international.snowowl.core.propertytester.OsPropertyTester"
+            id="com.b2international.snowowl.core.propertytester.OsPopertyTester"
+            namespace="com.b2international.snowowl.core.os"
+            properties="mac,windows"
+            type="java.lang.Object">
+      </propertyTester>
    </extension>
 </plugin>

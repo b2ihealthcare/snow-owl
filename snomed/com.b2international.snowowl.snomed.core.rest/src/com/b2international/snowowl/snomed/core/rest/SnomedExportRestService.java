@@ -53,9 +53,9 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ExportResult;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
@@ -65,7 +65,6 @@ import com.b2international.snowowl.snomed.core.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
 
@@ -77,8 +76,9 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
+ * @deprecated - refactored and redesigned - see {@link SnomedRf2ExportRestService} - to eliminate the necessity of a memory stored object {@link SnomedExportRestRun}
  */
-@Api(value = "Exports", description="Exports", tags = "exports")
+@Api(value = "Exports (deprecated)", description="Exports (deprecated)", tags = "exports (deprecated)")
 @RestController
 @RequestMapping(value="/exports")
 public class SnomedExportRestService extends AbstractSnomedRestService {
@@ -127,27 +127,6 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		Branch branch = validateBranch(configuration);
 		
 		validateNamespace(configuration, branch);
-		validateCodeSystemShortName(configuration);
-	}
-
-	private void validateCodeSystemShortName(SnomedExportRestConfiguration configuration) {
-		if (!Strings.isNullOrEmpty(configuration.getCodeSystemShortName())) {
-			
-			int hitSize = CodeSystemRequests.prepareSearchCodeSystem()
-				.one()
-				.filterById(configuration.getCodeSystemShortName())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES)
-				.getTotal();
-			
-			if (hitSize == 0) {
-				throw new BadRequestException("Unknown code system with short name: %s", configuration.getCodeSystemShortName());
-			}
-			
-		} else {
-			throw new BadRequestException("Code system short name must be set for configuring the export properly.");
-		}
 	}
 
 	private void validateNamespace(SnomedExportRestConfiguration configuration, Branch branch) {
@@ -244,7 +223,6 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		
 		final ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
 			.setReleaseType(export.getType())
-			.setCodeSystem(export.getCodeSystemShortName())
 			.setExtensionOnly(export.isExtensionOnly())
 			.setLocales(export.getLocales())
 			.setIncludePreReleaseContent(includeUnpublished)
@@ -256,8 +234,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.setStartEffectiveTime(export.getStartEffectiveTime())
 			.setEndEffectiveTime(export.getEndEffectiveTime())
 			.setRefSetExportLayout(refSetExportLayout)
-			.setReferenceBranch(export.getBranchPath())
-			.build(this.repositoryId)
+			.build(this.repositoryId, export.getBranchPath())
 			.execute(getBus())
 			.getSync();
 		

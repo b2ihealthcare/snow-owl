@@ -27,9 +27,9 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSchedulingRule;
@@ -104,14 +104,16 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				repositoryId, 
 				branch.path());
 
-		return JobRequests.prepareSchedule()
-				.setId(classificationId)
+		JobRequests.prepareSchedule()
+				.setKey(classificationId)
 				.setUser(user)
 				.setRequest(jobRequest)
 				.setDescription(String.format("Classifying the ontology on %s", branch.path()))
 				.setSchedulingRule(rule)
 				.buildAsync()
 				.get(context, SCHEDULE_TIMEOUT_MILLIS);
+		
+		return classificationId;
 	}
 	
 	@Override

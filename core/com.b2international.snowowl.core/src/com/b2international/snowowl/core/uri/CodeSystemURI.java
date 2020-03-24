@@ -111,5 +111,9 @@ public final class CodeSystemURI implements Serializable {
 	public String toString() {
 		return getUri();
 	}
+
+	public static String head(String codeSystem) {
+		return String.format("%s/%s", codeSystem, HEAD);
+	}
 	
 }

@@ -32,8 +32,8 @@ import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExportFormat;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;

@@ -29,13 +29,13 @@ import org.junit.Test;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.JsonSupport;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.request.compare.CompareResult;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -70,7 +70,7 @@ public class BranchCompareRequestTest {
 
 	@Test
 	public void compareEmptyBranchWithoutBase() throws Exception {
-		final CompareResult compareResult = compare(null, branchPath);
+		final BranchCompareResult compareResult = compare(null, branchPath);
 		
 		assertThat(compareResult.getCompareBranch()).isEqualTo(branchPath);
 		assertThat(compareResult.getBaseBranch()).isEqualTo(Branch.MAIN_PATH);
@@ -81,7 +81,7 @@ public class BranchCompareRequestTest {
 	
 	@Test
 	public void compareEmptyBranchWithBase() throws Exception {
-		final CompareResult compareResult = compare(Branch.MAIN_PATH, branchPath);
+		final BranchCompareResult compareResult = compare(Branch.MAIN_PATH, branchPath);
 		
 		assertThat(compareResult.getCompareBranch()).isEqualTo(branchPath);
 		assertThat(compareResult.getBaseBranch()).isEqualTo(Branch.MAIN_PATH);
@@ -94,7 +94,7 @@ public class BranchCompareRequestTest {
 	public void compareBranchWithNewComponents() throws Exception {
 		final Set<ComponentIdentifier> newIds = prepareBranchWithNewChanges(branchPath);
 		
-		final CompareResult compare = compare(null, branchPath);
+		final BranchCompareResult compare = compare(null, branchPath);
 		assertThat(compare.getNewComponents()).containsAll(newIds);
 		assertThat(compare.getChangedComponents()).doesNotContainAnyElementsOf(newIds);
 		assertThat(compare.getDeletedComponents()).isEmpty();
@@ -115,7 +115,7 @@ public class BranchCompareRequestTest {
 			.getSync();
 		
 		// compare task branch and its parent
-		final CompareResult compare = compare(branchPath, taskBranchPath);
+		final BranchCompareResult compare = compare(branchPath, taskBranchPath);
 		assertThat(compare.getNewComponents()).isEmpty();
 		assertThat(compare.getChangedComponents()).contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, newConceptId));
 		assertThat(compare.getDeletedComponents()).isEmpty();
@@ -138,7 +138,7 @@ public class BranchCompareRequestTest {
 			.getSync();
 		
 		// compare task branch and its parent
-		final CompareResult compare = compare(branchPath, taskBranchPath);
+		final BranchCompareResult compare = compare(branchPath, taskBranchPath);
 		assertThat(compare.getNewComponents()).isEmpty();
 		assertThat(compare.getChangedComponents()).isEmpty();
 		assertThat(compare.getDeletedComponents()).containsAll(componentIdsToDelete);
@@ -146,7 +146,7 @@ public class BranchCompareRequestTest {
 	
 	@Test
 	public void remoteJobSupportEmptyCompare() throws Exception {
-		final CompareResult compareResult = compareOnJob(Branch.MAIN_PATH, branchPath);
+		final BranchCompareResult compareResult = compareOnJob(Branch.MAIN_PATH, branchPath);
 		
 		assertThat(compareResult.getCompareBranch()).isEqualTo(branchPath);
 		assertThat(compareResult.getBaseBranch()).isEqualTo(Branch.MAIN_PATH);
@@ -159,7 +159,7 @@ public class BranchCompareRequestTest {
 	public void remoteJobSupportCompareWithContent() throws Exception {
 		final Set<ComponentIdentifier> newIds = prepareBranchWithNewChanges(branchPath);
 		
-		final CompareResult compare = compareOnJob(null, branchPath);
+		final BranchCompareResult compare = compareOnJob(null, branchPath);
 		assertThat(compare.getNewComponents()).containsAll(newIds);
 		assertThat(compare.getChangedComponents()).doesNotContainAnyElementsOf(newIds);
 		assertThat(compare.getDeletedComponents()).isEmpty();
@@ -178,13 +178,13 @@ public class BranchCompareRequestTest {
 		return JobRequests.prepareGet(jobId).buildAsync().execute(bus).getSync();
 	}
 	
-	private CompareResult compare(String base, String compare) {
+	private BranchCompareResult compare(String base, String compare) {
 		return prepareCompare(base, compare)
 				.execute(bus)
 				.getSync();
 	}
 
-	private AsyncRequest<CompareResult> prepareCompare(String base, String compare) {
+	private AsyncRequest<BranchCompareResult> prepareCompare(String base, String compare) {
 		return RepositoryRequests.branching().prepareCompare()
 				.setBase(base)
 				.setCompare(compare)
@@ -220,7 +220,7 @@ public class BranchCompareRequestTest {
 		return newIds;
 	}
 	
-	private CompareResult compareOnJob(String base, String compare) throws Exception {
+	private BranchCompareResult compareOnJob(String base, String compare) throws Exception {
 		final String compareJobId = JobRequests.prepareSchedule()
 			.setRequest(prepareCompare(base, compare).getRequest())
 			.setUser("test@b2i.sg")
@@ -231,7 +231,7 @@ public class BranchCompareRequestTest {
 		
 		final RemoteJobEntry job = waitDone(compareJobId);
 		
- 		return job.getResultAs(JsonSupport.getDefaultObjectMapper(), CompareResult.class);
+ 		return job.getResultAs(JsonSupport.getDefaultObjectMapper(), BranchCompareResult.class);
 	}
 	
 }

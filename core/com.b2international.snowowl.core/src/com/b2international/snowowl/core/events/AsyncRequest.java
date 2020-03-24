@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 import com.b2international.commons.CompositeClassLoader;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.jobs.ScheduleJobRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -99,4 +101,49 @@ public final class AsyncRequest<R> {
 		return execute(context.service(IEventBus.class)).getSync(timeout, unit);
 	}
 
+	/**
+	 * Wraps the this {@link AsyncRequest}'s {@link #getRequest()} into a {@link ScheduleJobRequestBuilder} and prepares for execution.
+	 *  
+	 * @param description - the description to use for the job
+	 * @return the prepared {@link AsyncRequest} that will schedule the request as a job and return the job ID as a result
+	 */
+	public AsyncRequest<String> runAsJob(String description) {
+		return JobRequests.prepareSchedule()
+				.setDescription(description)
+				.setRequest(this)
+				.buildAsync();
+	}	
+	
+	/**
+	 * Wraps the this {@link AsyncRequest}'s {@link #getRequest()} into a {@link ScheduleJobRequestBuilder} and prepares for execution.
+	 *  
+	 * @param jobKey - the id to use for job identification
+	 * @param description - the description to use for the job
+	 * @return the prepared {@link AsyncRequest} that will schedule the request as a job and return the job ID as a result
+	 */
+	public AsyncRequest<String> runAsJob(String jobKey, String description) {
+		return JobRequests.prepareSchedule()
+				.setKey(jobKey)
+				.setDescription(description)
+				.setRequest(this)
+				.buildAsync();
+	}
+	
+	/**
+	 * Wraps the this {@link AsyncRequest}'s {@link #getRequest()} into a {@link ScheduleJobRequestBuilder} and prepares for execution.
+	 * The restart flag is enabled for the job scheduling, so it will remove any existing jobs with the same key.
+	 *  
+	 * @param jobKey - the id to use for job identification
+	 * @param description - the description to use for the job
+	 * @return the prepared {@link AsyncRequest} that will schedule the request as a job and return the job ID as a result
+	 */
+	public AsyncRequest<String> runAsJobWithRestart(String jobKey, String description) {
+		return JobRequests.prepareSchedule()
+				.setKey(jobKey)
+				.setDescription(description)
+				.setRequest(this)
+				.setRestart(true)
+				.buildAsync();
+	}
+	
 }

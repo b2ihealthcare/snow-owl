@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.date;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.annotation.Nullable;
@@ -128,12 +129,29 @@ public abstract class EffectiveTimes {
 	}
 
 	/**
-	 * Ensures that for effective times the {@link Dates#getTime(Object)} will always return a valid long, for <code>null</code> input it will return
-	 * {@link #UNSET_EFFECTIVE_TIME}.
+	 * Returns the milliseconds representation of an effective time specified in String format. If the effectiveTime is <code>null</code> it returns
+	 * the {@value #UNSET_EFFECTIVE_TIME} value.
+	 * 
+	 * @param effectiveTime
+	 *            - to extract time from
+	 * @param datePattern
+	 *            - a valid {@link SimpleDateFormat} date pattern
+	 * @return the number of milliseconds from the effective time String
+	 * @see DateFormats
+	 * @see #getEffectiveTime(Date)
+	 */
+	public static final long getEffectiveTime(@Nullable String effectiveTime, String datePattern) {
+		return getEffectiveTime(parse(effectiveTime, datePattern));
+	}
+
+	/**
+	 * Returns the milliseconds representation of an effective time Date. If the effectiveTime is <code>null</code> it returns the
+	 * {@value #UNSET_EFFECTIVE_TIME} value.
 	 * 
 	 * @param effectiveTime
 	 *            - to extract time from
 	 * @return the number of milliseconds from the date object
+	 * @see #getEffectiveTime(String, String)
 	 */
 	public static final long getEffectiveTime(@Nullable Date effectiveTime) {
 		if (null == effectiveTime) {
@@ -173,7 +191,7 @@ public abstract class EffectiveTimes {
 			try {
 				if (UNSET_EFFECTIVE_TIME == Long.parseLong((String) effectiveTimeValue)) {
 					return true;
-				} 
+				}
 			} catch (NumberFormatException e) {
 				// ignore, return false, since the given value cannot be a valid unset effective time value
 			}

@@ -25,11 +25,11 @@ import java.util.UUID;
 import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
-import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -71,11 +71,8 @@ public final class SnomedCommand extends Command {
 		
 		private static final String SUPPORTED_FORMAT = "rf2";
 		
-		@Option(names = { "-c", "--codesystem" }, description = "The target codesystem where versions should be created if createVersions optionKey is enabled.", defaultValue = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
-		String codeSystem = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
-		
-		@Option(names = { "-b", "--branch" }, description = "The target branch. After a successful import all importable content will be accessible from this branch.", defaultValue = Branch.MAIN_PATH)
-		String branch = Branch.MAIN_PATH;
+		@Option(names = { "-b", "--branch" }, description = "The target branch. After a successful import all importable content will be accessible from this branch.", defaultValue = "SNOMEDCT/HEAD", required = true)
+		String branch = CodeSystemURI.head(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 		
 		@Option(names = { "-f", "--format" }, description = "The import file format. Currently 'rf2' is supported only.", defaultValue = SUPPORTED_FORMAT)
 		String format = SUPPORTED_FORMAT;
@@ -115,10 +112,8 @@ public final class SnomedCommand extends Command {
 			}
 			
 			final Rf2ImportResponse response = SnomedRequests.rf2().prepareImport()
-					.setCodeSystemShortName(codeSystem)
 					.setCreateVersions(createVersions)
 					.setRf2ArchiveId(rf2ArchiveId)
-					.setUserId(user.getUsername())
 					.setReleaseType(rf2ReleaseType)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 					.execute(getBus())

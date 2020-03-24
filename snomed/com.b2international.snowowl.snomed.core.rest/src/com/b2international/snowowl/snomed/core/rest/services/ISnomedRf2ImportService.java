@@ -26,6 +26,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration
 
 /**
  * Implementations allow importing SNOMED CT content from RF2 release archives.
+ * @deprecated - corresponding REST API has been deprecated, will be removed in 7.6
  */
 public interface ISnomedRf2ImportService {
 

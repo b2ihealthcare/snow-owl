@@ -17,8 +17,6 @@ package com.b2international.snowowl.fhir.tests.serialization.dt;
 
 import static org.junit.Assert.assertEquals;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.Test;

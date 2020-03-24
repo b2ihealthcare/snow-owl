@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -28,10 +27,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -50,12 +46,11 @@ public class SnomedExportRestConfiguration {
 	
 	private Collection<String> moduleIds;
 	private Collection<String> refsetIds;
-	private Date startEffectiveTime;
-	private Date endEffectiveTime;
+	private String startEffectiveTime;
+	private String endEffectiveTime;
 	private String transientEffectiveTime;
 	private boolean includeUnpublished;
 	
-	private String codeSystemShortName = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	private boolean extensionOnly = false;
 	private String acceptLanguage = "en-US,en-GB";
 
@@ -105,24 +100,22 @@ public class SnomedExportRestConfiguration {
 	/**
 	 * Returns with a restricting export start effective time. Can be {@code null}.
 	 */
-	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	public Date getStartEffectiveTime() {
+	public String getStartEffectiveTime() {
 		return startEffectiveTime;
 	}
 	
-	public void setStartEffectiveTime(Date startEffectiveTime) {
+	public void setStartEffectiveTime(String startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 	}
 
 	/**
 	 * Returns with a restricting export end effective time.May return with {@code null}.
 	 */
-	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	public Date getEndEffectiveTime() {
+	public String getEndEffectiveTime() {
 		return endEffectiveTime;
 	}
 	
-	public void setEndEffectiveTime(Date endEffectiveTime) {
+	public void setEndEffectiveTime(String endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 	}
 	
@@ -198,24 +191,6 @@ public class SnomedExportRestConfiguration {
 	 */
 	public boolean isIncludeUnpublished() {
 		return includeUnpublished;
-	}
-	
-	/**
-	 * Sets the short name of the code system that needs to be exported
-	 * 
-	 * @param codeSystemShortName the codeSystemShortName to set
-	 */
-	public void setCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-	}
-	
-	/**
-	 * Returns the short name of the code system that needs to be exported
-	 * 
-	 * @return the codeSystemShortName
-	 */
-	public String getCodeSystemShortName() {
-		return codeSystemShortName;
 	}
 	
 	/**

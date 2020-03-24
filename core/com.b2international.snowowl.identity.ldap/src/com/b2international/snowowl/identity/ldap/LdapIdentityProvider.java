@@ -35,11 +35,11 @@ import javax.naming.ldap.InitialLdapContext;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.Role;
-import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.identity.domain.Users;
+import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.Role;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.identity.Users;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;

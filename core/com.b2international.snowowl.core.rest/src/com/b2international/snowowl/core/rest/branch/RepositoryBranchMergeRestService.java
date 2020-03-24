@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.rest.branch;
 
 import java.util.Collections;
-import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,15 +31,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.b2international.commons.validation.ApiValidation;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.Merges;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -83,7 +80,7 @@ public abstract class RepositoryBranchMergeRestService extends AbstractRestServi
 		final String sourcePath = restRequest.getSource();
 		final String targetPath = restRequest.getTarget();
 		
-		final Request<ServiceProvider, Merge> mergeRequest = RepositoryRequests.merging()
+		final String jobId = RepositoryRequests.merging()
 				.prepareCreate()
 				.setSource(sourcePath)
 				.setTarget(targetPath)
@@ -91,17 +88,9 @@ public abstract class RepositoryBranchMergeRestService extends AbstractRestServi
 				.setUserId(author)
 				.setCommitComment(restRequest.getCommitComment())
 				.build(repositoryId)
-				.getRequest();
-		
-		final String jobId = UUID.randomUUID().toString();
-		
-		JobRequests.prepareSchedule()
-			.setId(jobId)
-			.setUser(author)
-			.setDescription(String.format("Merging branches %s to %s", sourcePath, targetPath))
-			.setRequest(mergeRequest)
-			.buildAsync()
-			.execute(getBus());
+				.runAsJob(String.format("Merge branch '%s' into '%s'", sourcePath, targetPath))
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
 		
 		return ResponseEntity.accepted().location(getResourceLocationURI(jobId)).build();
 	}

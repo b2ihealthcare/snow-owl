@@ -24,10 +24,8 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstant
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedExportRestRequests.createExport;
-import static com.b2international.snowowl.snomed.core.rest.SnomedExportRestRequests.getExport;
-import static com.b2international.snowowl.snomed.core.rest.SnomedExportRestRequests.getExportFile;
-import static com.b2international.snowowl.snomed.core.rest.SnomedExportRestRequests.getExportId;
+import static com.b2international.snowowl.snomed.core.rest.SnomedExportRestRequests.doExport;
+import static com.b2international.snowowl.snomed.core.rest.SnomedExportRestRequests.export;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.DEFAULT_TERM;
@@ -58,8 +56,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -70,11 +68,11 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -201,26 +199,10 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void createValidExportConfiguration() {
-		Map<?, ?> config = ImmutableMap.builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
-				.build();
-
-		String exportId = getExportId(createExport(config));
-
-		getExport(exportId).statusCode(200)
-		.body("type", equalTo(Rf2ReleaseType.DELTA.name()))
-		.body("branchPath", equalTo(branchPath.getPath()));
-	}
-
-	@Test
-	public void createInvalidExportConfiguration() {
-		Map<?, ?> config = ImmutableMap.builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.build();
-
-		createExport(config).statusCode(400);
+	public void incorrectRf2ReleaseType() {
+		export(branchPath, ImmutableMap.of("type", "unknown"))
+			.then()
+			.statusCode(400);
 	}
 
 	@Test
@@ -231,20 +213,12 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 		String transientEffectiveTime = "20170301";
 
-		Map<?, ?> config = ImmutableMap.builder()
+		Map<String, ?> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("transientEffectiveTime", transientEffectiveTime)
 				.build();
 
-		String exportId = getExportId(createExport(config));
-
-		getExport(exportId).statusCode(200)
-		.body("type", equalTo(Rf2ReleaseType.DELTA.name()))
-		.body("branchPath", equalTo(branchPath.getPath()))
-		.body("transientEffectiveTime", equalTo(transientEffectiveTime));
-
-		File exportArchive = getExportFile(exportId);
+		File exportArchive = doExport(branchPath, config);
 
 		String statedLine = TAB_JOINER.join(statedRelationshipId, 
 				transientEffectiveTime, 
@@ -295,23 +269,19 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	public void executeMultipleExportsAtTheSameTime() throws Exception {
 		
 		Promise<ExportResult> first = SnomedRequests.rf2().prepareExport()
-			.setCodeSystem("SNOMEDCT")
 			.setReleaseType(Rf2ReleaseType.FULL)
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
-			.setReferenceBranch(branchPath.getPath())
 			.setLocales(LOCALES)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus());
 		
 		Promise<ExportResult> second = SnomedRequests.rf2().prepareExport()
-			.setCodeSystem("SNOMEDCT")
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
 			.setReleaseType(Rf2ReleaseType.SNAPSHOT)
-			.setReferenceBranch(branchPath.getPath())
 			.setLocales(LOCALES)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus());
 		
 		String message = Promise.all(first, second)
@@ -362,23 +332,13 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		createVersion("SNOMEDCT-DELTA", "v1", versionEffectiveTime).statusCode(201);
 		IBranchPath versionPath = BranchPathUtils.createPath(branchPath, "v1");
 
-		Map<?, ?> config = ImmutableMap.builder()
-				.put("codeSystemShortName", "SNOMEDCT-DELTA")
+		Map<String, ?> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", versionPath.getPath())
 				.put("startEffectiveTime", versionEffectiveTime)
 				.put("endEffectiveTime", versionEffectiveTime)
 				.build();
 
-		String exportId = getExportId(createExport(config));
-
-		getExport(exportId).statusCode(200)
-		.body("type", equalTo(Rf2ReleaseType.DELTA.name()))
-		.body("branchPath", equalTo(versionPath.getPath()))
-		.body("startEffectiveTime", equalTo(versionEffectiveTime))
-		.body("endEffectiveTime", equalTo(versionEffectiveTime));
-
-		File exportArchive = getExportFile(exportId);
+		File exportArchive = doExport(versionPath, config);
 
 		String statedLine = TAB_JOINER.join(statedRelationshipId, 
 				versionEffectiveTime, 
@@ -443,25 +403,14 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath, conceptId);
 		// do not version description
 
-		Map<?, ?> config = ImmutableMap.builder()
-				.put("codeSystemShortName", "SNOMEDCT-GAMMA")
+		Map<String, ?> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("startEffectiveTime", relationshipEffectiveTime)
 				.put("endEffectiveTime", relationshipEffectiveTime)
 				.put("includeUnpublished", true)
 				.build();
 
-		String exportId = getExportId(createExport(config));
-
-		getExport(exportId).statusCode(200)
-		.body("type", equalTo(Rf2ReleaseType.DELTA.name()))
-		.body("branchPath", equalTo(branchPath.getPath()))
-		.body("startEffectiveTime", equalTo(relationshipEffectiveTime))
-		.body("endEffectiveTime", equalTo(relationshipEffectiveTime))
-		.body("includeUnpublished", equalTo(true));
-
-		File exportArchive = getExportFile(exportId);
+		File exportArchive = doExport(branchPath, config);
 
 		String statedLine = TAB_JOINER.join(statedRelationshipId, 
 				relationshipEffectiveTime, 
@@ -561,15 +510,12 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.body("effectiveTime", equalTo(versionEffectiveTime))
 			.body("released", equalTo(true));
 		
-		final Map<Object, Object> config = ImmutableMap.builder()
-				.put("codeSystemShortName", codeSystemShortName)
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.SNAPSHOT.name())
-				.put("branchPath", taskBranch.getPath())
 				.put("startEffectiveTime", versionEffectiveTime)
 				.build();
 			
-		final String exportId = getExportId(createExport(config));
-		final File exportArchive = getExportFile(exportId);
+		final File exportArchive = doExport(taskBranch, config);
 		
 		String refsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, newEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
 		String invalidRefsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
@@ -624,18 +570,14 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		// add a new component
 		String newMemberId = createNewRefSetMember(taskBranch, createdConceptId, createdRefSetId);
 		
-		final Map<Object, Object> config = ImmutableMap.builder()
-				.put("codeSystemShortName", codeSystemShortName)
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.SNAPSHOT.name())
-				.put("branchPath", taskBranch.getPath())
 				.put("startEffectiveTime", versionEffectiveTime)
 				.put("transientEffectiveTime", versionEffectiveTime)
 				.put("includeUnpublished", true)
 				.build();
 			
-		final String exportId = getExportId(createExport(config));
-		
-		final File exportArchive = getExportFile(exportId);
+		final File exportArchive = doExport(taskBranch, config);
 		
 		String refsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveTime, "0", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
 		String invalidRefsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
@@ -672,17 +614,14 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		// do not create new version
 		
-		final Map<Object, Object> config = ImmutableMap.builder()
-				.put("codeSystemShortName", codeSystemShortName)
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("startEffectiveTime", versionEffectiveTime)
 				.put("endEffectiveTime", versionEffectiveTime)
 				.put("includeUnpublished", true)
 				.build();
 			
-		final String exportId = getExportId(createExport(config));
-		final File exportArchive = getExportFile(exportId);
+		final File exportArchive = doExport(branchPath, config);
 		
 		String textDefinitionLine = getComponentLine(ImmutableList.<String> of(textDefinitionId, versionEffectiveTime, "1", MODULE_SCT_CORE, conceptId, "en",
 				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
@@ -723,17 +662,13 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final String newVersionEffectiveTime = "20170302";
 		createVersion(codeSystemShortName, "v2", newVersionEffectiveTime).statusCode(201);
 		
-		final Map<Object, Object> config = ImmutableMap.builder()
-				.put("codeSystemShortName", codeSystemShortName)
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("startEffectiveTime", newVersionEffectiveTime)
 				.put("endEffectiveTime", newVersionEffectiveTime)
 				.build();
 			
-		final String exportId = getExportId(createExport(config));
-		
-		final File exportArchive = getExportFile(exportId);
+		final File exportArchive = doExport(branchPath, config);
 		
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
 				.put("sct2_Description", true)
@@ -767,17 +702,14 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		// do not create new version
 		
-		final Map<Object, Object> config = ImmutableMap.builder()
-				.put("codeSystemShortName", codeSystemShortName)
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("startEffectiveTime", versionEffectiveTime)
 				.put("endEffectiveTime", versionEffectiveTime)
 				.put("includeUnpublished", true)
 				.build();
 			
-		final String exportId = getExportId(createExport(config));
-		final File exportArchive = getExportFile(exportId);
+		final File exportArchive = doExport(branchPath, config);
 		
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
 				.put("sct2_Description_Delta-en", true)
@@ -925,15 +857,12 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 		// do not create new version
 		
-		final Map<Object, Object> config = ImmutableMap.builder()
-				.put("codeSystemShortName", codeSystemShortName)
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("includeUnpublished", true)
 				.build();
 			
-		final String exportId = getExportId(createExport(config));
-		final File exportArchive = getExportFile(exportId);
+		final File exportArchive = doExport(branchPath, config);
 		
 		String englishDescriptionLine = createDescriptionLine(descriptionId, versionEffectiveTime, conceptId, "en", Concepts.SYNONYM, DEFAULT_TERM);
 		
@@ -998,17 +927,14 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionIdF, caseSignificanceChangeRequestBody).statusCode(204);
 		
 		// export delta rf2
-		final Map<Object, Object> config = ImmutableMap.builder()
-				.put("codeSystemShortName", codeSystemShortName)
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("startEffectiveTime", versionEffectiveTime)
 				.put("endEffectiveTime", versionEffectiveTime)
 				.put("includeUnpublished", true)
 				.build();
 		
-		final String exportId = getExportId(createExport(config));
-		final File exportArchive = getExportFile(exportId);
+		final File exportArchive = doExport(branchPath, config);
 	
 		String descriptionLineA = createDescriptionLine(descriptionIdA, "", conceptId, "en", Concepts.SYNONYM, DEFAULT_TERM,
 				Concepts.ENTIRE_TERM_CASE_SENSITIVE);
@@ -1087,16 +1013,13 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.extract().header("Location"));
 		
 		// export delta rf2
-		final Map<Object, Object> config = ImmutableMap.builder()
-				.put("codeSystemShortName", codeSystemShortName)
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("conceptsAndRelationshipsOnly", true)
 				.put("includeUnpublished", true)
 				.build();
 		
-		final String exportId = getExportId(createExport(config));
-		final File exportArchive = getExportFile(exportId);
+		final File exportArchive = doExport(branchPath, config);
 	
 		String conceptLine = TAB_JOINER.join(conceptId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.PRIMITIVE);
 		
@@ -1191,18 +1114,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.statusCode(201)
 				.extract().header("Location"));
 
-		Map<?, ?> config = ImmutableMap.builder()
+		Map<String, ?> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.build();
 
-		String exportId = getExportId(createExport(config));
-
-		getExport(exportId).statusCode(200)
-			.body("type", equalTo(Rf2ReleaseType.DELTA.name()))
-			.body("branchPath", equalTo(branchPath.getPath()));
-
-		File exportArchive = getExportFile(exportId);
+		File exportArchive = doExport(branchPath, config);
 
 		String mrcmDomainMemberLine = TAB_JOINER.join(mrcmDomainRefsetMemberId, 
 				"", 
@@ -1216,7 +1132,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				"proximalPrimitiveRefinement",
 				"domainTemplateForPrecoordination",
 				"domainTemplateForPostcoordination",
-				"editorialGuideReference"); 
+				"editorialGuideReference");
 
 		String mrcmAttributeDomainLine = TAB_JOINER.join(mrcmAttributeDomainRefsetMemberId, 
 				"", 
@@ -1290,18 +1206,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.statusCode(201)
 				.extract().header("Location"));
 		
-		Map<?, ?> config = ImmutableMap.builder()
+		Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.build();
 
-		String exportId = getExportId(createExport(config));
-
-		getExport(exportId).statusCode(200)
-			.body("type", equalTo(Rf2ReleaseType.DELTA.name()))
-			.body("branchPath", equalTo(branchPath.getPath()));
-
-		File exportArchive = getExportFile(exportId);
+		File exportArchive = doExport(branchPath, config);
 
 		String owlOntologyMemberLine = TAB_JOINER.join(owlOntologyRefsetMemberId, 
 				"", 

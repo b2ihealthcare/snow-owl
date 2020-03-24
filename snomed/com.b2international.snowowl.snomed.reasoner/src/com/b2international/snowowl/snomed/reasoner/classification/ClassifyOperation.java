@@ -29,12 +29,13 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Notifications;
+import com.b2international.snowowl.core.id.IDs;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
+import com.b2international.snowowl.core.jobs.RemoteJobNotification;
+import com.b2international.snowowl.core.jobs.RemoteJobs;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
@@ -102,15 +103,16 @@ public abstract class ClassifyOperation<T> {
 
 		try {
 
-			final String classificationId = UUID.randomUUID().toString(); 
+			final String classificationId = UUID.randomUUID().toString();
+			final String jobId = IDs.sha1(classificationId);
 			final Notifications notifications = getServiceForClass(Notifications.class);
 			final BlockingQueue<RemoteJobEntry> jobQueue = Queues.newArrayBlockingQueue(1); 
 			final Observable<RemoteJobEntry> jobObservable = notifications.ofType(RemoteJobNotification.class)
 					.filter(RemoteJobNotification::isChanged)
-					.filter(notification -> notification.getJobIds().contains(classificationId))
+					.filter(notification -> notification.getJobIds().contains(jobId))
 					.concatMap(notification -> JobRequests.prepareSearch()
 							.one()
-							.filterById(classificationId)
+							.filterById(jobId)
 							.buildAsync()
 							.execute(getEventBus()))
 					.map(RemoteJobs::first)
@@ -168,13 +170,13 @@ public abstract class ClassifyOperation<T> {
 							try {
 								return processResults(classificationId);
 							} finally {
-								deleteEntry(classificationId);
+								deleteEntry(jobId);
 							}
 						case CANCELED:
-							deleteEntry(classificationId);
+							deleteEntry(jobId);
 							throw new OperationCanceledException();
 						case FAILED:
-							deleteEntry(classificationId);
+							deleteEntry(jobId);
 							throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
 						default:
 							throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");

@@ -33,13 +33,13 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -111,25 +111,32 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	
 	@Override
 	public long commit() {
-		throw new UnsupportedOperationException("TODO implement me");
+		throw new UnsupportedOperationException("Use the single supported commit(String) method");
+	}
+	
+	@Override
+	public long commit(String commitComment) {
+		final Set<String> idsToRegister = ImmutableSet.copyOf(newComponents.keySet().stream().filter(SnomedIdentifiers::isValid).iterator());
+		// clear local cache before executing commit
+		newComponents = newHashMap();
+		LOG.info("Pushing changes: {}", commitComment);
+		long timestamp = getDelegate().commit(commitComment);
+		// after successful commit register all commited IDs to CIS
+		final ISnomedIdentifierService cis = service(ISnomedIdentifierService.class);
+		if (cis.importSupported()) {
+			cis.register(idsToRegister);
+		}
+		return timestamp;
+	}
+	
+	@Override
+	public long commit(String commitComment, String parentContextDescription) {
+		throw new UnsupportedOperationException("Use the single supported commit(String) method");
 	}
 	
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
-		final Set<String> idsToRegister = ImmutableSet.copyOf(newComponents.keySet().stream().filter(SnomedIdentifiers::isValid).iterator());
-		try {
-			// clear local cache before executing commit
-			newComponents = newHashMap();
-			LOG.info("Pushing changes: {}", commitComment);
-			long timestamp = getDelegate().commit(userId, commitComment, parentContextDescription);
-			// after successful commit register all commited IDs to CIS
-			final ISnomedIdentifierService cis = service(ISnomedIdentifierService.class);
-			if (cis.importSupported()) {
-				cis.register(idsToRegister);
-			}
-			return timestamp;
-		} finally {
-		}
+		throw new UnsupportedOperationException("Use the single supported commit(String) method");
 	}
 	
 	@Override

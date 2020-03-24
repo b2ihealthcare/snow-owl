@@ -27,8 +27,8 @@ import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
