@@ -19,7 +19,7 @@ Visit us at http://b2i.sg
    </license>
 
    <includes
-         id="com.b2international.snowowl.server.dependencies.feature"
+         id="com.b2international.snowowl.core.dependencies.feature"
          version="0.0.0"/>
 
    <plugin
