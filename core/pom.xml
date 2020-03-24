@@ -18,8 +18,8 @@
 		<module>com.b2international.snowowl.core</module>
 		<module>com.b2international.snowowl.core.tests</module>
 		<module>com.b2international.snowowl.core.feature</module>
+		<module>com.b2international.snowowl.core.dependencies.feature</module>
 		<module>com.b2international.snowowl.server.product</module>
-		<module>com.b2international.snowowl.server.dependencies.feature</module>
 		<module>com.b2international.snowowl.server.product.feature</module>
 		
 		<!-- Identity modules -->
