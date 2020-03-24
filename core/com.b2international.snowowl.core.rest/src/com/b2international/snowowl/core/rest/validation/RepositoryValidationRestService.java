@@ -109,7 +109,7 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 			@RequestBody 
 			final ValidationRestInput validationInput) {
 
-		final String uniqueJobId = ValidationRequests.createUniqueValidationId(repositoryId, validationInput.getBranchPath());
+		final String uniqueJobId = ValidationRequests.createUniqueValidationJobKey(repositoryId, validationInput.getBranchPath());
 		
 		final String jobId = ValidationRequests
 				.prepareValidate()
