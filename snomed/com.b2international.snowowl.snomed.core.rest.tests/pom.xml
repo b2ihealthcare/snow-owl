@@ -11,6 +11,10 @@
 		<version>7.5.0-SNAPSHOT</version>
 	</parent>
 
+	<properties>
+		<testHeapSize>2g</testHeapSize>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -48,12 +52,9 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
-					<useUIThread>false</useUIThread>
-					<argLine>${tycho.testArgLine} -Xms2g -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
 					<includes>
 						<include>**/AllSnomedApiTests.java</include>
 					</includes>
-					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
 		</plugins>

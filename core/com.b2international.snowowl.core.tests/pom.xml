@@ -11,7 +11,7 @@
 	</parent>
 	<artifactId>com.b2international.snowowl.core.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -34,8 +34,6 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
-					<useUIThread>false</useUIThread>
-					<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
 					<includes>
 						<include>**/AllCoreTests.java</include>
 					</includes>
@@ -43,5 +41,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>

@@ -37,9 +37,6 @@
 						<goals>
 							<goal>test</goal>
 						</goals>
-						<configuration>
-							<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
-						</configuration>
 					</execution>
 					<execution>
 						<id>http-tests</id>
@@ -48,7 +45,7 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
-							<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml -Dso.index.es.useHttp</argLine>
+							<argLine>${testArgLine} -Dso.index.es.useHttp</argLine>
 						</configuration>
 					</execution>
 				</executions>

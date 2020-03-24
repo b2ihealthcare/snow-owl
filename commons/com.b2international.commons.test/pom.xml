@@ -22,11 +22,6 @@
 						<extraRequirements>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>com.sun.el</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
 								<id>com.b2international.collections.fastutil</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
@@ -37,7 +32,6 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
-				<version>${tycho.version}</version>
 				<configuration>
 					<includes>
 						<include>**/AllCommonsTests.java</include>

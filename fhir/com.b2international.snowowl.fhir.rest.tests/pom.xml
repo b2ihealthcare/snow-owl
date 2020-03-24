@@ -10,6 +10,10 @@
 	<artifactId>com.b2international.snowowl.fhir.rest.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 
+	<properties>
+		<testHeapSize>2g</testHeapSize>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -67,11 +71,6 @@
 			            </configuration>
           			</execution>
 				</executions>
-				<configuration>
-					<useUIThread>false</useUIThread>
-					<argLine>${tycho.testArgLine} -Xms2g -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
-					<trimStackTrace>false</trimStackTrace>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
