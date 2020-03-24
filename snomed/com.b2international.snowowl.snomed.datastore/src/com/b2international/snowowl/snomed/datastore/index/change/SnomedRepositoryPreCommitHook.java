@@ -33,8 +33,6 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
 import com.b2international.snowowl.core.request.BranchRequest;
@@ -47,6 +45,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
+import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.icons.SnomedIconProvider;
@@ -66,9 +65,8 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	@Override
 	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
-		final FeatureToggles featureToggles = context.service(FeatureToggles.class);
-		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(context.id(), index.branch()));
-		if (!importRunning) {
+		
+		if (!context.isJobRunning(SnomedRf2Requests.importJobId(index.branch()))) {
 			doProcess(ImmutableList.of(new ComponentInactivationChangeProcessor(), new DetachedContainerChangeProcessor()), staging, index);
 		}
 	}
@@ -201,10 +199,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 
 		log.trace("Retrieving taxonomic information from store...");
 
-		final FeatureToggles featureToggles = context.service(FeatureToggles.class);
-		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(context.id(), index.branch()));
-		final boolean reindexRunning = featureToggles.isEnabled(Features.getReindexFeatureToggle(context.id()));
-		final boolean checkCycles = !importRunning && !reindexRunning;
+		final boolean checkCycles = !context.isJobRunning(SnomedRf2Requests.importJobId(index.branch()));
 		
 		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, expressionConverter, staging, inferredConceptIds, checkCycles);
 		final Taxonomy statedTaxonomy = Taxonomies.stated(index, expressionConverter, staging, statedConceptIds, checkCycles);
@@ -222,9 +217,8 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	@Override
 	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
-		final FeatureToggles featureToggles = context.service(FeatureToggles.class);
-		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(context.id(), index.branch()));
-		if (!importRunning) {
+		
+		if (!context.isJobRunning(SnomedRf2Requests.importJobId(index.branch()))) {
 			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
 			// XXX effective time restore should be the last processing unit before we send the changes to commit
 			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);

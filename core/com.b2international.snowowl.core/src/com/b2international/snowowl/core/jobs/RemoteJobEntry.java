@@ -410,6 +410,11 @@ public final class RemoteJobEntry implements Serializable {
 	}
 	
 	@JsonIgnore
+	public boolean isRunning() {
+		return !isDone();
+	}
+	
+	@JsonIgnore
 	public boolean isCancelled() {
 		return getState().oneOf(RemoteJobState.CANCELED, RemoteJobState.CANCEL_REQUESTED);
 	}

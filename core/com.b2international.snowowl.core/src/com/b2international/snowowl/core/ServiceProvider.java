@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,14 @@
  */
 package com.b2international.snowowl.core;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.jobs.RemoteJob;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.google.inject.Provider;
 
 /**
@@ -28,9 +34,29 @@ public interface ServiceProvider {
 	 * Returns the given service or throws an exception if none found in the current {@link ApplicationContext}.
 	 * 
 	 * @param type
+	 *            - the type of the service
 	 * @return the currently registered service implementation for the given service interface, never <code>null</code>
 	 */
 	<T> T service(Class<T> type);
+
+	/**
+	 * Returns the given service wrapped in an {@link Optional} indicating that the service might not be available. If not available the
+	 * {@link Optional#empty()} will be returned.
+	 * 
+	 * @param <T>
+	 *            - the type of the service
+	 * @param type
+	 *            - the type of the service
+	 * @return an {@link Optional}
+	 */
+	default <T> Optional<T> optionalService(Class<T> type) {
+		try {
+			return Optional.of(service(type));
+		} catch (NullPointerException e) {
+			// not the nicest to catch NPE here, but the internal are throwing that exception when the service is not available yet
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Returns a {@link Provider} to provide the given type when needed by using {@link #service(Class)}, so the returned {@link Provider} will never
@@ -40,9 +66,10 @@ public interface ServiceProvider {
 	 * @return
 	 */
 	<T> Provider<T> provider(Class<T> type);
-	
+
 	/**
-	 * Inject or override services in this context using a service provider builder. 
+	 * Inject or override services in this context using a service provider builder.
+	 * 
 	 * @return
 	 * @see DelegatingContext.Builder#build()
 	 */
@@ -50,6 +77,23 @@ public interface ServiceProvider {
 		return new DelegatingContext.Builder<>(ServiceProvider.class, this);
 	}
 	
+	/**
+	 * Returns <code>true</code> if any job present with the given jobKey in {@link RemoteJobEntry#isRunning()} state, <code>false</code> otherwise.
+	 * 
+	 * @param jobKey
+	 * @return
+	 */
+	default boolean isJobRunning(String jobKey) {
+		// check first if this context is running inside a job with the given jobKey
+		Optional<RemoteJob> job = optionalService(RemoteJob.class);
+		if (job.isPresent() && Objects.equals(jobKey, job.get().getKey())) {
+			return true;
+		}
+
+		// if not inside a job context or running in non-job context check the jobs index
+		return JobRequests.prepareSearch().one().filterByKey(jobKey).build().execute(this).first().map(RemoteJobEntry::isRunning).orElse(false);
+	}
+
 	/**
 	 * Empty {@link ServiceProvider} implementation that throws {@link UnsupportedOperationException}s when trying to provide services. Useful when
 	 * testing {@link Request} implementations.

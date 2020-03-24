@@ -42,8 +42,6 @@ import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
@@ -101,22 +99,16 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	@Override
 	public Rf2ImportResponse execute(BranchContext context) {
 		validate(context);
-		final FeatureToggles features = context.service(FeatureToggles.class);
-		final String feature = Features.getImportFeatureToggle(context.id(), context.branchPath());
-
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
 		
 		try {
-			features.enable(feature);
 			return doImport(context, rf2Archive, new Rf2ImportConfiguration(type, createVersions));
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
 			}
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			features.disable(feature);
+			throw SnowowlRuntimeException.wrap(e);
 		}
 	}
 
