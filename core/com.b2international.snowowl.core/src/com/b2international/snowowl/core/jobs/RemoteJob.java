@@ -74,7 +74,7 @@ public final class RemoteJob extends Job {
 	@Override
 	protected final IStatus run(IProgressMonitor monitor) {
 		final ObjectMapper mapper = this.context.service(ObjectMapper.class);
-		final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(key, monitor);
+		final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(id, monitor);
 		try {
 			// seed the monitor instance into the current context, so the request can use it for progress reporting
 			final ServiceProvider context = this.context.inject()
