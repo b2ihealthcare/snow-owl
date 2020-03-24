@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
-import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
@@ -60,7 +59,6 @@ import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQueryParser;
 import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryParser;
 import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
-import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -114,11 +112,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			env.services().registerService(MrcmImporter.class, RpcUtil.createProxy(env.container(), MrcmImporter.class));
 			env.services().registerService(MrcmExporter.class, RpcUtil.createProxy(env.container(), MrcmExporter.class));
 		}
-	}
-	
-	@Override
-	protected ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator() {
-		return new SnomedConceptSearchRequestEvaluator();
 	}
 	
 	@Override

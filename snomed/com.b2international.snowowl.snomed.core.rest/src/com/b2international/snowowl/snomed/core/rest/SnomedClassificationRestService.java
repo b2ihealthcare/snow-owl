@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -80,7 +81,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@ApiParam(value ="The user identifier")
 			@RequestParam(value="userId", required=false) 
 			final String userId,
-
+			
 			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
@@ -119,7 +120,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 	public Promise<ResponseEntity<?>> beginClassification(
 			@ApiParam(value ="Classification parameters")
 			@RequestBody 
-			final ClassificationRestInput request,
+			final ClassificationRunRestInput request,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -171,7 +172,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@ApiParam(value ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
-
+			
 			@ApiParam(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
@@ -184,10 +185,11 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		return ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.filterByClassificationId(classificationId)
 				.setExpand("equivalentConcepts(expand(pt()))")
-				.setLocales(acceptLanguage)
+				.setLocales(extendedLocales)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -348,7 +350,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			final String author) {
 		
 		ApiValidation.checkInput(update);
-
+		
 		// TODO: compare all fields to find out what the client wants us to do, check for conflicts, etc.
 		if (ClassificationStatus.SAVED.equals(update.getStatus())) {
 			ClassificationRequests.prepareSaveClassification()

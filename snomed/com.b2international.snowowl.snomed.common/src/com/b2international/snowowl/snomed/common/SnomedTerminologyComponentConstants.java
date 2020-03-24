@@ -49,8 +49,6 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final short REFSET_MEMBER_NUMBER = 104;
 	public static final String CONSTRAINT = "com.b2international.snowowl.terminology.snomed.constraint";
 	public static final short CONSTRAINT_NUMBER = 105;
-	public static final String TEMPLATE = "com.b2international.snowowl.terminology.snomed.template";
-	public static final short TEMPLATE_NUMBER = 106;
 	
 	public static final String SNOMED_SHORT_NAME = "SNOMEDCT";
 	public static final String SNOMED_NAME = "SNOMED CT";
@@ -71,7 +69,6 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String SNOMED_B2I_LINK = "https://b2i.sg";
 
 	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
-
 	
 	public static short getTerminologyComponentIdValue(final String referencedComponentId) {
 		final short s = getTerminologyComponentIdValueSafe(referencedComponentId);
@@ -125,7 +122,6 @@ public abstract class SnomedTerminologyComponentConstants {
 			case REFSET_NUMBER: return REFSET;
 			case REFSET_MEMBER_NUMBER: return REFSET_MEMBER;
 			case CONSTRAINT_NUMBER: return CONSTRAINT;
-			case TEMPLATE_NUMBER: return TEMPLATE;
 			default: throw new IllegalArgumentException("Unknown terminology component identifier value: " + value);
 		}
 	}
@@ -143,7 +139,6 @@ public abstract class SnomedTerminologyComponentConstants {
 			case REFSET: return REFSET_NUMBER;
 			case REFSET_MEMBER: return REFSET_MEMBER_NUMBER;
 			case CONSTRAINT: return CONSTRAINT_NUMBER;
-			case TEMPLATE: return TEMPLATE_NUMBER;
 			default: throw new IllegalArgumentException("Unknown terminology component identifier: " + id);
 		}
 	}

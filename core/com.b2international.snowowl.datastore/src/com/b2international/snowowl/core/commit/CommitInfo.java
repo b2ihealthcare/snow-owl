@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public final class CommitInfo implements Serializable {
 		private String branch;
 		private String author;
 		private String comment;
-		private Long timestamp;
+		private long timestamp;
 		private String groupId;
 		private RevisionBranchPoint mergeSource;
 		private CommitInfoDetails details;
@@ -93,7 +93,7 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
-		public Builder timestamp(final Long timestamp) {
+		public Builder timestamp(final long timestamp) {
 			this.timestamp = timestamp;
 			return this;
 		}
@@ -123,7 +123,7 @@ public final class CommitInfo implements Serializable {
 	private final String branch;
 	private final String author;
 	private final String comment;
-	private final Long timestamp;
+	private final long timestamp;
 	private final String groupId;
 	private final RevisionBranchPoint mergeSource;
 	private final CommitInfoDetails details;
@@ -133,7 +133,7 @@ public final class CommitInfo implements Serializable {
 			final String branch,
 			final String author,
 			final String comment,
-			final Long timestamp, 
+			final long timestamp, 
 			final String groupId,
 			final RevisionBranchPoint mergeSource,
 			final CommitInfoDetails details) {
@@ -163,12 +163,8 @@ public final class CommitInfo implements Serializable {
 		return comment;
 	}
 	
-	public Long getTimestamp() {
+	public long getTimestamp() {
 		return timestamp;
-	}
-	
-	public String getTimestampString() {
-		return timestamp == null ? null : Long.toString(timestamp);
 	}
 	
 	public String getGroupId() {

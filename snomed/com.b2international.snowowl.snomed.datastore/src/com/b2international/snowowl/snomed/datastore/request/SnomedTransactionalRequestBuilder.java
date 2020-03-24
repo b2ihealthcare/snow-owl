@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,11 @@ public interface SnomedTransactionalRequestBuilder<R> extends TransactionalReque
 		return build(repositoryId, branch, userId, commitComment, null);
 	}
 	
+	@Override
+	default SnomedRepositoryCommitRequestBuilder commit() {
+		return (SnomedRepositoryCommitRequestBuilder) new SnomedRepositoryCommitRequestBuilder().setBody(build());
+	}
+
 	default AsyncRequest<CommitResult> build(String repositoryId, 
 			String branch, 
 			String author,
@@ -44,10 +49,5 @@ public interface SnomedTransactionalRequestBuilder<R> extends TransactionalReque
 				.setAuthor(author)
 				.setCommitComment(commitComment)
 				.build(repositoryId, branch);
-	}
-	
-	@Override
-	default SnomedRepositoryCommitRequestBuilder commit() {
-		return (SnomedRepositoryCommitRequestBuilder) new SnomedRepositoryCommitRequestBuilder().setBody(build());
 	}
 }

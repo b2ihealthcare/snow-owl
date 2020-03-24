@@ -34,14 +34,8 @@ public final class Permission implements Serializable {
 
 	private static final long serialVersionUID = 8938726616446337680L;
 	
-	private static final String SEPARATOR = ":";
-	private static final String RESOURCE_SEPARATOR = "/";
-	
-	private final String operation;
-	private final String resource;
-	private final String permission;
-	private final boolean wildcard;
-	private final String rawResource;
+	public static final String SEPARATOR = ":";
+	public static final String RESOURCE_SEPARATOR = "/";
 	
 	public static final String ALL = "*";
 	public static final String BROWSE = "browse";
@@ -52,69 +46,26 @@ public final class Permission implements Serializable {
 	public static final String PROMOTE = "promote";
 	public static final String CLASSIFY = "classify";
 	
-	public static Permission toAll(String...resources) {
-		return new Permission(ALL, asResource(resources));
+	private final String operation;
+	private final String resource;
+	private final String name;
+	private final String permission;
+	private final boolean wildcard;
+	private final String rawResource;
+	
+	public Permission(final String operation, final String resource) {
+		this(operation, resource, "");
 	}
 
-	public static Permission toImport(String...resources) {
-		return new Permission(IMPORT, asResource(resources));
-	}
-	
-	public static Permission toExport(String...resources) {
-		return new Permission(EXPORT, asResource(resources));
-	}
-	
-	public static Permission toBrowse(String...resources) {
-		return new Permission(BROWSE, asResource(resources));
-	}
-	
-	public static Permission toEdit(String...resources) {
-		return new Permission(EDIT, asResource(resources));
-	}
-	
-	public static Permission toVersion(String...resources) {
-		return new Permission(VERSION, asResource(resources));
-	}
-	
-	public static Permission toPromote(String...resources) {
-		return new Permission(PROMOTE, asResource(resources));
-	}
-	
-	public static Permission toClassify(String...resources) {
-		return new Permission(CLASSIFY, asResource(resources));
-	}
-	
-	public static Permission of(String operation, String...resources) {
-		return new Permission(operation, asResource(resources));
-	}
-	
-	/**
-	 * Convert the {@link String} representation of a permission into a {@link Permission} object.
-	 * The input string must be in the form of "&lt;operation&gt;:&lt;resource&gt;"
-	 * 
-	 * @param permission as String
-	 * @return a {@link Permission} with the appropriate operation and resources set
-	*/
-	@JsonCreator
-	public static final Permission valueOf(@JsonProperty("permission") final String permission) {
-		checkArgument(!CompareUtils.isEmpty(permission), "Permission argument is required");
-		final String[] parts = permission.split(SEPARATOR);
-		checkArgument(parts.length == 2, "A permission should consist of two String values separated by a ':' character. Got: %s", permission);
-		final String operation = parts[0];
-		final String resourceReference = parts[1];
-		return new Permission(operation, resourceReference);
-	}
-
-	private Permission(final String operation, final String resource) {
+	public Permission(final String operation, final String resource, final String name) {
 		this.operation = checkNotNull(operation, "Operation must be specified");
 		this.resource = checkNotNull(resource, "Resource must be specified");
-		
 		final int wildcardPosition = this.resource.indexOf(ALL);
 		checkArgument(wildcardPosition == -1 /*no wildcard*/ || wildcardPosition == resource.length() - 1 /*at the end*/, "Wildcard character must be at the end of the resource. Got: %s", resource);
 		this.wildcard = wildcardPosition != -1;
 		this.rawResource = wildcard ? resource.substring(0, wildcardPosition) : resource;
-		
 		this.permission = String.join(SEPARATOR, operation, resource);
+		this.name = name;
 	}
 
 	/**
@@ -141,25 +92,29 @@ public final class Permission implements Serializable {
 	}
 	
 	/**
+	 * @return a descriptive name of this permission
+	 */
+	public String getName() {
+		return name;
+	}
+	
+	/**
 	 * Returns <code>true</code> if this {@link Permission} implies the incoming permission requirement and <code>false</code> if it does not.  
 	 * 
 	 * @param permissionRequirement
 	 * @return
 	 */
 	public boolean implies(Permission permissionRequirement) {
-		
 		checkArgument(!ALL.equals(permissionRequirement.getOperation()), "Explicit operation is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
+		checkArgument(!ALL.equals(permissionRequirement.getResource()), "Explicit resource is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
 		
-		// operation
-		
+		// rules
 		// * allows all incoming permission requirements (both operation and resource)
 		// if not *, then the operation in this permission should match the same operation from the requirement (equals)
 		final boolean allowedOperation = ALL.equals(operation) || operation.equals(permissionRequirement.getOperation());
 		if (!allowedOperation) {
 			return false;
 		}
-		
-		// resource
 		
 		// if operation matches, then proceed based on whether the resource part has a wildcard or not
 		if (wildcard) {
@@ -187,7 +142,23 @@ public final class Permission implements Serializable {
 
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper(Permission.class).add("permission", getPermission()).toString();
+		return MoreObjects.toStringHelper(Permission.class).add("permission", getPermission()).add("name", getName()).toString();
+	}
+	
+	public static final Permission valueOf(final String permission) {
+		return valueOf(permission, "N/A");
+	}
+	
+	@JsonCreator
+	public static final Permission valueOf(
+			@JsonProperty("permission") final String permission, 
+			@JsonProperty("name") final String name) {
+		checkArgument(!CompareUtils.isEmpty(permission), "Permission argument is required");
+		final String[] parts = permission.split(SEPARATOR);
+		checkArgument(parts.length == 2, "A permission should consist of two String values separated by a ':' character. Got: %s", permission);
+		final String operation = parts[0];
+		final String resourceReference = parts[1];
+		return new Permission(operation, resourceReference, name);
 	}
 	
 	public static String asResource(String...resources) {

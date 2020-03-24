@@ -75,7 +75,7 @@ public final class MrcmCommand extends Command {
 		public void run(CommandLineStream out) {
 			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(Permission.toImport(SnomedDatastoreActivator.REPOSITORY_UUID))) { // TODO add branch permission
+			if (user == null || !user.hasPermission(new Permission(Permission.IMPORT, SnomedDatastoreActivator.REPOSITORY_UUID, ""))) {
 				out.println("User is unauthorized to import MRCM rules.");
 				return;
 			}
@@ -107,7 +107,7 @@ public final class MrcmCommand extends Command {
 		public void run(CommandLineStream out) {
 			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(Permission.toExport(SnomedDatastoreActivator.REPOSITORY_UUID))) { // TODO add branch permission
+			if (user == null || !user.hasPermission(new Permission(Permission.EXPORT, SnomedDatastoreActivator.REPOSITORY_UUID, ""))) {
 				out.println("User is unauthorized to export MRCM rules.");
 				return;
 			}

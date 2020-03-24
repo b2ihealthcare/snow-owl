@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public interface Options {
 	 *             if the specified key is <code>null</code>
 	 */
 	boolean containsKey(Object key);
-	
+
 	/**
 	 * Returns the value to which the specified key is mapped, or {@code null} if this map contains no mapping for the key.
 	 *
@@ -67,24 +67,9 @@ public interface Options {
 	 *             if the specified key is <code>null</code>
 	 */
 	Object get(String key);
-	
-	/**
-	 * Returns the value to which the specified Enum key's name is mapped, or {@code null} if this map contains no mapping for the key.
-	 *
-	 * <p>
-	 * More formally, if this map contains a mapping from a key {@code k} to a value {@code v} such that {@code (key==null ? k==null :
-	 * key.name().equals(k))}, then this method returns {@code v}; otherwise it returns {@code null}. (There can be at most one such mapping.)
-	 *
-	 * @param key
-	 *            the key whose associated value is to be returned
-	 * @return the value to which the specified key is mapped, or {@code null} if this map contains no mapping for the key
-	 * @throws NullPointerException
-	 *             if the specified key is <code>null</code>
-	 */
-	Object get(Enum<?> key);
 
 	/**
-	 * Returns the value to which the specified key is mapped and it is an instance of the given expectedType, or {@code null} if this map contains no mapping for the key.
+	 * Returns the value for the given key as instance of the given expectedType.
 	 * 
 	 * @param key
 	 *            - the key whose associated value is to be returned
@@ -97,21 +82,6 @@ public interface Options {
 	 *             if the specified key is <code>null</code>
 	 */
 	<T> T get(String key, Class<T> expectedType);
-	
-	/**
-	 * Returns the value to which the specified Enum key's name is mapped and it is an instance of the given expectedType, or {@code null} if this map contains no mapping for the key.
-	 * 
-	 * @param key
-	 *            - the key whose associated value is to be returned
-	 * @param expectedType
-	 *            - the expected type of the returned value
-	 * @return the value to which the specified key is mapped, or {@code null} if this map contains no mapping for the key
-	 * @throws IllegalArgumentException
-	 *             - if the value is not the instance of the given type
-	 * @throws NullPointerException
-	 *             if the specified key is <code>null</code>
-	 */
-	<T> T get(Enum<?> key, Class<T> expectedType);
 
 	/**
 	 * Returns a boolean value from this options with the specified key. If the key contains another type of value, an
@@ -126,20 +96,6 @@ public interface Options {
 	 * @see #get(String, Class)
 	 */
 	boolean getBoolean(String key);
-	
-	/**
-	 * Returns a boolean value from this options with the specified Enum key's name. If the key contains another type of value, an
-	 * {@link IllegalArgumentException} is raised. If the key does not exists in the configuration, then a <code>false</code> value is returned.
-	 * Otherwise the stored configuration value is returned.
-	 * 
-	 * @param key
-	 *            - the key whose associated {@link boolean} value is to be returned
-	 * @return the value to which the specified key is mapped, or {@code false} if this map contains no mapping for the key
-	 * @throws NullPointerException
-	 *             if the specified key is <code>null</code>
-	 * @see #get(String, Class)
-	 */
-	boolean getBoolean(Enum<?> key);
 
 	/**
 	 * Returns a string value from the configuration map with the specified key. If the key contains another type of value, an
@@ -152,19 +108,7 @@ public interface Options {
 	 * @see #get(String, Class)
 	 */
 	String getString(String key);
-	
-	/**
-	 * Returns a string value from the configuration map with the specified Enum key's name. If the key contains another type of value, an
-	 * {@link IllegalArgumentException} is raised. If the key does not exists in the configuration, then <code>null</code> value is returned.
-	 * Otherwise the stored configuration value is returned.
-	 * 
-	 * @param key
-	 *            - the key whose associated {@link String} value is to be returned
-	 * @return the value to which the specified key is mapped, or {@code null} if this map contains no mapping for the key
-	 * @see #get(String, Class)
-	 */
-	String getString(Enum<?> key);
-	
+
 	/**
 	 * Returns a collection of values conform to the given class type found on the given key. If a single value (not a {@link Collection}) is mapped
 	 * to the given key, then it wraps the value in a {@link Collections#singleton(Object) singleton set} and returns it. Otherwise it tries to get
@@ -179,21 +123,6 @@ public interface Options {
 	 *             - if the elements in the collection is not applicable to the given type.
 	 */
 	<T> Collection<T> getCollection(String key, Class<T> type);
-	
-	/**
-	 * Returns a collection of values conform to the given class type found on the given Enum key's name. If a single value (not a {@link Collection}) is mapped
-	 * to the given key, then it wraps the value in a {@link Collections#singleton(Object) singleton set} and returns it. Otherwise it tries to get
-	 * the value as a {@link Collection} and return it.
-	 * 
-	 * @param key
-	 *            - the key whose associated value is to be returned
-	 * @param type
-	 *            - the type of the items if a collection is mapped to the given key in this map
-	 * @return a {@link Collection} mapped to the given key, or an empty collection if there was no mapping for the key, never <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             - if the elements in the collection is not applicable to the given type.
-	 */
-	<T> Collection<T> getCollection(Enum<?> key, Class<T> type);
 
 	/**
 	 * Returns a list of values conform to the given class type found on the given key. If a single value (not a {@link List}) is mapped to the given
@@ -209,21 +138,6 @@ public interface Options {
 	 *             - if the elements in the list is not applicable to the given type.
 	 */
 	<T> List<T> getList(String key, Class<T> type);
-	
-	/**
-	 * Returns a list of values conform to the given class type found on the given Enum key's name. If a single value (not a {@link List}) is mapped to the given
-	 * key, then it wraps the value in a {@link Collections#singletonList(Object) singleton list} and returns it. Otherwise it tries to get the value
-	 * as a {@link List} and return it.
-	 * 
-	 * @param key
-	 *            - the key whose associated value is to be returned
-	 * @param type
-	 *            - the type of the items if a list is mapped to the given key in this map
-	 * @return a {@link List} mapped to the given key, or an empty list if there was no mapping for the key, never <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             - if the elements in the list is not applicable to the given type.
-	 */
-	<T> List<T> getList(Enum<?> key, Class<T> type);
 
 	/**
 	 * Returns a nested {@link Options} from this options found on the given key, or an empty {@link Options} if not found.
@@ -235,17 +149,6 @@ public interface Options {
 	 *             - if the mapped item is not applicable to {@link Options}.
 	 */
 	Options getOptions(String key);
-	
-	/**
-	 * Returns a nested {@link Options} from this options found on the given Enum key's name, or an empty {@link Options} if not found.
-	 * 
-	 * @param key
-	 *            - the key whose associated value is to be returned
-	 * @return a non-null {@link Options} instance
-	 * @throws IllegalArgumentException
-	 *             - if the mapped item is not applicable to {@link Options}.
-	 */
-	Options getOptions(Enum<?> key);
 
 	/**
 	 * Returns a {@link Set} view of the keys contained in this map. The set is backed by the map, so changes to the map are reflected in the set, and

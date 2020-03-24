@@ -45,7 +45,7 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 		extends SearchIndexResourceRequest<BranchContext, R, D>
 		implements BranchAccessControl {
 
-	protected enum OptionKey {
+	enum OptionKey {
 		
 		/**
 		 * Component's released flag to match

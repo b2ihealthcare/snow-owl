@@ -29,6 +29,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -89,24 +90,26 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final SnomedReferenceSetRestSearch params,
 			
 			@ApiParam(value = "Accepted language tags, in order of preference")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
+		
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 
-		List<Sort> sorts = extractSortFields(params.getSort(), branch, acceptLanguage);
+		List<Sort> sorts = extractSortFields(params.getSort(), branch, extendedLocales);
 		
 		return SnomedRequests.prepareSearchRefSet()
 				.filterByIds(params.getId())
 				.filterByTypes(getRefSetTypes(params.getRefSetTypes()))
 				.setLimit(params.getLimit())
 				.setSearchAfter(params.getSearchAfter())
-				.setLocales(acceptLanguage)
+				.setLocales(extendedLocales)
 				.sortBy(sorts)
 				.build(repositoryId, branch)
 				.execute(getBus());
 	}
 	
 	@ApiOperation(
-		value="Retrieve Reference Sets from a branch",
+		value="Retrieve Reference Sets from a branch", 
 		notes="Returns a list with all/filtered Reference Sets from a branch."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
@@ -125,14 +128,14 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 
 			@RequestBody(required = false)
 			final SnomedReferenceSetRestSearch body,
-
+			
 			@ApiParam(value = "Accepted language tags, in order of preference")
-			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
+			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-
+		
 		return searchByGet(branch, body, acceptLanguage);
 	}
-
+	
 	private Collection<SnomedRefSetType> getRefSetTypes(String[] refSetTypes) {
 		if (refSetTypes == null) {
 			return null;
@@ -188,10 +191,12 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
+		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
+		
 		return SnomedRequests
 				.prepareGetReferenceSet(referenceSetId)
 				.setExpand(expand)
-				.setLocales(acceptLanguage)
+				.setLocales(extendedLocales)
 				.build(repositoryId, branchPath)
 				.execute(getBus());
 	}
@@ -363,5 +368,5 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
-
+	
 }

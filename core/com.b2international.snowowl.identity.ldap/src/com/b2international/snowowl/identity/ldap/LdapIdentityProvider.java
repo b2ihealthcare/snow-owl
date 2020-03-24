@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,12 +71,7 @@ import com.google.common.collect.Iterators;
  *         baseDn: dc=snowowl,dc=b2international,dc=com
  *         rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
  *         rootDnPassword: adminpwd
- *         userObjectClass: inetOrgPerson
- *         roleObjectClass: groupOfUniqueNames
  *         userIdProperty: uid
- *         memberProperty: uniqueMember
- *         permissionProperty: description
- *
  * </pre>
  * 
  * @since 5.11
@@ -90,12 +85,19 @@ final class LdapIdentityProvider implements IdentityProvider {
 	private static final String LDAP_CONNECTION_POOL = "com.sun.jndi.ldap.connect.pool";
 	
 	// Queries
-	private static final String OBJECT_QUERY = "(objectClass=%s)";
-	private static final String USER_FILTER = "(&(objectClass=%s)(%s=%s))";
+	private static final String ALL_USER_QUERY = "(objectClass=inetOrgPerson)";
+	private static final String ALL_ROLE = "(objectClass=role)";
+	private static final String USER_FILTER = "(&(objectClass=inetOrgPerson)({uid}={userName}))";
 	
+	// Query variable substitution
+	private static final String USER_NAME_PLACEHOLDER = "\\{userName\\}";
+	private static final String UID_PLACEHOLDER = "\\{uid\\}";
+
 	// Attributes
 	private static final String ATTRIBUTE_DN = "dn";
 	private static final String ATTR_CN = "cn";
+	private static final String ATTR_PERMISSION_ID = "permissionId";
+	private static final String ATTR_UNIQUE_MEMBER = "uniqueMember";
 	
 	private final LdapIdentityProviderConfig conf;
 	
@@ -130,7 +132,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		Preconditions.checkNotNull(context, "Directory context is null.");
 		Preconditions.checkNotNull(username, "Username is null.");
 
-		final String userFilterWithUsername = String.format(USER_FILTER, conf.getUserObjectClass(), conf.getUserIdProperty(), username);
+		final String userFilterWithUsername = USER_FILTER.replaceAll(UID_PLACEHOLDER, conf.getUserIdProperty()).replaceAll(USER_NAME_PLACEHOLDER, username);
 
 		NamingEnumeration<SearchResult> searchResultEnumeration = null;
 
@@ -177,8 +179,8 @@ final class LdapIdentityProvider implements IdentityProvider {
 			context = createLdapContext();
 			Collection<LdapRole> ldapRoles = getAllLdapRoles(context, baseDn);
 			
-			final String usersQuery = String.format(OBJECT_QUERY, conf.getUserObjectClass());
-			searchResultEnumeration = context.search(baseDn, usersQuery, createSearchControls(ATTRIBUTE_DN, uidProp));
+			
+			searchResultEnumeration = context.search(baseDn, ALL_USER_QUERY, createSearchControls(ATTRIBUTE_DN, uidProp));
 			for (final SearchResult searchResult : ImmutableList.copyOf(Iterators.forEnumeration(searchResultEnumeration))) {
 				final Attributes attributes = searchResult.getAttributes();
 
@@ -212,8 +214,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		NamingEnumeration<SearchResult> enumeration = null;
 		try {
 			final ImmutableList.Builder<LdapRole> results = ImmutableList.builder();
-			final String roleQuery = String.format(OBJECT_QUERY, conf.getRoleObjectClass());
-			enumeration = context.search(baseDn, roleQuery, createSearchControls(ATTR_CN, conf.getPermissionProperty(), conf.getMemberProperty()));
+			enumeration = context.search(baseDn, ALL_ROLE, createSearchControls(ATTR_CN, ATTR_PERMISSION_ID, ATTR_UNIQUE_MEMBER));
 			
 			NamingEnumeration<?> permissionEnumeration = null;
 			NamingEnumeration<?> uniqueMemberEnumeration = null;
@@ -226,8 +227,8 @@ final class LdapIdentityProvider implements IdentityProvider {
 				final ImmutableList.Builder<Permission> permissions = ImmutableList.builder();
 				
 				try {
-					permissionEnumeration = attributes.get(conf.getPermissionProperty()).getAll();
-					uniqueMemberEnumeration = attributes.get(conf.getMemberProperty()).getAll();
+					permissionEnumeration = attributes.get(ATTR_PERMISSION_ID).getAll();
+					uniqueMemberEnumeration = attributes.get(ATTR_UNIQUE_MEMBER).getAll();
 					
 					// process permissions
 					for (final Object permission : ImmutableList.copyOf(Iterators.forEnumeration(permissionEnumeration))) {

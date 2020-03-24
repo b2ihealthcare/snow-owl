@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,38 +20,34 @@ import java.util.List;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * @since 5.2
- * @param <B>
- * @param <C>
- * @param <R>
  */
 public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B, C, R>, C extends ServiceProvider, R> extends BaseRequestBuilder<B, C, R> {
 
+	private Options expand = OptionsBuilder.newBuilder().build();
 	private List<ExtendedLocale> locales = Collections.emptyList();
-	
-	/**
-	 * Sets the request to return the preferred locale for the returned display labels. 
-	 * 
-	 * @param locales - the locale list in Accept-Language header format
-	 * @return ResourceRequestBuilder
-	 */
-	public final B setLocales(String locales) {
-		if (locales != null) {
-			setLocales(ExtendedLocale.parseLocales(locales));
-		}
-		return getSelf();
-	}
+	private List<String> fields = Collections.emptyList();
+
+	protected ResourceRequestBuilder() {}
 	
 	/**
 	 * Sets the request to return the preferred locale for the returned display labels.
+	 * Typical way to obtain the preferred locales: 
+	 * <p>
+	 * {@code private final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference()}
+	 * 
 	 * 
 	 * @param locales for the labels returns by the request
-	 * @return ResourceRequestBuilder   
+	 * @return BaseResourceRequestBuilder   
 	 */
 	public final B setLocales(List<ExtendedLocale> locales) {
 		if (!CompareUtils.isEmpty(locales)) {
@@ -59,26 +55,41 @@ public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B,
 		}
 		return getSelf();
 	}
+
+	public final B setExpand(String expand) {
+		if (!CompareUtils.isEmpty(expand)) {
+			this.expand = ExpandParser.parse(expand);
+		}
+		return getSelf();
+	}
+
+	public final B setExpand(Options expand) {
+		if (!CompareUtils.isEmpty(expand)) {
+			this.expand = expand;
+		}
+		return getSelf();
+	}
 	
+	public final B setFields(String first, String... rest) {
+		return setFields(Lists.asList(first, rest));
+	}
+	
+	public final B setFields(List<String> fields) {
+		if (!CompareUtils.isEmpty(fields)) {
+				this.fields = ImmutableList.copyOf(fields);
+		}
+		return getSelf();
+	}
+
 	@Override
 	protected final Request<C, R> doBuild() {
 		final ResourceRequest<C, R> req = create();
 		req.setLocales(locales);
-		init(req);
+		req.setExpand(expand);
+		req.setFields(fields);
 		return req;
 	}
-	
-	/**
-	 * Subclasses may override this method to configure the request further with additional properties.
-	 *  
-	 * @param req - the request instance to configure
-	 */
-	protected void init(ResourceRequest<C, R> req) {
-	}
 
-	/**
-	 * @return the request instance
-	 */
 	protected abstract ResourceRequest<C, R> create();
-	
+
 }

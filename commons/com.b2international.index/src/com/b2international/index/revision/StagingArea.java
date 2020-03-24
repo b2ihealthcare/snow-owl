@@ -789,14 +789,7 @@ public final class StagingArea {
 				while (elements.hasNext()) {
 					JsonNode node = elements.next();
 					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
-					
-					// Remove trailing segments in nested property paths (we are only interested in the top property)
-					String property = change.get("path").asText().substring(1);
-					final int nextSegmentIdx = property.indexOf("/");
-					if (nextSegmentIdx >= 0) {
-						property = property.substring(0, nextSegmentIdx);
-					}
-
+					final String property = change.get("path").asText().substring(1);
 					// Keep hashed fields only
 					if (diffFields.contains(property)) {
 						diff.add(change);

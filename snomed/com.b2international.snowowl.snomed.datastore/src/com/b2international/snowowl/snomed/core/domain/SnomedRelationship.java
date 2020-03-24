@@ -19,7 +19,7 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
+import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Represents a SNOMED&nbsp;CT relationship.
  * <br>
- * Relationships returned by search requests are populated based on the expand parameters passed into the {@link IndexResourceRequestBuilder#setExpand(String)}
+ * Relationships returned by search requests are populated based on the expand parameters passed into the {@link ResourceRequestBuilder#setExpand(String)}
  * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
  * 
  * The supported expand parameters are:

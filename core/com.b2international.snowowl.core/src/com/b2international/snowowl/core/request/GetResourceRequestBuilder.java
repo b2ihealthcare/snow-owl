@@ -25,7 +25,7 @@ public abstract class GetResourceRequestBuilder<
 	B extends GetResourceRequestBuilder<B, SB, C, R>,
 	SB extends SearchResourceRequestBuilder<SB, C, ? extends CollectionResource<R>>,
 	C extends ServiceProvider, 
-	R> extends IndexResourceRequestBuilder<B, C, R> {
+	R> extends ResourceRequestBuilder<B, C, R> {
 	
 	private final GetResourceRequest<SB, C, R> request;
 
@@ -35,7 +35,7 @@ public abstract class GetResourceRequestBuilder<
 	}
 	
 	@Override
-	protected final IndexResourceRequest<C, R> create() {
+	protected final ResourceRequest<C, R> create() {
 		return request;
 	}
 

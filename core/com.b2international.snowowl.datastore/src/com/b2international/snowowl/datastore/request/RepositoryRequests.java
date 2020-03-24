@@ -73,13 +73,8 @@ public final class RepositoryRequests {
 	public static ServerInfoGetRequestBuilder prepareGetServerInfo() {
 		return new ServerInfoGetRequestBuilder();
 	}
-
+	
 	public static RepositoryClearRequestBuilder prepareClear() {
 		return new RepositoryClearRequestBuilder();
 	}
-
-	public static RepositoryCommitRequestBuilder prepareCommit() {
-		return new RepositoryCommitRequestBuilder();
-	}
-
 }

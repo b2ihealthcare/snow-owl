@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,6 @@ import com.b2international.snowowl.core.events.RequestBuilder;
  */
 public interface TransactionalRequestBuilder<R> extends RequestBuilder<TransactionContext, R> {
 
-	default AsyncRequest<CommitResult> build(String codeSystemUri, 
-			String author,
-			String commitComment) {
-		return commit()
-				.setAuthor(author)
-				.setCommitComment(commitComment)
-				.build(codeSystemUri);
-	}
-	
 	default AsyncRequest<CommitResult> build(String repositoryId, 
 			String branch, 
 			String author,

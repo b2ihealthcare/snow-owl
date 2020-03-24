@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.2
  */
-public abstract class GetResourceRequest<SB extends SearchResourceRequestBuilder<SB, C, ? extends CollectionResource<R>>, C extends ServiceProvider, R> extends IndexResourceRequest<C, R> {
+public abstract class GetResourceRequest<SB extends SearchResourceRequestBuilder<SB, C, ? extends CollectionResource<R>>, C extends ServiceProvider, R> extends ResourceRequest<C, R> {
 	
 	private static final long serialVersionUID = 1L;
 	

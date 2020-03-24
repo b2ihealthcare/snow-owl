@@ -36,8 +36,7 @@ import com.google.common.base.Strings;
 	@JsonSubTypes.Type(value = SnomedEnumeratedDefinition.class, name = "enumerated"),
 	@JsonSubTypes.Type(value = SnomedHierarchyDefinition.class, name = "hierarchy"),
 	@JsonSubTypes.Type(value = SnomedReferenceSetDefinition.class, name = "refSet"),
-	@JsonSubTypes.Type(value = SnomedRelationshipDefinition.class, name = "relationship"),
-	@JsonSubTypes.Type(value = SnomedSingletonDefinition.class, name = "singleton")
+	@JsonSubTypes.Type(value = SnomedRelationshipDefinition.class, name = "relationship")
 })
 public abstract class SnomedConceptSetDefinition extends SnomedConceptModelComponent {
 

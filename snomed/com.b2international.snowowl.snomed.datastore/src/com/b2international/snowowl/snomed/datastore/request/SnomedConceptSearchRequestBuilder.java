@@ -237,22 +237,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.DEFINITION_STATUS, definitionStatusId);
 	}
 	
-	/**
-	 * Filters concept that has a matching description with any acceptability in the given Accept-Language reference sets.
-	 * 
-	 * @param acceptLanguage
-	 * @return
-	 */
-	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(String acceptLanguage) {
-		return filterByDescriptionLanguageRefSet(ExtendedLocale.parseLocales(acceptLanguage));
-	}
-	
-	/**
-	 * Filters concept that has a matching description with any acceptability in the given list of {@link ExtendedLocale}s.
-	 * 
-	 * @param extendedLocales
-	 * @return
-	 */
 	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(List<ExtendedLocale> extendedLocales) {
 		return addOption(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(extendedLocales));
 	}

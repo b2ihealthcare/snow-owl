@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
+import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
@@ -43,14 +43,14 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Represents a SNOMED&nbsp;CT concept.
  * <br>
- * Concepts returned by search requests are populated based on the expand parameters passed into the {@link IndexResourceRequestBuilder#setExpand(String)}
+ * Concepts returned by search requests are populated based on the expand parameters passed into the {@link ResourceRequestBuilder#setExpand(String)}
  * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
  * 
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>{@code pt()} - returns the <i>Preferred Term</i> for the </li> locale set by {@link IndexResourceRequestBuilder#setLocales(java.util.List)} method.
- * <li>{@code fsn()} - returns the <i>Fully Specified Name (fsn)</i> for the </li> locale set by {@link IndexResourceRequestBuilder#setLocales(java.util.List)} method.</li>
+ * <li>{@code pt()} - returns the <i>Preferred Term</i> for the </li> locale set by {@link ResourceRequestBuilder#setLocales(java.util.List)} method.
+ * <li>{@code fsn()} - returns the <i>Fully Specified Name (fsn)</i> for the </li> locale set by {@link ResourceRequestBuilder#setLocales(java.util.List)} method.</li>
  * <li>{@code descriptions()} - returns the descriptions of the concept</li>
  * <li>{@code relationships()} - returns the relationships of the concept</li>
  * <li>{@code descendants(direct:true|false)} - returns the all or the only the direct descendants of the concept based on the inferred tree.</li> 

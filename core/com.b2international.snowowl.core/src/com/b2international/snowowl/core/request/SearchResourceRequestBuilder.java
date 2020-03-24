@@ -33,7 +33,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 5.2
  */
-public abstract class SearchResourceRequestBuilder<B extends SearchResourceRequestBuilder<B, C, R>, C extends ServiceProvider, R> extends IndexResourceRequestBuilder<B, C, R> {
+public abstract class SearchResourceRequestBuilder<B extends SearchResourceRequestBuilder<B, C, R>, C extends ServiceProvider, R> extends ResourceRequestBuilder<B, C, R> {
 	
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
@@ -76,7 +76,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterById(String id) {
-		return filterByIds(id == null ? null : ImmutableSet.of(id));
+		return filterByIds(ImmutableSet.of(id));
 	}
 	
 	/**
@@ -85,7 +85,9 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterByIds(Collection<String> ids) {
-		this.componentIds = ids == null ? null : ImmutableSet.copyOf(ids);
+		if (ids != null) {
+			this.componentIds = ImmutableSet.copyOf(ids);
+		}
 		return getSelf();
 	}
 	
@@ -119,9 +121,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B sortBy(List<Sort> sorts) {
-		if (sorts != null) {
-			optionsBuilder.put(OptionKey.SORT_BY, ImmutableList.copyOf(sorts));
-		}
+		optionsBuilder.put(OptionKey.SORT_BY.name(), ImmutableList.copyOf(sorts));
 		return getSelf();
 	}
 	
@@ -161,7 +161,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	@Override
-	protected IndexResourceRequest<C, R> create() {
+	protected ResourceRequest<C, R> create() {
 		final SearchResourceRequest<C, R> req = createSearch();
 		req.setComponentIds(componentIds);
 		req.setSearchAfter(searchAfter);

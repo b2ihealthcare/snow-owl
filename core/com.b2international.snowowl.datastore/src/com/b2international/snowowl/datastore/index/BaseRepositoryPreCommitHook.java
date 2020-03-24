@@ -112,6 +112,8 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 		}
 	}
 
+	protected abstract short getTerminologyComponentId(RevisionDocument revision);
+
 	/**
 	 * Subclasses may override this method to execute additional logic before the processing of the changeset.
 	 * 
