@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.jobs;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * The central class for managing and manipulating long running operations aka {@link RemoteJobEntry}s.
@@ -25,10 +28,12 @@ import java.util.Collections;
  */
 public final class JobRequests {
 
-	private JobRequests() {}
-	
+	private JobRequests() {
+	}
+
 	/**
 	 * Returns a job scheduling request builder to schedule a new remote job.
+	 * 
 	 * @return {@link ScheduleJobRequestBuilder}
 	 */
 	public static ScheduleJobRequestBuilder prepareSchedule() {
@@ -37,15 +42,18 @@ public final class JobRequests {
 
 	/**
 	 * Returns a request builder to search for remote jobs.
+	 * 
 	 * @return {@link SearchJobRequestBuilder}
 	 */
 	public static SearchJobRequestBuilder prepareSearch() {
 		return new SearchJobRequestBuilder();
 	}
-	
+
 	/**
 	 * Returns a request builder to get a single remote job by its identifier.
-	 * @param jobId - the identifier of the job
+	 * 
+	 * @param jobId
+	 *            - the identifier of the job
 	 * @return {@link GetJobRequestBuilder}
 	 */
 	public static GetJobRequestBuilder prepareGet(String jobId) {
@@ -54,7 +62,9 @@ public final class JobRequests {
 
 	/**
 	 * Returns a request builder to cancel a running remote job.
-	 * @param jobId - the identifier of the job to be cancelled
+	 * 
+	 * @param jobId
+	 *            - the identifier of the job to be cancelled
 	 * @return {@link CancelJobRequestBuilder}
 	 */
 	public static CancelJobRequestBuilder prepareCancel(String jobId) {
@@ -63,15 +73,55 @@ public final class JobRequests {
 
 	/**
 	 * Returns a request builder to delete a remote job. If the remote job is currently in RUNNING state, it will be cancelled and deleted.
-	 * @param jobId - the identifier of the job to be cancelled and deleted
+	 * 
+	 * @param jobId
+	 *            - the identifier of the job to be cancelled and deleted
 	 * @return {@link DeleteJobRequestBuilder}
 	 */
 	public static DeleteJobRequestBuilder prepareDelete(String jobId) {
 		return new DeleteJobRequestBuilder(Collections.singleton(jobId));
 	}
-	
+
 	public static DeleteJobRequestBuilder prepareDelete(Collection<String> jobIds) {
 		return new DeleteJobRequestBuilder(jobIds);
 	}
+
+	/**
+	 * Polls periodically (using a default pollInterval, 200ms) until the given job's state becomes one of the valid DONE states.
+	 * 
+	 * @param bus
+	 *            - the bus to use for requests
+	 * @param jobId
+	 *            - the job to poll
+	 * @return
+	 * @see RemoteJobEntry#isDone()
+	 */
+	public static RemoteJobEntry waitForJob(IEventBus bus, String jobId) {
+		return waitForJob(bus, jobId, 200);
+	}
 	
+	/**
+	 * Polls periodically until the given job's state becomes one of the valid DONE states.
+	 * 
+	 * @param bus
+	 *            - the bus to use for requests
+	 * @param jobId
+	 *            - the job to poll
+	 * @param pollIntervalMillis - the poll interval value to use
+	 * @return
+	 * @see RemoteJobEntry#isDone()
+	 */
+	public static RemoteJobEntry waitForJob(IEventBus bus, String jobId, long pollIntervalMillis) {
+		RemoteJobEntry job;
+		do {
+			try {
+				Thread.sleep(pollIntervalMillis);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			job = JobRequests.prepareGet(jobId).buildAsync().execute(bus).getSync(1, TimeUnit.MINUTES);
+		} while (!job.isDone());
+		return job;
+	}
+
 }

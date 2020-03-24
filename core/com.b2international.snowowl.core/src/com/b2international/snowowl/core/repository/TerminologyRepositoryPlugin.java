@@ -58,6 +58,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		// register terminology and component definitions
 		TerminologyRegistry registry = env.service(TerminologyRegistry.class);
 		registry.register(this);
+		getAdditionalTerminologyComponents().values().forEach(registry::register);
 		
 		if (env.isServer()) {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);

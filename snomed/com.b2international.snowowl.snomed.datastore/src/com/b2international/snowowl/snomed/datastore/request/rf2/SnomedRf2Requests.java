@@ -36,8 +36,8 @@ public final class SnomedRf2Requests {
 		return SNOMED_IMPORT_PREFIX.concat(branchPath);
 	}
 	
-	public static boolean isSnomedImportJob(RemoteJobEntry remoteJob) {
-		return remoteJob.getId().startsWith(SNOMED_IMPORT_PREFIX);
+	public static boolean isSnomedImportJob(RemoteJobEntry job) {
+		return job != null && job.getKey().startsWith(SNOMED_IMPORT_PREFIX);
 	}
 	
 }

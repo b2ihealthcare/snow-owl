@@ -165,19 +165,6 @@ public class BranchCompareRequestTest {
 		assertThat(compare.getDeletedComponents()).isEmpty();
 	}
 	
-	private RemoteJobEntry waitDone(final String jobId) throws InterruptedException {
-		RemoteJobEntry entry = null;
-		do {
-			Thread.sleep(100);
-			entry = get(jobId);
-		} while (!entry.isDone());
-		return entry;
-	}
-
-	private RemoteJobEntry get(final String jobId) {
-		return JobRequests.prepareGet(jobId).buildAsync().execute(bus).getSync();
-	}
-	
 	private BranchCompareResult compare(String base, String compare) {
 		return prepareCompare(base, compare)
 				.execute(bus)
@@ -220,7 +207,7 @@ public class BranchCompareRequestTest {
 		return newIds;
 	}
 	
-	private BranchCompareResult compareOnJob(String base, String compare) throws Exception {
+	private BranchCompareResult compareOnJob(String base, String compare) {
 		final String compareJobId = JobRequests.prepareSchedule()
 			.setRequest(prepareCompare(base, compare).getRequest())
 			.setUser("test@b2i.sg")
@@ -229,7 +216,7 @@ public class BranchCompareRequestTest {
 			.execute(bus)
 			.getSync();
 		
-		final RemoteJobEntry job = waitDone(compareJobId);
+		final RemoteJobEntry job = JobRequests.waitForJob(bus, compareJobId, 100);
 		
  		return job.getResultAs(JsonSupport.getDefaultObjectMapper(), BranchCompareResult.class);
 	}

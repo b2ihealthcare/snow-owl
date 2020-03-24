@@ -54,16 +54,16 @@ public final class ValidationRequests {
 	 * 
 	 * @return the unique id.
 	 */
-	public static String createUniqueValidationId(String shortName, String branch) {
+	public static String createUniqueValidationJobKey(String shortName, String branch) {
 		return String.format("%s%s%s%s", VALIDATION_JOB_ID_PREFIX, shortName, Branch.SEPARATOR, branch);
 	}
 	
 	public static boolean isValidationJob(RemoteJobEntry job) {
-		return job != null && job.getId().startsWith(VALIDATION_JOB_ID_PREFIX);
+		return job != null && job.getKey().startsWith(VALIDATION_JOB_ID_PREFIX);
 	}
 	
 	public static boolean isRelatedBranch(RemoteJobEntry job, String branch) {
-		return isValidationJob(job) && job.getId().endsWith(branch);
+		return isValidationJob(job) && job.getKey().endsWith(branch);
 	}
 	
 }
