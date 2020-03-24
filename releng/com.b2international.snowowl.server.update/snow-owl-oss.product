@@ -30,7 +30,7 @@
    </plugins>
 
    <features>
-      <feature id="com.b2international.snowowl.server.core.feature"/>
+      <feature id="com.b2international.snowowl.core.feature"/>
       <feature id="com.b2international.snowowl.server.product.feature"/>
       <feature id="com.b2international.snowowl.snomed.core.feature"/>
       <feature id="com.b2international.snowowl.server.dependencies.feature"/>

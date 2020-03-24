@@ -7,6 +7,6 @@
     <artifactId>core-parent</artifactId>
     <version>7.5.0-SNAPSHOT</version>
   </parent>
-  <artifactId>com.b2international.snowowl.server.core.feature</artifactId>
+  <artifactId>com.b2international.snowowl.core.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 </project>
