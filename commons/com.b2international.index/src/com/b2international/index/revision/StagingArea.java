@@ -307,17 +307,38 @@ public final class StagingArea {
 					
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
-					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
-						changedComponentsByContainer.put(containerId, objectId);
+					ArrayNode hashedFieldChanges = revisionDiff.diff();
+					
+					if (hashedFieldChanges != null && hashedFieldChanges.size() > 0) {
+						
+						/*
+						 * If detailed changes are present, that alone is enough to record 
+						 */
+						FluentIterable.from(hashedFieldChanges)
+							.filter(ObjectNode.class)
+							.forEach(node -> revisionsByChange.put((ObjectNode) node, objectId));
+						
+						/*
+						 * We still need to make a note of the container, in case eg. a concept needs
+						 * revisiting because its relationship changed.
+						 */
+						if (!containerId.isRoot()) { 
+							changedComponentsByContainer.put(containerId, objectId);
+						}
+						
+					} else {
+						
+						/*
+						 * If there are no details to record, we should still mark the component
+						 * as changed.
+						 */
+						if (!containerId.isRoot()) { 
+							changedComponentsByContainer.put(containerId, objectId);
+						} else {
+							changedComponentsByContainer.put(objectId, objectId);
+						}
 					}
 					
-					if (revisionDiff.diff() != null) {
-						revisionDiff.diff().forEach(node -> {
-							if (node instanceof ObjectNode) {
-								revisionsByChange.put((ObjectNode) node, objectId);
-							}
-						});
-					}
 				} else {
 					writer.put(key.id(), object);
 					changedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(object.getClass())), key);
