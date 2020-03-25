@@ -21,6 +21,7 @@ import java.util.Map;
 import com.b2international.index.Doc;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
@@ -163,6 +164,12 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * clear operation is needed.
 	 */
 	void clearContents();
+	
+	/**
+	 * @return <code>true</code> if the underlying {@link StagingArea} is dirty
+	 * @see StagingArea#isDirty()
+	 */
+	boolean isDirty();
 
 	@Override
 	default Builder<? extends TransactionContext> inject() {

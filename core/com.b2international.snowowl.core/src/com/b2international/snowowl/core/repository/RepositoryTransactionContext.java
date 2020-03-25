@@ -97,6 +97,11 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		bind(StagingArea.class, this.staging);
 	}
 	
+	@Override
+	public boolean isDirty() {
+		return staging.isDirty();
+	}
+	
 	public <T> T getResolvedObjectById(String componentId, Class<T> type) {
 		return type.cast(resolvedObjectsById.get(createComponentKey(componentId, type)));
 	}
@@ -248,6 +253,9 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
+		if (!isDirty()) {
+			return -1L;
+		}
 		final DatastoreLockContext lockContext = createLockContext(userId, parentContextDescription);
 		final DatastoreLockTarget lockTarget = createLockTarget(id(), branchPath());
 		IOperationLockManager locks = service(IOperationLockManager.class);

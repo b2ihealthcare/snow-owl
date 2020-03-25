@@ -461,6 +461,14 @@ public final class StagingArea {
 	}
 
 	/**
+	 * Dirty staging area if at least one object has been staged.
+	 * @return <code>true</code> if the staging area is dirty and can be committed via {@link #commit(String, long, String, String)}
+	 */
+	public boolean isDirty() {
+		return !stagedObjects.isEmpty();
+	}
+	
+	/**
 	 * Reset staging area to empty.
 	 */
 	private void reset() {
