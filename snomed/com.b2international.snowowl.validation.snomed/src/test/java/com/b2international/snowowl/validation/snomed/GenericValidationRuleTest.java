@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -458,19 +457,47 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void rule_duplicate_members() throws Exception {
-		final String ruleId = "rule_duplicate_members";
+	public void rule669() throws Exception {
+		final String ruleId = "669";
 		indexRule(ruleId);
 		
-		final SnomedRefSetMemberIndexEntry duplicateMember1 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
-		final SnomedRefSetMemberIndexEntry duplicateMember2 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
-		final SnomedRefSetMemberIndexEntry correctMember = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		final SnomedRefSetMemberIndexEntry duplicateSimpleMember1 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		final SnomedRefSetMemberIndexEntry duplicateSimpleMember2 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.SIMPLE).build();
+		final SnomedRefSetMemberIndexEntry correctSimpleMember = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.SIMPLE).build();
 		
-		indexRevision(MAIN, duplicateMember1, duplicateMember2, correctMember);
+		final SnomedRefSetMemberIndexEntry duplicateLanguageMember1 = member(Concepts.REFSET_ROOT_CONCEPT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_LANGUAGE_TYPE_UK).referenceSetType(SnomedRefSetType.LANGUAGE).build();
+		final SnomedRefSetMemberIndexEntry duplicateLanguageMember2 = member(Concepts.REFSET_ROOT_CONCEPT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_LANGUAGE_TYPE_UK).referenceSetType(SnomedRefSetType.LANGUAGE).build();
+		final SnomedRefSetMemberIndexEntry correctLanguageMember = member(Concepts.REFSET_ROOT_CONCEPT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_LANGUAGE_TYPE_US).referenceSetType(SnomedRefSetType.LANGUAGE).build();
+		
+		final SnomedRefSetMemberIndexEntry duplicateAttributeMember1 = member(Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_ATTRIBUTE_VALUE_TYPE).referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE).build();
+		final SnomedRefSetMemberIndexEntry duplicateAttributeMember2 = member(Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_ATTRIBUTE_VALUE_TYPE).referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE).build();
+		final SnomedRefSetMemberIndexEntry correctAttributeMember = member(Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE).build();
+		
+		indexRevision(MAIN, duplicateSimpleMember1, duplicateSimpleMember2, correctSimpleMember, duplicateLanguageMember1, duplicateLanguageMember2, correctLanguageMember, duplicateAttributeMember1, duplicateAttributeMember2, correctAttributeMember);
 		
 		final ValidationIssues issues = validate(ruleId);
-
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A));
+		
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_ROOT_CONCEPT),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT));
+	}
+	
+	@Test
+	public void rule670() throws Exception {
+		final String ruleId = "670";
+		indexRule(ruleId);
+		
+		final SnomedRefSetMemberIndexEntry duplicateSimpleMember1 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponent(Concepts.ATTRIBUTE_TYPE_ASSOCIATION_TARGET).build();
+		final SnomedRefSetMemberIndexEntry duplicateSimpleMember2 = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponent(Concepts.ATTRIBUTE_TYPE_ASSOCIATION_TARGET).build();
+		final SnomedRefSetMemberIndexEntry correctSimpleMember = member(Concepts.IS_A, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponent(Concepts.ATTRIBUTE_TYPE_COMPONENT_TYPE).build();
+		
+		indexRevision(MAIN, duplicateSimpleMember1, duplicateSimpleMember2, correctSimpleMember);
+		
+		final ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A));
 	}
 	
 }
