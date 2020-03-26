@@ -31,6 +31,8 @@ import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
@@ -80,6 +82,7 @@ public final class RemoteJob extends Job {
 			final ServiceProvider context = this.context.inject()
 					.bind(IProgressMonitor.class, trackerMonitor)
 					.bind(RemoteJob.class, this)
+					.bind(User.class, User.isSystem(user) ? User.SYSTEM : UserRequests.prepareGet(user).build().execute(this.context))
 					.build();
 			final Object response = request.execute(context);
 			if (response != null) {
