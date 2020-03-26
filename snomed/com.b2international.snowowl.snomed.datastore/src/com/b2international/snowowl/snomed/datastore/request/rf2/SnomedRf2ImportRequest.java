@@ -43,6 +43,8 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
@@ -68,6 +70,8 @@ import com.google.common.base.Strings;
  * @since 6.0.0
  */
 final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, BranchAccessControl {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 	
@@ -102,7 +106,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
 		
-		try {
+		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT)) {
 			return doImport(context, rf2Archive, new Rf2ImportConfiguration(type, createVersions));
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
