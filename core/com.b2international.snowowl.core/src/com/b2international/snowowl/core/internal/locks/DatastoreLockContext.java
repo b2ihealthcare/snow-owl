@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.google.common.base.Preconditions;
  * be acquired. Context equality is only based on the user ID.
  * 
  */
-public class DatastoreLockContext implements Serializable {
+public final class DatastoreLockContext implements Serializable {
 
 	private final String userId;
 

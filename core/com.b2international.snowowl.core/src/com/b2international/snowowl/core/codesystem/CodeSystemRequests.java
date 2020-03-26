@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCreateRequestBuilder;
@@ -90,7 +90,7 @@ public class CodeSystemRequests {
 			.collect(Collectors.toList());
 	}
 
-	public static CodeSystemEntry getCodeSystem(ServiceProvider context, String codeSystem) {
+	public static CodeSystemEntry getCodeSystem(ServiceProvider context, String codeSystem) throws NotFoundException {
 		final Repositories repositories = RepositoryRequests.prepareSearch()
 				.all()
 				.build()
@@ -108,7 +108,7 @@ public class CodeSystemRequests {
 						.stream();
 			})
 			.findFirst()
-			.orElseThrow(() -> new BadRequestException("CodeSystem '%s' cannot be found", codeSystem));
+			.orElseThrow(() -> new NotFoundException("CodeSystem", codeSystem));
 	}
 
 }
