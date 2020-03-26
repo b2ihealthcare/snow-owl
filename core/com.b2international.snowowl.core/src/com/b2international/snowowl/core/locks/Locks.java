@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,19 @@
 package com.b2international.snowowl.core.locks;
 
 import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.ROOT;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
 import java.util.Map;
 
-import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -32,26 +36,76 @@ import com.google.common.collect.Maps;
  */
 public final class Locks implements AutoCloseable {
 
+	/**
+	 * @since 7.5
+	 */
+	public static final class Builder {
+		
+		private final RepositoryContext context;
+		private String user;
+		private List<String> branches;
+		
+		public Builder(RepositoryContext context) {
+			this.context = checkNotNull(context, "Context is missing");
+			this.user = context.service(User.class).getUsername();
+			if (context instanceof BranchContext) {
+				this.branches = List.of(((BranchContext) context).branchPath()); 
+			}
+		}
+		
+		public Builder user(String user) {
+			this.user = user;
+			return this;
+		}
+		
+		public Builder branch(String branch) {
+			return branches(List.of(branch));
+		}
+		
+		public Builder branches(String...branches) {
+			return branches(List.of(branches));
+		}
+		
+		public Builder branches(List<String> branches) {
+			this.branches = branches;
+			return this;
+		}
+		
+		public Locks lock(String lockContext) {
+			return lock(lockContext, DatastoreLockContextDescriptions.ROOT);
+		}
+		
+		public Locks lock(String lockContext, String parentLockContext) {
+			return new Locks(context, user, lockContext, parentLockContext, branches);
+		}
+
+	}
+	
+	public static Builder on(RepositoryContext context) {
+		return new Builder(context);
+	}
+	
 	private final String repositoryId;
 	private final IOperationLockManager lockManager;
 	private final DatastoreLockContext lockContext;
 	private final Map<String, DatastoreLockTarget> lockTargets;
+
 	
-	public Locks(RepositoryContext context, String userId, String description, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
-		this(context, userId, description, ROOT, firstBranch, nextBranches);
-	}
+	private Locks(RepositoryContext context, String userId, String description, String parentLockContext, List<String> branchesToLock) throws OperationLockException {
+		this.repositoryId = context.id();
+		this.lockManager = context.service(IOperationLockManager.class);
+		this.lockContext = new DatastoreLockContext(userId, description, Strings.isNullOrEmpty(parentLockContext) ? ROOT : parentLockContext);
 	
-	public Locks(RepositoryContext context, String userId, String description, String parentLockContext, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
-		repositoryId = context.id();
-		lockManager = context.service(IOperationLockManager.class);
-		lockContext = new DatastoreLockContext(userId, description, Strings.isNullOrEmpty(parentLockContext) ? ROOT : parentLockContext);
-	
-		lockTargets = Maps.newHashMap();
-		for (Branch branch : Lists.asList(firstBranch, nextBranches)) {
-			lockTargets.put(branch.path(), new DatastoreLockTarget(repositoryId, branch.path()));	
+		this.lockTargets = Maps.newHashMapWithExpectedSize(branchesToLock.size());
+		for (String branch : branchesToLock) {
+			this.lockTargets.put(branch, new DatastoreLockTarget(repositoryId, branch));	
 		}
 		
-		lock();
+		try {
+			lock();
+		} catch (InterruptedException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 
 	private void lock() throws OperationLockException, InterruptedException {

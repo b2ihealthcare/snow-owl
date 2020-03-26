@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,11 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 	@Override
 	protected void applyChanges(RepositoryContext context, Branch source, Branch target) {
 		final String author = userId(context);
-		try (Locks locks = new Locks(context, author, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
+		try (Locks locks = Locks
+				.on(context)
+				.branches(source.path(), target.path())
+				.user(author)
+				.lock(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)) {
 			context.service(BaseRevisionBranching.class)
 				.prepareMerge(source.path(), target.path())
 				.author(author)
@@ -60,8 +64,6 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
 		} catch (DatastoreOperationLockException e) {
 			throw new ConflictException("Lock exception caught while merging source '%s' into target '%s'. %s", source.path(), target.path(), e.getMessage());
-		} catch (InterruptedException e) {
-			throw new ConflictException("Lock obtaining process was interrupted while merging source '%s' into target '%s'.", source.path(), target.path());
 		}
 	}
 	

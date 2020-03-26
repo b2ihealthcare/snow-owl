@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,6 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 	public Boolean execute(final BranchContext context) {
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String classificationId = job.getKey();
-		final String userId = job.getUser();
 
 		final Branch branch = context.branch();
 		final long headTimestamp = branch.headTimestamp();
@@ -99,7 +98,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		tracker.classificationRunning(classificationId, headTimestamp);
 
 		try {
-			executeClassification(context, classificationId, userId, branch, tracker);
+			executeClassification(context, classificationId, tracker);
 		} catch (final ReasonerApiException e) {
 			tracker.classificationFailed(classificationId);
 			throw e;
@@ -113,8 +112,6 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 
 	private void executeClassification(final BranchContext context, 
 			final String classificationId, 
-			final String userId,
-			final Branch branch, 
 			final ClassificationTracker tracker) {
 		
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
@@ -122,12 +119,10 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
 
 		final ReasonerTaxonomy taxonomy;
-		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.CLASSIFY, parentLockContext, branch)) {
+		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.CLASSIFY, parentLockContext)) {
 			taxonomy = buildTaxonomy(revisionSearcher, context.service(SnomedCoreConfiguration.class).getReasonerExcludedModuleIds(), concreteDomainSupported);
 		} catch (final OperationLockException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
-		} catch (final InterruptedException e) {
-			throw new ReasonerApiException("Thread interrupted while acquiring exclusive access to terminology store for classification.", e);
 		}
 		
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();

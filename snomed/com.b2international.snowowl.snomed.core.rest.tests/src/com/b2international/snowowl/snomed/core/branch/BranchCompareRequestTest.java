@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 5.9
@@ -210,7 +211,7 @@ public class BranchCompareRequestTest {
 	private BranchCompareResult compareOnJob(String base, String compare) {
 		final String compareJobId = JobRequests.prepareSchedule()
 			.setRequest(prepareCompare(base, compare).getRequest())
-			.setUser("test@b2i.sg")
+			.setUser(RestExtensions.USER)
 			.setDescription(String.format("Comparing %s changes", branchPath))
 			.buildAsync()
 			.execute(bus)
