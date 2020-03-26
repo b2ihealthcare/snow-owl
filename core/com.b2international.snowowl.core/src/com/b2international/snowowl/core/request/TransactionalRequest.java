@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.domain.TransactionContextProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -43,21 +42,21 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 
 	private final long preRequestPreparationTime;
 	
-	private final String parentContextDescription;
+	private final String parentLockContext;
 
-	public TransactionalRequest(String author, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentContextDescription) {
+	public TransactionalRequest(String author, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentLockContext) {
 		this.next = checkNotNull(next, "next");
 		this.author = author;
 		this.commitComment = commitComment;
 		this.preRequestPreparationTime = preRequestPreparationTime;
-		this.parentContextDescription = parentContextDescription;
+		this.parentLockContext = parentLockContext;
 	}
 	
 	@Override
 	public CommitResult execute(BranchContext context) {
 //		final Metrics metrics = context.service(Metrics.class);
 //		metrics.setExternalValue("preRequest", preRequestPreparationTime);
-		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, author, commitComment, parentContextDescription)) {
+		try (final TransactionContext transaction = context.openTransaction(context, author, commitComment, parentLockContext)) {
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);
 		} catch (ApiException e) {
@@ -72,7 +71,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		 * FIXME: at this point, the component identifier might have changed even though the input 
 		 * required an exact ID to be assigned. What to do?
 		 */
-		final long commitTimestamp = context.commit(context.author(), commitComment, parentContextDescription);
+		final long commitTimestamp = context.commit(context.author(), commitComment, parentLockContext);
 		return new CommitResult(commitTimestamp, body);
 	}
 	

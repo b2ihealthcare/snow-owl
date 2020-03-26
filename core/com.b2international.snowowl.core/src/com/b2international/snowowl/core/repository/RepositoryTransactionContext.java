@@ -78,7 +78,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 
 	private final String author;
 	private final String commitComment;
-	private final String parentContextDescription;
+	private final String parentLockContext;
 	
 	private boolean isNotificationEnabled = true;
 	
@@ -88,11 +88,11 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	@JsonIgnore
 	private transient final StagingArea staging;
 
-	RepositoryTransactionContext(BranchContext context, String author, String commitComment, String parentContextDescription) {
+	public RepositoryTransactionContext(BranchContext context, String author, String commitComment, String parentLockContext) {
 		super(context);
 		this.author = author;
 		this.commitComment = commitComment;
-		this.parentContextDescription = parentContextDescription;
+		this.parentLockContext = parentLockContext;
 		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath()).withContext(this);
 		bind(StagingArea.class, this.staging);
 	}
@@ -238,12 +238,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 
 	@Override
 	public long commit() {
-		return commit(author(), commitComment, parentContextDescription);
+		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override
 	public long commit(String commitComment) {
-		return commit(author(), commitComment, parentContextDescription);
+		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override

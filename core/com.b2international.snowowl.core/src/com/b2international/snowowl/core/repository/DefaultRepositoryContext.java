@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,14 @@ import org.slf4j.Logger;
 import com.b2international.index.es.client.EsIndexStatus;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.BranchContextProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
-public final class DefaultRepositoryContext implements RepositoryContext, BranchContextProvider {
+public final class DefaultRepositoryContext implements RepositoryContext {
 
 	private final ServiceProvider serviceProvider;
 	private final RepositoryInfo info;
@@ -46,9 +43,6 @@ public final class DefaultRepositoryContext implements RepositoryContext, Branch
 
 	@Override
 	public <T> T service(Class<T> type) {
-		if (BranchContextProvider.class.isAssignableFrom(type)) {
-			return type.cast(this);
-		}
 		return serviceProvider.service(type);
 	}
 
@@ -82,9 +76,4 @@ public final class DefaultRepositoryContext implements RepositoryContext, Branch
 		return info.indices();
 	}
 	
-	@Override
-	public BranchContext get(RepositoryContext context, Branch branch, String branchPath) {
-		return new RepositoryBranchContext(context, branch, branchPath);
-	}
-
 }

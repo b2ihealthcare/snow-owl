@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.domain;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
 
 /**
  * @since 4.5
@@ -50,5 +52,17 @@ public interface BranchContext extends RepositoryContext {
 	default boolean isMain() {
 		return Branch.MAIN_PATH.equals(branchPath());
 	}
+	
+	default TransactionContext openTransaction(BranchContext context) {
+		return openTransaction(context, DatastoreLockContextDescriptions.ROOT);
+	}
 
+	default TransactionContext openTransaction(BranchContext context, String parentLockContext) {
+		return openTransaction(context, null, null, parentLockContext);
+	}
+
+	default TransactionContext openTransaction(BranchContext context, String author, String commitComment, String parentLockContext) {
+		return new RepositoryTransactionContext(context, author, commitComment, parentLockContext);
+	}
+	
 }

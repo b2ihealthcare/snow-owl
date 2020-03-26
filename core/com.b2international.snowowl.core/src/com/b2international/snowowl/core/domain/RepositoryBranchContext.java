@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,30 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.b2international.snowowl.core.branch.Branch;
 
 /**
  * @since 4.5
  */
-public interface BranchContextProvider {
+public final class RepositoryBranchContext extends DelegatingRepositoryContext implements BranchContext {
 
-	BranchContext get(RepositoryContext context, Branch branch, String branchPath);
+	private final Branch branch;
+
+	public RepositoryBranchContext(RepositoryContext context, Branch branch) {
+		super(context);
+		this.branch = checkNotNull(branch, "branch");
+	}
 	
+	@Override
+	public final Branch branch() {
+		return branch;
+	}
+	
+	@Override
+	public String branchPath() {
+		return branch.path();
+	}
+
 }
