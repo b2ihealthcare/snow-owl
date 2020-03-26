@@ -45,7 +45,7 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Commit;
-import com.b2international.index.revision.Operation;
+import com.b2international.index.revision.CommitDetail;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
@@ -296,7 +296,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 
 	private Collection<ComponentIdentifier> getNewObjects(Commit commit) {
 		return commit.getDetails().stream()
-			.filter(detail -> Operation.ADD == detail.getOp())
+			.filter(CommitDetail::isAdd)
 			.flatMap(detail -> {
 				final short terminologyComponentId = getTerminologyComponentId(detail.getComponentType());
 				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
@@ -304,19 +304,19 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			.collect(Collectors.toSet());
 	}
 
+	/* From all commit detail object, extract both component level changes and container related add/change/remove and mark them as CHANGED components */
 	private Collection<ComponentIdentifier> getChangedObjects(Commit commit) {
 		return commit.getDetails().stream()
-			.filter(detail -> Operation.CHANGE == detail.getOp())
 			.flatMap(detail -> {
 				final short terminologyComponentId = getTerminologyComponentId(detail.getObjectType());
-				return detail.getObjects().stream().map(id -> ComponentIdentifier.of(terminologyComponentId, id));
+				return detail.getObjects().stream().map(id -> ComponentIdentifier.of(terminologyComponentId, id)); 
 			})
 			.collect(Collectors.toSet());
 	}
 	
 	private Collection<ComponentIdentifier> getRemovedObjects(Commit commit) {
 		return commit.getDetails().stream()
-			.filter(detail -> Operation.REMOVE == detail.getOp())
+			.filter(CommitDetail::isRemove)
 			.flatMap(detail -> {
 				final short terminologyComponentId = getTerminologyComponentId(detail.getComponentType());
 				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
