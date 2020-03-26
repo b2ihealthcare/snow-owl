@@ -37,12 +37,7 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.SystemNotification;
-import com.b2international.snowowl.core.jobs.JobRequests;
-import com.b2international.snowowl.core.jobs.RemoteJob;
-import com.b2international.snowowl.core.jobs.RemoteJobEntry;
-import com.b2international.snowowl.core.jobs.RemoteJobNotification;
-import com.b2international.snowowl.core.jobs.RemoteJobState;
-import com.b2international.snowowl.core.jobs.RemoteJobTracker;
+import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -71,6 +66,7 @@ public class JobRequestsTest {
 		this.context = ServiceProvider.EMPTY.inject()
 				.bind(ObjectMapper.class, mapper)
 				.bind(RemoteJobTracker.class, tracker)
+				.bind(IdentityProvider.class, IdentityProvider.NOOP)
 				.build();
 		this.bus.registerHandler(SystemNotification.ADDRESS, message -> {
 			try {

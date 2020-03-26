@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -239,6 +240,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 							.id(UUID.randomUUID().toString())
 							.active(true)
 							.referenceSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
+							.referenceSetType(SnomedRefSetType.MODULE_DEPENDENCY)
 							.moduleId(source)
 							.referencedComponentId(target);
 				} else {
