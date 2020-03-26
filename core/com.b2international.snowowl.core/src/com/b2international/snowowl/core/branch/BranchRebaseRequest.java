@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,11 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 		}
 		
 		final String author = userId(context);
-		try (Locks locks = new Locks(context, author, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
+		try (Locks locks = Locks
+				.on(context)
+				.branches(source.path(), target.path())
+				.user(author)
+				.lock(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)) {
 			context.service(BaseRevisionBranching.class)
 				.prepareMerge(source.path(), target.path())
 				.author(author)
@@ -71,8 +75,6 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);
 		} catch (OperationLockException e) {
 			throw new ConflictException("Lock exception caught while rebasing target '%s' on source '%s'. %s", target.path(), source.path(), e.getMessage());
-		} catch (InterruptedException e) {
-			throw new ConflictException("Lock obtaining process was interrupted while rebasing target '%s' on source '%s'.", target.path(), source.path());
 		}
 	}
 	

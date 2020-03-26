@@ -150,19 +150,17 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	@Override
 	public Boolean execute(final BranchContext context) {
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
-		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 		
-		try (Locks locks = new Locks(context, user, DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext, branch)) {
+		try (Locks locks = Locks.on(context)
+				.user(user)
+				.lock(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext)) {
 			return persistChanges(context, monitor);
 		} catch (final OperationLockException e) {
 			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for persisting classification changes; %s", e.getMessage(), e);
-		} catch (final InterruptedException e) {
-			tracker.classificationFailed(classificationId);
-			throw new ReasonerApiException("Thread interrupted while acquiring exclusive access to terminology store for persisting classification changes.", e);
 		} catch (final Exception e) {
 			LOG.error("Unexpected error while persisting classification changes.", e);
 			tracker.classificationSaveFailed(classificationId);
