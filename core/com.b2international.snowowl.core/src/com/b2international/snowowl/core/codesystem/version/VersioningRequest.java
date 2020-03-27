@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 
@@ -96,14 +97,15 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	
 	private final CodeSystemVersionEntry createVersion(final TransactionContext context, final VersioningConfiguration config) {
 		return CodeSystemVersionEntry.builder()
-			.description(config.getDescription())
-			.effectiveDate(config.getEffectiveTime().getTime())
-			.importDate(new Date().getTime())
-			.parentBranchPath(context.branchPath())
-			.versionId(config.getVersionId())
-			.codeSystemShortName(config.getCodeSystemShortName())
-			.repositoryUuid(context.id())
-			.build();
+				.id(IDs.base64UUID())
+				.description(config.getDescription())
+				.effectiveDate(config.getEffectiveTime().getTime())
+				.importDate(new Date().getTime())
+				.parentBranchPath(context.branchPath())
+				.versionId(config.getVersionId())
+				.codeSystemShortName(config.getCodeSystemShortName())
+				.repositoryUuid(context.id())
+				.build();
 	}
 	
 	@Override

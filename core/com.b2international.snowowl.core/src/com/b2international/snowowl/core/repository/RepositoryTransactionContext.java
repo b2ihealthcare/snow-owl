@@ -59,6 +59,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
@@ -190,7 +191,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			return cs.getShortName();
 		} else if (o instanceof CodeSystemVersionEntry) { 
 			final CodeSystemVersionEntry cs = (CodeSystemVersionEntry) o;
-			staging.stageNew(cs.getVersionId(), cs);
+			staging.stageNew(cs.getId(), cs);
 			resolvedObjectsById.put(createComponentKey(cs.getVersionId(), cs.getClass()), cs);
 			return cs.getVersionId();
 		} else if (o instanceof Revision) {

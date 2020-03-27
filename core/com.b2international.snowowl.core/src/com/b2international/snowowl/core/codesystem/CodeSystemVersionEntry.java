@@ -132,6 +132,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder {
 		
+		private String id;
 		private long importDate;
 		private long effectiveDate;
 		private String description;
@@ -141,6 +142,11 @@ public final class CodeSystemVersionEntry implements Serializable {
 		private String repositoryUuid;
 		private String codeSystemShortName;
 		private String parentBranchPath = Branch.MAIN_PATH;
+		
+		public Builder id(String id) {
+			this.id = id;
+			return this;
+		}
 		
 		public Builder description(String description) {
 			this.description = description;
@@ -188,12 +194,13 @@ public final class CodeSystemVersionEntry implements Serializable {
 		}
 		
 		public CodeSystemVersionEntry build() {
-			return new CodeSystemVersionEntry(importDate, effectiveDate, latestUpdateDate, description, versionId, parentBranchPath, 
+			return new CodeSystemVersionEntry(id, importDate, effectiveDate, latestUpdateDate, description, versionId, parentBranchPath, 
 					patched, repositoryUuid, codeSystemShortName);
 		}
 		
 	}
 	
+	private final String id;
 	private final long importDate;
 	private final long effectiveDate;
 	private final String description;
@@ -204,10 +211,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 	private final String repositoryUuid;
 	private final String codeSystemShortName;
 	
-	private CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
+	private CodeSystemVersionEntry(final String id, final long importDate, final long effectiveDate, final long latestUpdateDate,
 			final String description, final String versionId, final String parentBranchPath, final boolean patched, final String repositoryUuid, 
 			final String codeSystemShortName) {
-		
+		this.id = id;
 		this.importDate = importDate;
 		this.effectiveDate = effectiveDate;
 		this.latestUpdateDate = latestUpdateDate;
@@ -217,6 +224,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 		this.versionId = versionId;
 		this.parentBranchPath = parentBranchPath;
 		this.patched = patched;
+	}
+	
+	public String getId() {
+		return id;
 	}
 	
 	/**

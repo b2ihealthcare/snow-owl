@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -218,6 +219,7 @@ public final class Rf2EffectiveTimeSlice {
 				
 				if (doCreateVersion && !importPlan.hasNext()) {
 					tx.add(CodeSystemVersionEntry.builder()
+							.id(IDs.base64UUID())
 							.codeSystemShortName(codeSystem)
 							.description("")
 							.parentBranchPath(context.branch().path())
