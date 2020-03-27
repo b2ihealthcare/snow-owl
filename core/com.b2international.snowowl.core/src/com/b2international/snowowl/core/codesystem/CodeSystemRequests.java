@@ -99,7 +99,7 @@ public class CodeSystemRequests {
 				.build()
 				.execute(context);
 			
-		return repositories.getItems()
+		return repositories
 			.stream()
 			.flatMap(repository -> {
 				return CodeSystemRequests.prepareSearchCodeSystem()

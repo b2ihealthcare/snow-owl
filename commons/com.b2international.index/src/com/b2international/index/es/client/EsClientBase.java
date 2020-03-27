@@ -134,7 +134,7 @@ public abstract class EsClientBase implements EsClient {
 	
 	private ClusterHealthResponse checkClusterHealth(ClusterHealthResponse previousHealth) {
 		try {
-			log.trace("Checking cluster health at '{}'...", host.toURI());
+			log.info("Checking cluster health at '{}'...", host.toURI());
 			ClusterHealthRequest req = new ClusterHealthRequest();
 			req.level(Level.INDICES);
 			return cluster().health(req);
@@ -145,7 +145,7 @@ public abstract class EsClientBase implements EsClient {
 	
 	private GetSettingsResponse checkIndicesSettings(GetSettingsResponse previousSettings) {
 		try {
-			log.trace("Checking indices settings at '{}'...", host.toURI());
+			log.info("Checking indices settings at '{}'...", host.toURI());
 			return indices().settings(new GetSettingsRequest().indices(MetaData.ALL));
 		} catch (IOException e) {
 			throw new IndexException("Failed to get indices settings", e);
@@ -222,12 +222,7 @@ public abstract class EsClientBase implements EsClient {
 		}
 		
 		public T waitUntilValue(Predicate<T> test, long seconds) {
-			return waitFor(seconds, result -> !test.test(result), () -> {
-				synchronized (this) {
-					expirationNanos = 0L; // reset
-					return get();
-				}
-			});
+			return waitFor(seconds, result -> !test.test(result), this::get);
 		}
 		
 	}
