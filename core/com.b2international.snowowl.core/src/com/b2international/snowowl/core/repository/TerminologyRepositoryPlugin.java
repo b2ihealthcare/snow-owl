@@ -109,14 +109,12 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	protected abstract ContentAvailabilityInfoProvider getContentAvailabilityInfoProvider();
 	
 	/**
-	 * An optional evaluator that can evaluate generic {@link ConceptSearchRequest concept search requests}. 
+	 * An evaluator that can evaluate generic {@link ConceptSearchRequest concept search requests}. 
 	 * @return a {@link ConceptSearchRequestEvaluator} instance
 	 * @see ConceptSearchRequestBuilder
 	 * @see ConceptSearchRequest
 	 */
-	protected ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator() {
-		return null;
-	}
+	protected abstract ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator();
 	
 	/**
 	 * Subclasses may override to provide customized {@link ComponentDeletionPolicy} for the underlying repository.

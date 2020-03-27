@@ -19,6 +19,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
@@ -80,5 +81,26 @@ public interface ConceptSearchRequestEvaluator {
 	 * @return
 	 */
 	Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search);
-
+	
+	default Concept toConcept(CodeSystemURI codeSystem, IComponent concept, String iconId, String term) {
+		Concept result = new Concept(codeSystem.toString(), concept.getTerminologyComponentId());
+		result.setId(concept.getId());
+		result.setReleased(concept.isReleased());
+		result.setIconId(iconId);
+		result.setTerm(term);
+		return result;
+	}
+	
+	/**
+	 * No-op request evaluator that returns zero results
+	 * @since 7.5
+	 */
+	ConceptSearchRequestEvaluator NOOP = new ConceptSearchRequestEvaluator() {
+		
+		@Override
+		public Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+			return new Concepts(search.get(OptionKey.LIMIT, Integer.class), 0);
+		}
+	};
+	
 }

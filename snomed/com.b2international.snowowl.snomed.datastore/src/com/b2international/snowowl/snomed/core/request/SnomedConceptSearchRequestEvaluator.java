@@ -20,11 +20,9 @@ import java.util.stream.Collectors;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -77,16 +75,15 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 				.build()
 				.execute(context);
 
-		return new Concepts(matches.stream().map(c -> toConcept(uri, c)).collect(Collectors.toList()), matches.getSearchAfter(), matches.getLimit(), matches.getTotal());
-	}
-	
-	private Concept toConcept(CodeSystemURI codeSystem, SnomedConcept concept) {
-		Concept result = new Concept(codeSystem.toString(), concept.getTerminologyComponentId());
-		result.setId(concept.getId());
-		result.setReleased(concept.isReleased());
-		result.setIconId(concept.getIconId());
-		result.setTerm(concept.getPt() == null ? concept.getId() : concept.getPt().getTerm());
-		return result;
+		return new Concepts(
+			matches
+				.stream()
+				.map(concept -> toConcept(uri, concept, concept.getIconId(), concept.getPt() == null ? concept.getId() : concept.getPt().getTerm()))
+				.collect(Collectors.toList()), 
+			matches.getSearchAfter(), 
+			matches.getLimit(), 
+			matches.getTotal()
+		);
 	}
 	
 }
