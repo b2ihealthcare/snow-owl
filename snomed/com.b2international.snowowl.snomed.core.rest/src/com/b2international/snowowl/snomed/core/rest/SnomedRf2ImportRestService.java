@@ -97,7 +97,7 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@RequestPart("file") 
 			final MultipartFile file) throws IOException {
 		
-		final String importJobId = SnomedRf2Requests.importJobId(branchPath);
+		final String importJobId = SnomedRf2Requests.importJobKey(branchPath);
 		
 		final UUID rf2ArchiveId = UUID.randomUUID();
 		attachments.upload(rf2ArchiveId, file.getInputStream());

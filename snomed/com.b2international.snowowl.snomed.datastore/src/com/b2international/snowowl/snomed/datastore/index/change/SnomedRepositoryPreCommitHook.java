@@ -66,7 +66,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (!context.isJobRunning(SnomedRf2Requests.importJobId(index.branch()))) {
+		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()))) {
 			doProcess(ImmutableList.of(new ComponentInactivationChangeProcessor(), new DetachedContainerChangeProcessor()), staging, index);
 		}
 	}
@@ -199,7 +199,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 
 		log.trace("Retrieving taxonomic information from store...");
 
-		final boolean checkCycles = !context.isJobRunning(SnomedRf2Requests.importJobId(index.branch()));
+		final boolean checkCycles = !context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()));
 		
 		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, expressionConverter, staging, inferredConceptIds, checkCycles);
 		final Taxonomy statedTaxonomy = Taxonomies.stated(index, expressionConverter, staging, statedConceptIds, checkCycles);
@@ -218,7 +218,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (!context.isJobRunning(SnomedRf2Requests.importJobId(index.branch()))) {
+		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()))) {
 			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
 			// XXX effective time restore should be the last processing unit before we send the changes to commit
 			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);

@@ -79,7 +79,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setReleaseType(contentType)
 			.setCreateVersions(true)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, codeSystemBranchPath)
-			.runAsJobWithRestart(SnomedRf2Requests.importJobId(codeSystemBranchPath), "Initial SNOMEDCT import for tests")
+			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(codeSystemBranchPath), "Initial SNOMEDCT import for tests")
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
 		JobRequests.waitForJob(Services.bus(), jobId, 2000 /* 2 seconds */);

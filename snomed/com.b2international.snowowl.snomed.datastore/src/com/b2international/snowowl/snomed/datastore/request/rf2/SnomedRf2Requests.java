@@ -32,7 +32,7 @@ public final class SnomedRf2Requests {
 		return new SnomedRf2ImportRequestBuilder();
 	}
 
-	public static String importJobId(String branchPath) {
+	public static String importJobKey(String branchPath) {
 		return SNOMED_IMPORT_PREFIX.concat(branchPath);
 	}
 	
