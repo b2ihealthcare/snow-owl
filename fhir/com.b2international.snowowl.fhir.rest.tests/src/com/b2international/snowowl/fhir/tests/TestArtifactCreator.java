@@ -17,10 +17,7 @@ package com.b2international.snowowl.fhir.tests;
 
 import java.util.Date;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.test.commons.Services;
@@ -34,18 +31,13 @@ public class TestArtifactCreator {
 	
 	protected synchronized static void createVersion(String version, String codeSystemName) {
 		
-		Request<ServiceProvider, Boolean> request = CodeSystemRequests.prepareNewCodeSystemVersion()
+		String jobId = CodeSystemRequests.prepareNewCodeSystemVersion()
 			.setCodeSystemShortName(codeSystemName)
 			.setDescription("FHIR Test version")
 			.setVersionId(version)
 			.setEffectiveTime(new Date())
-			.build();
-			
-		String jobId = JobRequests.prepareSchedule()
-			.setDescription(String.format("Creating version '%s/%s'", codeSystemName, version))
-			.setUser(User.SYSTEM.getUsername())
-			.setRequest(request)
 			.buildAsync()
+			.runAsJob(String.format("Creating version '%s/%s'", codeSystemName, version))
 			.execute(getEventBus())
 			.getSync();
 		

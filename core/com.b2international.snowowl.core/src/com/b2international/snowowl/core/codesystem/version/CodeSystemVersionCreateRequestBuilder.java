@@ -20,20 +20,19 @@ import java.util.Date;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 5.7
  */
-public final class CodeSystemVersionCreateRequestBuilder extends BaseRequestBuilder<CodeSystemVersionCreateRequestBuilder, ServiceProvider, Boolean> {
+public final class CodeSystemVersionCreateRequestBuilder 
+		extends BaseRequestBuilder<CodeSystemVersionCreateRequestBuilder, ServiceProvider, Boolean>
+		implements SystemRequestBuilder<Boolean> {
 
 	private String codeSystemShortName;
 	private String versionId;
 	private String description;
 	private Date effectiveTime;
-
-	// TODO make it package visible
-	public CodeSystemVersionCreateRequestBuilder() {
-	}
 
 	public CodeSystemVersionCreateRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;

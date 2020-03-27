@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 
@@ -31,6 +32,8 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
  */
 public class CodeSystemRequests {
 
+	public static final String VERSION_JOB_KEY_PREFIX = "version-";
+	
 	private CodeSystemRequests() {}
 	
 	public static CodeSystemCreateRequestBuilder prepareNewCodeSystem() {
@@ -109,6 +112,14 @@ public class CodeSystemRequests {
 			})
 			.findFirst()
 			.orElseThrow(() -> new NotFoundException("CodeSystem", codeSystem));
+	}
+
+	public static String versionJobKey(String codeSystemShortName) {
+		return VERSION_JOB_KEY_PREFIX.concat(codeSystemShortName);
+	}
+	
+	public static boolean isVersionJob(RemoteJobEntry job) {
+		return job != null && job.getKey().startsWith(VERSION_JOB_KEY_PREFIX);
 	}
 
 }

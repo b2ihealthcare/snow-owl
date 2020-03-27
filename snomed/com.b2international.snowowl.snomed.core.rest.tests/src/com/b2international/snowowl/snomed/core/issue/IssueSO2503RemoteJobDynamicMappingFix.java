@@ -22,12 +22,9 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 
@@ -43,36 +40,28 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
 		
 		// 1. create a version with a datelike versionId
-		Request<ServiceProvider, Boolean> v1Req = CodeSystemRequests.prepareNewCodeSystemVersion()
+		CodeSystemRequests.prepareNewCodeSystemVersion()
 			.setCodeSystemShortName(codeSystemShortName)
 			// XXX use default format, ES will likely try to convert this to a date field, unless we disable it in the mapping
 			.setVersionId(Dates.formatByGmt(getNextAvailableEffectiveDate(codeSystemShortName), DateFormats.DEFAULT))
 			.setEffectiveTime(new Date())
-			.build();
-
-		scheduleJob(v1Req, "Creating version with datelike versionId")
+			.buildAsync()
+			.runAsJob("Creating version with datelike versionId")
+			.execute(getBus())
 			.then(this::waitDone)
 			.thenWith(unused -> {
 				// 2. create another version with a non-datelike versionId
-				Request<ServiceProvider, Boolean> v2Req = CodeSystemRequests.prepareNewCodeSystemVersion()
+				return CodeSystemRequests.prepareNewCodeSystemVersion()
 					.setCodeSystemShortName(codeSystemShortName)
 					.setVersionId("xx-" + Dates.formatByGmt(getNextAvailableEffectiveDate(codeSystemShortName), DateFormats.DEFAULT))
 					.setEffectiveTime(new Date())
-					.build();
-				return scheduleJob(v2Req, "Creating version with non-datelike versionId");
+					.buildAsync()
+					.runAsJob("Creating version with non-datelike versionId")
+					.execute(getBus());
 			})
 			.then(this::waitDone)
 			.getSync();
 		// 3. second step either has failed with index exception or the job is not available via the remote job API thus it throws a NotFoundException on first get call
-	}
-
-	private Promise<String> scheduleJob(Request<ServiceProvider, ?> req, String description) {
-		return JobRequests.prepareSchedule()
-			.setDescription(description)
-			.setUser("test")
-			.setRequest(req)
-			.buildAsync()
-			.execute(getBus());
 	}
 
 	private Object waitDone(String jobId) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiErrorException;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -38,8 +37,6 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersionProperties;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -140,18 +137,13 @@ public class CodeSystemVersionService {
 	 * @return the newly created code system version, as returned by {@link #getCodeSystemVersionById(String, String)}
 	 */
 	public CodeSystemVersion createVersion(String shortName, CodeSystemVersionProperties properties) {
-		Request<ServiceProvider, Boolean> req = CodeSystemRequests.prepareNewCodeSystemVersion()
+		String jobId = CodeSystemRequests.prepareNewCodeSystemVersion()
 				.setCodeSystemShortName(shortName)
 				.setVersionId(properties.getVersion())
 				.setDescription(properties.getDescription())
 				.setEffectiveTime(properties.getEffectiveDate())
-				.build();
-		
-		String jobId = JobRequests.prepareSchedule()
-				.setDescription(String.format("Creating version '%s/%s'", shortName, properties.getVersion()))
-				.setUser(User.SYSTEM.getUsername())
-				.setRequest(req)
 				.buildAsync()
+				.runAsJobWithRestart(CodeSystemRequests.versionJobKey(shortName), String.format("Creating version '%s/%s'", shortName, properties.getVersion()))
 				.execute(bus.get())
 				.getSync(1, TimeUnit.MINUTES);
 		
