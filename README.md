@@ -32,7 +32,7 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/vv7.5.0/snow-owl-oss-7.5.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.zip.sha512)
+* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.zip.sha512)
 * [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.tar.gz.sha512) 
 * [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.rpm.sha512)
 * [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.deb.sha512)
