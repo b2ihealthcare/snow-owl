@@ -132,14 +132,13 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	}
 
 	/*
-	 * Fetches members of the specified reference set, ignoring items where the referenced concept is inactive.
+	 * Fetches members of the specified reference set
 	 */
 	private SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> getMemberConceptIterator(String expand) {
 		
 		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
 			.setLocales(locales)
 			.setExpand(expand)
-			.filterByActive(true)
 			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
 			.setLimit(10_000);
 		
