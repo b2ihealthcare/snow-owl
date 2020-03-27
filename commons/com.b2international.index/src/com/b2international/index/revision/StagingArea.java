@@ -297,13 +297,16 @@ public final class StagingArea {
 					
 					if (shouldSetRevisedOnMergeBranch()) {
 						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+						writer.put(key.id(), rev);
 					}
 					
 					if (!revisionDiff.hasChanges()) {
 						return;
 					}
-					
-					writer.put(key.id(), rev);
+
+					if (!shouldSetRevisedOnMergeBranch()) {
+						writer.put(key.id(), rev);
+					}
 					
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
