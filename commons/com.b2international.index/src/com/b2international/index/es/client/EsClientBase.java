@@ -222,7 +222,17 @@ public abstract class EsClientBase implements EsClient {
 		}
 		
 		public T waitUntilValue(Predicate<T> test, long seconds) {
-			return waitFor(seconds, result -> !test.test(result), this::get);
+			T currentValue = get();
+			if (test.test(currentValue)) {
+				return currentValue;
+			} else {
+				return waitFor(seconds, result -> !test.test(result), () -> {
+					synchronized (this) {
+						expirationNanos = 0L; // reset
+						return get();
+					}
+				});
+			}
 		}
 		
 	}
