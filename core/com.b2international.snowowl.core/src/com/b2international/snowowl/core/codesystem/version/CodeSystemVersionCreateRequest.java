@@ -115,12 +115,15 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		RevisionBranch.BranchNameValidator.DEFAULT.checkName(versionId);
 		
 		try {
-			RepositoryRequests.branching()
+			Branch branch = RepositoryRequests.branching()
 				.prepareGet(newVersionPath)
 				.build(repositoryId)
 				.execute(context.service(IEventBus.class))
 				.getSync(1, TimeUnit.MINUTES);
-			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
+			// allow deleted version branches to be reused for versioning
+			if (!branch.isDeleted()) {
+				throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
+			}
 		} catch (NotFoundException e) {
 			// ignore
 		}
