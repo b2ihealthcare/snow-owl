@@ -55,8 +55,7 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-repository-plugin</artifactId>
 				<configuration>
-					<!-- Manually archive the repository via assembly -->
-					<skipArchive>true</skipArchive>
+					<finalName>${project.build.finalName}-site</finalName>
 				</configuration>
 			</plugin>
 			<!-- create site and server zip, tar.gz and RPM/Deb base folder -->
@@ -73,17 +72,6 @@
 							<appendAssemblyId>false</appendAssemblyId>
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
 							<descriptor>${basedir}/assembly/oss.xml</descriptor>
-						</configuration>
-					</execution>
-					<execution>
-						<id>package-site</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<workDirectory>${project.build.directory}/assembly/site</workDirectory>
-							<descriptor>${basedir}/assembly/site.xml</descriptor>
 						</configuration>
 					</execution>
 				</executions>

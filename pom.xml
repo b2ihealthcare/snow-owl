@@ -55,6 +55,11 @@
 		<!-- Testing -->
 		<testHeapSize>1g</testHeapSize>
 		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
+
+		<!-- Deployment -->
+		<maven.repository.id>nexus_deployment</maven.repository.id>
+		<nexus.releases.url>${nexus.url}/content/repositories/releases</nexus.releases.url>
+		<nexus.snapshots.url>${nexus.url}/content/repositories/snapshots</nexus.snapshots.url>
 	</properties>
 
 	<modules>
@@ -901,20 +906,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>2.3</version>
-				</plugin>
-				<plugin>
-					<artifactId>maven-install-plugin</artifactId>
-					<version>2.5.2</version>
-					<configuration>
-						<installAtEnd>true</installAtEnd>
-					</configuration>
-				</plugin>
-				<plugin>
-					<artifactId>maven-deploy-plugin</artifactId>
-					<version>2.8.2</version>
-					<configuration>
-						<deployAtEnd>true</deployAtEnd>
-					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
