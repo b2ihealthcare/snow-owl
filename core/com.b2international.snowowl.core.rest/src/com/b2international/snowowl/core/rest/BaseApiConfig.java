@@ -97,7 +97,7 @@ public abstract class BaseApiConfig {
 			final String apiLicenseUrl,
 			final String apiDescription) {
 		final TypeResolver resolver = new TypeResolver();
-		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + "/.*");
+		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + ".*");
 		return new Docket(DocumentationType.SWAGGER_2)
 				.securitySchemes(ImmutableList.of(
 					new BasicAuth("basic"),
