@@ -32,31 +32,17 @@ node('docker') {
 			
 			if (!custom_maven_settings.isEmpty()) {
 				withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher()],  publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean verify -Dmaven.test.skip=${skipTests} -Dtycho.localArtifacts=ignore"
+					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			} else {
 				withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', options: [artifactsPublisher()], publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean verify -Dmaven.test.skip=${skipTests} -Dtycho.localArtifacts=ignore"
+					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			}
 			
 		}
 
 		if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
-
-			stage('Deploy') {
-
-				if (!custom_maven_settings.isEmpty()) {
-					withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', mavenSettingsConfig: custom_maven_settings, publisherStrategy: 'EXPLICIT') {
-						sh "mvn deploy -Dmaven.test.skip=true -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
-					}
-				} else {
-					withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', publisherStrategy: 'EXPLICIT') {
-						sh "mvn deploy -Dmaven.test.skip=true -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
-					}
-				}
-				
-			}
 
 			stage('Find artifact') {
 				
