@@ -51,13 +51,6 @@
 					</products>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-p2-repository-plugin</artifactId>
-				<configuration>
-					<finalName>${project.build.finalName}-site</finalName>
-				</configuration>
-			</plugin>
 			<!-- create site and server zip, tar.gz and RPM/Deb base folder -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -69,7 +62,6 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<appendAssemblyId>false</appendAssemblyId>
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
 							<descriptor>${basedir}/assembly/oss.xml</descriptor>
 						</configuration>
