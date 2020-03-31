@@ -12,7 +12,7 @@
 	</parent>
 	
 	<properties>
-		<packageFiles>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</packageFiles>
+		<packageFiles>${project.build.directory}/${project.build.finalName}/${project.build.finalName}-oss</packageFiles>
 		<product.rootFolder>snow-owl-oss-${build.version}</product.rootFolder>
 		<products.directory>${project.build.directory}/products</products.directory>
 		<product.id>com.b2international.snowowl.server</product.id>
