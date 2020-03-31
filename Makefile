@@ -1,4 +1,4 @@
-NAME=chr-terminology-server
+NAME=snowowl
 RELEASE_VERSION=$(shell git rev-parse HEAD)
 SEMVER_VERSION=$(shell git describe --abbrev=0 --tags)
 REPO=quay.io/babylonhealth
@@ -45,10 +45,10 @@ tag-semver:
 	fi
 
 deploy-dev:
-	@curl -vvv -XPOST "${DEPLOY_DEV_URL}?token=${JENKINS_DEV_TOKEN}&APP=chr-terminology-server&VERSION=${RELEASE_VERSION}"
+	@curl -vvv -XPOST "${DEPLOY_DEV_URL}?token=${JENKINS_DEV_TOKEN}&APP=snowowl&VERSION=${RELEASE_VERSION}"
 
 deploy-staging:
 	docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}" quay.io
 	make pull
 	make tag-semver
-	@curl -vvv -XPOST "${DEPLOY_STAGING_URL}?token=${JENKINS_STAGING_TOKEN}&APP=chr-terminology-server&VERSION=${SEMVER_VERSION}"
+	@curl -vvv -XPOST "${DEPLOY_STAGING_URL}?token=${JENKINS_STAGING_TOKEN}&APP=snowowl&VERSION=${SEMVER_VERSION}"
