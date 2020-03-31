@@ -38,17 +38,18 @@
       <feature id="com.b2international.snowowl.core.rest.feature"/>
       <feature id="com.b2international.snowowl.snomed.core.rest.feature"/>
       <feature id="com.b2international.snowowl.fhir.rest.feature"/>
+      <feature id="com.babylonhealth.snowowl.rest.feature"/>
    </features>
 
    <configurations>
+      <plugin id="com.b2international.snowowl.core.rest" autoStart="true" startLevel="5" />
+      <plugin id="com.b2international.snowowl.server.product" autoStart="true" startLevel="4" />
       <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
-      <plugin id="com.b2international.snowowl.server.product" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.jetty.osgi.boot" autoStart="true" startLevel="5" />
-      <plugin id="com.b2international.snowowl.core.rest" autoStart="true" startLevel="5" />
    </configurations>
 
 </product>

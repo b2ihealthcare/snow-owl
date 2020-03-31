@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Rest
+Bundle-SymbolicName: com.babylonhealth.snowowl.rest
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: BABYLONHEALTH
+Fragment-Host: com.b2international.snowowl.core.rest
+Automatic-Module-Name: com.babylonhealth.snowowl.rest
+Bundle-RequiredExecutionEnvironment: JavaSE-11

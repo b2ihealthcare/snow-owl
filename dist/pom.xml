@@ -104,6 +104,12 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
+			<artifactId>com.babylonhealth.snowowl.rest</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.identity</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
