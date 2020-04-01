@@ -24,9 +24,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -124,6 +126,44 @@ public enum TerminologyRegistry {
 		checkArgument(terminologyComponentIdsByTerminology.containsKey(terminologyId), "Missing terminology '%s'.", terminologyId);
 		return ImmutableSet.copyOf(terminologyComponentIdsByTerminology.get(terminologyId));
 	}
+	
+	/**
+	 * Returns the primary terminology component ID (short) for a given terminology.
+	 * It is usually the 'Concept' type.
+	 * @param terminologyId
+	 * @return the primary component short identifier 
+	 */
+	public short getConceptTerminologyComponentIdByTerminology(String terminologyId) {
+		
+		Collection<String> componentIds = getTerminologyComponentIdsByTerminology(terminologyId);
+		
+		if (componentIds.isEmpty()) {
+			throw new SnowowlRuntimeException("Could not find registered terminology component IDs for " + terminologyId);
+		}
+		
+		Set<TerminologyComponent> terminologyComponents = componentIds.stream()
+				.map(componentId -> getTerminologyComponentById(componentId))
+				.collect(Collectors.toSet());
+		
+		if (terminologyComponents.isEmpty()) {
+			throw new SnowowlRuntimeException("Could not find registered terminology component for " + terminologyId);
+		} else if (terminologyComponents.size() == 1) {
+			//Return the the only registered component, even if it is not marked as primary
+			return terminologyComponents.iterator().next().shortId();
+		}
+			
+		Set<TerminologyComponent> primaryComponents = terminologyComponents.stream()
+				.filter(t -> t.componentCategory() == ComponentCategory.CONCEPT)
+				.collect(Collectors.toSet());
+		
+		if (primaryComponents.size() > 1) {
+			throw new SnowowlRuntimeException("There is more than one primary terminology component registered for " + terminologyId);
+		} else if (primaryComponents.isEmpty()) {
+			throw new SnowowlRuntimeException("There are multiple terminology components available, but no primary terminology component registered for " + terminologyId);
+		}
+		return primaryComponents.iterator().next().shortId();
+	}
+	
 	
 	private static TerminologyComponent createUnspecifiedTerminologyComponent() {
 		return new TerminologyComponent() {
