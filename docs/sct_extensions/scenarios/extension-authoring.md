@@ -13,7 +13,7 @@ When you have identified the version you need to depend on then you need to impo
 After you have successfully imported all dependencies into Snow Owl, the next step is to create a Code System that represents your SNOMED CT Extension (see [Core API](../../api/admin/index.md)).
 When creating the Code System, besides specifying the namespace and optional modules and languages, you need to enter a Code System `shortName`, which will serve as the unique identifier of your Extension and select the `extensionOf` value, which represents the dependency of the Code System.
 
-// TODO image showing a new Code System from the latest SNOMED CT 2020-01-31 version with the name of `SNOMEDCT-MYEXT`
+![extension-from-scratch](../images/extension-from-scratch.png "SNOMED CT My Extension based on the International Edition 2020-01-31")
 
 After you have successfully created the Code System representing your Extension, you can import any existing content from a most recent release or start from scratch by creating the module concept of your extension.
 
