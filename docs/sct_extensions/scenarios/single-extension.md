@@ -1,4 +1,4 @@
-# Extension Authoring Scenario
+# Single Extension Authoring and Distribution
 
 A typical extension scenario is the development of the extension itself. Whether you are starting your extension from scratch or already have a well-developed version that you need to maintain, the first choice you need to make is to identify the dependencies of your SNOMED CT Extension. 
 
@@ -25,6 +25,8 @@ RF2 releases tend to have content issues with the International Edition itself o
 
 If your Extension needs to extend another Extension and not the International Edition itself, then you need to identify the version you'd like to depend on in that Extension (that indirectly will select the International Edition dependency as well). When you have identified all required versions, then starting from the International Edition recursively traverse back and repeat the RF2 Import and Code System creation steps described on the Extending the International Edition section above until you have finally import your extension. In the end your extension might look like this, depending on how many Extensions you are depending on. 
 
+![extension-deep-extensions](../images/extension-from-scratch.png "SNOMED CT My Extension based on the International Edition 2020-01-31")
+
 ## Summary
 
 Setting up a Snow Owl deployment like this is not an easy task. It requires torough understanding of each SNOMED CT Extension you'd like to import and their dependencies as well.
@@ -39,12 +41,3 @@ Pros:
 
 Cons:
 * Harder to set up the initial deployment
-
-# Next steps
-
-After you have initialized your Snow Owl instance with the Extensions you'd like to maintain the next steps are:
-
-[Development](../development.md)
-[Release](../release.md)
-[Upgrade](../upgrade.md)
-[Integrate](../integrations.md)
