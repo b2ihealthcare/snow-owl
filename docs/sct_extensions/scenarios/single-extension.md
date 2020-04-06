@@ -23,9 +23,9 @@ RF2 releases tend to have content issues with the International Edition itself o
 
 ## Extending another Extension
 
-If your Extension needs to extend another Extension and not the International Edition itself, then you need to identify the version you'd like to depend on in that Extension (that indirectly will select the International Edition dependency as well). When you have identified all required versions, then starting from the International Edition recursively traverse back and repeat the RF2 Import and Code System creation steps described on the Extending the International Edition section above until you have finally import your extension. In the end your extension might look like this, depending on how many Extensions you are depending on. 
+If your Extension needs to extend another Extension and not the International Edition itself, then you need to identify the version you'd like to depend on in that Extension (that indirectly will select the International Edition dependency as well). When you have identified all required versions, then starting from the International Edition recursively traverse back and repeat the RF2 Import and Code System creation steps described in the previous section until you have finally import your extension. In the end your extension might look like this, depending on how many Extensions you are depending on. 
 
-![extension-deep-extensions](../images/extension-from-scratch.png "SNOMED CT My Extension based on the International Edition 2020-01-31")
+![extension-extends-another](../images/extension-extends-another.png "SNOMED CT UNMC Extension 2019-10-31 extends SNOMED CT US 2019-09-01")
 
 ## Summary
 
