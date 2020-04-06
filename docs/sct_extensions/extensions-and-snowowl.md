@@ -38,6 +38,18 @@ Snow Owl's branching infrastructure allows the use of isolated environments for 
 
 As in real life, a Code System can have zero or more versions (or with another name, releases). A version is a special branch, that is created during the versioning process and makes the currently available latest content accessible later in its current form. Since SNOMED CT Extensions can have releases as well, creating a Code System Version in Snow Owl is a must in order to produce the release packages.
 
-// TODO image showing the MAIN branch, assigned to a Code System with versions
+### Examples
+
+The following image shows the repository content rendered from the available commits, after a successful International Edition import.
+
+![international-structure](images/basic-international-structure.png "SNOMED CT International Edition 2020-01-31")
+
+Dots represent commits made with the commit message on the right. 
+Green boxes represent where the associated branch's `HEAD` is currently located.
+Blue tag labels represent versions created during the commit.
+
+If your use case would be to import the SNOMED CT US Extension 2019-09-01 version into this repository, then ideally it would look like this:
+
+![extension-structure](images/basic-extension-structure.png "SNOMED CT US Extension 2019-09-01")
 
 The next section describes the use case scenarios in the world of SNOMED CT and what are the recommended approach to deploy that scenario in Snow Owl.
