@@ -1,4 +1,0 @@
-# Configuring monitoring
-
-Coming soon!
-

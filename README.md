@@ -1,30 +1,36 @@
+# <a href='https://docs.b2i.sg/snow-owl/'><img src='logo/logo-title.png' height='80' alt='Snow Owl Logo' /></a>
+
+Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
+
+[![build status](https://img.shields.io/github/workflow/status/b2ihealthcare/snow-owl/Java%20CI/7.x?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.5.0)
+[![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
+[![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
+[![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE)
+[![grade: Java](https://img.shields.io/lgtm/grade/java/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/context:java)
+[![alerts](https://img.shields.io/lgtm/alerts/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/alerts/)
+[![codecov](https://codecov.io/gh/b2ihealthcare/snow-owl/branch/7.x/graph/badge.svg?style=flat-square)](https://codecov.io/gh/b2ihealthcare/snow-owl)
+
 # Introduction
 
-Snow Owl® is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
-
-[![build status](https://img.shields.io/github/workflow/status/b2ihealthcare/snow-owl/Java%20CI/7.x?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions) [![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.5.0) [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/) [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss) [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE) [![grade: Java](https://img.shields.io/lgtm/grade/java/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/context:java) [![alerts](https://img.shields.io/lgtm/alerts/g/b2ihealthcare/snow-owl.svg?logo=lgtm&logoWidth=18&style=flat-square)](https://lgtm.com/projects/g/b2ihealthcare/snow-owl/alerts/) [![codecov](https://codecov.io/gh/b2ihealthcare/snow-owl/branch/7.x/graph/badge.svg?style=flat-square)](https://codecov.io/gh/b2ihealthcare/snow-owl)
-
-## Introduction
-
 Features include:
-
 * Revision-controlled authoring
-  * Maintains multiple versions \(including unpublished and published\) for each terminology artifact and provides APIs to access them all
-  * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
+    * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
+    * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
-  * Full SNOMED CT terminology support \(full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, experimental Query Language\)
-  * With its modular design, the server can maintain multiple terminologies \(including local codes, mapping sets, value sets\)
+    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, experimental Query Language)
+    * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
 * Various set of APIs
-  * SNOMED CT API \(RESTful and native Java API\)
-  * FHIR API
-  * CIS API
+    * SNOMED CT API (RESTful and native Java API)
+    * FHIR API
+    * CIS API
 * Highly extensible and configurable
-  * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
-* Built on top of [Elasticsearch](https://www.elastic.co/products/elasticsearch) \(highly scalable, distributed, open source search engine\)
-  * Connect to your existing cluster or use the embedded instance
-  * All the power of Elasticsearch is available \(full-text search support, monitoring, analytics and many more\)
+    * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
+* Built on top of [Elasticsearch](https://www.elastic.co/products/elasticsearch) (highly scalable, distributed, open source search engine)
+    * Connect to your existing cluster or use the embedded instance
+    * All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more)
 
-## Download
+# Download
 
 * [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.zip.sha512)
 * [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.tar.gz.sha512) 
@@ -39,9 +45,9 @@ View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
-#### Install and Run
+### Install and Run
 
-NOTE: You need to have a recent version of Java installed \(Java 11+, [https://jdk.java.net/archive/](https://jdk.java.net/archive/)\).
+NOTE: You need to have a recent version of Java installed (Java 11+, https://jdk.java.net/archive/).
 
 Once you have downloaded the appropriate package:
 
@@ -50,91 +56,84 @@ Once you have downloaded the appropriate package:
 * Navigate to `http://localhost:8080/snowowl`
 * See [SNOMED CT API docs](https://docs.b2i.sg/snow-owl/api/snomed), [FHIR API docs](https://docs.b2i.sg/snow-owl/api/fhir)
 
-## Learn Snow Owl
+# Learn Snow Owl
 
-* [Getting Started](index/)
-* [Set up Snow Owl](index-1/)
-* [Configuring Snow Owl](index-1/index-1/)
-* [FHIR API]()
-* [SNOMED CT API]()
-* [Admin API]()
+* [Getting Started](docs/getting_started/index.md)
+* [Set up Snow Owl](docs/setup/index.md)
+* [Configuring Snow Owl](docs/setup/configure/index.md)
+* [FHIR API](docs/api/fhir/index.md)
+* [SNOMED CT API](docs/api/snomed/index.md)
+* [Admin API](docs/api/admin/index.md)
 
-## Building from source
+# Building from source
 
-Snow Owl uses Maven for its build system. In order to create a distribution, simply run the following command in the cloned directory.
+Snow Owl uses Maven for its build system. In order to create a distribution, simply run the following command in the cloned directory. 
 
-```text
-mvn clean package
-```
+    mvn clean package
 
 The distribution packages can be found in the `releng/com.b2international.snowowl.server.update/target` folder, when the build is complete.
 
 To run the test cases, use the following command:
 
-```text
-mvn clean verify
-```
+    mvn clean verify
 
-## Development
+# Development
 
 These instructions will get Snow Owl up and running on your local machine for development and testing purposes.
 
-### Prerequisites
+## Prerequisites
 
-Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE:
+Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
+* Use latest Eclipse IDE for Eclipse Committers package: http://www.eclipse.org/downloads/eclipse-packages/
 
-* Use latest Eclipse IDE for Eclipse Committers package: [http://www.eclipse.org/downloads/eclipse-packages/](http://www.eclipse.org/downloads/eclipse-packages/)
+Required Eclipse plug-ins (install the listed features via `Help` -> `Install New Software...`):
 
-Required Eclipse plug-ins \(install the listed features via `Help` -&gt; `Install New Software...`\):
+*Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
-_Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release._
-
-* Xtext/Xtend \([http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/](http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)\)
-  * MWE 2 language SDK 2.10.0 \(MWE\)
-  * Xtend IDE 2.18.0 \(Xtext\)
-  * Xtext Complete SDK 2.18.0 \(Xtext\)
-* Maven integration \([http://download.eclipse.org/technology/m2e/releases](http://download.eclipse.org/technology/m2e/releases)\) 
-
-#### Eclipse Preferences
+* Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
+  * MWE 2 language SDK 2.10.0 (MWE)
+  * Xtend IDE 2.18.0 (Xtext)
+  * Xtext Complete SDK 2.18.0 (Xtext)
+* Maven integration (http://download.eclipse.org/technology/m2e/releases) 
+ 
+### Eclipse Preferences
 
 Make sure you have the following preferences enabled/disabled.
+* Plug-in development API baseline errors is set to Ignored (Preferences > Plug-in Development > API Baselines)
+* The *Plugin execution not covered by lifecycle configuration: org.apache.maven.plugins:maven-clean-plugin:2.5:clean* type of errors can be ignored or changed to *Warnings* in *Preferences->Maven->Errors/Warnings*.
+* Set the workspace encoding to *UTF-8* (Preferences->General->Workspace)
+* Set the line endings to *Unix* style (Preferences->General->Workspace)
 
-* Plug-in development API baseline errors is set to Ignored \(Preferences &gt; Plug-in Development &gt; API Baselines\)
-* The _Plugin execution not covered by lifecycle configuration: org.apache.maven.plugins:maven-clean-plugin:2.5:clean_ type of errors can be ignored or changed to _Warnings_ in _Preferences-&gt;Maven-&gt;Errors/Warnings_.
-* Set the workspace encoding to _UTF-8_ \(Preferences-&gt;General-&gt;Workspace\)
-* Set the line endings to _Unix_ style \(Preferences-&gt;General-&gt;Workspace\)
+### Git configuration
 
-#### Git configuration
+* Make sure the Git line endings are set to *input* (Preferences->Team->Git->Configuration - add key if missing *core.autocrlf = input*)
 
-* Make sure the Git line endings are set to _input_ \(Preferences-&gt;Team-&gt;Git-&gt;Configuration - add key if missing _core.autocrlf = input_\)
-
-### First steps
+## First steps
 
 1. Import all projects into your Eclipse workspace and wait for the build to complete
-2. Select all projects and hit `Alt` + `F5` and trigger an update to all Maven projects manually \(to download dependencies from Maven\)
+2. Select all projects and hit `Alt` + `F5` and trigger an update to all Maven projects manually (to download dependencies from Maven)
 3. Open the `target-platform/target-platform-local.target` file
-4. Wait until Eclipse resolves the target platform \(click on the `Resolve` button if it refuses to do so\) and then click on `Set as Active Target platform`
+4. Wait until Eclipse resolves the target platform (click on the `Resolve` button if it refuses to do so) and then click on `Set as Active Target platform`
 5. Wait until the build is complete and you have no compile errors
 6. Launch `snow-owl-oss` launch configuration in the Run Configurations menu
 7. Navigate to `http://localhost:8080/snowowl`
 
-## Contributing
+# Contributing
 
-Please see [CONTRIBUTING.md](https://github.com/b2ihealthcare/snow-owl/tree/4de0e9dcd4a10e0733bd19cb336b1e511eea1138/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## Versioning
+# Versioning
 
-Our [releases](https://github.com/b2ihealthcare/snow-owl/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](https://github.com/b2ihealthcare/snow-owl/tree/4de0e9dcd4a10e0733bd19cb336b1e511eea1138/CHANGELOG.md).
+Our [releases](https://github.com/b2ihealthcare/snow-owl/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](CHANGELOG.md).
 
-## License
+# License
 
-This project is licensed under the Apache 2.0 License. See [LICENSE](https://github.com/b2ihealthcare/snow-owl/tree/4de0e9dcd4a10e0733bd19cb336b1e511eea1138/LICENSE/README.md) for details and refer to [NOTICE](https://github.com/b2ihealthcare/snow-owl/tree/4de0e9dcd4a10e0733bd19cb336b1e511eea1138/NOTICE/README.md) for additional licensing notes and uses of third-party components.
+This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) for details and refer to [NOTICE](NOTICE) for additional licensing notes and uses of third-party components.
 
-## Acknowledgements
+# Acknowledgements
 
 In March 2015, [SNOMED International](http://snomed.org) generously licensed the Snow Owl Terminology Server components supporting SNOMED CT. They subsequently made the licensed code available to their [members](http://www.snomed.org/members) and the global community under an open-source license.
 
-In March 2017, [NHS Digital](https://digital.nhs.uk) licensed the Snow Owl Terminology Server to support the mandatory adoption of SNOMED CT throughout all care settings in the United Kingdom by April 2020. In addition to driving the UK’s clinical terminology efforts by providing a platform to author national clinical codes, Snow Owl will support the maintenance and improvement of the dm+d drug extension which alone is used in over 156 million electronic prescriptions per month. Improvements to the terminology server made under this agreement will be made available to the global community.
+In March 2017, [NHS Digital](https://digital.nhs.uk) licensed the Snow Owl Terminology Server to support the mandatory adoption of SNOMED CT throughout all care settings in the United Kingdom by April 2020. In addition to driving the UK’s clinical terminology efforts by providing a platform to author national clinical codes, Snow Owl will support the maintenance and improvement of the dm+d drug extension which alone is used in over 156 million electronic prescriptions per month. Improvements to the terminology server made under this agreement will be made available to the global community. 
 
-Many other organizations have directly and indirectly contributed to Snow Owl, including: Singapore Ministry of Health; American Dental Association; University of Nebraska Medical Center \(USA\); Federal Public Service of Public Health \(Belgium\); Danish Health Data Authority; Health and Welfare Information Systems Centre \(Estonia\); Department of Health \(Ireland\); New Zealand Ministry of Health; Norwegian Directorate of eHealth; Integrated Health Information Systems \(Singapore\); National Board of Health and Welfare \(Sweden\); eHealth Suisse \(Switzerland\); and the National Library of Medicine \(USA\).
-
+Many other organizations have directly and indirectly contributed to Snow Owl, including: Singapore Ministry of Health; American Dental Association; University of Nebraska Medical Center (USA); Federal Public Service of Public Health (Belgium); Danish Health Data Authority; Health and Welfare Information Systems Centre (Estonia); Department of Health (Ireland); New Zealand Ministry of Health; Norwegian Directorate of eHealth; Integrated Health Information Systems (Singapore); National Board of Health and Welfare (Sweden); eHealth Suisse (Switzerland); and the National Library of Medicine (USA).
