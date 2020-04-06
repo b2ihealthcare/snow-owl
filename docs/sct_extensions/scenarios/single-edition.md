@@ -8,13 +8,13 @@ Since Snow Owl by default comes with a pre-initialized SNOMED CT Code System cal
 The import by default creates a Code System Version for each SNOMED CT Effective Date available in the supplied RF2 package.
 After successful import the content is immediately available via REST and FHIR APIs.
 
-// TODO image showing imported SNOMED CT International Edition
+![international-structure](../images/basic-international-structure.png "SNOMED CT International Edition 2020-01-31")
 
 ## SNOMED CT Extension Edition
 
 National Release Centers and other Care Providers provide their own SNOMED CT Edition distribution for third-party consumers in RF2 format. Importing their Edition distribution instead of the International Edition directly into the `SNOMEDCT` pre-initialized SNOMED CT Code System with the same [SNOMED CT RF2 Import API](../../api/snomed/import.md) makes both the International Edition (always included in Edition packages) and the National Extension available for read-only access.
 
-// TODO image showing imported NRC Edition directly on SNOMEDCT
+![basic-edition-structure](../images/basic-edition-structure.png "SNOMED CT US Edition 2020-03-01")
 
 ## Summary
 
