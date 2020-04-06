@@ -11,7 +11,7 @@ Development and maintenance of each managed extension can happen in parallel wit
 
 After you have initialized your Snow Owl instance with the Extensions you'd like to maintain the next steps are:
 
-[Development](../development.md)
-[Release](../release.md)
-[Upgrade](../upgrade.md)
-[Integrate](../integrations.md)
+* [Development](../development.md)
+* [Release](../release.md)
+* [Upgrade](../upgrade.md)
+* [Integrate](../integrations.md)

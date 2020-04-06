@@ -1,3 +1,6 @@
-# Upgrade
+# Extension Maintenance and Upgrades
 
-// TODO migrate Extension Ugrade Guide
+https://confluence.ihtsdotools.org/display/DOCEXTPG/5.7+Maintenance
+
+Coming soon!
+
