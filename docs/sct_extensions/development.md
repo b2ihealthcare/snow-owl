@@ -38,5 +38,5 @@ In Snow Owl, reports and rules can be represented with validation queries and sc
 
 ## Classification
 
-Last but not least, authors run an OWL Reasoner to classify their changes and generate the distribution normal form of their Extension.
-The [Classification API](../api/snomed/classification.md) provides support for running these reasoner instances and generating the distribution normal form.
+Last but not least, authors run an OWL Reasoner to classify their changes and generate the necessary normal form of their Extension.
+The [Classification API](../api/snomed/classification.md) provides support for running these reasoner instances and generating the necessary normal form.
