@@ -11,7 +11,7 @@ All planned content changes that are still on their dedicated branch either need
 ## Prepare the Release
 
 After all development branches have been merged and integrated with the main work-in-progress version, the Extension needs to be prepared for release.
-This usually involves last minute fixes, running quality checks and validation rules and generating the final distribution normal form of the Extension.
+This usually involves last minute fixes, running quality checks and validation rules and generating the final necessary normal form of the Extension.
 
 ![prepare-for-release](images/prepare-for-release.png "Last minute changes before the Release")
 
