@@ -8,7 +8,7 @@ If your Extension extends the SNOMED CT International Edition directly, then you
 * If you are starting from scratch, it is always recommended to select the latest International Release as the starting point of your Extension.
 * If you have an existing Extension then you probably already know the International Release version your Extension depends on.
 
-When you have identified the version you need to depend on then you need to import that version (or a later release packages that also includes that version in its FULL RF2 package) first into Snow Owl. Make sure that the `createVersion` feature of the RF2 import process is enabled, so it will automatically create the versions for each imported RF2 `effectiveTime` value. If you are depending on another Extension, then you need to create multiple
+When you have identified the version you need to depend on then you need to import that version (or a later release packages that also includes that version in its FULL RF2 package) first into Snow Owl. Make sure that the `createVersion` feature of the RF2 import process is enabled, so it will automatically create the versions for each imported RF2 `effectiveTime` value.
 
 After you have successfully imported all dependencies into Snow Owl, the next step is to create a Code System that represents your SNOMED CT Extension (see [Core API](../../api/admin/index.md)).
 When creating the Code System, besides specifying the namespace and optional modules and languages, you need to enter a Code System `shortName`, which will serve as the unique identifier of your Extension and select the `extensionOf` value, which represents the dependency of the Code System.
@@ -18,7 +18,7 @@ When creating the Code System, besides specifying the namespace and optional mod
 After you have successfully created the Code System representing your Extension, you can import any existing content from a most recent release or start from scratch by creating the module concept of your extension.
 
 {% hint style="info" %}
-RF2 releases tend to have content issues with the International Edition itself or refer to missing content when you try to import them into Snow Owl via the RF2 import API. For this reason, the recommended way is to always use the most recent Snapshot RF2 release of a SNOMED CT Extension to form its first representation in Snow Owl. That has a high probability of success without any missing component dependency errors during import. If you are having trouble import an RF2 Release Package into Snow Owl, feel free to raise a question ticket on our [GitHub Issues](https://github.com/b2ihealthcare/snow-owl/issues/new) page.
+RF2 releases tend to have content issues with the International Edition itself or refer to missing content when you try to import them into Snow Owl via the RF2 Import API. For this reason, the recommended way is to always use the most recent Snapshot RF2 release of a SNOMED CT Extension to form its first representation in Snow Owl. That has a high probability of success without any missing component dependency errors during import. If you are having trouble importing an RF2 Release Package into Snow Owl, feel free to raise a question on our [GitHub Issues](https://github.com/b2ihealthcare/snow-owl/issues/new) page.
 {% endhint %}#
 
 ## Extending another Extension
