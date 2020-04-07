@@ -18,19 +18,19 @@ When creating the Code System, besides specifying the namespace and optional mod
 After you have successfully created the Code System representing your Extension, you can import any existing content from a most recent release or start from scratch by creating the module concept of your extension.
 
 {% hint style="info" %}
-RF2 releases tend to have content issues with the International Edition itself or refer to missing content when you try to import them into Snow Owl via the RF2 import API. For this reason, the recommended way is to always use the most recent Snapshot RF2 release of a SNOMED CT Extension to form its first representation in Snow Owl. That has a high probability of success without any missing component dependency errors during import. If you are having trouble import an RF2 Release Package into Snow Owl, feel free to raise a question ticket on our [GitHub Issues](https://github.com/b2ihealthcare/snow-owl/issues/new)
+RF2 releases tend to have content issues with the International Edition itself or refer to missing content when you try to import them into Snow Owl via the RF2 import API. For this reason, the recommended way is to always use the most recent Snapshot RF2 release of a SNOMED CT Extension to form its first representation in Snow Owl. That has a high probability of success without any missing component dependency errors during import. If you are having trouble import an RF2 Release Package into Snow Owl, feel free to raise a question ticket on our [GitHub Issues](https://github.com/b2ihealthcare/snow-owl/issues/new) page.
 {% endhint %}#
 
 ## Extending another Extension
 
-If your Extension needs to extend another Extension and not the International Edition itself, then you need to identify the version you'd like to depend on in that Extension (that indirectly will select the International Edition dependency as well). When you have identified all required versions, then starting from the International Edition recursively traverse back and repeat the RF2 Import and Code System creation steps described in the previous section until you have finally import your extension. In the end your extension might look like this, depending on how many Extensions you are depending on. 
+If your Extension needs to extend another Extension and not the International Edition itself, then you need to identify the version you'd like to depend on in that Extension (that indirectly will select the International Edition dependency as well). When you have identified all required versions, then starting from the International Edition recursively traverse back and repeat the RF2 Import and Code System creation steps described in the previous section until you have finally imported your extension. In the end your extension might look like this, depending on how many Extensions you are depending on. 
 
 ![extension-extends-another](../images/extension-extends-another.png "SNOMED CT UNMC Extension 2019-10-31 extends SNOMED CT US 2019-09-01")
 
 ## Summary
 
-Setting up a Snow Owl deployment like this is not an easy task. It requires torough understanding of each SNOMED CT Extension you'd like to import and their dependencies as well.
-How ever, after the initial setup, the maintenance of your Extension becomes straightforward, thanks to the distinction from the International Edition and from its other dependencies.
+Setting up a Snow Owl deployment like this is not an easy task. It requires a thorough understanding of each SNOMED CT Extension you'd like to import and their dependencies as well.
+However, after the initial setup, the maintenance of your Extension becomes straightforward, thanks to the clear distinction from the International Edition and from its other dependencies.
 The release process is easier and you can choose to publish your Extension as an extension only release, or as an Edition or both (see [Release](../release.md)).
 Additionally, when a new version is available in one of the dependencies, you will be able to upgrade your Extension with the help of automated validation rules and upgrade processes (see [Upgrade](../upgrade.md)).
 From the distribution perspective, this scenario shines when you need to maintain multiple Extensions/Editions in a single deployment.
