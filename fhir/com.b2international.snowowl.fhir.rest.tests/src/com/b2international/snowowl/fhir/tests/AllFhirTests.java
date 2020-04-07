@@ -33,16 +33,7 @@ import com.b2international.snowowl.fhir.tests.serialization.domain.UsageContextS
 import com.b2international.snowowl.fhir.tests.serialization.domain.ValueSetSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.dt.ComplexDataTypeSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.dt.PrimitiveDataTypeSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.DesignationSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.ExpandValueSetRequestDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.LookupRequestDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.LookupResultSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.ParameterDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.ParameterSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.PropertySerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.SubsumptionRequestDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.TranslateRequestDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.TranslateResultSerializationTest;
+import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 
 /**
  * FHIR test suite.

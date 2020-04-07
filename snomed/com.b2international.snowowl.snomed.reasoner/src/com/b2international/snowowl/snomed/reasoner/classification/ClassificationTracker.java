@@ -49,7 +49,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
+import com.b2international.snowowl.core.jobs.RemoteJob;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdMultimap;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdSet;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IReasonerTaxonomy;
@@ -431,7 +431,7 @@ public final class ClassificationTracker implements IDisposableService {
 				if (isClassifyJob) {
 					final IStatus result = job.getResult();
 					if (result == null) {
-						classificationCancelled(job.getId());
+						classificationCancelled(job.getKey());
 					}
 				}
 			}

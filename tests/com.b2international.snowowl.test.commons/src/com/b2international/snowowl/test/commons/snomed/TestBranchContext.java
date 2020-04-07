@@ -30,6 +30,7 @@ import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingContext;
@@ -37,9 +38,9 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.HealthCheckingRequest;
+import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 
@@ -114,7 +115,8 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 			bus.registerHandler(Request.ADDRESS, message -> {
 				try {
 					final RepositoryRequest<?> repoReq = message.body(RepositoryRequest.class);
-					final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
+					final HealthCheckingRequest<?> healthReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
+					final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, healthReq, "next");
 					final Request<BranchContext, ?> innerReq = ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next");
 					message.reply(innerReq.execute(context));
 				} catch (WrappedException e1) {

@@ -20,7 +20,7 @@ import java.util.Map;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
+import com.b2international.snowowl.core.request.DeleteRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 

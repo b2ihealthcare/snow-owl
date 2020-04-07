@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -82,8 +80,6 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
-		
 		final SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareSearchMember()
 				.setLimit(params.getLimit())
 				.setSearchAfter(params.getSearchAfter())
@@ -94,7 +90,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.filterByRefSet(params.getReferenceSet())
 				.filterByReferencedComponent(params.getReferencedComponentId())
 				.setExpand(params.getExpand())
-				.setLocales(extendedLocales)
+				.setLocales(acceptLanguage)
 				.sortBy(extractSortFields(params.getSort()));
 		
 		Options propFilters = params.toPropsFilter();
@@ -162,7 +158,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		return SnomedRequests
 				.prepareGetMember(memberId)
 				.setExpand(expand)
-				.setLocales(getExtendedLocales(acceptLanguage))
+				.setLocales(acceptLanguage)
 				.build(repositoryId, branchPath)
 				.execute(getBus());
 	}

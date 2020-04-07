@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
-import java.util.Date;
-import java.util.List;
 
-import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ExportResult;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
@@ -32,36 +31,23 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  * @since 5.7
  */
 public final class SnomedRf2ExportRequestBuilder 
-		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, ExportResult> 
-		implements RepositoryRequestBuilder<ExportResult> {
+		extends ResourceRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, ExportResult> 
+		implements RevisionIndexRequestBuilder<ExportResult> {
 
-	private String codeSystem;
-	private String referenceBranch;
 	private Rf2ReleaseType releaseType;
 	private Rf2RefSetExportLayout refSetExportLayout;
 	private String countryNamespaceElement;
 	private String namespaceFilter;
-	private Date startEffectiveTime;
-	private Date endEffectiveTime;
+	private Long startEffectiveTime;
+	private Long endEffectiveTime;
 	private boolean includePreReleaseContent;
 	private Collection<String> componentTypes = null;
 	private Collection<String> modules = null;
 	private Collection<String> refSets = null;
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
-	private List<ExtendedLocale> locales;
 	
 	SnomedRf2ExportRequestBuilder() {}
-	
-	public SnomedRf2ExportRequestBuilder setCodeSystem(final String codeSystem) {
-		this.codeSystem = codeSystem;
-		return getSelf();
-	}
-	
-	public SnomedRf2ExportRequestBuilder setReferenceBranch(final String referenceBranch) {
-		this.referenceBranch = referenceBranch;
-		return getSelf();
-	}
 	
 	public SnomedRf2ExportRequestBuilder setReleaseType(final Rf2ReleaseType releaseType) {
 		this.releaseType = releaseType;
@@ -83,12 +69,20 @@ public final class SnomedRf2ExportRequestBuilder
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final Date startEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final String startEffectiveTime) {
+		return setStartEffectiveTime(startEffectiveTime == null ? null : EffectiveTimes.getEffectiveTime(startEffectiveTime, DateFormats.SHORT));
+	}
+	
+	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final Long startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final Date endEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final String endEffectiveTime) {
+		return setEndEffectiveTime(endEffectiveTime == null ? null : EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT));
+	}
+	
+	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final Long endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 		return getSelf();
 	}
@@ -122,17 +116,10 @@ public final class SnomedRf2ExportRequestBuilder
 		this.extensionOnly = extensionOnly;
 		return getSelf();
 	}
-	
-	public SnomedRf2ExportRequestBuilder setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
-		return getSelf();
-	}
-	
+
 	@Override
-	protected Request<RepositoryContext, ExportResult> doBuild() {
+	protected ResourceRequest<BranchContext, ExportResult> create() {
 		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
-		req.setCodeSystem(codeSystem);
-		req.setReferenceBranch(referenceBranch);
 		req.setReleaseType(releaseType);
 		req.setRefSetExportLayout(refSetExportLayout);
 		req.setCountryNamespaceElement(countryNamespaceElement);
@@ -145,7 +132,7 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setRefSets(refSets);
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setExtensionOnly(extensionOnly);
-		req.setLocales(locales);
 		return req;
 	}
+	
 }

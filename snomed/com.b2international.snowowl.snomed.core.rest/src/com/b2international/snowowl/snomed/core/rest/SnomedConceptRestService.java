@@ -32,12 +32,12 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -97,9 +97,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
-
-		List<Sort> sorts = extractSortFields(params.getSort(), branch, extendedLocales);
+		List<Sort> sorts = extractSortFields(params.getSort(), branch, acceptLanguage);
 		
 		if (sorts.isEmpty()) {
 			final SortField sortField = StringUtils.isEmpty(params.getTerm()) 
@@ -126,11 +124,11 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByStatedEcl(params.getStatedEcl())
 					.filterByQuery(params.getQuery())
 					.filterByTerm(params.getTerm())
-					.filterByDescriptionLanguageRefSet(extendedLocales)
+					.filterByDescriptionLanguageRefSet(acceptLanguage)
 					.filterByDescriptionType(params.getDescriptionType())
 					.filterByDescriptionSemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
 					.setExpand(params.getExpand())
-					.setLocales(extendedLocales)
+					.setLocales(acceptLanguage)
 					.sortBy(sorts)
 					.build(repositoryId, branch)
 					.execute(getBus());
@@ -198,13 +196,10 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-
-		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
-		
 		return SnomedRequests
 					.prepareGetConcept(conceptId)
 					.setExpand(expand)
-					.setLocales(extendedLocales)
+					.setLocales(acceptLanguage)
 					.build(repositoryId, branchPath)
 					.execute(getBus());
 	}
@@ -332,12 +327,12 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	}
 	
 	@Override
-	protected Sort toSort(String field, boolean ascending, String branch, List<ExtendedLocale> extendedLocales) {
+	protected Sort toSort(String field, boolean ascending, String branch, String acceptLanguage) {
 		switch (field) {
 		case SnomedRf2Headers.FIELD_TERM:
-			return toTermSort(field, ascending, branch, extendedLocales);
+			return toTermSort(field, ascending, branch, ExtendedLocale.parseLocales(acceptLanguage));
 		}
-		return super.toSort(field, ascending, branch, extendedLocales);
+		return super.toSort(field, ascending, branch, acceptLanguage);
 	}
 
 	private Sort toTermSort(String field, boolean ascending, String branchPath, List<ExtendedLocale> extendedLocales) {

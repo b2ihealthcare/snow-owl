@@ -19,6 +19,7 @@ import java.util.UUID;
 
 /**
  * @since 1.0
+ * @deprecated - will be removed in 7.6
  */
 public class SnomedExportRestRun extends SnomedExportRestConfiguration {
 	

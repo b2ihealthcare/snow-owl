@@ -65,7 +65,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipGetRequestBuilder;
 import com.b2international.snowowl.test.commons.rest.BranchBase;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

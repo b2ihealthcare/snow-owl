@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 
-import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
+import com.b2international.snowowl.core.jobs.SerializableSchedulingRule;
 
 /**
  * @since 7.0

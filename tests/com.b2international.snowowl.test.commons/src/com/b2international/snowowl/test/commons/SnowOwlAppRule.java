@@ -26,9 +26,9 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.identity.IdentityWriter;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.IdentityWriter;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**

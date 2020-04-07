@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -185,11 +184,10 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
 		return ClassificationRequests.prepareSearchEquivalentConceptSet()
 				.filterByClassificationId(classificationId)
 				.setExpand("equivalentConcepts(expand(pt()))")
-				.setLocales(extendedLocales)
+				.setLocales(acceptLanguage)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)

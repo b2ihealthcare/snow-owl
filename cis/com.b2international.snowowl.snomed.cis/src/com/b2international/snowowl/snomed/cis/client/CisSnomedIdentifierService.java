@@ -52,6 +52,7 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.model.*;
+import com.b2international.snowowl.snomed.cis.model.Record;
 import com.b2international.snowowl.snomed.cis.reservations.ISnomedIdentifierReservationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

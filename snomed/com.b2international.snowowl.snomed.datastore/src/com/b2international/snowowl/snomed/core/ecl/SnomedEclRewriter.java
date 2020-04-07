@@ -17,30 +17,7 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
-import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup;
-import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
-import com.b2international.snowowl.snomed.ecl.ecl.EclRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
-import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.*;
 
 /** 
  * @since 5.4

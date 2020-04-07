@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>7.5.0-SNAPSHOT</version>
+		<version>7.5.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.index.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
@@ -37,9 +37,6 @@
 						<goals>
 							<goal>test</goal>
 						</goals>
-						<configuration>
-							<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
-						</configuration>
 					</execution>
 					<execution>
 						<id>http-tests</id>
@@ -48,7 +45,7 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
-							<argLine>${tycho.testArgLine} -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml -Dso.index.es.useHttp</argLine>
+							<argLine>${testArgLine} -Dso.index.es.useHttp</argLine>
 						</configuration>
 					</execution>
 				</executions>

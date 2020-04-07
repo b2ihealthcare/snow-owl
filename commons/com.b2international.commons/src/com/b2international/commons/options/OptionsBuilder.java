@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,20 @@ public final class OptionsBuilder {
 	OptionsBuilder() {}
 	
 	public OptionsBuilder put(String key, Object value) {
-		options.put(key, value);
+		if (value != null) {
+			options.put(key, value);
+		} else {
+			options.remove(key);
+		}
 		return this;
+	}
+	
+	public OptionsBuilder put(Enum<?> key, Object value) {
+		return put(key.name(), value);
+	}
+	
+	public OptionsBuilder putAll(Options options) {
+		return putAll((Map<String, Object>) options);
 	}
 	
 	public OptionsBuilder putAll(Map<String, Object> source) {
@@ -52,5 +64,5 @@ public final class OptionsBuilder {
 	public static OptionsBuilder newBuilder() {
 		return new OptionsBuilder();
 	}
-
+	
 }

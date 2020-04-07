@@ -35,9 +35,9 @@ import org.eclipse.xtext.util.Tuples;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -185,7 +185,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponent().getId());
 			final Date originalMemberEffectiveTime = moduleToReferencedComponentAndEffectiveDateMap.get(pair);
 			if (originalMemberEffectiveTime != null) {
-				assertEquals("Effective dates on unaffected existing module dependency members shouldn't be updated after versioning" , originalMemberEffectiveTime,  member.getEffectiveTime());
+				assertEquals(String.format("Effective dates on unaffected existing module dependency members shouldn't be updated after versioning. ModuleID: %s", member.getReferencedComponentId()), originalMemberEffectiveTime,  member.getEffectiveTime());
 			} else {
 				assertEquals("The new members effective time should match the versionDate", effectiveDate, member.getEffectiveTime());
 			}

@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>7.5.0-SNAPSHOT</version>
+	<version>7.5.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -15,7 +15,7 @@
 		
 		<!-- Maven Dependency Versions -->
 		<jackson.version>2.9.10</jackson.version>
-		<jackson.databind.version>2.9.10.1</jackson.databind.version>
+		<jackson.databind.version>2.9.10.3</jackson.databind.version>
 		<netty.version>4.1.45.Final</netty.version>
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
@@ -51,6 +51,15 @@
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
+
+		<!-- Testing -->
+		<testHeapSize>1g</testHeapSize>
+		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
+
+		<!-- Deployment -->
+		<maven.repository.id>nexus_deployment</maven.repository.id>
+		<nexus.releases.url>${nexus.url}/content/repositories/releases</nexus.releases.url>
+		<nexus.snapshots.url>${nexus.url}/content/repositories/snapshots</nexus.snapshots.url>
 	</properties>
 
 	<modules>
@@ -859,11 +868,13 @@
 					<artifactId>tycho-surefire-plugin</artifactId>
 					<version>${tycho.version}</version>
 					<configuration>
-						<failIfNoTests>false</failIfNoTests>
 						<includes>
 							<include>**/*Test*.java</include>
 						</includes>
+						<useUIThread>false</useUIThread>
+						<failIfNoTests>false</failIfNoTests>
 						<trimStackTrace>false</trimStackTrace>
+						<argLine>${testArgLine}</argLine>
 					</configuration>
 				</plugin>
 				<plugin>

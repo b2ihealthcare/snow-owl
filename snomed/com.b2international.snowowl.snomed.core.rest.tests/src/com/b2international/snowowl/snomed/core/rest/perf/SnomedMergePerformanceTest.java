@@ -25,14 +25,14 @@ import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;

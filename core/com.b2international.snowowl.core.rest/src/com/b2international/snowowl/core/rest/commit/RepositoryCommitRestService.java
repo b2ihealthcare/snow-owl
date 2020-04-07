@@ -27,8 +27,8 @@ import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -83,6 +83,14 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 			@RequestParam(value="timestamp", required=false)
 			final Long timestamp,
 			
+			@ApiParam(value = "Minimum commit timestamp to search matches from")
+			@RequestParam(value="timestampFrom", required=false)
+			final Long timestampFrom,
+			
+			@ApiParam(value = "Maximum commit timestamp to search matches to")
+			@RequestParam(value="timestampTo", required=false)
+			final Long timestampTo,
+			
 			@ApiParam(value = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
@@ -107,6 +115,7 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 					.filterByComment(comment)
 					.filterByBranches(branch)
 					.filterByTimestamp(timestamp)
+					.filterByTimestamp(timestampFrom, timestampTo)
 					.setExpand(expand)
 					.setSearchAfter(searchAfter)
 					.setLimit(limit)

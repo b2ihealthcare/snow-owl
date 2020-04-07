@@ -30,9 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
 import com.b2international.snowowl.snomed.cis.rest.model.BulkJob;

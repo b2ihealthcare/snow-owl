@@ -41,14 +41,14 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.locks.Locks;
+import com.b2international.snowowl.core.locks.OperationLockException;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.datastore.request.Locks;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -159,19 +159,17 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	@Override
 	public Boolean execute(final BranchContext context) {
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
-		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
 		final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 		
-		try (Locks locks = new Locks(context, user, DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext, branch)) {
+		try (Locks locks = Locks.on(context)
+				.user(user)
+				.lock(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext)) {
 			return persistChanges(context, monitor);
 		} catch (final OperationLockException e) {
 			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for persisting classification changes; %s", e.getMessage(), e);
-		} catch (final InterruptedException e) {
-			tracker.classificationFailed(classificationId);
-			throw new ReasonerApiException("Thread interrupted while acquiring exclusive access to terminology store for persisting classification changes.", e);
 		} catch (final Exception e) {
 			LOG.error("Unexpected error while persisting classification changes.", e);
 			tracker.classificationSaveFailed(classificationId);

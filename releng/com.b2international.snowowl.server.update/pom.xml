@@ -8,11 +8,11 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>releng-parent</artifactId>
-		<version>7.5.0-SNAPSHOT</version>
+		<version>7.5.1-SNAPSHOT</version>
 	</parent>
 	
 	<properties>
-		<packageFiles>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</packageFiles>
+		<packageFiles>${project.build.directory}/${project.build.finalName}-oss/${project.build.finalName}</packageFiles>
 		<product.rootFolder>snow-owl-oss-${build.version}</product.rootFolder>
 		<products.directory>${project.build.directory}/products</products.directory>
 		<product.id>com.b2international.snowowl.server</product.id>
@@ -51,14 +51,6 @@
 					</products>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-p2-repository-plugin</artifactId>
-				<configuration>
-					<!-- Manually archive the repository via assembly -->
-					<skipArchive>true</skipArchive>
-				</configuration>
-			</plugin>
 			<!-- create site and server zip, tar.gz and RPM/Deb base folder -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -70,20 +62,8 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<appendAssemblyId>false</appendAssemblyId>
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
 							<descriptor>${basedir}/assembly/oss.xml</descriptor>
-						</configuration>
-					</execution>
-					<execution>
-						<id>package-site</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<workDirectory>${project.build.directory}/assembly/site</workDirectory>
-							<descriptor>${basedir}/assembly/site.xml</descriptor>
 						</configuration>
 					</execution>
 				</executions>

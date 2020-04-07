@@ -44,7 +44,6 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 			final String namespaceFilter, 
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
-			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
 			final Collection<String> descriptionTypes,
 			final String languageCode) {
@@ -54,7 +53,6 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 				namespaceFilter, 
 				transientEffectiveTime, 
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules);
 		this.descriptionTypes = descriptionTypes;
 		this.languageCode = languageCode;

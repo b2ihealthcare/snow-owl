@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,9 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
-import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
@@ -62,7 +62,6 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	protected final String countryNamespaceElement;
 	protected final String namespaceFilter;
 	protected final String archiveEffectiveTime;
-	protected final boolean includePreReleaseContent;
 
 	private final String transientEffectiveTime;
 	private final Collection<String> modules;
@@ -72,7 +71,6 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 			final String namespaceFilter, 
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
-			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		this.releaseType = releaseType;
@@ -80,7 +78,6 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 		this.namespaceFilter = namespaceFilter;
 		this.transientEffectiveTime = transientEffectiveTime;
 		this.archiveEffectiveTime = archiveEffectiveTime;
-		this.includePreReleaseContent = includePreReleaseContent;
 		this.modules = modules;
 	}
 

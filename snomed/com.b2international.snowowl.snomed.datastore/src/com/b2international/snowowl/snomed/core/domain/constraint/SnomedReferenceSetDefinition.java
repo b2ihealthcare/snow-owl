@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.datastore.index.constraint.ReferenceSetDefinitionFragment;
 import com.google.common.base.Strings;
 

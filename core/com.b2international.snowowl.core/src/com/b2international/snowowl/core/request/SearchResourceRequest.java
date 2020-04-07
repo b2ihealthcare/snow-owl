@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.2
  */
-public abstract class SearchResourceRequest<C extends ServiceProvider, B> extends ResourceRequest<C, B> {
+public abstract class SearchResourceRequest<C extends ServiceProvider, B> extends IndexResourceRequest<C, B> {
 	
 	/**
 	 * Exception that indicates that the search request will not have any matching items therefore can immediately respond back with an empty result.

@@ -26,7 +26,7 @@ import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
 import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintStrength;
 import com.fasterxml.jackson.annotation.JsonCreator;

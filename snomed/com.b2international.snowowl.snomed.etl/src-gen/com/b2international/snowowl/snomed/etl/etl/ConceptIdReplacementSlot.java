@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,14 +18,14 @@ package com.b2international.snowowl.snomed.etl.etl;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Concept Id Replacement Slot</b></em>'.
+ * A representation of the model object '<em><b>Expression Replacement Slot</b></em>'.
  * <!-- end-user-doc -->
  *
  *
- * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getConceptIdReplacementSlot()
+ * @see com.b2international.snowowl.snomed.etl.etl.EtlPackage#getExpressionReplacementSlot()
  * @model
  * @generated
  */
-public interface ConceptIdReplacementSlot extends ConceptReplacementSlot
+public interface ExpressionReplacementSlot extends ConceptReplacementSlot
 {
-} // ConceptIdReplacementSlot
+} // ExpressionReplacementSlot

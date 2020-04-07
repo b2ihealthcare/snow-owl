@@ -35,9 +35,9 @@ import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.google.common.collect.ImmutableList;
 
 import io.swagger.annotations.Api;

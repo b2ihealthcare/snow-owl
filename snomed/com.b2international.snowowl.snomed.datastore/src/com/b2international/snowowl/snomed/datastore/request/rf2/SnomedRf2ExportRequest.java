@@ -38,15 +38,15 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.FileUtils;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -55,15 +55,14 @@ import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.ResourceRequest;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.domain.Permission;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -87,7 +86,6 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2Lang
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetDescriptorRefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RelationshipExporter;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -101,7 +99,7 @@ import com.google.common.collect.Ordering;
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportResult>, RepositoryAccessControl {
+final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, ExportResult> implements BranchAccessControl {
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
@@ -110,14 +108,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 
 	private static final Ordering<CodeSystemVersionEntry> EFFECTIVE_DATE_ORDERING = Ordering.natural()
 			.onResultOf(CodeSystemVersionEntry::getEffectiveDate);
-
-	@JsonProperty
-	@NotEmpty
-	private String codeSystem;
-
-	@JsonProperty
-	@NotEmpty
-	private String referenceBranch;
 
 	@JsonProperty 
 	@NotNull 
@@ -135,10 +125,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 	private String namespaceFilter;
 
 	@JsonProperty 
-	private Date startEffectiveTime;
+	private Long startEffectiveTime;
 
 	@JsonProperty 
-	private Date endEffectiveTime;
+	private Long endEffectiveTime;
 
 	@JsonProperty
 	private boolean includePreReleaseContent;
@@ -158,19 +148,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 	@JsonProperty 
 	private boolean extensionOnly;
 	
-	@JsonProperty
-	@NotEmpty
-	private List<ExtendedLocale> locales;
-
 	SnomedRf2ExportRequest() {}
-
-	void setCodeSystem(final String codeSystem) {
-		this.codeSystem = codeSystem;
-	}
-
-	void setReferenceBranch(final String referenceBranch) {
-		this.referenceBranch = referenceBranch;
-	}
 
 	void setReleaseType(final Rf2ReleaseType releaseType) {
 		this.releaseType = releaseType;
@@ -188,11 +166,11 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 		this.namespaceFilter = namespaceFilter;
 	}
 
-	void setStartEffectiveTime(final Date startEffectiveTime) {
+	void setStartEffectiveTime(final Long startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 	}
 
-	void setEndEffectiveTime(final Date endEffectiveTime) {
+	void setEndEffectiveTime(final Long endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 	}
 
@@ -247,23 +225,21 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 		this.extensionOnly = extensionOnly;
 	}
 	
-	void setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
-	}
-
 	@Override
-	public ExportResult execute(final RepositoryContext context) {
+	public ExportResult execute(final BranchContext context) {
+		final String referenceBranch = context.branchPath();
+		
 		// register export start time for later use
 		final long exportStartTime = Instant.now().toEpochMilli();
 
 		// Step 1: check if the export reference branch is a working branch path descendant
-		final CodeSystemEntry referenceCodeSystem = validateCodeSystem(context);
+		final CodeSystemEntry referenceCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(referenceBranch);
 
 		// Step 2: retrieve code system versions that are visible from the reference branch
 		final TreeSet<CodeSystemVersionEntry> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
 		
 		// Step 3: compute branches to export
-		final List<String> branchesToExport = computeBranchesToExport(versionsToExport);
+		final List<String> branchesToExport = computeBranchesToExport(referenceBranch, versionsToExport);
 			
 		// Step 4: compute possible language codes
 		Multimap<String, String> availableLanguageCodes = getLanguageCodes(context, branchesToExport);
@@ -286,8 +262,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 
 			final Set<String> visitedComponentEffectiveTimes = newHashSet();
 			
-			final long effectiveTimeStart = startEffectiveTime != null ? startEffectiveTime.getTime() : 0;
-			final long effectiveTimeEnd =  endEffectiveTime != null ? endEffectiveTime.getTime() : Long.MAX_VALUE;
+			final long effectiveTimeStart = startEffectiveTime != null ? startEffectiveTime : 0;
+			final long effectiveTimeEnd =  endEffectiveTime != null ? endEffectiveTime : Long.MAX_VALUE;
 
 			// export content from the pre-computed version branches
 			for (String branch : branchesToExport) {
@@ -331,7 +307,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 		}
 	}
 
-	private Multimap<String, String> getLanguageCodes(RepositoryContext context, List<String> branchesToExport) {
+	private Multimap<String, String> getLanguageCodes(BranchContext context, List<String> branchesToExport) {
+		final String referenceBranch = context.branchPath();
 		
 		List<String> branchesOrRanges = newArrayList(branchesToExport);
 		
@@ -382,25 +359,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 		return branchToLanguageCodes;
 	}
 
-	private CodeSystemEntry validateCodeSystem(final RepositoryContext context) {
-		
-		final CodeSystemEntry referenceCodeSystem = getCodeSystem(context, codeSystem);
-		
-		if (null == referenceCodeSystem) {
-			throw new BadRequestException("Codesystem with shortname '%s' does not exist.", codeSystem);
-		}
-		
-		final IBranchPath codeSystemPath = BranchPathUtils.createPath(referenceCodeSystem.getBranchPath());
-		final IBranchPath referencePath = BranchPathUtils.createPath(referenceBranch);
-
-		if (!isDescendantOf(codeSystemPath, referencePath)) {
-			throw new BadRequestException("Export path '%s' is not a descendant of the working path of code system '%s'.", referenceBranch, codeSystem);
-		}
-		
-		return referenceCodeSystem;
-	}
-
-	private List<String> computeBranchesToExport(final TreeSet<CodeSystemVersionEntry> versionsToExport) {
+	private List<String> computeBranchesToExport(final String referenceBranch, final TreeSet<CodeSystemVersionEntry> versionsToExport) {
 		
 		final List<String> branchesToExport = newArrayList();
 		
@@ -449,7 +408,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 		Optional<CodeSystemVersionEntry> lastVersionToExport;
 		
 		if (endEffectiveTime != null) {
-			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, endEffectiveTime.getTime()));
+			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, endEffectiveTime));
 		} else {
 			lastVersionToExport = !versionsToExport.isEmpty() ? Optional.ofNullable(versionsToExport.last()) : Optional.empty();
 		}
@@ -562,7 +521,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 		return calendar.getTime();
 	}
 
-	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final RepositoryContext context, final CodeSystemEntry codeSystemEntry) {
+	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystemEntry codeSystemEntry) {
+		final String referenceBranch = context.branchPath();
 		final TreeSet<CodeSystemVersionEntry> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
 		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
 		return visibleVersions;
@@ -606,7 +566,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 		}
 
 		// Otherwise, collect applicable versions using this code system's working path
-		final CodeSystemEntry extensionEnty = getCodeSystem(context, codeSystemEntry.getExtensionOf());
+		final CodeSystemEntry extensionEnty = CodeSystemRequests.getCodeSystem(context, codeSystemEntry.getExtensionOf());
 		collectExportableCodeSystemVersions(context, versionsToExport, extensionEnty, codeSystemEntry.getBranchPath());
 	}
 
@@ -731,7 +691,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 				namespaceFilter,
 				transientEffectiveTime,
 				archiveEffectiveTime,
-				includePreReleaseContent,
 				modules);
 		
 		exporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
@@ -779,7 +738,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 				namespaceFilter,
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules, 
 				descriptionTypes,
 				languageCode);
@@ -789,7 +747,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules, 
 				ImmutableSet.of(Concepts.TEXT_DEFINITION),
 				languageCode);
@@ -828,7 +785,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules, 
 				ImmutableSet.of(Concepts.STATED_RELATIONSHIP));
 
@@ -837,7 +793,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 				namespaceFilter, 
 				transientEffectiveTime,
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules, 
 				characteristicTypes);
 
@@ -870,7 +825,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 					namespaceFilter, 
 					transientEffectiveTime,
 					archiveEffectiveTime,
-					includePreReleaseContent,
 					modules,
 					refSetExportLayout,
 					refSetType,
@@ -918,7 +872,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 					namespaceFilter, 
 					transientEffectiveTime,
 					archiveEffectiveTime,
-					includePreReleaseContent,
 					modules,
 					refSetExportLayout,
 					entry.getKey(),
@@ -959,7 +912,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 					namespaceFilter,
 					transientEffectiveTime,
 					archiveEffectiveTime,
-					includePreReleaseContent,
 					modules,
 					SnomedRefSetType.LANGUAGE,
 					languageRefSets,
@@ -991,7 +943,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 				.all()
 				.filterByIds(refSetsToLoad)
 				.setExpand("pt(),referenceSet()")
-				.setLocales(locales);
+				.setLocales(locales());
 
 		final Request<BranchContext, SnomedConcepts> request = refSetRequestBuilder.build();
 		final SnomedConcepts referenceSets = execute(context, currentVersion, request);
@@ -1018,16 +970,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 		}
 	}
 
-	private static boolean isDescendantOf(final IBranchPath codeSystemPath, final IBranchPath referencePath) {
-		for (final Iterator<IBranchPath> itr = BranchPathUtils.bottomToTopIterator(referencePath); itr.hasNext(); /* empty */) {
-			if (itr.next().equals(codeSystemPath)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private static long getCutoffBaseTimestamp(final RepositoryContext context, final Branch cutoffBranch, final String versionParentPath) {
 		if (cutoffBranch.path().equals(versionParentPath)) {
 			// We are on the working branch of the code system, all versions are visible for export
@@ -1039,16 +981,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, ExportR
 			// Two or more levels down from a working branch, look "upwards"
 			return getCutoffBaseTimestamp(context, getBranch(context, cutoffBranch.parentPath()), versionParentPath);
 		}
-	}
-
-	private static CodeSystemEntry getCodeSystem(final RepositoryContext context, final String shortName) {
-		return CodeSystemRequests.prepareSearchCodeSystem()
-				.one()
-				.filterById(shortName)
-				.build()
-				.execute(context)
-				.first()
-				.orElse(null);
 	}
 
 	private static Collection<CodeSystemVersionEntry> getCodeSystemVersions(final RepositoryContext context, final String shortName) {

@@ -24,11 +24,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.commons.validation.ApiValidation;
+import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.request.compare.CompareResult;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -59,7 +59,7 @@ public abstract class RepositoryBranchCompareRestService extends AbstractRestSer
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.OK)
-	public Promise<CompareResult> compareBranches(@RequestBody CompareRestRequest request) {
+	public Promise<BranchCompareResult> compareBranches(@RequestBody CompareRestRequest request) {
 		ApiValidation.checkInput(request);
 		return RepositoryRequests.branching().prepareCompare()
 			.setBase(request.getBaseBranch())

@@ -4,14 +4,14 @@
 	xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<artifactId>com.b2international.snowowl.snomed.etl</artifactId>
 	<packaging>eclipse-plugin</packaging>
-	
+
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snomed-parent</artifactId>
-		<version>7.5.0-SNAPSHOT</version>
+		<version>7.5.1-SNAPSHOT</version>
 	</parent>
-	
+
 </project>
