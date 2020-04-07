@@ -21,7 +21,9 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.UUID;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,20 @@ import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 
 /**
+ * Abstract configuration superclass to aid in providing Swagger documentation
+ * for a fragment, and extend Spring's context with additional beans (eg. REST
+ * controllers).
+ * <p>
+ * When creating a new REST fragment, create a subclass in package
+ * {@code com.b2international.snowowl.core.rest} and add a {@link Configuration}
+ * annotation to it, so it will be picked up by Spring; further packages can be
+ * registered by including a {@link ComponentScan} annotation on the subclass.
+ * <p>
+ * To provide automatically generated documentation, add a public method
+ * annotated with {@link Bean} that returns an instance of {@link Docket}. The
+ * {@link #docs(String, String, String, String, String, String, String, String, String)}
+ * method can be used for instantiation.
+ * 
  * @since 7.2
  */
 public abstract class BaseApiConfig {
@@ -81,7 +97,7 @@ public abstract class BaseApiConfig {
 			final String apiLicenseUrl,
 			final String apiDescription) {
 		final TypeResolver resolver = new TypeResolver();
-		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + "/.*");
+		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + ".*");
 		return new Docket(DocumentationType.SWAGGER_2)
 				.securitySchemes(ImmutableList.of(
 					new BasicAuth("basic"),

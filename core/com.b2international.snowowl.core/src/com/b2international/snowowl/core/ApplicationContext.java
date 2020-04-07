@@ -161,7 +161,7 @@ public class ApplicationContext {
 	public <T> T getServiceChecked(final Class<T> serviceInterface) {
 		Preconditions.checkNotNull(serviceInterface, "Service interface argument cannot be null.");
 		final T service = getService(serviceInterface);
-		Preconditions.checkNotNull(service, "Service for " + serviceInterface.getSimpleName() + " service cannot be null.");
+		Preconditions.checkNotNull(service, "Service for '%s' service cannot be null.", serviceInterface.getSimpleName());
 		return service;
 	}
 
@@ -174,7 +174,7 @@ public class ApplicationContext {
 	 * @param implementation
 	 */
 	public <T> void registerService(final Class<T> serviceInterface, final T implementation) {
-		Preconditions.checkNotNull(implementation, "Registering service for " + serviceInterface.getSimpleName() + " is prohibited with unspecified implementation.");
+		Preconditions.checkNotNull(implementation, "Registering service for '%s' is prohibited with unspecified implementation.", serviceInterface.getSimpleName());
 		
 		final ServiceRegistryEntry<T> entry = getServiceEntry(serviceInterface);
 		final T oldImplementation = entry.implementation;
@@ -190,7 +190,7 @@ public class ApplicationContext {
 			if (oldImplementation instanceof IDisposableService && !((IDisposableService) oldImplementation).isDisposed()) {
 				((IDisposableService)oldImplementation).dispose();
 			}
-			LOGGER.debug(MessageFormat.format("Registered service {0} for interface {1}.", implementation.getClass().getName(), serviceInterface.getName()));
+			LOGGER.debug("Registered service {} for interface {}.", implementation.getClass().getName(), serviceInterface.getName());
 		}
 	}
 	
@@ -261,7 +261,7 @@ public class ApplicationContext {
 					((IDisposableService) ((ServiceRegistryEntry<?>) service).implementation).dispose();
 
 				} catch (final Exception e) {
-					LOGGER.error("Error while disposing service " + service.getClass().getCanonicalName(), e);
+					LOGGER.error("Error while disposing service {}.", service.getClass().getCanonicalName(), e);
 				}
 			}
 		}

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.review.ReviewStatus;
+import com.b2international.snowowl.core.branch.review.ReviewStatus;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 

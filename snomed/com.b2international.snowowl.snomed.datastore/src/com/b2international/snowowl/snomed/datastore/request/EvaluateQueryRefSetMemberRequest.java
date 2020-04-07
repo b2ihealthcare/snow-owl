@@ -31,8 +31,8 @@ import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.request.ResourceRequest;
-import com.b2international.snowowl.identity.domain.Permission;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.request.IndexResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -48,7 +48,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluation> implements BranchAccessControl {
+public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest<BranchContext, QueryRefSetMemberEvaluation> implements BranchAccessControl {
 
 	@NotEmpty
 	private String memberId;

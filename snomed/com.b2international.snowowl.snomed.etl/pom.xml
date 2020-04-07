@@ -10,8 +10,13 @@
 	
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
+<<<<<<<< HEAD:snomed/com.b2international.snowowl.snomed.etl/pom.xml
 		<artifactId>snomed-parent</artifactId>
+		<version>7.5.1-SNAPSHOT</version>
+========
+		<artifactId>core-parent</artifactId>
 		<version>7.5.0-SNAPSHOT</version>
+>>>>>>>> 9e3749a0a8ea09c4ad5a3025876203f3c39437fa:core/com.b2international.snowowl.datastore/pom.xml
 	</parent>
 	
 </project>

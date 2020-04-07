@@ -29,7 +29,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -93,16 +92,14 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
-
-		List<Sort> sorts = extractSortFields(params.getSort(), branch, extendedLocales);
+		List<Sort> sorts = extractSortFields(params.getSort(), branch, acceptLanguage);
 		
 		return SnomedRequests.prepareSearchRefSet()
 				.filterByIds(params.getId())
 				.filterByTypes(getRefSetTypes(params.getRefSetTypes()))
 				.setLimit(params.getLimit())
 				.setSearchAfter(params.getSearchAfter())
-				.setLocales(extendedLocales)
+				.setLocales(acceptLanguage)
 				.sortBy(sorts)
 				.build(repositoryId, branch)
 				.execute(getBus());
@@ -191,12 +188,10 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
-		final List<ExtendedLocale> extendedLocales = getExtendedLocales(acceptLanguage);
-		
 		return SnomedRequests
 				.prepareGetReferenceSet(referenceSetId)
 				.setExpand(expand)
-				.setLocales(extendedLocales)
+				.setLocales(acceptLanguage)
 				.build(repositoryId, branchPath)
 				.execute(getBus());
 	}

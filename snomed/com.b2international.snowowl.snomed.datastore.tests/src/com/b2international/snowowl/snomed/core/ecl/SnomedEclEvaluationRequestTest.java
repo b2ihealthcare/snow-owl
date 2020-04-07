@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
+import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.ids;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
@@ -62,8 +62,8 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;

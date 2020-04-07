@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+<<<<<<< HEAD:babylonhealth/com.babylonhealth.snowowl.rest/.classpath
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="output" path="bin"/>
+=======
 	<classpathentry kind="src" path="src/"/>
 	<classpathentry kind="src" path="src-gen/"/>
 	<classpathentry kind="output" path="target/classes/"/>
+>>>>>>> 9e3749a0a8ea09c4ad5a3025876203f3c39437fa:snomed/com.b2international.snowowl.snomed.etl/.classpath
 </classpath>

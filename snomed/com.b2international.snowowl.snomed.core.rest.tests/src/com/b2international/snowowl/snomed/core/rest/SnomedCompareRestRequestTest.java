@@ -31,9 +31,9 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.request.compare.CompareResult;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -78,7 +78,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void testCompareOfSameBranch() throws IOException {
-		final CompareResult compareResult = getCompareResult(branchPath.getPath(), parentBranch.getPath());
+		final BranchCompareResult compareResult = getCompareResult(branchPath.getPath(), parentBranch.getPath());
 		
 		assertThat(compareResult.getBaseBranch().equals(branchPath.toString()));
 		assertThat(compareResult.getCompareBranch().equals(branchPath.toString()));
@@ -106,7 +106,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 	public void testCompareWithChangedNewComponents() throws IOException {
 		final String newConceptId = createNewConcept(branchPath);
 		
-		final CompareResult compareResult = getCompareResult(parentBranch.getPath(), branchPath.getPath());
+		final BranchCompareResult compareResult = getCompareResult(parentBranch.getPath(), branchPath.getPath());
 		final Set<ComponentIdentifier> newIds = prepareNewChanges(newConceptId, branchPath);
 		assertThat(compareResult.getNewComponents()).containsAll(newIds);
 		assertThat(compareResult.getChangedComponents()).doesNotContainAnyElementsOf(newIds);
@@ -127,7 +127,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 			.execute(bus)
 			.getSync();
 		
-		final CompareResult compareResult = getCompareResult(parentBranchPath, childBranchPath);
+		final BranchCompareResult compareResult = getCompareResult(parentBranchPath, childBranchPath);
 		// compare child branch with it's parent
 		assertThat(compareResult.getNewComponents()).isEmpty();
 		assertThat(compareResult.getChangedComponents()).contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, newConceptId));
@@ -151,7 +151,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 			.execute(bus)
 			.getSync();
 		
-		final CompareResult compareResult = getCompareResult(parentBranchPath, childBranchPath);
+		final BranchCompareResult compareResult = getCompareResult(parentBranchPath, childBranchPath);
 		
 		// compare task branch and its parent
 		assertThat(compareResult.getNewComponents()).isEmpty();
@@ -159,14 +159,14 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 		assertThat(compareResult.getDeletedComponents()).containsAll(newIds);
 	}
 
-	private CompareResult getCompareResult(final String parentBranchPath, final String childBranchPath) throws IOException {
+	private BranchCompareResult getCompareResult(final String parentBranchPath, final String childBranchPath) throws IOException {
 		final ImmutableMap<String, Object> compareRequest = createCompareRequest(parentBranchPath, childBranchPath);
 		return givenAuthenticatedRequest(SCT_API)
 				.contentType(ContentType.JSON)
 				.accept(ContentType.JSON)
 				.body(compareRequest)
 				.post("/compare")
-				.as(CompareResult.class);
+				.as(BranchCompareResult.class);
 	}
 	
 	private String createBranch(String parent, String name) {

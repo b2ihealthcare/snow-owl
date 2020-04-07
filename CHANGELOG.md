@@ -1,6 +1,57 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.5.0
+
+### Core
+- New `/:path` variable expression `<CODESYSTEM>[/<PATH>]` is available on all endpoints (#511)
+  * `<CODESYSTEM>` is the shortName ID of a Code System
+  * `<PATH>` is one of the following values:
+    * `LATEST` - special value that represents the latest released version of the codesystem. This is the default value if PATH is omitted. Examples: `SNOMEDCT` (implicit latest) or `SNOMEDCT/LATEST` (explicit latest).
+    * `HEAD` - special value that represents the latest development version of the codesystem. Examples: `SNOMEDCT/HEAD`
+    * `<versionId>` - an explicit `versionId` that matches one existing version of the Code System. Examples: `SNOMEDCT/2019-01-31` or `SNOMEDCT-UK/2019-10-31`
+    * `<branch_path>` - any other path value will be treated as relative path to the CodeSystem's current working branch (`CodeSystem.branchPath`). Examples: `SNOMEDCT/a/b`.
+- Commit API
+  * Commits now include timestamp value in a String typed property, `timestampString` (37a4f09, 0392e54)
+  * Expose `timestampFrom` and `timestampTo` filters (76c8f51)
+- Allow full customization of LDAP Identity Provider (#513)
+  * Support customization of user and role object classes (defaults are `inetOrgPerson` and `groupOfUniqueNames`)
+  * Support customization of permission and member properties (defaults are `description` and `uniqueMember`)
+  * NOTE: The selected default values are available in both OpenLDAP and AD 
+
+### SNOMED CT
+- New RF2 Import/Export APIs (#517)
+  * NOTE: The old APIs are still available and functional (a few unused properties were removed)
+  * `POST /:path/import?createVersions=true&type=full`
+    * Initiates an import with the specified config values and a multipart/form-data file
+    * Returns the Location header of the import task with the import ID
+  * `GET /:path/import/:id` - Retrieve the status of the import task using its ID
+  * `DELETE /:path/import/:id` - Delete an import task using its ID (NOTE: executing on a running import will mark the task as CANCEL_REQUESTED, but cancelletation is not supported)
+  * `GET /:path/export?type=full` - single RF2 export endpoint 
+  * The new APIs do not use any in-memory objects and can be safely used in scenarios when there are multiple Snow Owl instances working together on the same dataset
+- New RF2 Export REST API (#517)
+- Remove deprecated `acceptability` filter option from SNOMED CT Description API (d70f9e7)
+  * Use `acceptableIn`, `preferredIn` or `languageRefSet` alternatives instead
+
+### Validation
+- Add new duplicate reference set member rule (#516, 996630a)
+
+### Bugs/Improvements
+- [api] new exception handlers added to ControllerExceptionMapper (#517)
+- [api] fix malformed Location header values (36974a9, #500)
+- [api] fix potential NPE when using sortBy with null value (16af94a)
+- [api] fix potential NPE when using ID filter with null value (92dfa22)
+- [core] Removed FeatureToggle system (superseded by jobs and locks) (#517)
+- [core] do NOT perform empty commit when staging area is not dirty (caeaef3)
+- [core] add all objects as changed to the commit notification (beede99)
+- [core] allow deleted version branches to be reused for versioning (1d908f1)
+- [index] add the current revision to the commit if marked as revised even if the diff is empty (4cf64df)
+- [index] fix performance issue when checking Elasticsearch cluster and index health (7ba2aff)
+- [snomed] fix possible NPE when not supplying any acceptability values (d168d18)
+- [snomed] Do not unset effective time in SnomedConceptUpdateRequest for subclass definition status changes (32a189a)
+- [export] allow exporting members with inactive referenced components to be exported to DSV (21fcfc6)
+- [deps] Bump jackson-databind from 2.9.10.1 to 2.9.10.3 (#509, 7fa55b5)
+
 ## 7.4.0
 
 ### Changes from 6.x stream since 7.3.0 release

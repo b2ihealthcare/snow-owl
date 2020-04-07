@@ -64,7 +64,6 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			final String namespaceFilter, 
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
-			final boolean includePreReleaseContent, 
 			final Collection<String> modules, 
 			final Rf2RefSetExportLayout refSetExportLayout, 
 			final SnomedRefSetType refSetType, 
@@ -75,7 +74,6 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				namespaceFilter, 
 				transientEffectiveTime, 
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules);
 
 		this.refSetExportLayout = refSetExportLayout;

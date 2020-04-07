@@ -27,13 +27,13 @@ import org.springframework.stereotype.Component;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.CodeSystem;
-import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;

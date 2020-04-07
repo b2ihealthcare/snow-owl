@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import java.util.stream.Stream;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -48,7 +48,6 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 			final String namespaceFilter, 
 			final String transientEffectiveTime, 
 			final String archiveEffectiveTime, 
-			final boolean includePreReleaseContent,
 			final Collection<String> modules,
 			final SnomedRefSetType refSetType,
 			final Collection<SnomedConcept> referenceSets,
@@ -59,7 +58,6 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 				namespaceFilter, 
 				transientEffectiveTime, 
 				archiveEffectiveTime, 
-				includePreReleaseContent, 
 				modules,
 				Rf2RefSetExportLayout.COMBINED, // XXX: language reference sets are always aggregated by language code 
 				refSetType, 

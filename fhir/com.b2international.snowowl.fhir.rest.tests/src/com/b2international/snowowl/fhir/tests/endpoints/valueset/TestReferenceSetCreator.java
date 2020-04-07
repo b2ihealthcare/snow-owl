@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.b2international.snowowl.datastore.request.CommitResult;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
 import com.b2international.snowowl.snomed.common.SnomedConstants;

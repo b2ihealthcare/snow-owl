@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
-		<version>7.5.0-SNAPSHOT</version>
+		<version>7.5.1-SNAPSHOT</version>
 		<artifactId>snomed-parent</artifactId>
 	</parent>
 	<artifactId>com.b2international.snowowl.snomed.reasoner.tests</artifactId>
@@ -32,7 +32,6 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
-					<argLine>${tycho.testArgLine} -Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch</argLine>
 					<includes>
 						<include>**/AllSnomedReasonerTests.java</include>
 					</includes>

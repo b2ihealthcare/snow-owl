@@ -16,8 +16,8 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.index.revision.Revision.Fields.ID;
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
+import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.ids;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.google.common.collect.Sets.newHashSet;

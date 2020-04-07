@@ -31,8 +31,8 @@ import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.Searc
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SearchRequestParameterModifier;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SearchRequestParameterValuePrefix;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
-import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
+import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 

@@ -21,6 +21,7 @@ import java.util.Map;
 import com.b2international.index.Doc;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
@@ -77,6 +78,23 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @return - the timestamp of the successful commit
 	 */
 	long commit();
+	
+	/**
+	 * Commits all changes made so far using the current userId, the given commit comment and no lock context.
+	 * 
+	 * @param commitComment - the commit comment to use for the commit
+	 * @return - the timestamp of the successful commit
+	 */
+	long commit(String commitComment);
+	
+	/**
+	 * Commits all changes made so far using the current userId and the given commitComment and lock context.
+	 * 
+	 * @param commitComment - the commit comment to use for the commit
+	 * @param parentContextDescription - the parent lock context to use for the commit
+	 * @return - the timestamp of the successful commit
+	 */
+	long commit(String commitComment, String parentContextDescription);
 	
 	/**
 	 * Commits all changes made so far.
@@ -146,6 +164,12 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * clear operation is needed.
 	 */
 	void clearContents();
+	
+	/**
+	 * @return <code>true</code> if the underlying {@link StagingArea} is dirty
+	 * @see StagingArea#isDirty()
+	 */
+	boolean isDirty();
 
 	@Override
 	default Builder<? extends TransactionContext> inject() {

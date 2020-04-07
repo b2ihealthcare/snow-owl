@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
+import com.b2international.snowowl.core.request.RepositoryCommitRequestBuilder;
 
 /**
  * @since 4.5

@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.UnexpectedTypeException;
@@ -35,13 +36,15 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystems;
+import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -49,8 +52,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVersionSearchRequestBuilder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -146,28 +147,58 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		if (componentToRestore instanceof SnomedConceptDocument && previousVersion instanceof SnomedConceptDocument) {
 			final SnomedConceptDocument conceptToRestore = (SnomedConceptDocument) componentToRestore;
 			final SnomedConceptDocument previousConcept = (SnomedConceptDocument) previousVersion;
-			return conceptToRestore.isPrimitive() == previousConcept.isPrimitive();
-		} else if (componentToRestore instanceof SnomedDescriptionIndexEntry && previousVersion instanceof SnomedDescriptionIndexEntry) {
+			
+			return canRestoreEffectiveTime(conceptToRestore, previousConcept, 
+					SnomedConceptDocument::isPrimitive);
+		}
+		
+		if (componentToRestore instanceof SnomedDescriptionIndexEntry && previousVersion instanceof SnomedDescriptionIndexEntry) {
 			final SnomedDescriptionIndexEntry descriptionToRestore = (SnomedDescriptionIndexEntry) componentToRestore;
 			final SnomedDescriptionIndexEntry previousDescription = (SnomedDescriptionIndexEntry) previousVersion;
-			return descriptionToRestore.getTerm().equals(previousDescription.getTerm()) 
-					&& descriptionToRestore.getCaseSignificanceId().equals(previousDescription.getCaseSignificanceId());
-		} else if (componentToRestore instanceof SnomedRelationshipIndexEntry && previousVersion instanceof SnomedRelationshipIndexEntry) {
+			
+			return canRestoreEffectiveTime(descriptionToRestore, previousDescription, 
+					SnomedDescriptionIndexEntry::getTerm,
+					SnomedDescriptionIndexEntry::getCaseSignificanceId);
+		}
+		
+		if (componentToRestore instanceof SnomedRelationshipIndexEntry && previousVersion instanceof SnomedRelationshipIndexEntry) {
 			final SnomedRelationshipIndexEntry relationshipToRestore = (SnomedRelationshipIndexEntry) componentToRestore;
 			final SnomedRelationshipIndexEntry previousRelationship = (SnomedRelationshipIndexEntry) previousVersion;
-			return Objects.equals(relationshipToRestore.getGroup(), previousRelationship.getGroup()) 
-					&& Objects.equals(relationshipToRestore.getUnionGroup(), previousRelationship.getUnionGroup()) 
-					&& relationshipToRestore.getCharacteristicTypeId().equals(previousRelationship.getCharacteristicTypeId())
-					&& relationshipToRestore.getModifierId().equals(previousRelationship.getModifierId());
-		} else if (componentToRestore instanceof SnomedRefSetMemberIndexEntry && previousVersion instanceof SnomedRefSetMemberIndexEntry) {
+			
+			return canRestoreEffectiveTime(relationshipToRestore, previousRelationship, 
+					SnomedRelationshipIndexEntry::getGroup,
+					SnomedRelationshipIndexEntry::getUnionGroup,
+					SnomedRelationshipIndexEntry::getCharacteristicTypeId,
+					SnomedRelationshipIndexEntry::getModifierId);
+		}
+		
+		if (componentToRestore instanceof SnomedRefSetMemberIndexEntry && previousVersion instanceof SnomedRefSetMemberIndexEntry) {
 			final SnomedRefSetMemberIndexEntry memberToRestore = (SnomedRefSetMemberIndexEntry) componentToRestore;
 			final SnomedRefSetMemberIndexEntry previousMember = (SnomedRefSetMemberIndexEntry) previousVersion;
-			return memberToRestore.getAdditionalFields().entrySet().stream().allMatch(entry -> {
-				return Objects.equals(entry.getValue(), previousMember.getAdditionalFields().get(entry.getKey()));
-			});
-		} else {
-			throw new UnexpectedTypeException("Unexpected component type '" + componentToRestore.getClass() + "'.");
+			
+			final boolean additionalFieldsChanged = memberToRestore.getAdditionalFields()
+					.entrySet()
+					.stream()
+					.anyMatch(entry -> !Objects.equals(
+							entry.getValue(), 
+							previousMember.getAdditionalFields().get(entry.getKey())));
+
+			// Effective time can _not_ be restored if any of the additional fields mismatched
+			return !additionalFieldsChanged;
 		}
+		
+		throw new UnexpectedTypeException("Unexpected component type '" + componentToRestore.getClass() + "'.");
+	}
+	
+	@SafeVarargs
+	private <T extends SnomedDocument> boolean canRestoreEffectiveTime(T current, T previous, Function<T, Object>... accessors) {
+		for (final Function<T, Object> accessor : accessors) {
+			if (!Objects.equals(accessor.apply(current), accessor.apply(previous))) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	private List<String> getAvailableVersionPaths(IEventBus bus, String branchPath) {

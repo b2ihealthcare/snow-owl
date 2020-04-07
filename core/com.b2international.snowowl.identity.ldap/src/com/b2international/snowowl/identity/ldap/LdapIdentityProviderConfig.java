@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.identity.ldap;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.identity.IdentityProviderConfig;
+import com.b2international.snowowl.core.identity.IdentityProviderConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
@@ -31,7 +31,14 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 	@NotEmpty private String baseDn = "dc=snowowl,dc=b2international,dc=com";
 	@NotEmpty private String rootDn = "cn=admin,dc=snowowl,dc=b2international,dc=com";
 	@NotEmpty private String rootDnPassword;
+	// Customizable objectClasses
+	@NotEmpty private String userObjectClass = "inetOrgPerson";
+	@NotEmpty private String roleObjectClass = "groupOfUniqueNames";
+	
+	// Customizable attributes
 	@NotEmpty private String userIdProperty = "uid";
+	@NotEmpty private String permissionProperty = "description";
+	@NotEmpty private String memberProperty = "uniqueMember";
 	
 	private boolean connectionPoolEnabled = false;
 	
@@ -83,6 +90,38 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 	@JsonProperty("usePool")
 	public void setConnectionPoolEnabled(boolean connectionPoolEnabled) {
 		this.connectionPoolEnabled = connectionPoolEnabled;
+	}
+	
+	public String getUserObjectClass() {
+		return userObjectClass;
+	}
+	
+	public void setUserObjectClass(String userObjectClass) {
+		this.userObjectClass = userObjectClass;
+	}
+	
+	public String getRoleObjectClass() {
+		return roleObjectClass;
+	}
+	
+	public void setRoleObjectClass(String roleObjectClass) {
+		this.roleObjectClass = roleObjectClass;
+	}
+	
+	public String getMemberProperty() {
+		return memberProperty;
+	}
+	
+	public void setMemberProperty(String memberProperty) {
+		this.memberProperty = memberProperty;
+	}
+	
+	public String getPermissionProperty() {
+		return permissionProperty;
+	}
+	
+	public void setPermissionProperty(String permissionProperty) {
+		this.permissionProperty = permissionProperty;
 	}
 	
 }

@@ -19,11 +19,9 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.createImport;
-import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.deleteImport;
-import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.getImport;
-import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.uploadImportFile;
+import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.doImport;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.waitForImportJob;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
@@ -41,14 +39,16 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
 
@@ -63,70 +63,42 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :8801005)";
 
 	private void importArchive(final String fileName) {
-		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA);
+		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);
 	}
 	
-	private void importArchive(String fileName, IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType) { 
-		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+	private void importArchive(IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) { 
+		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", releaseType.name())
-				.put("branchPath", path.getPath())
 				.put("createVersions", createVersion)
 				.build();
-
-		importArchive(fileName, importConfiguration);
+		importArchive(path, importConfiguration, fileName);
 	}
 
-	private void importArchive(final String fileName, Map<?, ?> importConfiguration) {
-		final String importId = lastPathSegment(createImport(importConfiguration).statusCode(201)
+	private void importArchive(final IBranchPath branchPath, Map<String, ?> importConfiguration, final String fileName) {
+		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), fileName).statusCode(201)
 				.extract().header("Location"));
-
-		getImport(importId).statusCode(200).body("status", equalTo(ImportStatus.WAITING_FOR_FILE.name()));
-		uploadImportFile(importId, getClass(), fileName).statusCode(204);
-		waitForImportJob(importId).statusCode(200).body("status", equalTo(ImportStatus.COMPLETED.name()));
+		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
 	}
 
 	@Test
-	public void import01CreateValidConfiguration() {
-		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+	public void import01InvalidBranchPath() {
+		final IBranchPath branchPath = BranchPathUtils.createPath("MAIN/notfound");
+		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("createVersions", false)
 				.build();
-
-		final String importId = lastPathSegment(createImport(importConfiguration).statusCode(201)
+		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20150131_new_concept.zip").statusCode(201)
 				.extract().header("Location"));
-
-		getImport(importId).statusCode(200).body("status", equalTo(ImportStatus.WAITING_FOR_FILE.name()));
+		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
 	}
-
+	
 	@Test
-	public void import02DeleteConfiguration() {
-		final Map<?, ?> importConfiguration = ImmutableMap.builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", "MAIN")
-				.put("createVersions", false)
-				.build();
-
-		final String importId = lastPathSegment(createImport(importConfiguration).statusCode(201)
-				.extract().header("Location"));
-
-		deleteImport(importId).statusCode(204);
-		getImport(importId).statusCode(404);
-	}
-
-	@Test
-	public void import03VersionsAllowedOnBranch() {
-		final Map<?, ?> importConfiguration = ImmutableMap.builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
-				.put("createVersions", true)
-				.build();
-
-		final String importId = lastPathSegment(createImport(importConfiguration).statusCode(201)
-				.extract().header("Location"));
-
-		getImport(importId).statusCode(200)
-		.body("status", equalTo(ImportStatus.WAITING_FOR_FILE.name()));
+	public void import02DefaultsNoFileSpecified() {
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.contentType("multipart/form-data")
+			.post("/{path}/import", branchPath.toString())
+			.then()
+			.statusCode(400);
 	}
 
 	@Test
@@ -224,29 +196,16 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import10InvalidBranchPath() {
-		final Map<?, ?> importConfiguration = ImmutableMap.builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", "MAIN/x/y/z")
-				.put("createVersions", false)
-				.build();
-
-		createImport(importConfiguration).statusCode(404);
-	}
-
-	@Test
 	public void import11ExtensionConceptWithVersion() {
 		createCodeSystem(branchPath, "SNOMEDCT-NE").statusCode(201);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(404);
 
-		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
 				.put("createVersions", true)
-				.put("codeSystemShortName", "SNOMEDCT-NE")
 				.build();
 
-		importArchive("SnomedCT_Release_INT_20150205_new_extension_concept.zip", importConfiguration);
+		importArchive(branchPath, importConfiguration, "SnomedCT_Release_INT_20150205_new_extension_concept.zip");
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(200);
 		getVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
 	}
@@ -502,7 +461,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 		assertEquals("Base and head timestamp must be equal after branch creation", baseTimestamp, headTimestamp);
 
-		importArchive(importArchiveFileName, branch, createVersions, Rf2ReleaseType.DELTA);
+		importArchive(branch, createVersions, Rf2ReleaseType.DELTA, importArchiveFileName);
 
 		ValidatableResponse response2 = branching.getBranch(branch);
 
