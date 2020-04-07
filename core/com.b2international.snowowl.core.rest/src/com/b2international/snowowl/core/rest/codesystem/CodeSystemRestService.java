@@ -114,6 +114,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setExtensionOf(codeSystem.getExtensionOf())
+				.setAdditionalProperties(codeSystem.getAdditionalProperties())
 				.commit()
 				.setAuthor(author)
 				.setCommitComment(commitComment)
@@ -155,6 +156,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setIconPath(codeSystem.getIconPath())
 				.setLanguage(codeSystem.getPrimaryLanguage())
 				.setLink(codeSystem.getOrganizationLink())
+				.setAdditionalProperties(codeSystem.getAdditionalProperties())
 				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);

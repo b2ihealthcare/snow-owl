@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.codesystem;
+
+import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -33,6 +35,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 	private String citation;
 	private String branchPath;
 	private String iconPath;
+	private Map<String, Object> additionalProperties;
 
 	CodeSystemUpdateRequestBuilder(final String uniqueId) {
 		super();
@@ -68,6 +71,11 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		this.iconPath = iconPath;
 		return getSelf();
 	}
+	
+	public CodeSystemUpdateRequestBuilder setAdditionalProperties(Map<String, Object> additionalProperties) {
+		this.additionalProperties = additionalProperties;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<TransactionContext, Boolean> doBuild() {
@@ -78,6 +86,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setCitation(citation);
 		req.setBranchPath(branchPath);
 		req.setIconPath(iconPath);
+		req.setAdditionalProperties(additionalProperties);
 		return req;
 	}
 

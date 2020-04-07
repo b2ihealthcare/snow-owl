@@ -20,6 +20,9 @@ import static com.b2international.index.query.Expressions.matchAny;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 
 import com.b2international.index.Doc;
@@ -31,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
@@ -93,7 +97,8 @@ public final class CodeSystemEntry implements Serializable {
 				.terminologyComponentId(codeSystem.getTerminologyComponentId())
 				.repositoryUuid(codeSystem.getRepositoryUuid())
 				.branchPath(codeSystem.getBranchPath())
-				.extensionOf(codeSystem.getExtensionOf());
+				.extensionOf(codeSystem.getExtensionOf())
+				.additionalProperties(codeSystem.getAdditionalProperties());
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
@@ -110,6 +115,7 @@ public final class CodeSystemEntry implements Serializable {
 		private String repositoryUuid;
 		private String branchPath;
 		private CodeSystemURI extensionOf;
+		private Map<String, Object> additionalProperties;
 		
 		private Builder() {}
 		
@@ -168,6 +174,14 @@ public final class CodeSystemEntry implements Serializable {
 			return this;
 		}
 		
+		public Builder additionalProperties(final Map<String, Object> additionalProperties) {
+			this.additionalProperties = Optional.ofNullable(additionalProperties)
+					.map(ImmutableMap::copyOf)
+					.orElse(null);
+
+			return this;
+		}
+		
 		public CodeSystemEntry build() {
 			return new CodeSystemEntry(oid, 
 					name, 
@@ -179,7 +193,8 @@ public final class CodeSystemEntry implements Serializable {
 					terminologyComponentId, 
 					repositoryUuid, 
 					branchPath, 
-					extensionOf);
+					extensionOf,
+					additionalProperties);
 		}
 	}
 
@@ -194,6 +209,7 @@ public final class CodeSystemEntry implements Serializable {
 	private final String repositoryUuid;
 	private final String branchPath;
 	private final CodeSystemURI extensionOf;
+	private final Map<String, Object> additionalProperties;
 	
 	private CodeSystemEntry(final String oid, 
 			final String name, 
@@ -205,7 +221,8 @@ public final class CodeSystemEntry implements Serializable {
 			final String terminologyComponentId, 
 			final String repositoryUuid, 
 			final String branchPath, 
-			final CodeSystemURI extensionOf) {
+			final CodeSystemURI extensionOf, 
+			final Map<String, Object> additionalProperties) {
 
 		this.oid = Strings.nullToEmpty(oid);
 		this.name = Strings.nullToEmpty(name);
@@ -218,126 +235,139 @@ public final class CodeSystemEntry implements Serializable {
 		this.repositoryUuid = repositoryUuid;
 		this.branchPath = branchPath;
 		this.extensionOf = extensionOf;
+		this.additionalProperties = additionalProperties;
 	}
 
 	/**
-	 * Returns the code system OID. Can be {@code null}.
-	 * @return the OID.
+	 * @return the assigned object identifier (OID) of this code system, eg.
+	 *         "{@code 3.4.5.6.10000}" (can be {@code null})
 	 */
 	public String getOid() {
 		return oid;
 	}
 
 	/**
-	 * Returns with the name of the code system.
-	 * @return the name of the code system.
+	 * @return the name of this code system, eg. "{@code SNOMED Clinical Terms}"
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * Returns with the code system short name.
-	 * @return the code system short name.
+	 * @return the short name of this code system, usually an abbreviation of the
+	 *         name; eg. "{@code SNOMEDCT}"
 	 */
 	public String getShortName() {
 		return shortName;
 	}
 
 	/**
-	 * Returns with the maintaining organization link. Can be {@code null}.
-	 * @return the link for the maintaining organization. 
+	 * @return the URL of the maintaining organization, eg.
+	 *         "{@code http://example.com/}" (can be {@code null})
 	 */
 	public String getOrgLink() {
 		return orgLink;
 	}
 
 	/**
-	 * Returns with the language of the code system.
-	 * @return the language.
+	 * @return the primary language tag, eg. "en_US"
 	 */
 	public String getLanguage() {
 		return language;
 	}
 
 	/**
-	 * Returns with the citation of the code system.
-	 * @return the citation of the code system.
+	 * @return a short paragraph describing the origins and purpose of this code
+	 *         system (can be {@code null})
 	 */
 	public String getCitation() {
 		return citation;
 	}
 
 	/**
-	 * Returns with the application specific icon path of the code system. 
-	 * @return the application specific icon path.
+	 * @return the application specific icon path for the code system
 	 */
 	public String getIconPath() {
 		return iconPath;
 	}
 
 	/**
-	 * Returns with the application specific ID to associate the code 
-	 * system with any application specific
-	 *  feature or container repository.
-	 * @return the application specific ID.
+	 * @return the terminology (tooling) ID, used to associate the code system with
+	 *         specific application features
 	 */
 	public String getTerminologyComponentId() {
 		return terminologyComponentId;
 	}
 
 	/**
-	 * Returns with the unique ID of the repository where the current code system belongs to. 
-	 * @return the repository UUID for the code system.
+	 * @return the unique ID of the repository where code system content is stored
 	 */
 	public String getRepositoryUuid() {
 		return repositoryUuid;
 	}
 	
 	/**
-	 * Returns the branch path of the code system.
-	 * @return the path for the code system.
+	 * @return the working branch path for the code system, eg.
+	 *         "{@code MAIN/2018-07-31/SNOMEDCT-EXT}"
 	 */
 	public String getBranchPath() {
 		return branchPath;
 	}
 
 	/**
-	 * Returns the URI of the code system version this code system is extending.
+	 * @return the URI of the code system version this code system is based upon
+	 *         (can be {@code null} if this is a stand-alone code system).
 	 */
 	public CodeSystemURI getExtensionOf() {
 		return extensionOf;
 	}
 
+	/**
+	 * @return a map storing metadata key-value pairs specific to this code system.
+	 *         Interpretation of values is implementation-dependent.
+	 */
+	public Map<String, Object> getAdditionalProperties() {
+		return additionalProperties;
+	}
+
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((oid == null) ? 0 : oid.hashCode());
-		result = prime * result + ((shortName == null) ? 0 : shortName.hashCode());
-		return result;
+		return Objects.hash(oid, shortName);
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof CodeSystemEntry))
-			return false;
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (!(obj instanceof CodeSystemEntry)) { return false; }
+		
 		final CodeSystemEntry other = (CodeSystemEntry) obj;
-		if (oid == null) {
-			if (other.oid != null)
-				return false;
-		} else if (!oid.equals(other.oid))
-			return false;
-		if (shortName == null) {
-			if (other.shortName != null)
-				return false;
-		} else if (!shortName.equals(other.shortName))
-			return false;
-		return true;
+
+		/*
+		 * FIXME: The original intention was to allow eg. local code systems to co-exist
+		 * in case of a short name collision, if they come from different sources (and
+		 * so their OID would be different), however:
+		 *
+		 * - The current implementation does not treat code systems with the same OID 
+		 *   as equal unless their short name also matches; 
+		 * 
+		 * - We can't change the implementation that returns true if _either_ the 
+		 *   short name _or_ the OID matches, as it goes against the transitive requirement 
+		 *   of the equivalence relation described in the javadoc of equals():
+		 * 
+		 *   code system | cs1       cs2       cs3
+		 *   short name  | ABC       CDE       CDE
+		 *   OID         | 1.2.3.4   1.2.3.4   5.6.7.8
+		 * 
+		 *   In this alternative world, cs1 = cs2 and cs2 = cs3, and so cs1 should be 
+		 *   equal to cs3, but it isn't!
+		 * 
+		 * - While some requests take care to look up both short name and OID for a code system,
+		 *   other parts (client and UI) practically treat short names as unique
+		 * 
+		 * Consider removing "oid" from the equality check.
+		 */
+		return Objects.equals(oid, other.oid) && Objects.equals(shortName, other.shortName);
 	}
 	
 	/**

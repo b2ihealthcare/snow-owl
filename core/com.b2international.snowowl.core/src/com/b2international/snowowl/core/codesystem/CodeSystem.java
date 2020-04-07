@@ -15,12 +15,16 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.Map;
+import java.util.Optional;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Maps;
 
 /**
  * Captures metadata about a code system, which holds a set of concepts of
@@ -47,7 +51,8 @@ public class CodeSystem {
 				.iconPath(input.getIconPath())
 				.terminologyId(input.getTerminologyComponentId())
 				.repositoryUuid(input.getRepositoryUuid())
-				.extensionOf(input.getExtensionOf());
+				.extensionOf(input.getExtensionOf())
+				.additionalProperties(input.getAdditionalProperties());
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
@@ -64,7 +69,8 @@ public class CodeSystem {
 		private String terminologyId;
 		private String repositoryUuid;
 		private CodeSystemURI extensionOf;
-
+		private Map<String, Object> additionalProperties;
+		
 		@JsonCreator
 		private Builder() {}
 		
@@ -123,6 +129,14 @@ public class CodeSystem {
 			return getSelf();
 		}
 		
+		public Builder additionalProperties(final Map<String, Object> additionalProperties) {
+			this.additionalProperties = Optional.ofNullable(additionalProperties)
+					.map(Maps::newHashMap)
+					.orElse(null);
+			
+			return getSelf();
+		}
+		
 		public CodeSystem build() {
 			return new CodeSystem(
 					oid, 
@@ -135,7 +149,8 @@ public class CodeSystem {
 					iconPath, 
 					terminologyId, 
 					repositoryUuid,
-					extensionOf);
+					extensionOf,
+					additionalProperties);
 		}
 		
 		private Builder getSelf() {
@@ -153,7 +168,8 @@ public class CodeSystem {
 			final String iconPath, 
 			final String terminologyId, 
 			final String repositoryId,
-			final CodeSystemURI extensionOf) {
+			final CodeSystemURI extensionOf, 
+			final Map<String, Object> additionalProperties) {
 
 		this.oid = oid;
 		this.name = name;
@@ -166,6 +182,7 @@ public class CodeSystem {
 		this.terminologyId = terminologyId;
 		this.repositoryUuid = repositoryId;
 		this.extensionOf = extensionOf;
+		this.additionalProperties = additionalProperties;
 	}
 
 	private String oid;
@@ -179,19 +196,17 @@ public class CodeSystem {
 	private @NotEmpty String terminologyId;
 	private @NotEmpty String repositoryUuid;
 	private CodeSystemURI extensionOf;
+	private Map<String, Object> additionalProperties;
 
 	/**
-	 * Returns the assigned object identifier (OID) of this code system.
-	 * 
-	 * @return the assigned object identifier of this code system, eg. "{@code 3.4.5.6.10000}" (can be {@code null})
+	 * @return the assigned object identifier (OID) of this code system, eg.
+	 *         "{@code 3.4.5.6.10000}" (can be {@code null})
 	 */
 	public String getOid() {
 		return oid;
 	}
 
 	/**
-	 * Returns the name of this code system.
-	 * 
 	 * @return the name of this code system, eg. "{@code SNOMED Clinical Terms}"
 	 */
 	public String getName() {
@@ -199,26 +214,22 @@ public class CodeSystem {
 	}
 
 	/**
-	 * Returns the short name of this code system, which is usually an abbreviation of the name.
-	 * 
-	 * @return the short name of this code system, eg. "{@code SNOMEDCT}"
+	 * @return the short name of this code system, usually an abbreviation of the
+	 *         name; eg. "{@code SNOMEDCT}"
 	 */
 	public String getShortName() {
 		return shortName;
 	}
 
 	/**
-	 * Returns an URL for this code system which points to the maintaining organization's website.
-	 * 
-	 * @return the URL of the maintaining organization, eg. "{@code http://example.com/}" (can be {@code null}) 
+	 * @return the URL of the maintaining organization, eg.
+	 *         "{@code http://example.com/}" (can be {@code null})
 	 */
 	public String getOrganizationLink() {
 		return organizationLink;
 	}
 
 	/**
-	 * Returns the primary language tag for this code system.
-	 * 
 	 * @return the primary language tag, eg. "en_US"
 	 */
 	public String getPrimaryLanguage() {
@@ -226,58 +237,58 @@ public class CodeSystem {
 	}
 
 	/**
-	 * Returns a short paragraph describing the origins and purpose of this code system.
-	 * 
-	 * @return the citation for this code system (can be {@code null})
-	 */	
+	 * @return a short paragraph describing the origins and purpose of this code
+	 *         system (can be {@code null})
+	 */
 	public String getCitation() {
 		return citation;
 	}
 
 	/**
-	 * Returns the branch path of the code system.
-	 * 
-	 * @return the path for the code system.
+	 * @return the working branch path for the code system, eg.
+	 *         "{@code MAIN/2018-07-31/SNOMEDCT-EXT}"
 	 */
 	public String getBranchPath() {
 		return branchPath;
 	}
 
 	/**
-	 * Returns with the application specific icon path of the code system.
-	 * 
-	 * @return the application specific icon path.
+	 * @return the application specific icon path for the code system
 	 */
 	public String getIconPath() {
 		return iconPath;
 	}
 
 	/**
-	 * Returns with the application specific ID to associate the code system
-	 * with any application specific feature or container repository.
-	 * 
-	 * @return the application specific ID.
+	 * @return the terminology (tooling) ID, used to associate the code system with
+	 *         specific application features
 	 */
 	public String getTerminologyId() {
 		return terminologyId;
 	}
 
 	/**
-	 * Returns with the unique ID of the repository where the current code
-	 * system belongs to.
-	 * 
-	 * @return the repository UUID for the code system.
+	 * @return the unique ID of the repository where code system content is stored
 	 */
 	public String getRepositoryUuid() {
 		return repositoryUuid;
 	}
 
 	/**
-	 * Returns the URI of the code system version this code system is extending 
-	 * (can be {@code null} if this is a stand-alone code system).
+	 * @return the URI of the code system version this code system is based upon
+	 *         (can be {@code null} if this is a stand-alone code system).
 	 */
 	public CodeSystemURI getExtensionOf() {
 		return extensionOf;
+	}
+	
+	/**
+	 * @return a map storing metadata key-value pairs specific to this code system
+	 *         (can be {@code null}). Interpretation of values is
+	 *         implementation-dependent.
+	 */
+	public Map<String, Object> getAdditionalProperties() {
+		return additionalProperties;
 	}
 
 	public void setOid(final String oid) {
@@ -304,24 +315,28 @@ public class CodeSystem {
 		this.citation = citation;
 	}
 	
-	public void setBranchPath(String branchPath) {
+	public void setBranchPath(final String branchPath) {
 		this.branchPath = branchPath;
 	}
 	
-	public void setIconPath(String iconPath) {
+	public void setIconPath(final String iconPath) {
 		this.iconPath = iconPath;
 	}
 	
-	public void setTerminologyId(String terminologyId) {
+	public void setTerminologyId(final String terminologyId) {
 		this.terminologyId = terminologyId;
 	}
 	
-	public void setRepositoryUuid(String repositoryUuid) {
+	public void setRepositoryUuid(final String repositoryUuid) {
 		this.repositoryUuid = repositoryUuid;
 	}
 	
-	public void setExtensionOf(CodeSystemURI extensionOf) {
+	public void setExtensionOf(final CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
+	}
+	
+	public void setAdditionalProperties(final Map<String, Object> additionalProperties) {
+		this.additionalProperties = additionalProperties;
 	}
 
 	@Override
@@ -347,6 +362,8 @@ public class CodeSystem {
 		builder.append(repositoryUuid);
 		builder.append(", extensionOf=");
 		builder.append(extensionOf);
+		builder.append(", additionalProperties=");
+		builder.append(additionalProperties);
 		builder.append("]");
 		return builder.toString();
 	}

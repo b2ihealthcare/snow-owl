@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -22,6 +26,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.UpdateRequest;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
@@ -36,6 +41,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 	private String citation;
 	private String branchPath;
 	private String iconPath;
+	private Map<String, Object> additionalProperties;
 
 	CodeSystemUpdateRequest(final String uniqueId) {
 		super(uniqueId);
@@ -64,6 +70,10 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 	void setIconPath(final String iconPath) {
 		this.iconPath = iconPath;
 	}
+	
+	void setAdditionalProperties(final Map<String, Object> additionalProperties) {
+		this.additionalProperties = additionalProperties;
+	}
 
 	@Override
 	public Boolean execute(final TransactionContext context) {
@@ -76,12 +86,46 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		changed |= updateProperty(language, codeSystem::getLanguage, updated::language);
 		changed |= updateProperty(citation, codeSystem::getCitation, updated::citation);
 		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
+		changed |= updateAdditionalProperties(codeSystem, updated);
 		changed |= updateBranchPath(context, updated, codeSystem.getBranchPath());
 		
 		if (changed) {
 			context.add(updated.build());
 		}
 
+		return changed;
+	}
+
+	private boolean updateAdditionalProperties(final CodeSystemEntry codeSystem, final CodeSystemEntry.Builder updated) {
+		if (additionalProperties == null || additionalProperties.isEmpty()) {
+			return false;
+		}
+		
+		// Get mutable copy of existing properties, or an empty map for starters
+		final Map<String, Object> updatedProperties = Optional.ofNullable(codeSystem.getAdditionalProperties())
+				.map(Maps::newHashMap)
+				.orElse(Maps.newHashMap());
+		
+		boolean changed = false;
+		
+		// Remove null values from map
+		final Set<String> keysToRemove = Maps.filterValues(additionalProperties, v -> v == null).keySet();
+		for (final String key : keysToRemove) {
+			changed |= (updatedProperties.remove(key) != null);
+		}
+
+		// Merge (add or modify) non-null values
+		final Set<String> keysToUpdate = Maps.filterValues(additionalProperties, v -> v != null).keySet();
+		for (final String key : keysToUpdate) {
+			changed |= updateProperty(additionalProperties.get(key), // value 
+					() -> updatedProperties.get(key),                // getter
+					value -> updatedProperties.put(key, value));     // setter 
+		}
+		
+		if (changed) {
+			updated.additionalProperties(updatedProperties);
+		}
+		
 		return changed;
 	}
 
@@ -107,5 +151,4 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 	public String getOperation() {
 		return Permission.EDIT;
 	}
-
 }

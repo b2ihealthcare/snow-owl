@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -37,6 +39,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
+	private Map<String, Object> additionalProperties;
 
 	CodeSystemCreateRequestBuilder() {}
 
@@ -94,6 +97,11 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		this.extensionOf = extensionOf;
 		return getSelf();
 	}
+	
+	public CodeSystemCreateRequestBuilder setAdditionalProperties(final Map<String, Object> additionalProperties) {
+		this.additionalProperties = additionalProperties;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<TransactionContext, String> doBuild() {
@@ -109,7 +117,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
 		req.setExtensionOf(extensionOf);
+		req.setAdditionalProperties(additionalProperties);
 		return req;
 	}
-
 }

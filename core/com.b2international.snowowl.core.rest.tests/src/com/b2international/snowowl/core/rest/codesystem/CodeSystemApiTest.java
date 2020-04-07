@@ -24,14 +24,17 @@ import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCo
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdatedWithStatus;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
+import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.rest.CodeSystemApiAssert;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -67,7 +70,7 @@ public class CodeSystemApiTest {
 	public void createCodeSystem() {
 		final String shortName = "cs";
 		final Map<?, ?> requestBody = newCodeSystemRequestBody(shortName);
-		final String lastPathSegment = CodeSystemApiAssert.assertCodeSystemCreated(requestBody);
+		final String lastPathSegment = assertCodeSystemCreated(requestBody);
 		
 		assertEquals(shortName, lastPathSegment);
 		assertCodeSystemExists(shortName);
@@ -77,6 +80,20 @@ public class CodeSystemApiTest {
 	public void createCodeSystemWithNonUniqueShortName() {
 		final Map<?, ?> requestBody = newCodeSystemRequestBody("cs");
 		assertCodeSystemNotCreated(requestBody);
+	}
+	
+	@Test
+	public void createCodeSystemWithMetadata() {
+		final String shortName = "cs6";
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		requestBody.put("additionalProperties", Map.of(
+				"namespace", "1000198",
+				"moduleIds", List.of("1234567891000198103", "9876543211000198107")));
+		
+		assertCodeSystemCreated(requestBody);
+		assertCodeSystemExists(shortName);
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.namespace", "1000198");
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.moduleIds", List.of("1234567891000198103", "9876543211000198107"));
 	}
 	
 	@Test
@@ -92,6 +109,31 @@ public class CodeSystemApiTest {
 		
 		assertCodeSystemUpdated(shortName, updateRequestBody);
 		assertCodeSystemHasAttributeValue(shortName, "name", "updated name");
+	}
+	
+	@Test
+	public void updateCodeSystemWithMetadata() {
+		final String shortName = "cs5";
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		requestBody.put("additionalProperties", Map.of(
+			"namespace", "1000198",
+			"moduleIds", List.of("1234567891000198103", "9876543211000198107"),
+			"locked", true));
+		
+		assertCodeSystemCreated(requestBody);
+		
+		final Map<String, Object> updatedProperties = newHashMap();
+		updatedProperties.put("namespace", "1000197");
+		updatedProperties.put("locked", null);
+		
+		final Map<String, Object> updateRequestBody = Map.of(
+			"repositoryUuid", "snomedStore",
+			"additionalProperties", updatedProperties);
+		
+		assertCodeSystemUpdated(shortName, updateRequestBody);
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.namespace", "1000197");
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.moduleIds", List.of("1234567891000198103", "9876543211000198107"));
+		assertCodeSystemExists(shortName).and().body("additionalProperties", not(hasKey("locked")));
 	}
 	
 	@Test

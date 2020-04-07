@@ -94,7 +94,7 @@ public abstract class CodeSystemApiAssert {
 			.when().put("codesystems/{id}", uniqueId);
 	}
 	
-	public static void assertCodeSystemHasAttributeValue(final String uniqueId, final String attributeName, final String attributeValue) {
+	public static void assertCodeSystemHasAttributeValue(final String uniqueId, final String attributeName, final Object attributeValue) {
 		givenAuthenticatedRequest("/admin")
 			.when().get("/codesystems/{id}", uniqueId)
 			.then().assertThat().statusCode(200)

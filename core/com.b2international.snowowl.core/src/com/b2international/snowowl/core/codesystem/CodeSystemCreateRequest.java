@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.Map;
+import java.util.Optional;
+
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -42,6 +45,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
+	private Map<String, Object> additionalProperties;
 
 	CodeSystemCreateRequest() {}
 
@@ -89,9 +93,14 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		this.extensionOf = extensionOf;
 	}
 	
+	void setAdditionalProperties(final Map<String, Object> additionalProperties) {
+		this.additionalProperties = additionalProperties;
+	}
+
 	@Override
 	public String execute(final TransactionContext context) {
 		checkCodeSystem(context);
+		checkAdditionalProperties();
 		return context.add(createCodeSystem(context));
 	}
 
@@ -116,6 +125,20 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			}
 		}
 	}
+
+	private void checkAdditionalProperties() {
+		if (additionalProperties != null) {
+			final Optional<String> nullValueProperty = additionalProperties.entrySet()
+				.stream()
+				.filter(e -> e.getValue() == null)
+				.map(e -> e.getKey())
+				.findFirst();
+			
+			nullValueProperty.ifPresent(key -> {
+				throw new BadRequestException("Additional property value for key %s is null.", key);	
+			});
+		}
+	}
 	
 	private CodeSystemEntry getCodeSystem(final String uniqeId, final TransactionContext context) {
 		try {
@@ -138,6 +161,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.terminologyComponentId(terminologyId)
 				.repositoryUuid(repositoryUuid)
 				.extensionOf(extensionOf)
+				.additionalProperties(additionalProperties)
 				.build();
 	}
 	
@@ -145,5 +169,4 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	public String getOperation() {
 		return Permission.EDIT;
 	}
-	
 }
