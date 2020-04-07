@@ -134,7 +134,7 @@ public class CodeSystem extends MetadataResource {
 	private Collection<Concept> concepts;
 
 	@SuppressWarnings("rawtypes")
-	public CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
+	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			final Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
 			final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
 			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
