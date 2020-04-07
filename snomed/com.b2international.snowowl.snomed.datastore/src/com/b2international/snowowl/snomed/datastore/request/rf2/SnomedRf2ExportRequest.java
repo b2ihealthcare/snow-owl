@@ -62,6 +62,7 @@ import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -561,12 +562,14 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		versionsToExport.addAll(candidateVersions);
 
 		// Exit early if only an extension code system should be exported, or we are already at the "base" code system
-		if (extensionOnly || Strings.isNullOrEmpty(codeSystemEntry.getExtensionOf())) {
+		final CodeSystemURI extensionOf = codeSystemEntry.getExtensionOf();
+		if (extensionOnly || extensionOf == null) {
 			return;
 		}
 
 		// Otherwise, collect applicable versions using this code system's working path
-		final CodeSystemEntry extensionEnty = CodeSystemRequests.getCodeSystem(context, codeSystemEntry.getExtensionOf());
+		final String extensionOfShortName = extensionOf.getCodeSystem();
+		final CodeSystemEntry extensionEnty = CodeSystemRequests.getCodeSystem(context, extensionOfShortName);
 		collectExportableCodeSystemVersions(context, versionsToExport, extensionEnty, codeSystemEntry.getBranchPath());
 	}
 

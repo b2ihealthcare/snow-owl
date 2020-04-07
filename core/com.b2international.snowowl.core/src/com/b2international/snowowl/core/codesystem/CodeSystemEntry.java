@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@ import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
-
 
 /**
  * @since 5.0
@@ -62,7 +62,6 @@ public final class CodeSystemEntry implements Serializable {
 		public static Expression oids(Collection<String> oids) {
 			return matchAny(Fields.OID, oids);
 		}
-		
 	}
 	
 	public static class Fields {
@@ -109,11 +108,10 @@ public final class CodeSystemEntry implements Serializable {
 		private String iconPath; 
 		private String terminologyComponentId;
 		private String repositoryUuid;
-		private String branchPath = Branch.MAIN_PATH;
-		private String extensionOf;
+		private String branchPath;
+		private CodeSystemURI extensionOf;
 		
-		Builder() {
-		}
+		private Builder() {}
 		
 		public Builder oid(String oid) {
 			this.oid = oid;
@@ -165,16 +163,24 @@ public final class CodeSystemEntry implements Serializable {
 			return this;
 		}
 		
-		public Builder extensionOf(final String extensionOf) {
+		public Builder extensionOf(final CodeSystemURI extensionOf) {
 			this.extensionOf = extensionOf;
 			return this;
 		}
 		
 		public CodeSystemEntry build() {
-			return new CodeSystemEntry(oid, name, shortName, orgLink, language, citation, iconPath, terminologyComponentId, repositoryUuid, branchPath, extensionOf);
+			return new CodeSystemEntry(oid, 
+					name, 
+					shortName, 
+					orgLink, 
+					language, 
+					citation, 
+					iconPath, 
+					terminologyComponentId, 
+					repositoryUuid, 
+					branchPath, 
+					extensionOf);
 		}
-		
-		
 	}
 
 	private final String oid;
@@ -187,11 +193,20 @@ public final class CodeSystemEntry implements Serializable {
 	private final String terminologyComponentId;
 	private final String repositoryUuid;
 	private final String branchPath;
-	private final String extensionOf;
+	private final CodeSystemURI extensionOf;
 	
-	private CodeSystemEntry(final String oid, final String name, final String shortName, final String orgLink, 
-			final String language, final String citation, final String iconPath, final String terminologyComponentId, 
-			final String repositoryUuid, final String branchPath, final String extensionOf) {
+	private CodeSystemEntry(final String oid, 
+			final String name, 
+			final String shortName, 
+			final String orgLink, 
+			final String language, 
+			final String citation, 
+			final String iconPath, 
+			final String terminologyComponentId, 
+			final String repositoryUuid, 
+			final String branchPath, 
+			final CodeSystemURI extensionOf) {
+
 		this.oid = Strings.nullToEmpty(oid);
 		this.name = Strings.nullToEmpty(name);
 		this.shortName = Strings.nullToEmpty(shortName);
@@ -288,9 +303,9 @@ public final class CodeSystemEntry implements Serializable {
 	}
 
 	/**
-	 * Returns the unique ID of the base Code System.
+	 * Returns the URI of the code system version this code system is extending.
 	 */
-	public String getExtensionOf() {
+	public CodeSystemURI getExtensionOf() {
 		return extensionOf;
 	}
 
@@ -351,5 +366,4 @@ public final class CodeSystemEntry implements Serializable {
 	public String getRelativeBranchPath(String relativeTo) {
 		return String.format("%s%s%s", branchPath, Branch.SEPARATOR, relativeTo);
 	}
-	
 }

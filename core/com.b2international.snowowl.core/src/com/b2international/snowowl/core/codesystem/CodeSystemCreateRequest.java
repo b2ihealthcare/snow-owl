@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
-import com.google.common.base.Strings;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
@@ -41,10 +41,9 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
-	private String extensionOf;
+	private CodeSystemURI extensionOf;
 
-	CodeSystemCreateRequest() {
-	}
+	CodeSystemCreateRequest() {}
 
 	void setBranchPath(final String branchPath) {
 		this.branchPath = branchPath;
@@ -86,7 +85,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		this.terminologyId = terminologyId;
 	}
 
-	void setExtensionOf(final String extensionOf) {
+	void setExtensionOf(final CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
 	}
 	
@@ -105,8 +104,16 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			throw new AlreadyExistsException("Code system", shortName);
 		}
 		
-		if (!Strings.isNullOrEmpty(extensionOf) && getCodeSystem(extensionOf, context) == null) {
-			throw new BadRequestException("Couldn't find base Code System with unique ID %s.", extensionOf);
+		if (extensionOf != null) {
+			final String extensionOfShortName = extensionOf.getCodeSystem(); 
+			if (getCodeSystem(extensionOfShortName, context) == null) {
+				throw new BadRequestException("Couldn't find base code system for extensionOf URI %s.", extensionOf);
+			}
+			
+			if (extensionOf.isHead() || extensionOf.isLatest()) {
+				throw new BadRequestException("Base code system version was not expicitly given (can not be empty, "
+						+ "LATEST or HEAD) in extensionOf URI %s.", extensionOf);
+			}
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@ package com.b2international.snowowl.core.codesystem;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * Captures metadata about a code system, which holds a set of real-world concepts of medical significance (optionally
- * along with different components forming a description of said concepts) and their corresponding unique code.
+ * Captures metadata about a code system, which holds a set of concepts of
+ * medical significance (optionally with other, supporting components that
+ * together make up the definition of concepts) and their corresponding unique
+ * code.
  */
 @JsonDeserialize(builder=CodeSystem.Builder.class)
 public class CodeSystem {
@@ -60,7 +63,7 @@ public class CodeSystem {
 		private String iconPath;
 		private String terminologyId;
 		private String repositoryUuid;
-		private String extensionOf;
+		private CodeSystemURI extensionOf;
 
 		@JsonCreator
 		private Builder() {}
@@ -115,7 +118,7 @@ public class CodeSystem {
 			return getSelf();
 		}
 		
-		public Builder extensionOf(final String extensionOf) {
+		public Builder extensionOf(final CodeSystemURI extensionOf) {
 			this.extensionOf = extensionOf;
 			return getSelf();
 		}
@@ -138,17 +141,25 @@ public class CodeSystem {
 		private Builder getSelf() {
 			return this;
 		}
-		
 	}
 	
-	private CodeSystem(final String oid, final String name, final String shortName, final String link, final String language,
-			final String citation, final String branchPath, final String iconPath, final String terminologyId, final String repositoryId,
-			final String extensionOf) {
+	private CodeSystem(final String oid, 
+			final String name, 
+			final String shortName, 
+			final String organizationLink, 
+			final String primaryLanguage,
+			final String citation, 
+			final String branchPath, 
+			final String iconPath, 
+			final String terminologyId, 
+			final String repositoryId,
+			final CodeSystemURI extensionOf) {
+
 		this.oid = oid;
 		this.name = name;
 		this.shortName = shortName;
-		this.organizationLink = link;
-		this.primaryLanguage = language;
+		this.organizationLink = organizationLink;
+		this.primaryLanguage = primaryLanguage;
 		this.citation = citation;
 		this.branchPath = branchPath;
 		this.iconPath = iconPath;
@@ -158,27 +169,16 @@ public class CodeSystem {
 	}
 
 	private String oid;
-	
-	@NotEmpty
-	private String name;
-	@NotEmpty
-	private String shortName;
-	
+	private @NotEmpty String name;
+	private @NotEmpty String shortName;
 	private String organizationLink;
-	
-	@NotEmpty
-	private String primaryLanguage;
-	@NotEmpty
-	private String citation;
-	@NotEmpty
-	private String branchPath;
-	@NotEmpty
-	private String iconPath;
-	@NotEmpty
-	private String terminologyId;
-	@NotEmpty
-	private String repositoryUuid;
-	private String extensionOf;
+	private @NotEmpty String primaryLanguage;
+	private @NotEmpty String citation;
+	private @NotEmpty String branchPath;
+	private @NotEmpty String iconPath;
+	private @NotEmpty String terminologyId;
+	private @NotEmpty String repositoryUuid;
+	private CodeSystemURI extensionOf;
 
 	/**
 	 * Returns the assigned object identifier (OID) of this code system.
@@ -273,9 +273,10 @@ public class CodeSystem {
 	}
 
 	/**
-	 * Returns the unique ID of the base Code System of this Code System.
+	 * Returns the URI of the code system version this code system is extending 
+	 * (can be {@code null} if this is a stand-alone code system).
 	 */
-	public String getExtensionOf() {
+	public CodeSystemURI getExtensionOf() {
 		return extensionOf;
 	}
 
@@ -319,7 +320,7 @@ public class CodeSystem {
 		this.repositoryUuid = repositoryUuid;
 	}
 	
-	public void setExtensionOf(String extensionOf) {
+	public void setExtensionOf(CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
 	}
 
@@ -349,5 +350,4 @@ public class CodeSystem {
 		builder.append("]");
 		return builder.toString();
 	}
-	
 }

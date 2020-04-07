@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
@@ -35,7 +36,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
-	private String extensionOf;
+	private CodeSystemURI extensionOf;
 
 	CodeSystemCreateRequestBuilder() {}
 
@@ -89,7 +90,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setExtensionOf(final String extensionOf) {
+	public CodeSystemCreateRequestBuilder setExtensionOf(final CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
 		return getSelf();
 	}
