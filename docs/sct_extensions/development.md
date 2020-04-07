@@ -12,7 +12,7 @@ The authors directly (via the available REST and FHIR APIs) or indirectly (via u
 ## Workflow and Editing
 
 Authors often require a dedicated editing environment where they can make the necessary changes and let others review the changes they have made, so errors and issues can be corrected before integrating the change with the rest of the Extension.
-With a similar way how SNOMED CT Extensions are being separated from the SNOMED CT International Edition and other dependencies, this can be achieved by using branches.
+Similarly to how SNOMED CT Extensions are separated from the SNOMED CT International Edition and other dependencies, this can be achieved by using branches.
 
 * [Branching API](../api/snomed/branching.md) - to create and merge branches
 * [Compare API](../api/snomed/compare.md) - to compare branches
@@ -38,5 +38,5 @@ In Snow Owl, reports and rules can be represented with validation queries and sc
 
 ## Classification
 
-At the very least, but not last, authors run an OWL Reasoner to classify their changes and generate the distribution normal form of their Extension.
+Last but not least, authors run an OWL Reasoner to classify their changes and generate the distribution normal form of their Extension.
 The [Classification API](../api/snomed/classification.md) provides support for running these reasoner instances and generating the distribution normal form.
