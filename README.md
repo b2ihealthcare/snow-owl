@@ -18,7 +18,7 @@ Features include:
     * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
-    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, experimental Query Language)
+    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, SNOMED Query Language draft specification)
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
 * Various set of APIs
     * SNOMED CT API (RESTful and native Java API)
