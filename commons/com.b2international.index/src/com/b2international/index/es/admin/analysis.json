@@ -99,7 +99,7 @@
 			"name": "english"
 		},
 		"edge_ngram": {
-			"type": "edgeNGram",
+			"type": "edge_ngram",
 			"min_gram": 1,
 			"max_gram": 20
 		},
