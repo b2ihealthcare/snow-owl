@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.5.2</elasticsearch.version>
+		<elasticsearch.version>7.6.2</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
@@ -91,7 +91,11 @@
 								aggs-matrix-stats-client,
 								analysis-common,
 								antlr4-runtime,
-								asm-debug-all,
+								asm,
+								asm-analysis,
+								asm-commons,
+								asm-tree,
+								asm-util,
 								compiler,
 								elasticsearch,
 								elasticsearch-cli,
