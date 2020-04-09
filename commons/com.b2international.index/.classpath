@@ -10,7 +10,11 @@
 	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client-7.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/analysis-common-7.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.5.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/asm-debug-all-5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-analysis-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-commons-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-tree-7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-util-7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/compiler-0.9.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-7.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-cli-7.6.2.jar"/>
