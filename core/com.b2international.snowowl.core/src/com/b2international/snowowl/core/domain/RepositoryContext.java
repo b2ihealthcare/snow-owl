@@ -58,7 +58,7 @@ public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
 	}
 	
 	default BranchContext openBranch(RepositoryContext context, String branch) {
-		return new RepositoryBranchContext(context, ensureAvailability(context, branch));
+		return context.service(ContextConfigurer.class).configure(new RepositoryBranchContext(context, ensureAvailability(context, branch)));
 	}
 
 	private Branch ensureAvailability(RepositoryContext context, String branchPath) {

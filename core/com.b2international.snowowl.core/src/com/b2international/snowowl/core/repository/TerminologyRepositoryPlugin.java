@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.request.ConceptSearchRequest;
@@ -78,6 +79,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
+					.bind(ContextConfigurer.class, getRequestConfigurer())
 					.bind(RepositoryCodeSystemProvider.class, (referenceBranch) -> {
 						final IBranchPath referencePath = BranchPathUtils.createPath(referenceBranch);
 						return CodeSystemRequests.getAllCodeSystems(env)
@@ -104,8 +106,15 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		afterRun(configuration, env);
 	}
 	
-	
-	
+	/**
+	 * Subclasses may override to provide a terminology specific request configurer to configure incoming requests. The default implementation of this method returns a no-op request configurer.
+	 * 
+	 * @return 
+	 */
+	protected ContextConfigurer getRequestConfigurer() {
+		return ContextConfigurer.NOOP;
+	}
+
 	protected abstract ContentAvailabilityInfoProvider getContentAvailabilityInfoProvider();
 	
 	/**
