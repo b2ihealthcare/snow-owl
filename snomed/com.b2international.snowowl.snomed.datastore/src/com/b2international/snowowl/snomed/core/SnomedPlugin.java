@@ -24,8 +24,11 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.Hooks.PreCommitHook;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
@@ -70,6 +73,7 @@ import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositor
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.Synonyms;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
@@ -128,6 +132,24 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 				.build()
 				.execute(context)
 				.getTotal() > 0;
+		};
+	}
+	
+	@Override
+	protected ContextConfigurer getRequestConfigurer() {
+		return new ContextConfigurer() {
+			@Override
+			public <C extends ServiceProvider> C configure(C context) {
+				// enhance all branch context by attaching the Synonyms cache to it
+				if (context instanceof BranchContext) {
+					BranchContext branchContext = (BranchContext) context;
+					return (C) branchContext.inject()
+							.bind(Synonyms.class, new Synonyms(branchContext))
+							.build();
+				} else {
+					return context;
+				}
+			}
 		};
 	}
 	
