@@ -17,10 +17,7 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,25 +26,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedConceptRestUpdate;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import io.swagger.annotations.Api;
@@ -97,7 +88,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		List<Sort> sorts = extractSortFields(params.getSort(), branch, acceptLanguage);
+		List<Sort> sorts = extractSortFields(params.getSort());
 		
 		if (sorts.isEmpty()) {
 			final SortField sortField = StringUtils.isEmpty(params.getTerm()) 
@@ -324,30 +315,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.build(repositoryId, branchPath, author, String.format("Deleted Concept '%s' from store.", conceptId))
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
-	}
-	
-	@Override
-	protected Sort toSort(String field, boolean ascending, String branch, String acceptLanguage) {
-		switch (field) {
-		case SnomedRf2Headers.FIELD_TERM:
-			return toTermSort(field, ascending, branch, ExtendedLocale.parseLocales(acceptLanguage));
-		}
-		return super.toSort(field, ascending, branch, acceptLanguage);
-	}
-
-	private Sort toTermSort(String field, boolean ascending, String branchPath, List<ExtendedLocale> extendedLocales) {
-		final Set<String> synonymIds = SnomedRequests.prepareGetSynonyms()
-			.setFields(SnomedConcept.Fields.ID)
-			.build(repositoryId, branchPath)
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES)
-			.getItems()
-			.stream()
-			.map(IComponent::getId)
-			.collect(Collectors.toSet());
-	
-		final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(extendedLocales), "synonymIds", synonymIds);
-		return SearchResourceRequest.SortScript.of("termSort", args, ascending);
 	}
 	
 }

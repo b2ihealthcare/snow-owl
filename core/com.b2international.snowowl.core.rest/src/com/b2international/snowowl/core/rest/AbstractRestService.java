@@ -107,19 +107,6 @@ public abstract class AbstractRestService {
 	 * @return
 	 */ 
 	protected final List<Sort> extractSortFields(List<String> sortKeys) {
-		return extractSortFields(sortKeys, null, null);
-	}
-	
-	/**
-	 * Extract {@link SearchResourceRequest.Sort}s from the given list of sortKeys. The returned list maintains the same order as the input sortKey
-	 * list.
-	 * 
-	 * @param sortKeys
-	 * @param branch 
-	 * @param acceptLanguage 
-	 * @return
-	 */
-	protected final List<Sort> extractSortFields(List<String> sortKeys, String branch, String acceptLanguage) {
 		if (CompareUtils.isEmpty(sortKeys)) {
 			return Collections.emptyList();
 		}
@@ -129,7 +116,7 @@ public abstract class AbstractRestService {
 			if (matcher.matches()) {
 				String field = matcher.group(1);
 				String order = matcher.group(2);
-				result.add(toSort(field, !"desc".equals(order), branch, acceptLanguage));
+				result.add(SearchResourceRequest.SortField.of(field, !"desc".equals(order)));
 			} else {
 				throw new BadRequestException("Sort key '%s' is not supported, or incorrect sort field pattern.", sortKey);				
 			}
@@ -137,20 +124,6 @@ public abstract class AbstractRestService {
 		return result;
 	}
 
-	/**
-	 * Subclasses may optionally override this method in order to support special sorting requirements for special sort fields. By default this method
-	 * returns a field based sort on the given field.
-	 * 
-	 * @param field
-	 * @param ascending
-	 * @param branch 
-	 * @param acceptLanguage 
-	 * @return
-	 */
-	protected Sort toSort(String field, boolean ascending, String branch, String acceptLanguage) {
-		return SearchResourceRequest.SortField.of(field, ascending);
-	}
-	
 	/**
 	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
 	 * @param resourceId - the identifier of the resource

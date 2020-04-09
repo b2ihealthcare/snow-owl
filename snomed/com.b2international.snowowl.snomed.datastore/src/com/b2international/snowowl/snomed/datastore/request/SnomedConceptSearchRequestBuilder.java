@@ -34,6 +34,11 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
 
 	/**
+	 * Special term based sort key for 
+	 */
+	public static final String TERM_SORT = "term";
+
+	/**
 	 * Protected constructor.
 	 * This class should be instantiated using the central {@link SnomedRequests} class.
 	 */

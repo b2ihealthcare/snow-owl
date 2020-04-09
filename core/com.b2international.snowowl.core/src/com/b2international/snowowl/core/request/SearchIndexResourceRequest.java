@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
@@ -29,6 +31,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
@@ -63,7 +66,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 				.where(where)
 				.searchAfter(searchAfter())
 				.limit(limit())
-				.sortBy(querySortBy())
+				.sortBy(querySortBy(context))
 				.withScores(trackScores())
 				.build());
 		
@@ -92,26 +95,38 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	/**
 	 * @return the currently set {@link SortBy} search option or if sort is not present in the request, the default sort which is by <code>_id</code> document id.
 	 */
-	protected final SortBy querySortBy() {
+	protected final SortBy querySortBy(C context) {
 		List<Sort> sortBy = sortBy();
 		if (!CompareUtils.isEmpty(sortBy)) {
 			SortBy.Builder sortBuilder = SortBy.builder();
 			for (Sort sort : sortBy) {
-				if (sort instanceof SortField) {
-					SortField sortField = (SortField) sort;
-					sortBuilder.sortByField(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
-				} else if (sort instanceof SortScript) {
-					SortScript sortScript = (SortScript) sort;
-					sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
-				} else {
-					throw new UnsupportedOperationException("Cannot handle sort type " + sort);
-				}
+				toQuerySortBy(context, sortBuilder, sort);
 			}
 			return sortBuilder.build();
 		}		
 		return SortBy.DOC_ID;
 	}
 	
+	/**
+	 * Search requests may alter the default sortBy construction. By default it creates field and script sorts, but special sorts can be constructed using special sort keys.
+	 * @param context - the context to access if needed
+	 * @param sortBuilder - the builder to append to the query sort
+	 * @param sort - the sort to convert to low-level query sort
+	 */
+	@OverridingMethodsMustInvokeSuper
+	protected void toQuerySortBy(C context, Builder sortBuilder, Sort sort) {
+		final Order order = sort.isAscending() ? Order.ASC : Order.DESC;
+		if (sort instanceof SortField) {
+			SortField sortField = (SortField) sort;
+			sortBuilder.sortByField(sortField.getField(), order);
+		} else if (sort instanceof SortScript) {
+			SortScript sortScript = (SortScript) sort;
+			sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), order);
+		} else {
+			throw new UnsupportedOperationException("Cannot handle sort type " + sort);
+		}
+	}
+
 	/**
 	 * Prepares the search query with the clauses, filters specified in this request. 
 	 * @param context - the context that can be used to prepare the query 
