@@ -22,6 +22,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
@@ -72,6 +73,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 				.setSearchAfter(search.getString(OptionKey.AFTER))
 				.setLimit(search.get(OptionKey.LIMIT, Integer.class))
 				.setExpand("pt(),fsn()")
+				.sortBy(search.containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? search.getList(SearchResourceRequest.OptionKey.SORT_BY, SearchResourceRequest.Sort.class) : null)
 				.build()
 				.execute(context);
 
