@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
@@ -62,7 +63,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 				.where(where)
 				.searchAfter(searchAfter())
 				.limit(limit())
-				.sortBy(sortBy())
+				.sortBy(querySortBy())
 				.withScores(trackScores())
 				.build());
 		
@@ -88,24 +89,25 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		return applyIdFilter(queryBuilder, (qb, ids) -> qb.filter(expressionFactory.apply(ids)));
 	}
 	
-	protected final SortBy sortBy() {
-		if (containsKey(OptionKey.SORT_BY)) {
-			List<Sort> sorts = getList(OptionKey.SORT_BY, Sort.class);
-			if (!sorts.isEmpty()) {
-				SortBy.Builder sortBuilder = SortBy.builder();
-				for (Sort sort : sorts) {
-					if (sort instanceof SortField) {
-						SortField sortField = (SortField) sort;
-						sortBuilder.sortByField(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
-					} else if (sort instanceof SortScript) {
-						SortScript sortScript = (SortScript) sort;
-						sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
-					} else {
-						throw new UnsupportedOperationException("Cannot handle sort type " + sort);
-					}
+	/**
+	 * @return the currently set {@link SortBy} search option or if sort is not present in the request, the default sort which is by <code>_id</code> document id.
+	 */
+	protected final SortBy querySortBy() {
+		List<Sort> sortBy = sortBy();
+		if (!CompareUtils.isEmpty(sortBy)) {
+			SortBy.Builder sortBuilder = SortBy.builder();
+			for (Sort sort : sortBy) {
+				if (sort instanceof SortField) {
+					SortField sortField = (SortField) sort;
+					sortBuilder.sortByField(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
+				} else if (sort instanceof SortScript) {
+					SortScript sortScript = (SortScript) sort;
+					sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
+				} else {
+					throw new UnsupportedOperationException("Cannot handle sort type " + sort);
 				}
-				return sortBuilder.build();
 			}
+			return sortBuilder.build();
 		}		
 		return SortBy.DOC_ID;
 	}

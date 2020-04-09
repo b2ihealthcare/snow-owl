@@ -56,28 +56,35 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		SORT_BY;
 	}
 
-	public static interface Sort extends Serializable {
-		
-	}
-	
-	public static class SortField implements Sort {
+	public static abstract class Sort implements Serializable {
 		
 		private static final long serialVersionUID = 1L;
 		
-		private final String field;
 		private final boolean ascending;
+
+		public Sort(final boolean ascending) {
+			this.ascending = ascending;
+		}
+
+		public boolean isAscending() {
+			return ascending;
+		}
+		
+	}
+	
+	public static class SortField extends Sort {
+		
+		private static final long serialVersionUID = 2L;
+		
+		private final String field;
 		
 		private SortField(String field, boolean ascending) {
+			super(ascending);
 			this.field = field;
-			this.ascending = ascending;
 		}
 		
 		public String getField() {
 			return field;
-		}
-		
-		public boolean isAscending() {
-			return ascending;
 		}
 		
 		public static SortField of(String field, boolean ascending) {
@@ -94,7 +101,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(field, ascending);
+			return Objects.hash(field, isAscending());
 		}
 
 		@Override
@@ -103,31 +110,30 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			if (obj == null) { return false; }
 			if (getClass() != obj.getClass()) { return false; }
 			final SortField other = (SortField) obj;
-			if (ascending != other.ascending) { return false; }
+			if (isAscending() != other.isAscending()) { return false; }
 			if (!Objects.equals(field, other.field)) { return false; }
 			return true;
 		}
 		
 		@Override
 		public String toString() {
-			return String.format("%s:%s", field, ascending ? "asc" : "desc");
+			return String.format("%s:%s", field, isAscending() ? "asc" : "desc");
 		}
 	}
 	
-	public static class SortScript implements Sort {
+	public static class SortScript extends Sort {
 		
-		private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 2L;
 		
 		private final String script;
 		private final Map<String, Object> arguments;
-		private final boolean ascending;
 		
 		private SortScript(final String script,
 				final Map<String, Object> arguments,
 				final boolean ascending) {
+			super(ascending);
 			this.script = script;
 			this.arguments = arguments;
-			this.ascending = ascending;
 		}
 
 		public String getScript() {
@@ -136,10 +142,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		
 		public Map<String, Object> getArguments() {
 			return arguments;
-		}
-		
-		public boolean isAscending() {
-			return ascending;
 		}
 		
 		public static SortScript of(String script, final Map<String, Object> arguments, boolean ascending) {
@@ -152,6 +154,28 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		
 		public static SortScript descending(String script, final Map<String, Object> arguments) {
 			return of(script, arguments, false);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(script, arguments, isAscending());
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) { return true; }
+			if (obj == null) { return false; }
+			if (getClass() != obj.getClass()) { return false; }
+			final SortScript other = (SortScript) obj;
+			if (isAscending() != other.isAscending()) { return false; }
+			if (!Objects.equals(script, other.script)) { return false; }
+			if (!Objects.equals(arguments, other.arguments)) { return false; }
+			return true;
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("%s:%s", script, isAscending() ? "asc" : "desc");
 		}
 		
 	}
@@ -284,6 +308,11 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Caught exception while executing search request.", e);
 		}
+	}
+	
+	
+	protected final List<Sort> sortBy() {
+		return containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? getList(SearchResourceRequest.OptionKey.SORT_BY, Sort.class) : null;
 	}
 	
 	/**
